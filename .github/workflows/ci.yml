@@ -1,51 +1,5 @@
 name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
+on: [push, pull_request]
 jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install
-        run: npm install
-      - name: Build types
-        run: npm run build:types
-      - name: Lint
-        run: cd apps/desktop && npx eslint src/ --max-warnings 50
-      - name: Type check
-        run: cd apps/desktop && npx tsc --noEmit
-      - name: Build frontend
-        run: cd apps/desktop && npx vite build
-
-  rust-check:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: apps/desktop/src-tauri
-      - name: Cargo check
-        run: cd apps/desktop/src-tauri && cargo check
-
-  playwright:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install
-        run: cd apps/desktop && npm install
-      - name: Install Playwright browsers
-        run: cd apps/desktop && npx playwright install chromium
-      - name: Run Playwright tests
-        run: cd apps/desktop && npx playwright test --reporter=list
+  foundry:
+    uses: sarthakagrawal927/saas-maker/.github/workflows/foundry-ci.yml@v1
