@@ -48,3 +48,7 @@ playwright-report/
 # Misc
 *.log
 .saasmaker.json
+
+# fallow cache
+.fallow/
+cache.bin
