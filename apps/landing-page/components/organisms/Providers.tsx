@@ -4,31 +4,31 @@ import { SectionHeading } from "./Bento";
 const providers = [
   {
     name: "Anthropic",
-    models: ["Opus 4.7", "Sonnet 4.6", "Haiku 4.5"],
+    models: ["Claude 3.5 Sonnet", "Claude 3 Opus"],
     status: "Native",
-    accent: "from-[#f97316] to-[#fbbf24]",
+    accent: "from-orange-500 to-amber-500",
     note: "Recommended for security review",
   },
   {
     name: "OpenAI",
-    models: ["GPT-5", "GPT-5 Codex", "o5-mini"],
+    models: ["GPT-4o", "GPT-4o-mini", "o1-preview"],
     status: "Native",
-    accent: "from-[#10b981] to-[#7dd3fc]",
-    note: "Fast diffs · cheap codex tier",
+    accent: "from-emerald-500 to-sky-500",
+    note: "Fast diffs · robust reasoning",
   },
   {
     name: "OpenRouter",
-    models: ["Kimi K2", "Llama 4", "Mistral"],
+    models: ["Gemini 1.5 Pro", "Llama 3.1 405B"],
     status: "Gateway",
-    accent: "from-[#a78bfa] to-[#f472b6]",
-    note: "300+ models · single key",
+    accent: "from-purple-500 to-pink-500",
+    note: "300+ models · single API key",
   },
   {
-    name: "Local · Ollama",
-    models: ["Qwen 3 Coder", "DeepSeek v3"],
-    status: "Beta",
-    accent: "from-[#7dd3fc] to-[#a78bfa]",
-    note: "Air-gapped · no key needed",
+    name: "Local LLMs",
+    models: ["Qwen 2.5 Coder", "DeepSeek Coder"],
+    status: "Private",
+    accent: "from-blue-500 to-indigo-500",
+    note: "100% private · air-gapped",
   },
 ];
 
@@ -36,19 +36,12 @@ export function Providers() {
   return (
     <section
       id="providers"
-      className="py-28 border-t border-[--color-line] relative overflow-hidden"
+      className="py-32 relative overflow-hidden"
     >
-      <div className="absolute inset-0 grid-bg opacity-25 pointer-events-none" aria-hidden />
-      <div
-        className="absolute right-0 top-1/2 w-[600px] h-[600px] rounded-full pointer-events-none opacity-50 blur-3xl -translate-y-1/2"
-        style={{
-          background:
-            "radial-gradient(closest-side, rgba(125,211,252,0.10), transparent 70%)",
-        }}
-        aria-hidden
-      />
+      <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" aria-hidden />
+      
       <div className="relative max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-12 gap-12 items-end">
+        <div className="grid lg:grid-cols-12 gap-16 items-end mb-20">
           <div className="lg:col-span-7">
             <SectionHeading
               eyebrow="Provider matrix"
@@ -60,55 +53,52 @@ export function Providers() {
               sub="CodeVetter is provider-agnostic. Test the same diff across models, pin one per repo, or rotate as new releases land."
             />
           </div>
-          <div className="lg:col-span-5 grid grid-cols-2 gap-3 font-mono text-[10.5px]">
-            <Stat n="300+" l="Models reachable" />
-            <Stat n="0" l="Tokens we proxy" />
-            <Stat n="<200ms" l="Provider switch" />
-            <Stat n="∞" l="Reviews / month" />
+          <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+            <ProviderStat n="300+" l="Models reachable" />
+            <ProviderStat n="0" l="Tokens proxied" />
+            <ProviderStat n="<200ms" l="Provider latency" />
+            <ProviderStat n="∞" l="Reviews allowed" />
           </div>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {providers.map((p) => (
             <Spotlight
               key={p.name}
-              className="group relative bg-[--color-surface] border border-[--color-line] hover:border-[--color-accent]/40 transition-colors p-6 overflow-hidden"
+              className="group relative bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-500 p-8 rounded-[2rem] overflow-hidden"
             >
               <div
-                className={`absolute -top-32 -right-32 w-72 h-72 rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity bg-gradient-to-br ${p.accent}`}
+                className={`absolute -top-32 -right-32 w-80 h-80 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity bg-gradient-to-br ${p.accent}`}
                 aria-hidden
               />
-              <div
-                className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[--color-accent] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-hidden
-              />
-              <div className="relative">
-                <div className="flex items-start justify-between mb-4">
+              <div className="relative flex flex-col h-full">
+                <div className="flex items-start justify-between mb-8">
                   <div>
-                    <div className="font-display text-2xl font-semibold tracking-tight">
+                    <h3 className="font-display text-2xl font-bold text-white mb-2">
                       {p.name}
-                    </div>
-                    <div className="mt-1 font-mono text-[11px] text-[--color-text-mute]">
+                    </h3>
+                    <p className="text-sm text-gray-500 font-medium">
                       {p.note}
-                    </div>
+                    </p>
                   </div>
                   <span
-                    className={`font-mono text-[9px] uppercase tracking-[0.22em] px-2 py-1 border shrink-0 ${
+                    className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border shadow-sm ${
                       p.status === "Native"
-                        ? "text-[--color-ok] border-[--color-ok]/40 bg-[--color-ok]/5"
-                        : p.status === "Beta"
-                          ? "text-[--color-warn] border-[--color-warn]/40 bg-[--color-warn]/5"
-                          : "text-[--color-accent] border-[--color-accent]/40 bg-[--color-accent]/5"
+                        ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/10"
+                        : p.status === "Private"
+                          ? "text-blue-400 border-blue-500/20 bg-blue-500/10"
+                          : "text-purple-400 border-purple-500/20 bg-purple-500/10"
                     }`}
                   >
                     {p.status}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-5">
+                
+                <div className="flex flex-wrap gap-2 mt-auto">
                   {p.models.map((m) => (
                     <span
                       key={m}
-                      className="font-mono text-[11px] text-[--color-text-dim] border border-[--color-line] bg-[--color-bg] px-2.5 py-1 hover:border-[--color-accent]/40 hover:text-[--color-accent] transition-colors"
+                      className="text-xs font-semibold text-gray-400 border border-white/5 bg-white/[0.03] px-3 py-1.5 rounded-xl group-hover:border-blue-500/20 group-hover:text-gray-200 transition-colors"
                     >
                       {m}
                     </span>
@@ -123,13 +113,13 @@ export function Providers() {
   );
 }
 
-function Stat({ n, l }: { n: string; l: string }) {
+function ProviderStat({ n, l }: { n: string; l: string }) {
   return (
-    <div className="border border-[--color-line] bg-[--color-bg] p-3">
-      <div className="font-display text-2xl font-bold tabular-nums text-[--color-text]">
+    <div className="group p-5 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/10 transition-all">
+      <div className="font-display text-3xl font-bold text-white group-hover:text-blue-400 transition-colors tabular-nums">
         {n}
       </div>
-      <div className="mt-0.5 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[--color-text-mute]">
+      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
         {l}
       </div>
     </div>

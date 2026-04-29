@@ -1,4 +1,3 @@
-import { Spotlight } from "@/components/effects/Spotlight";
 import {
   Cpu,
   GitBranch,
@@ -11,21 +10,18 @@ import type { ReactNode } from "react";
 
 export function Bento() {
   return (
-    <section id="features" className="py-28 relative overflow-hidden">
+    <section id="features" className="py-32 relative overflow-hidden">
       <div
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[--color-accent]/40 to-transparent pointer-events-none"
+        className="absolute -top-40 right-0 w-[800px] h-[800px] rounded-full pointer-events-none opacity-40 blur-3xl"
+        style={{ background: "radial-gradient(closest-side, rgba(96,165,250,0.15), transparent 100%)" }}
         aria-hidden
       />
       <div
-        className="absolute -top-40 right-0 w-[600px] h-[600px] rounded-full pointer-events-none opacity-50 blur-3xl"
-        style={{ background: "radial-gradient(closest-side, rgba(125,211,252,0.10), transparent 70%)" }}
+        className="absolute top-1/2 -left-40 w-[600px] h-[600px] rounded-full pointer-events-none opacity-30 blur-3xl"
+        style={{ background: "radial-gradient(closest-side, rgba(192,132,252,0.15), transparent 100%)" }}
         aria-hidden
       />
-      <div
-        className="absolute top-1/2 -left-40 w-[500px] h-[500px] rounded-full pointer-events-none opacity-50 blur-3xl"
-        style={{ background: "radial-gradient(closest-side, rgba(167,139,250,0.10), transparent 70%)" }}
-        aria-hidden
-      />
+
       <div className="relative max-w-7xl mx-auto px-6">
         <SectionHeading
           eyebrow="Capability matrix"
@@ -38,7 +34,7 @@ export function Bento() {
           sub="Cursor, Claude Code, Devin — they merge fast and miss things. CodeVetter is the second pair of eyes that runs on your laptop."
         />
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-6 grid-rows-[repeat(4,minmax(140px,auto))] gap-4">
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-6 grid-rows-[repeat(4,minmax(180px,auto))] gap-6">
           <Card
             className="md:col-span-4 md:row-span-2"
             icon={<ScanSearch className="w-5 h-5" />}
@@ -65,6 +61,7 @@ export function Bento() {
           >
             <OfflineVisual />
           </Card>
+          
           <Card
             className="md:col-span-2"
             icon={<GitBranch className="w-5 h-5" />}
@@ -73,6 +70,7 @@ export function Bento() {
           >
             <GitVisual />
           </Card>
+          
           <Card
             className="md:col-span-2"
             icon={<Layers className="w-5 h-5" />}
@@ -106,18 +104,18 @@ export function SectionHeading({
   sub?: string;
 }) {
   return (
-    <div className="max-w-3xl">
-      <div className="flex items-center gap-3 mb-5">
-        <span className="w-8 h-px bg-gradient-to-r from-[--color-accent] to-transparent" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[--color-accent]">
+    <div className="max-w-3xl flex flex-col items-center mx-auto text-center">
+      <div className="flex items-center gap-3 mb-6 bg-blue-500/10 border border-blue-500/20 px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(96,165,250,0.15)]">
+        <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+        <span className="text-xs uppercase tracking-widest text-blue-400 font-semibold">
           {eyebrow}
         </span>
       </div>
-      <h2 className="font-display text-[clamp(2rem,4.5vw,3.6rem)] font-bold leading-[1.04] tracking-tight">
+      <h2 className="font-display text-[clamp(2.4rem,5vw,4.2rem)] font-bold leading-[1.05] tracking-tight">
         {title}
       </h2>
       {sub && (
-        <p className="mt-5 text-[16px] text-[--color-text-dim] leading-relaxed">
+        <p className="mt-6 text-[18px] text-gray-400 leading-relaxed max-w-2xl mx-auto">
           {sub}
         </p>
       )}
@@ -139,49 +137,53 @@ function Card({
   children?: ReactNode;
 }) {
   return (
-    <Spotlight
-      className={`group relative bg-[--color-surface] border border-[--color-line] hover:border-[--color-accent]/50 transition-colors p-6 overflow-hidden noise ${className}`}
+    <div
+      className={`group relative bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all duration-500 p-8 rounded-3xl overflow-hidden backdrop-blur-xl shadow-lg ${className}`}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[--color-accent]/[0.04] via-transparent to-[--color-accent-3]/[0.04] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] via-transparent to-purple-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       <div
-        className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[--color-accent] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         aria-hidden
       />
-      <div className="relative flex flex-col h-full">
-        <div className="flex items-center gap-2.5 text-[--color-accent]">
-          {icon}
-          <span className="label-mono !text-[--color-accent]">
-            // {title.slice(0, 14).toUpperCase()}
-          </span>
+      <div className="relative flex flex-col h-full z-10">
+        <div className="flex items-center gap-3 text-blue-400 mb-6">
+          <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 shadow-[0_0_15px_rgba(96,165,250,0.15)]">
+            {icon}
+          </div>
         </div>
-        <h3 className="mt-4 font-display text-xl font-semibold tracking-tight leading-snug">
+        <h3 className="font-display text-2xl font-bold tracking-tight text-white mb-3">
           {title}
         </h3>
-        <p className="mt-2 text-[14px] text-[--color-text-dim] leading-relaxed">
+        <p className="text-[15px] text-gray-400 leading-relaxed mb-6">
           {body}
         </p>
-        {children && <div className="mt-6 flex-1">{children}</div>}
+        {children && <div className="mt-auto pt-6 flex-1 flex flex-col justify-end">{children}</div>}
       </div>
-    </Spotlight>
+    </div>
   );
 }
 
 function DiffVisual() {
   return (
-    <div className="relative bg-[--color-bg] border border-[--color-line] font-mono text-[11.5px] leading-[1.85] p-4 overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[--color-accent]/40 to-transparent" aria-hidden />
-      <div className="text-[--color-text-mute] mb-1">@@ apps/api/src/users.ts @@</div>
-      <div className="bg-[--color-danger]/10 -mx-4 px-4 border-l-2 border-[--color-danger] text-[--color-danger]">
+    <div className="relative rounded-xl border border-white/5 bg-[#050505] font-mono text-[12px] leading-relaxed p-5 overflow-hidden shadow-inner">
+      <div className="text-gray-500 mb-3 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+        apps/api/src/users.ts
+      </div>
+      <div className="bg-red-500/10 -mx-5 px-5 border-l-2 border-red-500 text-red-400 py-1.5 mb-1">
         {"- return await db.raw(`SELECT * FROM users WHERE id = ${id}`);"}
       </div>
-      <div className="bg-[--color-ok]/10 -mx-4 px-4 border-l-2 border-[--color-ok] text-[--color-ok]">
+      <div className="bg-emerald-500/10 -mx-5 px-5 border-l-2 border-emerald-500 text-emerald-400 py-1.5">
         {"+ return await db.query(`SELECT * FROM users WHERE id = $1`, [id]);"}
       </div>
-      <div className="text-[--color-text-mute] mt-2 mb-1">@@ apps/api/src/cache.ts @@</div>
-      <div className="bg-[--color-warn]/10 -mx-4 px-4 border-l-2 border-[--color-warn] text-[--color-warn]/90">
+      <div className="text-gray-500 mt-5 mb-3 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+        apps/api/src/cache.ts
+      </div>
+      <div className="bg-amber-500/10 -mx-5 px-5 border-l-2 border-amber-500 text-amber-400 py-1.5 mb-1">
         ~ ttl 60s → 86400s · review eviction
       </div>
-      <div className="bg-[--color-warn]/10 -mx-4 px-4 border-l-2 border-[--color-warn] text-[--color-warn]/90">
+      <div className="bg-amber-500/10 -mx-5 px-5 border-l-2 border-amber-500 text-amber-400 py-1.5">
         ~ no invalidation on user.update
       </div>
     </div>
@@ -190,32 +192,33 @@ function DiffVisual() {
 
 function KeyVisual() {
   const providers = [
-    { p: "Anthropic", m: "claude-opus-4-7", state: "ok", env: "$ANTHROPIC_KEY" },
-    { p: "OpenAI", m: "gpt-5-codex", state: "ok", env: "$OPENAI_KEY" },
-    { p: "OpenRouter", m: "kimi-k2", state: "idle", env: "—" },
-    { p: "Local", m: "qwen-3-coder", state: "idle", env: "ollama:11434" },
+    { p: "Anthropic", m: "claude-3.5-sonnet", state: "ok", env: "$ANTHROPIC_API_KEY" },
+    { p: "OpenAI", m: "gpt-4o", state: "ok", env: "$OPENAI_API_KEY" },
+    { p: "OpenRouter", m: "gemini-pro", state: "idle", env: "—" },
   ];
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {providers.map((p) => (
         <div
           key={p.p}
-          className="border border-[--color-line] bg-[--color-bg] px-3 py-2 hover:border-[--color-accent]/40 transition-colors"
+          className="flex flex-col justify-center rounded-xl border border-white/5 bg-[#050505] p-4 hover:border-white/10 transition-colors"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] text-[--color-text]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-semibold text-gray-200">
               {p.p}
             </span>
             <span
-              className={`font-mono text-[9px] uppercase tracking-[0.2em] ${
-                p.state === "ok" ? "text-[--color-ok]" : "text-[--color-text-mute]"
+              className={`flex items-center gap-1.5 text-xs font-medium ${
+                p.state === "ok" ? "text-emerald-400" : "text-gray-500"
               }`}
             >
-              {p.state === "ok" ? "● live" : "○ ready"}
+              <span className={`w-1.5 h-1.5 rounded-full ${p.state === "ok" ? "bg-emerald-400" : "bg-gray-500"}`}></span>
+              {p.state === "ok" ? "Live" : "Ready"}
             </span>
           </div>
-          <div className="font-mono text-[10px] text-[--color-text-mute] mt-0.5 truncate">
-            {p.m} · {p.env}
+          <div className="font-mono text-[11px] text-gray-500 truncate flex items-center gap-2">
+            <span className="text-gray-400 bg-white/5 px-2 py-0.5 rounded">{p.m}</span>
+            <span>{p.env}</span>
           </div>
         </div>
       ))}
@@ -225,25 +228,20 @@ function KeyVisual() {
 
 function OfflineVisual() {
   return (
-    <div className="relative h-20 bg-[--color-bg] border border-[--color-line] overflow-hidden flex items-center justify-center">
-      <svg viewBox="0 0 200 60" className="absolute inset-0 w-full h-full" aria-hidden>
-        <defs>
-          <linearGradient id="net" x1="0" x2="1">
-            <stop offset="0" stopColor="rgba(125,211,252,0)" />
-            <stop offset="0.5" stopColor="rgba(125,211,252,0.6)" />
-            <stop offset="1" stopColor="rgba(125,211,252,0)" />
-          </linearGradient>
-        </defs>
-        <line x1="0" y1="30" x2="80" y2="30" stroke="url(#net)" strokeDasharray="2 4" />
-        <line x1="120" y1="30" x2="200" y2="30" stroke="url(#net)" strokeDasharray="2 4" opacity="0.3" />
-      </svg>
-      <div className="relative z-10 flex items-center gap-3">
-        <div className="w-10 h-10 border border-[--color-accent] bg-[--color-accent]/10 flex items-center justify-center">
-          <Cpu className="w-5 h-5 text-[--color-accent]" strokeWidth={1.5} />
+    <div className="relative h-24 rounded-xl border border-white/5 bg-[#050505] overflow-hidden flex items-center justify-center group/offline">
+      <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover/offline:opacity-100 transition-opacity"></div>
+      <div className="relative z-10 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+          <Cpu className="w-6 h-6 text-emerald-400" />
         </div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em]">
-          <div className="text-[--color-ok]">● local</div>
-          <div className="text-[--color-text-mute] line-through">cloud</div>
+        <div className="flex flex-col gap-1 text-xs font-mono">
+          <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            127.0.0.1
+          </div>
+          <div className="flex items-center gap-2 text-gray-600 px-2 py-1">
+            <span className="line-through">api.external.com</span>
+          </div>
         </div>
       </div>
     </div>
@@ -252,14 +250,18 @@ function OfflineVisual() {
 
 function GitVisual() {
   return (
-    <div className="relative h-20 bg-[--color-bg] border border-[--color-line] overflow-hidden p-3">
-      <div className="font-mono text-[10.5px] leading-[1.6]">
-        <div className="text-[--color-text-mute]">$ git diff HEAD~1</div>
-        <div className="text-[--color-accent]">→ 4 files · 87 lines</div>
-        <div className="text-[--color-text-mute]">$ codevetter review</div>
-        <div className="text-[--color-ok] flex items-center gap-1.5">
-          <span className="w-1 h-1 rounded-full bg-[--color-ok] animate-pulse-soft" />
-          scanning…
+    <div className="relative h-24 rounded-xl border border-white/5 bg-[#050505] p-4 flex flex-col justify-center">
+      <div className="font-mono text-[12px] leading-relaxed">
+        <div className="text-gray-500 flex items-center gap-2">
+          <span className="text-purple-400">❯</span> git diff HEAD~1
+        </div>
+        <div className="text-gray-400 ml-4 mb-2">→ 4 files · 87 lines</div>
+        <div className="text-gray-500 flex items-center gap-2">
+          <span className="text-blue-400">❯</span> codevetter review
+        </div>
+        <div className="text-emerald-400 ml-4 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Analyzing diff...
         </div>
       </div>
     </div>
@@ -268,29 +270,23 @@ function GitVisual() {
 
 function SeverityVisual() {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-3 pt-2">
       {[
-        { k: "Critical", v: 4, c: "--color-danger" },
-        { k: "High", v: 12, c: "--color-warn" },
-        { k: "Medium", v: 29, c: "--color-accent" },
+        { k: "Critical", v: 4, c: "bg-red-500", text: "text-red-400" },
+        { k: "High", v: 12, c: "bg-amber-500", text: "text-amber-400" },
+        { k: "Medium", v: 29, c: "bg-blue-500", text: "text-blue-400" },
       ].map((s) => (
-        <div key={s.k} className="flex items-center gap-2 font-mono text-[10.5px]">
-          <span
-            className="uppercase tracking-[0.16em] w-16 shrink-0"
-            style={{ color: `var(${s.c})` }}
-          >
-            {s.k}
-          </span>
-          <div className="flex-1 h-1.5 bg-[--color-line] overflow-hidden">
+        <div key={s.k} className="flex items-center gap-3 text-sm font-medium">
+          <span className={`w-20 ${s.text}`}>{s.k}</span>
+          <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
             <div
-              className="h-full"
+              className={`h-full rounded-full ${s.c} shadow-[0_0_10px_rgba(255,255,255,0.2)]`}
               style={{
                 width: `${(s.v / 29) * 100}%`,
-                background: `var(${s.c})`,
               }}
             />
           </div>
-          <span className="text-[--color-text-mute] tabular-nums">
+          <span className="text-gray-400 font-mono text-xs w-6 text-right">
             {String(s.v).padStart(2, "0")}
           </span>
         </div>
@@ -303,52 +299,51 @@ function PatchVisual() {
   const findings = [
     {
       sev: "Critical",
-      color: "--color-danger",
-      title: "SQLi — token concatenated",
-      body: "Token interpolated into query body. Parameterize or fail.",
+      color: "text-red-400",
+      bg: "bg-red-500/10 border-red-500/20",
+      title: "SQL Injection Vector",
+      body: "Unparameterized token concatenated into query. High risk of arbitrary table access.",
       fix: "db.query(`...$1`,[token])",
     },
     {
       sev: "High",
-      color: "--color-warn",
-      title: "PII logged at INFO",
-      body: "auth token leaks into observability stack.",
-      fix: "logger.redact(['token'])",
+      color: "text-amber-400",
+      bg: "bg-amber-500/10 border-amber-500/20",
+      title: "PII Leak in Logger",
+      body: "Authentication token leaks into DataDog via unredacted request payload.",
+      fix: "logger.redact(['token', 'pwd'])",
     },
     {
       sev: "Medium",
-      color: "--color-accent",
-      title: "/auth/refresh missing rate-limit",
-      body: "No throttle on token mint. DoS vector.",
+      color: "text-blue-400",
+      bg: "bg-blue-500/10 border-blue-500/20",
+      title: "Missing Rate Limit",
+      body: "No throttle applied to /auth/refresh. Potential vector for token exhaustion DoS.",
       fix: "rateLimit({ rpm: 60 })",
     },
   ];
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {findings.map((f) => (
         <div
           key={f.title}
-          className="relative bg-[--color-bg] border border-[--color-line] p-4 space-y-2.5 overflow-hidden group/card hover:border-[--color-accent]/30 transition-colors"
-          style={{ borderLeftColor: `var(${f.color})`, borderLeftWidth: 2 }}
+          className="relative rounded-xl border border-white/5 bg-[#050505] p-5 hover:border-white/10 transition-colors"
         >
-          <div className="flex items-center justify-between">
-            <span
-              className="font-mono text-[10px] uppercase tracking-[0.18em]"
-              style={{ color: `var(${f.color})` }}
-            >
-              // {f.sev}
+          <div className="flex items-center justify-between mb-4">
+            <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${f.bg} ${f.color}`}>
+              {f.sev}
             </span>
-            <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[--color-text-mute]">
-              FIX-1m
+            <span className="font-mono text-[10px] text-gray-500 bg-white/5 px-2 py-1 rounded">
+              Auto-Fix
             </span>
           </div>
-          <div className="font-display text-[15px] font-semibold leading-snug">
+          <div className="font-display text-[16px] font-bold text-gray-200 mb-2">
             {f.title}
           </div>
-          <div className="text-[12px] text-[--color-text-dim] leading-relaxed">
+          <div className="text-[13px] text-gray-400 leading-relaxed mb-4 min-h-[40px]">
             {f.body}
           </div>
-          <div className="font-mono text-[10.5px] bg-[--color-surface-2] border border-[--color-line] px-2.5 py-1.5 text-[--color-ok]">
+          <div className="font-mono text-[11.5px] rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 shadow-inner">
             + {f.fix}
           </div>
         </div>

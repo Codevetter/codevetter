@@ -19,36 +19,44 @@ const items = [
 
 export function CatchStrip() {
   return (
-    <section className="relative py-8 border-y border-[--color-line] bg-[--color-bg-elev]/60 overflow-hidden">
+    <section className="relative py-12 bg-black overflow-hidden group">
       <div
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[--color-accent] to-transparent animate-beam"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"
         aria-hidden
       />
-      <div className="relative max-w-7xl mx-auto px-6">
-        <div className="flex items-center gap-3 mb-5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[--color-accent]">
-            // PATTERN_LIBRARY
-          </span>
-          <span className="text-[--color-text-mute] font-mono text-[11px]">
-            things we catch the agent missed
+      
+      <div className="max-w-7xl mx-auto px-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+          <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">
+            Vulnerability Engine v2.0
           </span>
         </div>
-        <Marquee>
-          {items.map((it) => (
-            <div
-              key={it.tag}
-              className="flex items-center gap-3 border border-[--color-line] bg-[--color-surface] px-4 py-2.5"
-            >
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[--color-accent] border border-[--color-accent]/40 bg-[--color-accent]/5 px-1.5 py-0.5">
-                {it.tag}
-              </span>
-              <span className="font-mono text-[12px] text-[--color-text-dim] whitespace-nowrap">
-                {it.label}
-              </span>
-            </div>
-          ))}
-        </Marquee>
+        <div className="text-xs font-medium text-gray-500 font-mono">
+          Patterns specifically trained on high-velocity agent diffs
+        </div>
       </div>
+
+      <Marquee>
+        {items.map((it) => (
+          <div
+            key={it.tag}
+            className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-full px-5 py-2.5 mx-2 hover:bg-white/[0.08] hover:border-white/10 transition-all duration-300 group/item"
+          >
+            <span className="text-[10px] font-bold text-blue-400 font-mono bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full group-hover/item:bg-blue-500 group-hover/item:text-white transition-colors">
+              {it.tag}
+            </span>
+            <span className="text-sm font-semibold text-gray-300 whitespace-nowrap">
+              {it.label}
+            </span>
+          </div>
+        ))}
+      </Marquee>
+      
+      <div
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
+        aria-hidden
+      />
     </section>
   );
 }
