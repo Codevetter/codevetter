@@ -1318,9 +1318,9 @@ export default function QuickReview() {
         ) : (
           <div className="flex h-full flex-col">
             <div className="cv-terminal-bar h-11 px-4">
-              <span className="cv-dot bg-[var(--cv-danger)]/45" />
-              <span className="cv-dot bg-[var(--cv-warn)]/45" />
-              <span className="cv-dot bg-[var(--cv-ok)]/45" />
+              <span className="cv-dot" />
+              <span className="cv-dot" />
+              <span className="cv-dot" />
               <span className="cv-label mx-auto">review preview · select a diff</span>
               <span className="cv-label">⌘ K</span>
             </div>

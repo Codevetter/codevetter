@@ -1,7 +1,6 @@
 import {
   Activity,
   BarChart3,
-  Database,
   RefreshCw,
   ShieldCheck,
   Terminal,
@@ -894,14 +893,14 @@ export default function Home() {
         {/* Header */}
         <section className="cv-frame overflow-hidden">
           <div className="cv-terminal-bar h-10 px-4">
-            <span className="cv-dot bg-[var(--cv-danger)]/45" />
-            <span className="cv-dot bg-[var(--cv-warn)]/45" />
-            <span className="cv-dot bg-[var(--cv-ok)]/45" />
+            <span className="cv-dot" />
+            <span className="cv-dot" />
+            <span className="cv-dot" />
             <span className="cv-label mx-auto">codevetter — fleet command center</span>
             <span className="cv-label">local</span>
           </div>
-          <div className="grid gap-6 p-6 lg:grid-cols-[1fr_340px]">
-            <div>
+          <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="border-cyan-500/25 bg-cyan-500/10 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cv-accent)]">
                   <ShieldCheck size={12} className="mr-1" />
@@ -919,27 +918,16 @@ export default function Home() {
                 the same cockpit you use to inspect diffs and apply patches.
               </p>
             </div>
-            <div className="cv-panel flex flex-col justify-between p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="cv-label">Index status</div>
-                  <div className="mt-2 text-2xl font-semibold text-white">
-                    {loading && !stats ? "Scanning" : `${stats?.session_count ?? 0} sessions`}
-                  </div>
-                </div>
-                <Database className="h-8 w-8 text-[var(--cv-accent)]" strokeWidth={1.5} />
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleTriggerIndex}
-                disabled={indexing}
-                className="mt-5 h-10 justify-center gap-2 border-[var(--cv-line-strong)] bg-white text-black hover:bg-slate-200"
-              >
-                <RefreshCw size={14} className={indexing ? "animate-spin" : ""} />
-                {indexing ? "Indexing..." : "Re-index local data"}
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTriggerIndex}
+              disabled={indexing}
+              className="h-11 shrink-0 justify-center gap-2 border-[var(--cv-line-strong)] bg-white px-5 text-black hover:bg-slate-200"
+            >
+              <RefreshCw size={15} className={indexing ? "animate-spin" : ""} />
+              {indexing ? "Indexing..." : "Re-index local data"}
+            </Button>
           </div>
         </section>
 
@@ -1012,7 +1000,7 @@ export default function Home() {
       {/* Usage — remaining per account */}
       <div className="cv-frame overflow-hidden">
         <div className="cv-terminal-bar h-10 px-4">
-          <Activity size={14} className="text-[var(--cv-ok)]" />
+          <Activity size={14} className="text-[var(--cv-accent)]" />
           <span className="cv-label">provider telemetry</span>
           <div className="ml-auto flex items-center gap-3">
             <Button
