@@ -81,8 +81,18 @@ function UsageBar({
   resetsInSecs?: number;
 }) {
   const colorMap = {
-    amber: { bar: "bg-amber-500", text: "text-amber-400", bg: "bg-amber-500/10" },
-    red: { bar: "bg-red-500", text: "text-red-400", bg: "bg-red-500/10" },
+    amber: {
+      fill: "linear-gradient(90deg, #8f6b28 0%, #d6a947 58%, #f2c766 100%)",
+      text: "text-[#f0bf5b]",
+      track: "rgba(214, 169, 71, 0.11)",
+      glow: "0 0 16px rgba(214, 169, 71, 0.18)",
+    },
+    red: {
+      fill: "linear-gradient(90deg, #9f2e2d 0%, #e44c3f 58%, #ff7a59 100%)",
+      text: "text-[#ff725f]",
+      track: "rgba(228, 76, 63, 0.12)",
+      glow: "0 0 18px rgba(228, 76, 63, 0.22)",
+    },
   };
   const c = colorMap[color];
 
@@ -99,7 +109,7 @@ function UsageBar({
       paceColor = "text-emerald-400/80";
     } else if (pct > onTrackPct + 0.5) {
       paceLabel = `${Math.round(delta)}% ahead of pace`;
-      paceColor = "text-red-400/80";
+      paceColor = "text-[#ff725f]/90";
     } else {
       paceLabel = "on pace";
       paceColor = "text-slate-500";
@@ -126,10 +136,17 @@ function UsageBar({
           )}
         </div>
       </div>
-      <div className={`h-1.5 w-full rounded-full ${c.bg}`}>
+      <div
+        className="h-1.5 w-full overflow-hidden rounded-full"
+        style={{ backgroundColor: c.track }}
+      >
         <div
-          className={`h-full rounded-full ${c.bar} transition-all duration-500`}
-          style={{ width: `${Math.min(100, pct)}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${Math.min(100, pct)}%`,
+            background: c.fill,
+            boxShadow: c.glow,
+          }}
         />
       </div>
     </div>
@@ -355,10 +372,16 @@ function AccountUsageRow({
                         <span className="text-[10px] text-slate-400 truncate w-28 shrink-0" title={m.model}>
                           {m.model}
                         </span>
-                        <div className="flex-1 h-1 rounded-full bg-amber-500/10 overflow-hidden">
+                        <div
+                          className="flex-1 h-1 overflow-hidden rounded-full"
+                          style={{ backgroundColor: "rgba(214, 169, 71, 0.11)" }}
+                        >
                           <div
-                            className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                            style={{ width: `${Math.min(100, pct)}%` }}
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, pct)}%`,
+                              background: "linear-gradient(90deg, #8f6b28 0%, #d6a947 60%, #f2c766 100%)",
+                            }}
                           />
                         </div>
                         <span className="text-[10px] text-slate-500 tabular-nums shrink-0 w-10 text-right">
@@ -478,6 +501,17 @@ function TokenUsageChart({
   };
 
   const gridlines = [0.25, 0.5, 0.75, 1].map((f) => padTop + chartH * (1 - f));
+  const barFill = (ratio: number, isHover: boolean) => {
+    if (isHover) return "#f2c766";
+    if (ratio >= 0.82) return "#ff725f";
+    if (ratio >= 0.58) return "#d6a947";
+    if (ratio >= 0.32) return "#31c6b7";
+    return "#427489";
+  };
+  const barOpacity = (ratio: number, isHover: boolean) => {
+    if (isHover) return 1;
+    return 0.52 + Math.min(0.38, ratio * 0.38);
+  };
 
   return (
     <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
@@ -529,6 +563,7 @@ function TokenUsageChart({
         ))}
         {data.map((d, i) => {
           const h = (d.tokens / max) * chartH;
+          const ratio = d.tokens / max;
           const x = padX + i * barW + barW * 0.15;
           const y = padTop + chartH - h;
           const w = barW * 0.7;
@@ -549,8 +584,8 @@ function TokenUsageChart({
                 y={y}
                 width={w}
                 height={Math.max(h, d.tokens > 0 ? 1 : 0)}
-                fill={isHover ? "#22d3ee" : "#06b6d4"}
-                opacity={isHover ? 1 : 0.85}
+                fill={barFill(ratio, isHover)}
+                opacity={barOpacity(ratio, isHover)}
                 pointerEvents="none"
               />
             </g>
@@ -563,10 +598,10 @@ function TokenUsageChart({
             x2={padX + hover * barW + barW / 2}
             y1={padTop}
             y2={padTop + chartH}
-            stroke="#22d3ee"
+            stroke="#f2c766"
             strokeWidth={0.5}
             strokeDasharray="2 2"
-            opacity={0.4}
+            opacity={0.5}
             pointerEvents="none"
           />
         )}
@@ -603,7 +638,7 @@ function TokenUsageChart({
               textAnchor="middle"
               fontSize={9}
               fontWeight={isHover || isLast ? 600 : 400}
-              fill={isHover ? "#22d3ee" : isLast ? "#cbd5e1" : "#64748b"}
+              fill={isHover ? "#f2c766" : isLast ? "#cbd5e1" : "#64748b"}
             >
               {labelFor(d)}
             </text>
