@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { SearchCode } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/atoms/Button";
 
@@ -17,17 +17,18 @@ export function Nav() {
     <motion.header
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.55, ease: "easeOut" }}
       className="fixed top-6 inset-x-0 z-50 flex justify-center px-6 pointer-events-none"
     >
-      <div className="flex items-center justify-between w-full max-w-5xl h-14 px-5 rounded-full border border-white/10 bg-[#0A0A0A]/60 backdrop-blur-xl shadow-2xl pointer-events-auto">
+      <div className="corner-frame flex items-center justify-between w-full max-w-5xl h-14 px-5 border border-[--color-line] bg-[--color-bg]/75 backdrop-blur-xl shadow-2xl pointer-events-auto">
         <a href="#" className="flex items-center gap-2.5 group">
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20">
-            <SearchCode className="w-4 h-4 text-blue-400" strokeWidth={2} />
-            <span className="absolute inset-0 rounded-full bg-blue-400/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative">
+            <ShieldCheck className="w-5 h-5 text-[--color-accent]" strokeWidth={1.5} />
+            <span className="absolute -inset-1 rounded-full bg-[--color-accent]/20 blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
           </div>
-          <span className="font-display text-sm font-bold tracking-tight text-white">
+          <span className="font-mono text-[13px] tracking-[0.2em] uppercase font-semibold text-white">
             CodeVetter
+            <span className="text-[--color-text-mute]">_v2</span>
           </span>
         </a>
 
@@ -36,7 +37,7 @@ export function Nav() {
             <a
               key={l.href}
               href={l.href}
-              className="text-xs font-medium text-gray-400 hover:text-white transition-colors"
+              className="font-mono text-[11px] uppercase tracking-[0.16em] text-[--color-text-dim] hover:text-white transition-colors"
             >
               {l.label}
             </a>
