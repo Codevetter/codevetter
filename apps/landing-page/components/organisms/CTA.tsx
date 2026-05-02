@@ -1,5 +1,6 @@
+import { Apple, ArrowRight, ShieldCheck,Terminal } from "lucide-react";
+
 import { Button } from "@/components/atoms/Button";
-import { ArrowRight, Apple, Terminal, ShieldCheck } from "lucide-react";
 
 export function CTA() {
   return (

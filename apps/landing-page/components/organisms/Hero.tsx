@@ -1,17 +1,17 @@
 "use client";
 
-import { Button } from "@/components/atoms/Button";
-import { Tag } from "@/components/atoms/Tag";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
   Download,
-  Terminal,
-  ShieldAlert,
-  Sparkles,
   SearchCode,
-  ShieldCheck
-} from "lucide-react";
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  Terminal} from "lucide-react";
+
+import { Button } from "@/components/atoms/Button";
+import { Tag } from "@/components/atoms/Tag";
 
 export function Hero() {
   return (

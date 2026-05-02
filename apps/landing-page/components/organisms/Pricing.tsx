@@ -1,5 +1,7 @@
 import { Check, Star } from "lucide-react";
+
 import { Button } from "@/components/atoms/Button";
+
 import { SectionHeading } from "./Bento";
 
 const tiers = [

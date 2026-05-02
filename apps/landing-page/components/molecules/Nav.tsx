@@ -1,8 +1,9 @@
 "use client";
 
-import { Button } from "@/components/atoms/Button";
-import { SearchCode } from "lucide-react";
 import { motion } from "framer-motion";
+import { SearchCode } from "lucide-react";
+
+import { Button } from "@/components/atoms/Button";
 
 const links = [
   { href: "#features", label: "Features" },

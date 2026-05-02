@@ -1,5 +1,6 @@
+import { ShieldCheck, Terminal, Zap } from "lucide-react";
+
 import { SectionHeading } from "./Bento";
-import { Terminal, ShieldCheck, Zap } from "lucide-react";
 
 const steps = [
   {

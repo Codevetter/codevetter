@@ -1,5 +1,6 @@
-import { cn } from "@/lib/cn";
 import type { ComponentProps, ReactNode } from "react";
+
+import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "ghost" | "outline" | "glass";
 

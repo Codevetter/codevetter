@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, type MouseEvent, type ReactNode } from "react";
+import { type MouseEvent, type ReactNode,useRef } from "react";
+
 import { cn } from "@/lib/cn";
 
 export function Spotlight({

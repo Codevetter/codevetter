@@ -1,6 +1,9 @@
-import { SearchCode, Github, Twitter, Mail } from "lucide-react";
+import { Github, Mail,SearchCode, Twitter } from "lucide-react";
+import type React from "react";
 
-const cols = [
+type ColItem = { l: string; h: string; icon?: React.ReactElement };
+
+const cols: { label: string; items: ColItem[] }[] = [
   {
     label: "Product",
     items: [

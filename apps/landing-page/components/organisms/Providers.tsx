@@ -1,4 +1,5 @@
 import { Spotlight } from "@/components/effects/Spotlight";
+
 import { SectionHeading } from "./Bento";
 
 const providers = [
