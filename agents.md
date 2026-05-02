@@ -80,13 +80,13 @@ npm install           # Install all workspace deps
 <claude-mem-context>
 # Memory Context
 
-# [CodeVetter] recent context, 2026-05-02 3:00pm GMT+5:30
+# [CodeVetter] recent context, 2026-05-02 7:47pm GMT+5:30
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (14,452t read) | 307,979t work | 95% savings
+Stats: 50 obs (15,777t read) | 608,251t work | 97% savings
 
 ### Apr 25, 2026
 S76 CodeVetter token consumption not updating in real-time — fix real-time stats display + unblock pre-commit hook (Apr 25 at 11:40 AM)
@@ -97,29 +97,8 @@ S90 CodeVetter — does git push trigger auto-release and auto-update? Version b
 S91 CodeVetter token consumption display bug — stats frozen until app restart, fix shipped as v1.1.3 (Apr 25 at 11:48 AM)
 S328 CodeVetter CI now passing — fleet failure resolved (Apr 25 at 3:27 PM)
 ### May 2, 2026
-452 1:43p 🔵 CodeVetter CI failure root — Lint job failing, all downstream jobs skipped
-453 1:44p 🔵 CodeVetter CI run 24970083824 failed due to workflow file issue, not lint
-455 " 🔵 saas-maker repo has v1 tag — workflow action reference can resolve
-461 1:45p 🔵 CodeVetter CI failure root cause — missing package-lock.json
-462 " 🔴 CodeVetter CI — switched from npm ci to pnpm to fix missing package-lock.json failure
-463 " 🔴 CodeVetter CI fix committed and pushed — awaiting new run verification
-464 " 🔴 CodeVetter CI now passing — run 25044218143 completed with success
-465 1:47p ✅ CodeVetter root package.json — added @saas-maker/eslint-config devDependency
-466 1:48p ✅ CodeVetter — @saas-maker/eslint-config confirmed in package-lock.json after npm install
-470 " 🔵 CodeVetter CI lint errors — simple-import-sort violations across multiple files
-473 1:49p 🔵 CodeVetter desktop — ESLint errors blocking CI
-475 " 🔵 CodeVetter desktop — exact ESLint error locations mapped
-478 1:50p 🔵 CodeVetter desktop — lint error code patterns inspected, fixes identified
-488 1:52p 🔴 CodeVetter CI TypeScript lint fixes — 4 files patched
-489 " 🔴 CodeVetter CI — floating promise fixes in QuickReview and Settings
-490 " 🔵 CodeVetter lint — 3 errors remain after initial floating-promise sweep
-504 1:54p 🔴 CodeVetter CI failure — Settings.tsx lint fix
-505 " 🔵 CodeVetter — LinearUser type missing from tauri-ipc.ts exports
-506 1:55p 🔴 CodeVetter — added missing type exports to tauri-ipc.ts
-508 " 🔴 CodeVetter — saveReview cast to satisfy safeInvoke signature
 516 1:57p 🔴 CodeVetter finding-card.tsx — type mismatch fixed: ReviewFinding → CliReviewFinding
 517 " 🔴 CodeVetter tauri-ipc.ts — double-cast fix for saveReview input arg
-518 " 🔵 CodeVetter CI workflow — uses npm ci + workspace lint + tsc --noEmit
 520 " 🔵 CodeVetter — 28 files changed in working tree ahead of CI fix commit
 521 " 🔴 CodeVetter CI fix committed — inline workflow, ESLint config, type fixes
 526 1:59p 🔵 CodeVetter CI failure root cause — unsorted imports in Home.tsx
@@ -148,28 +127,27 @@ S328 CodeVetter CI now passing — fleet failure resolved (Apr 25 at 3:27 PM)
 560 2:10p 🔴 CodeVetter landing page build fixed and staged for CF Pages deploy
 561 " 🔴 CodeVetter landing page fix committed and pushed — commit e245cd6
 S337 Fix CodeVetter fleet failure — Cloudflare Pages build/deploy failure on feat/landing-page-overhaul (May 2 at 2:10 PM)
-**Investigated**: - CF Pages deployment list for codevetter project on branch feat/landing-page-overhaul
-    - Root causes of build failures across multiple deployment attempts
-    - TypeScript and import sort errors in landing page files
-    - CF Pages project configuration (root_dir, dest_dir, build_command)
-    - pnpm-lock.yaml freshness vs package.json dependencies
+656 3:02p 🔵 Foundry CLI (fnd) — command surface and SaaS Maker API limitations discovered
+658 " 🔵 SaaS Maker /v1/tasks API — fleet task inventory and filtering gotcha
+661 3:03p 🟣 CodeVetter — "Repo Unpacked" feature task created in SaaS Maker
+692 7:00p 🔴 CodeVetter QuickReview — browser-preview fallback states fixed
+693 7:01p 🔵 CodeVetter Tauri native build — Rust warnings in history.rs
+694 7:02p 🔵 CodeVetter Tauri build — app installs to /Applications despite DMG failure
+695 " 🔵 CodeVetter /Applications install confirmed byte-identical to build output
+696 7:03p 🔵 CodeVetter UI design system — cv-* CSS class patterns
+697 7:04p 🔄 CodeVetter Home header — simplified layout, removed index status panel
+698 " 🔄 CodeVetter Home header polish — verified via browser snapshot
+699 7:06p 🔵 CodeVetter CI run 25253115225 passed — lint and typecheck green
+700 " 🔵 CodeVetter CF Pages deployment aef09b5a actively building from main
+701 7:07p 🔵 CF Pages API returns null result during active build — polling script crashes
+702 " ✅ CodeVetter CF Pages deployment aef09b5a deployed successfully
+703 7:08p 🔵 CodeVetter QuickReview.tsx — view mode architecture and key component map
+704 7:11p 🔵 Playwright mock screenshot script times out — dev server or Tauri mock not rendering past reviews
+705 7:14p 🔵 CodeVetter Tauri dev build completed — unused line_number warnings in history.rs
+706 7:44p 🔵 CodeVetter Home.tsx — usage bar and chart color architecture mapped
+707 7:45p ✅ CodeVetter Home.tsx — usage bar colors upgraded to gradient system with glow
+708 7:46p ✅ CodeVetter desktop Tauri build succeeded after usage bar color refactor
+709 7:47p ✅ CodeVetter v1.1.11 Tauri release build + DMG bundled after usage bar color restyle
 
-**Learned**: - CF Pages project was misconfigured to build apps/desktop instead of apps/landing-page
-    - Stale pnpm-lock.yaml (missing @saas-maker/eslint-config) caused ERR_PNPM_OUTDATED_LOCKFILE in frozen CI installs
-    - Footer.tsx had union type missing icon? field causing TypeScript error
-    - 12 files violated simple-import-sort rule blocking ESLint CI gate
-    - Deployment 45d9b4f5 (commit e245cd6) is now Active — first successful preview on this branch
-    - Previous deployments f248b85 (two attempts: 014d7453 and edc838eb) both show Failure
-
-**Completed**: - pnpm-lock.yaml regenerated and committed (fixes frozen-lockfile CI failure)
-    - CF Pages project reconfigured via API: root_dir→apps/landing-page, dest_dir→out, build_command updated
-    - Footer.tsx ColItem type fixed to include optional icon field
-    - 12 landing page files auto-fixed for import sort violations via eslint --fix
-    - All fixes landed across 2 commits; desktop/Tauri uncommitted changes left untouched
-    - Latest deployment 45d9b4f5 shows Active status on branch feat/landing-page-overhaul
-
-**Next Steps**: Background poll running to confirm deployment 45d9b4f5 remains Active (not transitioning to failure). Once confirmed stable, task can be marked complete.
-
-
-Access 308k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 608k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
