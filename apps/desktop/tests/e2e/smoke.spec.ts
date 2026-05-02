@@ -24,7 +24,9 @@ test.describe("Smoke tests", () => {
     await navigateTo(page, "/");
     await waitForNoSpinners(page);
 
-    await expect(page.locator("h1", { hasText: "Overview" })).toBeVisible();
+    await expect(
+      page.locator("h1", { hasText: "Vet agent code before it lands." })
+    ).toBeVisible();
   });
 
   test("Review page loads without errors", async ({ page }) => {

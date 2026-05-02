@@ -1,4 +1,4 @@
-import { Home, Settings,Zap } from "lucide-react";
+import { Home, Settings, ShieldCheck, Zap } from "lucide-react";
 import { type ReactNode,useEffect, useRef, useState } from "react";
 import { Link, useLocation,useNavigate } from "react-router-dom";
 
@@ -111,19 +111,20 @@ export default function Sidebar() {
       <nav
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`no-drag fixed top-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-[#1a1a1a] bg-[#0a0a0a]/90 px-4 py-2 shadow-xl backdrop-blur-md transition-all duration-300 ease-in-out ${
+        className={`no-drag cv-frame fixed top-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 bg-[#07080a]/90 px-4 py-2 shadow-2xl backdrop-blur-md transition-all duration-300 ease-in-out ${
           visible
             ? "pointer-events-auto translate-y-0 opacity-100"
             : "pointer-events-none -translate-y-2 opacity-0"
         }`}
       >
         {/* App icon */}
-        <span className="mr-2 text-base font-bold text-amber-400">
-          {"\u25C8"}
+        <span className="mr-2 flex items-center gap-2 cv-label text-white">
+          <ShieldCheck size={15} className="text-[var(--cv-accent)]" />
+          <span className="hidden sm:inline">CodeVetter</span>
         </span>
 
         {/* Separator */}
-        <Separator orientation="vertical" className="mx-1 h-5 bg-[#1a1a1a]" />
+        <Separator orientation="vertical" className="mx-1 h-5 bg-[var(--cv-line)]" />
 
         {/* Nav items */}
         {navItems.map((item) => {
@@ -135,8 +136,8 @@ export default function Sidebar() {
                   to={item.href}
                   className={`flex h-10 w-10 items-center justify-center rounded-full text-[18px] transition-colors duration-200 ${
                     active
-                      ? "bg-amber-500/15 text-amber-400"
-                      : "text-slate-500 hover:bg-[#1a1a1a] hover:text-slate-200"
+                      ? "bg-cyan-500/10 text-[var(--cv-accent)]"
+                      : "text-slate-500 hover:bg-white/[0.04] hover:text-slate-200"
                   }`}
                 >
                   {item.icon}
@@ -153,10 +154,10 @@ export default function Sidebar() {
         })}
 
         {/* Separator */}
-        <Separator orientation="vertical" className="mx-1 h-5 bg-[#1a1a1a]" />
+        <Separator orientation="vertical" className="mx-1 h-5 bg-[var(--cv-line)]" />
 
         {/* Current page name — hidden at very narrow widths */}
-        <span className="ml-1 text-[11px] font-medium text-slate-500 hidden sm:inline">
+        <span className="ml-1 hidden text-[11px] font-medium text-slate-500 sm:inline">
           {currentPage}
         </span>
       </nav>

@@ -651,9 +651,9 @@ export default function QuickReview() {
 
   if (mode === "view" && result) {
     return (
-      <div className="flex h-full flex-col">
+      <div className="flex h-full flex-col px-4 pb-4 pt-20">
         {/* Top bar: just back button */}
-        <div className="shrink-0 border-b border-[#1a1a1a] px-2 py-1.5">
+        <div className="cv-frame mb-3 flex shrink-0 items-center justify-between px-3 py-2">
           <Button
             variant="ghost"
             size="sm"
@@ -663,6 +663,9 @@ export default function QuickReview() {
             <ArrowLeft size={14} />
             Back
           </Button>
+          <div className="cv-label">
+            {result.diff_range || diffRange || "review"} · {result.agent}
+          </div>
         </div>
 
         {/* Error banner */}
@@ -673,9 +676,9 @@ export default function QuickReview() {
         )}
 
         {/* Two-column body */}
-        <PanelGroup orientation="horizontal" className="flex-1">
+        <PanelGroup orientation="horizontal" className="min-h-0 flex-1 cv-frame overflow-hidden">
           <Panel defaultSize={40} minSize={25}>
-          <div className="flex h-full flex-col">
+          <div className="flex h-full flex-col bg-[rgba(10,11,14,0.72)]">
             {/* Blast Radius panel — graph-aware PR analysis */}
             <BlastRadiusPanel
               report={blastReport}
@@ -699,8 +702,8 @@ export default function QuickReview() {
                       className={cn(
                         "flex cursor-pointer items-start gap-2 px-3 py-3 transition-colors",
                         selectedFindingIdx === idx
-                          ? "border-l-2 border-amber-400 bg-amber-500/10"
-                          : "border-l-2 border-transparent hover:bg-[#111111]",
+                          ? "border-l-2 border-[var(--cv-accent)] bg-cyan-500/10"
+                          : "border-l-2 border-transparent hover:bg-white/[0.035]",
                       )}
                       onClick={() => handleFindingClick(idx)}
                     >
@@ -713,7 +716,7 @@ export default function QuickReview() {
                         className="mt-0.5 shrink-0 text-slate-500 hover:text-amber-400"
                       >
                         {selectedFindings.has(idx) ? (
-                          <CheckSquare2 size={16} className="text-amber-400" />
+                            <CheckSquare2 size={16} className="text-[var(--cv-accent)]" />
                         ) : (
                           <Square size={16} />
                         )}
@@ -746,7 +749,7 @@ export default function QuickReview() {
                           </div>
                         )}
                         {finding.suggestion && (
-                          <p className="mt-1 line-clamp-1 text-[10px] text-amber-400/50 italic">
+                          <p className="mt-1 line-clamp-1 text-[10px] text-[var(--cv-accent)]/60 italic">
                             {finding.suggestion}
                           </p>
                         )}
@@ -758,7 +761,7 @@ export default function QuickReview() {
             </div>
 
             {/* Sticky bottom bar: back, score, select all, fix */}
-            <div className="shrink-0 border-t border-[#1a1a1a] bg-[#0a0a0a] px-3 py-2">
+            <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
               <div className="flex items-center gap-2">
                 <ScoreBadge score={Math.round(result.score)} size="sm" />
                 <span className="flex items-center gap-1 text-[10px] text-slate-600">
@@ -811,7 +814,7 @@ export default function QuickReview() {
                         className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
                       >
                         {selectedFindings.size === sortedFindings.length && sortedFindings.length > 0 ? (
-                          <CheckSquare2 size={14} className="text-amber-400" />
+                          <CheckSquare2 size={14} className="text-[var(--cv-accent)]" />
                         ) : (
                           <Square size={14} />
                         )}
@@ -822,7 +825,7 @@ export default function QuickReview() {
                           size="sm"
                           onClick={handleFixSelected}
                           disabled={isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath}
-                          className="gap-1.5 bg-amber-600 text-xs text-white hover:bg-amber-500 disabled:opacity-50"
+                          className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
                         >
                           {isFixing === "selected" ? (
                             <Loader2 size={14} className="animate-spin" />
@@ -847,11 +850,11 @@ export default function QuickReview() {
           </div>
           </Panel>
 
-          <PanelResizeHandle className="w-1.5 bg-[#1a1a1a] hover:bg-amber-500/30 transition-colors cursor-col-resize" />
+          <PanelResizeHandle className="w-1.5 cursor-col-resize bg-[var(--cv-line)] transition-colors hover:bg-cyan-500/30" />
 
           <Panel defaultSize={60} minSize={30}>
           {/* Right column: code viewer OR fix diff */}
-          <div className="flex h-full flex-col bg-[#050505]">
+          <div className="cv-scan flex h-full flex-col bg-[#050505]">
             {/* Fix results view */}
             {fixResult ? (
               <div className="flex h-full flex-col">
@@ -863,7 +866,7 @@ export default function QuickReview() {
                         <div key={file.path}>
                           {/* File header */}
                           <div
-                            className="sticky top-0 z-10 flex items-center gap-2 bg-[#0a0a0a] border-b border-[#1a1a1a] px-4 py-2 cursor-pointer hover:bg-[#111111]"
+                            className="sticky top-0 z-10 flex cursor-pointer items-center gap-2 border-b border-[var(--cv-line)] bg-[#07080a] px-4 py-2 hover:bg-white/[0.035]"
                             onClick={() => toggleFileExpanded(file.path)}
                           >
                             {expandedFiles.has(file.path) || expandedFiles.size === 0 ? (
@@ -921,7 +924,7 @@ export default function QuickReview() {
                   )}
                 </div>
                 {/* Bottom action bar */}
-                <div className="shrink-0 border-t border-[#1a1a1a] bg-[#0a0a0a] px-3 py-2">
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
                   <div className="flex items-center gap-2">
                     <CheckCircle size={14} className="text-emerald-400" />
                     <span className="text-[11px] text-slate-400">
@@ -933,7 +936,7 @@ export default function QuickReview() {
                         variant="ghost"
                         onClick={handleReReview}
                         disabled={isReviewing || !repoPath || !diffRange}
-                        className="gap-1 text-[11px] text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
+                        className="gap-1 text-[11px] text-[var(--cv-accent)] hover:bg-cyan-500/10 hover:text-cyan-200 disabled:opacity-50"
                       >
                         {isReviewing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
                         Re-review
@@ -971,9 +974,9 @@ export default function QuickReview() {
               </div>
             ) : isFixing ? (
               <div className="flex h-full flex-col bg-[#050505]">
-                <div className="shrink-0 border-b border-[#1a1a1a] px-4 py-2 flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-amber-400" />
-                  <span className="text-xs font-medium text-amber-400">Fixing with Claude...</span>
+                <div className="flex shrink-0 items-center gap-2 border-b border-[var(--cv-line)] px-4 py-2">
+                  <Loader2 size={14} className="animate-spin text-[var(--cv-accent)]" />
+                  <span className="text-xs font-medium text-[var(--cv-accent)]">Fixing with Claude...</span>
                 </div>
                 <div ref={fixLogRef} className="flex-1 overflow-y-auto p-4">
                   {fixProgress.length > 0 ? (
@@ -993,7 +996,7 @@ export default function QuickReview() {
             ) : selectedFindingIdx !== null && codeFilePath ? (
               <>
                 {/* File path header + finding context */}
-                <div className="shrink-0 border-b border-[#1a1a1a] px-4 py-2">
+                <div className="shrink-0 border-b border-[var(--cv-line)] bg-[#07080a] px-4 py-2">
                   <div className="font-mono text-[11px] text-slate-400">
                     {codeFilePath}
                     {codeLanguage && <span className="ml-2 text-slate-600">({codeLanguage})</span>}
@@ -1004,7 +1007,7 @@ export default function QuickReview() {
                         {sortedFindings[selectedFindingIdx].title}
                       </span>
                       {sortedFindings[selectedFindingIdx].suggestion && (
-                        <p className="mt-0.5 text-[11px] text-amber-400/70">
+                        <p className="mt-0.5 text-[11px] text-[var(--cv-accent)]/70">
                           {sortedFindings[selectedFindingIdx].suggestion}
                         </p>
                       )}
@@ -1020,13 +1023,13 @@ export default function QuickReview() {
                           key={cl.line}
                           className={cn(
                             "flex font-mono text-[13px] leading-[22px]",
-                            cl.highlight && "bg-amber-500/10 border-l-2 border-amber-400",
+                            cl.highlight && "bg-red-500/10 border-l-2 border-[var(--cv-danger)]",
                             !cl.highlight && "border-l-2 border-transparent hover:bg-[#0e0e0e]",
                           )}
                         >
                           <span className={cn(
                             "w-14 shrink-0 select-none pr-4 text-right",
-                            cl.highlight ? "text-amber-500/60" : "text-[#333]",
+                            cl.highlight ? "text-[var(--cv-danger)]/70" : "text-[#333]",
                           )}>
                             {cl.line}
                           </span>
@@ -1062,14 +1065,14 @@ export default function QuickReview() {
   // ─── Create mode layout ─────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full gap-4 px-4 pb-4 pt-20">
       {/* Left panel */}
-      <div className="flex w-[400px] shrink-0 flex-col border-r border-[#1a1a1a]">
+      <div className="cv-frame flex w-[420px] shrink-0 flex-col overflow-hidden">
         {/* Header */}
-        <div className="shrink-0 border-b border-[#1a1a1a] px-4 py-3">
+        <div className="cv-terminal-bar h-11 shrink-0 px-4">
           <div className="flex items-center gap-2">
-            <Zap size={16} className="text-amber-400" />
-            <h1 className="text-sm font-semibold text-slate-200">
+            <Zap size={16} className="text-[var(--cv-accent)]" />
+            <h1 className="cv-label text-slate-200">
               Review
             </h1>
           </div>
@@ -1080,7 +1083,7 @@ export default function QuickReview() {
           {/* Folder picker */}
           <Button
             variant="outline"
-            className="w-full justify-start gap-2 border-[#1a1a1a] bg-[#0a0a0a] text-slate-300 hover:bg-[#111111] hover:text-slate-100"
+            className="w-full justify-start gap-2 border-[var(--cv-line)] bg-[#07080a] text-slate-300 hover:bg-white/[0.04] hover:text-slate-100"
             onClick={handlePickFolder}
           >
             <FolderOpen size={16} />
@@ -1091,13 +1094,13 @@ export default function QuickReview() {
           {repoPath && (
             <>
               {/* Tabs */}
-              <div className="flex gap-1 rounded-lg bg-[#0a0a0a] p-1">
+              <div className="flex gap-1 border border-[var(--cv-line)] bg-[#07080a] p-1">
                 <button
                   onClick={() => setActiveTab("branches")}
                   className={cn(
                     "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                     activeTab === "branches"
-                      ? "bg-[#1a1a1a] text-slate-100"
+                      ? "bg-cyan-500/10 text-[var(--cv-accent)]"
                       : "text-slate-500 hover:text-slate-300",
                   )}
                 >
@@ -1109,7 +1112,7 @@ export default function QuickReview() {
                   className={cn(
                     "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                     activeTab === "prs"
-                      ? "bg-[#1a1a1a] text-slate-100"
+                      ? "bg-cyan-500/10 text-[var(--cv-accent)]"
                       : "text-slate-500 hover:text-slate-300",
                   )}
                 >
@@ -1124,7 +1127,7 @@ export default function QuickReview() {
               </div>
 
               {/* List */}
-              <div className="max-h-[200px] overflow-y-auto rounded-lg border border-[#1a1a1a] bg-[#0a0a0a]">
+              <div className="max-h-[200px] overflow-y-auto border border-[var(--cv-line)] bg-[#07080a]">
                 {activeTab === "branches" ? (
                   branches.length === 0 ? (
                     <div className="px-3 py-4 text-center text-xs text-slate-500">
@@ -1138,8 +1141,8 @@ export default function QuickReview() {
                         className={cn(
                           "flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors",
                           selectedBranch === branch
-                            ? "bg-amber-500/10 text-amber-400"
-                            : "text-slate-400 hover:bg-[#111111] hover:text-slate-200",
+                            ? "bg-cyan-500/10 text-[var(--cv-accent)]"
+                            : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
                         )}
                       >
                         <GitBranch size={12} className="shrink-0" />
@@ -1167,8 +1170,8 @@ export default function QuickReview() {
                       className={cn(
                         "flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors",
                         selectedBranch === pr.headRefName
-                          ? "bg-amber-500/10 text-amber-400"
-                          : "text-slate-400 hover:bg-[#111111] hover:text-slate-200",
+                          ? "bg-cyan-500/10 text-[var(--cv-accent)]"
+                          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
                       )}
                     >
                       <GitPullRequest size={12} className="shrink-0" />
@@ -1183,12 +1186,12 @@ export default function QuickReview() {
 
               {/* Diff range indicator */}
               {diffRange && (
-                <div className="rounded-md bg-[#0a0a0a] px-3 py-2 font-mono text-[11px] text-slate-500">
+                <div className="border border-[var(--cv-line)] bg-[#07080a] px-3 py-2 font-mono text-[11px] text-slate-500">
                   {diffRange}
                 </div>
               )}
 
-              <Separator className="bg-[#1a1a1a]" />
+              <Separator className="bg-[var(--cv-line)]" />
 
               {/* Project description */}
               <div className="space-y-1.5">
@@ -1200,7 +1203,7 @@ export default function QuickReview() {
                   onChange={(e) => setProjectDesc(e.target.value)}
                   onBlur={handleProjectDescBlur}
                   placeholder="Describe the project so the reviewer has context..."
-                  className="w-full resize-none rounded-md border border-[#1a1a1a] bg-[#0a0a0a] px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-amber-500/40 focus:outline-none"
+                  className="w-full resize-none border border-[var(--cv-line)] bg-[#07080a] px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-cyan-500/40 focus:outline-none"
                   rows={3}
                 />
               </div>
@@ -1214,7 +1217,7 @@ export default function QuickReview() {
                   value={changeDesc}
                   onChange={(e) => setChangeDesc(e.target.value)}
                   placeholder="What does this change do?"
-                  className="w-full resize-none rounded-md border border-[#1a1a1a] bg-[#0a0a0a] px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-amber-500/40 focus:outline-none"
+                  className="w-full resize-none border border-[var(--cv-line)] bg-[#07080a] px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-cyan-500/40 focus:outline-none"
                   rows={2}
                 />
               </div>
@@ -1223,7 +1226,7 @@ export default function QuickReview() {
               <Button
                 onClick={handleReview}
                 disabled={!diffRange || isReviewing}
-                className="w-full gap-2 bg-amber-600 text-white hover:bg-amber-500 disabled:opacity-50"
+                className="w-full gap-2 bg-white text-black hover:bg-slate-200 disabled:opacity-50"
               >
                 {isReviewing ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -1245,7 +1248,7 @@ export default function QuickReview() {
           {/* Past reviews */}
           {pastReviewsLoading ? (
             <>
-              <Separator className="bg-[#1a1a1a]" />
+              <Separator className="bg-[var(--cv-line)]" />
               <div className="flex items-center gap-2 text-[11px] text-slate-500">
                 <Loader2 size={12} className="animate-spin" />
                 Loading past reviews...
@@ -1253,7 +1256,7 @@ export default function QuickReview() {
             </>
           ) : pastReviews.length > 0 ? (
             <>
-              <Separator className="bg-[#1a1a1a]" />
+              <Separator className="bg-[var(--cv-line)]" />
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className="flex w-full items-center justify-between text-[11px] font-medium text-slate-400 hover:text-slate-200"
@@ -1270,8 +1273,8 @@ export default function QuickReview() {
                       className={cn(
                         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
                         result?.review_id === r.id
-                          ? "bg-amber-500/10 text-amber-400"
-                          : "text-slate-400 hover:bg-[#111111] hover:text-slate-200",
+                          ? "bg-cyan-500/10 text-[var(--cv-accent)]"
+                          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
                       )}
                     >
                       <ScoreBadge score={Math.round(r.score_composite ?? 0)} size="sm" />
@@ -1295,20 +1298,57 @@ export default function QuickReview() {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="cv-frame cv-scan flex-1 overflow-hidden">
         {isReviewing ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">
-            <Loader2 size={32} className="animate-spin text-amber-400" />
+            <Loader2 size={32} className="animate-spin text-[var(--cv-accent)]" />
             <span className="text-sm text-slate-400">
               Reviewing with Claude...
             </span>
           </div>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-slate-500">
-            <GitBranch size={32} className="text-slate-600" />
-            <span className="text-sm">
-              Select a branch and run a review
-            </span>
+          <div className="flex h-full flex-col">
+            <div className="cv-terminal-bar h-11 px-4">
+              <span className="cv-dot bg-[var(--cv-danger)]/45" />
+              <span className="cv-dot bg-[var(--cv-warn)]/45" />
+              <span className="cv-dot bg-[var(--cv-ok)]/45" />
+              <span className="cv-label mx-auto">review preview · select a diff</span>
+              <span className="cv-label">⌘ K</span>
+            </div>
+            <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[1fr_280px]">
+              <div className="border-r border-[var(--cv-line)] bg-[#050505] p-6 font-mono text-[13px] leading-7 text-slate-400">
+                <div className="mb-4 flex items-center justify-between border-b border-[var(--cv-line)] pb-3">
+                  <span className="cv-label">apps/api/src/auth/session_manager.ts</span>
+                  <span className="cv-label text-[var(--cv-danger)]">+2 / -0</span>
+                </div>
+                <div className="grid grid-cols-[42px_1fr] gap-x-4">
+                  <span className="text-right text-slate-700">36</span>
+                  <span><span className="text-purple-400">import</span> {`{`} db {`}`} <span className="text-purple-400">from</span> <span className="text-emerald-400">"@/lib/sql"</span>;</span>
+                  <span className="text-right text-slate-700">37</span>
+                  <span />
+                  <span className="text-right text-slate-700">38</span>
+                  <span><span className="text-purple-400">async function</span> <span className="text-cyan-300">validateSession</span>(token: <span className="text-yellow-300">string</span>) {`{`}</span>
+                  <span className="text-right text-[var(--cv-danger)]/70">40</span>
+                  <span className="-mx-3 border-l-2 border-[var(--cv-danger)] bg-red-500/10 px-3 text-slate-200">const query = `SELECT * FROM sessions WHERE token = '${"{token}"}'`;</span>
+                </div>
+              </div>
+              <aside className="hidden bg-white/[0.015] p-6 xl:block">
+                <div className="cv-label mb-5">Verdict</div>
+                <Badge variant="outline" className="border-red-500/25 bg-red-500/10 text-red-400">
+                  <AlertTriangle size={12} className="mr-1" />
+                  Critical
+                </Badge>
+                <h2 className="mt-5 text-lg font-semibold text-white">SQL injection vector</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-400">
+                  Select a repository and diff to run the real review against
+                  your local code.
+                </p>
+                <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
+                  <div className="cv-label mb-3">Suggested actions</div>
+                  <button className="h-10 w-full bg-white text-sm font-medium text-black">Apply Patch</button>
+                </div>
+              </aside>
+            </div>
           </div>
         )}
       </div>

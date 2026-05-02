@@ -41,9 +41,12 @@ test.describe("Review page", () => {
   test("Right panel shows placeholder when no review is active", async ({
     page,
   }) => {
-    // When no review is active, the right panel shows a placeholder message
+    // When no review is active, the right panel shows the static review preview.
     await expect(
-      page.locator("text=Select a branch and run a review")
+      page.locator("text=review preview")
+    ).toBeVisible();
+    await expect(
+      page.locator("text=Select a repository and diff")
     ).toBeVisible();
   });
 
@@ -77,9 +80,9 @@ test.describe("Review page", () => {
     const hasSection = (await pastReviewsToggle.count()) > 0;
 
     if (!hasSection) {
-      // No past reviews — verify the placeholder is still showing
+      // No past reviews — verify the preview is still showing
       await expect(
-        page.locator("text=Select a branch and run a review")
+        page.locator("text=review preview")
       ).toBeVisible();
       return;
     }

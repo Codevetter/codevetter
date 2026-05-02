@@ -98,20 +98,20 @@ function Shell() {
 
   if (!ready) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0f1117]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+      <div className="flex h-screen items-center justify-center bg-[var(--bg-main)]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--cv-accent)] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full bg-[var(--bg-main)] text-[var(--text-primary)]">
       <UpdateChecker />
       {showOnboarding && (
         <Onboarding onComplete={() => setShowOnboarding(false)} />
       )}
       <Sidebar />
-      <main className="flex-1 h-full overflow-y-auto pt-2">
+      <main className="flex-1 h-full overflow-y-auto">
         <RouteErrorBoundary>
           <Outlet />
         </RouteErrorBoundary>

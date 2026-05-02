@@ -1,3 +1,11 @@
+import {
+  Activity,
+  BarChart3,
+  Database,
+  RefreshCw,
+  ShieldCheck,
+  Terminal,
+} from "lucide-react";
 import { useCallback, useEffect, useRef,useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -474,7 +482,7 @@ function TokenUsageChart({
   const gridlines = [0.25, 0.5, 0.75, 1].map((f) => padTop + chartH * (1 - f));
 
   return (
-    <Card className="border-[#1a1a1a] bg-[#0f1117] p-4">
+    <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="text-[11px] text-slate-500">Token usage</div>
@@ -881,24 +889,63 @@ export default function Home() {
   // ─── Render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-6 p-5 overflow-y-auto overflow-x-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-sm font-semibold text-slate-100">Overview</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleTriggerIndex}
-          disabled={indexing}
-          className="h-auto px-2.5 py-1 text-[11px] font-medium"
-        >
-          {indexing ? "Indexing..." : "Re-index"}
-        </Button>
-      </div>
+    <div className="min-h-full overflow-y-auto overflow-x-hidden px-5 pb-8 pt-20">
+      <div className="mx-auto flex max-w-7xl flex-col gap-5">
+        {/* Header */}
+        <section className="cv-frame overflow-hidden">
+          <div className="cv-terminal-bar h-10 px-4">
+            <span className="cv-dot bg-[var(--cv-danger)]/45" />
+            <span className="cv-dot bg-[var(--cv-warn)]/45" />
+            <span className="cv-dot bg-[var(--cv-ok)]/45" />
+            <span className="cv-label mx-auto">codevetter — fleet command center</span>
+            <span className="cv-label">local</span>
+          </div>
+          <div className="grid gap-6 p-6 lg:grid-cols-[1fr_340px]">
+            <div>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="border-cyan-500/25 bg-cyan-500/10 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cv-accent)]">
+                  <ShieldCheck size={12} className="mr-1" />
+                  offline review cockpit
+                </Badge>
+                <Badge variant="outline" className="border-white/10 bg-white/[0.03] font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                  no telemetry
+                </Badge>
+              </div>
+              <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-white md:text-5xl">
+                Vet agent code before it lands.
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
+                Track local AI usage, provider limits, and review readiness from
+                the same cockpit you use to inspect diffs and apply patches.
+              </p>
+            </div>
+            <div className="cv-panel flex flex-col justify-between p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="cv-label">Index status</div>
+                  <div className="mt-2 text-2xl font-semibold text-white">
+                    {loading && !stats ? "Scanning" : `${stats?.session_count ?? 0} sessions`}
+                  </div>
+                </div>
+                <Database className="h-8 w-8 text-[var(--cv-accent)]" strokeWidth={1.5} />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTriggerIndex}
+                disabled={indexing}
+                className="mt-5 h-10 justify-center gap-2 border-[var(--cv-line-strong)] bg-white text-black hover:bg-slate-200"
+              >
+                <RefreshCw size={14} className={indexing ? "animate-spin" : ""} />
+                {indexing ? "Indexing..." : "Re-index local data"}
+              </Button>
+            </div>
+          </div>
+        </section>
 
       {/* Index result banner */}
       {indexResult && (
-        <div className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+        <div className="cv-panel flex items-center gap-3 px-4 py-3">
           <span className="text-emerald-400 text-sm">{"\u2714"}</span>
           <p className="text-xs text-emerald-300">
             Indexed {indexResult.indexed_sessions} sessions and{" "}
@@ -916,7 +963,7 @@ export default function Home() {
 
       {/* Error banner */}
       {error && (
-        <div className="flex items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3">
+        <div className="cv-panel flex items-center gap-3 border-red-500/25 bg-red-500/5 px-4 py-3">
           <span className="text-red-400 text-sm">{"\u26A0"}</span>
           <p className="text-xs text-red-300">{error}</p>
           <button
@@ -929,7 +976,7 @@ export default function Home() {
       )}
 
       {/* Token period cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
           { label: "Today", value: tokenUsage?.today ?? 0, color: "text-cyan-400" },
           { label: "This week", value: tokenUsage?.this_week ?? 0, color: "text-emerald-400" },
@@ -938,9 +985,9 @@ export default function Home() {
         ].map((stat) => (
           <Card
             key={stat.label}
-            className="flex items-center justify-between border-[#1a1a1a] bg-[#0f1117] px-4 py-3 overflow-hidden"
+            className="cv-frame flex items-center justify-between overflow-hidden rounded-none px-4 py-4"
           >
-            <span className="text-[11px] text-slate-500 truncate mr-2">{stat.label}</span>
+            <span className="cv-label mr-2 truncate">{stat.label}</span>
             <span className={`text-sm font-semibold tabular-nums shrink-0 ${stat.color}`}>
               {loading && !tokenUsage ? "--" : formatTokens(stat.value)}
             </span>
@@ -950,17 +997,24 @@ export default function Home() {
 
       {/* Token usage chart */}
       {tokenUsage && (
-        <TokenUsageChart
-          daily={tokenUsage.daily_series}
-          weekly={tokenUsage.weekly_series}
-        />
+        <div className="cv-frame overflow-hidden">
+          <div className="cv-terminal-bar h-10 px-4">
+            <BarChart3 size={14} className="text-[var(--cv-accent)]" />
+            <span className="cv-label">token burn rate</span>
+          </div>
+          <TokenUsageChart
+            daily={tokenUsage.daily_series}
+            weekly={tokenUsage.weekly_series}
+          />
+        </div>
       )}
 
       {/* Usage — remaining per account */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[13px] font-medium text-slate-300">Usage</h2>
-          <div className="flex items-center gap-3">
+      <div className="cv-frame overflow-hidden">
+        <div className="cv-terminal-bar h-10 px-4">
+          <Activity size={14} className="text-[var(--cv-ok)]" />
+          <span className="cv-label">provider telemetry</span>
+          <div className="ml-auto flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
@@ -997,17 +1051,18 @@ export default function Home() {
           </div>
         </div>
         {loading ? (
-          <Card className="flex items-center justify-center py-4 border-[#1a1a1a]">
+          <Card className="flex items-center justify-center rounded-none border-0 bg-transparent py-8">
             <svg className="h-4 w-4 animate-spin text-slate-500" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           </Card>
         ) : (
-          <Card className="border-[#1a1a1a] overflow-hidden">
+          <Card className="overflow-hidden rounded-none border-0 bg-transparent">
             {accounts.length === 0 ? (
               <CardContent className="flex flex-col items-center justify-center py-5 p-5">
-                <p className="text-[11px] text-slate-600">No CLI accounts detected</p>
+                <Terminal className="mb-2 h-6 w-6 text-slate-600" />
+                <p className="text-[11px] text-slate-500">No CLI accounts detected</p>
                 <p className="text-[11px] text-slate-600 mt-0.5">Log into Claude Code, Codex, Cursor, or Gemini to auto-detect</p>
               </CardContent>
             ) : (
@@ -1049,8 +1104,7 @@ export default function Home() {
           </Card>
         )}
       </div>
-
-
+      </div>
     </div>
   );
 }
