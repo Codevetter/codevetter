@@ -1003,17 +1003,42 @@ export default function QuickReview() {
               </div>
               <div className="space-y-2">
                 {sortedFindings.map((finding, idx) => (
-                  <button
+                  <div
                     key={idx}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleFindingClick(idx)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleFindingClick(idx);
+                      }
+                    }}
                     className={cn(
-                      "w-full border px-3 py-3 text-left transition-colors",
+                      "w-full cursor-pointer border px-3 py-3 text-left transition-colors",
                       selectedFindingIdx === idx
                         ? "border-[rgba(125,211,252,0.42)] bg-cyan-500/10"
                         : "border-[var(--cv-line)] bg-[#07080a] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]",
+                      selectedFindings.has(idx) && "shadow-[inset_3px_0_0_rgba(125,211,252,0.82)]",
                     )}
                   >
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        aria-label={selectedFindings.has(idx) ? "Remove from fix selection" : "Select for fix"}
+                        aria-pressed={selectedFindings.has(idx)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleFinding(idx);
+                        }}
+                        className="shrink-0 text-slate-500 transition-colors hover:text-[var(--cv-accent)]"
+                      >
+                        {selectedFindings.has(idx) ? (
+                          <CheckSquare2 size={15} className="text-[var(--cv-accent)]" />
+                        ) : (
+                          <Square size={15} />
+                        )}
+                      </button>
                       <Badge
                         variant="outline"
                         className={cn(
@@ -1030,7 +1055,7 @@ export default function QuickReview() {
                     <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
                       {finding.summary}
                     </p>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
