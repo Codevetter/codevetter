@@ -930,7 +930,7 @@ export default function Home() {
             size="sm"
             onClick={handleTriggerIndex}
             disabled={indexing}
-            className="h-10 shrink-0 justify-center gap-2 border-[var(--cv-line-strong)] bg-white px-5 text-black hover:bg-slate-200"
+            className="h-10 shrink-0 justify-center gap-2 border-white/70 bg-white px-5 text-black shadow-[0_0_0_1px_rgba(125,211,252,0.08),0_18px_40px_-30px_rgba(125,211,252,0.85)] transition-all duration-150 hover:border-[var(--cv-accent)] hover:bg-[var(--cv-accent)] hover:text-[#031016] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.32),0_0_28px_rgba(125,211,252,0.24)] focus-visible:ring-1 focus-visible:ring-[var(--cv-accent)] active:translate-y-px disabled:border-white/20 disabled:bg-white/45 disabled:text-black/55 disabled:shadow-none"
           >
             <RefreshCw size={15} className={indexing ? "animate-spin" : ""} />
             {indexing ? "Indexing..." : "Re-index local data"}
