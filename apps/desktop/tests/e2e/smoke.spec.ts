@@ -25,8 +25,9 @@ test.describe("Smoke tests", () => {
     await waitForNoSpinners(page);
 
     await expect(
-      page.locator("h1", { hasText: "Vet agent code before it lands." })
+      page.getByRole("button", { name: /Re-index local data|Indexing/ })
     ).toBeVisible();
+    await expect(page.getByText("Provider telemetry")).toBeVisible();
   });
 
   test("Review page loads without errors", async ({ page }) => {

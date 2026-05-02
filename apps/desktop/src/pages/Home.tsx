@@ -2,10 +2,9 @@ import {
   Activity,
   BarChart3,
   RefreshCw,
-  ShieldCheck,
   Terminal,
 } from "lucide-react";
-import { useCallback, useEffect, useRef,useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -890,46 +889,18 @@ export default function Home() {
   return (
     <div className="min-h-full overflow-y-auto overflow-x-hidden px-5 pb-8 pt-20">
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
-        {/* Header */}
-        <section className="cv-frame overflow-hidden">
-          <div className="cv-terminal-bar h-10 px-4">
-            <span className="cv-dot" />
-            <span className="cv-dot" />
-            <span className="cv-dot" />
-            <span className="cv-label mx-auto">codevetter — fleet command center</span>
-            <span className="cv-label">local</span>
-          </div>
-          <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="border-cyan-500/25 bg-cyan-500/10 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cv-accent)]">
-                  <ShieldCheck size={12} className="mr-1" />
-                  offline review cockpit
-                </Badge>
-                <Badge variant="outline" className="border-white/10 bg-white/[0.03] font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">
-                  no telemetry
-                </Badge>
-              </div>
-              <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-white md:text-5xl">
-                Vet agent code before it lands.
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
-                Track local AI usage, provider limits, and review readiness from
-                the same cockpit you use to inspect diffs and apply patches.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTriggerIndex}
-              disabled={indexing}
-              className="h-11 shrink-0 justify-center gap-2 border-[var(--cv-line-strong)] bg-white px-5 text-black hover:bg-slate-200"
-            >
-              <RefreshCw size={15} className={indexing ? "animate-spin" : ""} />
-              {indexing ? "Indexing..." : "Re-index local data"}
-            </Button>
-          </div>
-        </section>
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleTriggerIndex}
+            disabled={indexing}
+            className="h-10 shrink-0 justify-center gap-2 border-[var(--cv-line-strong)] bg-white px-5 text-black hover:bg-slate-200"
+          >
+            <RefreshCw size={15} className={indexing ? "animate-spin" : ""} />
+            {indexing ? "Indexing..." : "Re-index local data"}
+          </Button>
+        </div>
 
       {/* Index result banner */}
       {indexResult && (

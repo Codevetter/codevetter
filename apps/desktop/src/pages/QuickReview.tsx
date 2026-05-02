@@ -20,7 +20,7 @@ import {
   Undo2,
   Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useRef,useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
 
 import BlastRadiusPanel from "@/components/blast-radius-panel";
@@ -434,13 +434,15 @@ export default function QuickReview() {
 
   // ─── Sorted findings ────────────────────────────────────────────────────
 
-  const sortedFindings = result
-    ? [...result.findings].sort(
+  const sortedFindings = useMemo(() => (
+    result
+      ? [...result.findings].sort(
         (a, b) =>
           (severityOrder[a.severity] ?? 99) -
           (severityOrder[b.severity] ?? 99),
       )
-    : [];
+      : []
+  ), [result]);
 
   // ─── Fix handlers ───────────────────────────────────────────────────────
 
@@ -622,6 +624,19 @@ export default function QuickReview() {
     [sortedFindings, repoPath],
   );
 
+  useEffect(() => {
+    if (
+      mode !== "view" ||
+      fixResult ||
+      selectedFindingIdx !== null ||
+      sortedFindings.length === 0
+    ) {
+      return;
+    }
+
+    void handleFindingClick(0);
+  }, [fixResult, handleFindingClick, mode, selectedFindingIdx, sortedFindings.length]);
+
   // ─── Jump from blast-radius caller → code viewer ─────────────────────────
 
   const handleJumpToCaller = useCallback(
@@ -653,21 +668,35 @@ export default function QuickReview() {
   // ─── View mode layout ────────────────────────────────────────────────────
 
   if (mode === "view" && result) {
+    const activeFinding =
+      selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
+    const activeCodePath = codeFilePath || activeFinding?.filePath || "";
+
     return (
       <div className="flex h-full flex-col px-4 pb-4 pt-20">
-        {/* Top bar: just back button */}
-        <div className="cv-frame mb-3 flex shrink-0 items-center justify-between px-3 py-2">
+        {/* Result header */}
+        <div className="cv-frame mb-3 flex h-12 shrink-0 items-center gap-3 overflow-hidden px-3">
           <Button
             variant="ghost"
             size="sm"
-            className="gap-1 text-slate-500 hover:text-slate-100"
+            className="h-8 gap-1 text-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
             onClick={handleNewReview}
           >
             <ArrowLeft size={14} />
             Back
           </Button>
-          <div className="cv-label">
-            {result.diff_range || diffRange || "review"} · {result.agent}
+          <div className="h-6 w-px bg-[var(--cv-line)]" />
+          <div className="min-w-0 flex-1">
+            <div className="cv-label truncate text-slate-300">
+              review result · {result.agent}
+            </div>
+            <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
+              {result.diff_range || diffRange || "local diff"}
+            </div>
+          </div>
+          <ScoreBadge score={Math.round(result.score)} size="sm" />
+          <div className="cv-label hidden sm:block">
+            {result.findings_count ?? sortedFindings.length} findings
           </div>
         </div>
 
@@ -679,34 +708,46 @@ export default function QuickReview() {
         )}
 
         {/* Two-column body */}
-        <PanelGroup orientation="horizontal" className="min-h-0 flex-1 cv-frame overflow-hidden">
+        <PanelGroup orientation="horizontal" className="min-h-0 flex-1 cv-frame overflow-hidden bg-[#07080a]">
           <Panel defaultSize={40} minSize={25}>
-          <div className="flex h-full flex-col bg-[rgba(10,11,14,0.72)]">
+          <div className="flex h-full flex-col bg-[rgba(10,11,14,0.78)]">
+            <div className="cv-terminal-bar h-10 shrink-0 px-4">
+              <Zap size={14} className="text-[var(--cv-accent)]" />
+              <span className="cv-label">findings queue</span>
+              <span className="cv-label ml-auto">
+                {sortedFindings.length === 0 ? "clean" : `${sortedFindings.length} total`}
+              </span>
+            </div>
+
             {/* Blast Radius panel — graph-aware PR analysis */}
-            <BlastRadiusPanel
-              report={blastReport}
-              loading={blastLoading}
-              error={blastError}
-              onJump={handleJumpToCaller}
-            />
+            {(blastReport || blastLoading || blastError) && (
+              <div className="border-b border-[var(--cv-line)]">
+                <BlastRadiusPanel
+                  report={blastReport}
+                  loading={blastLoading}
+                  error={blastError}
+                  onJump={handleJumpToCaller}
+                />
+              </div>
+            )}
 
             {/* Scrollable findings list */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto p-3">
               {sortedFindings.length === 0 ? (
-                <div className="flex items-center gap-2 px-4 py-6 text-sm text-emerald-400">
+                <div className="cv-panel flex items-center gap-2 px-4 py-6 text-sm text-[var(--cv-accent)]">
                   <CheckCircle size={18} />
                   No findings — clean review.
                 </div>
               ) : (
-                <div className="space-y-px">
+                <div className="space-y-2">
                   {sortedFindings.map((finding, idx) => (
                     <div
                       key={idx}
                       className={cn(
-                        "flex cursor-pointer items-start gap-2 px-3 py-3 transition-colors",
+                        "group flex cursor-pointer items-start gap-3 border px-3 py-3 transition-colors",
                         selectedFindingIdx === idx
-                          ? "border-l-2 border-[var(--cv-accent)] bg-cyan-500/10"
-                          : "border-l-2 border-transparent hover:bg-white/[0.035]",
+                          ? "border-[rgba(125,211,252,0.42)] bg-cyan-500/10 shadow-[inset_3px_0_0_rgba(125,211,252,0.9)]"
+                          : "border-[var(--cv-line)] bg-[#090a0d] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]",
                       )}
                       onClick={() => handleFindingClick(idx)}
                     >
@@ -716,7 +757,7 @@ export default function QuickReview() {
                           e.stopPropagation();
                           toggleFinding(idx);
                         }}
-                        className="mt-0.5 shrink-0 text-slate-500 hover:text-amber-400"
+                        className="mt-0.5 shrink-0 text-slate-500 hover:text-[var(--cv-accent)]"
                       >
                         {selectedFindings.has(idx) ? (
                             <CheckSquare2 size={16} className="text-[var(--cv-accent)]" />
@@ -732,27 +773,27 @@ export default function QuickReview() {
                           <Badge
                             variant="outline"
                             className={cn(
-                              "shrink-0 text-[10px] font-semibold uppercase",
+                              "shrink-0 rounded-none px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em]",
                               severityColor(finding.severity),
                             )}
                           >
                             {finding.severity}
                           </Badge>
-                          <span className="truncate text-xs font-medium text-slate-200">
+                          <span className="truncate text-[13px] font-medium text-slate-100">
                             {finding.title}
                           </span>
                         </div>
-                        <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
+                        <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
                           {finding.summary}
                         </p>
                         {finding.filePath && (
-                          <div className="mt-1 flex items-center gap-1 font-mono text-[10px] text-slate-600">
+                          <div className="mt-2 flex items-center gap-1 font-mono text-[10px] text-slate-600">
                             <span className="truncate">{finding.filePath}</span>
                             {finding.line != null && <span>:{finding.line}</span>}
                           </div>
                         )}
                         {finding.suggestion && (
-                          <p className="mt-1 line-clamp-1 text-[10px] text-[var(--cv-accent)]/60 italic">
+                          <p className="mt-2 line-clamp-1 font-mono text-[10px] text-[var(--cv-accent)]/70 italic">
                             {finding.suggestion}
                           </p>
                         )}
@@ -766,7 +807,6 @@ export default function QuickReview() {
             {/* Sticky bottom bar: back, score, select all, fix */}
             <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
               <div className="flex items-center gap-2">
-                <ScoreBadge score={Math.round(result.score)} size="sm" />
                 <span className="flex items-center gap-1 text-[10px] text-slate-600">
                   {(() => {
                     const counts: Record<string, number> = {};
@@ -996,42 +1036,43 @@ export default function QuickReview() {
                   )}
                 </div>
               </div>
-            ) : selectedFindingIdx !== null && codeFilePath ? (
+            ) : selectedFindingIdx !== null && activeFinding ? (
               <>
                 {/* File path header + finding context */}
-                <div className="shrink-0 border-b border-[var(--cv-line)] bg-[#07080a] px-4 py-2">
-                  <div className="font-mono text-[11px] text-slate-400">
-                    {codeFilePath}
-                    {codeLanguage && <span className="ml-2 text-slate-600">({codeLanguage})</span>}
+                <div className="shrink-0 border-b border-[var(--cv-line)] bg-[#07080a]">
+                  <div className="cv-terminal-bar h-10 px-4">
+                    <FileCode size={14} className="text-[var(--cv-accent)]" />
+                    <span className="cv-label min-w-0 flex-1 truncate">
+                      {activeCodePath || "source unavailable"}
+                    </span>
+                    {codeLanguage && <span className="cv-label">{codeLanguage}</span>}
                   </div>
-                  {sortedFindings[selectedFindingIdx] && (
-                    <div className="mt-1">
-                      <span className="text-xs font-medium text-slate-300">
-                        {sortedFindings[selectedFindingIdx].title}
-                      </span>
-                      {sortedFindings[selectedFindingIdx].suggestion && (
-                        <p className="mt-0.5 text-[11px] text-[var(--cv-accent)]/70">
-                          {sortedFindings[selectedFindingIdx].suggestion}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <div className="px-4 py-3">
+                    <span className="text-sm font-medium text-slate-100">
+                      {activeFinding.title}
+                    </span>
+                    {activeFinding.suggestion && (
+                      <p className="mt-1 font-mono text-[11px] leading-5 text-[var(--cv-accent)]/70">
+                        {activeFinding.suggestion}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {/* Code lines */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto bg-[#030405]">
                   {codeLines.length > 0 ? (
-                    <div className="py-1">
+                    <div className="py-2">
                       {codeLines.map((cl) => (
                         <div
                           key={cl.line}
                           className={cn(
-                            "flex font-mono text-[13px] leading-[22px]",
-                            cl.highlight && "bg-red-500/10 border-l-2 border-[var(--cv-danger)]",
-                            !cl.highlight && "border-l-2 border-transparent hover:bg-[#0e0e0e]",
+                            "flex border-l-2 font-mono text-[13px] leading-[24px]",
+                            cl.highlight && "border-[var(--cv-danger)] bg-red-500/10",
+                            !cl.highlight && "border-transparent hover:bg-white/[0.025]",
                           )}
                         >
                           <span className={cn(
-                            "w-14 shrink-0 select-none pr-4 text-right",
+                            "w-16 shrink-0 select-none pr-4 text-right",
                             cl.highlight ? "text-[var(--cv-danger)]/70" : "text-[#333]",
                           )}>
                             {cl.line}
@@ -1053,9 +1094,15 @@ export default function QuickReview() {
                 </div>
               </>
             ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-slate-600">
-                <Zap size={24} className="text-slate-700" />
-                <span className="text-sm">Click a finding to view the code</span>
+              <div className="flex h-full flex-col">
+                <div className="cv-terminal-bar h-10 px-4">
+                  <FileCode size={14} className="text-[var(--cv-accent)]" />
+                  <span className="cv-label">code lens</span>
+                </div>
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 text-slate-600">
+                  <Zap size={24} className="text-slate-700" />
+                  <span className="text-sm">Click a finding to view the code</span>
+                </div>
               </div>
             )}
           </div>
