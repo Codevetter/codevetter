@@ -20,7 +20,7 @@ import {
   Undo2,
   Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode,useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
 
 import BlastRadiusPanel from "@/components/blast-radius-panel";
@@ -167,6 +167,130 @@ function shortenPath(path: string): string {
     if (slashIdx >= 0) return "~" + afterHome.slice(slashIdx);
   }
   return path;
+}
+
+const CODE_KEYWORDS = new Set([
+  "as",
+  "async",
+  "await",
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "def",
+  "default",
+  "do",
+  "else",
+  "enum",
+  "export",
+  "extends",
+  "false",
+  "finally",
+  "fn",
+  "for",
+  "from",
+  "function",
+  "if",
+  "impl",
+  "import",
+  "in",
+  "interface",
+  "let",
+  "match",
+  "mod",
+  "mut",
+  "new",
+  "null",
+  "pub",
+  "return",
+  "self",
+  "static",
+  "struct",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "type",
+  "undefined",
+  "use",
+  "var",
+  "while",
+]);
+
+const CODE_BUILTINS = new Set([
+  "Array",
+  "Boolean",
+  "Date",
+  "Error",
+  "Map",
+  "Number",
+  "Object",
+  "Promise",
+  "Record",
+  "Result",
+  "Set",
+  "String",
+  "Vec",
+  "console",
+  "fs",
+  "JSON",
+]);
+
+const CODE_TOKEN_RE =
+  /(\/\/.*$|#.*$|\/\*.*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b)/g;
+
+function getCodeTokenClass(token: string, language: string): string {
+  const lowerLanguage = language.toLowerCase();
+  if (
+    token.startsWith("//") ||
+    token.startsWith("/*") ||
+    (token.startsWith("#") && !["typescript", "javascript", "tsx", "jsx"].includes(lowerLanguage))
+  ) {
+    return "text-slate-600 italic";
+  }
+  if (
+    token.startsWith("\"") ||
+    token.startsWith("'") ||
+    token.startsWith("`")
+  ) {
+    return "text-emerald-300";
+  }
+  if (/^\d/.test(token)) return "text-amber-300";
+  if (CODE_KEYWORDS.has(token)) return "text-violet-300";
+  if (CODE_BUILTINS.has(token)) return "text-cyan-300";
+  if (/^[A-Z]/.test(token)) return "text-sky-300";
+  return "";
+}
+
+function renderCodeLine(text: string, language: string): ReactNode[] | string {
+  if (!text) return " ";
+
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+
+  for (const match of text.matchAll(CODE_TOKEN_RE)) {
+    const token = match[0];
+    const index = match.index ?? 0;
+    if (index > lastIndex) nodes.push(text.slice(lastIndex, index));
+
+    const className = getCodeTokenClass(token, language);
+    nodes.push(
+      className ? (
+        <span key={`${index}-${token}`} className={className}>
+          {token}
+        </span>
+      ) : (
+        token
+      ),
+    );
+    lastIndex = index + token.length;
+  }
+
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -900,10 +1024,10 @@ export default function QuickReview() {
                               "min-w-0 whitespace-pre border-l-2 px-3",
                               cl.highlight
                                 ? "border-[var(--cv-danger)] bg-red-500/10 text-slate-100"
-                                : "border-transparent text-slate-400 hover:bg-white/[0.025]",
+                                : "border-transparent text-slate-300 hover:bg-white/[0.025]",
                             )}
                           >
-                            {cl.text || " "}
+                            {renderCodeLine(cl.text, codeLanguage)}
                           </pre>
                         </div>
                       ))}
