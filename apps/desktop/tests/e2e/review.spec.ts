@@ -217,16 +217,16 @@ test.describe("Review page", () => {
     page,
   }) => {
     // Without Tauri IPC, the page should still render the create form
-    // with the "Select repository..." button. Past reviews won't load.
+    // with the "Select repository..." button. Past reviews should not spin
+    // forever, and clicking the picker should show a visible fallback message.
     const repoButton = page.locator("button", {
       hasText: "Select repository...",
     });
-    const placeholder = page.locator("text=Select a branch and run a review");
 
-    const hasForm = (await repoButton.count()) > 0;
-    const hasPlaceholder = (await placeholder.count()) > 0;
+    await expect(repoButton).toBeVisible();
+    await expect(page.locator("text=Loading past reviews")).toHaveCount(0);
 
-    // At minimum, the page rendered without crashing
-    expect(hasForm || hasPlaceholder).toBe(true);
+    await repoButton.click();
+    await expect(page.locator("text=Not running in Tauri")).toBeVisible();
   });
 });

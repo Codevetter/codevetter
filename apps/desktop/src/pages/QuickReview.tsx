@@ -203,7 +203,7 @@ export default function QuickReview() {
 
   // Past reviews
   const [pastReviews, setPastReviews] = useState<LocalReviewRow[]>([]);
-  const [pastReviewsLoading, setPastReviewsLoading] = useState(true);
+  const [pastReviewsLoading, setPastReviewsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
 
   // Code viewer state (view mode)
@@ -259,7 +259,10 @@ export default function QuickReview() {
   // ─── Load past reviews ───────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!isTauriAvailable()) return;
+    if (!isTauriAvailable()) {
+      setPastReviewsLoading(false);
+      return;
+    }
     setPastReviewsLoading(true);
     void listReviews(20, 0)
       .then((reviews) => {
@@ -1089,6 +1092,12 @@ export default function QuickReview() {
             <FolderOpen size={16} />
             {repoPath ? shortenPath(repoPath) : "Select repository..."}
           </Button>
+
+          {!repoPath && error && (
+            <div className="border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+              {error}
+            </div>
+          )}
 
           {/* Branch/PR tabs + list */}
           {repoPath && (
