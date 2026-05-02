@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, Component, type ReactNode } from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
-import Sidebar from "@/components/sidebar";
-import Onboarding from "@/components/onboarding";
+import { Component, type ReactNode,useCallback, useEffect, useState } from "react";
+import { Outlet,Route, Routes } from "react-router-dom";
+
 import CommandPalette from "@/components/command-palette";
 import KeyboardShortcuts from "@/components/keyboard-shortcuts";
+import Onboarding from "@/components/onboarding";
+import Sidebar from "@/components/sidebar";
 import UpdateChecker from "@/components/update-checker";
 import { getPreference, isTauriAvailable } from "@/lib/tauri-ipc";
-
 // Pages
 import Home from "@/pages/Home";
 import QuickReview from "@/pages/QuickReview";

@@ -7,7 +7,7 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
  * Safely invoke a Tauri command. Returns `undefined` when running outside
  * of the Tauri webview (e.g. SSR, `next dev`, or Storybook).
  */
-async function safeInvoke<T>(
+export async function safeInvoke<T>(
   cmd: string,
   args?: Record<string, unknown>
 ): Promise<T> {
@@ -21,7 +21,7 @@ async function safeInvoke<T>(
       typeof (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ ===
         "undefined"
     ) {
-      throw new Error("TAURI_NOT_AVAILABLE");
+      throw new Error("TAURI_NOT_AVAILABLE", { cause: err });
     }
     throw err;
   }
@@ -173,8 +173,23 @@ interface SessionsResponse {
   sessions: SessionRow[];
 }
 
+interface SessionDetailResponse {
+  session: SessionRow;
+  messages: MessageRow[];
+}
+
 interface ReviewsResponse {
   reviews: LocalReviewRow[];
+}
+
+interface SearchResponse {
+  results: SearchResult[];
+}
+
+export interface LinearUser {
+  id: string;
+  name: string;
+  email: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -217,7 +232,7 @@ export interface SaveReviewInput {
 export async function saveReview(
   input: SaveReviewInput
 ): Promise<{ review_id: string; status: string; score: number; findings_count: number }> {
-  return safeInvoke("save_review", input);
+  return safeInvoke("save_review", input as unknown as Record<string, unknown>);
 }
 
 export async function getReview(
@@ -519,6 +534,13 @@ export interface AccountUsage {
   session_output_tokens: number;
   session_messages: number;
   session_id: string | null;
+  profile_breakdown: Array<{
+    profile: string;
+    week_cost: number;
+    week_input_tokens: number;
+    week_output_tokens: number;
+    week_sessions: number;
+  }>;
 }
 
 export async function listProviderAccounts(): Promise<ProviderAccount[]> {

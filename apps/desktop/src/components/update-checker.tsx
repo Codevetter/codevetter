@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import type { Update } from "@tauri-apps/plugin-updater";
+import { useCallback,useEffect, useRef, useState } from "react";
+
 import { isTauriAvailable } from "@/lib/tauri-ipc";
 
 const INITIAL_DELAY_MS = 5_000;
@@ -13,7 +15,7 @@ export default function UpdateChecker() {
   const [update, setUpdate] = useState<UpdateInfo | null>(null);
   const [installing, setInstalling] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const updateRef = useRef<Awaited<ReturnType<typeof import("@tauri-apps/plugin-updater").check>> | null>(null);
+  const updateRef = useRef<Update | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const checkForUpdate = useCallback(async () => {

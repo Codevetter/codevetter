@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo,useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setPreference, getPreference } from "@/lib/tauri-ipc";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { getPreference,setPreference } from "@/lib/tauri-ipc";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

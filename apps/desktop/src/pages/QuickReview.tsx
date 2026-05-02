@@ -1,52 +1,52 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import ScoreBadge from "@/components/score-badge";
-import { cn } from "@/lib/utils";
 import {
-  FolderOpen,
-  GitBranch,
-  GitPullRequest,
-  Zap,
-  Loader2,
   AlertTriangle,
-  CheckCircle,
   ArrowLeft,
-  Plus,
-  Square,
+  CheckCircle,
   CheckSquare2,
-  Undo2,
-  FileCode,
-  RefreshCw,
-  GitCommitHorizontal,
-  ExternalLink,
   ChevronDown,
   ChevronRight,
+  ExternalLink,
+  FileCode,
+  FolderOpen,
+  GitBranch,
+  GitCommitHorizontal,
   GitMerge,
+  GitPullRequest,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Square,
   Trash2,
+  Undo2,
+  Zap,
 } from "lucide-react";
+import { useCallback, useEffect, useRef,useState } from "react";
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
+
+import BlastRadiusPanel from "@/components/blast-radius-panel";
+import ScoreBadge from "@/components/score-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import type { BlastRadiusReport,CliReviewFinding, CliReviewResult, FileLineData,FixChangedFile, FixFindingsResult , LocalReviewRow, PullRequest } from "@/lib/tauri-ipc";
 import {
+  analyzeBlastRadius,
+  discardFix,
+  fixFindings,
+  getPreference,
+  getReview,
   isTauriAvailable,
-  pickDirectory,
   listGitBranches,
   listPullRequests,
   listReviews,
-  getReview,
-  getPreference,
-  setPreference,
-  runCliReview,
-  fixFindings,
-  revertFiles,
   mergeFix,
-  discardFix,
+  pickDirectory,
   readFileAroundLine,
-  analyzeBlastRadius,
+  revertFiles,
+  runCliReview,
+  setPreference,
 } from "@/lib/tauri-ipc";
-import type { FixFindingsResult, FixChangedFile, BlastRadiusReport } from "@/lib/tauri-ipc";
-import type { PullRequest, CliReviewResult, CliReviewFinding, LocalReviewRow, FileLineData } from "@/lib/tauri-ipc";
-import BlastRadiusPanel from "@/components/blast-radius-panel";
+import { cn } from "@/lib/utils";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -251,10 +251,8 @@ export default function QuickReview() {
 
   useEffect(() => {
     if (!isTauriAvailable()) return;
-    getPreference("quick_review_last_folder")
-      .then((dir) => {
-        if (dir) loadFolderData(dir);
-      })
+    void getPreference("quick_review_last_folder")
+      .then((dir) => dir ? loadFolderData(dir) : undefined)
       .catch(() => {});
   }, [loadFolderData]);
 
@@ -263,9 +261,9 @@ export default function QuickReview() {
   useEffect(() => {
     if (!isTauriAvailable()) return;
     setPastReviewsLoading(true);
-    listReviews(20, 0)
+    void listReviews(20, 0)
       .then((reviews) => {
-        setPastReviews(reviews);
+        return setPastReviews(reviews);
       })
       .catch((e) => console.error("[Review] failed to load past reviews:", e))
       .finally(() => setPastReviewsLoading(false));
