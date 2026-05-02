@@ -1,6 +1,9 @@
-import { ShieldCheck } from "lucide-react";
+import { Github, Mail,SearchCode, Twitter } from "lucide-react";
+import type React from "react";
 
-const cols = [
+type ColItem = { l: string; h: string; icon?: React.ReactElement };
+
+const cols: { label: string; items: ColItem[] }[] = [
   {
     label: "Product",
     items: [
@@ -14,48 +17,57 @@ const cols = [
     label: "Resources",
     items: [
       { l: "Documentation", h: "https://github.com/sarthakagrawal927/CodeVetter#readme" },
-      { l: "GitHub", h: "https://github.com/sarthakagrawal927/CodeVetter" },
-      { l: "Issues", h: "https://github.com/sarthakagrawal927/CodeVetter/issues" },
+      { l: "Security Hub", h: "#" },
+      { l: "Bug Bounty", h: "#" },
     ],
   },
   {
-    label: "Company",
+    label: "Connect",
     items: [
-      { l: "Privacy", h: "#" },
-      { l: "Security", h: "#" },
-      { l: "Contact", h: "mailto:hello@codevetter.dev" },
+      { l: "GitHub", h: "https://github.com/sarthakagrawal927/CodeVetter", icon: <Github className="w-3.5 h-3.5" /> },
+      { l: "Twitter", h: "#", icon: <Twitter className="w-3.5 h-3.5" /> },
+      { l: "Email", h: "mailto:hello@codevetter.dev", icon: <Mail className="w-3.5 h-3.5" /> },
     ],
   },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t border-[--color-line] bg-[--color-bg-elev]/60">
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-5 gap-8">
-        <div className="col-span-2">
+    <footer className="relative border-t border-white/5 bg-[#050505] pt-24 pb-12 overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+      
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-6 gap-12">
+        <div className="col-span-2 space-y-6">
           <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-[--color-accent]" strokeWidth={1.5} />
-            <span className="font-mono text-[13px] tracking-[0.22em] uppercase font-semibold">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20">
+              <SearchCode className="w-4 h-4 text-blue-400" />
+            </div>
+            <span className="font-display text-lg font-bold tracking-tight text-white">
               CodeVetter
             </span>
           </div>
-          <p className="mt-4 text-[13px] text-[--color-text-dim] max-w-xs leading-relaxed">
-            A second pair of eyes for the agent era. Desktop-first. Open source.
-            Made by engineers tired of merging unreviewed AI patches.
+          <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
+            Beautiful, desktop-first code review for the agent era. Built by engineers who want to ship AI code with confidence.
           </p>
+          <div className="flex items-center gap-3 text-emerald-400 text-xs font-mono bg-emerald-500/5 border border-emerald-500/10 w-fit px-3 py-1.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            All systems operational
+          </div>
         </div>
+        
         {cols.map((c) => (
-          <div key={c.label}>
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[--color-text-mute] mb-4">
+          <div key={c.label} className="col-span-1">
+            <div className="text-xs font-bold text-white uppercase tracking-widest mb-6">
               {c.label}
             </div>
-            <ul className="space-y-2.5">
+            <ul className="space-y-4">
               {c.items.map((it) => (
                 <li key={it.l}>
                   <a
                     href={it.h}
-                    className="text-[13px] text-[--color-text-dim] hover:text-[--color-text] transition-colors"
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors group"
                   >
+                    {it.icon && <span className="text-gray-600 group-hover:text-blue-400 transition-colors">{it.icon}</span>}
                     {it.l}
                   </a>
                 </li>
@@ -64,13 +76,17 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <div className="border-t border-[--color-line]">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[--color-text-mute]">
-          <span>© {new Date().getFullYear()} CodeVetter — ISC</span>
-          <span className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[--color-ok] animate-pulse-soft" />
-            All systems operational
-          </span>
+      
+      <div className="max-w-7xl mx-auto px-6 mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-600 font-medium">
+        <div className="flex items-center gap-6">
+          <span>© {new Date().getFullYear()} CodeVetter · ISC License</span>
+          <a href="#" className="hover:text-white transition-colors">Privacy</a>
+          <a href="#" className="hover:text-white transition-colors">Terms</a>
+        </div>
+        <div className="flex items-center gap-2">
+          <span>Crafted for high-integrity teams</span>
+          <span className="text-gray-800">·</span>
+          <span className="text-blue-500/50">v1.1.9</span>
         </div>
       </div>
     </footer>

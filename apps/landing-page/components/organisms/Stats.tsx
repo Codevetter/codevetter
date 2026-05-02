@@ -7,37 +7,29 @@ const items = [
 
 export function Stats() {
   return (
-    <section className="border-y border-[--color-line] bg-[--color-bg-elev]/40 relative overflow-hidden">
-      <div className="absolute inset-0 grid-bg opacity-25 pointer-events-none" aria-hidden />
-      <div
-        className="absolute -inset-y-12 left-1/2 -translate-x-1/2 w-[60%] blur-3xl pointer-events-none opacity-50"
-        style={{
-          background:
-            "radial-gradient(closest-side, rgba(125,211,252,0.12), transparent 70%)",
-        }}
-        aria-hidden
-      />
-      <div className="relative max-w-7xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-px bg-[--color-line]">
-        {items.map((it) => (
-          <div
-            key={it.k}
-            className="bg-[--color-bg] px-6 py-6 group hover:bg-[--color-surface] transition-colors relative overflow-hidden"
-          >
-            <span
-              className="absolute -bottom-px left-0 h-px w-0 bg-gradient-to-r from-[--color-accent] to-[--color-accent-3] group-hover:w-full transition-all duration-500"
-              aria-hidden
-            />
-            <div className="font-display text-4xl md:text-5xl font-bold text-[--color-text] group-hover:text-gradient transition-all tabular-nums">
-              {it.k}
+    <section className="relative overflow-hidden bg-[#0A0A0A] py-16">
+      <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" aria-hidden />
+      
+      <div className="relative max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {items.map((it) => (
+            <div
+              key={it.k}
+              className="relative group p-6 rounded-3xl hover:bg-white/[0.02] transition-colors duration-500"
+            >
+              <div className="font-display text-4xl md:text-5xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500 tabular-nums mb-3 tracking-tighter">
+                {it.k}
+              </div>
+              <div className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-1 group-hover:text-white transition-colors">
+                {it.v}
+              </div>
+              <div className="text-xs text-gray-500 font-medium">
+                {it.sub}
+              </div>
+              <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </div>
-            <div className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[--color-text]">
-              {it.v}
-            </div>
-            <div className="mt-1 font-mono text-[10px] tracking-[0.1em] text-[--color-text-mute]">
-              {it.sub}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -1,27 +1,27 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback,useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
-import {
-  getPreference,
-  setPreference,
-  isTauriAvailable,
-  checkGitHubAuth,
-  syncGitHubToken,
-  checkLinearConnection,
-  startLinearOAuth,
-  disconnectLinear,
-} from "@/lib/tauri-ipc";
 import {
   loadReviewConfig,
-  saveReviewConfig,
   PROVIDER_PRESETS,
   type ReviewConfig,
+  saveReviewConfig,
 } from "@/lib/review-service";
 import type { GitHubAuthStatus, LinearUser } from "@/lib/tauri-ipc";
+import {
+  checkGitHubAuth,
+  checkLinearConnection,
+  disconnectLinear,
+  getPreference,
+  isTauriAvailable,
+  setPreference,
+  startLinearOAuth,
+  syncGitHubToken,
+} from "@/lib/tauri-ipc";
+import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -139,9 +139,7 @@ function usePref(key: string, defaultValue: string) {
 
   useEffect(() => {
     if (!isTauriAvailable()) return;
-    getPreference(key).then((v) => {
-      if (v != null) setValue(v);
-    }).catch(() => {});
+    void getPreference(key).then((v) => v != null ? setValue(v) : undefined).catch(() => {});
   }, [key]);
 
   const update = useCallback(

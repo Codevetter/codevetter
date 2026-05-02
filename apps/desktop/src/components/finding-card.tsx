@@ -1,7 +1,7 @@
-import type { ReviewFinding } from "@/lib/tauri-ipc";
+import type { CliReviewFinding } from "@/lib/tauri-ipc";
 
 interface FindingCardProps {
-  finding: ReviewFinding;
+  finding: CliReviewFinding;
 }
 
 const severityConfig: Record<
@@ -63,9 +63,9 @@ export default function FindingCard({ finding }: FindingCardProps) {
               {severity}
             </span>
           </div>
-          {(finding.file_path || finding.line != null) && (
+          {(finding.filePath || finding.line != null) && (
             <p className="mono mt-0.5 text-xs text-slate-500">
-              {finding.file_path}
+              {finding.filePath}
               {finding.line != null ? `:${finding.line}` : ""}
             </p>
           )}

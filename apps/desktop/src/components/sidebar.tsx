@@ -1,13 +1,14 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Home, Zap, Settings } from "lucide-react";
+import { Home, Settings,Zap } from "lucide-react";
+import { type ReactNode,useEffect, useRef, useState } from "react";
+import { Link, useLocation,useNavigate } from "react-router-dom";
+
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Separator } from "@/components/ui/separator";
 
 interface NavItem {
   label: string;

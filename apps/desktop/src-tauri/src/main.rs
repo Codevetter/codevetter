@@ -440,7 +440,26 @@ fn resolve_all_claude_projects_dirs() -> Vec<std::path::PathBuf> {
     let home_path = std::path::PathBuf::from(&home);
     let mut dirs = Vec::new();
 
-    dirs.push(home_path.join(".claude").join("projects"));
+    if let Ok(config_dirs) = std::env::var("CLAUDE_CONFIG_DIR") {
+        for raw in config_dirs.split(',').map(str::trim).filter(|s| !s.is_empty()) {
+            let projects_dir = std::path::PathBuf::from(raw).join("projects");
+            if projects_dir.exists() && !dirs.contains(&projects_dir) {
+                dirs.push(projects_dir);
+            }
+        }
+        return dirs;
+    }
+
+    let default_dirs = [
+        home_path.join(".config").join("claude").join("projects"),
+        home_path.join(".claude").join("projects"),
+    ];
+
+    for projects_dir in default_dirs {
+        if projects_dir.exists() && !dirs.contains(&projects_dir) {
+            dirs.push(projects_dir);
+        }
+    }
 
     if let Ok(entries) = std::fs::read_dir(&home_path) {
         for entry in entries.flatten() {
@@ -448,7 +467,7 @@ fn resolve_all_claude_projects_dirs() -> Vec<std::path::PathBuf> {
             let name_str = name.to_string_lossy();
             if name_str.starts_with(".claude-") && entry.path().is_dir() {
                 let projects_dir = entry.path().join("projects");
-                if projects_dir.exists() {
+                if projects_dir.exists() && !dirs.contains(&projects_dir) {
                     dirs.push(projects_dir);
                 }
             }

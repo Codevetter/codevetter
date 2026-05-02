@@ -1,7 +1,8 @@
-import { cn } from "@/lib/cn";
 import type { ComponentProps, ReactNode } from "react";
 
-type Variant = "primary" | "ghost" | "outline";
+import { cn } from "@/lib/cn";
+
+type Variant = "primary" | "ghost" | "outline" | "glass";
 
 type Props = ComponentProps<"a"> & {
   variant?: Variant;
@@ -15,15 +16,17 @@ export function Button({
   ...props
 }: Props) {
   const base =
-    "group inline-flex items-center gap-2 px-5 h-11 font-mono text-[11px] uppercase tracking-[0.18em] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-accent] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg]";
+    "group inline-flex items-center gap-2 px-6 h-12 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-accent] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg] rounded-full";
 
   const variants: Record<Variant, string> = {
     primary:
-      "bg-[--color-accent] text-[#001016] hover:bg-[--color-accent-2] hover:shadow-[0_0_30px_-4px_var(--color-accent-glow)]",
+      "bg-white text-black hover:bg-gray-100 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]",
     outline:
-      "border border-[--color-line-2] text-[--color-text] hover:border-[--color-accent] hover:text-[--color-accent] hover:bg-[--color-accent]/5",
+      "border border-white/20 text-white hover:border-white/40 hover:bg-white/5 backdrop-blur-md",
+    glass:
+      "bg-white/5 border border-white/10 text-white backdrop-blur-md hover:bg-white/10 hover:border-white/20 shadow-lg",
     ghost:
-      "text-[--color-text-dim] hover:text-[--color-text]",
+      "text-gray-400 hover:text-white hover:bg-white/5",
   };
 
   return (

@@ -1,101 +1,84 @@
+import { Apple, ArrowRight, ShieldCheck,Terminal } from "lucide-react";
+
 import { Button } from "@/components/atoms/Button";
-import { Aurora } from "@/components/effects/Aurora";
-import { ParticleField } from "@/components/effects/ParticleField";
-import { ArrowRight, Apple, Terminal } from "lucide-react";
 
 export function CTA() {
   return (
     <section
       id="download"
-      className="py-32 relative overflow-hidden border-t border-[--color-line]"
+      className="py-32 relative overflow-hidden"
     >
-      <Aurora intensity="high" />
-      <div className="absolute inset-0 grid-bg pointer-events-none opacity-50" aria-hidden />
-      <ParticleField count={32} />
+      <div className="absolute inset-0 grid-bg pointer-events-none opacity-40" aria-hidden />
 
       <div className="relative max-w-5xl mx-auto px-6">
-        <div className="relative corner-frame bg-[--color-bg-elev]/80 border border-[--color-line] backdrop-blur-md p-12 md:p-16 noise overflow-hidden">
+        <div className="relative rounded-[3rem] bg-white/[0.02] border border-white/5 backdrop-blur-3xl p-12 md:p-20 overflow-hidden shadow-2xl">
           <div
-            className="absolute inset-0 pointer-events-none opacity-60"
+            className="absolute inset-0 pointer-events-none opacity-40"
             style={{
               background:
-                "radial-gradient(60% 50% at 50% 0%, rgba(125,211,252,0.18), transparent 70%)",
+                "radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.2), transparent 70%)",
             }}
             aria-hidden
           />
-          <div className="relative text-center">
-            <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[--color-accent] border border-[--color-accent]/30 bg-[--color-accent]/5 px-3 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[--color-accent] animate-pulse-soft" />
-              STATUS_READY · v1.1.9
-            </span>
-            <h2 className="mt-6 font-display text-[clamp(2.4rem,6vw,4.8rem)] font-bold leading-[1.02] tracking-tight">
+          <div className="relative text-center flex flex-col items-center">
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-widest uppercase mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              Build v1.1.9 · Ready for Review
+            </div>
+            
+            <h2 className="font-display text-[clamp(2.4rem,6vw,4.5rem)] font-bold leading-[1.1] tracking-tight text-white">
               Stop trusting agents{" "}
               <span className="text-gradient">blindly.</span>
             </h2>
-            <p className="mt-6 text-[16px] text-[--color-text-dim] max-w-xl mx-auto leading-relaxed">
-              Install in 30 seconds. First review in under a minute. Diff never
-              leaves your laptop.
+            <p className="mt-8 text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
+              Install in 30 seconds. First review in under a minute. Your code never
+              leaves your machine.
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
               <Button
                 variant="primary"
                 href="https://github.com/sarthakagrawal927/CodeVetter/releases/latest"
+                className="h-14 px-8"
               >
-                <Apple className="w-4 h-4" strokeWidth={1.5} />
-                macOS · Apple Silicon
+                <Apple className="w-5 h-5" />
+                Download for macOS
                 <ArrowRight
-                  className="w-4 h-4 transition-transform group-hover:translate-x-0.5"
-                  strokeWidth={1.5}
+                  className="w-4 h-4 transition-transform group-hover:translate-x-1"
                 />
               </Button>
               <Button
-                variant="outline"
+                variant="glass"
                 href="https://github.com/sarthakagrawal927/CodeVetter/releases/latest"
+                className="h-14 px-8"
               >
-                macOS · Intel
-              </Button>
-              <Button
-                variant="outline"
-                href="https://github.com/sarthakagrawal927/CodeVetter/releases/latest"
-              >
-                Windows
-              </Button>
-              <Button
-                variant="outline"
-                href="https://github.com/sarthakagrawal927/CodeVetter/releases/latest"
-              >
-                Linux · AppImage
+                Other Platforms
               </Button>
             </div>
 
-            <div className="mt-10 max-w-md mx-auto bg-[--color-bg] border border-[--color-line] font-mono text-[12px] text-left">
-              <div className="flex items-center gap-2 px-4 py-2 border-b border-[--color-line]">
-                <Terminal className="w-3.5 h-3.5 text-[--color-accent]" strokeWidth={1.5} />
-                <span className="label-mono">install via brew</span>
+            <div className="mt-12 w-full max-w-md rounded-2xl bg-black/40 border border-white/5 p-1 overflow-hidden backdrop-blur-md shadow-inner">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                <Terminal className="w-4 h-4 text-blue-400" />
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Quick Install</span>
               </div>
-              <div className="px-4 py-3 text-[--color-text-dim]">
-                <span className="text-[--color-accent]">$</span> brew install --cask{" "}
-                <span className="text-[--color-text]">codevetter</span>
+              <div className="px-5 py-4 text-sm font-mono flex items-center gap-3">
+                <span className="text-blue-500/50">❯</span>
+                <span className="text-gray-300">brew install --cask <span className="text-white">codevetter</span></span>
               </div>
             </div>
 
-            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[--color-text-mute]">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-xs font-semibold text-gray-500">
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[--color-ok]" />
-                signed
+                <ShieldCheck className="w-4 h-4 text-emerald-400/70" />
+                Signed binaries
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[--color-ok]" />
-                auto-updates
+                <ShieldCheck className="w-4 h-4 text-emerald-400/70" />
+                Auto-updates
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[--color-ok]" />
-                no account
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[--color-ok]" />
-                ISC
+                <ShieldCheck className="w-4 h-4 text-emerald-400/70" />
+                No account required
               </span>
             </div>
           </div>

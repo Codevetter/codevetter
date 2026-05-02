@@ -1,6 +1,7 @@
 use crate::db::queries::{self, ProviderAccountRow};
 use crate::DbState;
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
 use tauri::State;
 
 #[tauri::command]
@@ -73,10 +74,7 @@ pub async fn update_provider_account(
 }
 
 #[tauri::command]
-pub async fn delete_provider_account(
-    db: State<'_, DbState>,
-    id: String,
-) -> Result<Value, String> {
+pub async fn delete_provider_account(db: State<'_, DbState>, id: String) -> Result<Value, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     queries::delete_provider_account(&conn, &id).map_err(|e| e.to_string())?;
     Ok(json!({ "deleted": true }))
@@ -167,17 +165,35 @@ pub async fn check_account_usage(
     // ── Baseline: user-set limit > avg weekly > last week ───────────────
     let baseline = account
         .weekly_limit
-        .or_else(|| if avg_week_cost > 0.0 { Some(avg_week_cost) } else { None })
-        .or_else(|| if last_week_cost > 0.0 { Some(last_week_cost) } else { None });
+        .or_else(|| {
+            if avg_week_cost > 0.0 {
+                Some(avg_week_cost)
+            } else {
+                None
+            }
+        })
+        .or_else(|| {
+            if last_week_cost > 0.0 {
+                Some(last_week_cost)
+            } else {
+                None
+            }
+        });
 
-    let week_pct = baseline.map(|b| if b > 0.0 { week_cost / b * 100.0  } else { 0.0 });
+    let week_pct = baseline.map(|b| if b > 0.0 { week_cost / b * 100.0 } else { 0.0 });
     let week_remaining = baseline.map(|b| (b - week_cost).max(0.0));
 
     // ── Expected pace: what % of the week has elapsed ───────────────────
     let expected_pct = (day_of_week as f64 / 7.0) * 100.0;
 
     // ── Current / latest session with meaningful activity ────────────────
-    let (session_cost, session_input, session_output, session_id, session_messages): (f64, i64, i64, Option<String>, i64) = conn
+    let (session_cost, session_input, session_output, session_id, session_messages): (
+        f64,
+        i64,
+        i64,
+        Option<String>,
+        i64,
+    ) = conn
         .query_row(
             "SELECT estimated_cost_usd, total_input_tokens, total_output_tokens, id, message_count
              FROM cc_sessions
@@ -185,7 +201,15 @@ pub async fn check_account_usage(
              ORDER BY last_message DESC
              LIMIT 1",
             rusqlite::params![agent_type],
-            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+            |row| {
+                Ok((
+                    row.get(0)?,
+                    row.get(1)?,
+                    row.get(2)?,
+                    row.get(3)?,
+                    row.get(4)?,
+                ))
+            },
         )
         .unwrap_or((0.0, 0, 0, None, 0));
 
@@ -200,6 +224,48 @@ pub async fn check_account_usage(
             |row| row.get(0),
         )
         .unwrap_or(0.0);
+
+    // ── Per local profile breakdown ─────────────────────────────────────
+    let mut profile_usage: BTreeMap<String, (f64, i64, i64, i64)> = BTreeMap::new();
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT jsonl_path,
+                COALESCE(estimated_cost_usd, 0),
+                COALESCE(total_input_tokens, 0),
+                COALESCE(total_output_tokens, 0)
+         FROM cc_sessions
+         WHERE agent_type = ?1 AND last_message >= ?2",
+    ) {
+        if let Ok(rows) = stmt.query_map(rusqlite::params![agent_type, week_start_str], |row| {
+            Ok((
+                row.get::<_, Option<String>>(0)?,
+                row.get::<_, f64>(1)?,
+                row.get::<_, i64>(2)?,
+                row.get::<_, i64>(3)?,
+            ))
+        }) {
+            for (path, cost, input, output) in rows.flatten() {
+                let label = usage_profile_label(agent_type, path.as_deref());
+                let entry = profile_usage.entry(label).or_insert((0.0, 0, 0, 0));
+                entry.0 += cost;
+                entry.1 += input;
+                entry.2 += output;
+                entry.3 += 1;
+            }
+        }
+    }
+
+    let profile_breakdown: Vec<Value> = profile_usage
+        .into_iter()
+        .map(|(profile, (cost, input, output, sessions))| {
+            json!({
+                "profile": profile,
+                "week_cost": cost,
+                "week_input_tokens": input,
+                "week_output_tokens": output,
+                "week_sessions": sessions,
+            })
+        })
+        .collect();
 
     Ok(json!({
         "account_id": account.id,
@@ -231,7 +297,50 @@ pub async fn check_account_usage(
         "session_output_tokens": session_output,
         "session_messages": session_messages,
         "session_id": session_id,
+        "profile_breakdown": profile_breakdown,
     }))
+}
+
+fn usage_profile_label(agent_type: &str, jsonl_path: Option<&str>) -> String {
+    match agent_type {
+        "claude-code" => claude_profile_label(jsonl_path),
+        "codex" => "Codex (~/.codex)".to_string(),
+        "gemini" => "Gemini (~/.gemini)".to_string(),
+        other => other.to_string(),
+    }
+}
+
+fn claude_profile_label(jsonl_path: Option<&str>) -> String {
+    let Some(path) = jsonl_path else {
+        return "Claude (unknown profile)".to_string();
+    };
+
+    if path.contains("/.config/claude/projects/") {
+        return "Claude (~/.config/claude)".to_string();
+    }
+
+    if let Some(home) = std::env::var_os("HOME").and_then(|h| h.into_string().ok()) {
+        if let Some(rest) = path.strip_prefix(&(home + "/")) {
+            if let Some(segment) = rest.split('/').next() {
+                if segment == ".claude" || segment.starts_with(".claude-") {
+                    return format!("Claude (~/{segment})");
+                }
+            }
+        }
+    }
+
+    for marker in ["/.claude/projects/", "/.claude-"] {
+        if marker == "/.claude/projects/" && path.contains(marker) {
+            return "Claude (~/.claude)".to_string();
+        }
+        if let Some(after) = path.split(marker).nth(1) {
+            if let Some(profile) = after.split('/').next() {
+                return format!("Claude (~/.claude-{profile})");
+            }
+        }
+    }
+
+    "Claude (unknown profile)".to_string()
 }
 
 /// Default weekly limit hint for newly detected accounts.
@@ -313,16 +422,49 @@ pub async fn detect_provider_accounts(db: State<'_, DbState>) -> Result<Value, S
         let existing = queries::list_provider_accounts(&conn).map_err(|e| e.to_string())?;
 
         for det in &detected {
-            // Check if an account with same provider + org_id already exists
-            let already_exists = existing.iter().any(|e| {
-                e.provider == det.provider
-                    && det
-                        .org_id
+            let provider_accounts: Vec<&ProviderAccountRow> = existing
+                .iter()
+                .filter(|e| e.provider == det.provider)
+                .collect();
+            let matched_account = provider_accounts
+                .iter()
+                .copied()
+                .find(|e| {
+                    det.org_id
                         .as_ref()
                         .map_or(e.name == det.name, |oid| e.api_key.as_deref() == Some(oid))
-            });
+                })
+                .or_else(|| {
+                    if provider_accounts.len() == 1 {
+                        provider_accounts.first().copied()
+                    } else {
+                        None
+                    }
+                });
 
-            if !already_exists {
+            if let Some(existing_acc) = matched_account {
+                if existing_acc.plan.as_deref() != det.plan.as_deref()
+                    || existing_acc.api_key.as_deref() != det.org_id.as_deref()
+                    || existing_acc.name != det.name
+                {
+                    let now = chrono::Utc::now().to_rfc3339();
+                    let weekly = existing_acc
+                        .weekly_limit
+                        .or_else(|| default_weekly_limit(&det.provider, det.plan.as_deref()));
+                    let updated = ProviderAccountRow {
+                        id: existing_acc.id.clone(),
+                        name: det.name.clone(),
+                        provider: existing_acc.provider.clone(),
+                        api_key: det.org_id.clone(),
+                        monthly_limit: existing_acc.monthly_limit,
+                        plan: det.plan.clone(),
+                        weekly_limit: weekly,
+                        created_at: String::new(),
+                        updated_at: now,
+                    };
+                    let _ = queries::update_provider_account(&conn, &updated);
+                }
+            } else {
                 let now = chrono::Utc::now().to_rfc3339();
                 let weekly = default_weekly_limit(&det.provider, det.plan.as_deref());
                 let account = ProviderAccountRow {
@@ -338,36 +480,6 @@ pub async fn detect_provider_accounts(db: State<'_, DbState>) -> Result<Value, S
                 };
                 let _ = queries::create_provider_account(&conn, &account);
                 created += 1;
-            } else {
-                // Update plan + weekly_limit on existing account if plan changed
-                for existing_acc in &existing {
-                    if existing_acc.provider == det.provider {
-                        let matches = det
-                            .org_id
-                            .as_ref()
-                            .map_or(existing_acc.name == det.name, |oid| {
-                                existing_acc.api_key.as_deref() == Some(oid)
-                            });
-                        if matches && existing_acc.plan.as_deref() != det.plan.as_deref() {
-                            let now = chrono::Utc::now().to_rfc3339();
-                            let weekly = existing_acc.weekly_limit.or_else(|| {
-                                default_weekly_limit(&det.provider, det.plan.as_deref())
-                            });
-                            let updated = ProviderAccountRow {
-                                id: existing_acc.id.clone(),
-                                name: existing_acc.name.clone(),
-                                provider: existing_acc.provider.clone(),
-                                api_key: existing_acc.api_key.clone(),
-                                monthly_limit: existing_acc.monthly_limit,
-                                plan: det.plan.clone(),
-                                weekly_limit: weekly,
-                                created_at: String::new(),
-                                updated_at: now,
-                            };
-                            let _ = queries::update_provider_account(&conn, &updated);
-                        }
-                    }
-                }
             }
         }
     }
@@ -476,10 +588,7 @@ async fn detect_codex() -> Option<DetectedAccount> {
     let content = tokio::fs::read_to_string(&auth_path).await.ok()?;
     let parsed: serde_json::Value = serde_json::from_str(&content).ok()?;
 
-    let id_token = parsed
-        .get("tokens")?
-        .get("id_token")?
-        .as_str()?;
+    let id_token = parsed.get("tokens")?.get("id_token")?.as_str()?;
 
     // Decode JWT payload (base64url, no verification needed — local file)
     let parts: Vec<&str> = id_token.split('.').collect();
@@ -496,33 +605,44 @@ async fn detect_codex() -> Option<DetectedAccount> {
     };
     let replaced = padded.replace('-', "+").replace('_', "/");
     let decoded_bytes = base64_decode(&replaced)?;
-    let payload: serde_json::Value =
-        serde_json::from_slice(&decoded_bytes).ok()?;
+    let payload: serde_json::Value = serde_json::from_slice(&decoded_bytes).ok()?;
 
     let email = payload
         .get("email")
         .and_then(|v| v.as_str())
         .map(String::from);
-    let plan = payload
-        .get("https://api.openai.com/auth")
+    let auth_claim = payload.get("https://api.openai.com/auth");
+    let plan = auth_claim
         .and_then(|v| v.get("chatgpt_plan_type"))
+        .and_then(|v| v.as_str())
+        .map(normalize_plan);
+
+    let account_id = auth_claim
+        .and_then(|v| v.get("chatgpt_account_id"))
         .and_then(|v| v.as_str())
         .map(String::from);
 
-    let orgs = payload
-        .get("https://api.openai.com/auth")
+    let orgs = auth_claim
         .and_then(|v| v.get("organizations"))
         .and_then(|v| v.as_array());
 
     let (org_id, org_name) = if let Some(orgs) = orgs {
         let first = orgs.first();
         (
-            first.and_then(|o| o.get("id")).and_then(|v| v.as_str()).map(String::from),
-            first.and_then(|o| o.get("title")).and_then(|v| v.as_str()).map(String::from),
+            first
+                .and_then(|o| o.get("id"))
+                .and_then(|v| v.as_str())
+                .map(String::from),
+            first
+                .and_then(|o| o.get("title"))
+                .and_then(|v| v.as_str())
+                .map(String::from),
         )
     } else {
         (None, None)
     };
+
+    let stable_id = account_id.or(org_id.clone());
 
     let display_name = org_name
         .clone()
@@ -540,10 +660,20 @@ async fn detect_codex() -> Option<DetectedAccount> {
         provider: "openai".to_string(),
         name,
         email,
-        org_id,
+        org_id: stable_id,
         org_name,
         plan,
     })
+}
+
+fn normalize_plan(raw: &str) -> String {
+    match raw.to_ascii_lowercase().as_str() {
+        "prolite" | "pro" | "chatgptpro" | "chatgpt_pro" => "pro".to_string(),
+        "plus" | "chatgptplus" | "chatgpt_plus" => "plus".to_string(),
+        "teams" => "team".to_string(),
+        "enterprise" | "business" | "team" | "free" | "go" | "max" => raw.to_ascii_lowercase(),
+        other => other.to_string(),
+    }
 }
 
 // ─── Live Usage Check ────────────────────────────────────────────────────────
@@ -554,12 +684,7 @@ async fn detect_codex() -> Option<DetectedAccount> {
 /// or "Claude Code-credentials-f50ce9b7" for a secondary account.
 fn read_oauth_token_from_keychain(service: &str) -> Result<String, String> {
     let output = std::process::Command::new("security")
-        .args([
-            "find-generic-password",
-            "-s",
-            service,
-            "-w",
-        ])
+        .args(["find-generic-password", "-s", service, "-w"])
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .output()
@@ -644,10 +769,7 @@ fn read_keychain_account_info(service: &str) -> Option<(DetectedAccount, i64)> {
         .and_then(|v| v.as_str())
         .unwrap_or("unknown")
         .to_string();
-    let expires_at = oauth
-        .get("expiresAt")
-        .and_then(|v| v.as_i64())
-        .unwrap_or(0);
+    let expires_at = oauth.get("expiresAt").and_then(|v| v.as_i64()).unwrap_or(0);
 
     let name = match subscription_type.as_str() {
         "team" => "Claude Team".to_string(),
@@ -695,24 +817,36 @@ pub async fn check_live_usage(
                 (Ok(mut local_val), Ok(api_val)) => {
                     local_val["api"] = api_val;
                     match quota {
-                        Ok(q) => { local_val["quota_api"] = q; }
-                        Err(e) => { local_val["quota_api_error"] = json!(e); }
+                        Ok(q) => {
+                            local_val["quota_api"] = q;
+                        }
+                        Err(e) => {
+                            local_val["quota_api_error"] = json!(e);
+                        }
                     }
                     Ok(local_val)
                 }
                 (Ok(mut local_val), Err(api_err)) => {
                     local_val["api"] = json!({ "error": api_err });
                     match quota {
-                        Ok(q) => { local_val["quota_api"] = q; }
-                        Err(e) => { local_val["quota_api_error"] = json!(e); }
+                        Ok(q) => {
+                            local_val["quota_api"] = q;
+                        }
+                        Err(e) => {
+                            local_val["quota_api_error"] = json!(e);
+                        }
                     }
                     Ok(local_val)
                 }
                 (Err(_), Ok(api_val)) => {
                     let mut val = api_val;
                     match quota {
-                        Ok(q) => { val["quota_api"] = q; }
-                        Err(e) => { val["quota_api_error"] = json!(e); }
+                        Ok(q) => {
+                            val["quota_api"] = q;
+                        }
+                        Err(e) => {
+                            val["quota_api_error"] = json!(e);
+                        }
                     }
                     Ok(val)
                 }
@@ -945,7 +1079,8 @@ async fn check_live_usage_gemini_local() -> Result<Value, String> {
         std::collections::HashMap::new();
 
     // Iterate over project hash directories
-    let project_dirs = fs::read_dir(&gemini_tmp).map_err(|e| format!("Cannot read ~/.gemini/tmp: {e}"))?;
+    let project_dirs =
+        fs::read_dir(&gemini_tmp).map_err(|e| format!("Cannot read ~/.gemini/tmp: {e}"))?;
 
     for project_entry in project_dirs.flatten() {
         let chats_dir = project_entry.path().join("chats");
@@ -1003,7 +1138,7 @@ async fn check_live_usage_gemini_local() -> Result<Value, String> {
                         let out = tokens.get("output").and_then(|v| v.as_i64()).unwrap_or(0);
                         let cch = tokens.get("cached").and_then(|v| v.as_i64()).unwrap_or(0);
                         let tht = tokens.get("thoughts").and_then(|v| v.as_i64()).unwrap_or(0);
-                        let tl  = tokens.get("tool").and_then(|v| v.as_i64()).unwrap_or(0);
+                        let tl = tokens.get("tool").and_then(|v| v.as_i64()).unwrap_or(0);
                         let tot = tokens.get("total").and_then(|v| v.as_i64()).unwrap_or(0);
 
                         tok_input += inp;
@@ -1015,7 +1150,9 @@ async fn check_live_usage_gemini_local() -> Result<Value, String> {
 
                         // Track per-model stats
                         if let Some(model_name) = msg.get("model").and_then(|v| v.as_str()) {
-                            let entry = model_stats.entry(model_name.to_string()).or_insert((0, 0, 0, 0, 0, 0, 0));
+                            let entry = model_stats
+                                .entry(model_name.to_string())
+                                .or_insert((0, 0, 0, 0, 0, 0, 0));
                             entry.0 += 1; // requests
                             entry.1 += inp;
                             entry.2 += out;
@@ -1181,35 +1318,68 @@ async fn check_live_usage_gemini_quota() -> Result<Value, String> {
     // XOR-obfuscated at rest — not for security (they're public), just so GitHub
     // push-protection / naive secret scanners don't flag them as leaked credentials.
     const XK: u8 = 0x5A;
-    const CID: &[u8] = &[0x6c,0x62,0x6b,0x68,0x6f,0x6f,0x62,0x6a,0x63,0x69,0x63,0x6f,0x77,0x35,0x35,0x62,0x3c,0x2e,0x68,0x35,0x2a,0x28,0x3e,0x28,0x34,0x2a,0x63,0x3f,0x69,0x3b,0x2b,0x3c,0x6c,0x3b,0x2c,0x69,0x32,0x37,0x3e,0x33,0x38,0x6b,0x69,0x6f,0x30,0x74,0x3b,0x2a,0x2a,0x29,0x74,0x3d,0x35,0x35,0x3d,0x36,0x3f,0x2f,0x29,0x3f,0x28,0x39,0x35,0x34,0x2e,0x3f,0x34,0x2e,0x74,0x39,0x35,0x37];
-    const CSEC: &[u8] = &[0x1d,0x15,0x19,0x09,0x0a,0x02,0x77,0x6e,0x2f,0x12,0x3d,0x17,0x0a,0x37,0x77,0x6b,0x35,0x6d,0x09,0x31,0x77,0x3d,0x3f,0x0c,0x6c,0x19,0x2f,0x6f,0x39,0x36,0x02,0x1c,0x29,0x22,0x36];
+    const CID: &[u8] = &[
+        0x6c, 0x62, 0x6b, 0x68, 0x6f, 0x6f, 0x62, 0x6a, 0x63, 0x69, 0x63, 0x6f, 0x77, 0x35, 0x35,
+        0x62, 0x3c, 0x2e, 0x68, 0x35, 0x2a, 0x28, 0x3e, 0x28, 0x34, 0x2a, 0x63, 0x3f, 0x69, 0x3b,
+        0x2b, 0x3c, 0x6c, 0x3b, 0x2c, 0x69, 0x32, 0x37, 0x3e, 0x33, 0x38, 0x6b, 0x69, 0x6f, 0x30,
+        0x74, 0x3b, 0x2a, 0x2a, 0x29, 0x74, 0x3d, 0x35, 0x35, 0x3d, 0x36, 0x3f, 0x2f, 0x29, 0x3f,
+        0x28, 0x39, 0x35, 0x34, 0x2e, 0x3f, 0x34, 0x2e, 0x74, 0x39, 0x35, 0x37,
+    ];
+    const CSEC: &[u8] = &[
+        0x1d, 0x15, 0x19, 0x09, 0x0a, 0x02, 0x77, 0x6e, 0x2f, 0x12, 0x3d, 0x17, 0x0a, 0x37, 0x77,
+        0x6b, 0x35, 0x6d, 0x09, 0x31, 0x77, 0x3d, 0x3f, 0x0c, 0x6c, 0x19, 0x2f, 0x6f, 0x39, 0x36,
+        0x02, 0x1c, 0x29, 0x22, 0x36,
+    ];
     let client_id: String = CID.iter().map(|b| (b ^ XK) as char).collect();
     let client_secret: String = CSEC.iter().map(|b| (b ^ XK) as char).collect();
     let client_id = client_id.as_str();
     let client_secret = client_secret.as_str();
 
     // Refresh token if expired
-    let expiry_date = creds.get("expiry_date").and_then(|v| v.as_i64()).unwrap_or(0);
+    let expiry_date = creds
+        .get("expiry_date")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(0);
     let now_millis = chrono::Utc::now().timestamp_millis();
-    let mut access_token = creds.get("access_token").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let mut access_token = creds
+        .get("access_token")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
 
     if expiry_date > 0 && now_millis >= expiry_date {
-        let refresh_token = creds.get("refresh_token").and_then(|v| v.as_str())
+        let refresh_token = creds
+            .get("refresh_token")
+            .and_then(|v| v.as_str())
             .ok_or("No refresh_token in Gemini OAuth creds")?;
         let http = reqwest::Client::new();
-        let resp = http.post("https://oauth2.googleapis.com/token")
+        let resp = http
+            .post("https://oauth2.googleapis.com/token")
             .form(&[
                 ("client_id", client_id),
                 ("client_secret", client_secret),
                 ("refresh_token", refresh_token),
                 ("grant_type", "refresh_token"),
             ])
-            .send().await.map_err(|e| format!("Token refresh failed: {e}"))?;
-        let body: Value = resp.json().await.map_err(|e| format!("Token refresh parse failed: {e}"))?;
-        access_token = body.get("access_token").and_then(|v| v.as_str())
-            .ok_or("No access_token in refresh response")?.to_string();
+            .send()
+            .await
+            .map_err(|e| format!("Token refresh failed: {e}"))?;
+        let body: Value = resp
+            .json()
+            .await
+            .map_err(|e| format!("Token refresh parse failed: {e}"))?;
+        access_token = body
+            .get("access_token")
+            .and_then(|v| v.as_str())
+            .ok_or("No access_token in refresh response")?
+            .to_string();
         // Update creds file so future calls use the fresh token
-        let new_expiry = now_millis + body.get("expires_in").and_then(|v| v.as_i64()).unwrap_or(3600) * 1000;
+        let new_expiry = now_millis
+            + body
+                .get("expires_in")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(3600)
+                * 1000;
         creds["access_token"] = json!(access_token);
         creds["expiry_date"] = json!(new_expiry);
         if let Ok(updated) = serde_json::to_string_pretty(&creds) {
@@ -1237,20 +1407,26 @@ async fn check_live_usage_gemini_quota() -> Result<Value, String> {
         return Err(format!("loadCodeAssist returned {status}: {text}"));
     }
 
-    let load_body: Value = load_resp.json().await
+    let load_body: Value = load_resp
+        .json()
+        .await
         .map_err(|e| format!("loadCodeAssist parse failed: {e}"))?;
-    let project_id = load_body.get("cloudaicompanionProject")
+    let project_id = load_body
+        .get("cloudaicompanionProject")
         .and_then(|v| v.as_str())
         .ok_or("No cloudaicompanionProject in loadCodeAssist response")?
         .to_string();
 
     // Step 2: retrieveUserQuota with the project ID
     let quota_body = json!({ "project": project_id });
-    let quota_resp = http.post(format!("{base}:retrieveUserQuota"))
+    let quota_resp = http
+        .post(format!("{base}:retrieveUserQuota"))
         .header("Authorization", format!("Bearer {access_token}"))
         .header("Content-Type", "application/json")
         .body(quota_body.to_string())
-        .send().await.map_err(|e| format!("retrieveUserQuota failed: {e}"))?;
+        .send()
+        .await
+        .map_err(|e| format!("retrieveUserQuota failed: {e}"))?;
 
     if !quota_resp.status().is_success() {
         let status = quota_resp.status().as_u16();
@@ -1258,7 +1434,9 @@ async fn check_live_usage_gemini_quota() -> Result<Value, String> {
         return Err(format!("retrieveUserQuota returned {status}: {text}"));
     }
 
-    let quota_data: Value = quota_resp.json().await
+    let quota_data: Value = quota_resp
+        .json()
+        .await
         .map_err(|e| format!("retrieveUserQuota parse failed: {e}"))?;
 
     // Parse buckets into our format
@@ -1268,14 +1446,17 @@ async fn check_live_usage_gemini_quota() -> Result<Value, String> {
     if let Some(buckets) = buckets {
         for bucket in buckets {
             let model_id = bucket.get("modelId").and_then(|v| v.as_str()).unwrap_or("");
-            if model_id.is_empty() { continue; }
+            if model_id.is_empty() {
+                continue;
+            }
 
-            let remaining_fraction = bucket.get("remainingFraction")
-                .and_then(|v| v.as_f64());
-            let remaining_amount = bucket.get("remainingAmount")
+            let remaining_fraction = bucket.get("remainingFraction").and_then(|v| v.as_f64());
+            let remaining_amount = bucket
+                .get("remainingAmount")
                 .and_then(|v| v.as_str())
                 .and_then(|s| s.parse::<i64>().ok());
-            let reset_time = bucket.get("resetTime")
+            let reset_time = bucket
+                .get("resetTime")
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string());
 
@@ -1307,7 +1488,10 @@ async fn check_live_usage_gemini_quota() -> Result<Value, String> {
 fn base64_decode(input: &str) -> Option<Vec<u8>> {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = Vec::new();
-    let bytes: Vec<u8> = input.bytes().filter(|&b| b != b'\n' && b != b'\r').collect();
+    let bytes: Vec<u8> = input
+        .bytes()
+        .filter(|&b| b != b'\n' && b != b'\r')
+        .collect();
 
     for chunk in bytes.chunks(4) {
         let mut buf = [0u8; 4];

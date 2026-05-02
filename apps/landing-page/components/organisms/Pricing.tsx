@@ -1,5 +1,7 @@
-import { Check } from "lucide-react";
+import { Check, Star } from "lucide-react";
+
 import { Button } from "@/components/atoms/Button";
+
 import { SectionHeading } from "./Bento";
 
 const tiers = [
@@ -7,109 +9,116 @@ const tiers = [
     name: "Solo",
     price: "$0",
     cadence: "forever",
-    body: "The full desktop binary. Bring your own LLM key. Use forever, no asterisks.",
+    body: "The full desktop binary. Bring your own LLM key. Use forever, no strings attached.",
     features: [
-      "Unlimited reviews",
-      "All providers",
+      "Unlimited local reviews",
+      "All LLM providers",
       "Local SQLite history",
-      "Auto-updates from GitHub",
+      "Automatic updates",
     ],
-    cta: { label: "Download", href: "#download" },
+    cta: { label: "Download Now", href: "#download" },
     highlight: false,
   },
   {
     name: "Team",
     price: "$12",
-    cadence: "/ user / month",
-    body: "Shared review presets, org policy rules, and SSO. Everything stays on each machine.",
+    cadence: "per user / month",
+    body: "Shared review presets and org policy rules. Everything stays on each machine.",
     features: [
       "Everything in Solo",
       "Shared rule packs",
       "Audit log export",
-      "SSO (Google, Okta)",
+      "SSO Authentication",
       "Priority support",
     ],
-    cta: { label: "Join the waitlist", href: "#download" },
+    cta: { label: "Get Early Access", href: "#download" },
     highlight: true,
   },
   {
     name: "Enterprise",
     price: "Custom",
-    cadence: "talk to us",
-    body: "Air-gapped install, custom model routing, on-prem audit log sink, dedicated SE.",
+    cadence: "tailored for you",
+    body: "Air-gapped installs, custom model routing, and dedicated security engineering.",
     features: [
       "Everything in Team",
-      "Air-gapped binary",
-      "Custom CWE rule sets",
-      "Procurement-friendly contract",
+      "Air-gapped deployment",
+      "Custom CWE rulesets",
+      "On-prem audit logs",
+      "SLA guarantee",
     ],
-    cta: { label: "Contact sales", href: "mailto:hello@codevetter.dev" },
+    cta: { label: "Talk to Sales", href: "mailto:hello@codevetter.dev" },
     highlight: false,
   },
 ];
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-28 border-t border-[--color-line] relative overflow-hidden">
+    <section id="pricing" className="py-32 relative overflow-hidden">
       <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" aria-hidden />
       <div className="relative max-w-7xl mx-auto px-6">
         <SectionHeading
           eyebrow="Pricing"
           title={
             <>
-              Free for solo. <span className="text-[--color-accent]">Honest above it.</span>
+              Free for solo. <span className="text-gradient">Honest above it.</span>
             </>
           }
           sub="No tokens, no per-review fees. We don't see your code, so we can't bill on it."
         />
 
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
           {tiers.map((t) => (
             <div
               key={t.name}
-              className={`relative bg-[--color-surface] border p-7 flex flex-col transition-colors ${
+              className={`relative flex flex-col p-10 rounded-[2.5rem] border transition-all duration-500 ${
                 t.highlight
-                  ? "border-[--color-accent]/50 shadow-[0_0_60px_-20px_var(--color-accent-glow)]"
-                  : "border-[--color-line] hover:border-[--color-accent]/30"
+                  ? "bg-white/[0.04] border-blue-500/30 shadow-[0_0_80px_rgba(96,165,250,0.1)] backdrop-blur-3xl z-10 scale-105"
+                  : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.03]"
               }`}
             >
               {t.highlight && (
-                <span className="absolute -top-3 left-7 font-mono text-[10px] uppercase tracking-[0.22em] bg-[--color-accent] text-[#001016] px-2.5 py-0.5">
-                  Most popular
-                </span>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest shadow-xl shadow-blue-500/20">
+                  <Star className="w-3 h-3 fill-current" />
+                  Most Popular
+                </div>
               )}
-              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-[--color-text-dim]">
-                {t.name}
+              
+              <div className="mb-8">
+                <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4">
+                  {t.name}
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-white tracking-tight">
+                    {t.price}
+                  </span>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t.cadence}
+                  </span>
+                </div>
               </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="font-display text-5xl font-bold tracking-tight">
-                  {t.price}
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[--color-text-mute]">
-                  {t.cadence}
-                </span>
-              </div>
-              <p className="mt-3 text-[14px] text-[--color-text-dim] leading-relaxed">
+
+              <p className="text-[15px] text-gray-400 leading-relaxed mb-8">
                 {t.body}
               </p>
-              <ul className="mt-6 space-y-2.5 flex-1">
+
+              <div className="space-y-4 mb-10 flex-1">
                 {t.features.map((f) => (
-                  <li
+                  <div
                     key={f}
-                    className="flex items-start gap-2.5 text-[13px] text-[--color-text]"
+                    className="flex items-start gap-3 text-sm text-gray-300"
                   >
-                    <Check
-                      className="w-4 h-4 mt-0.5 text-[--color-accent] shrink-0"
-                      strokeWidth={2}
-                    />
+                    <div className="mt-1 flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                    </div>
                     <span>{f}</span>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
+
               <Button
                 variant={t.highlight ? "primary" : "outline"}
                 href={t.cta.href}
-                className="mt-7 justify-center"
+                className="w-full h-14 justify-center"
               >
                 {t.cta.label}
               </Button>

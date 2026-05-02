@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
-import {
-  setPreference,
-  isTauriAvailable,
-  checkPrerequisites,
-} from "@/lib/tauri-ipc";
-import type { PrerequisiteStatus } from "@/lib/tauri-ipc";
-import { Button } from "@/components/ui/button";
+import { useCallback,useEffect, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { PrerequisiteStatus } from "@/lib/tauri-ipc";
+import {
+  checkPrerequisites,
+  isTauriAvailable,
+  setPreference,
+} from "@/lib/tauri-ipc";
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -62,7 +63,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     if (step === "prerequisites" && !prerequisites && !prerequisitesLoading) {
       setPrerequisitesLoading(true);
       if (isTauriAvailable()) {
-        checkPrerequisites()
+        void checkPrerequisites()
           .then(setPrerequisites)
           .catch(() => {
             // Fallback: assume nothing is available

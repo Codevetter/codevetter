@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react";
 import {
   AlertOctagon,
   ChevronDown,
@@ -11,8 +10,10 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useMemo, useState } from "react";
+
 import type { BlastRadiusReport, BlastSymbol } from "@/lib/tauri-ipc";
+import { cn } from "@/lib/utils";
 
 interface Props {
   report: BlastRadiusReport | null;

@@ -10,10 +10,12 @@
   --color-text: #e6e8eb;
   --color-text-dim: #9aa0aa;
   --color-text-mute: #5b6068;
+  
   --color-accent: #7dd3fc;
   --color-accent-2: #38bdf8;
   --color-accent-3: #a78bfa;
   --color-accent-4: #f472b6;
+  
   --color-accent-glow: rgba(125, 211, 252, 0.45);
   --color-warn: #fbbf24;
   --color-danger: #ee7d77;
@@ -22,10 +24,6 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  --radius-sm: 0.125rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.5rem;
 }
 
 @layer base {
@@ -42,13 +40,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color-scheme: dark;
+    scroll-behavior: smooth;
   }
 
   body {
-    background:
+    background-color: var(--color-bg);
+    background-image:
       radial-gradient(1200px 600px at 12% -10%, rgba(56, 189, 248, 0.07), transparent 60%),
-      radial-gradient(900px 500px at 95% 10%, rgba(125, 211, 252, 0.05), transparent 65%),
-      var(--color-bg);
+      radial-gradient(900px 500px at 95% 10%, rgba(125, 211, 252, 0.05), transparent 65%);
+    background-attachment: fixed;
     min-height: 100dvh;
     overflow-x: hidden;
   }
@@ -66,12 +66,16 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-line-2);
+    background: rgba(255,255,255,0.1);
     border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.2);
   }
 }
 
 @layer components {
+  /* Elegant dotted grid */
   .grid-bg {
     background-image:
       linear-gradient(to right, rgba(125, 211, 252, 0.05) 1px, transparent 1px),
@@ -80,18 +84,20 @@
     mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
   }
 
-  .scanline::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.012) 0px,
-      rgba(255, 255, 255, 0.012) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-    pointer-events: none;
+  /* Frosted glass effect */
+  .glass-panel {
+    background: var(--color-surface);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-line);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .glow-edge {
+    box-shadow:
+      inset 0 0 0 1px rgba(125, 211, 252, 0.15),
+      0 0 0 1px rgba(125, 211, 252, 0.04),
+      0 30px 60px -30px rgba(56, 189, 248, 0.35);
   }
 
   .label-mono {
@@ -100,13 +106,6 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-text-dim);
-  }
-
-  .glow-edge {
-    box-shadow:
-      inset 0 0 0 1px rgba(125, 211, 252, 0.15),
-      0 0 0 1px rgba(125, 211, 252, 0.04),
-      0 30px 60px -30px rgba(56, 189, 248, 0.35);
   }
 
   .corner-frame {
@@ -134,6 +133,7 @@
     border-right: 1px solid;
   }
 
+  /* Subtle elegant noise overlay */
   .noise {
     position: relative;
   }
@@ -142,19 +142,19 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.025;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: 0.03;
+    mix-blend-mode: screen;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
 }
 
-@keyframes pulse-soft {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 @keyframes scan {
   0% { transform: translateY(-100%); opacity: 0; }
@@ -175,53 +175,32 @@
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
   50% { transform: translate3d(60px, -20px, 0) scale(1.05); }
 }
-@keyframes float-y {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-@keyframes ticker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-@keyframes beam-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
 
-.animate-pulse-soft { animation: pulse-soft 2.4s ease-in-out infinite; }
+.animate-float { animation: float-y 6s ease-in-out infinite; }
+.animate-pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
 .animate-scan { animation: scan 4.5s linear infinite; }
 .animate-drift-a { animation: drift-a 18s ease-in-out infinite; }
 .animate-drift-b { animation: drift-b 22s ease-in-out infinite; }
 .animate-drift-c { animation: drift-c 26s ease-in-out infinite; }
-.animate-float { animation: float-y 6s ease-in-out infinite; }
-.animate-ticker { animation: ticker 40s linear infinite; }
-.animate-beam { animation: beam-glow 3s ease-in-out infinite; }
-
-.spotlight {
-  background:
-    radial-gradient(
-      600px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(125, 211, 252, 0.08),
-      transparent 40%
-    );
-}
 
 .text-gradient {
   background: linear-gradient(120deg, #ffffff 0%, var(--color-accent) 45%, var(--color-accent-3) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  display: inline-block;
+}
+
+.text-gradient-accent {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse-soft,
-  .animate-scan,
-  .animate-drift-a,
-  .animate-drift-b,
-  .animate-drift-c,
-  .animate-float,
-  .animate-ticker,
-  .animate-beam {
+  .animate-float, .animate-pulse-soft {
     animation: none !important;
   }
 }

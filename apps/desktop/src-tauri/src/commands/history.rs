@@ -1689,8 +1689,8 @@ fn conn_lock<'a>(
     db.0.lock().map_err(|e| e.to_string())
 }
 
-/// Collect all Claude profile project directories.
-/// Scans for ~/.claude/projects/ and any ~/.claude-*/projects/ directories.
+/// Collect Claude profile project directories.
+/// Scans ccusage defaults plus any ~/.claude-*/projects/ profiles.
 fn resolve_all_claude_projects_dirs() -> Vec<std::path::PathBuf> {
     let home = std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
@@ -1698,17 +1698,34 @@ fn resolve_all_claude_projects_dirs() -> Vec<std::path::PathBuf> {
     let home_path = std::path::PathBuf::from(&home);
     let mut dirs = Vec::new();
 
-    // Primary: ~/.claude/projects/
-    dirs.push(home_path.join(".claude").join("projects"));
+    if let Ok(config_dirs) = std::env::var("CLAUDE_CONFIG_DIR") {
+        for raw in config_dirs.split(',').map(str::trim).filter(|s| !s.is_empty()) {
+            let projects_dir = std::path::PathBuf::from(raw).join("projects");
+            if projects_dir.exists() && !dirs.contains(&projects_dir) {
+                dirs.push(projects_dir);
+            }
+        }
+        return dirs;
+    }
 
-    // Additional profiles: ~/.claude-*/projects/
+    let default_dirs = [
+        home_path.join(".config").join("claude").join("projects"),
+        home_path.join(".claude").join("projects"),
+    ];
+
+    for projects_dir in default_dirs {
+        if projects_dir.exists() && !dirs.contains(&projects_dir) {
+            dirs.push(projects_dir);
+        }
+    }
+
     if let Ok(entries) = std::fs::read_dir(&home_path) {
         for entry in entries.flatten() {
             let name = entry.file_name();
             let name_str = name.to_string_lossy();
             if name_str.starts_with(".claude-") && entry.path().is_dir() {
                 let projects_dir = entry.path().join("projects");
-                if projects_dir.exists() {
+                if projects_dir.exists() && !dirs.contains(&projects_dir) {
                     dirs.push(projects_dir);
                 }
             }
