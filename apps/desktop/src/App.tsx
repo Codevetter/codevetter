@@ -2,6 +2,7 @@ import { Component, type ReactNode,useCallback, useEffect, useState } from "reac
 import { Outlet,Route, Routes } from "react-router-dom";
 
 import CommandPalette from "@/components/command-palette";
+import FancyCursor from "@/components/fancy-cursor";
 import KeyboardShortcuts from "@/components/keyboard-shortcuts";
 import Onboarding from "@/components/onboarding";
 import Sidebar from "@/components/sidebar";
@@ -118,6 +119,7 @@ function Shell() {
       </main>
       <CommandPalette isOpen={isOpen} onClose={close} />
       <KeyboardShortcuts />
+      <FancyCursor />
     </div>
   );
 }
