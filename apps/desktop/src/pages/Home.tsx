@@ -1,28 +1,28 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useCallback, useEffect, useRef,useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import type {
+  AccountUsage,
+  IndexStats,
+  LiveUsageResult,
+  ProviderAccount,
+  TokenUsageStats,
+  TriggerIndexResult,
+} from "@/lib/tauri-ipc";
 import {
-  getIndexStats,
-  getTokenUsageStats,
-  triggerIndex,
-  listProviderAccounts,
   checkAccountUsage,
   checkLiveUsage,
   deleteProviderAccount,
   detectProviderAccounts,
+  getIndexStats,
+  getTokenUsageStats,
   isTauriAvailable,
-  setTrayText,
+  listProviderAccounts,
   setTrayMenu,
-} from "@/lib/tauri-ipc";
-
-import type {
-  IndexStats,
-  TriggerIndexResult,
-  ProviderAccount,
-  AccountUsage,
-  LiveUsageResult,
-  TokenUsageStats,
+  setTrayText,
+  triggerIndex,
 } from "@/lib/tauri-ipc";
 
 // ─── Usage helpers ──────────────────────────────────────────────────────────
@@ -39,10 +39,14 @@ function planLabel(plan: string | null): string {
   const labels: Record<string, string> = {
     max: "Max",
     pro: "Pro",
+    prolite: "Pro",
     plus: "Plus",
     team: "Team",
+    teams: "Team",
     enterprise: "Enterprise",
+    business: "Business",
     free: "Free",
+    go: "Go",
   };
   return labels[plan.toLowerCase()] ?? plan;
 }
@@ -145,6 +149,7 @@ function AccountUsageRow({
 }) {
   const weekSessions = usage?.week_sessions ?? 0;
   const weekTokens = (usage?.week_input_tokens ?? 0) + (usage?.week_output_tokens ?? 0);
+  const profileBreakdown = usage?.profile_breakdown ?? [];
   const plan = usage?.plan ?? account.plan;
 
   // Live rate limit data — supported for all providers now
@@ -364,15 +369,34 @@ function AccountUsageRow({
 
         {/* ── Estimated stats (from local JSONL data) ───────────── */}
         {!isSharedUsage ? (
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] text-slate-600 tabular-nums">
-              {formatTokens(weekTokens)} tokens this week
-            </span>
-            <span className="text-[10px] text-slate-600 tabular-nums">
-              {weekSessions} sessions
-            </span>
-            {!hasLive && (
-              <span className="text-[10px] text-slate-700 italic">local estimates only</span>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-slate-600 tabular-nums">
+                {formatTokens(weekTokens)} tokens this week
+              </span>
+              <span className="text-[10px] text-slate-600 tabular-nums">
+                {weekSessions} sessions
+              </span>
+              {!hasLive && (
+                <span className="text-[10px] text-slate-700 italic">local estimates only</span>
+              )}
+            </div>
+            {profileBreakdown.length > 1 && (
+              <div className="flex flex-col gap-1 border-l border-[#1a1a1a] pl-2">
+                {profileBreakdown.map((profile) => {
+                  const profileTokens = profile.week_input_tokens + profile.week_output_tokens;
+                  return (
+                    <div key={profile.profile} className="flex items-center justify-between gap-2 min-w-0">
+                      <span className="text-[10px] text-slate-500 truncate" title={profile.profile}>
+                        {profile.profile}
+                      </span>
+                      <span className="text-[10px] text-slate-600 tabular-nums shrink-0">
+                        {formatTokens(profileTokens)} · {profile.week_sessions} sessions
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         ) : (
@@ -637,10 +661,13 @@ export default function Home() {
           (v) => ({ status: "fulfilled" as const, value: v }),
           (e) => ({ status: "rejected" as const, reason: e })
         ),
-        listProviderAccounts().then(
-          (v) => ({ status: "fulfilled" as const, value: v }),
-          (e) => ({ status: "rejected" as const, reason: e })
-        ),
+        detectProviderAccounts()
+          .then((v) => v.accounts)
+          .catch(() => listProviderAccounts())
+          .then(
+            (v) => ({ status: "fulfilled" as const, value: v }),
+            (e) => ({ status: "rejected" as const, reason: e })
+          ),
         cachedUsagePromise,
       ]);
 
@@ -661,17 +688,7 @@ export default function Home() {
       });
 
       if (accountsResult.status === "fulfilled") {
-        let accts = accountsResult.value;
-
-        if (accts.length === 0) {
-          // Auto-detect on first load
-          try {
-            const detectResult = await detectProviderAccounts();
-            accts = detectResult.accounts;
-          } catch {
-            // Detection failed, no big deal
-          }
-        }
+        const accts = accountsResult.value;
 
         setAccounts(accts);
 
