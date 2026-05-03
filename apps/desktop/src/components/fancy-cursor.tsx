@@ -27,7 +27,6 @@ function getCursorMode(target: EventTarget | null): CursorMode {
 
 export default function FancyCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
-  const dotRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<CursorMode>("default");
   const [visible, setVisible] = useState(false);
 
@@ -43,8 +42,6 @@ export default function FancyCursor() {
     const render = () => {
       cursorRef.current?.style.setProperty("--cursor-x", `${x}px`);
       cursorRef.current?.style.setProperty("--cursor-y", `${y}px`);
-      dotRef.current?.style.setProperty("--cursor-x", `${x}px`);
-      dotRef.current?.style.setProperty("--cursor-y", `${y}px`);
       frame = 0;
     };
 
@@ -84,21 +81,12 @@ export default function FancyCursor() {
   }, []);
 
   return (
-    <>
-      <div
-        ref={cursorRef}
-        aria-hidden="true"
-        className="cv-fancy-cursor"
-        data-mode={mode}
-        data-visible={visible}
-      />
-      <div
-        ref={dotRef}
-        aria-hidden="true"
-        className="cv-fancy-cursor-dot"
-        data-mode={mode}
-        data-visible={visible}
-      />
-    </>
+    <div
+      ref={cursorRef}
+      aria-hidden="true"
+      className="cv-fancy-cursor"
+      data-mode={mode}
+      data-visible={visible}
+    />
   );
 }
