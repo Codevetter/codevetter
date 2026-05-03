@@ -1,6 +1,13 @@
 import { useEffect,useRef, useState } from "react";
 
-type CursorMode = "default" | "action" | "text";
+type CursorMode =
+  | "default"
+  | "action"
+  | "disabled"
+  | "drag"
+  | "resize-x"
+  | "resize-y"
+  | "text";
 
 const ACTION_SELECTOR = [
   "a",
@@ -8,6 +15,31 @@ const ACTION_SELECTOR = [
   "[role='button']",
   "[role='menuitem']",
   "[data-cursor='action']",
+].join(",");
+
+const DISABLED_SELECTOR = [
+  "[aria-disabled='true']",
+  "[disabled]",
+  "[data-cursor='disabled']",
+].join(",");
+
+const DRAG_SELECTOR = [
+  "[draggable='true']",
+  ".drag-region",
+  "[data-cursor='drag']",
+].join(",");
+
+const RESIZE_X_SELECTOR = [
+  "[data-panel-resize-handle-id]",
+  "[role='separator'][aria-orientation='vertical']",
+  ".cursor-col-resize",
+  "[data-cursor='resize-x']",
+].join(",");
+
+const RESIZE_Y_SELECTOR = [
+  "[role='separator'][aria-orientation='horizontal']",
+  ".cursor-row-resize",
+  "[data-cursor='resize-y']",
 ].join(",");
 
 const TEXT_SELECTOR = [
@@ -21,6 +53,10 @@ const TEXT_SELECTOR = [
 function getCursorMode(target: EventTarget | null): CursorMode {
   if (!(target instanceof Element)) return "default";
   if (target.closest(TEXT_SELECTOR)) return "text";
+  if (target.closest(DISABLED_SELECTOR)) return "disabled";
+  if (target.closest(RESIZE_X_SELECTOR)) return "resize-x";
+  if (target.closest(RESIZE_Y_SELECTOR)) return "resize-y";
+  if (target.closest(DRAG_SELECTOR)) return "drag";
   if (target.closest(ACTION_SELECTOR)) return "action";
   return "default";
 }
