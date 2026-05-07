@@ -1000,3 +1000,162 @@ export async function getLatestTalk(
 ): Promise<AgentTalk | null> {
   return safeInvoke("get_latest_talk", { projectPath });
 }
+
+// ─── Repo Unpacked ──────────────────────────────────────────────────────────
+
+export interface UnpackLanguageCount {
+  language: string;
+  files: number;
+  bytes: number;
+}
+
+export interface UnpackManifestSummary {
+  path: string;
+  kind: string;
+  name: string | null;
+  version: string | null;
+  dependencies: string[];
+  scripts: string[];
+}
+
+export interface UnpackEntrypointHint {
+  path: string;
+  kind: string;
+  reason: string;
+}
+
+export interface UnpackDocFile {
+  path: string;
+  bytes: number;
+  preview: string;
+}
+
+export interface UnpackDirSummary {
+  path: string;
+  file_count: number;
+  bytes: number;
+}
+
+export interface UnpackRepoInventory {
+  repo_path: string;
+  repo_name: string;
+  commit_sha: string | null;
+  branch: string | null;
+  remote_url: string | null;
+  files_scanned: number;
+  files_skipped: number;
+  bytes_scanned: number;
+  max_files_hit: boolean;
+  languages: UnpackLanguageCount[];
+  manifests: UnpackManifestSummary[];
+  entrypoints: UnpackEntrypointHint[];
+  top_level_dirs: UnpackDirSummary[];
+  docs: UnpackDocFile[];
+  config_files: string[];
+  stack_tags: string[];
+  all_files: string[];
+  ignored_dirs: string[];
+}
+
+export interface UnpackReportClaim {
+  claim: string;
+  sources: string[];
+  kind?: string | null;
+}
+
+export interface UnpackReportSection {
+  title: string;
+  summary: string;
+  claims: UnpackReportClaim[];
+}
+
+export interface UnpackReport {
+  system_map?: UnpackReportSection | null;
+  feature_catalog?: UnpackReportSection | null;
+  behavior_traces?: UnpackReportSection | null;
+  risk_map?: UnpackReportSection | null;
+  agent_handoff?: UnpackReportSection | null;
+  agent_prompt?: string | null;
+  overview?: string | null;
+}
+
+export interface UnpackReportSummary {
+  id: string;
+  repo_path: string;
+  repo_name: string;
+  commit_sha: string | null;
+  status: string;
+  error_message: string | null;
+  agent_used: string | null;
+  model_used: string | null;
+  files_scanned: number;
+  files_skipped: number;
+  runtime_ms: number | null;
+  cost_usd: number | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface UnpackReportRecord extends UnpackReportSummary {
+  inventory_json: string | null;
+  report_json: string | null;
+  bytes_scanned: number;
+}
+
+export interface GenerateUnpackResult {
+  report_id: string;
+  status: string;
+  runtime_ms: number;
+  report: UnpackReport;
+  inventory: UnpackRepoInventory;
+}
+
+export async function scanRepoInventory(
+  repoPath: string,
+): Promise<UnpackRepoInventory> {
+  return safeInvoke("scan_repo_inventory", { repoPath });
+}
+
+export async function generateUnpackReport(
+  repoPath: string,
+  agent?: string,
+): Promise<GenerateUnpackResult> {
+  return safeInvoke("generate_unpack_report", {
+    repoPath,
+    agent: agent ?? null,
+  });
+}
+
+export async function listRepoUnpackReports(
+  repoPath?: string,
+  limit?: number,
+): Promise<UnpackReportSummary[]> {
+  const resp = await safeInvoke<{ reports: UnpackReportSummary[] }>(
+    "list_repo_unpack_reports",
+    {
+      repoPath: repoPath ?? null,
+      limit: limit ?? null,
+    },
+  );
+  return resp.reports;
+}
+
+export async function getRepoUnpackReport(
+  id: string,
+): Promise<UnpackReportRecord> {
+  return safeInvoke("get_repo_unpack_report", { id });
+}
+
+export async function deleteRepoUnpackReport(
+  id: string,
+): Promise<{ deleted: boolean }> {
+  return safeInvoke("delete_repo_unpack_report", { id });
+}
+
+export async function exportRepoUnpackReport(
+  id: string,
+  format: "markdown" | "html",
+): Promise<{ content: string; format: string }> {
+  return safeInvoke("export_repo_unpack_report", { id, format });
+}

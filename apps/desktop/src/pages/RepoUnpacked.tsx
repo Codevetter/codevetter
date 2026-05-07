@@ -1,0 +1,1063 @@
+import {
+  AlertTriangle,
+  ArrowRight,
+  Boxes,
+  Copy,
+  Download,
+  ExternalLink,
+  FileCode,
+  FilePlus2,
+  FileText,
+  FolderOpen,
+  Layers,
+  Loader2,
+  Network,
+  Package,
+  RefreshCw,
+  ScanSearch,
+  ShieldAlert,
+  Sparkles,
+  Trash2,
+  Wrench,
+} from "lucide-react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  deleteRepoUnpackReport,
+  exportRepoUnpackReport,
+  generateUnpackReport,
+  type GenerateUnpackResult,
+  getPreference,
+  getRepoUnpackReport,
+  isTauriAvailable,
+  listRepoUnpackReports,
+  openInApp,
+  pickDirectory,
+  scanRepoInventory,
+  setPreference,
+  type UnpackRepoInventory,
+  type UnpackReport,
+  type UnpackReportRecord,
+  type UnpackReportSection,
+  type UnpackReportSummary,
+} from "@/lib/tauri-ipc";
+import { cn } from "@/lib/utils";
+
+const REPO_PATH_KEY = "repo_unpacked_last_repo";
+
+type Phase = "idle" | "scanning" | "generating" | "ready" | "error";
+
+interface ActiveReportState {
+  inventory: UnpackRepoInventory;
+  report?: UnpackReport;
+  reportId?: string;
+  runtimeMs?: number;
+  agentUsed?: string | null;
+  modelUsed?: string | null;
+  createdAt?: string;
+}
+
+const SECTION_META: Array<{
+  key: keyof UnpackReport;
+  title: string;
+  Icon: typeof Layers;
+  blurb: string;
+}> = [
+  {
+    key: "system_map",
+    title: "System Map",
+    Icon: Network,
+    blurb: "Entrypoints, modules, runtime boundaries, storage, integrations.",
+  },
+  {
+    key: "feature_catalog",
+    title: "Feature Catalog",
+    Icon: Boxes,
+    blurb: "Routes, screens, commands, jobs, APIs — and where each lives.",
+  },
+  {
+    key: "behavior_traces",
+    title: "Behavior Traces",
+    Icon: ArrowRight,
+    blurb: "Startup, persistence, review execution, settings, release flow.",
+  },
+  {
+    key: "risk_map",
+    title: "Risk Map",
+    Icon: ShieldAlert,
+    blurb: "Security paths, untested critical flows, fragile coupling, traps.",
+  },
+  {
+    key: "agent_handoff",
+    title: "Agent Handoff Pack",
+    Icon: Wrench,
+    blurb: "Conventions, safe edit boundaries, prompt block for the next agent.",
+  },
+];
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatRuntime(ms?: number | null): string {
+  if (!ms || ms < 0) return "—";
+  if (ms < 1000) return `${ms} ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
+function repoNameFromPath(path: string): string {
+  const trimmed = path.replace(/\/$/, "");
+  const last = trimmed.split("/").pop();
+  return last || path;
+}
+
+export default function RepoUnpacked() {
+  const [repoPath, setRepoPath] = useState("");
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = useState<ActiveReportState | null>(null);
+  const [history, setHistory] = useState<UnpackReportSummary[]>([]);
+  const [agent, setAgent] = useState<string>("claude");
+
+  // Restore last repo path
+  useEffect(() => {
+    (async () => {
+      if (!isTauriAvailable()) return;
+      try {
+        const last = await getPreference(REPO_PATH_KEY);
+        if (last) setRepoPath(last);
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, []);
+
+  const [historyTick, setHistoryTick] = useState(0);
+
+  const refreshHistory = useCallback(() => {
+    setHistoryTick((n) => n + 1);
+  }, []);
+
+  useEffect(() => {
+    if (!isTauriAvailable()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = await listRepoUnpackReports(undefined, 25);
+        if (!cancelled) setHistory(rows);
+      } catch {
+        // listReports may fail if DB not initialized yet — ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [historyTick]);
+
+  const persistRepoPath = useCallback(async (p: string) => {
+    if (!isTauriAvailable()) return;
+    try {
+      await setPreference(REPO_PATH_KEY, p);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const handlePickRepo = useCallback(async () => {
+    if (!isTauriAvailable()) {
+      setError("Repo Unpacked requires the desktop app.");
+      return;
+    }
+    const picked = await pickDirectory("Select a repository to unpack");
+    if (picked) {
+      setRepoPath(picked);
+      void persistRepoPath(picked);
+    }
+  }, [persistRepoPath]);
+
+  const handleScanOnly = useCallback(async () => {
+    if (!repoPath.trim()) {
+      setError("Pick a repo first.");
+      return;
+    }
+    if (!isTauriAvailable()) {
+      setError("Scanning requires the desktop app.");
+      return;
+    }
+    setError(null);
+    setPhase("scanning");
+    setActive(null);
+    try {
+      const inv = await scanRepoInventory(repoPath);
+      setActive({ inventory: inv });
+      setPhase("ready");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      setPhase("error");
+    }
+  }, [repoPath]);
+
+  const handleGenerate = useCallback(async () => {
+    if (!repoPath.trim()) {
+      setError("Pick a repo first.");
+      return;
+    }
+    if (!isTauriAvailable()) {
+      setError("Generating reports requires the desktop app.");
+      return;
+    }
+    setError(null);
+    setActive(null);
+    setPhase("scanning");
+    try {
+      // Show inventory eagerly — gives the user something to read while the
+      // CLI agent runs (often 30-90s for a meaty repo).
+      const inv = await scanRepoInventory(repoPath);
+      setActive({ inventory: inv });
+      setPhase("generating");
+
+      const result: GenerateUnpackResult = await generateUnpackReport(
+        repoPath,
+        agent,
+      );
+      setActive({
+        inventory: result.inventory,
+        report: result.report,
+        reportId: result.report_id,
+        runtimeMs: result.runtime_ms,
+        agentUsed: agent,
+      });
+      setPhase("ready");
+      void refreshHistory();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      setPhase("error");
+      void refreshHistory();
+    }
+  }, [agent, refreshHistory, repoPath]);
+
+  const handleLoadReport = useCallback(async (id: string) => {
+    if (!isTauriAvailable()) return;
+    setError(null);
+    setPhase("scanning");
+    try {
+      const row: UnpackReportRecord = await getRepoUnpackReport(id);
+      const inventory: UnpackRepoInventory | null = row.inventory_json
+        ? (JSON.parse(row.inventory_json) as UnpackRepoInventory)
+        : null;
+      const report: UnpackReport | undefined = row.report_json
+        ? (JSON.parse(row.report_json) as UnpackReport)
+        : undefined;
+
+      if (!inventory) {
+        setError("Stored report missing inventory.");
+        setPhase("error");
+        return;
+      }
+      setActive({
+        inventory,
+        report,
+        reportId: row.id,
+        runtimeMs: row.runtime_ms ?? undefined,
+        agentUsed: row.agent_used,
+        modelUsed: row.model_used,
+        createdAt: row.created_at,
+      });
+      setRepoPath(row.repo_path);
+      setPhase("ready");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      setPhase("error");
+    }
+  }, []);
+
+  const handleDeleteReport = useCallback(
+    async (id: string) => {
+      if (!isTauriAvailable()) return;
+      try {
+        await deleteRepoUnpackReport(id);
+        if (active?.reportId === id) {
+          setActive(null);
+          setPhase("idle");
+        }
+        refreshHistory();
+      } catch {
+        /* ignore */
+      }
+    },
+    [active, refreshHistory],
+  );
+
+  const handleExport = useCallback(
+    async (format: "markdown" | "html") => {
+      if (!active?.reportId) return;
+      try {
+        const { content } = await exportRepoUnpackReport(
+          active.reportId,
+          format,
+        );
+        const ext = format === "html" ? "html" : "md";
+        const mime = format === "html" ? "text/html" : "text/markdown";
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `repo-unpacked-${active.inventory.repo_name}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(msg);
+      }
+    },
+    [active],
+  );
+
+  const handleCopyPrompt = useCallback(async () => {
+    const prompt = active?.report?.agent_prompt;
+    if (!prompt) return;
+    try {
+      await navigator.clipboard.writeText(prompt);
+    } catch {
+      /* ignore */
+    }
+  }, [active]);
+
+  const isBusy = phase === "scanning" || phase === "generating";
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <div className="mx-auto max-w-6xl px-6 pb-24 pt-20">
+        <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <ScanSearch size={22} className="text-[var(--cv-accent)]" />
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Repo Unpacked
+              </h1>
+              <Badge
+                variant="outline"
+                className="border-cyan-500/40 bg-cyan-500/10 text-[10px] uppercase tracking-wider text-[var(--cv-accent)]"
+              >
+                Beta
+              </Badge>
+            </div>
+            <p className="mt-1 max-w-2xl text-sm text-[var(--text-secondary)]">
+              Scan a local repository, then generate an evidence-backed system
+              brief — entrypoints, features, behavior, risk, and a handoff pack
+              the next agent can paste in. Every claim cites at least one
+              source file.
+            </p>
+          </div>
+        </header>
+
+        <RepoPicker
+          repoPath={repoPath}
+          setRepoPath={(p) => {
+            setRepoPath(p);
+            void persistRepoPath(p);
+          }}
+          agent={agent}
+          setAgent={setAgent}
+          onPick={handlePickRepo}
+          onScan={handleScanOnly}
+          onGenerate={handleGenerate}
+          phase={phase}
+        />
+
+        {error && (
+          <div className="mt-4 flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+            <div>
+              <div className="font-medium">Couldn&apos;t finish unpacking.</div>
+              <div className="mt-0.5 font-mono text-xs text-red-300/80">
+                {error}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {phase === "generating" && (
+          <div className="mt-4 flex items-center gap-2 rounded-md border border-cyan-500/30 bg-cyan-500/5 px-4 py-3 text-sm text-cyan-100">
+            <Loader2 size={16} className="animate-spin" />
+            <span>
+              Synthesising brief with{" "}
+              <span className="font-mono">{agent}</span>… this can take 30-90s
+              for medium repos.
+            </span>
+          </div>
+        )}
+
+        {active?.inventory && (
+          <InventorySummary
+            inventory={active.inventory}
+            agent={active.agentUsed ?? agent}
+            model={active.modelUsed ?? null}
+            runtimeMs={active.runtimeMs}
+            createdAt={active.createdAt}
+          />
+        )}
+
+        {active?.report && (
+          <ReportView
+            report={active.report}
+            inventory={active.inventory}
+            onExport={handleExport}
+            onCopyPrompt={handleCopyPrompt}
+            disabled={isBusy}
+          />
+        )}
+
+        {!active?.report && active?.inventory && phase === "ready" && (
+          <div className="mt-6 rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)] p-5 text-sm text-[var(--text-secondary)]">
+            Inventory ready. Click{" "}
+            <span className="font-medium text-[var(--text-primary)]">
+              Generate Brief
+            </span>{" "}
+            to ask <span className="font-mono">{agent}</span> to synthesise the
+            five-section system brief.
+          </div>
+        )}
+
+        <HistoryList
+          history={history}
+          activeId={active?.reportId}
+          onLoad={handleLoadReport}
+          onDelete={handleDeleteReport}
+        />
+      </div>
+    </TooltipProvider>
+  );
+}
+
+// ─── Subcomponents ──────────────────────────────────────────────────────────
+
+function RepoPicker({
+  repoPath,
+  setRepoPath,
+  agent,
+  setAgent,
+  onPick,
+  onScan,
+  onGenerate,
+  phase,
+}: {
+  repoPath: string;
+  setRepoPath: (p: string) => void;
+  agent: string;
+  setAgent: (a: string) => void;
+  onPick: () => void;
+  onScan: () => void;
+  onGenerate: () => void;
+  phase: Phase;
+}) {
+  const isBusy = phase === "scanning" || phase === "generating";
+  return (
+    <Card className="border-[var(--cv-line)] bg-[var(--bg-surface)]">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FolderOpen size={16} className="text-[var(--cv-accent)]" />
+          Repository
+        </CardTitle>
+        <CardDescription className="text-xs">
+          Local-first scan. Respects <span className="font-mono">.gitignore</span>{" "}
+          and skips <span className="font-mono">node_modules</span>,{" "}
+          <span className="font-mono">target</span>, build output and binaries.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            value={repoPath}
+            placeholder="/Users/me/code/my-repo"
+            onChange={(e) => setRepoPath(e.target.value)}
+            disabled={isBusy}
+            className="font-mono text-xs"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onPick}
+            disabled={isBusy}
+          >
+            <FolderOpen size={14} className="mr-1.5" />
+            Pick…
+          </Button>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+            <span className="cv-label">Agent</span>
+            <select
+              value={agent}
+              onChange={(e) => setAgent(e.target.value)}
+              disabled={isBusy}
+              className="rounded border border-[var(--cv-line)] bg-[var(--bg-raised)] px-2 py-1 font-mono text-xs"
+            >
+              <option value="claude">claude (CLI)</option>
+              <option value="gemini">gemini (CLI)</option>
+            </select>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onScan}
+              disabled={isBusy || !repoPath.trim()}
+            >
+              {phase === "scanning" ? (
+                <Loader2 size={14} className="mr-1.5 animate-spin" />
+              ) : (
+                <ScanSearch size={14} className="mr-1.5" />
+              )}
+              Scan only
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={onGenerate}
+              disabled={isBusy || !repoPath.trim()}
+            >
+              {phase === "generating" ? (
+                <Loader2 size={14} className="mr-1.5 animate-spin" />
+              ) : (
+                <Sparkles size={14} className="mr-1.5" />
+              )}
+              Generate Brief
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function InventorySummary({
+  inventory,
+  agent,
+  model,
+  runtimeMs,
+  createdAt,
+}: {
+  inventory: UnpackRepoInventory;
+  agent?: string | null;
+  model?: string | null;
+  runtimeMs?: number;
+  createdAt?: string;
+}) {
+  const stat = (label: string, value: ReactNode) => (
+    <div className="flex flex-col">
+      <span className="cv-label">{label}</span>
+      <span className="text-sm font-medium text-[var(--text-primary)]">
+        {value}
+      </span>
+    </div>
+  );
+
+  return (
+    <Card className="mt-4 border-[var(--cv-line)] bg-[var(--bg-surface)]">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Layers size={16} className="text-[var(--cv-accent)]" />
+          {inventory.repo_name}
+          {inventory.commit_sha && (
+            <span className="ml-2 font-mono text-[11px] text-[var(--text-muted)]">
+              {inventory.commit_sha.slice(0, 8)}
+            </span>
+          )}
+        </CardTitle>
+        <CardDescription className="break-all text-xs">
+          {inventory.repo_path}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+          {stat("Files", inventory.files_scanned.toLocaleString())}
+          {stat("Skipped", inventory.files_skipped.toLocaleString())}
+          {stat("Bytes", formatBytes(inventory.bytes_scanned))}
+          {stat("Branch", inventory.branch ?? "—")}
+          {stat("Agent", agent ?? "—")}
+          {stat(
+            "Runtime",
+            <span className="font-mono">{formatRuntime(runtimeMs)}</span>,
+          )}
+        </div>
+
+        {createdAt && (
+          <div className="text-[11px] text-[var(--text-muted)]">
+            Generated {new Date(createdAt).toLocaleString()}
+            {model ? ` · ${model}` : ""}
+          </div>
+        )}
+
+        {inventory.max_files_hit && (
+          <div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-200">
+            <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+            File walk hit the safety cap. The brief covers the first sample;
+            for very large repos consider scoping to a subdirectory.
+          </div>
+        )}
+
+        {inventory.stack_tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {inventory.stack_tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="border border-[var(--cv-line)] bg-[var(--bg-raised)] text-[10px] uppercase tracking-wider text-[var(--text-secondary)]"
+              >
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {inventory.languages.length > 0 && (
+          <div>
+            <div className="cv-label mb-1.5">Top languages</div>
+            <div className="flex flex-wrap gap-1.5">
+              {inventory.languages.slice(0, 8).map((l) => (
+                <span
+                  key={l.language}
+                  className="rounded border border-[var(--cv-line)] bg-[var(--bg-raised)] px-2 py-0.5 font-mono text-[11px] text-[var(--text-secondary)]"
+                >
+                  {l.language} · {l.files}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {inventory.entrypoints.length > 0 && (
+          <div>
+            <div className="cv-label mb-1.5">Likely entrypoints</div>
+            <ul className="space-y-1 text-xs">
+              {inventory.entrypoints.slice(0, 8).map((e) => (
+                <li
+                  key={`${e.path}-${e.kind}-${e.reason}`}
+                  className="flex items-center justify-between gap-2 rounded border border-[var(--cv-line)] bg-[var(--bg-raised)] px-2 py-1"
+                >
+                  <span className="flex items-center gap-2">
+                    <FileCode size={12} className="text-[var(--cv-accent)]" />
+                    <SourceLink
+                      path={e.path}
+                      repoPath={inventory.repo_path}
+                    />
+                  </span>
+                  <span className="text-[var(--text-muted)]">{e.reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReportView({
+  report,
+  inventory,
+  onExport,
+  onCopyPrompt,
+  disabled,
+}: {
+  report: UnpackReport;
+  inventory: UnpackRepoInventory;
+  onExport: (format: "markdown" | "html") => void;
+  onCopyPrompt: () => void;
+  disabled: boolean;
+}) {
+  const sourceList = useMemo(() => {
+    const set = new Set<string>();
+    for (const meta of SECTION_META) {
+      const sec = report[meta.key] as UnpackReportSection | null | undefined;
+      if (!sec) continue;
+      for (const c of sec.claims) {
+        for (const s of c.sources) {
+          set.add(s);
+        }
+      }
+    }
+    return Array.from(set).sort();
+  }, [report]);
+
+  return (
+    <div className="mt-6 space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+          <FileText size={14} className="text-[var(--cv-accent)]" />
+          {sourceList.length} sources cited across the brief
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={() => onExport("markdown")}
+          >
+            <Download size={14} className="mr-1.5" />
+            Markdown
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={() => onExport("html")}
+          >
+            <Download size={14} className="mr-1.5" />
+            HTML
+          </Button>
+          {report.agent_prompt && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              onClick={onCopyPrompt}
+            >
+              <Copy size={14} className="mr-1.5" />
+              Copy handoff prompt
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {report.overview && (
+        <Card className="border-[var(--cv-line)] bg-[var(--bg-surface)]">
+          <CardContent className="pt-6 text-sm leading-relaxed text-[var(--text-primary)]">
+            {report.overview}
+          </CardContent>
+        </Card>
+      )}
+
+      {SECTION_META.map(({ key, title, Icon, blurb }) => {
+        const sec = report[key] as UnpackReportSection | null | undefined;
+        if (!sec) {
+          return (
+            <SectionShell
+              key={key}
+              title={title}
+              Icon={Icon}
+              blurb={blurb}
+              empty
+            />
+          );
+        }
+        return (
+          <SectionShell
+            key={key}
+            title={sec.title || title}
+            Icon={Icon}
+            blurb={blurb}
+          >
+            {sec.summary && (
+              <p className="text-sm text-[var(--text-secondary)]">
+                {sec.summary}
+              </p>
+            )}
+            <ul className="mt-3 space-y-3">
+              {sec.claims.map((c, i) => (
+                <li
+                  key={`${key}-${i}`}
+                  className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-raised)] p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <p className="text-sm leading-relaxed text-[var(--text-primary)]">
+                      {c.claim}
+                    </p>
+                    {c.kind === "inference" && (
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500/40 bg-amber-500/10 text-[10px] uppercase tracking-wider text-amber-300"
+                      >
+                        Inference
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {c.sources.map((s) => (
+                      <SourceLink
+                        key={s}
+                        path={s}
+                        repoPath={inventory.repo_path}
+                      />
+                    ))}
+                  </div>
+                </li>
+              ))}
+              {sec.claims.length === 0 && (
+                <li className="text-xs text-[var(--text-muted)]">
+                  No cited claims for this section.
+                </li>
+              )}
+            </ul>
+          </SectionShell>
+        );
+      })}
+
+      {report.agent_prompt && (
+        <Card className="border-[var(--cv-line)] bg-[var(--bg-surface)]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FilePlus2 size={16} className="text-[var(--cv-accent)]" />
+              Handoff Prompt
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Paste into the next agent session to skip rediscovery.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-[var(--cv-line)] bg-[var(--bg-main)] p-3 font-mono text-xs text-[var(--text-secondary)]">
+              {report.agent_prompt}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
+
+      <SourcesPanel sources={sourceList} repoPath={inventory.repo_path} />
+    </div>
+  );
+}
+
+function SectionShell({
+  title,
+  Icon,
+  blurb,
+  children,
+  empty,
+}: {
+  title: string;
+  Icon: typeof Layers;
+  blurb: string;
+  children?: ReactNode;
+  empty?: boolean;
+}) {
+  return (
+    <Card
+      className={cn(
+        "border-[var(--cv-line)] bg-[var(--bg-surface)]",
+        empty && "opacity-60",
+      )}
+    >
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Icon size={16} className="text-[var(--cv-accent)]" />
+          {title}
+        </CardTitle>
+        <CardDescription className="text-xs">{blurb}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {empty ? (
+          <p className="text-xs text-[var(--text-muted)]">
+            Section omitted by the agent — no cited claims to show.
+          </p>
+        ) : (
+          children
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SourcesPanel({
+  sources,
+  repoPath,
+}: {
+  sources: string[];
+  repoPath: string;
+}) {
+  if (sources.length === 0) return null;
+  return (
+    <Card className="border-[var(--cv-line)] bg-[var(--bg-surface)]">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Package size={16} className="text-[var(--cv-accent)]" />
+          Source files
+        </CardTitle>
+        <CardDescription className="text-xs">
+          Every file referenced by the brief. Click to open in your editor.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+          {sources.map((s) => (
+            <li key={s}>
+              <SourceLink path={s} repoPath={repoPath} />
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SourceLink({ path, repoPath }: { path: string; repoPath: string }) {
+  const cleanPath = path.split("#")[0] ?? path;
+  const open = useCallback(async () => {
+    if (!isTauriAvailable()) return;
+    const abs = `${repoPath.replace(/\/$/, "")}/${cleanPath}`;
+    try {
+      await openInApp("cursor", abs);
+    } catch {
+      try {
+        await openInApp("vscode", abs);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [cleanPath, repoPath]);
+
+  const copy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(path);
+    } catch {
+      /* ignore */
+    }
+  }, [path]);
+
+  return (
+    <span className="inline-flex items-center gap-1 rounded border border-[var(--cv-line)] bg-[var(--bg-raised)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--text-secondary)]">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={open}
+            className="hover:text-[var(--cv-accent)]"
+          >
+            {path}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">Open in editor</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={copy}
+            className="text-[var(--text-muted)] hover:text-[var(--cv-accent)]"
+            aria-label="Copy path"
+          >
+            <Copy size={10} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">Copy path</TooltipContent>
+      </Tooltip>
+    </span>
+  );
+}
+
+function HistoryList({
+  history,
+  activeId,
+  onLoad,
+  onDelete,
+}: {
+  history: UnpackReportSummary[];
+  activeId?: string;
+  onLoad: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  if (history.length === 0) return null;
+  return (
+    <Card className="mt-8 border-[var(--cv-line)] bg-[var(--bg-surface)]">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <RefreshCw size={16} className="text-[var(--cv-accent)]" />
+          Recent unpacks
+        </CardTitle>
+        <CardDescription className="text-xs">
+          Stored locally — compare regenerated briefs across commits.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Separator className="mb-3 bg-[var(--cv-line)]" />
+        <ul className="divide-y divide-[var(--cv-line)]">
+          {history.map((row) => {
+            const isActive = row.id === activeId;
+            return (
+              <li
+                key={row.id}
+                className={cn(
+                  "flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:justify-between",
+                  isActive && "bg-cyan-500/5",
+                )}
+              >
+                <button
+                  type="button"
+                  className="flex flex-col text-left"
+                  onClick={() => onLoad(row.id)}
+                >
+                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                    {row.repo_name}{" "}
+                    <span className="font-mono text-[10px] text-[var(--text-muted)]">
+                      {row.commit_sha?.slice(0, 8) ?? ""}
+                    </span>
+                  </span>
+                  <span className="text-[11px] text-[var(--text-muted)]">
+                    {new Date(row.created_at).toLocaleString()} ·{" "}
+                    {row.status} · {formatRuntime(row.runtime_ms)} ·{" "}
+                    {row.files_scanned.toLocaleString()} files
+                  </span>
+                </button>
+                <div className="flex items-center gap-2">
+                  {row.status === "failed" && row.error_message && (
+                    <span className="font-mono text-[10px] text-red-300">
+                      {row.error_message.slice(0, 60)}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onLoad(row.id)}
+                  >
+                    <ExternalLink size={12} className="mr-1" />
+                    Open
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onDelete(row.id)}
+                    aria-label="Delete report"
+                  >
+                    <Trash2 size={12} />
+                  </Button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}

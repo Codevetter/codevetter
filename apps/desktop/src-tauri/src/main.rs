@@ -213,6 +213,13 @@ fn main() {
             // Tray
             commands::tray::set_tray_text,
             commands::tray::set_tray_menu,
+            // Repo Unpacked
+            commands::unpack::scan_repo_inventory,
+            commands::unpack::generate_unpack_report,
+            commands::unpack::list_repo_unpack_reports,
+            commands::unpack::get_repo_unpack_report,
+            commands::unpack::delete_repo_unpack_report,
+            commands::unpack::export_repo_unpack_report,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

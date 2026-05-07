@@ -900,6 +900,17 @@ pub async fn revert_files(
     }))
 }
 
+/// Public re-export for `unpack.rs` (and any future module) — same logic, no
+/// duplication.
+pub fn extract_json_from_output_pub(output: &str) -> Option<String> {
+    extract_json_from_output(output)
+}
+
+/// Public re-export of `resolve_cli_path` for sibling command modules.
+pub fn resolve_cli_path_pub(name: &str) -> String {
+    resolve_cli_path(name)
+}
+
 /// Extract a JSON object from CLI output that may contain markdown code fences
 /// or other surrounding text.
 fn extract_json_from_output(output: &str) -> Option<String> {

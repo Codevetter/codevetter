@@ -523,4 +523,37 @@ CREATE INDEX IF NOT EXISTS idx_cc_messages_type
 -- message granularity).
 CREATE INDEX IF NOT EXISTS idx_cc_sessions_last_message
     ON cc_sessions(last_message);
+
+-- ================================================================
+-- Repo Unpacked (whole-repository system briefs)
+-- ================================================================
+
+-- One row per generated brief. report_json holds the structured five-section
+-- payload (system_map, feature_catalog, behavior_traces, risk_map,
+-- agent_handoff). Inventory is stored separately so we can re-render without
+-- re-running the LLM. Status follows the same vocabulary as local_reviews:
+-- pending | running | completed | failed.
+CREATE TABLE IF NOT EXISTS repo_unpacked_reports (
+    id              TEXT PRIMARY KEY,
+    repo_path       TEXT NOT NULL,
+    repo_name       TEXT NOT NULL,
+    commit_sha      TEXT,
+    status          TEXT NOT NULL DEFAULT 'pending',
+    error_message   TEXT,
+    agent_used      TEXT,
+    model_used      TEXT,
+    inventory_json  TEXT,
+    report_json     TEXT,
+    files_scanned   INTEGER NOT NULL DEFAULT 0,
+    files_skipped   INTEGER NOT NULL DEFAULT 0,
+    bytes_scanned   INTEGER NOT NULL DEFAULT 0,
+    runtime_ms      INTEGER,
+    cost_usd        REAL,
+    started_at      TEXT,
+    completed_at    TEXT,
+    created_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_repo_unpacked_repo_path
+    ON repo_unpacked_reports(repo_path, created_at DESC);
 "#;
