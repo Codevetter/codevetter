@@ -49,7 +49,7 @@ npm install           # Install all workspace deps
 - **Tauri IPC**: all Rust commands called via typed wrappers in `src/lib/tauri-ipc.ts` → `invoke()` → `src-tauri/src/commands/`.
 - **`isTauriAvailable()` guard**: all IPC calls wrapped so React code also works in plain browser.
 - **FIXED**: Dead `@code-reviewer/*` workspace deps removed — `packages/` dir no longer exists and is no longer referenced. Build passes.
-- **Active screens**: Dashboard (usage/token analytics), History (session search), Review (`/review` — AI code review with diff + fix). Other tabs (Board, Workspaces) are legacy — do not invest in them.
+- **Active screens**: Dashboard (usage/token analytics), History (session search), Review (`/review` — AI code review with diff + fix), Repo Unpacked (`/unpack` — whole-repo evidence-backed system brief, scanner in `src-tauri/src/commands/unpack.rs`, page in `apps/desktop/src/pages/RepoUnpacked.tsx`, persisted to `repo_unpacked_reports` table). Other tabs (Board, Workspaces) are legacy — do not invest in them.
 - **GH Actions**: `ci.yml` runs lint + Playwright; `release.yml` builds platform binaries and uploads to GitHub Releases.
 - Husky pre-commit runs lint-staged on `apps/desktop/src/**/*.{ts,tsx}`; pre-push hook also configured.
 
