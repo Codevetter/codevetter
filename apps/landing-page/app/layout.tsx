@@ -1,6 +1,7 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "CodeVetter — Vet AI-generated code before it ships",
@@ -14,6 +15,9 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+
+const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY ?? "";
+const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
 
 export default function RootLayout({
   children,
@@ -34,7 +38,42 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Script src="https://us-assets.i.posthog.com/static/array.js" strategy="afterInteractive" />
+        <Script id="foundry-monitoring" strategy="afterInteractive">
+          {`
+            (function () {
+              var key = ${JSON.stringify(posthogKey)};
+              var host = ${JSON.stringify(posthogHost)};
+              function capturePageCrash(error, source) {
+                var message = error && error.message ? error.message : String(error);
+                var payload = {
+                  project_slug: "CodeVetter",
+                  route: location.origin + location.pathname,
+                  source: source,
+                  message: message,
+                  stack: error && error.stack ? error.stack : undefined
+                };
+                if (window.posthog && typeof window.posthog.capture === "function") {
+                  window.posthog.capture("foundry_page_crash", payload);
+                } else {
+                  console.warn("foundry_page_crash", payload);
+                }
+              }
+              window.addEventListener("error", function (event) {
+                capturePageCrash(event.error || event.message, "window_error");
+              });
+              window.addEventListener("unhandledrejection", function (event) {
+                capturePageCrash(event.reason, "unhandled_rejection");
+              });
+              if (key && window.posthog && typeof window.posthog.init === "function") {
+                window.posthog.init(key, { api_host: host, capture_pageview: false, autocapture: false });
+              }
+            })();
+          `}
+        </Script>
+      </body>
     </html>
   );
 }
