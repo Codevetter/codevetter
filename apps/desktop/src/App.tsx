@@ -1,5 +1,5 @@
-import { Component, type ReactNode,useCallback, useEffect, useState } from "react";
-import { Outlet,Route, Routes } from "react-router-dom";
+import { Component, type ErrorInfo,type ReactNode, useCallback, useEffect, useState } from "react";
+import { Link,Outlet, Route, Routes } from "react-router-dom";
 
 import CommandPalette from "@/components/command-palette";
 import FancyCursor from "@/components/fancy-cursor";
@@ -7,6 +7,7 @@ import KeyboardShortcuts from "@/components/keyboard-shortcuts";
 import Onboarding from "@/components/onboarding";
 import Sidebar from "@/components/sidebar";
 import UpdateChecker from "@/components/update-checker";
+import { trackAppLaunch } from "@/lib/analytics";
 import { getPreference, isTauriAvailable } from "@/lib/tauri-ipc";
 import { useTrayMonitor } from "@/lib/use-tray-monitor";
 // Pages
@@ -76,23 +77,50 @@ class RouteErrorBoundary extends Component<
     return { error };
   }
 
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    // Full detail goes to the console (DevTools) — never to the user.
+    console.error("[CodeVetter] Route error boundary caught:", error, info);
+  }
+
   render() {
     if (this.state.error) {
       return (
         <div className="flex flex-col items-center justify-center h-full p-8 text-center">
           <h2 className="text-lg font-semibold text-red-400 mb-2">Something went wrong</h2>
-          <p className="text-sm text-slate-400 mb-4 max-w-md font-mono">{this.state.error.message}</p>
+          <p className="text-sm text-slate-400 mb-4 max-w-md">
+            This screen hit an unexpected error. Your saved data is safe — try
+            again, and if it keeps happening, restart the app.
+          </p>
           <button
             onClick={() => this.setState({ error: null })}
             className="px-4 py-1.5 text-sm bg-amber-600 text-white rounded hover:bg-amber-500 transition-colors"
           >
-            Try Again
+            Try again
           </button>
         </div>
       );
     }
     return this.props.children;
   }
+}
+
+/** Shown when the user navigates to a route that does not exist. */
+function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+      <p className="text-sm font-medium text-slate-500 mb-2">404</p>
+      <h2 className="text-lg font-semibold mb-2">Page not found</h2>
+      <p className="text-sm text-slate-400 mb-4 max-w-md">
+        That screen doesn&apos;t exist or may have moved.
+      </p>
+      <Link
+        to="/"
+        className="px-4 py-1.5 text-sm bg-amber-600 text-white rounded hover:bg-amber-500 transition-colors"
+      >
+        Back to dashboard
+      </Link>
+    </div>
+  );
 }
 
 /** Main shell: floating nav + full-width content area */
@@ -129,6 +157,12 @@ function Shell() {
 }
 
 export default function App() {
+  // Owner-facing analytics: emits `signup` on first launch, `returned` after.
+  // Self-dedupes via localStorage; safe to run once per app mount.
+  useEffect(() => {
+    trackAppLaunch();
+  }, []);
+
   return (
     <Routes>
       <Route element={<Shell />}>
@@ -137,6 +171,7 @@ export default function App() {
         <Route path="/rubrics" element={<Rubrics />} />
         <Route path="/unpack" element={<RepoUnpacked />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

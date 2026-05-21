@@ -28,7 +28,6 @@ export function Nav() {
           </div>
           <span className="font-mono text-[13px] tracking-[0.2em] uppercase font-semibold text-white">
             CodeVetter
-            <span className="text-[--color-text-mute]">_v2</span>
           </span>
         </a>
 

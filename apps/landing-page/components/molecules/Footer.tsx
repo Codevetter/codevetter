@@ -80,13 +80,16 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-600 font-medium">
         <div className="flex items-center gap-6">
           <span>© {new Date().getFullYear()} CodeVetter · ISC License</span>
-          <a href="#" className="hover:text-white transition-colors">Privacy</a>
-          <a href="#" className="hover:text-white transition-colors">Terms</a>
+          <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
+          <a
+            href="https://github.com/sarthakagrawal927/CodeVetter"
+            className="hover:text-white transition-colors"
+          >
+            GitHub
+          </a>
         </div>
         <div className="flex items-center gap-2">
-          <span>Crafted for high-integrity teams</span>
-          <span className="text-gray-800">·</span>
-          <span className="text-blue-500/50">v1.1.9</span>
+          <span>Open-source desktop code review</span>
         </div>
       </div>
     </footer>

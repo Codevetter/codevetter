@@ -39,6 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { trackCoreAction } from "@/lib/analytics";
 import {
   deleteRepoUnpackReport,
   exportRepoUnpackReport,
@@ -211,8 +212,8 @@ export default function RepoUnpacked() {
       setActive({ inventory: inv });
       setPhase("ready");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
+      console.error("[CodeVetter] Repo scan failed:", err);
+      setError("Couldn't scan that repository. Make sure the path is a valid git repo and try again.");
       setPhase("error");
     }
   }, [repoPath]);
@@ -248,10 +249,12 @@ export default function RepoUnpacked() {
         agentUsed: agent,
       });
       setPhase("ready");
+      // Core action: a repo unpack completed (also fires `activated` once).
+      trackCoreAction("repo_unpack");
       void refreshHistory();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
+      console.error("[CodeVetter] Unpack report generation failed:", err);
+      setError("The report couldn't be generated. The AI agent may have failed or timed out — check the agent is installed and try again.");
       setPhase("error");
       void refreshHistory();
     }
@@ -287,8 +290,8 @@ export default function RepoUnpacked() {
       setRepoPath(row.repo_path);
       setPhase("ready");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
+      console.error("[CodeVetter] Failed to load stored report:", err);
+      setError("Couldn't open that report. Try again, or pick another one.");
       setPhase("error");
     }
   }, []);

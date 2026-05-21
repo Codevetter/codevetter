@@ -29,11 +29,11 @@ export function CatchStrip() {
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
           <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">
-            Vulnerability Engine v2.0
+            What the review looks for
           </span>
         </div>
         <div className="text-xs font-medium text-gray-500 font-mono">
-          Patterns specifically trained on high-velocity agent diffs
+          Common CWE / OWASP issue classes, mapped to severity
         </div>
       </div>
 

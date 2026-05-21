@@ -750,8 +750,10 @@ export default function Home() {
         setAccountUsages(usageMap);
       }
 
-      // If critical reads failed, surface the first error
+      // If critical reads failed, surface a friendly message — full detail
+      // goes to the console, never the raw IPC error to the user.
       if (statsResult.status === "rejected") {
+        console.error("[CodeVetter] Dashboard stats load failed:", statsResult.reason);
         const msg =
           statsResult.reason instanceof Error
             ? statsResult.reason.message
@@ -761,11 +763,16 @@ export default function Home() {
             "Tauri APIs not available. Run inside the desktop app to see live data."
           );
         } else {
-          setError(msg);
+          setError(
+            "Couldn't load your dashboard. Your saved data is safe — try again."
+          );
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      console.error("[CodeVetter] Dashboard load failed:", err);
+      setError(
+        "Couldn't load your dashboard. Your saved data is safe — try again."
+      );
     } finally {
       setLoading(false);
       isInitialLoad.current = false;

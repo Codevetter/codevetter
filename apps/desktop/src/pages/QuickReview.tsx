@@ -29,6 +29,7 @@ import ScoreBadge from "@/components/score-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { trackCoreAction } from "@/lib/analytics";
 import type { BlastRadiusReport,CliReviewFinding, CliReviewResult, FileLineData,FixChangedFile, FixFindingsResult , LocalReviewRow, PullRequest } from "@/lib/tauri-ipc";
 import {
   analyzeBlastRadius,
@@ -438,7 +439,8 @@ export default function QuickReview() {
       setBlastError(null);
       setMode("view");
     } catch (e) {
-      setError(String(e));
+      console.error("[CodeVetter] Failed to open past review:", e);
+      setError("Couldn't open that review. Try again, or pick another one.");
     }
   }, []);
 
@@ -464,11 +466,12 @@ export default function QuickReview() {
       // Persist last used folder
       setPreference("quick_review_last_folder", dir).catch(() => {});
     } catch (e) {
+      console.error("[CodeVetter] Folder pick failed:", e);
       const msg = String(e);
       if (msg.includes("TAURI_NOT_AVAILABLE")) {
-        setError("Not running in Tauri");
+        setError("Not running in Tauri — run inside the desktop app to pick a repository.");
       } else {
-        setError(msg);
+        setError("Couldn't open that folder. Make sure it's a valid git repository and try again.");
       }
     }
   }, [loadFolderData]);
@@ -537,13 +540,18 @@ export default function QuickReview() {
       setMode("view");
       setViewHasRepoPath(true);
       setSelectedFindings(new Set());
+      // Core action: a code review run completed (also fires `activated` once).
+      trackCoreAction("review_run");
       await blastPromise;
     } catch (e) {
+      console.error("[CodeVetter] CLI review failed:", e);
       const msg = String(e);
       if (msg.includes("TAURI_NOT_AVAILABLE")) {
-        setError("Not running in Tauri");
+        setError("Not running in Tauri — run inside the desktop app to start a review.");
       } else {
-        setError(msg);
+        setError(
+          "The review couldn't finish. The AI agent may have failed or timed out — check the agent is installed and try again.",
+        );
       }
     } finally {
       setIsReviewing(false);

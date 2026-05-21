@@ -7,12 +7,21 @@ export const metadata: Metadata = {
   title: "CodeVetter — Vet AI-generated code before it ships",
   description:
     "Desktop-first code review for agent-generated code. Runs offline. Multi-LLM. Catches what your agent misses.",
-  metadataBase: new URL("https://codevetter.dev"),
+  metadataBase: new URL("https://codevetter.com"),
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "CodeVetter",
+    title: "CodeVetter — Vet AI-generated code before it ships",
     description:
-      "Desktop-first code review for agent-generated code. Runs offline. Multi-LLM.",
+      "Desktop-first code review for agent-generated code. Runs offline. Bring your own LLM key. Catches what your agent misses.",
     type: "website",
+    url: "https://codevetter.com",
+    siteName: "CodeVetter",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CodeVetter — Vet AI-generated code before it ships",
+    description:
+      "Desktop-first code review for agent-generated code. Runs offline. Bring your own LLM key.",
   },
 };
 
