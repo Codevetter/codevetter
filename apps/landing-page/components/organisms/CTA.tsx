@@ -23,7 +23,7 @@ export function CTA() {
           <div className="relative text-center flex flex-col items-center">
             <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-widest uppercase mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              Build v1.1.9 · Ready for Review
+              Latest build · Ready to review
             </div>
             
             <h2 className="font-display text-[clamp(2.4rem,6vw,4.5rem)] font-bold leading-[1.1] tracking-tight text-white">

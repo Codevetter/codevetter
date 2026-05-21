@@ -201,7 +201,8 @@ function GitHubConnectionPanel() {
         await checkAuth();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      console.error("[CodeVetter] GitHub token sync failed:", err);
+      setError("Couldn't sync your GitHub token. Make sure the GitHub CLI is installed and signed in, then try again.");
     } finally {
       setSyncing(false);
     }
@@ -379,7 +380,8 @@ function LinearConnectionPanel() {
         setError(result.error ?? "OAuth flow failed");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      console.error("[CodeVetter] Linear connect failed:", err);
+      setError("Couldn't connect to Linear. Try again in a moment.");
     } finally {
       setConnecting(false);
     }
@@ -391,7 +393,8 @@ function LinearConnectionPanel() {
       setConnected(false);
       setUser(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      console.error("[CodeVetter] Linear disconnect failed:", err);
+      setError("Couldn't disconnect from Linear. Try again in a moment.");
     }
   }
 

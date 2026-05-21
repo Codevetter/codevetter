@@ -1,8 +1,8 @@
 const items = [
-  { k: "0ms", v: "Cloud round-trip", sub: "runs entirely on-device" },
+  { k: "0ms", v: "Cloud round-trip", sub: "the review runs on your device" },
   { k: "3+", v: "LLM providers", sub: "anthropic · openai · openrouter" },
   { k: "100%", v: "Code stays local", sub: "no proxy, no telemetry" },
-  { k: "<60s", v: "Typical review", sub: "median across 1,200 PRs" },
+  { k: "$0", v: "To run forever", sub: "bring your own LLM key" },
 ];
 
 export function Stats() {

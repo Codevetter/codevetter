@@ -33,7 +33,7 @@ export function Hero() {
           <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
             <Tag tone="accent" className="font-mono uppercase tracking-[0.16em]">
               <span className="w-1.5 h-1.5 rounded-full bg-[--color-accent] animate-pulse-soft" />
-              v1.1.9 Available
+              macOS build available
             </Tag>
             <Tag tone="mute" className="font-mono uppercase tracking-[0.16em]">
               <Sparkles className="w-3 h-3" strokeWidth={1.5} />
