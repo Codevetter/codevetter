@@ -468,6 +468,17 @@ function TokenUsageChart({
   const n = data.length;
   const hovered = hover != null ? data[hover] : null;
 
+  // Trend: recent half vs prior half of the visible window.
+  // Daily → last 7d vs prior 7d. Weekly → last 4w vs prior 4w. We pick the
+  // longest tail that fits in `n` so the comparison stays apples-to-apples.
+  const window = mode === "daily" ? 7 : 4;
+  const recent = data.slice(Math.max(0, n - window));
+  const prior = data.slice(Math.max(0, n - window * 2), Math.max(0, n - window));
+  const recentSum = recent.reduce((a, d) => a + d.tokens, 0);
+  const priorSum = prior.reduce((a, d) => a + d.tokens, 0);
+  const trendPct = priorSum > 0 ? ((recentSum - priorSum) / priorSum) * 100 : null;
+  const trendLabel = mode === "daily" ? "vs prior 7d" : "vs prior 4w";
+
   // ViewBox in nice round units — scales responsively.
   const W = 600;
   const H = 160;
@@ -499,13 +510,6 @@ function TokenUsageChart({
   };
 
   const gridlines = [0.25, 0.5, 0.75, 1].map((f) => padTop + chartH * (1 - f));
-  const barFill = (ratio: number, isHover: boolean) => {
-    if (isHover) return "#f2c766";
-    if (ratio >= 0.82) return "#ff725f";
-    if (ratio >= 0.58) return "#d6a947";
-    if (ratio >= 0.32) return "#31c6b7";
-    return "#427489";
-  };
   const barOpacity = (ratio: number, isHover: boolean) => {
     if (isHover) return 1;
     return 0.52 + Math.min(0.38, ratio * 0.38);
@@ -514,13 +518,34 @@ function TokenUsageChart({
   return (
     <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
       <div className="mb-3 flex items-center justify-between">
-        <div>
-          <div className="text-[11px] text-slate-500">Token usage</div>
-          <div className="text-xs text-slate-400 tabular-nums">
-            {hovered
-              ? `${labelFor(hovered)} · ${formatTokens(hovered.tokens)}`
-              : `${mode === "daily" ? "Last 30 days" : "Last 12 weeks"} · peak ${formatTokens(max)} · total ${formatTokens(total)}`}
+        <div className="flex items-center gap-2.5">
+          <div>
+            <div className="text-[11px] text-slate-500">Token usage</div>
+            <div className="text-xs text-slate-400 tabular-nums">
+              {hovered
+                ? `${labelFor(hovered)} · ${formatTokens(hovered.tokens)}`
+                : `${mode === "daily" ? "Last 30 days" : "Last 12 weeks"} · peak ${formatTokens(max)} · total ${formatTokens(total)}`}
+            </div>
           </div>
+          {trendPct != null && Number.isFinite(trendPct) && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums ${
+                trendPct > 5
+                  ? "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30"
+                  : trendPct < -5
+                  ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30"
+                  : "bg-slate-500/10 text-slate-300 ring-1 ring-slate-500/30"
+              }`}
+              title={trendLabel}
+            >
+              <span aria-hidden>
+                {trendPct > 5 ? "▲" : trendPct < -5 ? "▼" : "•"}
+              </span>
+              {Math.abs(trendPct) >= 1000
+                ? `${Math.round(trendPct / 100)}×`
+                : `${trendPct > 0 ? "+" : ""}${trendPct.toFixed(0)}%`}
+            </span>
+          )}
         </div>
         <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
           {(["daily", "weekly"] as const).map((m) => (
@@ -548,6 +573,33 @@ function TokenUsageChart({
         preserveAspectRatio="none"
         onMouseLeave={() => setHover(null)}
       >
+        <defs>
+          {/* Per-bucket gradients keep the bars vivid at the top, fading
+              toward the baseline so the chart reads as "value flowing down". */}
+          <linearGradient id="bar-grad-cool" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#62d6c9" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#427489" stopOpacity="0.55" />
+          </linearGradient>
+          <linearGradient id="bar-grad-warm" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#f2c766" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#d6a947" stopOpacity="0.55" />
+          </linearGradient>
+          <linearGradient id="bar-grad-hot" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ff9579" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#ff725f" stopOpacity="0.6" />
+          </linearGradient>
+          <linearGradient id="bar-grad-hover" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ffe09a" stopOpacity="1" />
+            <stop offset="100%" stopColor="#f2c766" stopOpacity="0.85" />
+          </linearGradient>
+          <filter id="bar-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="1.2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
         {gridlines.map((y, i) => (
           <line
             key={i}
@@ -566,6 +618,14 @@ function TokenUsageChart({
           const y = padTop + chartH - h;
           const w = barW * 0.7;
           const isHover = hover === i;
+          const isLatest = i === n - 1;
+          const grad = isHover
+            ? "url(#bar-grad-hover)"
+            : ratio >= 0.7
+            ? "url(#bar-grad-hot)"
+            : ratio >= 0.35
+            ? "url(#bar-grad-warm)"
+            : "url(#bar-grad-cool)";
           return (
             <g key={i}>
               {/* Full-height hit target so mouse doesn't need to land on a short bar. */}
@@ -582,9 +642,11 @@ function TokenUsageChart({
                 y={y}
                 width={w}
                 height={Math.max(h, d.tokens > 0 ? 1 : 0)}
-                fill={barFill(ratio, isHover)}
+                fill={grad}
                 opacity={barOpacity(ratio, isHover)}
                 pointerEvents="none"
+                rx={1}
+                filter={isHover || (isLatest && d.tokens > 0) ? "url(#bar-glow)" : undefined}
               />
             </g>
           );
@@ -643,6 +705,103 @@ function TokenUsageChart({
           );
         })}
       </svg>
+    </Card>
+  );
+}
+
+// ─── WeeklyAgentSplit (stacked bar of this-week tokens by provider) ─────────
+
+const PROVIDER_PALETTE: Record<string, { bar: string; dot: string; label: string }> = {
+  anthropic: { bar: "#d6a947", dot: "bg-amber-400", label: "Claude" },
+  openai: { bar: "#31c6b7", dot: "bg-emerald-400", label: "Codex" },
+  google: { bar: "#5da6f5", dot: "bg-blue-400", label: "Gemini" },
+  cursor: { bar: "#a78bfa", dot: "bg-violet-400", label: "Cursor" },
+};
+
+function WeeklyAgentSplit({
+  accounts,
+  usages,
+}: {
+  accounts: ProviderAccount[];
+  usages: Record<string, AccountUsage>;
+}) {
+  // Collapse by provider — multiple accounts on the same provider share local stats.
+  const byProvider: Record<string, { tokens: number; sessions: number; accountId: string }> = {};
+  for (const acc of accounts) {
+    const u = usages[acc.id];
+    if (!u) continue;
+    const tokens = (u.week_input_tokens ?? 0) + (u.week_output_tokens ?? 0);
+    // First account per provider wins — sibling accounts mirror the same stats.
+    if (!byProvider[acc.provider]) {
+      byProvider[acc.provider] = {
+        tokens,
+        sessions: u.week_sessions ?? 0,
+        accountId: acc.id,
+      };
+    }
+  }
+
+  const segments = Object.entries(byProvider)
+    .filter(([, v]) => v.tokens > 0)
+    .sort((a, b) => b[1].tokens - a[1].tokens);
+  const grandTotal = segments.reduce((acc, [, v]) => acc + v.tokens, 0);
+
+  if (segments.length === 0 || grandTotal === 0) {
+    return null;
+  }
+
+  return (
+    <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
+      <div className="mb-2.5 flex items-end justify-between gap-3">
+        <div>
+          <div className="text-[11px] text-slate-500">This week by agent</div>
+          <div className="text-xs text-slate-400 tabular-nums">
+            {formatTokens(grandTotal)} tokens · {segments.length} agent{segments.length === 1 ? "" : "s"}
+          </div>
+        </div>
+      </div>
+      {/* Stacked bar */}
+      <div className="flex h-2.5 w-full overflow-hidden rounded-sm bg-[#0b0d12] ring-1 ring-[#1a1a1a]">
+        {segments.map(([provider, v]) => {
+          const palette = PROVIDER_PALETTE[provider] ?? {
+            bar: "#64748b",
+            dot: "bg-slate-400",
+            label: provider,
+          };
+          const pct = (v.tokens / grandTotal) * 100;
+          return (
+            <div
+              key={provider}
+              title={`${palette.label}: ${formatTokens(v.tokens)} (${pct.toFixed(0)}%)`}
+              style={{ width: `${pct}%`, backgroundColor: palette.bar }}
+              className="h-full transition-all"
+            />
+          );
+        })}
+      </div>
+      {/* Legend */}
+      <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1.5">
+        {segments.map(([provider, v]) => {
+          const palette = PROVIDER_PALETTE[provider] ?? {
+            bar: "#64748b",
+            dot: "bg-slate-400",
+            label: provider,
+          };
+          const pct = (v.tokens / grandTotal) * 100;
+          return (
+            <div key={provider} className="flex items-center gap-1.5 text-[11px]">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: palette.bar }}
+              />
+              <span className="text-slate-300">{palette.label}</span>
+              <span className="tabular-nums text-slate-500">
+                {formatTokens(v.tokens)} · {pct.toFixed(0)}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </Card>
   );
 }
@@ -959,6 +1118,7 @@ export default function Home() {
             daily={tokenUsage.daily_series}
             weekly={tokenUsage.weekly_series}
           />
+          <WeeklyAgentSplit accounts={accounts} usages={accountUsages} />
         </div>
       )}
 

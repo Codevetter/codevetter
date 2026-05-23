@@ -446,6 +446,10 @@ export default function RepoUnpacked() {
           </div>
         )}
 
+        {!active && history.length === 0 && phase === "idle" && (
+          <HowItWorks />
+        )}
+
         <HistoryList
           history={history}
           activeId={active?.reportId}
@@ -458,6 +462,114 @@ export default function RepoUnpacked() {
 }
 
 // ─── Subcomponents ──────────────────────────────────────────────────────────
+
+function HowItWorks() {
+  const steps: Array<{
+    icon: ReactNode;
+    title: string;
+    body: string;
+  }> = [
+    {
+      icon: <FolderOpen size={16} className="text-[var(--cv-accent)]" />,
+      title: "1. Point at a local repo",
+      body: "Pick any folder you have on disk. Nothing is uploaded — the scan runs locally and respects .gitignore.",
+    },
+    {
+      icon: <ScanSearch size={16} className="text-[var(--cv-accent)]" />,
+      title: "2. Scan (or generate)",
+      body: "“Scan only” builds the inventory: entrypoints, packages, scripts, languages. “Generate Brief” chains that into the CLI agent.",
+    },
+    {
+      icon: <Sparkles size={16} className="text-[var(--cv-accent)]" />,
+      title: "3. Get an evidence-backed brief",
+      body: "Five sections: what it is, how it runs, key behaviors, risks, handoff pack. Every claim cites a source file you can click into.",
+    },
+    {
+      icon: <Copy size={16} className="text-[var(--cv-accent)]" />,
+      title: "4. Hand off to the next agent",
+      body: "Copy the handoff prompt and paste it into a fresh Claude / Cursor / Codex session. Saves you re-explaining the codebase.",
+    },
+  ];
+
+  const goodFits: Array<{ label: string; detail: string }> = [
+    {
+      label: "Onboarding to a new repo",
+      detail: "Get oriented in 60 seconds instead of an afternoon of grep-and-pray.",
+    },
+    {
+      label: "Cold-starting an agent session",
+      detail: "Drop the brief in as context so the model isn’t guessing at the architecture.",
+    },
+    {
+      label: "Pre-merge sanity check",
+      detail: "Compare current behavior to what shipped last time the brief was generated.",
+    },
+  ];
+
+  return (
+    <div className="mt-6 grid gap-4 md:grid-cols-[1.4fr,1fr]">
+      <Card className="border-[var(--cv-line)] bg-[var(--bg-surface)]">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles size={16} className="text-[var(--cv-accent)]" />
+            How Repo Unpacked works
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Four steps. Pick → scan → brief → handoff. Everything stays local;
+            only the CLI agent call leaves your machine.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ol className="grid gap-3 sm:grid-cols-2">
+            {steps.map((step) => (
+              <li
+                key={step.title}
+                className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-raised)] p-3"
+              >
+                <div className="mb-1.5 flex items-center gap-2 text-[13px] font-medium text-[var(--text-primary)]">
+                  {step.icon}
+                  {step.title}
+                </div>
+                <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                  {step.body}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </CardContent>
+      </Card>
+
+      <Card className="border-[var(--cv-line)] bg-[var(--bg-surface)]">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ArrowRight size={16} className="text-[var(--cv-accent)]" />
+            When to reach for this
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Best used when you (or an agent) are about to touch unfamiliar
+            code.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2.5">
+          {goodFits.map((fit) => (
+            <div key={fit.label} className="text-xs leading-relaxed">
+              <div className="font-medium text-[var(--text-primary)]">
+                {fit.label}
+              </div>
+              <div className="text-[var(--text-secondary)]">{fit.detail}</div>
+            </div>
+          ))}
+          <div className="mt-3 rounded-md border border-[var(--cv-line)]/60 bg-[var(--bg-raised)] p-2.5 text-[11px] text-[var(--text-secondary)]">
+            Heads up: the agent step shells out to{" "}
+            <span className="font-mono">claude</span> or{" "}
+            <span className="font-mono">gemini</span> CLI — install whichever
+            one you select before clicking Generate.
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function RepoPicker({
   repoPath,
