@@ -103,6 +103,7 @@ pub async fn check_account_usage(
     let agent_type = match account.provider.as_str() {
         "openai" => "codex",
         "google" => "gemini",
+        "cursor" => "cursor",
         _ => "claude-code",
     };
 
@@ -306,6 +307,7 @@ fn usage_profile_label(agent_type: &str, jsonl_path: Option<&str>) -> String {
         "claude-code" => claude_profile_label(jsonl_path),
         "codex" => "Codex (~/.codex)".to_string(),
         "gemini" => "Gemini (~/.gemini)".to_string(),
+        "cursor" => "Cursor (workspace storage)".to_string(),
         other => other.to_string(),
     }
 }
@@ -386,6 +388,11 @@ pub async fn detect_provider_accounts(db: State<'_, DbState>) -> Result<Value, S
 
     // ── Detect Gemini / Google accounts ──────────────────────────────────
     if let Some(acc) = detect_gemini().await {
+        detected.push(acc);
+    }
+
+    // ── Detect Cursor (IDE-installed, no OAuth) ──────────────────────────
+    if let Some(acc) = detect_cursor_account() {
         detected.push(acc);
     }
 
@@ -587,6 +594,30 @@ async fn detect_gemini() -> Option<DetectedAccount> {
         org_id: None,
         org_name: None,
         plan: Some("personal".to_string()),
+    })
+}
+
+/// Detect Cursor IDE.
+///
+/// Cursor doesn't expose an OAuth token or user identity that we can read
+/// without screen-scraping its protected storage, so the signal here is
+/// just: the app's data dir exists and the global conversation DB is
+/// present. That's the same condition `index_cursor_sessions` needs to
+/// surface any usage at all, so it cleanly couples account visibility to
+/// "we actually have data for this tool."
+fn detect_cursor_account() -> Option<DetectedAccount> {
+    let cursor_dir = crate::commands::history::resolve_cursor_data_dir();
+    let global_db = crate::commands::history::resolve_cursor_global_db();
+    if !cursor_dir.exists() || !global_db.exists() {
+        return None;
+    }
+    Some(DetectedAccount {
+        provider: "cursor".to_string(),
+        name: "Cursor".to_string(),
+        email: None,
+        org_id: Some("cursor-local".to_string()),
+        org_name: None,
+        plan: None,
     })
 }
 
