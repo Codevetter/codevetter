@@ -1,7 +1,35 @@
 <!-- generated-by: gsd-doc-writer -->
 # CodeVetter
 
-AI code review platform for agent-generated code — desktop-first, works offline.
+AI software quality workbench for agent-generated code — desktop-first, local-first, and focused on finding bugs that normal AI review misses.
+
+## Product Direction
+
+CodeVetter should end as a personal verification layer for AI-built software. The durable scope is:
+
+- code review
+- bug finding
+- agent-written code verification
+- debugging and replay
+- synthetic user QA for software quality
+- AI step-through debugging
+- codebase history explanation
+
+The near-term wedge is not beating Claude, Codex, or hosted PR bots at generic review. It is a self-first workflow that makes agent output trustworthy: inspect the diff, understand the repo and prior intent, exercise the changed behavior, preserve evidence, fix one finding at a time, and re-check that the issue is gone.
+
+## Current Coverage And Gaps
+
+| Capability | Current state | Main gap |
+|---|---|---|
+| Code review | Review tab runs local diffs through CLI agents and persists findings. | Needs multi-pass specialist review, better AGENTS.md/project-context ingestion, and benchmarked catch-rate evidence. |
+| Bug finding | Findings, severity, code viewer, and re-review loop exist. | Needs runtime evidence from tests/browser sessions/logs, not only static diff judgment. |
+| Agent-written code verification | Product is aimed at agent output and can fix/re-review selected findings. | Needs agent provenance: which agent changed what, prompt/task context, and whether the fix actually resolved the original user goal. |
+| Debugging/replay | History indexes Claude/Codex sessions and can replay conversations. | Replay is not connected to files, diffs, failures, screenshots, tests, or review findings. |
+| Synthetic user QA | Not implemented as a first-class workflow. | Needs browser/app automation that performs user tasks, captures screenshots/traces, and converts failures into review findings. |
+| AI step-through debugger | Not implemented. | Needs an execution timeline across agent actions, file edits, commands, test failures, and UI observations. |
+| Codebase history explainer | Repo Unpacked generates repo briefs; History indexes agent sessions. | Needs commit/decision mining tied to touched files so reviews can catch intent regressions. |
+
+The product should prefer narrow, evidence-backed loops over broad "code intelligence" surfaces. A feature is on-strategy when it helps answer: "What changed, why did the agent change it, what could break, can we reproduce it, and did the fix actually work?"
 
 ## Deployment & External Services
 
@@ -32,7 +60,7 @@ npm install
    ```bash
    cd apps/desktop && npm run tauri:dev
    ```
-3. Add an AI provider API key (Anthropic, OpenAI, or OpenRouter) in Settings, then open the Review tab to run your first review.
+3. Open the Review tab, pick a local repository, and run your first review through an installed CLI agent.
 
 ## Usage Examples
 
@@ -76,3 +104,20 @@ apps/
 ## License
 
 ISC (root package); MIT (landing-page template — Copyright 2022 Themesberg)
+
+<!-- ACTIVE-AI-TASK-LOG:START -->
+## Active AI Task Log
+
+This section is maintained by the SaaS Maker Active-AI product/design loop so future agents do not reopen duplicate UI tasks.
+
+- Business lane: Core/status context
+- Rule: do not create another broad "improve the UI" task unless the acceptance criteria differ materially from the tasks listed here.
+- Source of truth for task status: SaaS Maker task board. README entries are durable context only.
+
+| Task ID | Title | Status |
+|---|---|---|
+| d6d19901 | CodeVetter: add verification summary handoff proof | done — compact verification summary panel added to QuickReview sidebar with fixed/reproduced/unchecked counts and copy-proof button |
+| a59acaa7 | CodeVetter: add unchecked finding risk summary | done — QuickReview sidebar now lists unchecked findings grouped by severity with per-bucket risk copy explaining why each unchecked item still matters (above the verification handoff proof) |
+| 79eff0b9 | CodeVetter: add revalidation checklist after fixes | done — when a finding's re-check status is "fixed", QuickReview renders a checklist derived from the finding's evidence fields (file/line, artifact, level, notes) so the user can tick off concrete revalidation steps; checklist state persists per finding alongside other evidence |
+| 2b9ac8d9 | CodeVetter: add copyable reviewer handoff template | done — QuickReview's "Copy proof" button now emits a full markdown reviewer handoff (heading, score/agent/finding tallies, per-finding evidence with status icons, and a `### Next actions` checkbox list derived from unchecked findings, reproduced findings, and unticked revalidation items for fixed findings) so reviewers can paste proof directly into PRs/Slack |
+<!-- ACTIVE-AI-TASK-LOG:END -->

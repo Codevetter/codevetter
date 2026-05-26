@@ -574,16 +574,20 @@ function TokenUsageChart({
   const n = data.length;
   const hovered = hover != null ? data[hover] : null;
 
-  // Trend: recent half vs prior half of the visible window.
-  // Daily → last 7d vs prior 7d. Weekly → last 4w vs prior 4w. We pick the
-  // longest tail that fits in `n` so the comparison stays apples-to-apples.
-  const window = mode === "daily" ? 7 : 4;
-  const recent = data.slice(Math.max(0, n - window));
-  const prior = data.slice(Math.max(0, n - window * 2), Math.max(0, n - window));
-  const recentSum = recent.reduce((a, d) => a + d.tokens, 0);
-  const priorSum = prior.reduce((a, d) => a + d.tokens, 0);
-  const trendPct = priorSum > 0 ? ((recentSum - priorSum) / priorSum) * 100 : null;
-  const trendLabel = mode === "daily" ? "vs prior 7d" : "vs prior 4w";
+  const trendWindow = mode === "daily" ? 7 : 4;
+  const trendPairs = data
+    .slice(Math.max(1, n - trendWindow))
+    .map((bucket, offset) => {
+      const currentIndex = Math.max(1, n - trendWindow) + offset;
+      const previous = data[currentIndex - 1]?.tokens ?? 0;
+      if (previous <= 0 || bucket.tokens <= 0) return null;
+      return ((bucket.tokens - previous) / previous) * 100;
+    })
+    .filter((value): value is number => value !== null && Number.isFinite(value));
+  const trendPct = trendPairs.length > 0
+    ? trendPairs.reduce((sum, value) => sum + value, 0) / trendPairs.length
+    : null;
+  const trendLabel = mode === "daily" ? "avg day-over-day, last 7d" : "avg week-over-week, last 4w";
 
   // ViewBox in nice round units — scales responsively.
   const W = 600;
@@ -647,9 +651,7 @@ function TokenUsageChart({
               <span aria-hidden>
                 {trendPct > 5 ? "▲" : trendPct < -5 ? "▼" : "•"}
               </span>
-              {Math.abs(trendPct) >= 1000
-                ? `${Math.round(trendPct / 100)}×`
-                : `${trendPct > 0 ? "+" : ""}${trendPct.toFixed(0)}%`}
+              {`${trendPct > 0 ? "+" : ""}${trendPct.toFixed(0)}% avg`}
             </span>
           )}
         </div>

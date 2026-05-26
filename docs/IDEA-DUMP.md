@@ -6,7 +6,132 @@ This note stays here because the idea is no longer a fresh standalone concept. I
 
 ## Core Direction
 
-Will start off a simple code reviewer. (have already created repo with initial flow)
+Will start off a simple code reviewer. The end state should be a software quality workbench for agent-written code:
+
+- code review
+- bug finding
+- agent-written code verification
+- debugging/replay
+- synthetic user QA for software quality
+- AI step-through debugger
+- synthetic user QA tester
+- codebase history explainer
+
+The important constraint: do not drift into generic "code intelligence" unless it is attached to a concrete verification loop. CodeVetter does not need to beat Claude/Codex at raw model intelligence. It needs to make agent-written changes trustworthy by combining static review, repo history, agent-session replay, runtime checks, and fix revalidation.
+
+## Gap Map
+
+### 1. Code review
+
+Current:
+- Review tab can review a local git diff with CLI agents.
+- Findings are persisted, displayed with surrounding code, and can be sent back to an agent for fixes.
+- Re-review exists after a fix.
+
+Gaps:
+- Review is still mostly one-shot static diff review.
+- Standards/rubrics are concatenated into one prompt instead of running as specialist passes.
+- Target-repo `AGENTS.md`, repo brief, prior decisions, and blast radius are not yet a single reliable review context package.
+- No published catch-rate benchmark proves it catches bugs that normal AI review misses.
+
+Next useful shape:
+- Risk-tiered review: quick pass for small diffs, specialist passes for larger/security-sensitive diffs.
+- Include target `AGENTS.md`, Repo Unpacked summary, prior-decision snippets, and changed-file blast radius in the prompt.
+- Build a small benchmark set of real agent PRs with known bugs.
+
+### 2. Bug finding
+
+Current:
+- CodeVetter can surface suspicious code and rank findings.
+- Existing UI supports fix selection, diff viewing, and re-review.
+
+Gaps:
+- Bug evidence is mostly inferred from code, not reproduced from behavior.
+- No automatic test selection, browser task execution, log inspection, or screenshot trace.
+- Findings do not yet distinguish "LLM suspicion" from "reproduced failure."
+
+Next useful shape:
+- Attach evidence level to each finding: static suspicion, test failure, browser reproduction, log/runtime trace.
+- Run the smallest relevant command/check for a touched repo when possible.
+- Promote reproduced bugs above style or speculative concerns.
+
+### 3. Agent-written code verification
+
+Current:
+- Product positioning is agent-output review.
+- History can index Claude/Codex sessions separately from review records.
+
+Gaps:
+- A review does not know which agent session produced the diff.
+- Prompt/task intent is not attached to the review, so "did it satisfy the request?" is mostly missing.
+- Agent behavior patterns are not scored: over-editing, silent scope drift, skipped tests, fake-green summaries, or deleting user work.
+
+Next useful shape:
+- Link review runs to the producing agent session when cwd/branch/time overlap.
+- Add an "agent verification" section: requested goal, files touched, commands claimed, commands actually observed, unverified claims.
+- Flag classic agent failure modes separately from normal code issues.
+
+### 4. Debugging and replay
+
+Current:
+- History indexes local Claude/Codex transcripts and supports conversation replay.
+
+Gaps:
+- Replay is not connected to changed files, review findings, test output, screenshots, or app state.
+- It is conversation replay, not debugging replay.
+- Gemini/local browser/tool traces are incomplete or absent.
+
+Next useful shape:
+- Build a run timeline: prompt -> tool/command -> file edit -> test/browser result -> review finding -> fix -> re-check.
+- Let a user click from a finding back to the agent step that introduced it.
+- Preserve enough evidence to explain what happened without rereading the entire transcript.
+
+### 5. Synthetic user QA
+
+Current:
+- Not implemented as a product workflow.
+- Playwright exists for CodeVetter's own tests, but not as a user-facing QA runner for target apps.
+
+Gaps:
+- No way to define a user task like "create item, edit item, delete item" and have CodeVetter exercise it.
+- No screenshot/video/trace artifacts attached to findings.
+- No route for visual or interaction failures to become review findings.
+
+Next useful shape:
+- Add a "QA run" primitive: target URL/app command, user goal, steps attempted, screenshots, console/network errors, pass/fail.
+- Start with browser apps because Playwright gives high evidence density.
+- Convert failures into review findings tied to files when possible.
+
+### 6. AI step-through debugger
+
+Current:
+- Not implemented.
+
+Gaps:
+- No execution timeline spanning code changes, agent actions, commands, tests, browser events, and review decisions.
+- No ability to step through "why this bug exists" from symptom to commit/file/agent action.
+
+Next useful shape:
+- Timeline-first UI for one verification run.
+- Each step should have input, action, output, evidence, and linked file/finding.
+- The AI explains the next debugging step from the evidence already collected, not from chat alone.
+
+### 7. Codebase history explainer
+
+Current:
+- Repo Unpacked creates a cited system brief and agent handoff.
+- History explains agent sessions.
+- Project log already notes Decision Intelligence / prior-intent review.
+
+Gaps:
+- Commit history, ADRs, inline `WHY:` markers, and prior review memory are not automatically attached to changed files.
+- Repo Unpacked is a separate brief, not yet part of every review.
+- No "why is this code shaped this way?" answer grounded in commits and decisions.
+
+Next useful shape:
+- For every touched file, mine recent commits and decision markers.
+- Show "prior decisions touching this change" beside the diff.
+- Feed this into review so CodeVetter catches intent regressions, not only local bugs.
 
 In future will expand to:
 - Code View Generator (something like deepwiki), index and understand incremental changes
