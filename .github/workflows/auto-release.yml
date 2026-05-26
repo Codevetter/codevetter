@@ -1,0 +1,68 @@
+name: Auto-publish release
+
+# When tauri.conf.json's version changes on main, create a GitHub release
+# with tag v<version>. That `release: created` event triggers release.yml,
+# which builds and uploads the signed updater artifacts. The in-app
+# UpdateChecker (polls every 30 min) then surfaces the update to users.
+#
+# Idempotent: if a release with that tag already exists, this no-ops.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/desktop/src-tauri/tauri.conf.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Read version from tauri.conf.json
+        id: ver
+        run: |
+          set -euo pipefail
+          VERSION=$(jq -r '.version' apps/desktop/src-tauri/tauri.conf.json)
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "::error::No version field in apps/desktop/src-tauri/tauri.conf.json"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release already exists
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh release view "${{ steps.ver.outputs.tag }}" \
+              --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.ver.outputs.tag }} already exists — skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub release
+        if: steps.check.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "CodeVetter ${{ steps.ver.outputs.tag }}" \
+            --generate-notes

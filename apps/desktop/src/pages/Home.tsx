@@ -94,23 +94,47 @@ function UsageBar({
   };
   const c = colorMap[color];
 
-  // Reserve / deplete calculation
-  // on-track % = (elapsed / total) * 100 — if actual < on-track → in reserve
+  // Pace projection: at the current burn rate, where does usage land when
+  // the window resets? Replaces a confusing "X% ahead of pace" readout —
+  // that delta only made sense if you mentally extrapolated. Show projected
+  // end-of-window headroom when safe, and a concrete countdown when on
+  // track to hit the cap.
   let paceLabel: string | null = null;
   let paceColor = "text-slate-500";
-  if (windowTotalSecs && resetsInSecs != null && resetsInSecs > 0) {
+  if (
+    windowTotalSecs &&
+    windowTotalSecs > 0 &&
+    resetsInSecs != null &&
+    resetsInSecs > 0 &&
+    resetsInSecs <= windowTotalSecs
+  ) {
     const elapsed = windowTotalSecs - resetsInSecs;
-    const onTrackPct = (elapsed / windowTotalSecs) * 100;
-    const delta = Math.abs(onTrackPct - pct);
-    if (pct < onTrackPct - 0.5) {
-      paceLabel = `${Math.round(delta)}% in reserve`;
-      paceColor = "text-emerald-400/80";
-    } else if (pct > onTrackPct + 0.5) {
-      paceLabel = `${Math.round(delta)}% ahead of pace`;
-      paceColor = "text-[#ff725f]/90";
-    } else {
-      paceLabel = "on pace";
-      paceColor = "text-slate-500";
+    // Suppress until ≥10 min elapsed AND ≥0.5% used — rate is noisy below
+    // that and used to flicker between "ahead/behind pace" states.
+    if (elapsed >= 10 * 60 && pct >= 0.5) {
+      const projectedEndPct = pct * (windowTotalSecs / elapsed);
+      if (projectedEndPct >= 100) {
+        // Burn rate projects to hit the cap. When?
+        // rate = pct/elapsed per second → secs to reach 100% = (100-pct)/rate
+        const secsToCap = ((100 - pct) * elapsed) / pct;
+        if (secsToCap <= 0) {
+          paceLabel = "at limit";
+          paceColor = "text-[#ff725f]";
+        } else if (secsToCap < resetsInSecs) {
+          paceLabel = `caps in ${formatDuration(secsToCap)}`;
+          paceColor = "text-[#ff725f]/90";
+        } else {
+          // Tipped just over but slow enough to coast to reset
+          paceLabel = "on pace";
+          paceColor = "text-slate-500";
+        }
+      } else if (projectedEndPct >= 95) {
+        paceLabel = "on pace";
+        paceColor = "text-slate-500";
+      } else {
+        paceLabel = `${Math.round(100 - projectedEndPct)}% headroom`;
+        paceColor = "text-emerald-400/80";
+      }
     }
   }
 
