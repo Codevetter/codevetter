@@ -5,6 +5,8 @@ import {
   CheckSquare2,
   ChevronDown,
   ChevronRight,
+  ClipboardCheck,
+  Copy,
   ExternalLink,
   FileCode,
   FolderOpen,
@@ -132,11 +134,145 @@ function queueGuidance(findings: CliReviewFinding[]): string {
   return "Low-risk queue. Patch together only if the files overlap.";
 }
 
+// Risk copy for unchecked findings — why a finding still matters even if you
+// didn't reproduce it. Keep it terse; the panel shows one line per bucket.
+function uncheckedRiskCopy(severity: string): string {
+  switch (severity) {
+    case "critical":
+      return "Untriaged blockers — assume they ship and break prod until proven otherwise.";
+    case "high":
+      return "High-severity issues with no evidence either way — silent regressions are likely.";
+    case "medium":
+    case "warning":
+      return "Medium-risk items unverified — could mask real failures or compound under load.";
+    case "low":
+      return "Low-risk items unconfirmed — quality drift if left unreviewed across many PRs.";
+    case "suggestion":
+    case "info":
+    case "nitpick":
+      return "Suggestions left unread — useful signal lost, but not blocking.";
+    default:
+      return "Unchecked — verdict unknown.";
+  }
+}
+
 interface DiffFile {
   path: string;
   hunks: string[];
   additions: number;
   deletions: number;
+}
+
+type EvidenceLevel = "static" | "test" | "browser" | "runtime";
+type VerificationStatus = "not_checked" | "reproduced" | "fixed" | "not_reproduced";
+
+interface FindingEvidence {
+  level: EvidenceLevel;
+  status: VerificationStatus;
+  artifact: string;
+  notes: string;
+  // Which revalidation checklist items the user has ticked off after marking
+  // the finding "fixed". Keyed by the stable item id from buildRevalidationChecklist.
+  revalidation: Record<string, boolean>;
+}
+
+const defaultFindingEvidence: FindingEvidence = {
+  level: "static",
+  status: "not_checked",
+  artifact: "",
+  notes: "",
+  revalidation: {},
+};
+
+interface RevalidationItem {
+  id: string;
+  label: string;
+}
+
+// Derive the revalidation checklist purely from existing evidence fields so the
+// list is always coherent with what the user has already recorded. Returns the
+// stable id and a one-liner; the UI checkbox state is stored separately.
+function buildRevalidationChecklist(
+  finding: CliReviewFinding,
+  evidence: FindingEvidence,
+): RevalidationItem[] {
+  const items: RevalidationItem[] = [];
+  const loc = finding.filePath
+    ? `${finding.filePath}${finding.line != null ? `:${finding.line}` : ""}`
+    : null;
+
+  items.push({
+    id: "original-gone",
+    label: loc
+      ? `Confirm the original failure no longer reproduces at ${loc}.`
+      : "Confirm the originally-described failure no longer reproduces.",
+  });
+
+  const artifact = evidence.artifact.trim();
+  if (artifact) {
+    items.push({
+      id: "rerun-artifact",
+      label: `Re-run the recorded artifact (${artifact}) and confirm it now passes.`,
+    });
+  } else if (evidence.level !== "static") {
+    items.push({
+      id: "capture-artifact",
+      label: "Capture a fresh artifact (command output, screenshot, or trace) proving the fix.",
+    });
+  }
+
+  if (evidence.level === "static") {
+    items.push({
+      id: "add-regression-test",
+      label: "Add or extend a test covering this case — the original signal was static-only.",
+    });
+  } else if (evidence.level === "browser") {
+    items.push({
+      id: "rerun-browser-flow",
+      label: "Walk the browser flow end-to-end and verify no console/network regressions.",
+    });
+  } else if (evidence.level === "runtime") {
+    items.push({
+      id: "watch-runtime",
+      label: "Watch the relevant logs / runtime trace for one more cycle to confirm silence.",
+    });
+  }
+
+  if (evidence.notes.trim()) {
+    items.push({
+      id: "recheck-notes",
+      label: "Re-read the QA notes and tick off each documented pass criterion.",
+    });
+  }
+
+  items.push({
+    id: "scan-neighbors",
+    label: "Spot-check adjacent files in the same diff for the same pattern.",
+  });
+
+  return items;
+}
+
+const evidenceLevels: Array<{ value: EvidenceLevel; label: string }> = [
+  { value: "static", label: "Static suspicion" },
+  { value: "test", label: "Test failure" },
+  { value: "browser", label: "Browser reproduction" },
+  { value: "runtime", label: "Log / runtime trace" },
+];
+
+const verificationStatuses: Array<{ value: VerificationStatus; label: string }> = [
+  { value: "not_checked", label: "Not checked" },
+  { value: "reproduced", label: "Reproduced" },
+  { value: "fixed", label: "Fixed on re-check" },
+  { value: "not_reproduced", label: "Could not reproduce" },
+];
+
+function findingEvidenceKey(finding: CliReviewFinding, idx: number): string {
+  return [
+    finding.filePath ?? "review",
+    finding.line ?? idx,
+    finding.title,
+  ].join("::");
 }
 
 function parseDiffIntoFiles(diff: string): DiffFile[] {
@@ -348,9 +484,11 @@ export default function QuickReview() {
   const [codeLines, setCodeLines] = useState<FileLineData[]>([]);
   const [codeFilePath, setCodeFilePath] = useState("");
   const [codeLanguage, setCodeLanguage] = useState("");
+  const [evidenceByFinding, setEvidenceByFinding] = useState<Record<string, FindingEvidence>>({});
 
   // Diff range derived from selection
   const [diffRange, setDiffRange] = useState("");
+  const [proofCopied, setProofCopied] = useState(false);
 
   // ─── Load saved folder + branches on mount ───────────────────────────────
 
@@ -602,6 +740,107 @@ export default function QuickReview() {
     [patchQueue],
   );
 
+  const evidenceCounts = useMemo(
+    () =>
+      Object.values(evidenceByFinding).reduce(
+        (acc, evidence) => {
+          if (evidence.status === "reproduced") acc.reproduced += 1;
+          if (evidence.status === "fixed") acc.fixed += 1;
+          if (evidence.status === "not_reproduced") acc.notReproduced += 1;
+          return acc;
+        },
+        { reproduced: 0, fixed: 0, notReproduced: 0 },
+      ),
+    [evidenceByFinding],
+  );
+
+  const uncheckedFindings = useMemo(
+    () =>
+      sortedFindings.filter((finding, idx) => {
+        const ev = evidenceByFinding[findingEvidenceKey(finding, idx)];
+        return !ev || ev.status === "not_checked";
+      }),
+    [sortedFindings, evidenceByFinding],
+  );
+
+  const uncheckedBySeverity = useMemo(() => {
+    const buckets = new Map<string, CliReviewFinding[]>();
+    for (const finding of uncheckedFindings) {
+      const arr = buckets.get(finding.severity) ?? [];
+      arr.push(finding);
+      buckets.set(finding.severity, arr);
+    }
+    return Array.from(buckets.entries()).sort(
+      ([a], [b]) => (severityOrder[a] ?? 99) - (severityOrder[b] ?? 99),
+    );
+  }, [uncheckedFindings]);
+
+  const updateFindingEvidence = useCallback(
+    (idx: number, patch: Partial<FindingEvidence>) => {
+      const finding = sortedFindings[idx];
+      if (!finding) return;
+      const key = findingEvidenceKey(finding, idx);
+      setEvidenceByFinding((prev) => ({
+        ...prev,
+        [key]: {
+          ...defaultFindingEvidence,
+          ...prev[key],
+          ...patch,
+        },
+      }));
+    },
+    [sortedFindings],
+  );
+
+  const toggleRevalidationItem = useCallback(
+    (idx: number, itemId: string) => {
+      const finding = sortedFindings[idx];
+      if (!finding) return;
+      const key = findingEvidenceKey(finding, idx);
+      setEvidenceByFinding((prev) => {
+        const current = { ...defaultFindingEvidence, ...prev[key] };
+        const nextRevalidation = {
+          ...current.revalidation,
+          [itemId]: !current.revalidation?.[itemId],
+        };
+        return {
+          ...prev,
+          [key]: { ...current, revalidation: nextRevalidation },
+        };
+      });
+    },
+    [sortedFindings],
+  );
+
+  useEffect(() => {
+    if (!result?.review_id) {
+      setEvidenceByFinding({});
+      return;
+    }
+    void getPreference(`quick_review_evidence_${result.review_id}`)
+      .then((raw) => {
+        if (!raw) {
+          setEvidenceByFinding({});
+          return;
+        }
+        try {
+          setEvidenceByFinding(JSON.parse(raw) as Record<string, FindingEvidence>);
+        } catch {
+          setEvidenceByFinding({});
+        }
+        return;
+      })
+      .catch(() => setEvidenceByFinding({}));
+  }, [result?.review_id]);
+
+  useEffect(() => {
+    if (!result?.review_id) return;
+    void setPreference(
+      `quick_review_evidence_${result.review_id}`,
+      JSON.stringify(evidenceByFinding),
+    ).catch(() => {});
+  }, [evidenceByFinding, result?.review_id]);
+
   // ─── Fix handlers ───────────────────────────────────────────────────────
 
   const toggleFinding = useCallback((idx: number) => {
@@ -726,6 +965,90 @@ export default function QuickReview() {
     }
   }, [repoPath]);
 
+  const handleCopyProof = useCallback(async () => {
+    if (!result) return;
+    const notChecked = sortedFindings.length - evidenceCounts.reproduced - evidenceCounts.fixed - evidenceCounts.notReproduced;
+    const statusIcon = (s: VerificationStatus): string => {
+      if (s === "fixed") return "✅";
+      if (s === "reproduced") return "⚠️";
+      if (s === "not_reproduced") return "🔵";
+      return "⏳";
+    };
+    const formatLoc = (finding: CliReviewFinding): string =>
+      finding.filePath
+        ? ` (\`${finding.filePath}${finding.line != null ? `:${finding.line}` : ""}\`)`
+        : "";
+
+    const lines: string[] = [];
+    lines.push(`## Reviewer handoff — ${result.diff_range || "local diff"}`);
+    lines.push("");
+    lines.push(
+      `**Score:** ${Math.round(result.score)}/10 · **Agent:** ${result.agent} · **Findings:** ${sortedFindings.length}`,
+    );
+    lines.push(
+      `**Fixed:** ${evidenceCounts.fixed} · **Reproduced:** ${evidenceCounts.reproduced} · **Not reproduced:** ${evidenceCounts.notReproduced} · **Unchecked:** ${notChecked}`,
+    );
+
+    lines.push("", "### Findings & evidence");
+    if (sortedFindings.length === 0) {
+      lines.push("- _No findings._");
+    } else {
+      sortedFindings.forEach((finding, idx) => {
+        const ev = {
+          ...defaultFindingEvidence,
+          ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+        };
+        const artifact = ev.artifact.trim()
+          ? ` · artifact: \`${ev.artifact.trim()}\``
+          : "";
+        lines.push(
+          `- ${statusIcon(ev.status)} **[${finding.severity.toUpperCase()}]** ${finding.title}${formatLoc(finding)} — ${ev.status.replace("_", " ")}${artifact}`,
+        );
+        const notes = ev.notes.trim();
+        if (notes) {
+          notes.split("\n").forEach((line) => lines.push(`  - ${line}`));
+        }
+      });
+    }
+
+    const nextActions: string[] = [];
+    sortedFindings.forEach((finding, idx) => {
+      const ev = {
+        ...defaultFindingEvidence,
+        ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+      };
+      const sev = `[${finding.severity.toUpperCase()}]`;
+      if (ev.status === "not_checked") {
+        nextActions.push(`- [ ] Verify **${sev}** ${finding.title}${formatLoc(finding)}`);
+      } else if (ev.status === "reproduced") {
+        const artifact = ev.artifact.trim()
+          ? ` (artifact: \`${ev.artifact.trim()}\`)`
+          : "";
+        nextActions.push(
+          `- [ ] Fix **${sev}** ${finding.title}${formatLoc(finding)} — currently reproduced${artifact}`,
+        );
+      } else if (ev.status === "fixed") {
+        buildRevalidationChecklist(finding, ev).forEach((item) => {
+          if (!ev.revalidation[item.id]) {
+            nextActions.push(`- [ ] ${item.label}`);
+          }
+        });
+      }
+    });
+    if (nextActions.length > 0) {
+      lines.push("", "### Next actions");
+      lines.push(...nextActions);
+    }
+
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setProofCopied(true);
+      setTimeout(() => setProofCopied(false), 2000);
+    } catch {
+      // clipboard unavailable — fail silently
+    }
+  }, [result, sortedFindings, evidenceCounts, evidenceByFinding]);
+
   // Track which diff files are expanded
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
   const toggleFileExpanded = useCallback((path: string) => {
@@ -829,6 +1152,13 @@ export default function QuickReview() {
     const activeFinding =
       selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
     const activeCodePath = codeFilePath || activeFinding?.filePath || "";
+    const activeEvidence =
+      activeFinding && selectedFindingIdx !== null
+        ? {
+          ...defaultFindingEvidence,
+          ...evidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
+        }
+        : defaultFindingEvidence;
 
     return (
       <div className="flex h-full flex-col px-4 pb-4 pt-20">
@@ -855,6 +1185,9 @@ export default function QuickReview() {
           <ScoreBadge score={Math.round(result.score)} size="sm" />
           <div className="cv-label hidden sm:block">
             {result.findings_count ?? sortedFindings.length} findings
+          </div>
+          <div className="cv-label hidden lg:block">
+            {evidenceCounts.reproduced} reproduced · {evidenceCounts.fixed} fixed
           </div>
         </div>
 
@@ -1134,6 +1467,153 @@ export default function QuickReview() {
                       </p>
                     </div>
                   )}
+                  {selectedFindingIdx !== null && (
+                    <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
+                      <div className="mb-3 flex items-center gap-2">
+                        <ClipboardCheck size={14} className="text-[var(--cv-accent)]" />
+                        <div className="cv-label text-slate-300">Verification evidence</div>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <label className="space-y-1">
+                          <span className="cv-label">Evidence level</span>
+                          <select
+                            value={activeEvidence.level}
+                            onChange={(event) =>
+                              updateFindingEvidence(selectedFindingIdx, {
+                                level: event.target.value as EvidenceLevel,
+                              })
+                            }
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                          >
+                            {evidenceLevels.map((level) => (
+                              <option key={level.value} value={level.value}>
+                                {level.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="space-y-1">
+                          <span className="cv-label">Re-check status</span>
+                          <select
+                            value={activeEvidence.status}
+                            onChange={(event) =>
+                              updateFindingEvidence(selectedFindingIdx, {
+                                status: event.target.value as VerificationStatus,
+                              })
+                            }
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                          >
+                            {verificationStatuses.map((status) => (
+                              <option key={status.value} value={status.value}>
+                                {status.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                      <label className="mt-3 block space-y-1">
+                        <span className="cv-label">Artifact</span>
+                        <input
+                          value={activeEvidence.artifact}
+                          onChange={(event) =>
+                            updateFindingEvidence(selectedFindingIdx, {
+                              artifact: event.target.value,
+                            })
+                          }
+                          placeholder="test command, screenshot path, console trace, replay URL"
+                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                        />
+                      </label>
+                      <label className="mt-3 block space-y-1">
+                        <span className="cv-label">QA steps / notes</span>
+                        <textarea
+                          value={activeEvidence.notes}
+                          onChange={(event) =>
+                            updateFindingEvidence(selectedFindingIdx, {
+                              notes: event.target.value,
+                            })
+                          }
+                          rows={4}
+                          placeholder="How to reproduce, what failed, and what passed after the fix."
+                          className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                        />
+                      </label>
+                      {activeEvidence.status === "fixed" && activeFinding && (() => {
+                        const items = buildRevalidationChecklist(activeFinding, activeEvidence);
+                        const done = items.filter(
+                          (item) => activeEvidence.revalidation?.[item.id],
+                        ).length;
+                        const allDone = done === items.length;
+                        return (
+                          <div
+                            data-testid="revalidation-checklist"
+                            className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-3"
+                          >
+                            <div className="flex items-center gap-2">
+                              <ClipboardCheck
+                                size={12}
+                                className={cn(
+                                  "shrink-0",
+                                  allDone ? "text-emerald-400" : "text-[var(--cv-accent)]",
+                                )}
+                              />
+                              <div className="cv-label text-slate-300">
+                                Revalidation checklist
+                              </div>
+                              <span
+                                className={cn(
+                                  "ml-auto font-mono text-[10px]",
+                                  allDone ? "text-emerald-400" : "text-slate-500",
+                                )}
+                              >
+                                {done}/{items.length} {allDone ? "verified" : "done"}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                              Quick checks derived from this finding&apos;s evidence so &ldquo;fixed&rdquo; is provable, not just claimed.
+                            </p>
+                            <ul className="mt-2 space-y-1.5">
+                              {items.map((item) => {
+                                const checked = Boolean(
+                                  activeEvidence.revalidation?.[item.id],
+                                );
+                                return (
+                                  <li key={item.id}>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        toggleRevalidationItem(selectedFindingIdx, item.id)
+                                      }
+                                      className="flex w-full items-start gap-2 rounded text-left text-[11px] leading-4 text-slate-300 transition-colors hover:text-white"
+                                    >
+                                      {checked ? (
+                                        <CheckSquare2
+                                          size={13}
+                                          className="mt-px shrink-0 text-emerald-400"
+                                        />
+                                      ) : (
+                                        <Square
+                                          size={13}
+                                          className="mt-px shrink-0 text-slate-600"
+                                        />
+                                      )}
+                                      <span
+                                        className={cn(
+                                          checked && "text-slate-500 line-through",
+                                        )}
+                                      >
+                                        {item.label}
+                                      </span>
+                                    </button>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
@@ -1220,63 +1700,156 @@ export default function QuickReview() {
                 )}
               </div>
               <div className="space-y-2">
-                {sortedFindings.map((finding, idx) => (
-                  <div
-                    key={idx}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => handleFindingClick(idx)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        handleFindingClick(idx);
-                      }
-                    }}
-                    className={cn(
-                      "w-full cursor-pointer border px-3 py-3 text-left transition-colors",
-                      selectedFindingIdx === idx
-                        ? "border-[rgba(125,211,252,0.42)] bg-cyan-500/10"
-                        : "border-[var(--cv-line)] bg-[#07080a] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]",
-                      selectedFindings.has(idx) && "shadow-[inset_3px_0_0_rgba(125,211,252,0.82)]",
-                    )}
-                  >
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        aria-label={selectedFindings.has(idx) ? "Remove from fix selection" : "Select for fix"}
-                        aria-pressed={selectedFindings.has(idx)}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          toggleFinding(idx);
-                        }}
-                        className="shrink-0 text-slate-500 transition-colors hover:text-[var(--cv-accent)]"
-                      >
-                        {selectedFindings.has(idx) ? (
-                          <CheckSquare2 size={15} className="text-[var(--cv-accent)]" />
-                        ) : (
-                          <Square size={15} />
+                {sortedFindings.map((finding, idx) => {
+                  const evidence = {
+                    ...defaultFindingEvidence,
+                    ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+                  };
+                  const hasEvidence =
+                    evidence.status !== "not_checked" ||
+                    Boolean(evidence.artifact.trim()) ||
+                    Boolean(evidence.notes.trim());
+                  return (
+                    <div
+                      key={idx}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleFindingClick(idx)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleFindingClick(idx);
+                        }
+                      }}
+                      className={cn(
+                        "w-full cursor-pointer border px-3 py-3 text-left transition-colors",
+                        selectedFindingIdx === idx
+                          ? "border-[rgba(125,211,252,0.42)] bg-cyan-500/10"
+                          : "border-[var(--cv-line)] bg-[#07080a] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]",
+                        selectedFindings.has(idx) && "shadow-[inset_3px_0_0_rgba(125,211,252,0.82)]",
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          aria-label={selectedFindings.has(idx) ? "Remove from fix selection" : "Select for fix"}
+                          aria-pressed={selectedFindings.has(idx)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleFinding(idx);
+                          }}
+                          className="shrink-0 text-slate-500 transition-colors hover:text-[var(--cv-accent)]"
+                        >
+                          {selectedFindings.has(idx) ? (
+                            <CheckSquare2 size={15} className="text-[var(--cv-accent)]" />
+                          ) : (
+                            <Square size={15} />
+                          )}
+                        </button>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold uppercase",
+                            severityColor(finding.severity),
+                          )}
+                        >
+                          {finding.severity}
+                        </Badge>
+                        {hasEvidence && (
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 rounded-full border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-cyan-300"
+                          >
+                            {evidence.status.replace("_", " ")}
+                          </Badge>
                         )}
-                      </button>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold uppercase",
-                          severityColor(finding.severity),
-                        )}
-                      >
-                        {finding.severity}
-                      </Badge>
-                      <span className="truncate text-xs font-medium text-slate-100">
-                        {finding.title}
-                      </span>
+                        <span className="truncate text-xs font-medium text-slate-100">
+                          {finding.title}
+                        </span>
+                      </div>
+                      <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
+                        {finding.summary}
+                      </p>
                     </div>
-                    <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
-                      {finding.summary}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
+
+            {/* Unchecked-finding risk summary — why "unchecked" still matters */}
+            {uncheckedFindings.length > 0 && (
+              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={12} className="shrink-0 text-yellow-400" />
+                  <span className="cv-label text-slate-300">
+                    {uncheckedFindings.length} unchecked finding{uncheckedFindings.length !== 1 ? "s" : ""} — still on the risk ledger
+                  </span>
+                </div>
+                <ul className="mt-1.5 space-y-1">
+                  {uncheckedBySeverity.map(([severity, findings]) => {
+                    const sample = findings[0];
+                    const loc = sample?.filePath
+                      ? `${sample.filePath}${sample.line != null ? `:${sample.line}` : ""}`
+                      : sample?.title;
+                    return (
+                      <li key={severity} className="flex items-start gap-2">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "mt-0.5 shrink-0 rounded-full px-1.5 py-0 font-mono text-[9px] uppercase",
+                            severityColor(severity),
+                          )}
+                        >
+                          {severity} · {findings.length}
+                        </Badge>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] leading-4 text-slate-400">
+                            {uncheckedRiskCopy(severity)}
+                          </p>
+                          {loc && (
+                            <p className="truncate font-mono text-[9px] text-slate-600">
+                              e.g. {loc}
+                              {findings.length > 1 ? ` (+${findings.length - 1} more)` : ""}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {/* Verification handoff proof */}
+            {sortedFindings.length > 0 && (
+              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
+                  <div className="flex flex-1 flex-wrap items-center gap-x-2 font-mono text-[10px]">
+                    <span className="text-emerald-400">{evidenceCounts.fixed} fixed</span>
+                    <span className="text-slate-700">·</span>
+                    <span className="text-yellow-400">{evidenceCounts.reproduced} reproduced</span>
+                    <span className="text-slate-700">·</span>
+                    <span className="text-slate-500">
+                      {uncheckedFindings.length} unchecked
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleCopyProof}
+                    className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
+                  >
+                    {proofCopied ? (
+                      <CheckCircle size={10} className="text-emerald-400" />
+                    ) : (
+                      <Copy size={10} />
+                    )}
+                    {proofCopied ? "Copied!" : "Copy proof"}
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] p-3">
               <div className="flex items-center gap-2">
