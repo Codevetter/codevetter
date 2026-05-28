@@ -6,7 +6,7 @@
  * D1/D7 retention insight without any custom dashboard.
  *
  * CodeVetter is a local Tauri desktop app — it has no accounts and no server,
- * so it does NOT depend on `@saas-maker/posthog-client`. Instead it posts to
+ * so it does not depend on the old SaaS Maker PostHog wrapper. Instead it posts to
  * the PostHog capture API directly from the webview, keyed by a stable
  * anonymous install ID. The taxonomy is mapped to desktop usage:
  *
@@ -15,7 +15,7 @@
  *   core_action — each review run or repo unpack (the thing the product does).
  *   returned    — a launch by an install that already has prior activity.
  *
- * Every event carries `project: "CodeVetter"`. Analytics must NEVER break a
+ * Every event carries `project_id: "CodeVetter"`. Analytics must NEVER break a
  * user flow — every path here is wrapped and best-effort.
  */
 
@@ -56,7 +56,7 @@ function getInstallId(): string {
 /** Fire-and-forget capture. Best-effort: never blocks or throws into a flow. */
 function emit(event: string, props: Record<string, unknown>): void {
   try {
-    const payload = { project: PROJECT, ...props };
+    const payload = { project_id: PROJECT, ...props };
     void fetch(`${POSTHOG_HOST}/i/v0/e/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
