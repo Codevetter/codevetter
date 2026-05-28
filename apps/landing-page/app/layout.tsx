@@ -59,7 +59,7 @@ export default function RootLayout({
               function capturePageCrash(error, source) {
                 var message = error && error.message ? error.message : String(error);
                 var payload = {
-                  project_slug: "CodeVetter",
+                  project_id: "CodeVetter",
                   route: location.origin + location.pathname,
                   source: source,
                   message: message,
