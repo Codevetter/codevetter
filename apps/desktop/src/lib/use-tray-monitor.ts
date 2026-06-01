@@ -1,14 +1,18 @@
 import { useEffect, useRef } from "react";
 
 import {
+  type AccountUsage,
+  checkAccountUsage,
   checkLiveUsage,
   getPreference,
   getTokenUsageStats,
   isTauriAvailable,
   listProviderAccounts,
+  listSessions,
   type LiveUsageResult,
   type ProviderAccount,
   sendTrayNotification,
+  type SessionRow,
   setTrayMenu,
   setTrayText,
 } from "@/lib/tauri-ipc";
@@ -24,6 +28,11 @@ const SUPPORTED_PROVIDERS = new Set(["anthropic", "openai", "google"]);
 // notification. Each (accountId × window × threshold) only fires once per app
 // process — the ref below holds the latest threshold we've already notified.
 const NOTIFY_THRESHOLDS = [75, 90, 100];
+const WEEKLY_USAGE_NOTIFY_THRESHOLDS = [90, 100];
+const WEEKLY_PACE_AHEAD_NOTIFY_PCT = 50;
+const MIN_WEEKLY_PACE_NOTIFY_PCT = 10;
+const SESSION_USAGE_NOTIFY_THRESHOLD = 90;
+const ACTIVE_SESSION_WINDOW_MS = 15 * 60 * 1000;
 
 function formatTokens(n: number): string {
   if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
@@ -110,6 +119,60 @@ function buildTrayLine(
   return `${label}${plan} — ${live.status ?? "ok"}`;
 }
 
+function inferContextLimitTokens(model: string | null, agentType: string): number | null {
+  const normalized = (model ?? "").toLowerCase();
+
+  if (normalized.includes("claude") || agentType === "claude-code") {
+    return 200_000;
+  }
+  if (normalized.includes("gpt-4.1") || normalized.includes("gpt-4o")) {
+    return 128_000;
+  }
+  if (
+    normalized === "o3" ||
+    normalized.startsWith("o3-") ||
+    normalized === "o4-mini"
+  ) {
+    return 200_000;
+  }
+  if (normalized.includes("gemini-1.5") || normalized.includes("gemini-2")) {
+    return 1_000_000;
+  }
+
+  return null;
+}
+
+function sessionUsagePct(session: SessionRow): number | null {
+  const limit = inferContextLimitTokens(session.model_used, session.agent_type);
+  if (!limit) return null;
+  const total = session.total_input_tokens + session.total_output_tokens;
+  if (total <= 0) return null;
+  return (total / limit) * 100;
+}
+
+function sessionLabel(session: SessionRow): string {
+  if (session.cwd) {
+    const parts = session.cwd.split("/").filter(Boolean);
+    const name = parts.at(-1);
+    if (name) return name;
+  }
+  if (session.slug) return session.slug;
+  return `${session.agent_type} session`;
+}
+
+function isRecentlyActiveSession(session: SessionRow): boolean {
+  if (!session.last_message) return false;
+  const lastMessageMs = new Date(session.last_message).getTime();
+  if (!Number.isFinite(lastMessageMs)) return false;
+  return Date.now() - lastMessageMs <= ACTIVE_SESSION_WINDOW_MS;
+}
+
+function weeklyPaceAheadPct(usage: AccountUsage): number | null {
+  if (usage.week_pct == null || usage.expected_pct <= 0) return null;
+  if (usage.week_pct < MIN_WEEKLY_PACE_NOTIFY_PCT) return null;
+  return ((usage.week_pct - usage.expected_pct) / usage.expected_pct) * 100;
+}
+
 async function loadCadenceSecs(): Promise<number> {
   if (!isTauriAvailable()) return DEFAULT_CADENCE_SECS;
   try {
@@ -133,6 +196,16 @@ async function loadNotificationsEnabled(): Promise<boolean> {
   }
 }
 
+async function loadSessionNotificationsEnabled(): Promise<boolean> {
+  if (!isTauriAvailable()) return true;
+  try {
+    const raw = await getPreference("notify_session_usage_thresholds");
+    return raw !== "false";
+  } catch {
+    return true;
+  }
+}
+
 /**
  * Mounts a single global tray monitor at App level so the menu-bar icon stays
  * fresh regardless of which page the user is on. Polls accounts + live usage
@@ -142,6 +215,9 @@ export function useTrayMonitor(): void {
   // Persist last-notified threshold per accountId across re-renders so we
   // don't re-fire the same notification on every poll.
   const lastNotifiedRef = useRef<Record<string, number>>({});
+  const weeklyUsageNotifiedRef = useRef<Record<string, number>>({});
+  const weeklyPaceNotifiedRef = useRef<Record<string, number>>({});
+  const sessionUsageNotifiedRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     if (!isTauriAvailable()) return;
@@ -168,6 +244,14 @@ export function useTrayMonitor(): void {
         const liveMap: Record<string, LiveUsageResult> = {};
         liveResults.forEach((r, i) => {
           if (r.status === "fulfilled") liveMap[supported[i].id] = r.value;
+        });
+
+        const usageResults = await Promise.allSettled(
+          accounts.map((a) => checkAccountUsage(a.id))
+        );
+        const usageMap: Record<string, AccountUsage> = {};
+        usageResults.forEach((r, i) => {
+          if (r.status === "fulfilled") usageMap[accounts[i].id] = r.value;
         });
 
         // Today's tokens (separate query; cheap local SQLite call).
@@ -205,6 +289,68 @@ export function useTrayMonitor(): void {
             await sendTrayNotification(
               `${label} ${verb}`,
               `Worst window utilization: ${Math.round(pct)}%`
+            ).catch(() => {});
+          }
+
+          for (const a of accounts) {
+            const usage = usageMap[a.id];
+            if (!usage) continue;
+            const label = a.name || a.provider;
+
+            if (usage.week_pct != null) {
+              const crossed = WEEKLY_USAGE_NOTIFY_THRESHOLDS.filter(
+                (t) => usage.week_pct != null && usage.week_pct >= t
+              ).pop();
+              const last = weeklyUsageNotifiedRef.current[a.id] ?? 0;
+              if (crossed && crossed > last) {
+                weeklyUsageNotifiedRef.current[a.id] = crossed;
+                const verb = crossed >= 100 ? "over weekly baseline" : `at ${crossed}% weekly`;
+                await sendTrayNotification(
+                  `${label} ${verb}`,
+                  `Weekly usage is ${Math.round(usage.week_pct)}% of baseline.`
+                ).catch(() => {});
+              }
+            }
+
+            const aheadPct = weeklyPaceAheadPct(usage);
+            const paceLast = weeklyPaceNotifiedRef.current[a.id] ?? 0;
+            if (
+              aheadPct != null &&
+              aheadPct >= WEEKLY_PACE_AHEAD_NOTIFY_PCT &&
+              paceLast < WEEKLY_PACE_AHEAD_NOTIFY_PCT
+            ) {
+              weeklyPaceNotifiedRef.current[a.id] = WEEKLY_PACE_AHEAD_NOTIFY_PCT;
+              await sendTrayNotification(
+                `${label} is ahead of weekly pace`,
+                `Usage is ${Math.round(aheadPct)}% ahead of schedule (${Math.round(
+                  usage.week_pct ?? 0
+                )}% used vs ${Math.round(usage.expected_pct)}% expected).`
+              ).catch(() => {});
+            }
+          }
+        }
+
+        // ── Session context-usage notifications ────────────────────────
+        const sessionNotifyEnabled = await loadSessionNotificationsEnabled();
+        if (sessionNotifyEnabled) {
+          const sessions = await listSessions(undefined, undefined, 25).catch(
+            () => [] as SessionRow[]
+          );
+          for (const session of sessions) {
+            if (!isRecentlyActiveSession(session)) continue;
+            const pct = sessionUsagePct(session);
+            if (pct == null || pct < SESSION_USAGE_NOTIFY_THRESHOLD) continue;
+            const last = sessionUsageNotifiedRef.current[session.id] ?? 0;
+            if (last >= SESSION_USAGE_NOTIFY_THRESHOLD) continue;
+            sessionUsageNotifiedRef.current[session.id] =
+              SESSION_USAGE_NOTIFY_THRESHOLD;
+
+            const total = session.total_input_tokens + session.total_output_tokens;
+            await sendTrayNotification(
+              `${sessionLabel(session)} is near its session limit`,
+              `${Math.round(pct)}% used (${formatTokens(total)} tokens) for ${
+                session.model_used ?? session.agent_type
+              }.`
             ).catch(() => {});
           }
         }

@@ -25,11 +25,12 @@
    npm run tauri:build
    ```
 
-3. The build produces (in `src-tauri/target/release/bundle/`):
-   - `CodeVetter_x.y.z_aarch64.dmg` — installer for manual download
+3. The release workflow produces:
    - `CodeVetter.app.tar.gz` — compressed app bundle for auto-update
    - `CodeVetter.app.tar.gz.sig` — signature file
    - `latest.json` — update manifest (contains version, download URL, signature)
+
+   Prefer the app archive for manual installs until the macOS bundle is Developer ID signed and notarized. Unsigned or ad-hoc signed DMGs fail Gatekeeper for new installs.
 
 4. Create a GitHub release at `sarthak-fleet/CodeVetter`:
    - Tag: `v{x.y.z}`

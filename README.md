@@ -44,6 +44,21 @@ The product should prefer narrow, evidence-backed loops over broad "code intelli
 
 ## Installation
 
+### Ask Your Agent To Install
+
+Give your coding agent this prompt:
+
+```text
+Install CodeVetter from the latest GitHub release:
+https://github.com/sarthak-fleet/CodeVetter/releases/latest
+
+Detect this machine's OS and CPU architecture, download the matching CodeVetter app archive, verify the release asset hash when available, extract it, install CodeVetter.app into /Applications on macOS, remove the quarantine attribute if needed, and launch the app once to verify it starts.
+```
+
+Prefer the app archive over the DMG until the macOS bundle is Developer ID signed and notarized.
+
+### Development Install
+
 ```bash
 # Clone and install dependencies (uses npm workspaces)
 git clone https://github.com/sarthak-fleet/CodeVetter.git
