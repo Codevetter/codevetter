@@ -27,11 +27,11 @@ const SUPPORTED_PROVIDERS = new Set(["anthropic", "openai", "google"]);
 // Thresholds (worst-window utilization %) that should fire a desktop
 // notification. Each (accountId × window × threshold) only fires once per app
 // process — the ref below holds the latest threshold we've already notified.
-const NOTIFY_THRESHOLDS = [75, 90, 100];
-const WEEKLY_USAGE_NOTIFY_THRESHOLDS = [90, 100];
+const NOTIFY_THRESHOLDS = [75, 90, 99, 100];
+const WEEKLY_USAGE_NOTIFY_THRESHOLDS = [90, 99, 100];
 const WEEKLY_PACE_AHEAD_NOTIFY_PCT = 50;
 const MIN_WEEKLY_PACE_NOTIFY_PCT = 10;
-const SESSION_USAGE_NOTIFY_THRESHOLD = 90;
+const SESSION_USAGE_NOTIFY_THRESHOLDS = [90, 99, 100];
 const ACTIVE_SESSION_WINDOW_MS = 15 * 60 * 1000;
 
 function formatTokens(n: number): string {
@@ -339,15 +339,16 @@ export function useTrayMonitor(): void {
           for (const session of sessions) {
             if (!isRecentlyActiveSession(session)) continue;
             const pct = sessionUsagePct(session);
-            if (pct == null || pct < SESSION_USAGE_NOTIFY_THRESHOLD) continue;
+            if (pct == null) continue;
+            const crossed = SESSION_USAGE_NOTIFY_THRESHOLDS.filter((t) => pct >= t).pop();
+            if (!crossed) continue;
             const last = sessionUsageNotifiedRef.current[session.id] ?? 0;
-            if (last >= SESSION_USAGE_NOTIFY_THRESHOLD) continue;
-            sessionUsageNotifiedRef.current[session.id] =
-              SESSION_USAGE_NOTIFY_THRESHOLD;
+            if (crossed <= last) continue;
+            sessionUsageNotifiedRef.current[session.id] = crossed;
 
             const total = session.total_input_tokens + session.total_output_tokens;
             await sendTrayNotification(
-              `${sessionLabel(session)} is near its session limit`,
+              `${sessionLabel(session)} is at ${crossed}% session usage`,
               `${Math.round(pct)}% used (${formatTokens(total)} tokens) for ${
                 session.model_used ?? session.agent_type
               }.`

@@ -874,7 +874,7 @@ export default function Settings() {
 
               <Toggle
                 label="Provider Quota Thresholds"
-                description="Notify when provider windows, weekly baselines, or weekly pace cross important thresholds."
+                description="Notify when provider windows or weekly baselines cross 75%, 90%, 99%, or 100%, and when weekly pace runs hot."
                 enabled={notifyQuotaThresholds}
                 onToggle={toggleNotifyQuotaThresholds}
               />
@@ -883,7 +883,7 @@ export default function Settings() {
 
               <Toggle
                 label="Session Usage Thresholds"
-                description="Notify when an active session crosses 90% of its inferred context window."
+                description="Notify when an active session crosses 90%, 99%, or 100% of its inferred context window."
                 enabled={notifySessionUsageThresholds}
                 onToggle={toggleNotifySessionUsageThresholds}
               />
