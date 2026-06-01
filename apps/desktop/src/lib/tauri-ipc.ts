@@ -1,5 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/plugin-notification";
 
 import { buildActiveStandardsContext } from "@/lib/review-service";
 
@@ -498,7 +503,17 @@ export async function sendTrayNotification(
   title: string,
   body: string
 ): Promise<void> {
-  return safeInvoke<void>("send_tray_notification", { title, body });
+  let permissionGranted = await isPermissionGranted();
+  if (!permissionGranted) {
+    const permission = await requestPermission();
+    permissionGranted = permission === "granted";
+  }
+
+  if (!permissionGranted) {
+    throw new Error("NOTIFICATION_PERMISSION_DENIED");
+  }
+
+  sendNotification({ title, body });
 }
 
 export async function getIndexStats(): Promise<IndexStats> {
