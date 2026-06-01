@@ -573,6 +573,7 @@ export default function Settings() {
   const [notifyTaskComplete, toggleNotifyTaskComplete] = useBoolPref("notify_task_complete", false);
   const [notificationSound, toggleNotificationSound] = useBoolPref("notification_sound", true);
   const [notifyQuotaThresholds, toggleNotifyQuotaThresholds] = useBoolPref("notify_quota_thresholds", true);
+  const [notifySessionUsageThresholds, toggleNotifySessionUsageThresholds] = useBoolPref("notify_session_usage_thresholds", true);
 
   // Menu-bar tray
   const [trayCadence, setTrayCadence] = usePref("tray_refresh_cadence_secs", "120");
@@ -873,9 +874,18 @@ export default function Settings() {
 
               <Toggle
                 label="Provider Quota Thresholds"
-                description="Notify when any provider window crosses 75%, 90%, or 100% utilization."
+                description="Notify when provider windows, weekly baselines, or weekly pace cross important thresholds."
                 enabled={notifyQuotaThresholds}
                 onToggle={toggleNotifyQuotaThresholds}
+              />
+
+              <Divider />
+
+              <Toggle
+                label="Session Usage Thresholds"
+                description="Notify when an active session crosses 90% of its inferred context window."
+                enabled={notifySessionUsageThresholds}
+                onToggle={toggleNotifySessionUsageThresholds}
               />
 
               <Divider />
