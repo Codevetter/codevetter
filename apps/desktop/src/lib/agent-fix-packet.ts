@@ -17,7 +17,7 @@ export interface BrowserEvidenceRef {
   qaArtifacts: string;
 }
 
-export interface AgentFixPacketFinding extends CliReviewFinding {
+export interface AgentFixPacketFinding extends CliReviewFinding, Record<string, unknown> {
   taskGoal?: string;
   acceptanceCriteria?: string[];
   nonGoals?: string[];
