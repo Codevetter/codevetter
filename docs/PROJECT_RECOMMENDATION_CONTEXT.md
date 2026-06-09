@@ -17,6 +17,8 @@ AI code review platform — desktop-first, works offline.
 
 CodeVetter is a local-first desktop workbench for checking agent-generated code. The active product direction is evidence-backed software quality review: code review, bug finding, synthetic user QA, replay, and debugging surfaces that help a human decide whether agent-written work is actually shippable.
 
+The Review workflow now includes an Agent Verification Environment slice: isolated worktree fix attempts, structured agent fix packets, task goal/acceptance/non-goal context, browser/QA evidence references, usage-routing advice, and a compact review/evidence/fix/worktree status timeline.
+
 CodeVetter AI software quality workbench for agent-generated code — desktop-first, local-first, and focused on finding bugs that normal AI review misses. Product Direction CodeVetter should end as a personal verification layer for AI-built software. The durable scope is: - code review - bug finding - agent-written code verification - debugging and replay - synthetic user QA for software quality - AI step-through debugging - codebase history explanation The near-term wedge is not beating Claude, Codex, or hosted PR bots at generic review. It is a self-first workflow that makes agent output trustworthy: inspect the diff, understand the repo and prior intent, exercise the changed behavior, pres
 
 ## Feature Map

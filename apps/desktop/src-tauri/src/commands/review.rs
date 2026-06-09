@@ -1172,6 +1172,21 @@ fn create_fix_worktree(repo_path: &str) -> Option<(String, String)> {
     Some((worktree_dir, branch_name))
 }
 
+fn render_string_array(value: Option<&Value>) -> Vec<String> {
+    value
+        .and_then(|v| v.as_array())
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str())
+                .map(str::trim)
+                .filter(|item| !item.is_empty())
+                .map(String::from)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 /// Fix one or more review findings by sending them to a CLI agent.
 /// Creates a git worktree so fixes happen in isolation (not in the user's working directory).
 #[tauri::command]
@@ -1206,6 +1221,14 @@ pub async fn fix_findings(
             .and_then(|v| v.as_str())
             .unwrap_or("unknown");
         let line = f.get("line").and_then(|v| v.as_i64());
+        let task_goal = f.get("taskGoal").and_then(|v| v.as_str()).unwrap_or("").trim();
+        let human_comment = f
+            .get("humanComment")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .trim();
+        let acceptance = render_string_array(f.get("acceptanceCriteria"));
+        let non_goals = render_string_array(f.get("nonGoals"));
 
         issues.push_str(&format!("\n{}. [{severity}] {title}\n", i + 1));
         issues.push_str(&format!("   File: {file_path}"));
@@ -1216,10 +1239,43 @@ pub async fn fix_findings(
         if !suggestion.is_empty() {
             issues.push_str(&format!("   Fix: {suggestion}\n"));
         }
+        if !task_goal.is_empty() {
+            issues.push_str(&format!("   Task goal: {task_goal}\n"));
+        }
+        if !acceptance.is_empty() {
+            issues.push_str("   Acceptance criteria:\n");
+            for item in acceptance {
+                issues.push_str(&format!("   - {item}\n"));
+            }
+        }
+        if !non_goals.is_empty() {
+            issues.push_str("   Non-goals:\n");
+            for item in non_goals {
+                issues.push_str(&format!("   - {item}\n"));
+            }
+        }
+        if !human_comment.is_empty() {
+            issues.push_str(&format!("   Human/task source: {human_comment}\n"));
+        }
+        if let Some(evidence_refs) = f.get("evidenceRefs").and_then(|v| v.as_array()) {
+            if !evidence_refs.is_empty() {
+                issues.push_str("   Evidence references (path-backed; inspect artifacts when useful):\n");
+                for evidence in evidence_refs {
+                    match serde_json::to_string_pretty(evidence) {
+                        Ok(rendered) => {
+                            for line in rendered.lines() {
+                                issues.push_str(&format!("     {line}\n"));
+                            }
+                        }
+                        Err(_) => issues.push_str("     [unrenderable evidence]\n"),
+                    }
+                }
+            }
+        }
     }
 
     let base_fix_prompt = format!(
-        "Fix the following code review issues by editing the files directly. Use your tools to read and write the actual source files. Do NOT just describe the changes — actually make the edits. Make the minimal changes needed. Do not refactor unrelated code.\n{issues}"
+        "Fix the following code review issues by editing the files directly. Use your tools to read and write the actual source files. Do NOT just describe the changes — actually make the edits. Make the minimal changes needed. Do not refactor unrelated code. Respect any acceptance criteria, non-goals, and evidence references attached to each issue.\n{issues}"
     );
 
     // Inject previous talk context if available

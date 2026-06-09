@@ -34,6 +34,12 @@ import ScoreBadge from "@/components/score-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  type BrowserEvidenceRef,
+  buildAgentFixPacket,
+  renderAgentFixPacketMarkdown,
+  type TaskContext,
+} from "@/lib/agent-fix-packet";
 import { trackCoreAction } from "@/lib/analytics";
 import { buildReviewIntentReport } from "@/lib/intent-debugger/report";
 import {
@@ -256,6 +262,15 @@ const defaultFindingEvidence: FindingEvidence = {
   notes: "",
   revalidation: {},
 };
+
+const emptyBrowserEvidence = (): BrowserEvidenceRef => ({
+  route: "",
+  screenshotPath: "",
+  domSnippet: "",
+  consoleErrors: "",
+  networkFailures: "",
+  qaArtifacts: "",
+});
 
 interface QaPreset {
   baseUrl: string;
@@ -526,6 +541,10 @@ export default function QuickReview() {
   const [baseBranch, setBaseBranch] = useState("main");
   const [projectDesc, setProjectDesc] = useState("");
   const [changeDesc, setChangeDesc] = useState("");
+  const [taskGoal, setTaskGoal] = useState("");
+  const [taskAcceptance, setTaskAcceptance] = useState("");
+  const [taskNonGoals, setTaskNonGoals] = useState("");
+  const [taskSourceLabel, setTaskSourceLabel] = useState("");
   const [isReviewing, setIsReviewing] = useState(false);
   const [isFixing, setIsFixing] = useState<string | null>(null);
   const [fixProgress, setFixProgress] = useState<string[]>([]);
@@ -558,6 +577,8 @@ export default function QuickReview() {
   const [codeFilePath, setCodeFilePath] = useState("");
   const [codeLanguage, setCodeLanguage] = useState("");
   const [evidenceByFinding, setEvidenceByFinding] = useState<Record<string, FindingEvidence>>({});
+  const [browserEvidenceByFinding, setBrowserEvidenceByFinding] = useState<Record<string, BrowserEvidenceRef>>({});
+  const [packetCopied, setPacketCopied] = useState(false);
 
   // Synthetic user QA (browser loop → verification evidence)
   const [qaBaseUrl, setQaBaseUrl] = useState(CODEVETTER_REVIEW_SHELL.default_base_url);
@@ -637,6 +658,26 @@ export default function QuickReview() {
       else setProjectDesc("");
     } catch {
       setProjectDesc("");
+    }
+    try {
+      const savedTask = await getPreference(`quick_review_task_${btoa(dir)}`);
+      if (savedTask) {
+        const parsed = JSON.parse(savedTask) as Partial<TaskContext>;
+        setTaskGoal(parsed.goal ?? "");
+        setTaskAcceptance(parsed.acceptanceCriteria ?? "");
+        setTaskNonGoals(parsed.nonGoals ?? "");
+        setTaskSourceLabel(parsed.sourceLabel ?? "");
+      } else {
+        setTaskGoal("");
+        setTaskAcceptance("");
+        setTaskNonGoals("");
+        setTaskSourceLabel("");
+      }
+    } catch {
+      setTaskGoal("");
+      setTaskAcceptance("");
+      setTaskNonGoals("");
+      setTaskSourceLabel("");
     }
   }, []);
 
@@ -786,6 +827,19 @@ export default function QuickReview() {
     setPreference(prefKey, projectDesc).catch(() => {});
   }, [repoPath, projectDesc]);
 
+  const currentTaskContext = useMemo<TaskContext>(() => ({
+    goal: taskGoal,
+    acceptanceCriteria: taskAcceptance,
+    nonGoals: taskNonGoals,
+    sourceLabel: taskSourceLabel,
+  }), [taskAcceptance, taskGoal, taskNonGoals, taskSourceLabel]);
+
+  const handleTaskContextBlur = useCallback(() => {
+    if (!repoPath || !isTauriAvailable()) return;
+    const prefKey = `quick_review_task_${btoa(repoPath)}`;
+    setPreference(prefKey, JSON.stringify(currentTaskContext)).catch(() => {});
+  }, [currentTaskContext, repoPath]);
+
   // ─── Run review ──────────────────────────────────────────────────────────
 
   const handleReview = useCallback(async () => {
@@ -885,6 +939,65 @@ export default function QuickReview() {
     [patchQueue],
   );
 
+  const selectedFindingIndexes = useMemo(
+    () => Array.from(selectedFindings).sort((a, b) => a - b),
+    [selectedFindings],
+  );
+
+  const selectedEvidence = useMemo(
+    () =>
+      selectedFindingIndexes.map((idx) => {
+        const finding = sortedFindings[idx];
+        return finding
+          ? {
+            ...defaultFindingEvidence,
+            ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+          }
+          : defaultFindingEvidence;
+      }),
+    [evidenceByFinding, selectedFindingIndexes, sortedFindings],
+  );
+
+  const selectedBrowserEvidence = useMemo(
+    () =>
+      selectedFindingIndexes.map((idx) => {
+        const finding = sortedFindings[idx];
+        return finding
+          ? {
+            ...emptyBrowserEvidence(),
+            ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
+          }
+          : emptyBrowserEvidence();
+      }),
+    [browserEvidenceByFinding, selectedFindingIndexes, sortedFindings],
+  );
+
+  const fixPacket = useMemo(
+    () =>
+      buildAgentFixPacket({
+        repoPath,
+        diffRange: result?.diff_range || diffRange,
+        agent: result?.agent ?? "claude",
+        task: currentTaskContext,
+        findings: selectedFindingIndexes
+          .map((idx) => sortedFindings[idx])
+          .filter((finding): finding is CliReviewFinding => Boolean(finding)),
+        evidence: selectedEvidence,
+        browserEvidence: selectedBrowserEvidence,
+      }),
+    [
+      currentTaskContext,
+      diffRange,
+      repoPath,
+      result?.agent,
+      result?.diff_range,
+      selectedBrowserEvidence,
+      selectedEvidence,
+      selectedFindingIndexes,
+      sortedFindings,
+    ],
+  );
+
   const evidenceCounts = useMemo(
     () =>
       Object.values(evidenceByFinding).reduce(
@@ -898,6 +1011,65 @@ export default function QuickReview() {
       ),
     [evidenceByFinding],
   );
+
+  const reviewTimeline = useMemo(() => {
+    const items: Array<{
+      label: string;
+      detail: string;
+      status: "done" | "active" | "blocked" | "idle";
+    }> = [
+      {
+        label: "Task context",
+        detail: taskGoal.trim() ? taskGoal.trim() : "No manual goal attached",
+        status: taskGoal.trim() ? "done" : "idle",
+      },
+      {
+        label: "Review",
+        detail: result
+          ? `${sortedFindings.length} finding${sortedFindings.length !== 1 ? "s" : ""}`
+          : "No review loaded",
+        status: isReviewing ? "active" : result ? "done" : "idle",
+      },
+      {
+        label: "Evidence",
+        detail: `${evidenceCounts.reproduced} reproduced, ${evidenceCounts.fixed} fixed`,
+        status: qaRunning
+          ? "active"
+          : evidenceCounts.reproduced + evidenceCounts.fixed > 0
+            ? "done"
+            : "idle",
+      },
+      {
+        label: "Fix packet",
+        detail: `${fixPacket.findings.length} selected - ${fixPacket.routeAdvice}`,
+        status: isFixing ? "active" : fixPacket.findings.length > 0 ? "done" : "idle",
+      },
+      {
+        label: "Worktree",
+        detail: fixResult?.using_worktree === false
+          ? "Agent fell back to primary repo"
+          : fixResult?.worktree_path
+            ? shortenPath(fixResult.worktree_path)
+            : "No fix run yet",
+        status: fixResult?.using_worktree === false
+          ? "blocked"
+          : fixResult?.worktree_path
+            ? "done"
+            : "idle",
+      },
+    ];
+    return items;
+  }, [
+    evidenceCounts,
+    fixPacket,
+    fixResult,
+    isFixing,
+    isReviewing,
+    qaRunning,
+    result,
+    sortedFindings.length,
+    taskGoal,
+  ]);
 
   const uncheckedFindings = useMemo(
     () =>
@@ -1090,6 +1262,23 @@ export default function QuickReview() {
     [sortedFindings],
   );
 
+  const updateBrowserEvidence = useCallback(
+    (idx: number, patch: Partial<BrowserEvidenceRef>) => {
+      const finding = sortedFindings[idx];
+      if (!finding) return;
+      const key = findingEvidenceKey(finding, idx);
+      setBrowserEvidenceByFinding((prev) => ({
+        ...prev,
+        [key]: {
+          ...emptyBrowserEvidence(),
+          ...prev[key],
+          ...patch,
+        },
+      }));
+    },
+    [sortedFindings],
+  );
+
   const toggleRevalidationItem = useCallback(
     (idx: number, itemId: string) => {
       const finding = sortedFindings[idx];
@@ -1113,31 +1302,56 @@ export default function QuickReview() {
   useEffect(() => {
     if (!result?.review_id) {
       setEvidenceByFinding({});
+      setBrowserEvidenceByFinding({});
       return;
     }
-    void getPreference(`quick_review_evidence_${result.review_id}`)
-      .then((raw) => {
+    void Promise.all([
+      getPreference(`quick_review_evidence_${result.review_id}`),
+      getPreference(`quick_review_browser_evidence_${result.review_id}`),
+    ])
+      .then(([raw, browserRaw]) => {
         if (!raw) {
           setEvidenceByFinding({});
-          return;
+        } else {
+          try {
+            setEvidenceByFinding(JSON.parse(raw) as Record<string, FindingEvidence>);
+          } catch {
+            setEvidenceByFinding({});
+          }
         }
-        try {
-          setEvidenceByFinding(JSON.parse(raw) as Record<string, FindingEvidence>);
-        } catch {
-          setEvidenceByFinding({});
+
+        if (!browserRaw) {
+          setBrowserEvidenceByFinding({});
+        } else {
+          try {
+            setBrowserEvidenceByFinding(
+              JSON.parse(browserRaw) as Record<string, BrowserEvidenceRef>,
+            );
+          } catch {
+            setBrowserEvidenceByFinding({});
+          }
         }
         return;
       })
-      .catch(() => setEvidenceByFinding({}));
+      .catch(() => {
+          setEvidenceByFinding({});
+          setBrowserEvidenceByFinding({});
+      });
   }, [result?.review_id]);
 
   useEffect(() => {
     if (!result?.review_id) return;
-    void setPreference(
-      `quick_review_evidence_${result.review_id}`,
-      JSON.stringify(evidenceByFinding),
-    ).catch(() => {});
-  }, [evidenceByFinding, result?.review_id]);
+    void Promise.all([
+      setPreference(
+        `quick_review_evidence_${result.review_id}`,
+        JSON.stringify(evidenceByFinding),
+      ),
+      setPreference(
+        `quick_review_browser_evidence_${result.review_id}`,
+        JSON.stringify(browserEvidenceByFinding),
+      ),
+    ]).catch(() => {});
+  }, [browserEvidenceByFinding, evidenceByFinding, result?.review_id]);
 
   const applyQaWorkflow = useCallback((workflow: Partial<QaWorkflowPreset>) => {
     if (workflow.baseUrl) setQaBaseUrl(workflow.baseUrl);
@@ -1652,8 +1866,7 @@ export default function QuickReview() {
     }
 
     try {
-      const toFix = sortedFindings.filter((_, i) => selectedFindings.has(i));
-      const res = await fixFindings(repoPath, toFix, result.agent);
+      const res = await fixFindings(repoPath, fixPacket.findings, result.agent);
       setFixResult(res);
     } catch (e) {
       setError(`Fix failed: ${String(e)}`);
@@ -1661,7 +1874,7 @@ export default function QuickReview() {
       setIsFixing(null);
       unlisten?.();
     }
-  }, [repoPath, result, selectedFindings, sortedFindings]);
+  }, [fixPacket.findings, repoPath, result, selectedFindings.size]);
 
   const handleRevertFile = useCallback(async (filePath: string) => {
     if (!fixResult?.worktree_path) return;
@@ -1771,6 +1984,17 @@ export default function QuickReview() {
     intentReport,
     historyFindingSummaries,
   ]);
+
+  const handleCopyFixPacket = useCallback(async () => {
+    if (fixPacket.findings.length === 0) return;
+    try {
+      await navigator.clipboard.writeText(renderAgentFixPacketMarkdown(fixPacket));
+      setPacketCopied(true);
+      setTimeout(() => setPacketCopied(false), 2000);
+    } catch {
+      // clipboard unavailable — fail silently
+    }
+  }, [fixPacket]);
 
   // Track which diff files are expanded
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
@@ -1882,6 +2106,13 @@ export default function QuickReview() {
           ...evidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
         }
         : defaultFindingEvidence;
+    const activeBrowserEvidence =
+      activeFinding && selectedFindingIdx !== null
+        ? {
+          ...emptyBrowserEvidence(),
+          ...browserEvidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
+        }
+        : emptyBrowserEvidence();
 
     return (
       <div className="flex h-full flex-col px-4 pb-4 pt-20">
@@ -2731,6 +2962,99 @@ export default function QuickReview() {
                           className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
                         />
                       </label>
+                      <div className="mt-4 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-3">
+                        <div className="mb-2 flex items-center gap-2">
+                          <MonitorPlay size={13} className="text-[var(--cv-accent)]" />
+                          <div className="cv-label text-slate-300">
+                            Browser evidence references
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <label className="space-y-1">
+                            <span className="cv-label">Route</span>
+                            <input
+                              value={activeBrowserEvidence.route}
+                              onChange={(event) =>
+                                updateBrowserEvidence(selectedFindingIdx, {
+                                  route: event.target.value,
+                                })
+                              }
+                              placeholder="/checkout"
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                            />
+                          </label>
+                          <label className="space-y-1">
+                            <span className="cv-label">Screenshot / crop</span>
+                            <input
+                              value={activeBrowserEvidence.screenshotPath}
+                              onChange={(event) =>
+                                updateBrowserEvidence(selectedFindingIdx, {
+                                  screenshotPath: event.target.value,
+                                })
+                              }
+                              placeholder="artifacts/screenshot.png"
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                            />
+                          </label>
+                        </div>
+                        <label className="mt-2 block space-y-1">
+                          <span className="cv-label">DOM snippet</span>
+                          <textarea
+                            value={activeBrowserEvidence.domSnippet}
+                            onChange={(event) =>
+                              updateBrowserEvidence(selectedFindingIdx, {
+                                domSnippet: event.target.value,
+                              })
+                            }
+                            rows={2}
+                            placeholder="<button disabled>Save</button>"
+                            className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
+                        </label>
+                        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <label className="space-y-1">
+                            <span className="cv-label">Console errors</span>
+                            <textarea
+                              value={activeBrowserEvidence.consoleErrors}
+                              onChange={(event) =>
+                                updateBrowserEvidence(selectedFindingIdx, {
+                                  consoleErrors: event.target.value,
+                                })
+                              }
+                              rows={2}
+                              placeholder="One error per line."
+                              className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                            />
+                          </label>
+                          <label className="space-y-1">
+                            <span className="cv-label">Network failures</span>
+                            <textarea
+                              value={activeBrowserEvidence.networkFailures}
+                              onChange={(event) =>
+                                updateBrowserEvidence(selectedFindingIdx, {
+                                  networkFailures: event.target.value,
+                                })
+                              }
+                              rows={2}
+                              placeholder="POST /api/save 500"
+                              className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                            />
+                          </label>
+                        </div>
+                        <label className="mt-2 block space-y-1">
+                          <span className="cv-label">QA artifacts</span>
+                          <input
+                            value={activeBrowserEvidence.qaArtifacts}
+                            onChange={(event) =>
+                              updateBrowserEvidence(selectedFindingIdx, {
+                                qaArtifacts: event.target.value,
+                              })
+                            }
+                            placeholder="trace.zip, playwright-report/index.html"
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
+                        </label>
+                      </div>
                       {activeEvidence.status === "fixed" && activeFinding && (() => {
                         const items = buildRevalidationChecklist(activeFinding, activeEvidence);
                         const done = items.filter(
@@ -2845,6 +3169,38 @@ export default function QuickReview() {
                 <p className="text-[11px] leading-5 text-slate-500">
                   {queueGuidance(patchQueue)}
                 </p>
+                {patchQueue.length > 0 && (
+                  <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
+                    <div className="flex items-center gap-2">
+                      <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
+                      <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                        fix packet
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
+                        onClick={handleCopyFixPacket}
+                      >
+                        {packetCopied ? (
+                          <CheckCircle size={10} className="text-emerald-400" />
+                        ) : (
+                          <Copy size={10} />
+                        )}
+                        {packetCopied ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                    <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                      {fixPacket.routeAdvice}
+                    </p>
+                    {(taskGoal || taskAcceptance) && (
+                      <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-400">
+                        {taskGoal || taskAcceptance}
+                      </p>
+                    )}
+                  </div>
+                )}
                 {patchQueue.length > 0 && (
                   <>
                     <div className="mt-3 flex flex-wrap gap-1.5">
@@ -3002,6 +3358,39 @@ export default function QuickReview() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+              <div className="mb-2 flex items-center gap-2">
+                <ListOrdered size={12} className="shrink-0 text-[var(--cv-accent)]" />
+                <span className="cv-label text-slate-300">Agent status timeline</span>
+              </div>
+              <div className="grid grid-cols-1 gap-1.5">
+                {reviewTimeline.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-start gap-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                  >
+                    <span
+                      className={cn(
+                        "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
+                        item.status === "done" && "bg-emerald-400",
+                        item.status === "active" && "bg-cyan-300",
+                        item.status === "blocked" && "bg-red-400",
+                        item.status === "idle" && "bg-slate-600",
+                      )}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[10px] text-slate-300">
+                        {item.label}
+                      </span>
+                      <span className="block truncate text-[10px] text-slate-600">
+                        {item.detail}
+                      </span>
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -3365,6 +3754,58 @@ export default function QuickReview() {
                   className="w-full resize-none border border-[var(--cv-line)] bg-[#07080a] px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-cyan-500/40 focus:outline-none"
                   rows={2}
                 />
+              </div>
+
+              <div className="space-y-2 border border-[var(--cv-line)] bg-[#07080a] p-3">
+                <div className="flex items-center gap-2">
+                  <ListOrdered size={13} className="text-[var(--cv-accent)]" />
+                  <span className="cv-label text-slate-300">Task context for fix packets</span>
+                </div>
+                <label className="block space-y-1">
+                  <span className="cv-label">Goal</span>
+                  <input
+                    value={taskGoal}
+                    onChange={(event) => setTaskGoal(event.target.value)}
+                    onBlur={handleTaskContextBlur}
+                    placeholder="What should the agent make true?"
+                    className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="cv-label">Acceptance criteria</span>
+                  <textarea
+                    value={taskAcceptance}
+                    onChange={(event) => setTaskAcceptance(event.target.value)}
+                    onBlur={handleTaskContextBlur}
+                    rows={3}
+                    placeholder="One criterion per line."
+                    className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                  />
+                </label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <label className="block space-y-1">
+                    <span className="cv-label">Non-goals</span>
+                    <textarea
+                      value={taskNonGoals}
+                      onChange={(event) => setTaskNonGoals(event.target.value)}
+                      onBlur={handleTaskContextBlur}
+                      rows={2}
+                      placeholder="Out of scope."
+                      className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="cv-label">Source</span>
+                    <textarea
+                      value={taskSourceLabel}
+                      onChange={(event) => setTaskSourceLabel(event.target.value)}
+                      onBlur={handleTaskContextBlur}
+                      rows={2}
+                      placeholder="Task, PR, or manual note."
+                      className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Read-only history context panel (review-input section for one repo path).

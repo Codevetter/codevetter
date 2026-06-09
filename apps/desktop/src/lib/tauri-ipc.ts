@@ -388,6 +388,7 @@ export interface FixFindingsResult {
   agent_output: string;
   worktree_path: string;
   worktree_branch: string;
+  using_worktree?: boolean;
 }
 
 export interface RevertFilesResult {
@@ -423,7 +424,7 @@ export async function runCliReview(
 
 export async function fixFindings(
   repoPath: string,
-  findings: CliReviewFinding[],
+  findings: Array<CliReviewFinding & Record<string, unknown>>,
   agent?: string,
 ): Promise<FixFindingsResult> {
   return safeInvoke("fix_findings", {
