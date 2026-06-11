@@ -768,7 +768,11 @@ export default function QuickReview() {
         findings_count: findings.length,
       });
       setViewHasRepoPath(!!review.repo_path);
-      if (review.repo_path) setRepoPath(review.repo_path);
+      if (review.repo_path) {
+        await loadFolderData(review.repo_path);
+      } else {
+        setRepoPath("");
+      }
       // Past reviews don't have a stored blast report — clear the panel.
       setBlastReport(null);
       setBlastError(null);
@@ -777,7 +781,7 @@ export default function QuickReview() {
       console.error("[CodeVetter] Failed to open past review:", e);
       setError("Couldn't open that review. Try again, or pick another one.");
     }
-  }, []);
+  }, [loadFolderData]);
 
   // ─── Folder picker ───────────────────────────────────────────────────────
 
