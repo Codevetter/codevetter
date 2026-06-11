@@ -755,6 +755,7 @@ export default function QuickReview() {
       setCodeLines([]);
       setCodeFilePath("");
       setCodeLanguage("");
+      setDiffRange("");
       setEvidenceByFinding({});
       setBrowserEvidenceByFinding({});
       setResult({
@@ -767,6 +768,8 @@ export default function QuickReview() {
         diff_range: diffRangeFromSourceLabel(review.source_label),
         findings_count: findings.length,
       });
+      setSelectedBranch("");
+      setDiffRange(diffRangeFromSourceLabel(review.source_label));
       setViewHasRepoPath(!!review.repo_path);
       if (review.repo_path) {
         await loadFolderData(review.repo_path);
