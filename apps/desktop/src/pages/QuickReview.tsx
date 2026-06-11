@@ -43,6 +43,10 @@ import {
 import { trackCoreAction } from "@/lib/analytics";
 import { buildReviewIntentReport } from "@/lib/intent-debugger/report";
 import {
+  diffRangeFromSourceLabel,
+  repoPrefKey,
+} from "@/lib/quick-review-state";
+import {
   buildRevalidationChecklist,
   buildReviewerProofMarkdown,
   formatHistoryCommandEvidence,
@@ -653,14 +657,14 @@ export default function QuickReview() {
     }
     // Load persisted project description
     try {
-      const saved = await getPreference(`quick_review_desc_${btoa(dir)}`);
+      const saved = await getPreference(`quick_review_desc_${repoPrefKey(dir)}`);
       if (saved != null) setProjectDesc(saved);
       else setProjectDesc("");
     } catch {
       setProjectDesc("");
     }
     try {
-      const savedTask = await getPreference(`quick_review_task_${btoa(dir)}`);
+      const savedTask = await getPreference(`quick_review_task_${repoPrefKey(dir)}`);
       if (savedTask) {
         const parsed = JSON.parse(savedTask) as Partial<TaskContext>;
         setTaskGoal(parsed.goal ?? "");
@@ -745,6 +749,14 @@ export default function QuickReview() {
         line: f.line ?? undefined,
         confidence: f.confidence ?? undefined,
       }));
+      setFixResult(null);
+      setSelectedFindings(new Set());
+      setSelectedFindingIdx(null);
+      setCodeLines([]);
+      setCodeFilePath("");
+      setCodeLanguage("");
+      setEvidenceByFinding({});
+      setBrowserEvidenceByFinding({});
       setResult({
         review_id: review.id,
         score: review.score_composite ?? 0,
@@ -752,7 +764,7 @@ export default function QuickReview() {
         summary: review.summary_markdown ?? "",
         agent: review.agent_used ?? "claude",
         duration_ms: 0,
-        diff_range: review.source_label ?? "",
+        diff_range: diffRangeFromSourceLabel(review.source_label),
         findings_count: findings.length,
       });
       setViewHasRepoPath(!!review.repo_path);
@@ -823,7 +835,7 @@ export default function QuickReview() {
 
   const handleProjectDescBlur = useCallback(() => {
     if (!repoPath || !isTauriAvailable()) return;
-    const prefKey = `quick_review_desc_${btoa(repoPath)}`;
+    const prefKey = `quick_review_desc_${repoPrefKey(repoPath)}`;
     setPreference(prefKey, projectDesc).catch(() => {});
   }, [repoPath, projectDesc]);
 
@@ -836,7 +848,7 @@ export default function QuickReview() {
 
   const handleTaskContextBlur = useCallback(() => {
     if (!repoPath || !isTauriAvailable()) return;
-    const prefKey = `quick_review_task_${btoa(repoPath)}`;
+    const prefKey = `quick_review_task_${repoPrefKey(repoPath)}`;
     setPreference(prefKey, JSON.stringify(currentTaskContext)).catch(() => {});
   }, [currentTaskContext, repoPath]);
 
