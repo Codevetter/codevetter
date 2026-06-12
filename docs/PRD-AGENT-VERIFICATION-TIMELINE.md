@@ -87,7 +87,7 @@ Render the run spine in a compact vertical timeline.
 
 Acceptance:
 
-- The current step and next evidence are easy to see. Implemented in the Review sidebar through the shared verification timeline contract.
+- The current step and next evidence are easy to see. Implemented in the Review sidebar through the shared verification timeline contract, with a Home latest-roadmap-build banner that makes the shipped timeline/fix/QA slices visible on launch.
 - A user can jump from timeline step to file or finding. Implemented through first-class timeline jump targets for findings, files, QA artifacts, fix worktrees, and command source anchors.
 - Long runs remain readable with collapsing.
 

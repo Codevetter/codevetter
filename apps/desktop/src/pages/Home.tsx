@@ -3,6 +3,7 @@ import {
   ArrowRight,
   BarChart3,
   BrainCircuit,
+  CheckCircle2,
   FileClock,
   GitBranch,
   MonitorPlay,
@@ -955,6 +956,73 @@ function scoreTone(score: number): string {
   return "text-red-300";
 }
 
+const ROADMAP_RELEASE_VERSION = "1.1.30";
+
+const ROADMAP_RELEASE_ITEMS = [
+  {
+    label: "Agent timeline",
+    detail: "Jump targets, command anchors, edit origins, and timeline fix packets.",
+    href: "/review",
+  },
+  {
+    label: "Post-fix QA",
+    detail: "Same-flow reruns now show fixed, regressed, still broken, or needs rerun.",
+    href: "/review",
+  },
+  {
+    label: "Workbench entry points",
+    detail: "Evidence, timeline, QA, memory graph, history brief, and session scorecard are visible from Home.",
+    href: "/",
+  },
+];
+
+function RoadmapReleaseBanner() {
+  return (
+    <section className="cv-panel overflow-hidden border-[var(--cv-accent)]/35 bg-[#090806]">
+      <div className="grid gap-px bg-[#2b2414] lg:grid-cols-[1.2fr_2fr]">
+        <div className="bg-[#0b0a08] px-4 py-4">
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="rounded-full border-[var(--cv-accent)]/35 bg-[var(--cv-accent)]/10 px-2 py-0 text-[10px] uppercase text-[var(--cv-accent)]"
+            >
+              v{ROADMAP_RELEASE_VERSION}
+            </Badge>
+            <span className="cv-label text-slate-400">latest installed roadmap build</span>
+          </div>
+          <h2 className="mt-3 text-lg font-semibold tracking-normal text-slate-100">
+            Verification work is now visible from launch.
+          </h2>
+          <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">
+            The recent roadmap slices are no longer only buried inside Review state. Home now exposes the shipped verification spine and routes directly into the live surfaces.
+          </p>
+        </div>
+        <div className="grid gap-px bg-[#18130b] md:grid-cols-3">
+          {ROADMAP_RELEASE_ITEMS.map((item) => (
+            <Link
+              key={item.label}
+              to={item.href}
+              className="group flex min-h-36 flex-col justify-between bg-[#08090a] px-3 py-3 transition-colors hover:bg-[#0d1012]"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-300" />
+                  <ArrowRight
+                    size={13}
+                    className="text-slate-700 transition-colors group-hover:text-[var(--cv-accent)]"
+                  />
+                </div>
+                <div className="mt-3 text-sm font-medium text-slate-200">{item.label}</div>
+              </div>
+              <p className="mt-3 text-[11px] leading-4 text-slate-500">{item.detail}</p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function VerificationWorkbenchPanel({
   scorecard,
 }: {
@@ -1432,6 +1500,8 @@ export default function Home() {
           </button>
         </div>
       )}
+
+      <RoadmapReleaseBanner />
 
       <VerificationWorkbenchPanel scorecard={sessionScorecard} />
 
