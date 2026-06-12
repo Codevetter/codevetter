@@ -398,6 +398,7 @@ describe("buildReviewerProofMarkdown", () => {
         command_signals: [
           {
             agent: "codex",
+            date: "2026-06-12T00:00:00Z",
             command: "npm run test:checkout",
             status: "failed",
             source: "raw_session",
