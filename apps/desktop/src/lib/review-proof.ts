@@ -343,6 +343,55 @@ function buildCommandTimelineAnchors(
   });
 }
 
+function buildTranscriptReplayTimelineAnchors(
+  commandAnchors: VerificationTimelineAnchor[],
+): VerificationTimelineAnchor[] {
+  const groups = new Map<string, VerificationTimelineAnchor[]>();
+  commandAnchors
+    .filter((anchor) => anchor.sourcePath && anchor.jump?.kind === "command_source")
+    .forEach((anchor) => {
+      const key = `${anchor.sessionId ?? "session"}:${anchor.source}:${anchor.sourcePath}`;
+      groups.set(key, [...(groups.get(key) ?? []), anchor]);
+    });
+
+  return Array.from(groups.values())
+    .filter((anchors) => anchors.length >= 2)
+    .slice(0, 2)
+    .map((anchors, idx) => {
+      const ordered = [...anchors].sort(
+        (a, b) => (a.sourceLine ?? 0) - (b.sourceLine ?? 0),
+      );
+      const first = ordered[0];
+      const last = ordered[ordered.length - 1];
+      const failedCount = ordered.filter((anchor) => anchor.status === "failed").length;
+      const passedCount = ordered.filter((anchor) => anchor.status === "passed").length;
+      const status: VerificationTimelineAnchor["status"] = failedCount > 0
+        ? "failed"
+        : passedCount > 0
+          ? "passed"
+          : "unknown";
+      const contextExcerpt = ordered.slice(0, 4).map((anchor, eventIdx) => {
+        const statusText = anchor.status ?? "unknown";
+        const lineText = anchor.sourceLine != null ? `line ${anchor.sourceLine}` : "no line";
+        return `${eventIdx + 1}. ${statusText} ${lineText}: ${anchor.label}`;
+      });
+
+      return {
+        id: `transcript-replay:${first.sessionId ?? first.eventId ?? idx}:${first.sourcePath}`,
+        label: `Multi-turn transcript replay: ${ordered.length} command events`,
+        source: `transcript:${first.source}`,
+        status,
+        contextExcerpt,
+        sourcePath: first.sourcePath ?? null,
+        sourceLine: first.sourceLine ?? null,
+        eventId: `${first.eventId ?? first.id}->${last.eventId ?? last.id}`,
+        sessionId: first.sessionId ?? null,
+        artifact: first.sourcePath ?? null,
+        jump: first.jump ?? null,
+      };
+    });
+}
+
 function joinTimelinePath(base: string | null | undefined, path: string): string {
   if (!base || path.startsWith("/")) return path;
   return `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
@@ -870,6 +919,11 @@ export function buildVerificationTimeline(
   const worktreeFallback = input.fixResult?.usingWorktree === false;
   const worktreePath = input.fixResult?.worktreePath?.trim();
   const commandAnchors = buildCommandTimelineAnchors(input.history?.command_signals);
+  const transcriptReplayAnchors = buildTranscriptReplayTimelineAnchors(commandAnchors);
+  const evidenceAnchors = [
+    ...commandAnchors.slice(0, Math.max(0, 4 - transcriptReplayAnchors.length)),
+    ...transcriptReplayAnchors,
+  ];
   const editOriginAnchors = buildEditOriginTimelineAnchors(input);
   const qaComparisonAnchors = buildQaComparisonTimelineAnchors(qaComparison);
   const claimCheckAnchors = buildClaimCheckTimelineAnchors(
@@ -1002,9 +1056,9 @@ export function buildVerificationTimeline(
       id: "evidence",
       phase: "evidence",
       label: "Evidence",
-      detail: `${input.evidenceCounts.reproduced} reproduced, ${input.evidenceCounts.fixed} fixed, ${input.evidenceCounts.notReproduced} not reproduced${commandAnchors.length > 0 ? ` · ${commandAnchors.length} command anchor${commandAnchors.length === 1 ? "" : "s"}${failedCommandCount > 0 ? `, ${failedCommandCount} failed` : ""}` : ""}`,
+      detail: `${input.evidenceCounts.reproduced} reproduced, ${input.evidenceCounts.fixed} fixed, ${input.evidenceCounts.notReproduced} not reproduced${commandAnchors.length > 0 ? ` · ${commandAnchors.length} command anchor${commandAnchors.length === 1 ? "" : "s"}${failedCommandCount > 0 ? `, ${failedCommandCount} failed` : ""}` : ""}${transcriptReplayAnchors.length > 0 ? ` · ${transcriptReplayAnchors.length} replay packet${transcriptReplayAnchors.length === 1 ? "" : "s"}` : ""}`,
       status: input.qa?.running ? "active" : evidenceTotal > 0 ? "done" : "idle",
-      anchors: commandAnchors,
+      anchors: evidenceAnchors,
       jump: evidenceJump,
     },
     {

@@ -271,6 +271,22 @@ describe("buildReviewerProofMarkdown", () => {
               "tool: failed with one assertion",
             ],
           },
+          {
+            agent: "codex",
+            date: "2026-06-12T00:03:00Z",
+            command: "npm run build",
+            source: "raw_session",
+            source_path: "/tmp/session.jsonl",
+            source_line: 60,
+            event_id: "session:raw_session:60",
+            session_id: "session-1",
+            status: "passed",
+            artifacts: ["artifacts/build.log"],
+            context_excerpt: [
+              "assistant: ran npm run build after fixing the review proof assertion",
+              "tool: build passed",
+            ],
+          },
         ],
       },
     });
@@ -289,7 +305,8 @@ describe("buildReviewerProofMarkdown", () => {
     assert.equal(qaStep?.anchors?.[1]?.jump?.path, "artifacts/checkout-after.png");
     const evidenceStep = timeline.find((item) => item.id === "evidence");
     assert.equal(evidenceStep?.status, "done");
-    assert.match(evidenceStep?.detail ?? "", /1 command anchor, 1 failed/);
+    assert.match(evidenceStep?.detail ?? "", /2 command anchors, 1 failed/);
+    assert.match(evidenceStep?.detail ?? "", /1 replay packet/);
     assert.equal(evidenceStep?.anchors?.[0]?.eventId, "session:raw_session:42");
     assert.equal(evidenceStep?.anchors?.[0]?.artifact, "artifacts/review-proof.log");
     assert.equal(
@@ -298,6 +315,16 @@ describe("buildReviewerProofMarkdown", () => {
     );
     assert.equal(evidenceStep?.anchors?.[0]?.jump?.kind, "command_source");
     assert.equal(evidenceStep?.anchors?.[0]?.jump?.path, "/tmp/session.jsonl");
+    const replayAnchor = evidenceStep?.anchors?.find((anchor) =>
+      anchor.id.startsWith("transcript-replay:")
+    );
+    assert.equal(replayAnchor?.label, "Multi-turn transcript replay: 2 command events");
+    assert.equal(replayAnchor?.source, "transcript:raw_session");
+    assert.equal(replayAnchor?.status, "failed");
+    assert.match(replayAnchor?.contextExcerpt?.join("\n") ?? "", /1\. failed line 42: npm run test:review-proof/);
+    assert.match(replayAnchor?.contextExcerpt?.join("\n") ?? "", /2\. passed line 60: npm run build/);
+    assert.equal(replayAnchor?.jump?.kind, "command_source");
+    assert.equal(replayAnchor?.jump?.path, "/tmp/session.jsonl");
     assert.equal(evidenceStep?.jump?.kind, "command_source");
     const claimCheckStep = timeline.find((item) => item.id === "claim-check");
     assert.equal(claimCheckStep?.status, "blocked");
