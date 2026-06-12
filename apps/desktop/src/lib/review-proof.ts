@@ -440,6 +440,15 @@ function statusRank(status: VerificationTimelineAnchor["status"]): number {
   return 2;
 }
 
+function isPositiveVerificationClaim(claim: string): boolean {
+  const normalized = claim.trim().toLowerCase();
+  return [
+    /\b(?:tests?|checks?|build|lint|typecheck|playwright|ci)\b.{0,48}\b(?:pass(?:ed|es|ing)?|green|succeed(?:ed|s|ing)?|successful|clean)\b/,
+    /\b(?:pass(?:ed|es|ing)?|green|succeed(?:ed|s|ing)?|successful|clean)\b.{0,48}\b(?:tests?|checks?|build|lint|typecheck|playwright|ci)\b/,
+    /\bno\s+(?:test\s+)?(?:failures|errors|regressions)\b/,
+  ].some((pattern) => pattern.test(normalized));
+}
+
 function buildClaimCheckTimelineAnchors(
   input: VerificationTimelineInput,
   commandAnchors: VerificationTimelineAnchor[],
@@ -464,16 +473,32 @@ function buildClaimCheckTimelineAnchors(
       });
     });
 
+  const contradictingCommand = commandAnchors.find(
+    (anchor) => anchor.status === "failed" || anchor.status === "stale",
+  );
+
   (input.history?.agent_claims ?? []).slice(0, 2).forEach((claim, idx) => {
     const id = claim.event_id ?? claim.talk_id ?? claim.session_id ?? `${runId}:agent-claim:${idx}`;
+    const hasCommandContradiction = Boolean(
+      contradictingCommand && isPositiveVerificationClaim(claim.claim),
+    );
+    const status: VerificationTimelineAnchor["status"] = hasCommandContradiction && contradictingCommand
+      ? contradictingCommand.status
+      : "unknown";
     anchors.push({
       id: `claim:agent:${id}`,
-      label: `Unverified agent claim: ${claim.claim}`,
+      label: hasCommandContradiction
+        ? `Contradicted agent claim: ${claim.claim}`
+        : `Unverified agent claim: ${claim.claim}`,
       source: `claim:${claim.source}`,
-      status: "unknown",
+      status,
+      contextExcerpt: hasCommandContradiction && contradictingCommand
+        ? [`${contradictingCommand.status} command: ${contradictingCommand.label}`]
+        : [],
       sourceLine: claim.source_line ?? null,
       eventId: claim.event_id ?? null,
       sessionId: claim.session_id ?? claim.talk_id ?? runId,
+      jump: hasCommandContradiction ? contradictingCommand?.jump ?? null : null,
     });
   });
 
