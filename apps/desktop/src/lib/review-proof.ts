@@ -168,6 +168,15 @@ export interface ReviewerProofInput {
   historyFindingSummaries: Map<number, HistoryFindingSummary>;
 }
 
+export interface FindingHunkNoteInput {
+  diffRange: string;
+  finding: CliReviewFinding;
+  findingIndex: number;
+  evidence: FindingEvidence;
+  historySummary?: HistoryFindingSummary;
+  focusedReviewMemoryGraph?: ReviewMemoryGraph | null;
+}
+
 function graphNodeMatchesFinding(
   node: ReviewMemoryGraph["nodes"][number],
   finding: CliReviewFinding,
@@ -829,6 +838,101 @@ export function buildReviewerProofMarkdown(input: ReviewerProofInput): string {
     lines.push("", "### Next actions");
     lines.push(...nextActions);
   }
+
+  return lines.join("\n");
+}
+
+export function buildFindingHunkNoteMarkdown(input: FindingHunkNoteInput): string {
+  const finding = input.finding;
+  const evidence = input.evidence;
+  const loc = finding.filePath
+    ? `${finding.filePath}${finding.line != null ? `:${finding.line}` : ""}`
+    : "unanchored";
+  const lines: string[] = [];
+
+  lines.push(`# CodeVetter finding note`);
+  lines.push("");
+  lines.push(`- Diff: ${input.diffRange || "local diff"}`);
+  lines.push(`- Finding: ${input.findingIndex + 1}`);
+  lines.push(`- Severity: ${finding.severity.toUpperCase()}`);
+  lines.push(`- Location: ${loc}`);
+  lines.push(`- Evidence status: ${evidence.status.replace("_", " ")}`);
+  lines.push(`- Evidence level: ${evidence.level}`);
+  if (evidence.artifact.trim()) {
+    lines.push(`- Artifact: ${evidence.artifact.trim()}`);
+  }
+
+  lines.push("", "## Finding");
+  lines.push(`**${finding.title}**`);
+  lines.push("");
+  lines.push(finding.summary.trim() || "No summary provided.");
+  if (finding.suggestion?.trim()) {
+    lines.push("", "## Suggested action");
+    lines.push(finding.suggestion.trim());
+  }
+
+  if (evidence.notes.trim()) {
+    lines.push("", "## Evidence notes");
+    evidence.notes
+      .trim()
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .forEach((line) => lines.push(`- ${line}`));
+  }
+
+  if (input.historySummary) {
+    const summary = input.historySummary;
+    const counts = [
+      summary.decisions ? `${summary.decisions} decision` : null,
+      summary.commits ? `${summary.commits} commit` : null,
+      summary.recurring ? `${summary.recurring} recurring` : null,
+      summary.commands ? `${summary.commands} command` : null,
+      summary.claims ? `${summary.claims} claim` : null,
+    ].filter(Boolean);
+    const sample = summary.topDecision ?? summary.topCommit ?? summary.topClaim;
+    lines.push("", "## Local history context");
+    lines.push(`- ${counts.length ? counts.join(", ") : "No linked history counts."}`);
+    if (sample) {
+      lines.push(`- ${sample}`);
+    }
+    for (const command of summary.topCommands ?? []) {
+      lines.push(`- Command evidence: ${command}`);
+    }
+  }
+
+  if (input.focusedReviewMemoryGraph && input.focusedReviewMemoryGraph.nodes.length > 0) {
+    const graph = input.focusedReviewMemoryGraph;
+    lines.push("", "## Focused memory graph");
+    lines.push(
+      `Schema v${graph.schema_version}; scope ${graph.scope}; ${graph.nodes.length} nodes; ${graph.edges.length} edges${graph.truncated ? "; truncated" : ""}.`,
+    );
+    graph.nodes.slice(0, 8).forEach((node) => {
+      const path = node.file_path && node.file_path !== node.label ? ` (${node.file_path})` : "";
+      const detail = node.detail ? ` - ${node.detail}` : "";
+      lines.push(`- [${node.kind}] ${node.label}${path}${detail}`);
+    });
+    graph.edges.slice(0, 8).forEach((edge) => {
+      lines.push(`- Edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.confidence.toFixed(2)})`);
+    });
+  }
+
+  const nextActions = buildRevalidationChecklist(finding, evidence)
+    .filter((item) => !evidence.revalidation[item.id])
+    .map((item) => `- [ ] ${item.label}`);
+  if (evidence.status === "not_checked") {
+    nextActions.unshift(`- [ ] Verify this finding against ${loc}.`);
+  } else if (evidence.status === "reproduced") {
+    nextActions.unshift(`- [ ] Fix the reproduced issue and attach fresh proof.`);
+  }
+  if (nextActions.length > 0) {
+    lines.push("", "## Next verification actions", ...nextActions);
+  }
+
+  lines.push("", "## Agent-context instruction");
+  lines.push(
+    "Use this note as bounded local context. Validate every graph edge against source before editing, preserve unrelated files, and return fresh evidence for the same finding.",
+  );
 
   return lines.join("\n");
 }
