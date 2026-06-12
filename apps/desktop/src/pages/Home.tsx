@@ -964,7 +964,7 @@ function scoreTone(score: number): string {
   return "text-red-300";
 }
 
-const ROADMAP_RELEASE_VERSION = "1.1.46";
+const ROADMAP_RELEASE_VERSION = "1.1.47";
 
 const ROADMAP_RELEASE_ITEMS = [
   {
@@ -974,7 +974,7 @@ const ROADMAP_RELEASE_ITEMS = [
   },
   {
     label: "Live archive refresh",
-    detail: "Manual re-index emits archive update events and refreshes active search results.",
+    detail: "Startup, periodic, and manual indexes emit archive events for active search refresh.",
     href: "/roadmap",
   },
   {

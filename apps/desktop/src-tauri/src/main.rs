@@ -38,6 +38,7 @@ fn main() {
             // the DB write lock. VACUUM is intentionally omitted here — it
             // takes minutes and holds an exclusive lock, freezing the UI.
             let bg_data_dir = app_data_dir;
+            let bg_handle = app.handle().clone();
             std::thread::Builder::new()
                 .name("initial-index".into())
                 .spawn(move || {
@@ -49,7 +50,12 @@ fn main() {
 
                     log::info!("Starting full index...");
                     match run_full_index(bg_data_dir.clone()) {
-                        Ok(msg) => log::info!("Full index complete: {msg}"),
+                        Ok(summary) => {
+                            log::info!("Full index complete: {}", summary.log_message());
+                            crate::commands::history::emit_session_archive_updated(
+                                &bg_handle, &summary,
+                            );
+                        }
                         Err(e) => log::error!("Full index failed: {e}"),
                     }
 
@@ -84,8 +90,19 @@ fn main() {
                         log::info!("Periodic re-index starting...");
                         match db::init_db(periodic_data_dir.clone()) {
                             Ok(conn) => {
-                                match crate::commands::history::run_full_index_with_conn(&conn) {
-                                    Ok(msg) => log::info!("Periodic re-index complete: {msg}"),
+                                match crate::commands::history::run_full_index_summary_with_conn(
+                                    &conn,
+                                ) {
+                                    Ok(summary) => {
+                                        log::info!(
+                                            "Periodic re-index complete: {}",
+                                            summary.log_message()
+                                        );
+                                        crate::commands::history::emit_session_archive_updated(
+                                            &periodic_handle,
+                                            &summary,
+                                        );
+                                    }
                                     Err(e) => log::error!("Periodic re-index failed: {e}"),
                                 }
 
@@ -377,10 +394,12 @@ fn run_initial_index(app_data_dir: std::path::PathBuf) -> Result<String, String>
     ))
 }
 
-fn run_full_index(app_data_dir: std::path::PathBuf) -> Result<String, String> {
+fn run_full_index(
+    app_data_dir: std::path::PathBuf,
+) -> Result<crate::commands::history::FullIndexSummary, String> {
     use crate::commands::history;
     let conn = db::init_db(app_data_dir).map_err(|e| e.to_string())?;
-    history::run_full_index_with_conn(&conn)
+    history::run_full_index_summary_with_conn(&conn)
 }
 
 struct QuickMeta {
