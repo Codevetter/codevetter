@@ -33,12 +33,24 @@ struct ProductionAdapterRunStats {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct SessionArchiveUpdatedPayload {
-    indexed_sessions: u64,
-    indexed_messages: u64,
-    skipped_sessions: u64,
-    archive_search_rows_indexed: i64,
-    indexed_at: String,
+pub struct FullIndexSummary {
+    pub indexed_sessions: u64,
+    pub indexed_messages: u64,
+    pub skipped_sessions: u64,
+    pub archive_search_rows_indexed: i64,
+    pub indexed_at: String,
+}
+
+impl FullIndexSummary {
+    pub fn log_message(&self) -> String {
+        format!(
+            "sessions={}, messages={}, skipped={}, archive_search_rows_indexed={}",
+            self.indexed_sessions,
+            self.indexed_messages,
+            self.skipped_sessions,
+            self.archive_search_rows_indexed
+        )
+    }
 }
 
 impl ProductionAdapterRunStats {
@@ -132,19 +144,37 @@ fn persist_production_adapter_run(
 /// lines are parsed.
 /// Run the full index directly with a connection reference.
 /// Used by the startup background thread.
-pub fn run_full_index_with_conn(conn: &rusqlite::Connection) -> Result<String, String> {
+pub fn run_full_index_summary_with_conn(
+    conn: &rusqlite::Connection,
+) -> Result<FullIndexSummary, String> {
     let _index_guard = FULL_INDEX_LOCK
         .lock()
         .map_err(|e| format!("full index lock poisoned: {e}"))?;
+    run_full_index_unlocked(conn)
+}
+
+fn run_full_index_unlocked(conn: &rusqlite::Connection) -> Result<FullIndexSummary, String> {
     let (indexed_sessions, indexed_messages, skipped_sessions) = full_index_impl(conn)?;
+    let archive_search_rows_indexed =
+        queries::sync_session_message_archive_fts(conn).map_err(|e| e.to_string())?;
 
     // Store the last indexed timestamp
     let now = chrono::Utc::now().to_rfc3339();
     let _ = queries::set_preference(conn, "last_indexed_at", &now);
 
-    Ok(format!(
-        "sessions={indexed_sessions}, messages={indexed_messages}, skipped={skipped_sessions}"
-    ))
+    Ok(FullIndexSummary {
+        indexed_sessions,
+        indexed_messages,
+        skipped_sessions,
+        archive_search_rows_indexed,
+        indexed_at: now,
+    })
+}
+
+pub fn emit_session_archive_updated(app: &AppHandle, summary: &FullIndexSummary) {
+    if let Err(error) = app.emit("session_archive_updated", summary.clone()) {
+        log::warn!("Failed to emit session_archive_updated: {error}");
+    }
 }
 
 #[tauri::command]
@@ -153,30 +183,14 @@ pub async fn trigger_index(app: AppHandle, db: State<'_, DbState>) -> Result<Val
     let _index_guard = FULL_INDEX_LOCK
         .lock()
         .map_err(|e| format!("full index lock poisoned: {e}"))?;
-    let (indexed_sessions, indexed_messages, skipped_sessions) =
-        full_index_impl(&conn).map_err(|e| e.to_string())?;
-    let archive_search_rows_indexed =
-        queries::sync_session_message_archive_fts(&conn).map_err(|e| e.to_string())?;
-
-    // Store the last indexed timestamp
-    let now = chrono::Utc::now().to_rfc3339();
-    let _ = queries::set_preference(&conn, "last_indexed_at", &now);
-    let payload = SessionArchiveUpdatedPayload {
-        indexed_sessions,
-        indexed_messages,
-        skipped_sessions,
-        archive_search_rows_indexed,
-        indexed_at: now.clone(),
-    };
-    if let Err(error) = app.emit("session_archive_updated", payload) {
-        log::warn!("Failed to emit session_archive_updated: {error}");
-    }
+    let summary = run_full_index_unlocked(&conn)?;
+    emit_session_archive_updated(&app, &summary);
 
     Ok(json!({
-        "indexed_sessions": indexed_sessions,
-        "indexed_messages": indexed_messages,
-        "skipped_sessions": skipped_sessions,
-        "archive_search_rows_indexed": archive_search_rows_indexed,
+        "indexed_sessions": summary.indexed_sessions,
+        "indexed_messages": summary.indexed_messages,
+        "skipped_sessions": summary.skipped_sessions,
+        "archive_search_rows_indexed": summary.archive_search_rows_indexed,
         "projects_scanned": 0,
     }))
 }
