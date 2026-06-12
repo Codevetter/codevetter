@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   buildCodebaseHistoryExplanations,
+  buildFindingHunkNoteMarkdown,
   buildFocusedReviewMemoryGraph,
   buildQaPostFixComparison,
   buildReviewerProofMarkdown,
@@ -535,5 +536,85 @@ describe("buildReviewerProofMarkdown", () => {
     assert.match(markdown, /ui-change-needs-browser-proof/);
     const focusedSection = markdown.split("### Focused finding graph")[1].split("### Findings")[0];
     assert.doesNotMatch(focusedSection, /Settings\.tsx.*unrelated file/);
+  });
+
+  it("builds a finding-specific Hunk-style note with focused graph and history context", () => {
+    const finding = {
+      severity: "high",
+      title: "Billing page lacks browser proof",
+      summary: "Billing UI changed without runtime evidence.",
+      suggestion: "Run the billing flow and attach the screenshot or trace.",
+      filePath: "src/pages/Billing.tsx",
+      line: 12,
+    };
+    const note = buildFindingHunkNoteMarkdown({
+      diffRange: "main...HEAD",
+      findingIndex: 0,
+      finding,
+      evidence: {
+        level: "browser",
+        status: "reproduced",
+        artifact: "artifacts/billing-fail.png",
+        notes: "Checkout modal did not open.",
+        revalidation: {
+          "scan-neighbors": true,
+        },
+      },
+      historySummary: {
+        findingIdx: 0,
+        file: "src/pages/Billing.tsx",
+        commits: 1,
+        decisions: 1,
+        recurring: 0,
+        commands: 1,
+        claims: 0,
+        topDecision: "DECISION: Billing flows require browser proof.",
+        topCommands: ["codex: npm run test:e2e [failed; raw_session:42]"],
+      },
+      focusedReviewMemoryGraph: {
+        schema_version: 1,
+        scope: "finding:src/pages/Billing.tsx",
+        truncated: false,
+        nodes: [
+          {
+            id: "file-src-pages-billing-tsx",
+            kind: "file",
+            label: "src/pages/Billing.tsx",
+            file_path: "src/pages/Billing.tsx",
+            detail: "changed file",
+          },
+          {
+            id: "candidate-ui-change-needs-browser-proof",
+            kind: "evidence_candidate",
+            label: "ui-change-needs-browser-proof",
+            file_path: "src/pages/Billing.tsx",
+            detail: "ui_without_browser_proof",
+          },
+        ],
+        edges: [
+          {
+            from: "file-src-pages-billing-tsx",
+            to: "candidate-ui-change-needs-browser-proof",
+            kind: "raises_candidate",
+            confidence: 0.72,
+          },
+        ],
+      },
+    });
+
+    assert.match(note, /# CodeVetter finding note/);
+    assert.match(note, /Diff: main\.\.\.HEAD/);
+    assert.match(note, /Location: src\/pages\/Billing\.tsx:12/);
+    assert.match(note, /Evidence status: reproduced/);
+    assert.match(note, /Artifact: artifacts\/billing-fail\.png/);
+    assert.match(note, /## Local history context/);
+    assert.match(note, /DECISION: Billing flows require browser proof/);
+    assert.match(note, /Command evidence: codex: npm run test:e2e/);
+    assert.match(note, /## Focused memory graph/);
+    assert.match(note, /ui-change-needs-browser-proof/);
+    assert.match(note, /Edge: file-src-pages-billing-tsx -> candidate-ui-change-needs-browser-proof/);
+    assert.match(note, /Fix the reproduced issue and attach fresh proof/);
+    assert.doesNotMatch(note, /Spot-check adjacent files/);
+    assert.match(note, /Agent-context instruction/);
   });
 });

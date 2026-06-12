@@ -178,7 +178,7 @@ Add optional export/open paths for users who already use Hunk or Graphify.
 
 Acceptance:
 
-- CodeVetter can export findings as Hunk-style agent-context notes or another documented sidecar format. Partially implemented through Repo Unpacked `agent_context_markdown` sidecar export with repo graph and history context; finding-specific Hunk note export remains pending.
+- CodeVetter can export findings as Hunk-style agent-context notes or another documented sidecar format. Implemented through Repo Unpacked `agent_context_markdown` sidecar export with repo graph and history context plus Review's selected-finding "Copy note" action, which includes file/line, evidence status, local history context, focused graph nodes/edges, and next verification actions.
 - CodeVetter can export its local graph as JSON for Graphify comparison. Implemented through Repo Unpacked `repo_graph_json` export.
 - CodeVetter can import a graph JSON/report only through an explicit user action.
 - Missing optional CLIs produce clear non-fatal UI errors.

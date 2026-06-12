@@ -48,6 +48,7 @@ import {
 } from "@/lib/quick-review-state";
 import {
   buildCodebaseHistoryExplanations,
+  buildFindingHunkNoteMarkdown,
   buildFocusedReviewMemoryGraph,
   buildQaPostFixComparison,
   buildRevalidationChecklist,
@@ -958,6 +959,7 @@ export default function QuickReview() {
   // Diff range derived from selection
   const [diffRange, setDiffRange] = useState("");
   const [proofCopied, setProofCopied] = useState(false);
+  const [findingNoteCopied, setFindingNoteCopied] = useState(false);
 
   // ─── Load saved folder + branches on mount ───────────────────────────────
 
@@ -2655,6 +2657,42 @@ export default function QuickReview() {
     reviewTimeline,
     historyFindingSummaries,
     historyExplanations,
+  ]);
+
+  const handleCopyFindingNote = useCallback(async () => {
+    if (!result || selectedFindingIdx === null) return;
+    const finding = sortedFindings[selectedFindingIdx];
+    if (!finding) return;
+    const evidence = {
+      ...defaultFindingEvidence,
+      ...evidenceByFinding[findingEvidenceKey(finding, selectedFindingIdx)],
+    };
+    const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(
+      result.review_memory_graph,
+      finding,
+    );
+    const markdown = buildFindingHunkNoteMarkdown({
+      diffRange: result.diff_range,
+      finding,
+      findingIndex: selectedFindingIdx,
+      evidence,
+      historySummary: historyFindingSummaries.get(selectedFindingIdx),
+      focusedReviewMemoryGraph,
+    });
+
+    try {
+      await navigator.clipboard.writeText(markdown);
+      setFindingNoteCopied(true);
+      setTimeout(() => setFindingNoteCopied(false), 2000);
+    } catch {
+      // clipboard unavailable — fail silently
+    }
+  }, [
+    result,
+    selectedFindingIdx,
+    sortedFindings,
+    evidenceByFinding,
+    historyFindingSummaries,
   ]);
 
   const handleCopyFixPacket = useCallback(async () => {
@@ -4730,6 +4768,25 @@ export default function QuickReview() {
                       <Copy size={10} />
                     )}
                     {proofCopied ? "Copied!" : "Copy proof"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleCopyFindingNote}
+                    disabled={selectedFindingIdx === null}
+                    className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200 disabled:opacity-40"
+                    title={
+                      selectedFindingIdx === null
+                        ? "Select a finding to copy its context note"
+                        : "Copy selected finding context note"
+                    }
+                  >
+                    {findingNoteCopied ? (
+                      <CheckCircle size={10} className="text-emerald-400" />
+                    ) : (
+                      <FileCode size={10} />
+                    )}
+                    {findingNoteCopied ? "Copied!" : "Copy note"}
                   </Button>
                 </div>
               </div>
