@@ -383,6 +383,62 @@ describe("buildReviewerProofMarkdown", () => {
     assert.equal(claimCheckStep?.anchors?.[0]?.eventId, "talk-1:recommended_next_steps:claim:1");
   });
 
+  it("blocks positive agent claims contradicted by failed command evidence", () => {
+    const timeline = buildVerificationTimeline({
+      runId: "review-claim-mismatch",
+      review: {
+        findingsCount: 1,
+      },
+      evidenceCounts: {
+        fixed: 0,
+        reproduced: 1,
+        notReproduced: 0,
+      },
+      history: {
+        command_signals: [
+          {
+            agent: "codex",
+            command: "npm run test:checkout",
+            status: "failed",
+            source: "raw_session",
+            source_path: "/tmp/session.jsonl",
+            source_line: 12,
+            event_id: "cmd-failed",
+            session_id: "session-claim-mismatch",
+            status_reason: "exit 1",
+            artifacts: ["/tmp/test.log"],
+          },
+        ],
+        agent_claims: [
+          {
+            agent: "codex",
+            date: "2026-06-12T00:00:00Z",
+            claim: "All checkout tests are passing.",
+            source: "recommended_next_steps",
+            source_line: 7,
+            event_id: "claim-pass",
+            talk_id: "talk-claim-mismatch",
+            session_id: "session-claim-mismatch",
+          },
+        ],
+      },
+    });
+
+    const claimCheckStep = timeline.find((item) => item.id === "claim-check");
+    const contradictedClaim = claimCheckStep?.anchors?.find((anchor) =>
+      anchor.id === "claim:agent:claim-pass"
+    );
+    assert.equal(claimCheckStep?.status, "blocked");
+    assert.match(claimCheckStep?.detail ?? "", /2 blocking, 0 need proof/);
+    assert.equal(
+      contradictedClaim?.label,
+      "Contradicted agent claim: All checkout tests are passing.",
+    );
+    assert.equal(contradictedClaim?.status, "failed");
+    assert.equal(contradictedClaim?.contextExcerpt?.[0], "failed command: npm run test:checkout");
+    assert.equal(contradictedClaim?.jump?.kind, "command_source");
+  });
+
   it("copies concrete command evidence into finding handoff proof", () => {
     const history = new Map<number, HistoryFindingSummary>();
     history.set(0, {
