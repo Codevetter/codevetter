@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   FileClock,
   GitBranch,
+  Map as MapIcon,
   MonitorPlay,
   Network,
   RefreshCw,
@@ -964,7 +965,7 @@ function scoreTone(score: number): string {
   return "text-red-300";
 }
 
-const ROADMAP_RELEASE_VERSION = "1.1.47";
+const ROADMAP_RELEASE_VERSION = "1.1.48";
 
 const ROADMAP_RELEASE_ITEMS = [
   {
@@ -978,8 +979,8 @@ const ROADMAP_RELEASE_ITEMS = [
     href: "/roadmap",
   },
   {
-    label: "Usage-first Home",
-    detail: "Roadmap owns verification surfaces so launch stays focused on usage telemetry.",
+    label: "Usage launch surface",
+    detail: "Home opens directly into usage telemetry while Roadmap keeps the deeper build surfaces.",
     href: "/",
   },
 ];
@@ -996,13 +997,13 @@ export function RoadmapReleaseBanner() {
             >
               v{ROADMAP_RELEASE_VERSION}
             </Badge>
-            <span className="cv-label text-slate-400">latest installed roadmap build</span>
+            <span className="cv-label text-slate-400">latest installed build</span>
           </div>
           <h2 className="mt-3 text-lg font-semibold tracking-normal text-slate-100">
             Verification work is now visible from launch.
           </h2>
           <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">
-            The recent roadmap slices are no longer only buried inside Review state. Roadmap exposes the shipped verification spine, archive search, and live source-health surfaces while Home stays usage-first.
+            The recent roadmap slices are no longer only buried inside Review state. Roadmap exposes the shipped verification spine, archive search, and live source-health surfaces while Home opens directly into usage telemetry.
           </p>
         </div>
         <div className="grid gap-px bg-[#18130b] md:grid-cols-3">
@@ -1653,27 +1654,57 @@ export default function Home() {
   // ─── Render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full overflow-y-auto overflow-x-hidden px-5 pb-8 pt-20">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5">
-        <div className="flex justify-end gap-2">
-          <Link
-            to="/roadmap"
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 border border-[#262626] bg-[#08090a] px-4 text-xs font-medium text-slate-400 transition-colors hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
-          >
-            Roadmap
-            <ArrowRight size={14} />
-          </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTriggerIndex}
-            disabled={indexing}
-            className="h-10 shrink-0 justify-center gap-2 border-white/70 bg-white px-5 text-black shadow-[0_0_0_1px_rgba(125,211,252,0.08),0_18px_40px_-30px_rgba(125,211,252,0.85)] transition-all duration-150 hover:border-[var(--cv-accent)] hover:bg-[var(--cv-accent)] hover:text-[#031016] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.32),0_0_28px_rgba(125,211,252,0.24)] focus-visible:ring-1 focus-visible:ring-[var(--cv-accent)] active:translate-y-px disabled:border-white/20 disabled:bg-white/45 disabled:text-black/55 disabled:shadow-none"
-          >
-            <RefreshCw size={15} className={indexing ? "animate-spin" : ""} />
-            {indexing ? "Indexing..." : "Re-index local data"}
-          </Button>
-        </div>
+    <div className="min-h-full overflow-y-auto overflow-x-hidden px-5 pb-8 pt-16">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4">
+        <section className="cv-frame overflow-hidden bg-[#07090b]">
+          <div className="flex flex-col gap-3 border-b border-[#1c1c1c] px-4 py-3 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <div className="cv-label text-slate-500">usage</div>
+              <h1 className="mt-1 truncate text-lg font-semibold tracking-normal text-slate-100">
+                Usage dashboard
+              </h1>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTriggerIndex}
+                disabled={indexing}
+                className="h-10 shrink-0 justify-center gap-2 border-white/70 bg-white px-5 text-black shadow-[0_0_0_1px_rgba(125,211,252,0.08),0_18px_40px_-30px_rgba(125,211,252,0.85)] transition-all duration-150 hover:border-[var(--cv-accent)] hover:bg-[var(--cv-accent)] hover:text-[#031016] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.32),0_0_28px_rgba(125,211,252,0.24)] focus-visible:ring-1 focus-visible:ring-[var(--cv-accent)] active:translate-y-px disabled:border-white/20 disabled:bg-white/45 disabled:text-black/55 disabled:shadow-none"
+              >
+                <RefreshCw size={15} className={indexing ? "animate-spin" : ""} />
+                {indexing ? "Indexing..." : "Re-index local data"}
+              </Button>
+              <Link
+                to="/roadmap"
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 border border-[#262626] bg-[#08090a] px-4 text-xs font-medium text-slate-500 transition-colors hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
+              >
+                <MapIcon size={14} />
+                Roadmap
+              </Link>
+            </div>
+          </div>
+
+          {/* Token period cards */}
+          <div className="grid grid-cols-2 gap-px bg-[#171717] lg:grid-cols-4">
+            {[
+              { label: "Today", value: tokenUsage?.today ?? 0, color: "text-cyan-400" },
+              { label: "This week", value: tokenUsage?.this_week ?? 0, color: "text-emerald-400" },
+              { label: "This month", value: tokenUsage?.this_month ?? 0, color: "text-yellow-400" },
+              { label: "This year", value: tokenUsage?.this_year ?? 0, color: "text-rose-400" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="flex min-h-20 items-center justify-between bg-[#090a0b] px-4 py-4"
+              >
+                <span className="cv-label mr-2 truncate">{stat.label}</span>
+                <span className={`shrink-0 text-base font-semibold tabular-nums ${stat.color}`}>
+                  {loading && !tokenUsage ? "--" : formatTokens(stat.value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
 
       {/* Index result banner */}
       {indexResult && (
@@ -1706,26 +1737,6 @@ export default function Home() {
           </button>
         </div>
       )}
-
-      {/* Token period cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[
-          { label: "Today", value: tokenUsage?.today ?? 0, color: "text-cyan-400" },
-          { label: "This week", value: tokenUsage?.this_week ?? 0, color: "text-emerald-400" },
-          { label: "This month", value: tokenUsage?.this_month ?? 0, color: "text-yellow-400" },
-          { label: "This year", value: tokenUsage?.this_year ?? 0, color: "text-rose-400" },
-        ].map((stat) => (
-          <Card
-            key={stat.label}
-            className="cv-frame flex items-center justify-between overflow-hidden rounded-none px-4 py-4"
-          >
-            <span className="cv-label mr-2 truncate">{stat.label}</span>
-            <span className={`text-sm font-semibold tabular-nums shrink-0 ${stat.color}`}>
-              {loading && !tokenUsage ? "--" : formatTokens(stat.value)}
-            </span>
-          </Card>
-        ))}
-      </div>
 
       {/* Token usage chart */}
       {tokenUsage && (
