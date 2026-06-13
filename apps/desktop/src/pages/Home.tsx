@@ -965,23 +965,23 @@ function scoreTone(score: number): string {
   return "text-red-300";
 }
 
-const ROADMAP_RELEASE_VERSION = "1.1.52";
+const ROADMAP_RELEASE_VERSION = "1.1.53";
 
 const ROADMAP_RELEASE_ITEMS = [
   {
-    label: "Archive search",
-    detail: "Search normalized local agent messages and tool calls from Roadmap.",
-    href: "/roadmap",
+    label: "Lightweight idle usage",
+    detail: "Startup and tray refresh now use cheap usage reads instead of background transcript indexing.",
+    href: "/",
   },
   {
-    label: "Live archive refresh",
-    detail: "Startup, periodic, and manual indexes emit archive events for active search refresh.",
-    href: "/roadmap",
+    label: "Manual archive refresh",
+    detail: "Full Claude, Codex, and Cursor session indexing now runs only from the explicit re-index action.",
+    href: "/",
   },
   {
-    label: "Conversation replay context",
-    detail: "Transcript previews now label before/target/after turns and nearest command lines.",
-    href: "/review",
+    label: "Quieter tray monitor",
+    detail: "The default tray cadence is five minutes, with session threshold scans opt-in.",
+    href: "/settings",
   },
 ];
 
@@ -1000,10 +1000,10 @@ export function RoadmapReleaseBanner() {
             <span className="cv-label text-slate-400">latest installed build</span>
           </div>
           <h2 className="mt-3 text-lg font-semibold tracking-normal text-slate-100">
-            Verification work is now visible from launch.
+            Usage tracking is lightweight by default.
           </h2>
           <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">
-            The recent roadmap slices are no longer only buried inside Review state. Roadmap exposes the shipped verification spine, archive search, and live source-health surfaces while Home opens directly into usage telemetry.
+            Home can track usage without waking expensive archive scans. Session intelligence and transcript refreshes stay available when explicitly requested.
           </p>
         </div>
         <div className="grid gap-px bg-[#18130b] md:grid-cols-3">
