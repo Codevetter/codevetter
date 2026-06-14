@@ -794,41 +794,78 @@ fn normalize_plan(raw: &str) -> String {
 /// `service` — the keychain service name, e.g. "Claude Code-credentials"
 /// or "Claude Code-credentials-f50ce9b7" for a secondary account.
 fn read_oauth_token_from_keychain(service: &str) -> Result<String, String> {
-    let output = std::process::Command::new("security")
-        .args(["find-generic-password", "-s", service, "-w"])
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .output()
-        .map_err(|e| format!("Failed to run security command: {e}"))?;
-
-    if !output.status.success() {
-        return Err(format!("No credentials found in Keychain for '{service}'"));
+    // Try the default keychain search list first, then the login keychain
+    // explicitly. Some machines have a malformed default search list (e.g. a
+    // stray newline merging login.keychain-db with another keychain), so
+    // `find-generic-password` without a named keychain misses the Claude token
+    // even though it lives in login.keychain-db.
+    let mut arg_sets: Vec<Vec<String>> = vec![vec![
+        "find-generic-password".into(),
+        "-s".into(),
+        service.into(),
+        "-w".into(),
+    ]];
+    if let Ok(home) = std::env::var("HOME") {
+        arg_sets.push(vec![
+            "find-generic-password".into(),
+            "-s".into(),
+            service.into(),
+            "-w".into(),
+            format!("{home}/Library/Keychains/login.keychain-db"),
+        ]);
     }
 
-    let raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    let parsed: Value =
-        serde_json::from_str(&raw).map_err(|e| format!("Failed to parse keychain JSON: {e}"))?;
-
-    parsed
-        .get("claudeAiOauth")
-        .and_then(|o| o.get("accessToken"))
-        .and_then(|v| v.as_str())
-        .map(String::from)
-        .ok_or_else(|| "No accessToken in keychain credentials".to_string())
+    let mut last_err = format!("No credentials found in Keychain for '{service}'");
+    for args in &arg_sets {
+        let output = std::process::Command::new("security")
+            .args(args)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .output()
+            .map_err(|e| format!("Failed to run security command: {e}"))?;
+        if !output.status.success() {
+            continue;
+        }
+        let raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        match serde_json::from_str::<Value>(&raw) {
+            Ok(parsed) => {
+                if let Some(token) = parsed
+                    .get("claudeAiOauth")
+                    .and_then(|o| o.get("accessToken"))
+                    .and_then(|v| v.as_str())
+                {
+                    return Ok(token.to_string());
+                }
+                last_err = "No accessToken in keychain credentials".to_string();
+            }
+            Err(e) => last_err = format!("Failed to parse keychain JSON: {e}"),
+        }
+    }
+    Err(last_err)
 }
 
 /// Scan macOS Keychain for all Claude Code credential entries.
 fn find_claude_keychain_services() -> Vec<String> {
-    let output = std::process::Command::new("security")
+    // Dump the default search list AND the login keychain explicitly — a
+    // malformed default search list can otherwise hide login.keychain-db
+    // entries (see read_oauth_token_from_keychain).
+    let mut dumps: Vec<String> = Vec::new();
+    if let Ok(o) = std::process::Command::new("security")
         .args(["dump-keychain"])
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
         .output()
-        .ok();
-
-    let stdout = output
-        .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
-        .unwrap_or_default();
+    {
+        dumps.push(String::from_utf8_lossy(&o.stdout).to_string());
+    }
+    if let Ok(home) = std::env::var("HOME") {
+        let login = format!("{home}/Library/Keychains/login.keychain-db");
+        if let Ok(o) = std::process::Command::new("security")
+            .args(["dump-keychain", &login])
+            .output()
+        {
+            dumps.push(String::from_utf8_lossy(&o.stdout).to_string());
+        }
+    }
+    let stdout = dumps.join("\n");
 
     let mut services = Vec::new();
     for line in stdout.lines() {
