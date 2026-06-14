@@ -119,6 +119,7 @@ import {
   runCliReview,
   runReviewVerificationCommand,
   runSyntheticQa,
+  sendTrayNotification,
   setPreference,
   suggestReviewVerificationCommands,
 } from "@/lib/tauri-ipc";
@@ -1303,6 +1304,20 @@ export default function QuickReview() {
       setSelectedFindings(new Set());
       // Core action: a code review run completed (also fires `activated` once).
       trackCoreAction("review_run");
+      // Fire the "Review Completed" desktop notification (default-on, like the
+      // tray monitor's quota notifications). Best-effort — never block the flow.
+      void getPreference("notify_review_done")
+        .then((raw) => {
+          if (raw === "false") return;
+          const count = res.findings_count ?? res.findings.length;
+          return sendTrayNotification(
+            "Review complete",
+            `${count} finding${count === 1 ? "" : "s"} · score ${Math.round(res.score)}/100 · ${res.diff_range || diffRange}`,
+          );
+        })
+        .catch(() => {
+          // Notifications are best-effort; ignore permission/plugin failures.
+        });
       await blastPromise;
     } catch (e) {
       console.error("[CodeVetter] CLI review failed:", e);
@@ -2991,8 +3006,12 @@ export default function QuickReview() {
     });
   }, []);
 
-  // Parse diff into files when fixResult changes
-  const diffFiles = fixResult?.diff ? parseDiffIntoFiles(fixResult.diff) : [];
+  // Parse diff into files only when the fix diff changes, not on every render.
+  const fixDiff = fixResult?.diff;
+  const diffFiles = useMemo(
+    () => (fixDiff ? parseDiffIntoFiles(fixDiff) : []),
+    [fixDiff],
+  );
 
   const handleReReview = useCallback(() => {
     setFixResult(null);

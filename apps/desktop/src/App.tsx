@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo,type ReactNode, useCallback, useEffect, useState } from "react";
+import { Component, type ErrorInfo, lazy, type ReactNode, Suspense, useCallback, useEffect, useState } from "react";
 import { Link,Outlet, Route, Routes } from "react-router-dom";
 
 import CommandPalette from "@/components/command-palette";
@@ -9,16 +9,17 @@ import UpdateChecker from "@/components/update-checker";
 import { trackAppLaunch } from "@/lib/analytics";
 import { getPreference, isTauriAvailable } from "@/lib/tauri-ipc";
 import { useTrayMonitor } from "@/lib/use-tray-monitor";
-// Pages
-import AgentMemories from "@/pages/AgentMemories";
-import Home from "@/pages/Home";
-import IntentDebugger from "@/pages/IntentDebugger";
-import QaReplay from "@/pages/QaReplay";
-import QuickReview from "@/pages/QuickReview";
-import RepoUnpacked from "@/pages/RepoUnpacked";
-import Roadmap from "@/pages/Roadmap";
-import Rubrics from "@/pages/Rubrics";
-import Settings from "@/pages/Settings";
+// Pages are lazy-loaded so the initial bundle isn't dominated by the large
+// review/unpack screens — only the route the user lands on is fetched.
+const AgentMemories = lazy(() => import("@/pages/AgentMemories"));
+const Home = lazy(() => import("@/pages/Home"));
+const IntentDebugger = lazy(() => import("@/pages/IntentDebugger"));
+const QaReplay = lazy(() => import("@/pages/QaReplay"));
+const QuickReview = lazy(() => import("@/pages/QuickReview"));
+const RepoUnpacked = lazy(() => import("@/pages/RepoUnpacked"));
+const Roadmap = lazy(() => import("@/pages/Roadmap"));
+const Rubrics = lazy(() => import("@/pages/Rubrics"));
+const Settings = lazy(() => import("@/pages/Settings"));
 
 /** Hook: open/close command palette via Cmd+K */
 function useCommandPalette() {
@@ -126,6 +127,15 @@ function NotFound() {
   );
 }
 
+/** Shown while a lazy-loaded route chunk is being fetched. */
+function RouteFallback() {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--cv-accent)] border-t-transparent" />
+    </div>
+  );
+}
+
 /** Main shell: floating nav + full-width content area */
 function Shell() {
   const { showOnboarding, setShowOnboarding, ready } = useOnboarding();
@@ -149,7 +159,9 @@ function Shell() {
       <Sidebar />
       <main className="flex-1 h-full overflow-y-auto">
         <RouteErrorBoundary>
-          <Outlet />
+          <Suspense fallback={<RouteFallback />}>
+            <Outlet />
+          </Suspense>
         </RouteErrorBoundary>
       </main>
       <CommandPalette isOpen={isOpen} onClose={close} />
