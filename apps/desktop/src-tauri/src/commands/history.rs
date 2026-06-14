@@ -507,6 +507,18 @@ fn full_index_impl(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), Strin
         }
     }
 
+    // ── Phase 5: Scan Cursor Agent CLI sessions (~/.cursor/chats) ───
+    match index_cursor_agent_sessions(&conn) {
+        Ok((ca_indexed, ca_messages, ca_skipped)) => {
+            indexed_sessions += ca_indexed;
+            indexed_messages += ca_messages;
+            skipped_sessions += ca_skipped;
+        }
+        Err(error) => {
+            log::warn!("Cursor Agent session index failed; continuing: {error}");
+        }
+    }
+
     let backfilled_archives = backfill_missing_session_archives(&conn)?;
     if backfilled_archives > 0 {
         log::info!("Backfilled normalized session archive for {backfilled_archives} sessions");
@@ -1305,6 +1317,204 @@ fn index_grok_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), S
     Ok((indexed, messages, skipped))
 }
 
+fn resolve_cursor_agent_chats_dir() -> std::path::PathBuf {
+    let home = std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
+        .unwrap_or_else(|_| ".".to_string());
+    std::path::PathBuf::from(home).join(".cursor").join("chats")
+}
+
+/// Estimate a Cursor Agent CLI session's usage from its `store.db` message
+/// blobs. Cursor logs no token counts and no per-turn context — only role +
+/// content text. We approximate cumulative input as the re-sent context: at
+/// each assistant turn the model re-reads everything before it, so input grows
+/// by `prior_context_chars / 4`. Output is the assistant text / 4. Rough by
+/// nature (chars-per-token heuristic), but magnitude-aware like the other
+/// estimates. Returns (input_est, output_est, message_count, model).
+fn estimate_cursor_agent_session(
+    store_db: &std::path::Path,
+) -> Result<(i64, i64, i64, Option<String>), String> {
+    let conn = rusqlite::Connection::open_with_flags(
+        store_db,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+    )
+    .map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare("SELECT data FROM blobs ORDER BY rowid")
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map([], |r| r.get::<_, Vec<u8>>(0))
+        .map_err(|e| e.to_string())?;
+
+    let mut context_chars: i64 = 0;
+    let (mut input_est, mut output_est, mut message_count) = (0i64, 0i64, 0i64);
+    let mut model: Option<String> = None;
+
+    for data in rows.flatten() {
+        // Blobs are a mix of JSON messages and opaque binary; skip non-JSON.
+        let text = match std::str::from_utf8(&data) {
+            Ok(t) => t,
+            Err(_) => continue,
+        };
+        let value: Value = match serde_json::from_str(text) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let role = value.get("role").and_then(|v| v.as_str()).unwrap_or("");
+        let content = value.get("content").and_then(|v| v.as_str()).unwrap_or("");
+        if role.is_empty() {
+            continue;
+        }
+        if model.is_none() {
+            model = value
+                .get("model")
+                .and_then(|v| v.as_str())
+                .map(String::from);
+        }
+        let chars = content.chars().count() as i64;
+        if role == "assistant" {
+            input_est += context_chars / 4; // context re-sent for this turn
+            output_est += chars / 4;
+        }
+        context_chars += chars;
+        message_count += 1;
+    }
+
+    Ok((input_est, output_est, message_count, model))
+}
+
+/// Phase 5: index Cursor Agent CLI sessions from ~/.cursor/chats/<ws>/<uuid>/
+/// store.db. Token counts are content-length estimates (see
+/// `estimate_cursor_agent_session`), the roughest of the adapters.
+fn index_cursor_agent_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), String> {
+    let base = resolve_cursor_agent_chats_dir();
+    if !base.exists() {
+        return Ok((0, 0, 0));
+    }
+    let now = chrono::Utc::now().to_rfc3339();
+    let (mut indexed, mut messages, mut skipped) = (0u64, 0u64, 0u64);
+
+    // All Cursor Agent sessions share one synthetic project — store.db has no
+    // reliable cwd (only embedded in user-message text).
+    let chats_dir = base.to_string_lossy().to_string();
+    let project_id = queries::get_project_id_by_dir(conn, &chats_dir)
+        .map_err(|e| e.to_string())?
+        .unwrap_or_else(|| {
+            let pid = uuid::Uuid::new_v4().to_string();
+            let _ = queries::upsert_project(
+                conn,
+                &queries::ProjectInput {
+                    id: pid.clone(),
+                    display_name: "Cursor Agent".to_string(),
+                    dir_path: chats_dir.clone(),
+                    session_count: None,
+                    last_activity: Some(now.clone()),
+                    created_at: now.clone(),
+                },
+            );
+            pid
+        });
+
+    // Find every store.db two levels deep: <chats>/<workspace>/<uuid>/store.db
+    for ws_entry in std::fs::read_dir(&base).into_iter().flatten().flatten() {
+        let ws_dir = ws_entry.path();
+        if !ws_dir.is_dir() {
+            continue;
+        }
+        for sess_entry in std::fs::read_dir(&ws_dir).into_iter().flatten().flatten() {
+            let store_db = sess_entry.path().join("store.db");
+            if !store_db.exists() {
+                continue;
+            }
+            let source_ref = store_db.to_string_lossy().to_string();
+            let file_meta = std::fs::metadata(&store_db).ok();
+            let file_size = file_meta.as_ref().map(|m| m.len() as i64).unwrap_or(0);
+            let file_mtime = file_meta
+                .as_ref()
+                .and_then(|m| m.modified().ok())
+                .map(|t| chrono::DateTime::<chrono::Utc>::from(t).to_rfc3339());
+
+            let existing = queries::get_session_by_jsonl_path(conn, &source_ref)
+                .map_err(|e| e.to_string())?;
+            if let Some(ref meta) = existing {
+                if meta.file_mtime.as_deref() == file_mtime.as_deref() && meta.message_count > 0 {
+                    skipped += 1;
+                    continue;
+                }
+            }
+
+            let (input_est, output_est, msg_count, model) =
+                match estimate_cursor_agent_session(&store_db) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        log::warn!("cursor-agent estimate failed for {source_ref}: {e}");
+                        continue;
+                    }
+                };
+            if msg_count == 0 {
+                continue;
+            }
+
+            let stable_id = sess_entry
+                .path()
+                .file_name()
+                .map(|s| s.to_string_lossy().to_string());
+            let mut day_counts: std::collections::BTreeMap<String, i64> =
+                std::collections::BTreeMap::new();
+            if let Some(ts) = file_mtime.as_deref() {
+                if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(ts) {
+                    let day = dt
+                        .with_timezone(&chrono::Local)
+                        .format("%Y-%m-%d")
+                        .to_string();
+                    day_counts.insert(day, msg_count.max(1));
+                }
+            }
+
+            let summary = RawSessionAdapterSummary {
+                adapter_id: "cursor-agent".to_string(),
+                agent_type: "cursor".to_string(),
+                stable_id,
+                source_ref: source_ref.clone(),
+                cwd: None,
+                git_branch: None,
+                cli_version: None,
+                model_used: model,
+                first_timestamp: file_mtime.clone(),
+                last_timestamp: file_mtime.clone(),
+                message_count: msg_count,
+                total_input_tokens: input_est,
+                total_output_tokens: output_est,
+                cache_read_tokens: 0,
+                cache_creation_tokens: 0,
+                compaction_count: 0,
+                slug: None,
+                day_counts,
+                archive_messages: Vec::new(),
+                parse_warnings: Vec::new(),
+            };
+
+            match upsert_adapter_summary_session(
+                conn,
+                &project_id,
+                summary,
+                file_size,
+                file_mtime,
+                &now,
+                existing.as_ref().map(|m| m.id.as_str()),
+            ) {
+                Ok(_) => {
+                    indexed += 1;
+                    messages += msg_count.max(0) as u64;
+                }
+                Err(e) => log::warn!("cursor-agent upsert failed for {source_ref}: {e}"),
+            }
+        }
+    }
+
+    Ok((indexed, messages, skipped))
+}
+
 fn index_cursor_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), String> {
     let db_path = resolve_cursor_global_db();
     let index_started_at = chrono::Utc::now().to_rfc3339();
@@ -1940,6 +2150,37 @@ mod tests {
         // Grok logs no cumulative output or cache figures.
         assert_eq!(summary.total_output_tokens, 0);
         assert_eq!(summary.cache_read_tokens, 0);
+    }
+
+    #[test]
+    fn cursor_agent_estimates_input_from_resent_context() {
+        let dir = std::env::temp_dir().join(format!("cv-cursor-agent-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let db_path = dir.join("store.db");
+        {
+            let conn = Connection::open(&db_path).unwrap();
+            conn.execute("CREATE TABLE blobs (id TEXT, data BLOB)", [])
+                .unwrap();
+            let put = |s: Vec<u8>| {
+                conn.execute("INSERT INTO blobs (id, data) VALUES ('x', ?1)", params![s])
+                    .unwrap();
+            };
+            put(format!(r#"{{"role":"user","content":"{}"}}"#, "u".repeat(100)).into_bytes());
+            put(format!(r#"{{"role":"assistant","content":"{}"}}"#, "a".repeat(40)).into_bytes());
+            put(format!(r#"{{"role":"user","content":"{}"}}"#, "u".repeat(60)).into_bytes());
+            put(format!(r#"{{"role":"assistant","content":"{}"}}"#, "a".repeat(40)).into_bytes());
+            put(vec![0u8, 159, 146, 150]); // opaque binary blob — must be skipped
+        }
+
+        let (input_est, output_est, msgs, _model) =
+            estimate_cursor_agent_session(&db_path).expect("estimate");
+        std::fs::remove_dir_all(&dir).ok();
+
+        // Re-sent context: turn 1 sees 100 prior chars (25 tok), turn 2 sees
+        // 100+40+60=200 (50 tok) -> 75. Output: 40/4 + 40/4 = 20. Binary skipped.
+        assert_eq!(input_est, 75);
+        assert_eq!(output_est, 20);
+        assert_eq!(msgs, 4);
     }
 
     #[test]
