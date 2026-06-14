@@ -894,11 +894,35 @@ function WeeklyAgentSplit() {
 
   useEffect(() => {
     let cancelled = false;
-    getAgentUsageBreakdown()
-      .then((r) => !cancelled && setRows(r))
-      .catch(() => !cancelled && setRows([]));
+    let unlisten: (() => void) | undefined;
+    const fetchRows = async () => {
+      try {
+        const r = await getAgentUsageBreakdown();
+        if (!cancelled) setRows(r);
+      } catch {
+        if (!cancelled) setRows((prev) => prev ?? []);
+      }
+    };
+    void fetchRows();
+    // Startup runs a fast *partial* quick-index, then a full index minutes
+    // later. Without refetching, this bar stays frozen on the partial numbers
+    // (e.g. Claude far below its real total). Refresh when the indexer emits
+    // its completion event, plus a periodic fallback.
+    const interval = setInterval(() => void fetchRows(), 60_000);
+    void (async () => {
+      try {
+        const { listen } = await import("@tauri-apps/api/event");
+        const un = await listen("session_archive_updated", () => void fetchRows());
+        if (cancelled) un();
+        else unlisten = un;
+      } catch {
+        // Event API unavailable (e.g. browser) — periodic fallback still runs.
+      }
+    })();
     return () => {
       cancelled = true;
+      clearInterval(interval);
+      unlisten?.();
     };
   }, []);
 
