@@ -789,66 +789,11 @@ fn normalize_plan(raw: &str) -> String {
 
 // ─── Live Usage Check ────────────────────────────────────────────────────────
 
-/// Read the Claude Code OAuth access token from macOS Keychain.
-///
-/// `service` — the keychain service name, e.g. "Claude Code-credentials"
-/// or "Claude Code-credentials-f50ce9b7" for a secondary account.
-fn read_oauth_token_from_keychain(service: &str) -> Result<String, String> {
-    // Try the default keychain search list first, then the login keychain
-    // explicitly. Some machines have a malformed default search list (e.g. a
-    // stray newline merging login.keychain-db with another keychain), so
-    // `find-generic-password` without a named keychain misses the Claude token
-    // even though it lives in login.keychain-db.
-    let mut arg_sets: Vec<Vec<String>> = vec![vec![
-        "find-generic-password".into(),
-        "-s".into(),
-        service.into(),
-        "-w".into(),
-    ]];
-    if let Ok(home) = std::env::var("HOME") {
-        arg_sets.push(vec![
-            "find-generic-password".into(),
-            "-s".into(),
-            service.into(),
-            "-w".into(),
-            format!("{home}/Library/Keychains/login.keychain-db"),
-        ]);
-    }
-
-    let mut last_err = format!("No credentials found in Keychain for '{service}'");
-    for args in &arg_sets {
-        let output = std::process::Command::new("security")
-            .args(args)
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .output()
-            .map_err(|e| format!("Failed to run security command: {e}"))?;
-        if !output.status.success() {
-            continue;
-        }
-        let raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        match serde_json::from_str::<Value>(&raw) {
-            Ok(parsed) => {
-                if let Some(token) = parsed
-                    .get("claudeAiOauth")
-                    .and_then(|o| o.get("accessToken"))
-                    .and_then(|v| v.as_str())
-                {
-                    return Ok(token.to_string());
-                }
-                last_err = "No accessToken in keychain credentials".to_string();
-            }
-            Err(e) => last_err = format!("Failed to parse keychain JSON: {e}"),
-        }
-    }
-    Err(last_err)
-}
-
 /// Scan macOS Keychain for all Claude Code credential entries.
 fn find_claude_keychain_services() -> Vec<String> {
     // Dump the default search list AND the login keychain explicitly — a
     // malformed default search list can otherwise hide login.keychain-db
-    // entries (see read_oauth_token_from_keychain).
+    // entries (see read_full_credential, which queries both the same way).
     let mut dumps: Vec<String> = Vec::new();
     if let Ok(o) = std::process::Command::new("security")
         .args(["dump-keychain"])
@@ -937,6 +882,305 @@ fn read_keychain_account_info(service: &str) -> Option<(DetectedAccount, i64)> {
         },
         expires_at,
     ))
+}
+
+/// Public OAuth client id Claude Code uses for its PKCE flow + token refresh.
+const ANTHROPIC_OAUTH_CLIENT_ID: &str = "9d1c250a-e61b-44d9-88ed-5944d1962f5e";
+const ANTHROPIC_OAUTH_TOKEN_URL: &str = "https://console.anthropic.com/v1/oauth/token";
+
+/// Where a Claude Code credential lives. Newer versions store OAuth in a file
+/// under ~/.claude (refreshed in place); older versions used the macOS keychain.
+enum CredLocation {
+    File(String),
+    Keychain {
+        account: String,
+        keychain: Option<String>,
+    },
+}
+
+/// Full Claude Code credential — enough to refresh the access token in place
+/// and write the rotated tokens back to wherever it came from.
+struct KeychainCred {
+    service: String,
+    location: CredLocation,
+    wrapper: Value,
+    access_token: String,
+    refresh_token: Option<String>,
+    expires_at: i64,
+}
+
+/// Parse the `"acct"<blob>="..."` attribute out of `security find-generic-password`
+/// (without `-w`) output.
+fn parse_keychain_account(attr_dump: &str) -> Option<String> {
+    for line in attr_dump.lines() {
+        let t = line.trim();
+        if t.starts_with("\"acct\"") {
+            if let Some(eq) = t.find("=\"") {
+                let rest = &t[eq + 2..];
+                if let Some(end) = rest.find('"') {
+                    return Some(rest[..end].to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Parse a `{ "claudeAiOauth": { accessToken, refreshToken, expiresAt, ... } }`
+/// blob — the shape both the keychain entry and `~/.claude/.credentials.json`
+/// use — into a `KeychainCred`.
+fn parse_credential_wrapper(
+    raw: &str,
+    service: &str,
+    location: CredLocation,
+) -> Result<KeychainCred, String> {
+    let wrapper: Value =
+        serde_json::from_str(raw).map_err(|e| format!("Failed to parse credential JSON: {e}"))?;
+    let oauth = wrapper
+        .get("claudeAiOauth")
+        .ok_or_else(|| "No claudeAiOauth in credentials".to_string())?;
+    let access_token = oauth
+        .get("accessToken")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "No accessToken in credentials".to_string())?
+        .to_string();
+    let refresh_token = oauth
+        .get("refreshToken")
+        .and_then(|v| v.as_str())
+        .map(String::from);
+    let expires_at = oauth.get("expiresAt").and_then(|v| v.as_i64()).unwrap_or(0);
+    Ok(KeychainCred {
+        service: service.to_string(),
+        location,
+        wrapper,
+        access_token,
+        refresh_token,
+        expires_at,
+    })
+}
+
+/// Read the full Claude Code credential so it can be refreshed in place.
+///
+/// Newer Claude Code stores the active account's OAuth in
+/// `~/.claude/.credentials.json` (a file it refreshes in place); older versions
+/// used the macOS keychain. The keychain entries are frequently stale leftovers,
+/// so for the primary account prefer the file and fall back to the keychain.
+fn read_full_credential(service: &str) -> Result<KeychainCred, String> {
+    if service == "Claude Code-credentials" {
+        if let Ok(home) = std::env::var("HOME") {
+            let path = format!("{home}/.claude/.credentials.json");
+            if let Ok(raw) = std::fs::read_to_string(&path) {
+                if let Ok(cred) =
+                    parse_credential_wrapper(raw.trim(), service, CredLocation::File(path))
+                {
+                    return Ok(cred);
+                }
+            }
+        }
+    }
+
+    let mut keychains: Vec<Option<String>> = vec![None];
+    if let Ok(home) = std::env::var("HOME") {
+        keychains.push(Some(format!("{home}/Library/Keychains/login.keychain-db")));
+    }
+
+    let mut last_err = format!("No credentials found for '{service}'");
+    for kc in &keychains {
+        let mut pw_args = vec![
+            "find-generic-password".to_string(),
+            "-s".to_string(),
+            service.to_string(),
+            "-w".to_string(),
+        ];
+        if let Some(k) = kc {
+            pw_args.push(k.clone());
+        }
+        let pw_out = std::process::Command::new("security")
+            .args(&pw_args)
+            .output()
+            .map_err(|e| format!("Failed to run security command: {e}"))?;
+        if !pw_out.status.success() {
+            continue;
+        }
+        let raw = String::from_utf8_lossy(&pw_out.stdout).trim().to_string();
+
+        // Account name (for the -U update target). Best-effort.
+        let mut attr_args = vec![
+            "find-generic-password".to_string(),
+            "-s".to_string(),
+            service.to_string(),
+        ];
+        if let Some(k) = kc {
+            attr_args.push(k.clone());
+        }
+        let account = std::process::Command::new("security")
+            .args(&attr_args)
+            .output()
+            .ok()
+            .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+            .and_then(|s| parse_keychain_account(&s))
+            .unwrap_or_default();
+
+        match parse_credential_wrapper(
+            &raw,
+            service,
+            CredLocation::Keychain {
+                account,
+                keychain: kc.clone(),
+            },
+        ) {
+            Ok(cred) => return Ok(cred),
+            Err(e) => {
+                last_err = e;
+                continue;
+            }
+        }
+    }
+    Err(last_err)
+}
+
+/// Write rotated tokens back to wherever the credential came from (the
+/// `~/.claude` credentials file or the keychain), preserving every other field
+/// Claude Code stores there so the two stay in sync.
+fn store_refreshed_credential(
+    cred: &KeychainCred,
+    access_token: &str,
+    refresh_token: &str,
+    expires_at_ms: i64,
+) -> Result<(), String> {
+    let mut wrapper = cred.wrapper.clone();
+    if let Some(o) = wrapper
+        .get_mut("claudeAiOauth")
+        .and_then(|v| v.as_object_mut())
+    {
+        o.insert("accessToken".to_string(), json!(access_token));
+        o.insert("refreshToken".to_string(), json!(refresh_token));
+        o.insert("expiresAt".to_string(), json!(expires_at_ms));
+    } else {
+        return Err("credential wrapper missing claudeAiOauth object".to_string());
+    }
+    let serialized = serde_json::to_string(&wrapper).map_err(|e| e.to_string())?;
+
+    match &cred.location {
+        CredLocation::File(path) => {
+            // Atomic replace (temp file in the same dir + rename) so a concurrent
+            // Claude Code read never sees a partial file. Preserve 0600 perms.
+            use std::io::Write;
+            let tmp = format!("{path}.codevetter.tmp");
+            {
+                let mut f = std::fs::File::create(&tmp)
+                    .map_err(|e| format!("Failed to create temp credential file: {e}"))?;
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    let _ = f.set_permissions(std::fs::Permissions::from_mode(0o600));
+                }
+                f.write_all(serialized.as_bytes())
+                    .map_err(|e| format!("Failed to write temp credential file: {e}"))?;
+            }
+            std::fs::rename(&tmp, path)
+                .map_err(|e| format!("Failed to replace credential file: {e}"))?;
+            Ok(())
+        }
+        CredLocation::Keychain { account, keychain } => {
+            let mut args = vec![
+                "add-generic-password".to_string(),
+                "-U".to_string(),
+                "-a".to_string(),
+                account.clone(),
+                "-s".to_string(),
+                cred.service.clone(),
+                "-w".to_string(),
+                serialized,
+            ];
+            if let Some(k) = keychain {
+                args.push(k.clone());
+            }
+            let out = std::process::Command::new("security")
+                .args(&args)
+                .output()
+                .map_err(|e| format!("Failed to run security command: {e}"))?;
+            if !out.status.success() {
+                return Err(format!(
+                    "Keychain update failed: {}",
+                    String::from_utf8_lossy(&out.stderr).trim()
+                ));
+            }
+            Ok(())
+        }
+    }
+}
+
+/// Refresh an expired Claude Code OAuth access token using the stored refresh
+/// token, and write the rotated pair back to the keychain (mirroring what
+/// Claude Code itself does, so the two stay in sync). Returns the new access
+/// token on success.
+async fn refresh_anthropic_token(service: String) -> Result<String, String> {
+    let svc = service.clone();
+    let cred = tokio::task::spawn_blocking(move || read_full_credential(&svc))
+        .await
+        .map_err(|e| format!("spawn error: {e}"))??;
+    let refresh_token = cred
+        .refresh_token
+        .clone()
+        .ok_or_else(|| "No refresh token stored — re-authenticate Claude Code.".to_string())?;
+
+    let client = reqwest::Client::new();
+    let resp = client
+        .post(ANTHROPIC_OAUTH_TOKEN_URL)
+        .header("content-type", "application/json")
+        .body(
+            json!({
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+                "client_id": ANTHROPIC_OAUTH_CLIENT_ID,
+            })
+            .to_string(),
+        )
+        .send()
+        .await
+        .map_err(|e| format!("Token refresh request failed: {e}"))?;
+
+    let status = resp.status().as_u16();
+    if status == 429 {
+        return Err("Claude's token-refresh endpoint is rate-limited right now — try again in a minute.".to_string());
+    }
+    if !resp.status().is_success() {
+        let body = resp.text().await.unwrap_or_default();
+        if status == 400 || status == 401 {
+            return Err("Stored Claude refresh token is no longer valid — re-authenticate Claude Code (run `claude`, then /login).".to_string());
+        }
+        return Err(format!(
+            "Token refresh failed (HTTP {status}): {}",
+            body.chars().take(200).collect::<String>()
+        ));
+    }
+
+    let body: Value = resp
+        .json()
+        .await
+        .map_err(|e| format!("Token refresh response parse failed: {e}"))?;
+    let new_access = body
+        .get("access_token")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "Refresh response missing access_token".to_string())?
+        .to_string();
+    let new_refresh = body
+        .get("refresh_token")
+        .and_then(|v| v.as_str())
+        .map(String::from)
+        .unwrap_or(refresh_token);
+    let expires_in = body.get("expires_in").and_then(|v| v.as_i64()).unwrap_or(3600);
+    let new_expires_at = chrono::Utc::now().timestamp_millis() + expires_in * 1000;
+
+    let access_for_store = new_access.clone();
+    tokio::task::spawn_blocking(move || {
+        store_refreshed_credential(&cred, &access_for_store, &new_refresh, new_expires_at)
+    })
+    .await
+    .map_err(|e| format!("spawn error: {e}"))??;
+
+    Ok(new_access)
 }
 
 /// Check live usage for any supported provider.
@@ -1210,22 +1454,45 @@ fn upsert_usage_ledger_row(
 async fn check_live_usage_anthropic(credential_key: Option<String>) -> Result<Value, String> {
     let service = credential_key.unwrap_or_else(|| "Claude Code-credentials".to_string());
     let svc = service.clone();
-    let token = tokio::task::spawn_blocking(move || read_oauth_token_from_keychain(&svc))
+    let cred = tokio::task::spawn_blocking(move || read_full_credential(&svc))
         .await
         .map_err(|e| format!("spawn error: {e}"))??;
 
+    // The keychain access token expires ~hourly; Claude Code refreshes its own
+    // copy in memory and doesn't always write the fresh one back, so the stored
+    // token is usually stale. Refresh it ourselves (and persist the rotated
+    // pair) before calling, then retry once if the API still rejects it.
+    let now_ms = chrono::Utc::now().timestamp_millis();
+    let mut token = cred.access_token.clone();
+    let mut refreshed = false;
+    if cred.expires_at > 0 && cred.expires_at <= now_ms + 60_000 {
+        token = refresh_anthropic_token(service.clone()).await?;
+        refreshed = true;
+    }
+
     let client = reqwest::Client::new();
-    let resp = client
-        .post("https://api.anthropic.com/v1/messages?beta=true")
-        .header("Authorization", format!("Bearer {}", token))
-        .header("anthropic-beta", "oauth-2025-04-20")
-        .header("anthropic-dangerous-direct-browser-access", "true")
-        .header("anthropic-version", "2023-06-01")
-        .header("content-type", "application/json")
-        .body(r#"{"model":"claude-haiku-4-5-20251001","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}"#)
-        .send()
+    let make_request = |bearer: String| {
+        client
+            .post("https://api.anthropic.com/v1/messages?beta=true")
+            .header("Authorization", format!("Bearer {}", bearer))
+            .header("anthropic-beta", "oauth-2025-04-20")
+            .header("anthropic-dangerous-direct-browser-access", "true")
+            .header("anthropic-version", "2023-06-01")
+            .header("content-type", "application/json")
+            .body(r#"{"model":"claude-haiku-4-5-20251001","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}"#)
+            .send()
+    };
+
+    let mut resp = make_request(token.clone())
         .await
         .map_err(|e| format!("API request failed: {e}"))?;
+
+    if resp.status().as_u16() == 401 && !refreshed {
+        token = refresh_anthropic_token(service.clone()).await?;
+        resp = make_request(token)
+            .await
+            .map_err(|e| format!("API request failed: {e}"))?;
+    }
 
     let status_code = resp.status().as_u16();
     if status_code == 401 {
