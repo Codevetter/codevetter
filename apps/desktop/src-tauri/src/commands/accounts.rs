@@ -555,9 +555,14 @@ pub async fn detect_provider_accounts(db: State<'_, DbState>) -> Result<Value, S
         }
     }
 
-    // Return fresh list
+    // Return fresh list — hide any persisted google/Gemini account (this is the
+    // path Home actually uses; the list_provider_accounts filter alone missed it).
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    let accounts = queries::list_provider_accounts(&conn).map_err(|e| e.to_string())?;
+    let accounts: Vec<_> = queries::list_provider_accounts(&conn)
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .filter(|a| a.provider != "google")
+        .collect();
 
     Ok(json!({
         "detected": detected,
