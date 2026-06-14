@@ -283,58 +283,6 @@ fn validate_github_token(token: &str) -> Option<(String, String)> {
     Some((username, "repo,read:org".to_string()))
 }
 
-/// Get the list of changed files in a git repo via `git status --porcelain`.
-/// Returns a list of `{ status, path }` objects.
-#[tauri::command]
-pub async fn get_git_changed_files(repo_path: String) -> Result<Value, String> {
-    let output = StdCommand::new("git")
-        .args(["status", "--porcelain"])
-        .current_dir(&repo_path)
-        .output()
-        .map_err(|e| format!("Failed to run git status: {e}"))?;
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("git status failed: {stderr}"));
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let mut files: Vec<Value> = Vec::new();
-
-    for line in stdout.lines() {
-        if line.is_empty() {
-            continue;
-        }
-        // Porcelain format: XY filename
-        // First two chars are status codes, then a space, then the path.
-        if line.len() < 4 {
-            continue;
-        }
-        let xy = &line[0..2];
-        let path = line[3..].trim().to_string();
-
-        // Map to a simplified status
-        let status = if xy.contains('?') {
-            "?"
-        } else if xy.contains('D') {
-            "D"
-        } else if xy.contains('A') || xy.starts_with("??") {
-            "A"
-        } else if xy.contains('R') {
-            "R"
-        } else {
-            "M"
-        };
-
-        files.push(json!({
-            "status": status,
-            "path": path,
-        }));
-    }
-
-    Ok(json!({ "files": files }))
-}
-
 fn parse_github_remote(url: &str) -> Option<(String, String)> {
     // HTTPS: https://github.com/owner/repo.git
     if let Some(rest) = url
