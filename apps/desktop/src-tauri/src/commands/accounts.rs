@@ -322,6 +322,7 @@ pub async fn list_provider_usage_ledger(
                     reasoning_tokens, total_tokens, cost_usd, confidence,
                     metadata_json, observed_at
              FROM provider_usage_ledger
+             WHERE provider != 'google'
              ORDER BY observed_at DESC
              LIMIT ?1",
         )
