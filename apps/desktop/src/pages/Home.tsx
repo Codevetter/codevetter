@@ -205,6 +205,7 @@ function AccountUsageRow({
   account,
   usage,
   liveUsage,
+  liveError,
   onCheckLive,
   checkingLive,
   onDelete: _onDelete,
@@ -213,11 +214,18 @@ function AccountUsageRow({
   account: ProviderAccount;
   usage: AccountUsage | null;
   liveUsage: LiveUsageResult | null;
+  liveError: string | null;
   onCheckLive: () => void;
   checkingLive: boolean;
   onDelete: () => void;
   isSharedUsage: boolean;
 }) {
+  // Turn a raw live-usage error into an actionable hint.
+  const liveErrorHint = liveError
+    ? /401|expired|invalid|re-?authenticate/i.test(liveError)
+      ? "Live windows unavailable — stored Claude credential is expired. Re-authenticate Claude Code (run `claude`, then /login)."
+      : `Live usage unavailable: ${liveError}`
+    : null;
   const weekSessions = usage?.week_sessions ?? 0;
   const weekTokens = (usage?.week_input_tokens ?? 0) + (usage?.week_output_tokens ?? 0);
   const profileBreakdown = usage?.profile_breakdown ?? [];
@@ -560,10 +568,16 @@ function AccountUsageRow({
               <span className="text-[10px] text-slate-600 tabular-nums">
                 {weekSessions} sessions
               </span>
-              {!hasLive && (
+              {!hasLive && !liveErrorHint && (
                 <span className="text-[10px] text-slate-700 italic">local estimates only</span>
               )}
             </div>
+            {liveErrorHint && (
+              <div className="flex items-start gap-1.5 text-[10px] text-amber-400/90">
+                <span className="shrink-0">⚠</span>
+                <span>{liveErrorHint}</span>
+              </div>
+            )}
             {profileBreakdown.length > 1 && (
               <div className="flex flex-col gap-1 border-l border-[#1a1a1a] pl-2">
                 {profileBreakdown.map((profile) => {
@@ -929,11 +943,9 @@ function WeeklyAgentSplit() {
   if (!rows) return null;
 
   // Total tokens (cache-inclusive) all-time — the metric that matches how usage
-  // reads everywhere else (Claude dominant, big numbers). Cursor is excluded
-  // here: it's shown accurately via its own provider account/ledger, so the
-  // rough local estimate was redundant clutter.
+  // reads everywhere else (Claude dominant, big numbers). All indexed agents
+  // are shown, Cursor included (its local count is a per-turn-context estimate).
   const segments = rows
-    .filter((r) => r.agent_type !== "cursor")
     .map((r) => ({
       agent: r.agent_type,
       tokens: r.real_input_tokens + r.cache_read_tokens + r.output_tokens,
@@ -1541,6 +1553,7 @@ export default function Home() {
   const [accounts, setAccounts] = useState<ProviderAccount[]>(_cachedDashboard?.accounts ?? []);
   const [accountUsages, setAccountUsages] = useState<Record<string, AccountUsage>>(_cachedDashboard?.usages ?? {});
   const [liveUsages, setLiveUsages] = useState<Record<string, LiveUsageResult>>(_cachedDashboard?.liveUsages ?? {});
+  const [liveErrors, setLiveErrors] = useState<Record<string, string>>({});
   const [usageLedger, setUsageLedger] = useState<ProviderUsageLedgerRow[]>(_cachedDashboard?.usageLedger ?? []);
   const [checkingLiveFor, setCheckingLiveFor] = useState<string | null>(null);
 
@@ -1724,6 +1737,16 @@ export default function Home() {
         if (r.status === "fulfilled") {
           next[supported[i].id] = r.value;
         }
+      });
+      return next;
+    });
+    // Surface live-check failures (e.g. expired Claude token) instead of
+    // silently falling back to "local estimates only".
+    setLiveErrors((prev) => {
+      const next = { ...prev };
+      results.forEach((r, i) => {
+        if (r.status === "rejected") next[supported[i].id] = String(r.reason);
+        else delete next[supported[i].id];
       });
       return next;
     });
@@ -1944,6 +1967,7 @@ export default function Home() {
                   account={account}
                   usage={accountUsages[account.id] ?? null}
                   liveUsage={liveUsages[account.id] ?? null}
+                  liveError={liveErrors[account.id] ?? null}
                   checkingLive={checkingLiveFor === account.id}
                   isSharedUsage={hasSiblings && !isFirstOfProvider}
                   onCheckLive={async () => {
@@ -1951,12 +1975,17 @@ export default function Home() {
                     try {
                       const result = await checkLiveUsage(account.provider, account.api_key ?? undefined);
                       setLiveUsages((prev) => ({ ...prev, [account.id]: result }));
+                      setLiveErrors((prev) => {
+                        const next = { ...prev };
+                        delete next[account.id];
+                        return next;
+                      });
                       const rows = await listProviderUsageLedger(12).catch(() => null);
                       if (rows) {
                         setUsageLedger(rows);
                       }
                     } catch (err) {
-                      console.error("Live usage check failed:", err);
+                      setLiveErrors((prev) => ({ ...prev, [account.id]: String(err) }));
                     } finally {
                       setCheckingLiveFor(null);
                     }
