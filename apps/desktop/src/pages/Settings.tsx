@@ -594,6 +594,42 @@ export default function Settings() {
     };
   }, []);
 
+  // Manual "Check for updates" CTA (reuses the auto-updater plugin).
+  type UpdateState = "idle" | "checking" | "available" | "latest" | "error" | "installing";
+  const [updateState, setUpdateState] = useState<UpdateState>("idle");
+  const [pendingUpdate, setPendingUpdate] = useState<
+    { version: string; install: () => Promise<void> } | null
+  >(null);
+
+  const checkForUpdates = useCallback(async () => {
+    setUpdateState("checking");
+    try {
+      const { check } = await import("@tauri-apps/plugin-updater");
+      const result = await check();
+      if (result?.available) {
+        setPendingUpdate({ version: result.version, install: () => result.downloadAndInstall() });
+        setUpdateState("available");
+      } else {
+        setPendingUpdate(null);
+        setUpdateState("latest");
+      }
+    } catch {
+      setUpdateState("error");
+    }
+  }, []);
+
+  const installUpdate = useCallback(async () => {
+    if (!pendingUpdate) return;
+    setUpdateState("installing");
+    try {
+      await pendingUpdate.install();
+      const { relaunch } = await import("@tauri-apps/plugin-process");
+      await relaunch();
+    } catch {
+      setUpdateState("error");
+    }
+  }, [pendingUpdate]);
+
   // Menu-bar tray
   const [trayCadence, setTrayCadence] = usePref("tray_refresh_cadence_secs", "120");
 
@@ -984,6 +1020,48 @@ export default function Settings() {
                   <span className="text-sm text-slate-400">License</span>
                   <span className="text-sm text-slate-200">ISC</span>
                 </div>
+              </div>
+
+              <Divider />
+
+              {/* Check for updates */}
+              <div className="flex items-center justify-between py-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm text-slate-400">Updates</span>
+                  <span className="text-xs text-slate-500">
+                    {updateState === "checking"
+                      ? "Checking for updates…"
+                      : updateState === "available"
+                        ? `Update available: v${pendingUpdate?.version}`
+                        : updateState === "latest"
+                          ? "You're on the latest version."
+                          : updateState === "installing"
+                            ? "Downloading & installing…"
+                            : updateState === "error"
+                              ? "Couldn't check — try again."
+                              : "Check GitHub Releases for a newer build."}
+                  </span>
+                </div>
+                {updateState === "available" ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={installUpdate}
+                    className="h-auto px-3 py-1 text-xs text-amber-400 hover:text-amber-300"
+                  >
+                    Install &amp; relaunch
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={checkForUpdates}
+                    disabled={updateState === "checking" || updateState === "installing"}
+                    className="h-auto px-3 py-1 text-xs text-slate-400 hover:text-slate-200"
+                  >
+                    {updateState === "checking" ? "Checking…" : "Check for updates"}
+                  </Button>
+                )}
               </div>
 
               <Divider />
