@@ -203,14 +203,12 @@ fn main() {
             commands::history::trigger_index,
             commands::history::get_index_stats,
             commands::history::get_token_usage_stats,
-            commands::history::detect_cursor,
             // Git
             commands::git::list_git_branches,
             commands::git::get_git_remote_info,
             commands::git::list_pull_requests,
             commands::git::check_github_auth,
             commands::git::sync_github_token,
-            commands::git::get_git_changed_files,
             commands::git::get_repo_history_context,
             commands::git::read_raw_session_context,
             // GitHub PR & CI
@@ -246,7 +244,6 @@ fn main() {
             // Tray
             commands::tray::set_tray_text,
             commands::tray::set_tray_menu,
-            commands::tray::send_tray_notification,
             // Repo Unpacked
             commands::unpack::scan_repo_inventory,
             commands::unpack::generate_unpack_report,

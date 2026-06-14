@@ -973,20 +973,6 @@ fn backfill_missing_session_archives(conn: &rusqlite::Connection) -> Result<u64,
 // Cursor AI session detection & indexing
 // ─────────────────────────────────────────────────────────────────
 
-/// Detect whether Cursor IDE is installed on this machine.
-#[tauri::command]
-pub async fn detect_cursor() -> Result<Value, String> {
-    let cursor_dir = resolve_cursor_data_dir();
-    let installed = cursor_dir.exists();
-    let global_db = resolve_cursor_global_db();
-    let has_conversations = global_db.exists();
-    Ok(json!({
-        "installed": installed,
-        "path": cursor_dir.to_string_lossy().to_string(),
-        "has_conversations": has_conversations,
-    }))
-}
-
 /// Resolve the Cursor data directory (platform-specific).
 pub fn resolve_cursor_data_dir() -> std::path::PathBuf {
     #[cfg(target_os = "macos")]
