@@ -904,10 +904,12 @@ function WeeklyAgentSplit() {
 
   if (!rows) return null;
 
+  // All-time real compute so every indexed agent shows — Grok/Cursor sessions
+  // are often older than the current week and would vanish from a week-only view.
   const segments = rows
     .map((r) => ({
       agent: r.agent_type,
-      tokens: r.week_real_input_tokens + r.week_output_tokens,
+      tokens: r.real_input_tokens + r.output_tokens,
     }))
     .filter((s) => s.tokens > 0)
     .sort((a, b) => b.tokens - a.tokens);
@@ -925,7 +927,7 @@ function WeeklyAgentSplit() {
     <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
       <div className="mb-2.5 flex items-end justify-between gap-3">
         <div>
-          <div className="text-[11px] text-slate-500">This week by agent · real compute</div>
+          <div className="text-[11px] text-slate-500">By agent · real compute (all time)</div>
           <div className="text-xs text-slate-400 tabular-nums">
             {formatTokens(grandTotal)} tokens · cache reads excluded · {segments.length} agent{segments.length === 1 ? "" : "s"}
           </div>
