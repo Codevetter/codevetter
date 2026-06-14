@@ -349,6 +349,7 @@ pub struct SessionMeta {
     pub file_mtime: Option<String>,
     pub message_count: i64,
     pub archived_message_count: i64,
+    pub total_input_tokens: i64,
 }
 
 #[derive(Debug, Clone)]
@@ -366,7 +367,8 @@ pub fn get_session_by_jsonl_path(
 ) -> Result<Option<SessionMeta>, rusqlite::Error> {
     conn.query_row(
         "SELECT id, file_mtime, message_count,
-                (SELECT COUNT(*) FROM session_message_archive a WHERE a.session_id = cc_sessions.id)
+                (SELECT COUNT(*) FROM session_message_archive a WHERE a.session_id = cc_sessions.id),
+                total_input_tokens
          FROM cc_sessions
          WHERE jsonl_path = ?1",
         params![jsonl_path],
@@ -376,6 +378,7 @@ pub fn get_session_by_jsonl_path(
                 file_mtime: row.get(1)?,
                 message_count: row.get(2)?,
                 archived_message_count: row.get(3)?,
+                total_input_tokens: row.get(4)?,
             })
         },
     )

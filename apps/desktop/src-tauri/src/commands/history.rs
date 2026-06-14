@@ -1309,7 +1309,12 @@ fn index_grok_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), S
             let existing = queries::get_session_by_jsonl_path(conn, &source_ref)
                 .map_err(|e| e.to_string())?;
             if let Some(ref meta) = existing {
-                if meta.file_mtime.as_deref() == file_mtime.as_deref() && meta.message_count > 0 {
+                // Re-parse 0-token rows: earlier builds estimated Grok at 0
+                // (token fields were nested), so don't let the mtime skip pin them.
+                if meta.file_mtime.as_deref() == file_mtime.as_deref()
+                    && meta.message_count > 0
+                    && meta.total_input_tokens > 0
+                {
                     skipped += 1;
                     continue;
                 }
@@ -1462,7 +1467,10 @@ fn index_cursor_agent_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64,
             let existing = queries::get_session_by_jsonl_path(conn, &source_ref)
                 .map_err(|e| e.to_string())?;
             if let Some(ref meta) = existing {
-                if meta.file_mtime.as_deref() == file_mtime.as_deref() && meta.message_count > 0 {
+                if meta.file_mtime.as_deref() == file_mtime.as_deref()
+                    && meta.message_count > 0
+                    && meta.total_input_tokens > 0
+                {
                     skipped += 1;
                     continue;
                 }
