@@ -179,11 +179,19 @@ pub fn emit_session_archive_updated(app: &AppHandle, summary: &FullIndexSummary)
 
 #[tauri::command]
 pub async fn trigger_index(app: AppHandle, db: State<'_, DbState>) -> Result<Value, String> {
-    let conn = conn_lock(&db)?;
-    let _index_guard = FULL_INDEX_LOCK
-        .lock()
-        .map_err(|e| format!("full index lock poisoned: {e}"))?;
-    let summary = run_full_index_unlocked(&conn)?;
+    // Run the full index on a blocking thread: it reads + parses every session
+    // JSONL and writes SQLite synchronously, which would otherwise stall the
+    // Tauri async runtime worker for the whole (cold) index.
+    let conn = db.0.clone();
+    let summary = tokio::task::spawn_blocking(move || {
+        let conn = conn.lock().map_err(|e| e.to_string())?;
+        let _index_guard = FULL_INDEX_LOCK
+            .lock()
+            .map_err(|e| format!("full index lock poisoned: {e}"))?;
+        run_full_index_unlocked(&conn)
+    })
+    .await
+    .map_err(|e| format!("index task join error: {e}"))??;
     emit_session_archive_updated(&app, &summary);
 
     Ok(json!({

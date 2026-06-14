@@ -299,7 +299,11 @@ pub struct UnpackReport {
 
 #[tauri::command]
 pub async fn scan_repo_inventory(repo_path: String) -> Result<Value, String> {
-    let inv = build_inventory(&repo_path)?;
+    // The repo walk + per-file reads are synchronous and CPU/IO-bound; run them
+    // off the async runtime thread so the UI stays responsive during a scan.
+    let inv = tokio::task::spawn_blocking(move || build_inventory(&repo_path))
+        .await
+        .map_err(|e| format!("inventory scan task join error: {e}"))??;
     Ok(serde_json::to_value(&inv).map_err(|e| e.to_string())?)
 }
 
@@ -312,7 +316,12 @@ pub async fn generate_unpack_report(
     let agent = agent.unwrap_or_else(|| "claude".to_string());
     let started = std::time::Instant::now();
 
-    let inventory = build_inventory(&repo_path)?;
+    // Run the synchronous repo scan off the async runtime thread; the DB writes
+    // below stay on this thread since the connection guard isn't Send.
+    let repo_path_for_scan = repo_path.clone();
+    let inventory = tokio::task::spawn_blocking(move || build_inventory(&repo_path_for_scan))
+        .await
+        .map_err(|e| format!("inventory scan task join error: {e}"))??;
     let inventory_json = serde_json::to_string(&inventory).map_err(|e| e.to_string())?;
 
     let report_id = uuid::Uuid::new_v4().to_string();
