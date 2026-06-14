@@ -1,5 +1,5 @@
-{"totalTokens":1000,"turnStartMs":100,"updateType":"AgentThoughtChunk"}
-{"totalTokens":1000,"turnStartMs":100,"updateType":"AgentMessageChunk"}
-{"totalTokens":3000,"turnStartMs":200,"updateType":"AgentMessageChunk"}
-{"totalTokens":5200,"turnStartMs":300,"updateType":"ToolCallUpdate"}
-{"totalTokens":5000,"turnStartMs":300,"updateType":"AgentMessageChunk"}
+{"timestamp":1779903764,"method":"session/update","params":{"sessionId":"grok-session-1","update":{"sessionUpdate":"agent_thought_chunk","totalTokens":1000,"turnStartMs":100,"updateType":"AgentThoughtChunk"}}}
+{"timestamp":1779903765,"method":"session/update","params":{"sessionId":"grok-session-1","update":{"sessionUpdate":"agent_message_chunk","totalTokens":1000,"turnStartMs":100,"updateType":"AgentMessageChunk"}}}
+{"timestamp":1779903780,"method":"session/update","params":{"sessionId":"grok-session-1","update":{"sessionUpdate":"agent_message_chunk","totalTokens":3000,"turnStartMs":200,"updateType":"AgentMessageChunk"}}}
+{"timestamp":1779903800,"method":"session/update","params":{"sessionId":"grok-session-1","update":{"sessionUpdate":"tool_call_update","totalTokens":5200,"turnStartMs":300,"updateType":"ToolCallUpdate"}}}
+{"timestamp":1779903801,"method":"session/update","params":{"sessionId":"grok-session-1","update":{"sessionUpdate":"agent_message_chunk","totalTokens":5000,"turnStartMs":300,"updateType":"AgentMessageChunk"}}}

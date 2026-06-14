@@ -7,7 +7,13 @@ use tauri::State;
 #[tauri::command]
 pub async fn list_provider_accounts(db: State<'_, DbState>) -> Result<Value, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    let accounts = queries::list_provider_accounts(&conn).map_err(|e| e.to_string())?;
+    // Gemini usage tracking is disabled — hide any google account that was
+    // detected and persisted before detection was turned off.
+    let accounts: Vec<_> = queries::list_provider_accounts(&conn)
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .filter(|a| a.provider != "google")
+        .collect();
     Ok(json!({ "accounts": accounts }))
 }
 

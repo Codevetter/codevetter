@@ -1105,6 +1105,22 @@ fn percent_decode_path(encoded: &str) -> String {
     String::from_utf8_lossy(&out).to_string()
 }
 
+/// Recursively find the first i64 value for `key` anywhere in a JSON value.
+/// Grok's updates.jsonl nests token fields under JSON-RPC `params.update`, so a
+/// flat top-level lookup misses them.
+fn json_find_i64(value: &Value, key: &str) -> Option<i64> {
+    match value {
+        Value::Object(map) => {
+            if let Some(found) = map.get(key).and_then(|v| v.as_i64()) {
+                return Some(found);
+            }
+            map.values().find_map(|v| json_find_i64(v, key))
+        }
+        Value::Array(arr) => arr.iter().find_map(|v| json_find_i64(v, key)),
+        _ => None,
+    }
+}
+
 /// Estimate a Grok session's usage from its on-disk logs. Grok records only a
 /// per-turn *context-window size* (`totalTokens` in updates.jsonl), not
 /// cumulative billing — so summing the peak context per turn approximates the
@@ -1154,6 +1170,7 @@ fn parse_grok_session_dir(
         .unwrap_or(0);
 
     // Peak context size per turn (keyed by turn start), summed = input estimate.
+    // Token fields are nested under JSON-RPC params, so search recursively.
     let mut per_turn: std::collections::BTreeMap<i64, i64> = std::collections::BTreeMap::new();
     if let Ok(file) = std::fs::File::open(sess_dir.join("updates.jsonl")) {
         for line in std::io::BufReader::new(file).lines().map_while(Result::ok) {
@@ -1162,11 +1179,9 @@ fn parse_grok_session_dir(
                 continue;
             }
             if let Ok(v) = serde_json::from_str::<Value>(line) {
-                let total = v.get("totalTokens").and_then(|t| t.as_i64());
-                let turn = v
-                    .get("turnStartMs")
-                    .and_then(|t| t.as_i64())
-                    .or_else(|| v.get("agentTimestampMs").and_then(|t| t.as_i64()));
+                let total = json_find_i64(&v, "totalTokens");
+                let turn = json_find_i64(&v, "turnStartMs")
+                    .or_else(|| json_find_i64(&v, "agentTimestampMs"));
                 if let (Some(total), Some(turn)) = (total, turn) {
                     let slot = per_turn.entry(turn).or_insert(0);
                     if total > *slot {
@@ -1176,7 +1191,17 @@ fn parse_grok_session_dir(
             }
         }
     }
-    let estimated_input: i64 = per_turn.values().sum();
+    let mut estimated_input: i64 = per_turn.values().sum();
+
+    // Fallback: if updates.jsonl yielded nothing, use the peak context size
+    // from signals.json (a floor — single snapshot, not cumulative).
+    if estimated_input == 0 {
+        if let Ok(sig_raw) = std::fs::read_to_string(sess_dir.join("signals.json")) {
+            if let Ok(sig) = serde_json::from_str::<Value>(&sig_raw) {
+                estimated_input = json_find_i64(&sig, "contextTokensUsed").unwrap_or(0);
+            }
+        }
+    }
 
     let mut day_counts: std::collections::BTreeMap<String, i64> = std::collections::BTreeMap::new();
     if let Some(ts) = first_ts.as_deref() {
