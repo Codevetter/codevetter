@@ -6,15 +6,39 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use base64::{engine::general_purpose, Engine as _};
-use chromiumoxide::cdp::browser_protocol::page::CaptureScreenshotParams;
+use chromiumoxide::cdp::browser_protocol::page::{
+    CaptureScreenshotFormat, CaptureScreenshotParams,
+};
 use chromiumoxide::{Browser as Cdp, BrowserConfig, Page};
 use futures::StreamExt;
 use tokio::task::JoinHandle;
+
+pub const DEFAULT_MAX_ELEMENTS: usize = 80;
 
 pub struct Browser {
     inner: Cdp,
     page: Page,
     handler: JoinHandle<()>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SnapshotOpts<'a> {
+    /// Where to write the captured screenshot. `None` skips screenshot
+    /// capture entirely — the right call for text-only providers (claude,
+    /// gemini), where bytes get thrown away anyway.
+    pub screenshot_path: Option<&'a Path>,
+    /// Cap on interactable elements returned. Applied in the injected JS so
+    /// huge pages don't waste serialization time.
+    pub max_elements: usize,
+}
+
+impl Default for SnapshotOpts<'_> {
+    fn default() -> Self {
+        Self {
+            screenshot_path: None,
+            max_elements: DEFAULT_MAX_ELEMENTS,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -25,19 +49,25 @@ pub struct PageState {
     /// the brain consumes alongside the screenshot (when available).
     pub element_list: String,
     pub screenshot_path: Option<PathBuf>,
-    /// `data:image/png;base64,…` form of the same screenshot. Filled when a
+    /// `data:image/jpeg;base64,…` form of the same screenshot. Filled when a
     /// screenshot was captured so the frontend can render it inline without
-    /// configuring the asset:// protocol scope.
+    /// configuring the asset:// protocol scope. JPEG q80 keeps payload small.
     pub screenshot_data_url: Option<String>,
 }
 
-const EXTRACT_ELEMENTS_JS: &str = r#"
-(() => {
+/// Builds the element-extraction JS with a cap inlined as `MAX`. Capping in
+/// the page avoids serializing hundreds of elements over CDP and paying the
+/// JSON parse cost on the Rust side. We sort by viewport-top so the cap
+/// keeps the most-visible elements rather than truncating randomly.
+fn extract_elements_js(max_elements: usize) -> String {
+    format!(
+        r#"
+(() => {{
+  const MAX = {max_elements};
   const out = [];
   const sel = 'a, button, input, textarea, select, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [contenteditable="true"]';
   const nodes = document.querySelectorAll(sel);
-  let i = 0;
-  nodes.forEach((el) => {
+  nodes.forEach((el) => {{
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
     const style = getComputedStyle(el);
@@ -57,22 +87,35 @@ const EXTRACT_ELEMENTS_JS: &str = r#"
     else if (el.getAttribute('aria-label')) sel = tag + '[aria-label="' + el.getAttribute('aria-label') + '"]';
     else if (tag === 'a' && el.getAttribute('href')) sel = 'a[href="' + el.getAttribute('href') + '"]';
 
-    out.push({
-      idx: i,
+    out.push({{
       role,
       label,
       selector: sel,
       top: Math.round(rect.top),
-    });
-    i++;
-  });
-  return JSON.stringify(out);
-})()
-"#;
+    }});
+  }});
+  out.sort((a, b) => a.top - b.top);
+  const clipped = out.slice(0, MAX);
+  return JSON.stringify(clipped.map((it, idx) => ({{ idx, ...it }})));
+}})()
+"#,
+    )
+}
 
 impl Browser {
     pub async fn launch() -> Result<Self, String> {
+        // Unique profile dir per launch so concurrent Browser instances (e.g.
+        // multiple agent runs queued back-to-back, or parallel test threads)
+        // don't deadlock on chromiumoxide's default singleton lock.
+        let profile_dir = std::env::temp_dir().join(format!(
+            "codevetter-chrome-{}",
+            uuid::Uuid::new_v4()
+        ));
+        std::fs::create_dir_all(&profile_dir)
+            .map_err(|e| format!("create profile dir {profile_dir:?}: {e}"))?;
+
         let config = BrowserConfig::builder()
+            .user_data_dir(&profile_dir)
             .build()
             .map_err(|e| format!("BrowserConfig build failed: {e}"))?;
 
@@ -109,7 +152,7 @@ impl Browser {
         Ok(())
     }
 
-    pub async fn snapshot(&self, shot_path: Option<&Path>) -> Result<PageState, String> {
+    pub async fn snapshot(&self, opts: SnapshotOpts<'_>) -> Result<PageState, String> {
         let url = self
             .page
             .url()
@@ -124,9 +167,10 @@ impl Browser {
             .map_err(|e| format!("page.get_title() failed: {e}"))?
             .unwrap_or_default();
 
+        let js = extract_elements_js(opts.max_elements);
         let raw_value = self
             .page
-            .evaluate(EXTRACT_ELEMENTS_JS)
+            .evaluate(js.as_str())
             .await
             .map_err(|e| format!("element-extraction JS failed: {e}"))?;
         let json_str: String = raw_value
@@ -134,9 +178,15 @@ impl Browser {
             .map_err(|e| format!("element-extraction value not a string: {e}"))?;
         let element_list = format_element_list(&json_str);
 
-        let (screenshot_path, screenshot_data_url) = match shot_path {
+        let (screenshot_path, screenshot_data_url) = match opts.screenshot_path {
             Some(p) => {
-                let params = CaptureScreenshotParams::default();
+                // JPEG q80 is ~5-10x smaller than PNG for typical screenshots
+                // and the model doesn't care about exact pixel fidelity for
+                // GUI navigation purposes.
+                let params = CaptureScreenshotParams::builder()
+                    .format(CaptureScreenshotFormat::Jpeg)
+                    .quality(80)
+                    .build();
                 let bytes = self
                     .page
                     .screenshot(params)
@@ -148,7 +198,7 @@ impl Browser {
                 let encoded = general_purpose::STANDARD.encode(&bytes);
                 (
                     Some(p.to_path_buf()),
-                    Some(format!("data:image/png;base64,{encoded}")),
+                    Some(format!("data:image/jpeg;base64,{encoded}")),
                 )
             }
             None => (None, None),
@@ -253,7 +303,7 @@ fn format_element_list(json_str: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{format_element_list, Browser};
+    use super::{format_element_list, Browser, SnapshotOpts};
 
     #[test]
     fn format_element_list_renders_compact_lines() {
@@ -296,7 +346,10 @@ mod tests {
         );
         let browser = Browser::launch().await.expect("launch chrome");
         browser.goto(url).await.expect("goto data:url");
-        let state = browser.snapshot(None).await.expect("snapshot");
+        let state = browser
+            .snapshot(SnapshotOpts::default())
+            .await
+            .expect("snapshot");
         assert_eq!(state.title, "Test Page", "title should populate");
         assert!(
             state.element_list.contains("Click me"),

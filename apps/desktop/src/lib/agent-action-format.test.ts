@@ -14,6 +14,9 @@ function step(action: AgentAction): AgentStep {
     screenshot_path: null,
     screenshot_data_url: null,
     elapsed_ms: 100,
+    snapshot_ms: 10,
+    brain_ms: 80,
+    exec_ms: 10,
     error: null,
   };
 }

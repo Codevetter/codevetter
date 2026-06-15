@@ -55,10 +55,17 @@ pub struct AgentStep {
     pub url: String,
     pub page_title: String,
     pub screenshot_path: Option<String>,
-    /// `data:image/png;base64,…` so the frontend can render the screenshot
+    /// `data:image/jpeg;base64,…` so the frontend can render the screenshot
     /// inline without configuring the asset:// scope.
     pub screenshot_data_url: Option<String>,
     pub elapsed_ms: u64,
+    /// Time spent capturing URL/title/elements/screenshot.
+    pub snapshot_ms: u64,
+    /// Time spent waiting for the brain to return an action. Typically the
+    /// dominant cost — CLI cold-start is 2-5s per spawn.
+    pub brain_ms: u64,
+    /// Time spent executing the chosen action against the browser.
+    pub exec_ms: u64,
     pub error: Option<String>,
 }
 
