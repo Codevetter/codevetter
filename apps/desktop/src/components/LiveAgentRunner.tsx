@@ -282,6 +282,11 @@ export function LiveAgentRunner({
                     )}
                     <p className="mt-1 text-[10px] font-mono text-slate-500">
                       {step.url} · {step.elapsed_ms}ms
+                      {step.brain_ms > 0 && (
+                        <span className="ml-2 text-slate-600">
+                          (snap {step.snapshot_ms} · brain {step.brain_ms} · exec {step.exec_ms})
+                        </span>
+                      )}
                     </p>
                     {step.error && (
                       <p className="mt-1 text-[10px] text-red-300">{step.error}</p>

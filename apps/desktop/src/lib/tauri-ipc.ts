@@ -2021,9 +2021,16 @@ export interface AgentStep {
   url: string;
   page_title: string;
   screenshot_path: string | null;
-  /** `data:image/png;base64,…` so the trace UI can render the shot inline. */
+  /** `data:image/jpeg;base64,…` so the trace UI can render the shot inline. */
   screenshot_data_url: string | null;
   elapsed_ms: number;
+  /** Time spent capturing URL/title/elements/screenshot for this step. */
+  snapshot_ms: number;
+  /** Time spent waiting for the brain to return an action. Typically the
+   *  dominant cost — CLI cold-start is 2-5s per spawn. */
+  brain_ms: number;
+  /** Time spent executing the chosen action against the browser. */
+  exec_ms: number;
   error: string | null;
 }
 

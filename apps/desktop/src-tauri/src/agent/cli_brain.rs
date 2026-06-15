@@ -343,4 +343,21 @@ mod tests {
         let text = spawn_claude(&ctx, None).await.expect("spawn claude");
         assert!(!text.is_empty(), "expected non-empty response");
     }
+
+    /// End-to-end smoke against the real `codex` CLI. Ignored by default.
+    #[tokio::test]
+    #[ignore]
+    async fn e2e_codex_returns_text() {
+        let ctx = BrainContext {
+            goal: "respond with the literal text DONE and nothing else",
+            persona: None,
+            history: &[],
+            url: "https://example.com",
+            page_title: "Example",
+            accessibility_tree: "(nothing)",
+            screenshot_path: None,
+        };
+        let text = spawn_codex(&ctx, None).await.expect("spawn codex");
+        assert!(!text.is_empty(), "expected non-empty response");
+    }
 }
