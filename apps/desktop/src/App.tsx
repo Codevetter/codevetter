@@ -14,6 +14,7 @@ import { useTrayMonitor } from "@/lib/use-tray-monitor";
 const AgentMemories = lazy(() => import("@/pages/AgentMemories"));
 const Ask = lazy(() => import("@/pages/Ask"));
 const Fleet = lazy(() => import("@/pages/Fleet"));
+const Ops = lazy(() => import("@/pages/Ops"));
 const Home = lazy(() => import("@/pages/Home"));
 const Intel = lazy(() => import("@/pages/Intel"));
 const IntentDebugger = lazy(() => import("@/pages/IntentDebugger"));
@@ -191,6 +192,7 @@ export default function App() {
         <Route path="/intel" element={<Intel />} />
         <Route path="/fleet" element={<Fleet />} />
         <Route path="/ask" element={<Ask />} />
+        <Route path="/ops" element={<Ops />} />
         <Route path="/agent-memories" element={<AgentMemories />} />
         <Route path="/intent-debugger" element={<IntentDebugger />} />
         <Route path="/qa-replay" element={<QaReplay />} />
