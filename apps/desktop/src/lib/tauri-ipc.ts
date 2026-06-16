@@ -2664,3 +2664,37 @@ export async function sendWebhookNotification(
 ): Promise<void> {
   return safeInvoke<void>("send_notification", { input });
 }
+
+// ─── v1.1.82: persona generator ─────────────────────────────────────────────
+
+export interface PersonaArchetype {
+  name: string;
+  one_liner: string;
+  population_pct: number;
+  representative_handles: string[];
+  signals: string[];
+  jobs_to_be_done: string[];
+}
+
+export interface PersonaReport {
+  repo: string;
+  sample_size: number;
+  stargazer_count: number;
+  issue_author_count: number;
+  archetypes: PersonaArchetype[];
+  summary: string;
+  took_ms: number;
+  warnings: string[];
+}
+
+export interface PersonaInput {
+  repo: string;
+  sample_size?: number;
+  provider?: "claude" | "codex";
+}
+
+export async function generatePersonas(
+  input: PersonaInput,
+): Promise<PersonaReport> {
+  return safeInvoke<PersonaReport>("generate_personas", { input });
+}

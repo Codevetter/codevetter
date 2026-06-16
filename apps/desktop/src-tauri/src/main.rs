@@ -244,6 +244,8 @@ fn main() {
             commands::observability::get_webhook_config,
             commands::observability::set_webhook_config,
             commands::observability::send_notification,
+            // v1.1.82: persona generator (Featurely-style)
+            commands::persona::generate_personas,
             // Git
             commands::git::list_git_branches,
             commands::git::get_git_remote_info,

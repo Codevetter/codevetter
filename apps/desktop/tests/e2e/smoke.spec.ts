@@ -54,10 +54,10 @@ test.describe("Smoke tests", () => {
     await expect(nav).toBeVisible();
 
     // Nav links: Home, Review, Roadmap, Rubrics, Unpack, Intel, Fleet,
-    // Ask, Ops, Memories, Settings. The signed-in avatar chip only renders
-    // when authenticated; unsigned-in nav has exactly 11 anchor links.
+    // Ask, Ops, Personas, Memories, Settings. The signed-in avatar chip
+    // only renders when authenticated; unsigned-in nav has exactly 12.
     const links = nav.locator("a");
-    await expect(links).toHaveCount(11);
+    await expect(links).toHaveCount(12);
   });
 
   test("Nav bar shows current page name", async ({ page }) => {
