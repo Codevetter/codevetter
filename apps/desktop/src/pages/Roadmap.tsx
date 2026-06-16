@@ -1,6 +1,7 @@
 import { Activity, Loader2, RefreshCw, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import SaasMakerTasksPanel from "@/components/SaasMakerTasksPanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -285,6 +286,7 @@ export default function Roadmap() {
           </div>
         )}
 
+        <SaasMakerTasksPanel />
         <RoadmapReleaseBanner />
         <VerificationWorkbenchPanel scorecard={scorecard} />
         <SessionScorecardPanel scorecard={scorecard} />
