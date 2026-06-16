@@ -1011,9 +1011,8 @@ export interface DailyAttribution {
   human_commits: number;
 }
 
-export interface RepoAttributionReport {
-  repo_path: string;
-  since_days: number | null;
+export interface WindowReport {
+  label: string; // "all" / "90d" / "30d" / "7d"
   total_commits: number;
   ai_commits: number;
   human_commits: number;
@@ -1022,8 +1021,48 @@ export interface RepoAttributionReport {
   ai_deletions: number;
   human_additions: number;
   human_deletions: number;
+  active_days: number;
   by_tool: ToolCount[];
+}
+
+export interface AuthorRow {
+  name: string;
+  email: string;
+  commits: number;
+  ai_commits: number;
+  human_commits: number;
+  additions: number;
+  deletions: number;
+  active_days: number;
+  last_commit: string;
+  tool_mix: ToolCount[];
+}
+
+export interface FileChurn {
+  path: string;
+  commits: number;
+  additions: number;
+  deletions: number;
+}
+
+export interface RepoAttributionReport {
+  repo_path: string;
+  windows: WindowReport[];
+  by_author: AuthorRow[];
+  top_files: FileChurn[];
+  day_of_week: [number, number, number, number, number, number, number];
   daily_series: DailyAttribution[];
+}
+
+export interface ModelCostRow {
+  model: string;
+  sessions: number;
+  estimated_cost_usd: number;
+}
+
+export interface DailyCost {
+  date: string;
+  cost_usd: number;
 }
 
 export interface ToolBreakdownRow {
@@ -1031,18 +1070,29 @@ export interface ToolBreakdownRow {
   sessions: number;
   real_input_tokens: number;
   cache_read_tokens: number;
+  cache_creation_tokens: number;
   output_tokens: number;
   estimated_cost_usd: number;
+  cost_p50_usd: number;
+  cost_p95_usd: number;
   avg_session_seconds: number | null;
+  models: ModelCostRow[];
+  daily_cost: DailyCost[];
+}
+
+export interface PricingRow {
+  model: string;
+  input_per_mtok: number;
+  output_per_mtok: number;
+  cache_read_per_mtok: number;
+  cache_write_per_mtok: number;
 }
 
 export async function attributeRepoCommits(
   repoPath: string,
-  sinceDays: number | null,
 ): Promise<RepoAttributionReport> {
   return safeInvoke<RepoAttributionReport>("attribute_repo_commits", {
     repoPath,
-    sinceDays,
   });
 }
 
@@ -1050,6 +1100,10 @@ export async function getToolBreakdown(
   sinceDays: number | null,
 ): Promise<ToolBreakdownRow[]> {
   return safeInvoke<ToolBreakdownRow[]>("get_tool_breakdown", { sinceDays });
+}
+
+export async function getPricingTable(): Promise<PricingRow[]> {
+  return safeInvoke<PricingRow[]>("get_pricing_table");
 }
 
 export async function setTrayText(text: string): Promise<void> {

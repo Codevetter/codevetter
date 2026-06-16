@@ -208,6 +208,7 @@ fn main() {
             // Engineering Intelligence (/intel)
             commands::intel::attribute_repo_commits,
             commands::intel::get_tool_breakdown,
+            commands::intel::get_pricing_table,
             // Git
             commands::git::list_git_branches,
             commands::git::get_git_remote_info,

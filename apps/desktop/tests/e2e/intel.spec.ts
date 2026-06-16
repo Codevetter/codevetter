@@ -22,11 +22,11 @@ test.describe("Intel page", () => {
       page.locator("h1", { hasText: "Engineering Intelligence" }),
     ).toBeVisible();
     await expect(page.getByText("Repo Attribution")).toBeVisible();
-    await expect(page.getByText("Per-Tool Usage")).toBeVisible();
+    await expect(page.getByText("Per-Tool LLM Usage")).toBeVisible();
 
-    // The four range buttons should all be present.
-    for (const label of ["7 days", "30 days", "90 days", "All time"]) {
-      await expect(page.getByRole("button", { name: label })).toBeVisible();
+    // The four compact range buttons should all be present.
+    for (const label of ["7d", "30d", "90d", "All"]) {
+      await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
     }
 
     // Run button is disabled until a path is entered.
@@ -48,9 +48,8 @@ test.describe("Intel page", () => {
     await navigateTo(page, "/intel");
     await waitForNoSpinners(page);
 
-    const all = page.getByRole("button", { name: "All time" });
+    const all = page.getByRole("button", { name: "All", exact: true });
     await all.click();
-    // Active state uses cv-accent text color; just assert it stays visible after click.
     await expect(all).toBeVisible();
   });
 });
