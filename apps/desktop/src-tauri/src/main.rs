@@ -236,6 +236,14 @@ fn main() {
             commands::dora::get_dora_metrics,
             // v1.1.80: Ask CodeVetter — NL Q&A over fleet+repo data
             commands::ask::ask_codevetter,
+            // v1.1.81: real billing + agent observability + notifications
+            commands::observability::get_billing_config,
+            commands::observability::set_billing_config,
+            commands::observability::get_billing_snapshots,
+            commands::observability::get_agent_observability,
+            commands::observability::get_webhook_config,
+            commands::observability::set_webhook_config,
+            commands::observability::send_notification,
             // Git
             commands::git::list_git_branches,
             commands::git::get_git_remote_info,

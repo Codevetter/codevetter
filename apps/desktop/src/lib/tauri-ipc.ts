@@ -2574,3 +2574,93 @@ export interface AskResult {
 export async function askCodevetter(input: AskInput): Promise<AskResult> {
   return safeInvoke<AskResult>("ask_codevetter", { input });
 }
+
+// ─── v1.1.81: billing + agent obs + webhook notifications ───────────────────
+
+export interface BillingConfig {
+  anthropic_configured: boolean;
+  openai_configured: boolean;
+}
+
+export interface SetBillingConfigInput {
+  anthropic_admin_key?: string | null;
+  openai_admin_key?: string | null;
+}
+
+export interface BillingSnapshot {
+  provider: string;
+  configured: boolean;
+  period_start: string | null;
+  period_end: string | null;
+  usd_cents: number | null;
+  source: string;
+  error: string | null;
+}
+
+export interface TaskTypeStats {
+  task_type: string;
+  session_count: number;
+  success_count: number;
+  failure_count: number;
+  success_rate_pct: number;
+  median_duration_seconds: number | null;
+  p95_duration_seconds: number | null;
+}
+
+export interface AgentObservability {
+  rows: TaskTypeStats[];
+  window_days: number;
+}
+
+export interface WebhookConfig {
+  configured: boolean;
+  url_preview: string | null;
+  flavor: string;
+}
+
+export interface SendNotificationInput {
+  title: string;
+  message: string;
+  severity?: "info" | "warning" | "critical";
+}
+
+export async function getBillingConfig(): Promise<BillingConfig> {
+  return safeInvoke<BillingConfig>("get_billing_config");
+}
+
+export async function setBillingConfig(
+  input: SetBillingConfigInput,
+): Promise<BillingConfig> {
+  return safeInvoke<BillingConfig>("set_billing_config", { input });
+}
+
+export async function getBillingSnapshots(): Promise<BillingSnapshot[]> {
+  return safeInvoke<BillingSnapshot[]>("get_billing_snapshots");
+}
+
+export async function getAgentObservability(
+  windowDays?: number,
+): Promise<AgentObservability> {
+  return safeInvoke<AgentObservability>("get_agent_observability", {
+    windowDays: windowDays ?? null,
+  });
+}
+
+export async function getWebhookConfig(): Promise<WebhookConfig> {
+  return safeInvoke<WebhookConfig>("get_webhook_config");
+}
+
+export async function setWebhookConfig(
+  url: string,
+  flavor: string,
+): Promise<WebhookConfig> {
+  return safeInvoke<WebhookConfig>("set_webhook_config", {
+    input: { url, flavor },
+  });
+}
+
+export async function sendWebhookNotification(
+  input: SendNotificationInput,
+): Promise<void> {
+  return safeInvoke<void>("send_notification", { input });
+}
