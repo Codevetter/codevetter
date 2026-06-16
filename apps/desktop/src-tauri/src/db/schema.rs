@@ -72,6 +72,41 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         [],
     );
 
+    // v1.1.83 — T-Rex v2 watcher state
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS trex_watchers (
+            repo_path       TEXT PRIMARY KEY,
+            interval_secs   INTEGER NOT NULL,
+            enabled         INTEGER NOT NULL DEFAULT 1,
+            base_branch     TEXT,
+            last_polled_at  TEXT,
+            last_error      TEXT,
+            created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+        )",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS trex_pr_runs (
+            id              TEXT PRIMARY KEY,
+            repo_path       TEXT NOT NULL,
+            pr_number       INTEGER NOT NULL,
+            head_sha        TEXT NOT NULL,
+            verdict         TEXT NOT NULL,
+            confidence      REAL NOT NULL,
+            summary         TEXT NOT NULL,
+            status_state    TEXT,
+            status_error    TEXT,
+            duration_ms     INTEGER NOT NULL DEFAULT 0,
+            ran_at          TEXT NOT NULL DEFAULT (datetime('now'))
+        )",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_trex_pr_runs_repo_pr_time
+            ON trex_pr_runs(repo_path, pr_number, ran_at DESC)",
+        [],
+    );
+
     Ok(())
 }
 

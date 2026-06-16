@@ -134,6 +134,16 @@ pub async fn run_branch_sandbox(
     db: State<'_, DbState>,
     input: SandboxRunInput,
 ) -> Result<SandboxRunResult, String> {
+    run_branch_sandbox_inner(app, &*db, input).await
+}
+
+/// Sandbox runner without the Tauri-State wrapper, so background tasks
+/// (T-Rex watcher) can invoke it with a DbState they own.
+pub async fn run_branch_sandbox_inner(
+    app: AppHandle,
+    db: &DbState,
+    input: SandboxRunInput,
+) -> Result<SandboxRunResult, String> {
     let started = Instant::now();
     let run_id = uuid::Uuid::new_v4().to_string();
 

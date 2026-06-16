@@ -25,4 +25,5 @@ pub mod setup;
 pub mod synthetic_qa;
 pub mod talks;
 pub mod tray;
+pub mod trex_watcher;
 pub mod unpack;
