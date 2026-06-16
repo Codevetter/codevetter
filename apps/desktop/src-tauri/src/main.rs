@@ -212,6 +212,13 @@ fn main() {
             // T-Rex sandbox (/review → Test branch)
             commands::sandbox::run_branch_sandbox,
             commands::sandbox::detect_test_command,
+            // SaaS Maker fleet wireup
+            commands::saas_maker::get_saas_maker_status,
+            commands::saas_maker::set_saas_maker_config,
+            commands::saas_maker::list_saas_maker_tasks,
+            commands::saas_maker::list_saas_maker_projects,
+            commands::saas_maker::update_saas_maker_task,
+            commands::saas_maker::push_finding_to_saas_maker,
             // Git
             commands::git::list_git_branches,
             commands::git::get_git_remote_info,

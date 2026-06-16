@@ -1,5 +1,6 @@
 import { useCallback,useEffect, useState } from "react";
 
+import SaasMakerConfigPanel from "@/components/SaasMakerConfigPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -803,6 +804,13 @@ export default function Settings() {
             </h3>
             <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
               <GitHubConnectionPanel />
+            </div>
+
+            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+              SaaS Maker
+            </h3>
+            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+              <SaasMakerConfigPanel />
             </div>
 
             <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">

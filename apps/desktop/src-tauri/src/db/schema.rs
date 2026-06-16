@@ -39,6 +39,26 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         [],
     );
 
+    // SaaS Maker sync: maps a CodeVetter finding (by id) → the SaaS Maker
+    // task it was pushed as, so re-pushing the same finding is a no-op.
+    // Mirrors reel-pipeline's deduping pattern but keyed locally so we
+    // don't need to round-trip SaaS Maker every check.
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS saas_maker_sync (
+            saas_maker_task_id TEXT PRIMARY KEY,
+            local_source_kind  TEXT NOT NULL,
+            local_source_id    TEXT NOT NULL,
+            last_payload       TEXT NOT NULL,
+            synced_at          TEXT NOT NULL
+        )",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_saas_maker_sync_local
+            ON saas_maker_sync(local_source_kind, local_source_id)",
+        [],
+    );
+
     Ok(())
 }
 

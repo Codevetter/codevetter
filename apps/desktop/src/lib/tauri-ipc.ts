@@ -2264,3 +2264,94 @@ export async function listenToSandboxSteps(
 ): Promise<UnlistenFn> {
   return listen<SandboxStep>("sandbox:step", (evt) => handler(evt.payload));
 }
+
+// ─── SaaS Maker wireup ──────────────────────────────────────────────────────
+
+export interface SaasMakerTask {
+  id: string;
+  title: string;
+  description?: string | null;
+  status?: string | null;
+  priority?: string | null;
+  project_slug?: string | null;
+  task_type?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  pr_url?: string | null;
+}
+
+export interface SaasMakerStatus {
+  configured: boolean;
+  base_url: string;
+  project_slug: string | null;
+  token_source: "env" | "preferences" | "none";
+}
+
+export interface SaasMakerSetConfig {
+  token?: string | null;
+  base_url?: string | null;
+  project_slug?: string | null;
+}
+
+export interface PushFindingResult {
+  task: SaasMakerTask | null;
+  skipped: boolean;
+  skipped_reason: string | null;
+  already_synced: boolean;
+}
+
+export async function getSaasMakerStatus(): Promise<SaasMakerStatus> {
+  return safeInvoke<SaasMakerStatus>("get_saas_maker_status");
+}
+
+export async function setSaasMakerConfig(
+  config: SaasMakerSetConfig,
+): Promise<SaasMakerStatus> {
+  return safeInvoke<SaasMakerStatus>("set_saas_maker_config", { config });
+}
+
+export async function listSaasMakerTasks(
+  projectSlug?: string | null,
+): Promise<SaasMakerTask[]> {
+  return safeInvoke<SaasMakerTask[]>("list_saas_maker_tasks", {
+    projectSlug: projectSlug ?? null,
+  });
+}
+
+export async function pushFindingToSaasMaker(args: {
+  review_id: string;
+  finding_id: string;
+  project_slug?: string | null;
+}): Promise<PushFindingResult> {
+  return safeInvoke<PushFindingResult>("push_finding_to_saas_maker", {
+    input: args,
+  });
+}
+
+export interface SaasMakerProject {
+  id: string;
+  name: string;
+  slug?: string | null;
+  source?: string | null;
+}
+
+export interface UpdateTaskPatch {
+  status?: "todo" | "in_progress" | "done" | null;
+  priority?: "low" | "medium" | "high" | null;
+  title?: string | null;
+  description?: string | null;
+}
+
+export async function listSaasMakerProjects(): Promise<SaasMakerProject[]> {
+  return safeInvoke<SaasMakerProject[]>("list_saas_maker_projects");
+}
+
+export async function updateSaasMakerTask(
+  taskId: string,
+  patch: UpdateTaskPatch,
+): Promise<SaasMakerTask> {
+  return safeInvoke<SaasMakerTask>("update_saas_maker_task", {
+    taskId,
+    patch,
+  });
+}
