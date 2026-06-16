@@ -2698,3 +2698,67 @@ export async function generatePersonas(
 ): Promise<PersonaReport> {
   return safeInvoke<PersonaReport>("generate_personas", { input });
 }
+
+// ─── T-Rex v2 watcher (v1.1.83) ────────────────────────────────────────────
+
+export interface TrexWatcher {
+  repo_path: string;
+  interval_secs: number;
+  enabled: boolean;
+  base_branch: string | null;
+  last_polled_at: string | null;
+  last_error: string | null;
+  created_at: string;
+}
+
+export interface TrexPrRun {
+  id: string;
+  repo_path: string;
+  pr_number: number;
+  head_sha: string;
+  verdict: "APPROVE" | "NEEDS_REVIEW" | "BLOCK" | string;
+  confidence: number;
+  summary: string;
+  status_state: "success" | "pending" | "failure" | null;
+  status_error: string | null;
+  duration_ms: number;
+  ran_at: string;
+}
+
+export interface StartTrexWatcherInput {
+  repo_path: string;
+  interval_secs?: number;
+  base_branch?: string;
+}
+
+export async function startTrexWatcher(
+  input: StartTrexWatcherInput,
+): Promise<TrexWatcher> {
+  return safeInvoke<TrexWatcher>("start_trex_watcher", { input });
+}
+
+export async function stopTrexWatcher(repoPath: string): Promise<void> {
+  await safeInvoke<void>("stop_trex_watcher", { repoPath });
+}
+
+export async function listTrexWatchers(): Promise<TrexWatcher[]> {
+  return (await safeInvoke<TrexWatcher[]>("list_trex_watchers", {})) ?? [];
+}
+
+export async function listTrexPrRuns(
+  repoPath?: string,
+  limit?: number,
+): Promise<TrexPrRun[]> {
+  return (
+    (await safeInvoke<TrexPrRun[]>("list_trex_pr_runs", {
+      repoPath,
+      limit,
+    })) ?? []
+  );
+}
+
+export async function forcePollTrexWatcher(repoPath: string): Promise<number> {
+  return (
+    (await safeInvoke<number>("force_poll_trex_watcher", { repoPath })) ?? 0
+  );
+}

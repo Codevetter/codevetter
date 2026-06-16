@@ -16,6 +16,7 @@ const Ask = lazy(() => import("@/pages/Ask"));
 const Fleet = lazy(() => import("@/pages/Fleet"));
 const Ops = lazy(() => import("@/pages/Ops"));
 const Persona = lazy(() => import("@/pages/Persona"));
+const TRex = lazy(() => import("@/pages/TRex"));
 const Home = lazy(() => import("@/pages/Home"));
 const Intel = lazy(() => import("@/pages/Intel"));
 const IntentDebugger = lazy(() => import("@/pages/IntentDebugger"));
@@ -195,6 +196,7 @@ export default function App() {
         <Route path="/ask" element={<Ask />} />
         <Route path="/ops" element={<Ops />} />
         <Route path="/personas" element={<Persona />} />
+        <Route path="/trex" element={<TRex />} />
         <Route path="/agent-memories" element={<AgentMemories />} />
         <Route path="/intent-debugger" element={<IntentDebugger />} />
         <Route path="/qa-replay" element={<QaReplay />} />

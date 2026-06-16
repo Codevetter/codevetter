@@ -32,6 +32,11 @@ fn main() {
 
             let conn = db::init_db(app_data_dir.clone()).expect("failed to initialize database");
             app.manage(DbState(Arc::new(Mutex::new(conn))));
+            app.manage(commands::trex_watcher::WatcherHandles::new());
+
+            // v1.1.83: resume any T-Rex watchers that were enabled before the
+            // last shutdown. Each enabled row spawns its own Tokio polling task.
+            commands::trex_watcher::resume_enabled_watchers(&app.handle());
 
             // ── Trigger initial index on startup ─────────────────
             // Storage cleanup (one-time purge of cruft message rows) runs at
@@ -246,6 +251,12 @@ fn main() {
             commands::observability::send_notification,
             // v1.1.82: persona generator (Featurely-style)
             commands::persona::generate_personas,
+            // v1.1.83: T-Rex v2 watcher — background PR scanner + GitHub status check
+            commands::trex_watcher::start_trex_watcher,
+            commands::trex_watcher::stop_trex_watcher,
+            commands::trex_watcher::list_trex_watchers,
+            commands::trex_watcher::list_trex_pr_runs,
+            commands::trex_watcher::force_poll_trex_watcher,
             // Git
             commands::git::list_git_branches,
             commands::git::get_git_remote_info,
