@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
+import { Link } from "react-router-dom";
 
 import BlastRadiusPanel from "@/components/blast-radius-panel";
 import SandboxRunner from "@/components/SandboxRunner";
@@ -5391,11 +5392,23 @@ export default function QuickReview() {
       <div className="cv-frame flex w-[420px] shrink-0 flex-col overflow-hidden">
         {/* Header */}
         <div className="cv-terminal-bar h-11 shrink-0 px-4">
-          <div className="flex items-center gap-2">
-            <Zap size={16} className="text-[var(--cv-accent)]" />
-            <h1 className="cv-label text-slate-200">
-              Review
-            </h1>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Zap size={16} className="text-[var(--cv-accent)]" />
+              <h1 className="cv-label text-slate-200">
+                Review
+              </h1>
+            </div>
+            {/* Rubric/standards is review config, not a top-level tab — reach
+                the editor from here. */}
+            <Link
+              to="/rubrics"
+              title="Choose the standards pack CodeVetter applies when reviewing"
+              className="flex items-center gap-1 text-[10px] text-slate-500 transition-colors hover:text-[var(--cv-accent)]"
+            >
+              <ClipboardCheck size={12} />
+              Rubric
+            </Link>
           </div>
         </div>
 
