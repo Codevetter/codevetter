@@ -1,4 +1,4 @@
-import { BookOpenText, ClipboardCheck, Eye, Gauge, Home, Map, MessageSquare, Rocket, ScanSearch, Settings, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
+import { BookOpenText, Eye, Gauge, Home, Map, Rocket, ScanSearch, Settings, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { type ReactNode,useEffect, useRef, useState } from "react";
 import { Link, useLocation,useNavigate } from "react-router-dom";
 
@@ -22,13 +22,10 @@ const navItems: NavItem[] = [
   { label: "Home", href: "/", icon: <Home size={18} />, shortcut: "H" },
   { label: "Review", href: "/review", icon: <Zap size={18} />, shortcut: "R" },
   { label: "Roadmap", href: "/roadmap", icon: <Map size={18} />, shortcut: "M" },
-  { label: "Rubrics", href: "/rubrics", icon: <ClipboardCheck size={18} />, shortcut: "B" },
   { label: "Unpack", href: "/unpack", icon: <ScanSearch size={18} />, shortcut: "U" },
   { label: "Intel", href: "/intel", icon: <Sparkles size={18} />, shortcut: "I" },
   { label: "Fleet", href: "/fleet", icon: <Rocket size={18} />, shortcut: "F" },
-  { label: "Ask", href: "/ask", icon: <MessageSquare size={18} />, shortcut: "K" },
   { label: "Ops", href: "/ops", icon: <Gauge size={18} />, shortcut: "O" },
-  { label: "Personas", href: "/personas", icon: <Users size={18} />, shortcut: "P" },
   { label: "T-Rex", href: "/trex", icon: <Eye size={18} />, shortcut: "T" },
   { label: "Memories", href: "/agent-memories", icon: <BookOpenText size={18} />, shortcut: "A" },
   { label: "Settings", href: "/settings", icon: <Settings size={18} />, shortcut: "," },
