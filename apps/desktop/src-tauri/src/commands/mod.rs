@@ -11,6 +11,8 @@ pub mod github_ops;
 pub mod history;
 pub mod intel;
 pub mod observability;
+#[cfg(test)]
+mod perf_bench;
 pub mod preferences;
 pub mod procedure_events;
 pub mod resources;
