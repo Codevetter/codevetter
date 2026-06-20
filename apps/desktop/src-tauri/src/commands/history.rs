@@ -244,6 +244,42 @@ pub fn tail_live_transcript_sessions_with_conn(
     })
 }
 
+/// Refresh Grok + Cursor sessions outside the full index. They aren't
+/// transcript-tailable via `list_live_session_sources` (Grok is a session
+/// directory, Cursor is a SQLite DB), so without this they only refreshed on
+/// the 5-minute full index and visibly lagged Claude/Codex (which tail every
+/// 10s) — reading to the user as "Grok/Cursor not updating". Each indexer skips
+/// unchanged sessions cheaply via mtime, so this is light to call on a short
+/// sub-cadence. Runs every indexer independently so one failure doesn't block
+/// the others.
+pub fn refresh_secondary_agents_with_conn(
+    conn: &rusqlite::Connection,
+) -> Result<TranscriptTailSummary, String> {
+    let now = chrono::Utc::now().to_rfc3339();
+    let mut sessions_tailed = 0u64;
+    let mut messages_indexed = 0u64;
+
+    for result in [
+        index_grok_sessions(conn),
+        index_cursor_sessions(conn),
+        index_cursor_agent_sessions(conn),
+    ] {
+        match result {
+            Ok((indexed, messages, _skipped)) => {
+                sessions_tailed += indexed;
+                messages_indexed += messages;
+            }
+            Err(error) => log::debug!("Secondary-agent refresh skipped one source: {error}"),
+        }
+    }
+
+    Ok(TranscriptTailSummary {
+        sessions_tailed,
+        messages_indexed,
+        tailed_at: now,
+    })
+}
+
 #[tauri::command]
 pub async fn trigger_index(app: AppHandle) -> Result<Value, String> {
     // Index against a private WAL connection on a blocking thread — exactly the
@@ -622,6 +658,36 @@ pub async fn get_agent_usage_breakdown(
 ) -> Result<Vec<queries::AgentUsageRow>, String> {
     let conn = conn_lock(&db)?;
     queries::get_agent_usage_breakdown(&conn).map_err(|e| e.to_string())
+}
+
+/// Per-day, per-agent generated/cache tokens for the last `days` days (day-wise
+/// drill-down behind the daily chart). Defaults to 30 days when omitted.
+#[tauri::command]
+pub async fn get_agent_usage_by_day(
+    db: State<'_, DbState>,
+    days: Option<i64>,
+) -> Result<Vec<queries::AgentDayUsage>, String> {
+    let conn = conn_lock(&db)?;
+    queries::get_agent_usage_by_day(&conn, days.unwrap_or(30)).map_err(|e| e.to_string())
+}
+
+/// All-time generated/cache tokens grouped by project, top `limit` (default 12).
+#[tauri::command]
+pub async fn get_usage_by_project(
+    db: State<'_, DbState>,
+    limit: Option<i64>,
+) -> Result<Vec<queries::ProjectUsage>, String> {
+    let conn = conn_lock(&db)?;
+    queries::get_usage_by_project(&conn, limit.unwrap_or(12)).map_err(|e| e.to_string())
+}
+
+/// All-time generated/cache tokens grouped by model.
+#[tauri::command]
+pub async fn get_usage_by_model(
+    db: State<'_, DbState>,
+) -> Result<Vec<queries::ModelUsage>, String> {
+    let conn = conn_lock(&db)?;
+    queries::get_usage_by_model(&conn).map_err(|e| e.to_string())
 }
 
 // ─────────────────────────────────────────────────────────────────
