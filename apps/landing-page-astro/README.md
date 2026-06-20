@@ -13,7 +13,9 @@ CI: `.github/workflows/deploy-landing.yml` on pushes to `apps/landing-page-astro
 
 ## Custom-domain cache
 
-`codevetter.com` sits on a Cloudflare zone with the fleet HTML cache rule (`psi-swarm/scripts/deploy-cf-cache-rules.mjs`). After deploy, **purge the zone edge cache** or canonical URLs can serve stale HTML for up to 24h (old `s-maxage`) even while `codevetter.pages.dev` is fresh.
+`codevetter.com` sits on a Cloudflare zone with the fleet HTML cache rule (`psi-swarm/scripts/deploy-cf-cache-rules.mjs`). A temporary Worker (`worker.mjs`, `wrangler.worker.jsonc`) serves `dist/` on `codevetter.com/*` routes until zone cache purge works. It fixes stale HTML but adds ~300–400ms TTFB vs `codevetter.pages.dev` (~300ms LCP). **Remove the worker routes** after `CLOUDFLARE_API_TOKEN` has **Zone.Cache Purge** and post-deploy purge succeeds.
+
+After deploy (once purge is available), **purge the zone edge cache** or canonical URLs can serve stale HTML even while `codevetter.pages.dev` is fresh.
 
 Post-deploy (needs `Zone.Cache Purge` on the API token):
 
