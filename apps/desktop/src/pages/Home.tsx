@@ -23,6 +23,7 @@ import type {
   AccountUsage,
   AgentDayUsage,
   AgentUsageRow,
+  DayBucket,
   LiveUsageResult,
   ModelUsage,
   ProjectUsage,
@@ -32,6 +33,7 @@ import type {
   SessionScorecard,
   TokenUsageStats,
   TriggerIndexResult,
+  WeekBucket,
 } from "@/lib/tauri-ipc";
 import {
   checkAccountUsage,
@@ -850,7 +852,6 @@ function TokenUsageChart({
           const x = padX + i * barW + barW * 0.15;
           const y = padTop + chartH - h;
           const w = barW * 0.7;
-          const isHover = hover === i;
           const isActive = activeIdx === i;
           const isPinned = pinned === i;
           const isLatest = i === n - 1;
