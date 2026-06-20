@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "codevetter-landing-proxy",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-06-04",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    { "pattern": "codevetter.com/*", "zone_name": "codevetter.com" },
+    { "pattern": "www.codevetter.com/*", "zone_name": "codevetter.com" }
+  ]
+}

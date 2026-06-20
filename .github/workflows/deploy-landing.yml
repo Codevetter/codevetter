@@ -65,6 +65,15 @@ jobs:
           command: pages deploy apps/landing-page-astro/dist --project-name=codevetter --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Deploy codevetter.com Worker (bypass stale zone cache)
+        if: steps.cloudflare.outputs.deploy_enabled == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/landing-page-astro
+          command: deploy --config wrangler.worker.jsonc
+
       - name: Purge codevetter.com edge cache
         if: steps.cloudflare.outputs.deploy_enabled == 'true'
         continue-on-error: true
