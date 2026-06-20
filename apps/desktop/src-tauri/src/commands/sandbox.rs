@@ -14,9 +14,13 @@ use tokio::io::AsyncReadExt;
 use tokio::process::Command;
 
 use crate::agent::local_server::LocalServer;
+#[cfg(feature = "browser-agent")]
 use crate::agent::runner::run_with_brain;
+#[cfg(feature = "browser-agent")]
 use crate::agent::cli_brain::CliBrain;
-use crate::agent::types::{AgentRunInput, AgentStep};
+#[cfg(feature = "browser-agent")]
+use crate::agent::types::AgentRunInput;
+use crate::agent::types::AgentStep;
 use crate::db::queries;
 use crate::DbState;
 
@@ -183,6 +187,8 @@ pub async fn run_branch_sandbox_inner(
     }
 
     // 3. Dev server + 4. browser drive — coupled because the agent needs the URL.
+    // `agent_steps` is only mutated by the browser-agent phase below.
+    #[cfg_attr(not(feature = "browser-agent"), allow(unused_mut))]
     let mut agent_steps: Vec<AgentStep> = Vec::new();
     let mut server_url: Option<String> = None;
     let mut server_handle: Option<LocalServer> = None;
@@ -210,6 +216,7 @@ pub async fn run_branch_sandbox_inner(
         }
     }
 
+    #[cfg(feature = "browser-agent")]
     if let (true, Some(url)) = (input.options.drive_browser, server_url.clone()) {
         emit(SandboxStep::Phase {
             phase: "browser".into(),
@@ -245,6 +252,10 @@ pub async fn run_branch_sandbox_inner(
             }
         }
     }
+    // When the browser-agent feature is disabled the browser-driving phase is
+    // skipped entirely; the sandbox still runs the dev server + tests + verdict.
+    #[cfg(not(feature = "browser-agent"))]
+    let _ = &server_url;
 
     // 5. Tests
     let mut test_result: Option<TestRunResult> = None;
@@ -571,6 +582,7 @@ struct Synthesis {
     findings: Vec<ExecutionFinding>,
 }
 
+#[cfg(feature = "browser-agent")]
 fn default_browser_goal() -> String {
     "You are reviewing a candidate branch. Open the home route. From there, \
      visit every link on the page in order, fill any visible forms with \

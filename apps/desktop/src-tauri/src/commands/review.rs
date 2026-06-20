@@ -718,24 +718,36 @@ Diff:
     )
 }
 
-fn run_agent_json(
-    cli_path: &str,
+/// Spawn a review CLI agent and parse its JSON output.
+///
+/// The CLI call is a long-running blocking process, so the spawn + wait runs
+/// inside `tokio::task::spawn_blocking` to avoid stalling the async runtime
+/// (mirrors the fix path in `run_fix`). All inputs are taken by value so the
+/// closure can own them across the thread boundary.
+async fn run_agent_json(
+    cli_path: String,
     cli_cmd: &str,
-    repo_path: &str,
-    prompt: &str,
+    repo_path: String,
+    prompt: String,
 ) -> Result<(Value, String), String> {
-    let cli_output = StdCommand::new(cli_path)
-        .args(["-p", prompt])
-        .current_dir(repo_path)
-        .output()
-        .map_err(|e| format!("Failed to spawn {cli_cmd} (resolved to {cli_path}): {e}"))?;
+    let cli_cmd_owned = cli_cmd.to_string();
+    let raw_output = tokio::task::spawn_blocking(move || {
+        let cli_output = StdCommand::new(&cli_path)
+            .args(["-p", &prompt])
+            .current_dir(&repo_path)
+            .output()
+            .map_err(|e| format!("Failed to spawn {cli_cmd_owned} (resolved to {cli_path}): {e}"))?;
 
-    if !cli_output.status.success() {
-        let stderr = String::from_utf8_lossy(&cli_output.stderr);
-        return Err(format!("{cli_cmd} failed: {stderr}"));
-    }
+        if !cli_output.status.success() {
+            let stderr = String::from_utf8_lossy(&cli_output.stderr);
+            return Err(format!("{cli_cmd_owned} failed: {stderr}"));
+        }
 
-    let raw_output = String::from_utf8_lossy(&cli_output.stdout).to_string();
+        Ok::<String, String>(String::from_utf8_lossy(&cli_output.stdout).to_string())
+    })
+    .await
+    .map_err(|e| format!("Task join error: {e}"))??;
+
     let json_str = extract_json_from_output(&raw_output)
         .ok_or_else(|| format!("Could not find JSON in {cli_cmd} output"))?;
     let parsed: Value =
@@ -1229,10 +1241,15 @@ pub async fn run_cli_review(
     };
     let cli_path = resolve_cli_path(cli_cmd);
 
-    let mut specialist_outputs: Vec<Value> = Vec::new();
     let mut raw_outputs: Vec<String> = Vec::new();
     let mut prompts_used: Vec<String> = Vec::new();
 
+    // Build every specialist prompt up front (sequential — this is the only
+    // step that touches the DB lock, and it's cheap), then run the independent
+    // specialist CLI passes concurrently with a bounded join so N blocking LLM
+    // calls overlap instead of running back-to-back on the runtime.
+    let mut specialist_prompts: Vec<(ReviewSpecialist, String)> =
+        Vec::with_capacity(plan.specialists.len());
     for specialist in &plan.specialists {
         let specialist_block = build_specialist_block(specialist, &plan);
         let base_prompt = build_review_prompt(
@@ -1256,21 +1273,59 @@ pub async fn run_cli_review(
             drop(conn);
             p
         };
+        specialist_prompts.push((*specialist, prompt));
+    }
 
-        let (mut parsed, raw_output) = run_agent_json(&cli_path, cli_cmd, &repo_path, &prompt)?;
-        if let Some(obj) = parsed.as_object_mut() {
-            obj.insert(
-                "specialist".to_string(),
-                json!({
-                    "id": specialist.id,
-                    "name": specialist.name,
-                    "focus": specialist.focus,
-                }),
-            );
+    // Bounded concurrency: at most MAX_CONCURRENT specialist CLI calls in
+    // flight at once. Results are collected by index so the order matches the
+    // plan regardless of completion order.
+    const MAX_CONCURRENT_SPECIALISTS: usize = 3;
+    let total = specialist_prompts.len();
+    let mut results: Vec<Option<(Value, String)>> = (0..total).map(|_| None).collect();
+    let mut join_set: tokio::task::JoinSet<(usize, Result<(Value, String), String>)> =
+        tokio::task::JoinSet::new();
+    let mut next = 0usize;
+
+    while next < total || !join_set.is_empty() {
+        while join_set.len() < MAX_CONCURRENT_SPECIALISTS && next < total {
+            let idx = next;
+            let (specialist, prompt) = specialist_prompts[idx].clone();
+            let cli_path = cli_path.clone();
+            let cli_cmd = cli_cmd.to_string();
+            let repo_path = repo_path.clone();
+            join_set.spawn(async move {
+                let outcome = run_agent_json(cli_path, &cli_cmd, repo_path, prompt)
+                    .await
+                    .map(|(mut parsed, raw_output)| {
+                        if let Some(obj) = parsed.as_object_mut() {
+                            obj.insert(
+                                "specialist".to_string(),
+                                json!({
+                                    "id": specialist.id,
+                                    "name": specialist.name,
+                                    "focus": specialist.focus,
+                                }),
+                            );
+                        }
+                        (parsed, raw_output)
+                    });
+                (idx, outcome)
+            });
+            next += 1;
         }
+
+        if let Some(joined) = join_set.join_next().await {
+            let (idx, outcome) = joined.map_err(|e| format!("Task join error: {e}"))?;
+            results[idx] = Some(outcome?);
+        }
+    }
+
+    let mut specialist_outputs: Vec<Value> = Vec::with_capacity(total);
+    for (idx, slot) in results.into_iter().enumerate() {
+        let (parsed, raw_output) = slot.expect("every specialist slot is filled");
         specialist_outputs.push(parsed);
         raw_outputs.push(raw_output);
-        prompts_used.push(prompt);
+        prompts_used.push(specialist_prompts[idx].1.clone());
     }
 
     let mut coordinator_failed: Option<String> = None;
@@ -1284,7 +1339,14 @@ pub async fn run_cli_review(
         );
         prompts_used.push(coordinator_prompt.clone());
 
-        match run_agent_json(&cli_path, cli_cmd, &repo_path, &coordinator_prompt) {
+        match run_agent_json(
+            cli_path.clone(),
+            cli_cmd,
+            repo_path.clone(),
+            coordinator_prompt.clone(),
+        )
+        .await
+        {
             Ok((mut parsed, raw_output)) => {
                 if let Some(obj) = parsed.as_object_mut() {
                     obj.insert("coordinator".to_string(), json!({"status": "completed"}));
