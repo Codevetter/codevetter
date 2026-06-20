@@ -366,6 +366,7 @@ fn main() {
             commands::synthetic_qa::record_synthetic_qa_run,
             commands::synthetic_qa::list_synthetic_qa_runs,
             // Live browser agent (drives real Chrome via chromiumoxide)
+            #[cfg(feature = "browser-agent")]
             commands::agent::agent_run_task,
         ])
         .run(tauri::generate_context!())

@@ -70,7 +70,9 @@ jobs:
           # can detect + verify releases. The explicit --bundles list forces
           # tauri build to also produce the updater (.tar.gz + .sig) artifacts;
           # without it tauri-action silently skips the signature upload.
-          args: --target aarch64-apple-darwin --bundles app,dmg,updater
+          # --features browser-agent keeps the live browser agent (chromiumoxide)
+          # in release binaries; it is intentionally OUT of the default dev build.
+          args: --target aarch64-apple-darwin --bundles app,dmg,updater --features browser-agent
           includeUpdaterJson: true
           updaterJsonPreferNsis: false
 

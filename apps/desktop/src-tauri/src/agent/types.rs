@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "browser-agent")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentRunInput {
     pub url: String,
@@ -69,6 +70,7 @@ pub struct AgentStep {
     pub error: Option<String>,
 }
 
+#[cfg(feature = "browser-agent")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentRunResult {
     pub run_id: String,

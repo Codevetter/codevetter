@@ -356,6 +356,17 @@ pub struct SessionMeta {
 }
 
 #[derive(Debug, Clone)]
+pub struct LiveSessionSource {
+    pub id: String,
+    pub project_id: String,
+    pub agent_type: String,
+    pub jsonl_path: String,
+    pub file_mtime: Option<String>,
+    pub message_count: i64,
+    pub archived_message_count: i64,
+}
+
+#[derive(Debug, Clone)]
 pub struct SessionArchiveBackfillCandidate {
     pub id: String,
     pub agent_type: String,
@@ -386,6 +397,41 @@ pub fn get_session_by_jsonl_path(
         },
     )
     .optional()
+}
+
+pub fn list_live_session_sources(
+    conn: &Connection,
+    since: &str,
+    limit: i64,
+) -> Result<Vec<LiveSessionSource>, rusqlite::Error> {
+    let mut stmt = conn.prepare(
+        "SELECT id, project_id, agent_type, jsonl_path, file_mtime, message_count,
+                (SELECT COUNT(*) FROM session_message_archive a WHERE a.session_id = cc_sessions.id)
+         FROM cc_sessions
+         WHERE jsonl_path IS NOT NULL
+           AND agent_type IN ('claude-code', 'codex')
+           AND (
+                indexed_at IS NULL
+                OR indexed_at >= ?1
+                OR file_mtime >= ?1
+                OR last_message >= ?1
+                OR message_count = 0
+           )
+         ORDER BY COALESCE(indexed_at, file_mtime, last_message, '') DESC
+         LIMIT ?2",
+    )?;
+    let rows = stmt.query_map(params![since, limit.max(1)], |row| {
+        Ok(LiveSessionSource {
+            id: row.get(0)?,
+            project_id: row.get(1)?,
+            agent_type: row.get(2)?,
+            jsonl_path: row.get(3)?,
+            file_mtime: row.get(4)?,
+            message_count: row.get(5)?,
+            archived_message_count: row.get(6)?,
+        })
+    })?;
+    rows.collect()
 }
 
 /// Look up a project by its `dir_path`.  Returns the project ID if found.
@@ -717,52 +763,62 @@ fn insert_archive_rows(
     session_id: &str,
     messages: &[SessionMessageArchiveInput],
 ) -> Result<(), rusqlite::Error> {
-    let now = chrono::Utc::now().to_rfc3339();
-    let mut stmt = conn.prepare(
-        "INSERT INTO session_message_archive (
-            id, session_id, adapter_id, agent_type, source_ref, source_line,
-            message_index, role, kind, timestamp, content_text, tool_name,
-            tool_call_id, raw_type, created_at
-         ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
-    )?;
-    let mut fts_stmt = conn.prepare(
-        "INSERT INTO session_message_archive_fts (
-            archive_id, session_id, adapter_id, agent_type, role, kind,
-            content_text, tool_name, source_ref
-         ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
-    )?;
-    for message in messages {
-        let archive_id = uuid::Uuid::new_v4().to_string();
-        stmt.execute(params![
-            archive_id.as_str(),
-            session_id,
-            message.adapter_id.as_str(),
-            message.agent_type.as_str(),
-            message.source_ref.as_str(),
-            message.source_line,
-            message.message_index,
-            message.role.as_deref(),
-            message.kind.as_str(),
-            message.timestamp.as_deref(),
-            message.content_text.as_deref(),
-            message.tool_name.as_deref(),
-            message.tool_call_id.as_deref(),
-            message.raw_type.as_deref(),
-            now.as_str(),
-        ])?;
-        fts_stmt.execute(params![
-            archive_id.as_str(),
-            session_id,
-            message.adapter_id.as_str(),
-            message.agent_type.as_str(),
-            message.role.as_deref(),
-            message.kind.as_str(),
-            message.content_text.as_deref(),
-            message.tool_name.as_deref(),
-            message.source_ref.as_str(),
-        ])?;
+    if messages.is_empty() {
+        return Ok(());
     }
-    Ok(())
+    let now = chrono::Utc::now().to_rfc3339();
+    // Wrap the bulk insert in one transaction so a partial failure can't leave
+    // the base table and its FTS mirror out of sync, and so SQLite commits the
+    // whole batch once instead of fsync-ing per row. `unchecked_transaction`
+    // takes `&Connection`, avoiding a `&mut` cascade through every caller.
+    let tx = conn.unchecked_transaction()?;
+    {
+        let mut stmt = tx.prepare(
+            "INSERT INTO session_message_archive (
+                id, session_id, adapter_id, agent_type, source_ref, source_line,
+                message_index, role, kind, timestamp, content_text, tool_name,
+                tool_call_id, raw_type, created_at
+             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+        )?;
+        let mut fts_stmt = tx.prepare(
+            "INSERT INTO session_message_archive_fts (
+                archive_id, session_id, adapter_id, agent_type, role, kind,
+                content_text, tool_name, source_ref
+             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+        )?;
+        for message in messages {
+            let archive_id = uuid::Uuid::new_v4().to_string();
+            stmt.execute(params![
+                archive_id.as_str(),
+                session_id,
+                message.adapter_id.as_str(),
+                message.agent_type.as_str(),
+                message.source_ref.as_str(),
+                message.source_line,
+                message.message_index,
+                message.role.as_deref(),
+                message.kind.as_str(),
+                message.timestamp.as_deref(),
+                message.content_text.as_deref(),
+                message.tool_name.as_deref(),
+                message.tool_call_id.as_deref(),
+                message.raw_type.as_deref(),
+                now.as_str(),
+            ])?;
+            fts_stmt.execute(params![
+                archive_id.as_str(),
+                session_id,
+                message.adapter_id.as_str(),
+                message.agent_type.as_str(),
+                message.role.as_deref(),
+                message.kind.as_str(),
+                message.content_text.as_deref(),
+                message.tool_name.as_deref(),
+                message.source_ref.as_str(),
+            ])?;
+        }
+    }
+    tx.commit()
 }
 
 /// (last_indexed_byte_offset, last_indexed_line_count) — how far the indexer has
