@@ -203,6 +203,12 @@ fn main() {
                 .name("transcript-tail".into())
                 .spawn(move || {
                     std::thread::sleep(std::time::Duration::from_secs(20));
+                    // Grok/Cursor aren't transcript-tailable, so they only
+                    // refreshed on the 5-min full index and lagged Claude/Codex.
+                    // Refresh them every ~60s (every 6th 10s tick) — responsive
+                    // without spamming the unpruned session_adapter_runs table
+                    // (the Cursor indexers each write a run row per pass).
+                    let mut tick: u64 = 0;
                     loop {
                         match db::init_db(tail_data_dir.clone()) {
                             Ok(conn) => {
@@ -236,11 +242,41 @@ fn main() {
                                         log::debug!("Transcript tail pass failed: {error}");
                                     }
                                 }
+
+                                if tick % 6 == 0 {
+                                    match crate::commands::history::refresh_secondary_agents_with_conn(
+                                        &conn,
+                                    ) {
+                                        Ok(summary) if summary.sessions_tailed > 0 => {
+                                            log::info!(
+                                                "Secondary-agent refresh updated {} Grok/Cursor sessions",
+                                                summary.sessions_tailed
+                                            );
+                                            let archive_summary =
+                                                crate::commands::history::FullIndexSummary {
+                                                    indexed_sessions: summary.sessions_tailed,
+                                                    indexed_messages: summary.messages_indexed,
+                                                    skipped_sessions: 0,
+                                                    archive_search_rows_indexed: 0,
+                                                    indexed_at: summary.tailed_at,
+                                                };
+                                            crate::commands::history::emit_session_archive_updated(
+                                                &tail_handle,
+                                                &archive_summary,
+                                            );
+                                        }
+                                        Ok(_) => {}
+                                        Err(error) => {
+                                            log::debug!("Secondary-agent refresh failed: {error}");
+                                        }
+                                    }
+                                }
                             }
                             Err(error) => {
                                 log::debug!("Transcript tail DB init failed: {error}");
                             }
                         }
+                        tick = tick.wrapping_add(1);
                         std::thread::sleep(std::time::Duration::from_secs(10));
                     }
                 })
@@ -320,6 +356,9 @@ fn main() {
             commands::history::get_index_stats,
             commands::history::get_token_usage_stats,
             commands::history::get_agent_usage_breakdown,
+            commands::history::get_agent_usage_by_day,
+            commands::history::get_usage_by_project,
+            commands::history::get_usage_by_model,
             // Engineering Intelligence (/intel)
             commands::intel::attribute_repo_commits,
             commands::intel::get_tool_breakdown,
