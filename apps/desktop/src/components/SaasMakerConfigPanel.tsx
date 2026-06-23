@@ -8,12 +8,12 @@ import {
   RefreshCw,
   Save,
   X,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   getCurrentUser,
   getSaasMakerStatus,
@@ -26,26 +26,26 @@ import {
   setSaasMakerConfig,
   signOutOfSaasMaker,
   startSaasMakerSignin,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
 type SignInPhase =
-  | { kind: "idle" }
-  | { kind: "starting" }
-  | { kind: "polling"; code: string; approvalUrl: string }
-  | { kind: "expired" }
-  | { kind: "approved" };
+  | { kind: 'idle' }
+  | { kind: 'starting' }
+  | { kind: 'polling'; code: string; approvalUrl: string }
+  | { kind: 'expired' }
+  | { kind: 'approved' };
 
 export default function SaasMakerConfigPanel() {
   const [status, setStatus] = useState<SaasMakerStatus | null>(null);
   const [user, setUser] = useState<SaasMakerUser | null>(null);
-  const [token, setToken] = useState("");
-  const [baseUrl, setBaseUrl] = useState("");
-  const [projectSlug, setProjectSlug] = useState("");
+  const [token, setToken] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [projectSlug, setProjectSlug] = useState('');
   const [projects, setProjects] = useState<SaasMakerProject[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [signIn, setSignIn] = useState<SignInPhase>({ kind: "idle" });
+  const [signIn, setSignIn] = useState<SignInPhase>({ kind: 'idle' });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const cancelledRef = useRef(false);
 
@@ -78,7 +78,7 @@ export default function SaasMakerConfigPanel() {
       const s = await getSaasMakerStatus();
       setStatus(s);
       setBaseUrl(s.base_url);
-      setProjectSlug(s.project_slug ?? "");
+      setProjectSlug(s.project_slug ?? '');
       if (s.configured) {
         await Promise.all([loadProjects(), refreshUser()]);
       } else {
@@ -95,7 +95,7 @@ export default function SaasMakerConfigPanel() {
 
   const handleSave = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError("Configuration requires the desktop app.");
+      setError('Configuration requires the desktop app.');
       return;
     }
     setSaving(true);
@@ -107,7 +107,7 @@ export default function SaasMakerConfigPanel() {
         project_slug: projectSlug || null,
       });
       setStatus(s);
-      setToken("");
+      setToken('');
       if (s.configured) {
         await refreshUser();
       }
@@ -120,44 +120,44 @@ export default function SaasMakerConfigPanel() {
 
   const handleSignIn = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError("Sign in requires the desktop app.");
+      setError('Sign in requires the desktop app.');
       return;
     }
     setError(null);
     cancelledRef.current = false;
-    setSignIn({ kind: "starting" });
+    setSignIn({ kind: 'starting' });
     try {
       const start = await startSaasMakerSignin();
       setSignIn({
-        kind: "polling",
+        kind: 'polling',
         code: start.code,
         approvalUrl: start.approval_url,
       });
       const result = await pollSaasMakerSignin(start.code);
       if (cancelledRef.current) {
-        setSignIn({ kind: "idle" });
+        setSignIn({ kind: 'idle' });
         return;
       }
-      if (result.status === "approved") {
+      if (result.status === 'approved') {
         setUser(result.user);
-        setSignIn({ kind: "approved" });
+        setSignIn({ kind: 'approved' });
         await load();
         // Brief celebratory state, then back to idle.
-        setTimeout(() => setSignIn({ kind: "idle" }), 1500);
-      } else if (result.status === "expired") {
-        setSignIn({ kind: "expired" });
+        setTimeout(() => setSignIn({ kind: 'idle' }), 1500);
+      } else if (result.status === 'expired') {
+        setSignIn({ kind: 'expired' });
       } else {
-        setSignIn({ kind: "idle" });
+        setSignIn({ kind: 'idle' });
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
-      setSignIn({ kind: "idle" });
+      setSignIn({ kind: 'idle' });
     }
   }, [load]);
 
   const handleCancelSignIn = useCallback(() => {
     cancelledRef.current = true;
-    setSignIn({ kind: "idle" });
+    setSignIn({ kind: 'idle' });
   }, []);
 
   const handleSignOut = useCallback(async () => {
@@ -171,25 +171,24 @@ export default function SaasMakerConfigPanel() {
     }
   }, [load]);
 
-  const tokenFromEnv = status?.token_source === "env";
-  const polling = signIn.kind === "polling" || signIn.kind === "starting";
+  const tokenFromEnv = status?.token_source === 'env';
+  const polling = signIn.kind === 'polling' || signIn.kind === 'starting';
 
   return (
     <div className="space-y-4">
       <p className="text-xs text-slate-400">
-        Connect to the fleet task DB at{" "}
-        <span className="font-mono">api.sassmaker.com</span>. CodeVetter and the
-        cockpit read/write the same projects and tasks.
+        Connect to the fleet task DB at <span className="font-mono">api.sassmaker.com</span>.
+        CodeVetter and the cockpit read/write the same projects and tasks.
       </p>
 
       {/* IDENTITY BLOCK — the headline */}
       {user ? (
         <IdentityBlock
           user={user}
-          tokenSource={status?.token_source ?? "preferences"}
+          tokenSource={status?.token_source ?? 'preferences'}
           onSignOut={handleSignOut}
         />
-      ) : signIn.kind === "approved" ? (
+      ) : signIn.kind === 'approved' ? (
         <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-3 text-sm text-emerald-200">
           <CheckCircle2 size={14} className="mr-1.5 inline" />
           Signed in successfully.
@@ -231,9 +230,9 @@ export default function SaasMakerConfigPanel() {
             >
               <option value="">(none)</option>
               {projects.map((p) => (
-                <option key={p.id} value={p.slug ?? ""}>
+                <option key={p.id} value={p.slug ?? ''}>
                   {p.name}
-                  {p.slug ? ` — ${p.slug}` : ""}
+                  {p.slug ? ` — ${p.slug}` : ''}
                 </option>
               ))}
             </select>
@@ -246,9 +245,8 @@ export default function SaasMakerConfigPanel() {
             />
           )}
           <p className="mt-1 text-[10px] text-slate-500">
-            Default project slug used when pulling tasks and pushing findings.
-            Once you mark a fleet project&apos;s git URL, the auto-detect picks
-            this up per-repo automatically.
+            Default project slug used when pulling tasks and pushing findings. Once you mark a fleet
+            project&apos;s git URL, the auto-detect picks this up per-repo automatically.
           </p>
         </div>
       )}
@@ -260,7 +258,7 @@ export default function SaasMakerConfigPanel() {
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="text-[10px] text-slate-500 hover:text-[var(--cv-accent)]"
         >
-          {showAdvanced ? "▼" : "▶"} Advanced (manual token, custom base URL)
+          {showAdvanced ? '▼' : '▶'} Advanced (manual token, custom base URL)
         </button>
         {showAdvanced && (
           <div className="mt-3 space-y-3">
@@ -271,10 +269,10 @@ export default function SaasMakerConfigPanel() {
                 value={token}
                 placeholder={
                   tokenFromEnv
-                    ? "Overridden by SAASMAKER_SESSION_TOKEN env"
+                    ? 'Overridden by SAASMAKER_SESSION_TOKEN env'
                     : status?.configured
-                      ? "(stored — replace to update)"
-                      : "Bearer token from SaaS Maker"
+                      ? '(stored — replace to update)'
+                      : 'Bearer token from SaaS Maker'
                 }
                 onChange={(e) => setToken(e.target.value)}
                 disabled={tokenFromEnv}
@@ -298,12 +296,7 @@ export default function SaasMakerConfigPanel() {
             </div>
 
             <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSave}
-                disabled={saving || polling}
-              >
+              <Button type="button" size="sm" onClick={handleSave} disabled={saving || polling}>
                 {saving ? (
                   <>
                     <Loader2 size={12} className="mr-1.5 animate-spin" />
@@ -340,11 +333,11 @@ function IdentityBlock({
   tokenSource: string;
   onSignOut: () => void;
 }) {
-  const initials = (user.name ?? user.email ?? "U")
+  const initials = (user.name ?? user.email ?? 'U')
     .split(/\s+/)
     .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase() ?? "")
-    .join("");
+    .map((s) => s[0]?.toUpperCase() ?? '')
+    .join('');
   return (
     <div className="flex items-center gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5">
       {user.avatar_url ? (
@@ -361,7 +354,7 @@ function IdentityBlock({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-medium text-slate-100">
-            {user.name ?? "Signed in"}
+            {user.name ?? 'Signed in'}
           </span>
           <Badge
             variant="outline"
@@ -372,9 +365,7 @@ function IdentityBlock({
           </Badge>
         </div>
         {user.email && (
-          <div className="truncate font-mono text-[10px] text-slate-500">
-            {user.email}
-          </div>
+          <div className="truncate font-mono text-[10px] text-slate-500">{user.email}</div>
         )}
       </div>
       <Button
@@ -402,7 +393,7 @@ function SignInBlock({
   onCancel: () => void;
   tokenFromEnv: boolean;
 }) {
-  if (phase.kind === "polling") {
+  if (phase.kind === 'polling') {
     return (
       <div className="rounded-md border border-cyan-500/30 bg-cyan-500/5 px-3 py-3">
         <div className="flex items-center gap-2">
@@ -412,8 +403,8 @@ function SignInBlock({
           </span>
         </div>
         <p className="mt-1 text-[11px] text-slate-400">
-          A tab opened to your cockpit. Click <strong>Approve CodeVetter</strong>{" "}
-          and this dialog will sign you in automatically.
+          A tab opened to your cockpit. Click <strong>Approve CodeVetter</strong> and this dialog
+          will sign you in automatically.
         </p>
         <div className="mt-2 flex items-center justify-between gap-2">
           <a
@@ -425,13 +416,7 @@ function SignInBlock({
             <ExternalLink size={10} />
             re-open approval page
           </a>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onCancel}
-            className="h-7"
-          >
+          <Button type="button" variant="outline" size="sm" onClick={onCancel} className="h-7">
             <X size={12} className="mr-1" />
             Cancel
           </Button>
@@ -440,7 +425,7 @@ function SignInBlock({
     );
   }
 
-  if (phase.kind === "expired") {
+  if (phase.kind === 'expired') {
     return (
       <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-3">
         <div className="flex items-center gap-2 text-sm text-amber-200">
@@ -462,21 +447,18 @@ function SignInBlock({
     <div className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-raised)] px-3 py-3">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <div className="text-sm font-medium text-slate-100">
-            Not signed in
-          </div>
+          <div className="text-sm font-medium text-slate-100">Not signed in</div>
           <p className="text-[11px] text-slate-400">
-            Sign in once. Your fleet projects and tasks become available across
-            CodeVetter.
+            Sign in once. Your fleet projects and tasks become available across CodeVetter.
           </p>
         </div>
         <Button
           type="button"
           size="sm"
           onClick={onSignIn}
-          disabled={phase.kind === "starting" || tokenFromEnv}
+          disabled={phase.kind === 'starting' || tokenFromEnv}
         >
-          {phase.kind === "starting" ? (
+          {phase.kind === 'starting' ? (
             <>
               <Loader2 size={12} className="mr-1.5 animate-spin" />
               Opening…
@@ -491,8 +473,7 @@ function SignInBlock({
       </div>
       {tokenFromEnv && (
         <p className="mt-1 text-[10px] text-slate-500">
-          SAASMAKER_SESSION_TOKEN is set in your shell — that already
-          authenticates you.
+          SAASMAKER_SESSION_TOKEN is set in your shell — that already authenticates you.
         </p>
       )}
     </div>

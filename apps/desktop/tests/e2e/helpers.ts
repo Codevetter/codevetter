@@ -1,4 +1,4 @@
-import { type Page, expect } from "@playwright/test";
+import { type Page, expect } from '@playwright/test';
 
 /**
  * Console error collector. Attach in beforeEach, assert in afterEach.
@@ -9,29 +9,27 @@ export class ConsoleErrorCollector {
 
   private static IGNORED_PATTERNS = [
     // Tauri IPC is unavailable in browser — expected
-    "TAURI_NOT_AVAILABLE",
-    "__TAURI__",
-    "ipc://localhost",
-    "tauri://localhost",
+    'TAURI_NOT_AVAILABLE',
+    '__TAURI__',
+    'ipc://localhost',
+    'tauri://localhost',
     // Vite HMR noise
-    "[vite]",
+    '[vite]',
     // React strict mode double-render warnings
-    "findDOMNode is deprecated",
+    'findDOMNode is deprecated',
     // Network errors from missing Tauri backend
-    "Failed to fetch",
-    "NetworkError",
-    "net::ERR_",
+    'Failed to fetch',
+    'NetworkError',
+    'net::ERR_',
     // ResizeObserver can fire during layout shifts in tests
-    "ResizeObserver loop",
+    'ResizeObserver loop',
   ];
 
   attach(page: Page) {
-    page.on("console", (msg) => {
-      if (msg.type() !== "error") return;
+    page.on('console', (msg) => {
+      if (msg.type() !== 'error') return;
       const text = msg.text();
-      const isIgnored = ConsoleErrorCollector.IGNORED_PATTERNS.some((p) =>
-        text.includes(p)
-      );
+      const isIgnored = ConsoleErrorCollector.IGNORED_PATTERNS.some((p) => text.includes(p));
       if (!isIgnored) {
         this.errors.push(text);
       }
@@ -39,10 +37,7 @@ export class ConsoleErrorCollector {
   }
 
   assertNoErrors() {
-    expect(
-      this.errors,
-      `Unexpected console errors:\n${this.errors.join("\n")}`
-    ).toHaveLength(0);
+    expect(this.errors, `Unexpected console errors:\n${this.errors.join('\n')}`).toHaveLength(0);
   }
 
   reset() {
@@ -57,7 +52,7 @@ export class ConsoleErrorCollector {
 export async function navigateTo(page: Page, path: string) {
   await page.goto(path);
   // Wait for the main content area to appear (Shell has rendered)
-  await page.waitForSelector("main", { timeout: 10_000 });
+  await page.waitForSelector('main', { timeout: 10_000 });
 }
 
 /**
@@ -66,9 +61,9 @@ export async function navigateTo(page: Page, path: string) {
  */
 export async function waitForNoSpinners(page: Page, timeout = 5_000) {
   await page
-    .locator(".animate-spin")
+    .locator('.animate-spin')
     .first()
-    .waitFor({ state: "hidden", timeout })
+    .waitFor({ state: 'hidden', timeout })
     .catch(() => {
       // No spinner was present — that's fine
     });

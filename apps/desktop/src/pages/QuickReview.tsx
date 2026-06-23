@@ -18,7 +18,6 @@ import {
   ListOrdered,
   Loader2,
   MonitorPlay,
-  Plus,
   RefreshCw,
   Sparkles,
   Square,
@@ -26,29 +25,26 @@ import {
   Undo2,
   X,
   Zap,
-} from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
-import { Link } from "react-router-dom";
+} from 'lucide-react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels';
+import { Link } from 'react-router-dom';
 
-import BlastRadiusPanel from "@/components/blast-radius-panel";
-import SandboxRunner from "@/components/SandboxRunner";
-import ScoreBadge from "@/components/score-badge";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import BlastRadiusPanel from '@/components/blast-radius-panel';
+import SandboxRunner from '@/components/SandboxRunner';
+import ScoreBadge from '@/components/score-badge';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import {
   type BrowserEvidenceRef,
   buildAgentFixPacket,
   renderAgentFixPacketMarkdown,
   type TaskContext,
-} from "@/lib/agent-fix-packet";
-import { trackCoreAction } from "@/lib/analytics";
-import { buildReviewIntentReport } from "@/lib/intent-debugger/report";
-import {
-  diffRangeFromSourceLabel,
-  repoPrefKey,
-} from "@/lib/quick-review-state";
+} from '@/lib/agent-fix-packet';
+import { trackCoreAction } from '@/lib/analytics';
+import { buildReviewIntentReport } from '@/lib/intent-debugger/report';
+import { diffRangeFromSourceLabel, repoPrefKey } from '@/lib/quick-review-state';
 import {
   buildCodebaseHistoryExplanations,
   buildFindingHunkNoteMarkdown,
@@ -67,16 +63,13 @@ import {
   type VerificationTimelineItem,
   type VerificationTimelineJumpTarget,
   visibleTimelineAnchors,
-} from "@/lib/review-proof";
+} from '@/lib/review-proof';
 import {
   syntheticQaFailureFinding,
   syntheticQaToFindingEvidence,
-} from "@/lib/synthetic-qa/apply-evidence";
-import {
-  CODEVETTER_REVIEW_SHELL,
-  SYNTHETIC_QA_LOOPS,
-} from "@/lib/synthetic-qa/loops";
-import type { SyntheticQaRunResult } from "@/lib/synthetic-qa/types";
+} from '@/lib/synthetic-qa/apply-evidence';
+import { CODEVETTER_REVIEW_SHELL, SYNTHETIC_QA_LOOPS } from '@/lib/synthetic-qa/loops';
+import type { SyntheticQaRunResult } from '@/lib/synthetic-qa/types';
 import type {
   BlastRadiusReport,
   CliReviewFinding,
@@ -84,7 +77,6 @@ import type {
   EvidenceCandidate,
   EvidenceProcedureStep,
   FileLineData,
-  FixChangedFile,
   FixFindingsResult,
   LocalReviewRow,
   PlaywrightSpecCandidate,
@@ -96,7 +88,7 @@ import type {
   ReviewQaRunEvidence,
   ReviewVerificationCommandSuggestion,
   StoredSyntheticQaRun,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 import {
   analyzeBlastRadius,
   cancelReviewVerificationCommand,
@@ -130,8 +122,8 @@ import {
   sendTrayNotification,
   setPreference,
   suggestReviewVerificationCommands,
-} from "@/lib/tauri-ipc";
-import { cn } from "@/lib/utils";
+} from '@/lib/tauri-ipc';
+import { cn } from '@/lib/utils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -148,36 +140,36 @@ const severityOrder: Record<string, number> = {
 
 function severityColor(s: string): string {
   switch (s) {
-    case "critical":
-      return "text-red-400 bg-red-500/10 border-red-500/20";
-    case "high":
-      return "text-orange-400 bg-orange-500/10 border-orange-500/20";
-    case "medium":
-      return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20";
-    case "warning":
-      return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20";
-    case "low":
-      return "text-blue-400 bg-blue-500/10 border-blue-500/20";
-    case "suggestion":
-      return "text-cyan-400 bg-cyan-500/10 border-cyan-500/20";
-    case "info":
-      return "text-slate-400 bg-slate-500/10 border-slate-500/20";
+    case 'critical':
+      return 'text-red-400 bg-red-500/10 border-red-500/20';
+    case 'high':
+      return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
+    case 'medium':
+      return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
+    case 'warning':
+      return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
+    case 'low':
+      return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+    case 'suggestion':
+      return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20';
+    case 'info':
+      return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
     default:
-      return "text-slate-400 bg-slate-500/10 border-slate-500/20";
+      return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
   }
 }
 
 function evidenceCandidateLabel(candidate: EvidenceCandidate): string {
-  return candidate.kind.replaceAll("_", " ");
+  return candidate.kind.replaceAll('_', ' ');
 }
 
 function severityIcon(s: string) {
   switch (s) {
-    case "critical":
-    case "high":
+    case 'critical':
+    case 'high':
       return <AlertTriangle size={14} className="text-red-400" />;
-    case "medium":
-    case "warning":
+    case 'medium':
+    case 'warning':
       return <AlertTriangle size={14} className="text-yellow-400" />;
     default:
       return <CheckCircle size={14} className="text-slate-400" />;
@@ -186,43 +178,54 @@ function severityIcon(s: string) {
 
 function qaArtifactLabel(path: string): string {
   const lower = path.toLowerCase();
-  if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".webp")) {
-    return "screenshot";
+  if (
+    lower.endsWith('.png') ||
+    lower.endsWith('.jpg') ||
+    lower.endsWith('.jpeg') ||
+    lower.endsWith('.webp')
+  ) {
+    return 'screenshot';
   }
-  if (lower.endsWith(".zip") || lower.includes("trace")) {
-    return "trace";
+  if (lower.endsWith('.zip') || lower.includes('trace')) {
+    return 'trace';
   }
-  if (lower.endsWith(".webm") || lower.endsWith(".mp4")) {
-    return "video";
+  if (lower.endsWith('.webm') || lower.endsWith('.mp4')) {
+    return 'video';
   }
-  if (lower.endsWith(".json")) {
-    return lower.includes("playwright") ? "json report" : "json";
+  if (lower.endsWith('.json')) {
+    return lower.includes('playwright') ? 'json report' : 'json';
   }
-  if (lower.endsWith(".log") || lower.endsWith(".txt")) {
-    return "log";
+  if (lower.endsWith('.log') || lower.endsWith('.txt')) {
+    return 'log';
   }
-  if (lower.endsWith(".html") || lower.includes("playwright-report/")) {
-    return "html report";
+  if (lower.endsWith('.html') || lower.includes('playwright-report/')) {
+    return 'html report';
   }
-  if (lower.includes("coverage/")) {
-    return "coverage";
+  if (lower.includes('coverage/')) {
+    return 'coverage';
   }
-  return "artifact";
+  return 'artifact';
 }
 
 function canPreviewQaArtifact(path: string): boolean {
   const label = qaArtifactLabel(path);
-  return label === "log" || label === "json" || label === "json report" || label === "html report" || label === "coverage";
+  return (
+    label === 'log' ||
+    label === 'json' ||
+    label === 'json report' ||
+    label === 'html report' ||
+    label === 'coverage'
+  );
 }
 
 function formatRelativeTime(dateStr: string | null): string {
-  if (!dateStr) return "";
+  if (!dateStr) return '';
   const now = Date.now();
   const then = new Date(dateStr).getTime();
-  if (isNaN(then)) return "";
+  if (Number.isNaN(then)) return '';
   const diffMs = now - then;
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "just now";
+  if (diffMin < 1) return 'just now';
   if (diffMin < 60) return `${diffMin}m ago`;
   const diffHr = Math.floor(diffMin / 60);
   if (diffHr < 24) return `${diffHr}h ago`;
@@ -240,35 +243,35 @@ function formatDuration(ms: number): string {
 }
 
 function queueGuidance(findings: CliReviewFinding[]): string {
-  if (findings.length === 0) return "Select findings to build a patch queue.";
+  if (findings.length === 0) return 'Select findings to build a patch queue.';
   const blocking = findings.filter((finding) =>
-    ["critical", "high", "medium", "warning"].includes(finding.severity),
+    ['critical', 'high', 'medium', 'warning'].includes(finding.severity)
   ).length;
   if (blocking > 0) {
-    return `Start with ${blocking} blocking finding${blocking !== 1 ? "s" : ""}; keep unrelated cleanup out of this patch.`;
+    return `Start with ${blocking} blocking finding${blocking !== 1 ? 's' : ''}; keep unrelated cleanup out of this patch.`;
   }
-  return "Low-risk queue. Patch together only if the files overlap.";
+  return 'Low-risk queue. Patch together only if the files overlap.';
 }
 
 // Risk copy for unchecked findings — why a finding still matters even if you
 // didn't reproduce it. Keep it terse; the panel shows one line per bucket.
 function uncheckedRiskCopy(severity: string): string {
   switch (severity) {
-    case "critical":
-      return "Untriaged blockers — assume they ship and break prod until proven otherwise.";
-    case "high":
-      return "High-severity issues with no evidence either way — silent regressions are likely.";
-    case "medium":
-    case "warning":
-      return "Medium-risk items unverified — could mask real failures or compound under load.";
-    case "low":
-      return "Low-risk items unconfirmed — quality drift if left unreviewed across many PRs.";
-    case "suggestion":
-    case "info":
-    case "nitpick":
-      return "Suggestions left unread — useful signal lost, but not blocking.";
+    case 'critical':
+      return 'Untriaged blockers — assume they ship and break prod until proven otherwise.';
+    case 'high':
+      return 'High-severity issues with no evidence either way — silent regressions are likely.';
+    case 'medium':
+    case 'warning':
+      return 'Medium-risk items unverified — could mask real failures or compound under load.';
+    case 'low':
+      return 'Low-risk items unconfirmed — quality drift if left unreviewed across many PRs.';
+    case 'suggestion':
+    case 'info':
+    case 'nitpick':
+      return 'Suggestions left unread — useful signal lost, but not blocking.';
     default:
-      return "Unchecked — verdict unknown.";
+      return 'Unchecked — verdict unknown.';
   }
 }
 
@@ -286,21 +289,21 @@ interface DiffFile {
   deletions: number;
 }
 
-type EvidenceLevel = "static" | "test" | "browser" | "runtime";
-type VerificationStatus = "not_checked" | "reproduced" | "fixed" | "not_reproduced";
-type QaRunnerType = "playwright_builtin" | "external_skill" | "repo_playwright";
-type QaAuthMode = "none" | "storage_state";
-type QaRepoTraceMode = "off" | "retain-on-failure" | "on";
+type EvidenceLevel = 'static' | 'test' | 'browser' | 'runtime';
+type VerificationStatus = 'not_checked' | 'reproduced' | 'fixed' | 'not_reproduced';
+type QaRunnerType = 'playwright_builtin' | 'external_skill' | 'repo_playwright';
+type QaAuthMode = 'none' | 'storage_state';
+type QaRepoTraceMode = 'off' | 'retain-on-failure' | 'on';
 
 const evidenceCandidateStatusOptions: Array<{
   value: EvidenceCandidateStatus;
   label: string;
 }> = [
-  { value: "open", label: "Open" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "needs_proof", label: "Needs proof" },
-  { value: "rejected", label: "Rejected" },
-  { value: "irrelevant", label: "Irrelevant" },
+  { value: 'open', label: 'Open' },
+  { value: 'confirmed', label: 'Confirmed' },
+  { value: 'needs_proof', label: 'Needs proof' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'irrelevant', label: 'Irrelevant' },
 ];
 
 interface FindingEvidence {
@@ -314,20 +317,20 @@ interface FindingEvidence {
 }
 
 const defaultFindingEvidence: FindingEvidence = {
-  level: "static",
-  status: "not_checked",
-  artifact: "",
-  notes: "",
+  level: 'static',
+  status: 'not_checked',
+  artifact: '',
+  notes: '',
   revalidation: {},
 };
 
 const emptyBrowserEvidence = (): BrowserEvidenceRef => ({
-  route: "",
-  screenshotPath: "",
-  domSnippet: "",
-  consoleErrors: "",
-  networkFailures: "",
-  qaArtifacts: "",
+  route: '',
+  screenshotPath: '',
+  domSnippet: '',
+  consoleErrors: '',
+  networkFailures: '',
+  qaArtifacts: '',
 });
 
 interface QaPreset {
@@ -380,17 +383,17 @@ interface QaRunHistoryEntry {
 }
 
 function qaRequestFromHistory(
-  run: Pick<QaRunHistoryEntry, "baseUrl" | "loopId" | "runnerType" | "goal"> &
+  run: Pick<QaRunHistoryEntry, 'baseUrl' | 'loopId' | 'runnerType' | 'goal'> &
     Partial<QaRunHistoryEntry>,
-  fallback: QaPreset,
+  fallback: QaPreset
 ): QaPreset {
   return {
     baseUrl: run.baseUrl || fallback.baseUrl,
     loopId: run.loopId || fallback.loopId,
     runnerType:
-      run.runnerType === "external_skill" ||
-      run.runnerType === "repo_playwright" ||
-      run.runnerType === "playwright_builtin"
+      run.runnerType === 'external_skill' ||
+      run.runnerType === 'repo_playwright' ||
+      run.runnerType === 'playwright_builtin'
         ? run.runnerType
         : fallback.runnerType,
     goal: run.goal || fallback.goal,
@@ -420,8 +423,8 @@ function repoScopedPreferenceKey(prefix: string, repoPath: string): string {
 }
 
 function repoLabelFromPath(repoPath: string): string {
-  const trimmed = repoPath.trim().replace(/\/$/, "");
-  return trimmed.split("/").pop() || "repo";
+  const trimmed = repoPath.trim().replace(/\/$/, '');
+  return trimmed.split('/').pop() || 'repo';
 }
 
 function firstNonEmpty(values: Array<string | null | undefined>): string | undefined {
@@ -450,12 +453,12 @@ function storedSyntheticQaRunToHistory(run: StoredSyntheticQaRun): QaRunHistoryE
     createdAt: run.created_at,
     loopId: run.loop_id,
     runnerType: run.runner_type,
-    baseUrl: run.base_url ?? "",
+    baseUrl: run.base_url ?? '',
     goal: run.goal ?? run.loop_id,
     route: run.route ?? undefined,
     pass: run.pass,
     durationMs: run.duration_ms,
-    notes: run.notes ?? "",
+    notes: run.notes ?? '',
     screenshotPath: run.screenshot_path ?? null,
     artifacts: run.artifacts ?? [],
     consoleErrors: run.console_errors,
@@ -465,13 +468,13 @@ function storedSyntheticQaRunToHistory(run: StoredSyntheticQaRun): QaRunHistoryE
 function browserEvidenceArtifact(evidence: BrowserEvidenceRef): string | undefined {
   return firstNonEmpty([
     evidence.screenshotPath,
-    evidence.qaArtifacts.split("\n")[0],
+    evidence.qaArtifacts.split('\n')[0],
     evidence.route,
   ]);
 }
 
 function findingEvidenceArtifact(evidence: FindingEvidence): string | undefined {
-  return firstNonEmpty([evidence.artifact, evidence.notes.split("\n")[0]]);
+  return firstNonEmpty([evidence.artifact, evidence.notes.split('\n')[0]]);
 }
 
 function buildProcedureExecutionEvents(input: {
@@ -483,21 +486,21 @@ function buildProcedureExecutionEvents(input: {
 }): ProcedureExecutionEvent[] {
   const events: ProcedureExecutionEvent[] = [];
   const evidenceValues = Object.values(input.evidenceByFinding).filter(
-    (evidence) => evidence.status !== "not_checked",
+    (evidence) => evidence.status !== 'not_checked'
   );
   const browserValues = Object.values(input.browserEvidenceByFinding).filter((evidence) =>
-    Boolean(browserEvidenceArtifact(evidence)),
+    Boolean(browserEvidenceArtifact(evidence))
   );
   const latestQa = input.qaRunHistory[0];
 
   for (const step of input.steps) {
-    if (step.id === "verify_ui_route_change") {
+    if (step.id === 'verify_ui_route_change') {
       if (latestQa) {
         events.push({
           stepId: step.id,
-          status: latestQa.pass ? "satisfied" : "blocked",
+          status: latestQa.pass ? 'satisfied' : 'blocked',
           source: `qa:${latestQa.runnerType}`,
-          summary: `${latestQa.pass ? "PASS" : "FAIL"} ${latestQa.route || latestQa.loopId} (${latestQa.durationMs}ms)`,
+          summary: `${latestQa.pass ? 'PASS' : 'FAIL'} ${latestQa.route || latestQa.loopId} (${latestQa.durationMs}ms)`,
           artifact: firstNonEmpty([latestQa.screenshotPath, latestQa.artifacts?.[0]]),
           createdAt: latestQa.createdAt,
         });
@@ -508,31 +511,31 @@ function buildProcedureExecutionEvents(input: {
       if (browserEvidence) {
         events.push({
           stepId: step.id,
-          status: "observed",
-          source: "browser_evidence",
+          status: 'observed',
+          source: 'browser_evidence',
           summary: browserEvidence.route
             ? `Browser evidence attached for ${browserEvidence.route}`
-            : "Browser evidence attached to a finding",
+            : 'Browser evidence attached to a finding',
           artifact: browserEvidenceArtifact(browserEvidence),
         });
       }
       continue;
     }
 
-    if (step.id === "rerun_relevant_verification") {
+    if (step.id === 'rerun_relevant_verification') {
       const sourceEvidence = evidenceValues[0];
       if (sourceEvidence) {
-        const fixed = evidenceValues.filter((evidence) => evidence.status === "fixed").length;
+        const fixed = evidenceValues.filter((evidence) => evidence.status === 'fixed').length;
         const notReproduced = evidenceValues.filter(
-          (evidence) => evidence.status === "not_reproduced",
+          (evidence) => evidence.status === 'not_reproduced'
         ).length;
         const reproduced = evidenceValues.filter(
-          (evidence) => evidence.status === "reproduced",
+          (evidence) => evidence.status === 'reproduced'
         ).length;
         events.push({
           stepId: step.id,
-          status: reproduced > 0 ? "blocked" : "satisfied",
-          source: "finding_evidence",
+          status: reproduced > 0 ? 'blocked' : 'satisfied',
+          source: 'finding_evidence',
           summary: `${fixed} fixed, ${notReproduced} not reproduced, ${reproduced} reproduced`,
           artifact: findingEvidenceArtifact(sourceEvidence),
         });
@@ -542,9 +545,9 @@ function buildProcedureExecutionEvents(input: {
       if (latestQa) {
         events.push({
           stepId: step.id,
-          status: latestQa.pass ? "satisfied" : "blocked",
+          status: latestQa.pass ? 'satisfied' : 'blocked',
           source: `qa:${latestQa.runnerType}`,
-          summary: `${latestQa.pass ? "PASS" : "FAIL"} ${latestQa.goal} (${latestQa.durationMs}ms)`,
+          summary: `${latestQa.pass ? 'PASS' : 'FAIL'} ${latestQa.goal} (${latestQa.durationMs}ms)`,
           artifact: firstNonEmpty([latestQa.screenshotPath, latestQa.artifacts?.[0]]),
           createdAt: latestQa.createdAt,
         });
@@ -555,15 +558,15 @@ function buildProcedureExecutionEvents(input: {
     if (
       input.fixResult &&
       [
-        "review_changed_sensitive_path",
-        "scope_control_review",
-        "inspect_generated_or_lockfile_source",
-        "inspect_blast_radius_callers",
+        'review_changed_sensitive_path',
+        'scope_control_review',
+        'inspect_generated_or_lockfile_source',
+        'inspect_blast_radius_callers',
       ].includes(step.id)
     ) {
       events.push({
         stepId: step.id,
-        status: input.fixResult.success ? "observed" : "blocked",
+        status: input.fixResult.success ? 'observed' : 'blocked',
         source: `fix:${input.fixResult.agent}`,
         summary: `${input.fixResult.changed_files.length} changed file(s), ${input.fixResult.findings_fixed} finding(s) fixed`,
         artifact: firstNonEmpty([
@@ -578,17 +581,13 @@ function buildProcedureExecutionEvents(input: {
 }
 
 function procedureEventKey(event: ProcedureExecutionEvent): string {
-  return [
-    event.stepId,
-    event.status,
-    event.source,
-    event.summary,
-    event.artifact ?? "",
-  ].join("\u0000");
+  return [event.stepId, event.status, event.source, event.summary, event.artifact ?? ''].join(
+    '\u0000'
+  );
 }
 
 function storedProcedureEventToExecutionEvent(
-  event: ReviewProcedureEvent,
+  event: ReviewProcedureEvent
 ): ProcedureExecutionEvent {
   return {
     stepId: event.step_id,
@@ -602,7 +601,7 @@ function storedProcedureEventToExecutionEvent(
 
 function mergeProcedureExecutionEvents(
   stored: ProcedureExecutionEvent[],
-  derived: ProcedureExecutionEvent[],
+  derived: ProcedureExecutionEvent[]
 ): ProcedureExecutionEvent[] {
   const seen = new Set<string>();
   const merged: ProcedureExecutionEvent[] = [];
@@ -618,50 +617,50 @@ function mergeProcedureExecutionEvents(
 }
 
 function procedureEventTimeLabel(event: ProcedureExecutionEvent): string {
-  if (!event.createdAt) return "now";
+  if (!event.createdAt) return 'now';
   const date = new Date(event.createdAt);
   if (Number.isNaN(date.getTime())) return event.createdAt;
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 function procedureEventsForQaRun(
   steps: EvidenceProcedureStep[],
-  run: QaRunHistoryEntry,
+  run: QaRunHistoryEntry
 ): ProcedureExecutionEvent[] {
   const eventForStep = (stepId: string): ProcedureExecutionEvent | null => {
     if (!steps.some((step) => step.id === stepId)) return null;
     return {
       stepId,
-      status: run.pass ? "satisfied" : "blocked",
+      status: run.pass ? 'satisfied' : 'blocked',
       source: `qa:${run.runnerType}`,
-      summary: `${run.pass ? "PASS" : "FAIL"} ${run.route || run.loopId} (${run.durationMs}ms)`,
+      summary: `${run.pass ? 'PASS' : 'FAIL'} ${run.route || run.loopId} (${run.durationMs}ms)`,
       artifact: firstNonEmpty([run.screenshotPath, run.artifacts?.[0]]),
       createdAt: run.createdAt,
     };
   };
 
   return [
-    eventForStep("verify_ui_route_change"),
-    eventForStep("rerun_relevant_verification"),
+    eventForStep('verify_ui_route_change'),
+    eventForStep('rerun_relevant_verification'),
   ].filter((event): event is ProcedureExecutionEvent => Boolean(event));
 }
 
 function procedureEventsForFixResult(
   steps: EvidenceProcedureStep[],
-  result: FixFindingsResult,
+  result: FixFindingsResult
 ): ProcedureExecutionEvent[] {
   const fixLinkedStepIds = [
-    "review_changed_sensitive_path",
-    "scope_control_review",
-    "inspect_generated_or_lockfile_source",
-    "inspect_blast_radius_callers",
+    'review_changed_sensitive_path',
+    'scope_control_review',
+    'inspect_generated_or_lockfile_source',
+    'inspect_blast_radius_callers',
   ];
 
   return steps
     .filter((step) => fixLinkedStepIds.includes(step.id))
     .map((step) => ({
       stepId: step.id,
-      status: result.success ? "observed" : "blocked",
+      status: result.success ? 'observed' : 'blocked',
       source: `fix:${result.agent}`,
       summary: `${result.changed_files.length} changed file(s), ${result.findings_fixed} finding(s) fixed`,
       artifact: firstNonEmpty([result.worktree_path, result.changed_files[0]?.path]),
@@ -671,26 +670,26 @@ function procedureEventsForFixResult(
 function procedureEventsForFindingEvidence(
   steps: EvidenceProcedureStep[],
   evidence: FindingEvidence,
-  finding: CliReviewFinding,
+  finding: CliReviewFinding
 ): ProcedureExecutionEvent[] {
-  if (!steps.some((step) => step.id === "rerun_relevant_verification")) {
+  if (!steps.some((step) => step.id === 'rerun_relevant_verification')) {
     return [];
   }
   const artifact = findingEvidenceArtifact(evidence);
-  const summaryTarget = finding.title || finding.filePath || "selected finding";
-  const status: ProcedureExecutionEvent["status"] =
-    evidence.status === "reproduced"
-      ? "blocked"
-      : evidence.status === "fixed" || evidence.status === "not_reproduced"
-        ? "satisfied"
-        : "observed";
+  const summaryTarget = finding.title || finding.filePath || 'selected finding';
+  const status: ProcedureExecutionEvent['status'] =
+    evidence.status === 'reproduced'
+      ? 'blocked'
+      : evidence.status === 'fixed' || evidence.status === 'not_reproduced'
+        ? 'satisfied'
+        : 'observed';
 
   return [
     {
-      stepId: "rerun_relevant_verification",
+      stepId: 'rerun_relevant_verification',
       status,
       source: `finding:${evidence.level}`,
-      summary: `${evidence.status.replace("_", " ")} - ${summaryTarget}`,
+      summary: `${evidence.status.replace('_', ' ')} - ${summaryTarget}`,
       artifact,
       createdAt: new Date().toISOString(),
     },
@@ -701,11 +700,11 @@ function isLoopbackQaBaseUrl(value: string): boolean {
   try {
     const url = new URL(value);
     return (
-      url.hostname === "localhost" ||
-      url.hostname === "127.0.0.1" ||
-      url.hostname === "::1" ||
-      url.hostname.endsWith(".localhost") ||
-      url.hostname.startsWith("127.")
+      url.hostname === 'localhost' ||
+      url.hostname === '127.0.0.1' ||
+      url.hostname === '::1' ||
+      url.hostname.endsWith('.localhost') ||
+      url.hostname.startsWith('127.')
     );
   } catch {
     return false;
@@ -713,25 +712,21 @@ function isLoopbackQaBaseUrl(value: string): boolean {
 }
 
 const evidenceLevels: Array<{ value: EvidenceLevel; label: string }> = [
-  { value: "static", label: "Static suspicion" },
-  { value: "test", label: "Test failure" },
-  { value: "browser", label: "Browser reproduction" },
-  { value: "runtime", label: "Log / runtime trace" },
+  { value: 'static', label: 'Static suspicion' },
+  { value: 'test', label: 'Test failure' },
+  { value: 'browser', label: 'Browser reproduction' },
+  { value: 'runtime', label: 'Log / runtime trace' },
 ];
 
 const verificationStatuses: Array<{ value: VerificationStatus; label: string }> = [
-  { value: "not_checked", label: "Not checked" },
-  { value: "reproduced", label: "Reproduced" },
-  { value: "fixed", label: "Fixed on re-check" },
-  { value: "not_reproduced", label: "Could not reproduce" },
+  { value: 'not_checked', label: 'Not checked' },
+  { value: 'reproduced', label: 'Reproduced' },
+  { value: 'fixed', label: 'Fixed on re-check' },
+  { value: 'not_reproduced', label: 'Could not reproduce' },
 ];
 
 function findingEvidenceKey(finding: CliReviewFinding, idx: number): string {
-  return [
-    finding.filePath ?? "review",
-    finding.line ?? idx,
-    finding.title,
-  ].join("::");
+  return [finding.filePath ?? 'review', finding.line ?? idx, finding.title].join('::');
 }
 
 function sameHistoryFile(historyFile: string, findingFile: string) {
@@ -749,11 +744,11 @@ async function notifyIfEnabled(
   prefKey: string,
   defaultOn: boolean,
   title: string,
-  body: string,
+  body: string
 ): Promise<void> {
   try {
     const raw = await getPreference(prefKey);
-    const enabled = raw == null ? defaultOn : raw === "true";
+    const enabled = raw == null ? defaultOn : raw === 'true';
     if (enabled) await sendTrayNotification(title, body);
   } catch {
     // Notifications are best-effort; ignore permission/plugin failures.
@@ -766,10 +761,10 @@ function parseDiffIntoFiles(diff: string): DiffFile[] {
   const fileSections = diff.split(/^diff --git /m).filter(Boolean);
 
   for (const section of fileSections) {
-    const lines = section.split("\n");
+    const lines = section.split('\n');
     // Extract file path from "a/path b/path"
     const headerMatch = lines[0]?.match(/a\/(.*?) b\/(.*)/);
-    const path = headerMatch?.[2] ?? lines[0] ?? "unknown";
+    const path = headerMatch?.[2] ?? lines[0] ?? 'unknown';
 
     let additions = 0;
     let deletions = 0;
@@ -777,18 +772,18 @@ function parseDiffIntoFiles(diff: string): DiffFile[] {
     let currentHunk: string[] = [];
     const pushHunk = () => {
       if (currentHunk.length > 0) {
-        hunks.push({ text: currentHunk.join("\n"), lines: currentHunk });
+        hunks.push({ text: currentHunk.join('\n'), lines: currentHunk });
       }
     };
 
     for (const line of lines.slice(1)) {
-      if (line.startsWith("@@")) {
+      if (line.startsWith('@@')) {
         pushHunk();
         currentHunk = [line];
-      } else if (currentHunk.length > 0 || line.startsWith("+") || line.startsWith("-")) {
+      } else if (currentHunk.length > 0 || line.startsWith('+') || line.startsWith('-')) {
         currentHunk.push(line);
-        if (line.startsWith("+") && !line.startsWith("+++")) additions++;
-        if (line.startsWith("-") && !line.startsWith("---")) deletions++;
+        if (line.startsWith('+') && !line.startsWith('+++')) additions++;
+        if (line.startsWith('-') && !line.startsWith('---')) deletions++;
       }
     }
     pushHunk();
@@ -799,83 +794,83 @@ function parseDiffIntoFiles(diff: string): DiffFile[] {
 }
 
 function shortenPath(path: string): string {
-  const home = "/Users/";
+  const home = '/Users/';
   if (path.startsWith(home)) {
     const afterHome = path.slice(home.length);
-    const slashIdx = afterHome.indexOf("/");
-    if (slashIdx >= 0) return "~" + afterHome.slice(slashIdx);
+    const slashIdx = afterHome.indexOf('/');
+    if (slashIdx >= 0) return `~${afterHome.slice(slashIdx)}`;
   }
   return path;
 }
 
 const CODE_KEYWORDS = new Set([
-  "as",
-  "async",
-  "await",
-  "break",
-  "case",
-  "catch",
-  "class",
-  "const",
-  "continue",
-  "def",
-  "default",
-  "do",
-  "else",
-  "enum",
-  "export",
-  "extends",
-  "false",
-  "finally",
-  "fn",
-  "for",
-  "from",
-  "function",
-  "if",
-  "impl",
-  "import",
-  "in",
-  "interface",
-  "let",
-  "match",
-  "mod",
-  "mut",
-  "new",
-  "null",
-  "pub",
-  "return",
-  "self",
-  "static",
-  "struct",
-  "switch",
-  "this",
-  "throw",
-  "true",
-  "try",
-  "type",
-  "undefined",
-  "use",
-  "var",
-  "while",
+  'as',
+  'async',
+  'await',
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'def',
+  'default',
+  'do',
+  'else',
+  'enum',
+  'export',
+  'extends',
+  'false',
+  'finally',
+  'fn',
+  'for',
+  'from',
+  'function',
+  'if',
+  'impl',
+  'import',
+  'in',
+  'interface',
+  'let',
+  'match',
+  'mod',
+  'mut',
+  'new',
+  'null',
+  'pub',
+  'return',
+  'self',
+  'static',
+  'struct',
+  'switch',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'type',
+  'undefined',
+  'use',
+  'var',
+  'while',
 ]);
 
 const CODE_BUILTINS = new Set([
-  "Array",
-  "Boolean",
-  "Date",
-  "Error",
-  "Map",
-  "Number",
-  "Object",
-  "Promise",
-  "Record",
-  "Result",
-  "Set",
-  "String",
-  "Vec",
-  "console",
-  "fs",
-  "JSON",
+  'Array',
+  'Boolean',
+  'Date',
+  'Error',
+  'Map',
+  'Number',
+  'Object',
+  'Promise',
+  'Record',
+  'Result',
+  'Set',
+  'String',
+  'Vec',
+  'console',
+  'fs',
+  'JSON',
 ]);
 
 const CODE_TOKEN_RE =
@@ -884,28 +879,24 @@ const CODE_TOKEN_RE =
 function getCodeTokenClass(token: string, language: string): string {
   const lowerLanguage = language.toLowerCase();
   if (
-    token.startsWith("//") ||
-    token.startsWith("/*") ||
-    (token.startsWith("#") && !["typescript", "javascript", "tsx", "jsx"].includes(lowerLanguage))
+    token.startsWith('//') ||
+    token.startsWith('/*') ||
+    (token.startsWith('#') && !['typescript', 'javascript', 'tsx', 'jsx'].includes(lowerLanguage))
   ) {
-    return "text-slate-600 italic";
+    return 'text-slate-600 italic';
   }
-  if (
-    token.startsWith("\"") ||
-    token.startsWith("'") ||
-    token.startsWith("`")
-  ) {
-    return "text-emerald-300";
+  if (token.startsWith('"') || token.startsWith("'") || token.startsWith('`')) {
+    return 'text-emerald-300';
   }
-  if (/^\d/.test(token)) return "text-amber-300";
-  if (CODE_KEYWORDS.has(token)) return "text-violet-300";
-  if (CODE_BUILTINS.has(token)) return "text-cyan-300";
-  if (/^[A-Z]/.test(token)) return "text-sky-300";
-  return "";
+  if (/^\d/.test(token)) return 'text-amber-300';
+  if (CODE_KEYWORDS.has(token)) return 'text-violet-300';
+  if (CODE_BUILTINS.has(token)) return 'text-cyan-300';
+  if (/^[A-Z]/.test(token)) return 'text-sky-300';
+  return '';
 }
 
 function renderCodeLine(text: string, language: string): ReactNode[] | string {
-  if (!text) return " ";
+  if (!text) return ' ';
 
   const nodes: ReactNode[] = [];
   let lastIndex = 0;
@@ -923,7 +914,7 @@ function renderCodeLine(text: string, language: string): ReactNode[] | string {
         </span>
       ) : (
         token
-      ),
+      )
     );
     lastIndex = index + token.length;
   }
@@ -936,24 +927,23 @@ function renderCodeLine(text: string, language: string): ReactNode[] | string {
 
 export default function QuickReview() {
   // Mode: "create" shows the form, "view" shows past review results
-  const [mode, setMode] = useState<"create" | "view">("create");
+  const [mode, setMode] = useState<'create' | 'view'>('create');
 
-  const [repoPath, setRepoPath] = useState("");
+  const [repoPath, setRepoPath] = useState('');
   // SaaS Maker fleet auto-detect: null = unknown, populated after `detectProjectForRepo`.
-  const [detectedFleetProject, setDetectedFleetProject] =
-    useState<RepoDetectResult | null>(null);
+  const [detectedFleetProject, setDetectedFleetProject] = useState<RepoDetectResult | null>(null);
   const [branches, setBranches] = useState<string[]>([]);
-  const [currentBranch, setCurrentBranch] = useState("");
+  const [currentBranch, setCurrentBranch] = useState('');
   const [pullRequests, setPullRequests] = useState<PullRequest[]>([]);
-  const [activeTab, setActiveTab] = useState<"branches" | "prs">("branches");
-  const [selectedBranch, setSelectedBranch] = useState("");
-  const [baseBranch, setBaseBranch] = useState("main");
-  const [projectDesc, setProjectDesc] = useState("");
-  const [changeDesc, setChangeDesc] = useState("");
-  const [taskGoal, setTaskGoal] = useState("");
-  const [taskAcceptance, setTaskAcceptance] = useState("");
-  const [taskNonGoals, setTaskNonGoals] = useState("");
-  const [taskSourceLabel, setTaskSourceLabel] = useState("");
+  const [activeTab, setActiveTab] = useState<'branches' | 'prs'>('branches');
+  const [selectedBranch, setSelectedBranch] = useState('');
+  const [baseBranch, setBaseBranch] = useState('main');
+  const [projectDesc, setProjectDesc] = useState('');
+  const [changeDesc, setChangeDesc] = useState('');
+  const [taskGoal, setTaskGoal] = useState('');
+  const [taskAcceptance, setTaskAcceptance] = useState('');
+  const [taskNonGoals, setTaskNonGoals] = useState('');
+  const [taskSourceLabel, setTaskSourceLabel] = useState('');
   const [isReviewing, setIsReviewing] = useState(false);
   const [isFixing, setIsFixing] = useState<string | null>(null);
   const [fixProgress, setFixProgress] = useState<string[]>([]);
@@ -984,10 +974,12 @@ export default function QuickReview() {
   // Code viewer state (view mode)
   const [selectedFindingIdx, setSelectedFindingIdx] = useState<number | null>(null);
   const [codeLines, setCodeLines] = useState<FileLineData[]>([]);
-  const [codeFilePath, setCodeFilePath] = useState("");
-  const [codeLanguage, setCodeLanguage] = useState("");
+  const [codeFilePath, setCodeFilePath] = useState('');
+  const [codeLanguage, setCodeLanguage] = useState('');
   const [evidenceByFinding, setEvidenceByFinding] = useState<Record<string, FindingEvidence>>({});
-  const [browserEvidenceByFinding, setBrowserEvidenceByFinding] = useState<Record<string, BrowserEvidenceRef>>({});
+  const [browserEvidenceByFinding, setBrowserEvidenceByFinding] = useState<
+    Record<string, BrowserEvidenceRef>
+  >({});
   const [evidenceCandidateStatuses, setEvidenceCandidateStatuses] = useState<
     Record<string, EvidenceCandidateStatus>
   >({});
@@ -995,12 +987,12 @@ export default function QuickReview() {
   const [packetCopied, setPacketCopied] = useState(false);
   const [timelinePacketCopiedId, setTimelinePacketCopiedId] = useState<string | null>(null);
   const [expandedTimelineItems, setExpandedTimelineItems] = useState<Set<string>>(new Set());
-  const reviewId = result?.review_id ?? "";
+  const reviewId = result?.review_id ?? '';
   const activeProcedureSteps = useMemo(
     () => result?.evidence_procedure_steps ?? [],
-    [result?.evidence_procedure_steps],
+    [result?.evidence_procedure_steps]
   );
-  const [verificationCommand, setVerificationCommand] = useState("");
+  const [verificationCommand, setVerificationCommand] = useState('');
   const [verificationCommandTimeoutMs, setVerificationCommandTimeoutMs] = useState(120_000);
   const [verificationCommandRunning, setVerificationCommandRunning] = useState(false);
   const [verificationCommandCanceling, setVerificationCommandCanceling] = useState(false);
@@ -1015,26 +1007,26 @@ export default function QuickReview() {
   // Synthetic user QA (browser loop → verification evidence)
   const [qaBaseUrl, setQaBaseUrl] = useState(CODEVETTER_REVIEW_SHELL.default_base_url);
   const [qaLoopId, setQaLoopId] = useState(CODEVETTER_REVIEW_SHELL.id);
-  const [qaRunnerType, setQaRunnerType] = useState<QaRunnerType>("playwright_builtin");
+  const [qaRunnerType, setQaRunnerType] = useState<QaRunnerType>('playwright_builtin');
   const [qaGoal, setQaGoal] = useState(CODEVETTER_REVIEW_SHELL.goal);
   const [qaTargetRoute, setQaTargetRoute] = useState(CODEVETTER_REVIEW_SHELL.route);
   const [qaTargetName, setQaTargetName] = useState(CODEVETTER_REVIEW_SHELL.label);
-  const [qaActiveTargetId, setQaActiveTargetId] = useState("");
+  const [qaActiveTargetId, setQaActiveTargetId] = useState('');
   const [qaTargets, setQaTargets] = useState<QaTargetPreset[]>([]);
-  const [qaExternalCommand, setQaExternalCommand] = useState("");
-  const [qaRepoSpecPath, setQaRepoSpecPath] = useState("");
-  const [qaRepoTraceMode, setQaRepoTraceMode] = useState<QaRepoTraceMode>("retain-on-failure");
+  const [qaExternalCommand, setQaExternalCommand] = useState('');
+  const [qaRepoSpecPath, setQaRepoSpecPath] = useState('');
+  const [qaRepoTraceMode, setQaRepoTraceMode] = useState<QaRepoTraceMode>('retain-on-failure');
   const [qaSpecCandidates, setQaSpecCandidates] = useState<PlaywrightSpecCandidate[]>([]);
   const [qaSpecLoading, setQaSpecLoading] = useState(false);
   const [qaSpecError, setQaSpecError] = useState<string | null>(null);
-  const [qaAuthMode, setQaAuthMode] = useState<QaAuthMode>("none");
-  const [qaStorageStatePath, setQaStorageStatePath] = useState("");
+  const [qaAuthMode, setQaAuthMode] = useState<QaAuthMode>('none');
+  const [qaStorageStatePath, setQaStorageStatePath] = useState('');
   const [qaAllowRemoteTarget, setQaAllowRemoteTarget] = useState(false);
   const [qaWorkflowName, setQaWorkflowName] = useState(CODEVETTER_REVIEW_SHELL.label);
-  const [qaActiveWorkflowId, setQaActiveWorkflowId] = useState("");
+  const [qaActiveWorkflowId, setQaActiveWorkflowId] = useState('');
   const [qaWorkflows, setQaWorkflows] = useState<QaWorkflowPreset[]>([]);
   const [qaPresetLoaded, setQaPresetLoaded] = useState(false);
-  const [qaPreferenceLoadedKey, setQaPreferenceLoadedKey] = useState("");
+  const [qaPreferenceLoadedKey, setQaPreferenceLoadedKey] = useState('');
   const [qaRunHistory, setQaRunHistory] = useState<QaRunHistoryEntry[]>([]);
   const [qaRunning, setQaRunning] = useState(false);
   const [postFixQaRunning, setPostFixQaRunning] = useState(false);
@@ -1055,22 +1047,24 @@ export default function QuickReview() {
     lines?: FileLineData[];
     items?: RawSessionContextItem[];
   } | null>(null);
-  const [commandSourcePreviewLoading, setCommandSourcePreviewLoading] = useState<string | null>(null);
+  const [commandSourcePreviewLoading, setCommandSourcePreviewLoading] = useState<string | null>(
+    null
+  );
 
   const qaWorkflowPreferenceKey = useMemo(
-    () => repoScopedPreferenceKey("quick_review_qa_workflows", repoPath),
-    [repoPath],
+    () => repoScopedPreferenceKey('quick_review_qa_workflows', repoPath),
+    [repoPath]
   );
   const qaPresetPreferenceKey = useMemo(
-    () => repoScopedPreferenceKey("quick_review_qa_preset", repoPath),
-    [repoPath],
+    () => repoScopedPreferenceKey('quick_review_qa_preset', repoPath),
+    [repoPath]
   );
   const qaWorkflowScopeLabel = repoPath.trim()
     ? `Repo workflow · ${repoLabelFromPath(repoPath)}`
-    : "Global QA workflow";
+    : 'Global QA workflow';
 
   // Diff range derived from selection
-  const [diffRange, setDiffRange] = useState("");
+  const [diffRange, setDiffRange] = useState('');
   const [proofCopied, setProofCopied] = useState(false);
   const [findingNoteCopied, setFindingNoteCopied] = useState(false);
   // Collapsed by default: the verification detail (procedure gates, event
@@ -1100,18 +1094,18 @@ export default function QuickReview() {
       listGitBranches(dir),
       listPullRequests(dir),
     ]);
-    if (branchResult.status === "fulfilled") {
+    if (branchResult.status === 'fulfilled') {
       const { branches: brList, current } = branchResult.value;
       setBranches(brList);
-      setCurrentBranch(current ?? "");
-      if (brList.includes("main")) setBaseBranch("main");
-      else if (brList.includes("master")) setBaseBranch("master");
+      setCurrentBranch(current ?? '');
+      if (brList.includes('main')) setBaseBranch('main');
+      else if (brList.includes('master')) setBaseBranch('master');
       else if (brList.length > 0) setBaseBranch(brList[0]);
     } else {
       setBranches([]);
-      setCurrentBranch("");
+      setCurrentBranch('');
     }
-    if (prs.status === "fulfilled") {
+    if (prs.status === 'fulfilled') {
       setPullRequests(prs.value);
     } else {
       setPullRequests([]);
@@ -1120,29 +1114,29 @@ export default function QuickReview() {
     try {
       const saved = await getPreference(`quick_review_desc_${repoPrefKey(dir)}`);
       if (saved != null) setProjectDesc(saved);
-      else setProjectDesc("");
+      else setProjectDesc('');
     } catch {
-      setProjectDesc("");
+      setProjectDesc('');
     }
     try {
       const savedTask = await getPreference(`quick_review_task_${repoPrefKey(dir)}`);
       if (savedTask) {
         const parsed = JSON.parse(savedTask) as Partial<TaskContext>;
-        setTaskGoal(parsed.goal ?? "");
-        setTaskAcceptance(parsed.acceptanceCriteria ?? "");
-        setTaskNonGoals(parsed.nonGoals ?? "");
-        setTaskSourceLabel(parsed.sourceLabel ?? "");
+        setTaskGoal(parsed.goal ?? '');
+        setTaskAcceptance(parsed.acceptanceCriteria ?? '');
+        setTaskNonGoals(parsed.nonGoals ?? '');
+        setTaskSourceLabel(parsed.sourceLabel ?? '');
       } else {
-        setTaskGoal("");
-        setTaskAcceptance("");
-        setTaskNonGoals("");
-        setTaskSourceLabel("");
+        setTaskGoal('');
+        setTaskAcceptance('');
+        setTaskNonGoals('');
+        setTaskSourceLabel('');
       }
     } catch {
-      setTaskGoal("");
-      setTaskAcceptance("");
-      setTaskNonGoals("");
-      setTaskSourceLabel("");
+      setTaskGoal('');
+      setTaskAcceptance('');
+      setTaskNonGoals('');
+      setTaskSourceLabel('');
     }
   }, []);
 
@@ -1158,7 +1152,7 @@ export default function QuickReview() {
       setHistoryContext(ctx);
     } catch (e) {
       // Non-fatal — panel just shows empty; review still works.
-      console.warn("[Review] history context load failed (non-fatal):", e);
+      console.warn('[Review] history context load failed (non-fatal):', e);
       setHistoryContext(null);
     } finally {
       setHistoryLoading(false);
@@ -1167,8 +1161,8 @@ export default function QuickReview() {
 
   useEffect(() => {
     if (!isTauriAvailable()) return;
-    void getPreference("quick_review_last_folder")
-      .then((dir) => dir ? loadFolderData(dir) : undefined)
+    void getPreference('quick_review_last_folder')
+      .then((dir) => (dir ? loadFolderData(dir) : undefined))
       .catch(() => {});
   }, [loadFolderData]);
 
@@ -1193,92 +1187,95 @@ export default function QuickReview() {
       .then((reviews) => {
         return setPastReviews(reviews);
       })
-      .catch((e) => console.error("[Review] failed to load past reviews:", e))
+      .catch((e) => console.error('[Review] failed to load past reviews:', e))
       .finally(() => setPastReviewsLoading(false));
   }, [result]); // reload after new review completes
 
-  const handleLoadPastReview = useCallback(async (id: string) => {
-    try {
-      const data = await getReview(id);
-      const review = data.review;
-      const findings = (data.findings ?? []).map((f) => ({
-        severity: f.severity ?? "info",
-        title: f.title ?? "",
-        summary: f.summary ?? "",
-        suggestion: f.suggestion ?? undefined,
-        filePath: f.file_path ?? undefined,
-        line: f.line ?? undefined,
-        confidence: f.confidence ?? undefined,
-      }));
-      setFixResult(null);
-      setFixCompletedAt(null);
-      setSelectedFindings(new Set());
-      setSelectedFindingIdx(null);
-      setCodeLines([]);
-      setCodeFilePath("");
-      setCodeLanguage("");
-      setDiffRange("");
-      setEvidenceByFinding({});
-      setBrowserEvidenceByFinding({});
-      setResult({
-        review_id: review.id,
-        score: review.score_composite ?? 0,
-        findings,
-        summary: review.summary_markdown ?? "",
-        agent: review.agent_used ?? "claude",
-        duration_ms: 0,
-        diff_range: diffRangeFromSourceLabel(review.source_label),
-        findings_count: findings.length,
-      });
-      setSelectedBranch("");
-      setDiffRange(diffRangeFromSourceLabel(review.source_label));
-      setViewHasRepoPath(!!review.repo_path);
-      if (review.repo_path) {
-        await loadFolderData(review.repo_path);
-      } else {
-        setRepoPath("");
-        setBranches([]);
-        setCurrentBranch("");
-        setBaseBranch("main");
-        setSelectedBranch("");
+  const handleLoadPastReview = useCallback(
+    async (id: string) => {
+      try {
+        const data = await getReview(id);
+        const review = data.review;
+        const findings = (data.findings ?? []).map((f) => ({
+          severity: f.severity ?? 'info',
+          title: f.title ?? '',
+          summary: f.summary ?? '',
+          suggestion: f.suggestion ?? undefined,
+          filePath: f.file_path ?? undefined,
+          line: f.line ?? undefined,
+          confidence: f.confidence ?? undefined,
+        }));
+        setFixResult(null);
+        setFixCompletedAt(null);
+        setSelectedFindings(new Set());
+        setSelectedFindingIdx(null);
+        setCodeLines([]);
+        setCodeFilePath('');
+        setCodeLanguage('');
+        setDiffRange('');
+        setEvidenceByFinding({});
+        setBrowserEvidenceByFinding({});
+        setResult({
+          review_id: review.id,
+          score: review.score_composite ?? 0,
+          findings,
+          summary: review.summary_markdown ?? '',
+          agent: review.agent_used ?? 'claude',
+          duration_ms: 0,
+          diff_range: diffRangeFromSourceLabel(review.source_label),
+          findings_count: findings.length,
+        });
+        setSelectedBranch('');
+        setDiffRange(diffRangeFromSourceLabel(review.source_label));
+        setViewHasRepoPath(!!review.repo_path);
+        if (review.repo_path) {
+          await loadFolderData(review.repo_path);
+        } else {
+          setRepoPath('');
+          setBranches([]);
+          setCurrentBranch('');
+          setBaseBranch('main');
+          setSelectedBranch('');
+        }
+        // Past reviews don't have a stored blast report — clear the panel.
+        setBlastReport(null);
+        setBlastError(null);
+        setMode('view');
+      } catch (e) {
+        console.error('[CodeVetter] Failed to open past review:', e);
+        setError("Couldn't open that review. Try again, or pick another one.");
       }
-      // Past reviews don't have a stored blast report — clear the panel.
-      setBlastReport(null);
-      setBlastError(null);
-      setMode("view");
-    } catch (e) {
-      console.error("[CodeVetter] Failed to open past review:", e);
-      setError("Couldn't open that review. Try again, or pick another one.");
-    }
-  }, [loadFolderData]);
+    },
+    [loadFolderData]
+  );
 
   // ─── Folder picker ───────────────────────────────────────────────────────
 
   const handlePickFolder = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError("Not running in Tauri");
+      setError('Not running in Tauri');
       return;
     }
     try {
-      const dir = await pickDirectory("Select a git repository");
+      const dir = await pickDirectory('Select a git repository');
       if (!dir) return;
 
       setResult(null);
       setError(null);
-      setSelectedBranch("");
-      setDiffRange("");
-      setMode("create");
+      setSelectedBranch('');
+      setDiffRange('');
+      setMode('create');
       setHistoryContext(null);
 
       await loadFolderData(dir);
 
       // Persist last used folder
-      setPreference("quick_review_last_folder", dir).catch(() => {});
+      setPreference('quick_review_last_folder', dir).catch(() => {});
     } catch (e) {
-      console.error("[CodeVetter] Folder pick failed:", e);
+      console.error('[CodeVetter] Folder pick failed:', e);
       const msg = String(e);
-      if (msg.includes("TAURI_NOT_AVAILABLE")) {
-        setError("Not running in Tauri — run inside the desktop app to pick a repository.");
+      if (msg.includes('TAURI_NOT_AVAILABLE')) {
+        setError('Not running in Tauri — run inside the desktop app to pick a repository.');
       } else {
         setError("Couldn't open that folder. Make sure it's a valid git repository and try again.");
       }
@@ -1294,7 +1291,7 @@ export default function QuickReview() {
       setResult(null);
       setError(null);
     },
-    [baseBranch],
+    [baseBranch]
   );
 
   const handleSelectPR = useCallback((pr: PullRequest) => {
@@ -1312,12 +1309,15 @@ export default function QuickReview() {
     setPreference(prefKey, projectDesc).catch(() => {});
   }, [repoPath, projectDesc]);
 
-  const currentTaskContext = useMemo<TaskContext>(() => ({
-    goal: taskGoal,
-    acceptanceCriteria: taskAcceptance,
-    nonGoals: taskNonGoals,
-    sourceLabel: taskSourceLabel,
-  }), [taskAcceptance, taskGoal, taskNonGoals, taskSourceLabel]);
+  const currentTaskContext = useMemo<TaskContext>(
+    () => ({
+      goal: taskGoal,
+      acceptanceCriteria: taskAcceptance,
+      nonGoals: taskNonGoals,
+      sourceLabel: taskSourceLabel,
+    }),
+    [taskAcceptance, taskGoal, taskNonGoals, taskSourceLabel]
+  );
 
   const handleTaskContextBlur = useCallback(() => {
     if (!repoPath || !isTauriAvailable()) return;
@@ -1351,43 +1351,38 @@ export default function QuickReview() {
       .finally(() => setBlastLoading(false));
 
     try {
-      const res = await runCliReview(
-        repoPath,
-        diffRange,
-        projectDesc,
-        changeDesc,
-        "claude",
-        { qaRuns: qaRunsForReviewPrompt(qaRunHistory) },
-      );
+      const res = await runCliReview(repoPath, diffRange, projectDesc, changeDesc, 'claude', {
+        qaRuns: qaRunsForReviewPrompt(qaRunHistory),
+      });
       setResult(res);
       setFixCompletedAt(null);
-      setMode("view");
+      setMode('view');
       setViewHasRepoPath(true);
       setSelectedFindings(new Set());
       // Core action: a code review run completed (also fires `activated` once).
-      trackCoreAction("review_run");
+      trackCoreAction('review_run');
       const count = res.findings_count ?? res.findings.length;
       void notifyIfEnabled(
-        "notify_review_done",
+        'notify_review_done',
         true,
-        "Review complete",
-        `${count} finding${count === 1 ? "" : "s"} · score ${Math.round(res.score)}/100 · ${res.diff_range || diffRange}`,
+        'Review complete',
+        `${count} finding${count === 1 ? '' : 's'} · score ${Math.round(res.score)}/100 · ${res.diff_range || diffRange}`
       );
       await blastPromise;
     } catch (e) {
-      console.error("[CodeVetter] CLI review failed:", e);
+      console.error('[CodeVetter] CLI review failed:', e);
       const msg = String(e);
-      if (msg.includes("TAURI_NOT_AVAILABLE")) {
-        setError("Not running in Tauri — run inside the desktop app to start a review.");
+      if (msg.includes('TAURI_NOT_AVAILABLE')) {
+        setError('Not running in Tauri — run inside the desktop app to start a review.');
       } else {
         setError(
-          "The review couldn't finish. The AI agent may have failed or timed out — check the agent is installed and try again.",
+          "The review couldn't finish. The AI agent may have failed or timed out — check the agent is installed and try again."
         );
         void notifyIfEnabled(
-          "notify_agent_error",
+          'notify_agent_error',
           true,
-          "Review failed",
-          "The AI agent failed or timed out during the review.",
+          'Review failed',
+          'The AI agent failed or timed out during the review.'
         );
       }
     } finally {
@@ -1398,18 +1393,18 @@ export default function QuickReview() {
   // ─── Back to create mode ─────────────────────────────────────────────────
 
   const handleNewReview = useCallback(() => {
-    setMode("create");
+    setMode('create');
     setResult(null);
     setError(null);
     setBlastReport(null);
     setBlastError(null);
-    setSelectedBranch("");
-    setDiffRange("");
+    setSelectedBranch('');
+    setDiffRange('');
     setHistoryContext(null);
     setSelectedFindingIdx(null);
     setCodeLines([]);
-    setCodeFilePath("");
-    setCodeLanguage("");
+    setCodeFilePath('');
+    setCodeLanguage('');
     // Re-fetch branches for the current folder
     if (repoPath) {
       loadFolderData(repoPath);
@@ -1418,19 +1413,19 @@ export default function QuickReview() {
 
   // ─── Sorted findings ────────────────────────────────────────────────────
 
-  const sortedFindings = useMemo(() => (
-    result
-      ? [...result.findings].sort(
-        (a, b) =>
-          (severityOrder[a.severity] ?? 99) -
-          (severityOrder[b.severity] ?? 99),
-      )
-      : []
-  ), [result]);
+  const sortedFindings = useMemo(
+    () =>
+      result
+        ? [...result.findings].sort(
+            (a, b) => (severityOrder[a.severity] ?? 99) - (severityOrder[b.severity] ?? 99)
+          )
+        : [],
+    [result]
+  );
 
   const patchQueue = useMemo(
     () => sortedFindings.filter((_, idx) => selectedFindings.has(idx)),
-    [selectedFindings, sortedFindings],
+    [selectedFindings, sortedFindings]
   );
 
   const patchQueueSeverityCounts = useMemo(
@@ -1439,12 +1434,12 @@ export default function QuickReview() {
         acc[finding.severity] = (acc[finding.severity] ?? 0) + 1;
         return acc;
       }, {}),
-    [patchQueue],
+    [patchQueue]
   );
 
   const selectedFindingIndexes = useMemo(
     () => Array.from(selectedFindings).sort((a, b) => a - b),
-    [selectedFindings],
+    [selectedFindings]
   );
 
   const selectedEvidence = useMemo(
@@ -1453,12 +1448,12 @@ export default function QuickReview() {
         const finding = sortedFindings[idx];
         return finding
           ? {
-            ...defaultFindingEvidence,
-            ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-          }
+              ...defaultFindingEvidence,
+              ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+            }
           : defaultFindingEvidence;
       }),
-    [evidenceByFinding, selectedFindingIndexes, sortedFindings],
+    [evidenceByFinding, selectedFindingIndexes, sortedFindings]
   );
 
   const selectedBrowserEvidence = useMemo(
@@ -1467,21 +1462,24 @@ export default function QuickReview() {
         const finding = sortedFindings[idx];
         return finding
           ? {
-            ...emptyBrowserEvidence(),
-            ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
-          }
+              ...emptyBrowserEvidence(),
+              ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
+            }
           : emptyBrowserEvidence();
       }),
-    [browserEvidenceByFinding, selectedFindingIndexes, sortedFindings],
+    [browserEvidenceByFinding, selectedFindingIndexes, sortedFindings]
   );
 
   const timelineEvidenceStatuses = useMemo(
     () =>
-      sortedFindings.map((finding, idx) => ({
-        ...defaultFindingEvidence,
-        ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-      }).status),
-    [evidenceByFinding, sortedFindings],
+      sortedFindings.map(
+        (finding, idx) =>
+          ({
+            ...defaultFindingEvidence,
+            ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+          }).status
+      ),
+    [evidenceByFinding, sortedFindings]
   );
 
   const timelineSegmentFindingIndexes = useCallback(
@@ -1493,12 +1491,7 @@ export default function QuickReview() {
         activeFindingIndex: selectedFindingIdx,
         evidenceStatuses: timelineEvidenceStatuses,
       }),
-    [
-      selectedFindingIdx,
-      selectedFindingIndexes,
-      sortedFindings.length,
-      timelineEvidenceStatuses,
-    ],
+    [selectedFindingIdx, selectedFindingIndexes, sortedFindings.length, timelineEvidenceStatuses]
   );
 
   const fixPacket = useMemo(
@@ -1506,7 +1499,7 @@ export default function QuickReview() {
       buildAgentFixPacket({
         repoPath,
         diffRange: result?.diff_range || diffRange,
-        agent: result?.agent ?? "claude",
+        agent: result?.agent ?? 'claude',
         task: currentTaskContext,
         findings: selectedFindingIndexes
           .map((idx) => sortedFindings[idx])
@@ -1524,48 +1517,45 @@ export default function QuickReview() {
       selectedEvidence,
       selectedFindingIndexes,
       sortedFindings,
-    ],
+    ]
   );
 
   const evidenceCounts = useMemo(
     () =>
       Object.values(evidenceByFinding).reduce(
         (acc, evidence) => {
-          if (evidence.status === "reproduced") acc.reproduced += 1;
-          if (evidence.status === "fixed") acc.fixed += 1;
-          if (evidence.status === "not_reproduced") acc.notReproduced += 1;
+          if (evidence.status === 'reproduced') acc.reproduced += 1;
+          if (evidence.status === 'fixed') acc.fixed += 1;
+          if (evidence.status === 'not_reproduced') acc.notReproduced += 1;
           return acc;
         },
-        { reproduced: 0, fixed: 0, notReproduced: 0 },
+        { reproduced: 0, fixed: 0, notReproduced: 0 }
       ),
-    [evidenceByFinding],
+    [evidenceByFinding]
   );
 
-  const procedureExecutionEvents = useMemo(
-    () => {
-      const stored = storedProcedureEvents.map(storedProcedureEventToExecutionEvent);
-      const derived = buildProcedureExecutionEvents({
-        steps: activeProcedureSteps,
-        qaRunHistory,
-        evidenceByFinding,
-        browserEvidenceByFinding,
-        fixResult,
-      });
-      return mergeProcedureExecutionEvents(stored, derived);
-    },
-    [
-      browserEvidenceByFinding,
-      evidenceByFinding,
-      fixResult,
+  const procedureExecutionEvents = useMemo(() => {
+    const stored = storedProcedureEvents.map(storedProcedureEventToExecutionEvent);
+    const derived = buildProcedureExecutionEvents({
+      steps: activeProcedureSteps,
       qaRunHistory,
-      activeProcedureSteps,
-      storedProcedureEvents,
-    ],
-  );
+      evidenceByFinding,
+      browserEvidenceByFinding,
+      fixResult,
+    });
+    return mergeProcedureExecutionEvents(stored, derived);
+  }, [
+    browserEvidenceByFinding,
+    evidenceByFinding,
+    fixResult,
+    qaRunHistory,
+    activeProcedureSteps,
+    storedProcedureEvents,
+  ]);
 
   const qaPostFixComparison = useMemo(
     () => buildQaPostFixComparison(qaRunHistory, fixCompletedAt),
-    [fixCompletedAt, qaRunHistory],
+    [fixCompletedAt, qaRunHistory]
   );
 
   const reviewTimeline = useMemo(() => {
@@ -1574,16 +1564,16 @@ export default function QuickReview() {
       taskGoal,
       review: result
         ? {
-          findingsCount: sortedFindings.length,
-          mode: result.review_mode,
-          riskTier: result.risk_tier,
-          selectedFindingIndex: selectedFindingIdx,
-          firstFindingPath: sortedFindings[0]?.filePath ?? null,
-          firstFindingLine: sortedFindings[0]?.line ?? null,
-          findingPaths: sortedFindings.flatMap((finding) =>
-            finding.filePath ? [finding.filePath] : []
-          ),
-        }
+            findingsCount: sortedFindings.length,
+            mode: result.review_mode,
+            riskTier: result.risk_tier,
+            selectedFindingIndex: selectedFindingIdx,
+            firstFindingPath: sortedFindings[0]?.filePath ?? null,
+            firstFindingLine: sortedFindings[0]?.line ?? null,
+            findingPaths: sortedFindings.flatMap((finding) =>
+              finding.filePath ? [finding.filePath] : []
+            ),
+          }
         : null,
       isReviewing,
       qa: {
@@ -1600,14 +1590,14 @@ export default function QuickReview() {
       isFixing: Boolean(isFixing),
       fixResult: fixResult
         ? {
-          success: fixResult.success,
-          agent: fixResult.agent,
-          usingWorktree: fixResult.using_worktree,
-          worktreePath: fixResult.worktree_path ?? null,
-          changedFiles: fixResult.changed_files.length,
-          changedFileOrigins: fixResult.changed_files,
-          findingsFixed: fixResult.findings_fixed,
-        }
+            success: fixResult.success,
+            agent: fixResult.agent,
+            usingWorktree: fixResult.using_worktree,
+            worktreePath: fixResult.worktree_path ?? null,
+            changedFiles: fixResult.changed_files.length,
+            changedFileOrigins: fixResult.changed_files,
+            findingsFixed: fixResult.findings_fixed,
+          }
         : null,
       history: historyContext,
     });
@@ -1635,9 +1625,9 @@ export default function QuickReview() {
     () =>
       sortedFindings.filter((finding, idx) => {
         const ev = evidenceByFinding[findingEvidenceKey(finding, idx)];
-        return !ev || ev.status === "not_checked";
+        return !ev || ev.status === 'not_checked';
       }),
-    [sortedFindings, evidenceByFinding],
+    [sortedFindings, evidenceByFinding]
   );
 
   const uncheckedBySeverity = useMemo(() => {
@@ -1648,7 +1638,7 @@ export default function QuickReview() {
       buckets.set(finding.severity, arr);
     }
     return Array.from(buckets.entries()).sort(
-      ([a], [b]) => (severityOrder[a] ?? 99) - (severityOrder[b] ?? 99),
+      ([a], [b]) => (severityOrder[a] ?? 99) - (severityOrder[b] ?? 99)
     );
   }, [uncheckedFindings]);
 
@@ -1683,11 +1673,17 @@ export default function QuickReview() {
 
     return Array.from(summaries.entries())
       .map(([file, counts]) => ({ file, ...counts }))
-      .filter((summary) =>
-        summary.commits + summary.decisions + summary.agents + summary.recurring > 0)
-      .sort((a, b) =>
-        (b.decisions + b.recurring + b.agents + b.commits) -
-        (a.decisions + a.recurring + a.agents + a.commits))
+      .filter(
+        (summary) => summary.commits + summary.decisions + summary.agents + summary.recurring > 0
+      )
+      .sort(
+        (a, b) =>
+          b.decisions +
+          b.recurring +
+          b.agents +
+          b.commits -
+          (a.decisions + a.recurring + a.agents + a.commits)
+      )
       .slice(0, 5);
   }, [historyContext]);
 
@@ -1700,11 +1696,14 @@ export default function QuickReview() {
       if (!file) return;
 
       const commits = historyContext.recent_commits.filter((commit) =>
-        sameHistoryFile(commit.file, file));
+        sameHistoryFile(commit.file, file)
+      );
       const decisions = (historyContext.prior_decisions ?? []).filter((decision) =>
-        sameHistoryFile(decision.file, file));
+        sameHistoryFile(decision.file, file)
+      );
       const recurring = historyContext.recurring_failures.filter((failure) =>
-        sameHistoryFile(failure.file, file));
+        sameHistoryFile(failure.file, file)
+      );
       const commands = historyContext.command_signals ?? [];
       const claims = historyContext.agent_claims ?? [];
       const signalCount =
@@ -1731,7 +1730,7 @@ export default function QuickReview() {
 
   const historyExplanations = useMemo(
     () => buildCodebaseHistoryExplanations(historyContext),
-    [historyContext],
+    [historyContext]
   );
 
   const selectedFindingHistoryExplanation = useMemo(() => {
@@ -1761,40 +1760,46 @@ export default function QuickReview() {
       })),
       history: historyContext
         ? {
-          recentCommits: historyContext.recent_commits.length,
-          priorDecisions: historyContext.prior_decisions?.length ?? 0,
-          priorAgentRuns: historyContext.prior_agent_activity.length,
-          recurringFailures: historyContext.recurring_failures.length,
-          commands: historyContext.command_signals?.length ?? 0,
-          claims: historyContext.agent_claims?.length ?? 0,
-          commandStatus: {
-            passed: (historyContext.command_signals ?? []).filter((signal) => signal.status === "passed").length,
-            failed: (historyContext.command_signals ?? []).filter((signal) => signal.status === "failed").length,
-            stale: (historyContext.command_signals ?? []).filter((signal) => signal.status === "stale").length,
-            unknown: (historyContext.command_signals ?? []).filter(
-              (signal) => signal.status == null || signal.status === "unknown",
+            recentCommits: historyContext.recent_commits.length,
+            priorDecisions: historyContext.prior_decisions?.length ?? 0,
+            priorAgentRuns: historyContext.prior_agent_activity.length,
+            recurringFailures: historyContext.recurring_failures.length,
+            commands: historyContext.command_signals?.length ?? 0,
+            claims: historyContext.agent_claims?.length ?? 0,
+            commandStatus: {
+              passed: (historyContext.command_signals ?? []).filter(
+                (signal) => signal.status === 'passed'
+              ).length,
+              failed: (historyContext.command_signals ?? []).filter(
+                (signal) => signal.status === 'failed'
+              ).length,
+              stale: (historyContext.command_signals ?? []).filter(
+                (signal) => signal.status === 'stale'
+              ).length,
+              unknown: (historyContext.command_signals ?? []).filter(
+                (signal) => signal.status == null || signal.status === 'unknown'
+              ).length,
+            },
+            commandArtifacts: (historyContext.command_signals ?? []).reduce(
+              (sum, signal) => sum + (signal.artifacts?.length ?? 0),
+              0
+            ),
+            rawSessionCommands: (historyContext.command_signals ?? []).filter(
+              (signal) => signal.source === 'raw_session'
             ).length,
-          },
-          commandArtifacts: (historyContext.command_signals ?? []).reduce(
-            (sum, signal) => sum + (signal.artifacts?.length ?? 0),
-            0,
-          ),
-          rawSessionCommands: (historyContext.command_signals ?? []).filter(
-            (signal) => signal.source === "raw_session",
-          ).length,
-          structuredCommands: (historyContext.command_signals ?? []).filter(
-            (signal) => signal.source === "output_structured",
-          ).length,
-          latestCommand: historyContext.command_signals?.[0]?.command ?? null,
-          latestClaim: historyContext.agent_claims?.[0]?.claim ?? null,
-        }
+            structuredCommands: (historyContext.command_signals ?? []).filter(
+              (signal) => signal.source === 'output_structured'
+            ).length,
+            latestCommand: historyContext.command_signals?.[0]?.command ?? null,
+            latestClaim: historyContext.agent_claims?.[0]?.claim ?? null,
+          }
         : null,
       qaRuns: qaRunHistory,
       fix: fixResult
         ? {
-          changedFiles: fixResult.changed_files.length,
-          findingsFixed: fixResult.findings_fixed,
-        }
+            changedFiles: fixResult.changed_files.length,
+            findingsFixed: fixResult.findings_fixed,
+          }
         : null,
       reviewMode: result.review_mode,
       riskTier: result.risk_tier,
@@ -1802,10 +1807,10 @@ export default function QuickReview() {
       sensitivePaths: result.sensitive_paths,
       blast: blastReport
         ? {
-          totalCallers: blastReport.totalCallers,
-          totalSymbols: blastReport.totalSymbols,
-          changedFiles: blastReport.changedFiles,
-        }
+            totalCallers: blastReport.totalCallers,
+            totalSymbols: blastReport.totalSymbols,
+            changedFiles: blastReport.changedFiles,
+          }
         : null,
     });
   }, [
@@ -1834,7 +1839,7 @@ export default function QuickReview() {
         },
       }));
     },
-    [sortedFindings],
+    [sortedFindings]
   );
 
   const updateBrowserEvidence = useCallback(
@@ -1851,7 +1856,7 @@ export default function QuickReview() {
         },
       }));
     },
-    [sortedFindings],
+    [sortedFindings]
   );
 
   const updateEvidenceCandidateStatus = useCallback(
@@ -1861,7 +1866,7 @@ export default function QuickReview() {
         [candidateId]: status,
       }));
     },
-    [],
+    []
   );
 
   const toggleRevalidationItem = useCallback(
@@ -1881,7 +1886,7 @@ export default function QuickReview() {
         };
       });
     },
-    [sortedFindings],
+    [sortedFindings]
   );
 
   useEffect(() => {
@@ -1913,7 +1918,7 @@ export default function QuickReview() {
         } else {
           try {
             setBrowserEvidenceByFinding(
-              JSON.parse(browserRaw) as Record<string, BrowserEvidenceRef>,
+              JSON.parse(browserRaw) as Record<string, BrowserEvidenceRef>
             );
           } catch {
             setBrowserEvidenceByFinding({});
@@ -1925,7 +1930,7 @@ export default function QuickReview() {
         } else {
           try {
             setEvidenceCandidateStatuses(
-              JSON.parse(candidateRaw) as Record<string, EvidenceCandidateStatus>,
+              JSON.parse(candidateRaw) as Record<string, EvidenceCandidateStatus>
             );
           } catch {
             setEvidenceCandidateStatuses({});
@@ -1954,17 +1959,14 @@ export default function QuickReview() {
   useEffect(() => {
     if (!reviewId) return;
     void Promise.all([
-      setPreference(
-        `quick_review_evidence_${reviewId}`,
-        JSON.stringify(evidenceByFinding),
-      ),
+      setPreference(`quick_review_evidence_${reviewId}`, JSON.stringify(evidenceByFinding)),
       setPreference(
         `quick_review_browser_evidence_${reviewId}`,
-        JSON.stringify(browserEvidenceByFinding),
+        JSON.stringify(browserEvidenceByFinding)
       ),
       setPreference(
         `quick_review_candidate_statuses_${reviewId}`,
-        JSON.stringify(evidenceCandidateStatuses),
+        JSON.stringify(evidenceCandidateStatuses)
       ),
     ]).catch(() => {});
   }, [browserEvidenceByFinding, evidenceByFinding, evidenceCandidateStatuses, reviewId]);
@@ -1983,8 +1985,8 @@ export default function QuickReview() {
             summary: event.summary,
             artifact: event.artifact ?? null,
             metadata,
-          }),
-        ),
+          })
+        )
       )
         .then((stored) => {
           setStoredProcedureEvents((prev) => [...stored, ...prev]);
@@ -1992,43 +1994,43 @@ export default function QuickReview() {
         })
         .catch(() => {});
     },
-    [reviewId],
+    [reviewId]
   );
 
   const applyQaWorkflow = useCallback((workflow: Partial<QaWorkflowPreset>) => {
     if (workflow.baseUrl) setQaBaseUrl(workflow.baseUrl);
     if (workflow.loopId) setQaLoopId(workflow.loopId);
     if (
-      workflow.runnerType === "playwright_builtin" ||
-      workflow.runnerType === "external_skill" ||
-      workflow.runnerType === "repo_playwright"
+      workflow.runnerType === 'playwright_builtin' ||
+      workflow.runnerType === 'external_skill' ||
+      workflow.runnerType === 'repo_playwright'
     ) {
       setQaRunnerType(workflow.runnerType);
     }
     if (workflow.goal) setQaGoal(workflow.goal);
-    if (typeof workflow.targetRoute === "string") {
+    if (typeof workflow.targetRoute === 'string') {
       setQaTargetRoute(workflow.targetRoute || CODEVETTER_REVIEW_SHELL.route);
     }
-    if (typeof workflow.externalCommand === "string") {
+    if (typeof workflow.externalCommand === 'string') {
       setQaExternalCommand(workflow.externalCommand);
     }
-    if (typeof workflow.repoSpecPath === "string") {
+    if (typeof workflow.repoSpecPath === 'string') {
       setQaRepoSpecPath(workflow.repoSpecPath);
     }
     if (
-      workflow.repoTraceMode === "off" ||
-      workflow.repoTraceMode === "retain-on-failure" ||
-      workflow.repoTraceMode === "on"
+      workflow.repoTraceMode === 'off' ||
+      workflow.repoTraceMode === 'retain-on-failure' ||
+      workflow.repoTraceMode === 'on'
     ) {
       setQaRepoTraceMode(workflow.repoTraceMode);
     }
-    if (workflow.authMode === "none" || workflow.authMode === "storage_state") {
+    if (workflow.authMode === 'none' || workflow.authMode === 'storage_state') {
       setQaAuthMode(workflow.authMode);
     }
-    if (typeof workflow.storageStatePath === "string") {
+    if (typeof workflow.storageStatePath === 'string') {
       setQaStorageStatePath(workflow.storageStatePath);
     }
-    if (typeof workflow.allowRemoteTarget === "boolean") {
+    if (typeof workflow.allowRemoteTarget === 'boolean') {
       setQaAllowRemoteTarget(workflow.allowRemoteTarget);
     }
     if (Array.isArray(workflow.targets)) {
@@ -2040,55 +2042,59 @@ export default function QuickReview() {
         setQaTargetRoute(firstTarget.route);
         setQaGoal(firstTarget.goal);
       } else {
-        setQaActiveTargetId("");
+        setQaActiveTargetId('');
       }
     }
     if (workflow.name) setQaWorkflowName(workflow.name);
   }, []);
 
-  const currentQaWorkflow = useCallback((id: string): QaWorkflowPreset => ({
-    id,
-    name: qaWorkflowName.trim() || CODEVETTER_REVIEW_SHELL.label,
-    baseUrl: qaBaseUrl,
-    loopId: qaLoopId,
-    runnerType: qaRunnerType,
-    goal: qaGoal,
-    externalCommand: qaExternalCommand,
-    repoSpecPath: qaRepoSpecPath,
-    repoTraceMode: qaRepoTraceMode,
-    authMode: qaAuthMode,
-    storageStatePath: qaStorageStatePath,
-    targetRoute: qaTargetRoute,
-    allowRemoteTarget: qaAllowRemoteTarget,
-    targets: qaTargets,
-    updatedAt: new Date().toISOString(),
-  }), [
-    qaAllowRemoteTarget,
-    qaAuthMode,
-    qaBaseUrl,
-    qaExternalCommand,
-    qaGoal,
-    qaLoopId,
-    qaRepoSpecPath,
-    qaRepoTraceMode,
-    qaRunnerType,
-    qaStorageStatePath,
-    qaTargetRoute,
-    qaTargets,
-    qaWorkflowName,
-  ]);
+  const currentQaWorkflow = useCallback(
+    (id: string): QaWorkflowPreset => ({
+      id,
+      name: qaWorkflowName.trim() || CODEVETTER_REVIEW_SHELL.label,
+      baseUrl: qaBaseUrl,
+      loopId: qaLoopId,
+      runnerType: qaRunnerType,
+      goal: qaGoal,
+      externalCommand: qaExternalCommand,
+      repoSpecPath: qaRepoSpecPath,
+      repoTraceMode: qaRepoTraceMode,
+      authMode: qaAuthMode,
+      storageStatePath: qaStorageStatePath,
+      targetRoute: qaTargetRoute,
+      allowRemoteTarget: qaAllowRemoteTarget,
+      targets: qaTargets,
+      updatedAt: new Date().toISOString(),
+    }),
+    [
+      qaAllowRemoteTarget,
+      qaAuthMode,
+      qaBaseUrl,
+      qaExternalCommand,
+      qaGoal,
+      qaLoopId,
+      qaRepoSpecPath,
+      qaRepoTraceMode,
+      qaRunnerType,
+      qaStorageStatePath,
+      qaTargetRoute,
+      qaTargets,
+      qaWorkflowName,
+    ]
+  );
 
   useEffect(() => {
     setQaPresetLoaded(false);
-    setQaPreferenceLoadedKey("");
+    setQaPreferenceLoadedKey('');
     async function loadQaWorkflows() {
       try {
-        const [scopedWorkflowsRaw, globalWorkflowsRaw, scopedPresetRaw, legacyRaw] = await Promise.all([
-          getPreference(qaWorkflowPreferenceKey),
-          getPreference("quick_review_qa_workflows"),
-          getPreference(qaPresetPreferenceKey),
-          getPreference("quick_review_qa_preset"),
-        ]);
+        const [scopedWorkflowsRaw, globalWorkflowsRaw, scopedPresetRaw, legacyRaw] =
+          await Promise.all([
+            getPreference(qaWorkflowPreferenceKey),
+            getPreference('quick_review_qa_workflows'),
+            getPreference(qaPresetPreferenceKey),
+            getPreference('quick_review_qa_preset'),
+          ]);
 
         const workflowsRaw = scopedWorkflowsRaw || globalWorkflowsRaw;
         if (workflowsRaw) {
@@ -2105,12 +2111,12 @@ export default function QuickReview() {
         if (presetRaw) {
           const legacy = JSON.parse(presetRaw) as Partial<QaPreset>;
           setQaWorkflows([]);
-          setQaActiveWorkflowId("");
+          setQaActiveWorkflowId('');
           applyQaWorkflow({ ...legacy, name: CODEVETTER_REVIEW_SHELL.label });
           return;
         }
         setQaWorkflows([]);
-        setQaActiveWorkflowId("");
+        setQaActiveWorkflowId('');
       } catch {
         // Keep defaults if local preferences are unavailable or malformed.
       } finally {
@@ -2161,11 +2167,14 @@ export default function QuickReview() {
     void setPreference(qaWorkflowPreferenceKey, JSON.stringify(qaWorkflows)).catch(() => {});
   }, [qaPresetLoaded, qaPreferenceLoadedKey, qaWorkflowPreferenceKey, qaWorkflows]);
 
-  const handleSelectQaWorkflow = useCallback((workflowId: string) => {
-    setQaActiveWorkflowId(workflowId);
-    const workflow = qaWorkflows.find((candidate) => candidate.id === workflowId);
-    if (workflow) applyQaWorkflow(workflow);
-  }, [applyQaWorkflow, qaWorkflows]);
+  const handleSelectQaWorkflow = useCallback(
+    (workflowId: string) => {
+      setQaActiveWorkflowId(workflowId);
+      const workflow = qaWorkflows.find((candidate) => candidate.id === workflowId);
+      if (workflow) applyQaWorkflow(workflow);
+    },
+    [applyQaWorkflow, qaWorkflows]
+  );
 
   const handleSaveQaWorkflow = useCallback(() => {
     const id = qaActiveWorkflowId || `qa-workflow-${Date.now()}`;
@@ -2174,7 +2183,7 @@ export default function QuickReview() {
     setQaWorkflows((prev) => {
       const exists = prev.some((workflow) => workflow.id === id);
       const updated = exists
-        ? prev.map((workflow) => workflow.id === id ? next : workflow)
+        ? prev.map((workflow) => (workflow.id === id ? next : workflow))
         : [next, ...prev];
       return updated.slice(0, 12);
     });
@@ -2183,17 +2192,20 @@ export default function QuickReview() {
   const handleDeleteQaWorkflow = useCallback(() => {
     if (!qaActiveWorkflowId) return;
     setQaWorkflows((prev) => prev.filter((workflow) => workflow.id !== qaActiveWorkflowId));
-    setQaActiveWorkflowId("");
+    setQaActiveWorkflowId('');
   }, [qaActiveWorkflowId]);
 
-  const handleSelectQaTarget = useCallback((targetId: string) => {
-    setQaActiveTargetId(targetId);
-    const target = qaTargets.find((candidate) => candidate.id === targetId);
-    if (!target) return;
-    setQaTargetName(target.name);
-    setQaTargetRoute(target.route);
-    setQaGoal(target.goal);
-  }, [qaTargets]);
+  const handleSelectQaTarget = useCallback(
+    (targetId: string) => {
+      setQaActiveTargetId(targetId);
+      const target = qaTargets.find((candidate) => candidate.id === targetId);
+      if (!target) return;
+      setQaTargetName(target.name);
+      setQaTargetRoute(target.route);
+      setQaGoal(target.goal);
+    },
+    [qaTargets]
+  );
 
   const handleSaveQaTarget = useCallback(() => {
     const id = qaActiveTargetId || `qa-target-${Date.now()}`;
@@ -2205,16 +2217,18 @@ export default function QuickReview() {
     };
     setQaActiveTargetId(id);
     const exists = qaTargets.some((target) => target.id === id);
-    const updatedTargets = (exists
-      ? qaTargets.map((target) => target.id === id ? next : target)
-      : [next, ...qaTargets]).slice(0, 16);
+    const updatedTargets = (
+      exists ? qaTargets.map((target) => (target.id === id ? next : target)) : [next, ...qaTargets]
+    ).slice(0, 16);
     setQaTargets(updatedTargets);
     if (qaActiveWorkflowId) {
       setQaWorkflows((prev) =>
         prev.map((workflow) =>
           workflow.id === qaActiveWorkflowId
             ? { ...currentQaWorkflow(workflow.id), targets: updatedTargets }
-            : workflow));
+            : workflow
+        )
+      );
     }
   }, [
     currentQaWorkflow,
@@ -2235,9 +2249,11 @@ export default function QuickReview() {
         prev.map((workflow) =>
           workflow.id === qaActiveWorkflowId
             ? { ...currentQaWorkflow(workflow.id), targets: updatedTargets }
-            : workflow));
+            : workflow
+        )
+      );
     }
-    setQaActiveTargetId("");
+    setQaActiveTargetId('');
   }, [currentQaWorkflow, qaActiveTargetId, qaActiveWorkflowId, qaTargets]);
 
   useEffect(() => {
@@ -2278,13 +2294,12 @@ export default function QuickReview() {
     if (!reviewId) return;
     void setPreference(
       `quick_review_qa_runs_${reviewId}`,
-      JSON.stringify(qaRunHistory.slice(0, 8)),
+      JSON.stringify(qaRunHistory.slice(0, 8))
     ).catch(() => {});
   }, [qaRunHistory, reviewId]);
 
   useEffect(() => {
-    const finding =
-      selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
+    const finding = selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
     if (!repoPath || !isTauriAvailable()) {
       setVerificationCommandSuggestions([]);
       return;
@@ -2293,7 +2308,7 @@ export default function QuickReview() {
     setVerificationCommandSuggestionsLoading(true);
     const seenHistoryCommands = new Set<string>();
     const historyCommands = (historyContext?.command_signals ?? [])
-      .filter((signal) => signal.command.trim() && signal.status !== "stale")
+      .filter((signal) => signal.command.trim() && signal.status !== 'stale')
       .filter((signal) => {
         const command = signal.command.trim();
         if (seenHistoryCommands.has(command)) return false;
@@ -2305,7 +2320,7 @@ export default function QuickReview() {
         command: signal.command.trim(),
         date: signal.date,
         source: signal.source,
-        status: signal.status ?? "unknown",
+        status: signal.status ?? 'unknown',
         artifacts: signal.artifacts ?? [],
       }));
     void suggestReviewVerificationCommands({
@@ -2326,11 +2341,11 @@ export default function QuickReview() {
 
   const handleDiscoverQaSpecs = useCallback(async () => {
     if (!repoPath) {
-      setQaSpecError("Select a repository first.");
+      setQaSpecError('Select a repository first.');
       return;
     }
     if (!isTauriAvailable()) {
-      setQaSpecError("Spec discovery requires the CodeVetter desktop app (Tauri).");
+      setQaSpecError('Spec discovery requires the CodeVetter desktop app (Tauri).');
       return;
     }
     setQaSpecLoading(true);
@@ -2342,7 +2357,7 @@ export default function QuickReview() {
         setQaRepoSpecPath(discovered.specs[0].path);
       }
       if (discovered.specs.length === 0) {
-        setQaSpecError("No Playwright-looking specs found.");
+        setQaSpecError('No Playwright-looking specs found.');
       }
     } catch (err) {
       setQaSpecError(err instanceof Error ? err.message : String(err));
@@ -2354,24 +2369,23 @@ export default function QuickReview() {
   const runSyntheticQaFlow = useCallback(
     async (
       request: QaPreset,
-      options?: { repoPathOverride?: string | null },
+      options?: { repoPathOverride?: string | null }
     ): Promise<QaRunHistoryEntry> => {
       if (!isTauriAvailable()) {
-        throw new Error("Synthetic QA requires the CodeVetter desktop app (Tauri).");
+        throw new Error('Synthetic QA requires the CodeVetter desktop app (Tauri).');
       }
       const runRepoPath = options?.repoPathOverride || repoPath;
       const run = await runSyntheticQa(request.baseUrl, request.loopId, {
         runnerType: request.runnerType,
         goal: request.goal,
         externalCommand:
-          request.runnerType === "external_skill" ? request.externalCommand : undefined,
+          request.runnerType === 'external_skill' ? request.externalCommand : undefined,
         repoPath: runRepoPath,
-        specPath: request.runnerType === "repo_playwright" ? request.repoSpecPath : undefined,
-        repoTraceMode:
-          request.runnerType === "repo_playwright" ? request.repoTraceMode : undefined,
+        specPath: request.runnerType === 'repo_playwright' ? request.repoSpecPath : undefined,
+        repoTraceMode: request.runnerType === 'repo_playwright' ? request.repoTraceMode : undefined,
         authMode: request.authMode,
         storageStatePath:
-          request.authMode === "storage_state" ? request.storageStatePath : undefined,
+          request.authMode === 'storage_state' ? request.storageStatePath : undefined,
         targetRoute: request.targetRoute,
         allowRemoteTarget: request.allowRemoteTarget,
       });
@@ -2416,28 +2430,25 @@ export default function QuickReview() {
         }
       }
       setQaRunHistory((prev) => [entry, ...prev].slice(0, 8));
-      recordProcedureExecutionEvents(
-        procedureEventsForQaRun(activeProcedureSteps, entry),
-        {
-          loopId: entry.loopId,
-          runnerType: entry.runnerType,
-          route: entry.route,
-          pass: entry.pass,
-        },
-      );
+      recordProcedureExecutionEvents(procedureEventsForQaRun(activeProcedureSteps, entry), {
+        loopId: entry.loopId,
+        runnerType: entry.runnerType,
+        route: entry.route,
+        pass: entry.pass,
+      });
       if (!run.pass) {
-        trackCoreAction("review_run");
+        trackCoreAction('review_run');
       }
       return entry;
     },
-    [activeProcedureSteps, recordProcedureExecutionEvents, reviewId, repoPath],
+    [activeProcedureSteps, recordProcedureExecutionEvents, reviewId, repoPath]
   );
 
   const handleRunSyntheticQa = useCallback(async () => {
     setQaRunning(true);
     setQaError(null);
     try {
-      await runSyntheticQaFlow(currentQaWorkflow(qaActiveWorkflowId || "manual"));
+      await runSyntheticQaFlow(currentQaWorkflow(qaActiveWorkflowId || 'manual'));
     } catch (err) {
       setQaError(err instanceof Error ? err.message : String(err));
       setQaLastRun(null);
@@ -2454,34 +2465,26 @@ export default function QuickReview() {
       await runSyntheticQaFlow(
         qaRequestFromHistory(
           qaPostFixComparison.before,
-          currentQaWorkflow(qaActiveWorkflowId || "manual"),
+          currentQaWorkflow(qaActiveWorkflowId || 'manual')
         ),
         {
           repoPathOverride: fixResult?.worktree_path,
-        },
+        }
       );
     } catch (err) {
-      setQaError(
-        `Post-fix QA rerun failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      setQaError(`Post-fix QA rerun failed: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setPostFixQaRunning(false);
     }
-  }, [
-    currentQaWorkflow,
-    fixResult,
-    qaActiveWorkflowId,
-    qaPostFixComparison,
-    runSyntheticQaFlow,
-  ]);
+  }, [currentQaWorkflow, fixResult, qaActiveWorkflowId, qaPostFixComparison, runSyntheticQaFlow]);
 
   const handleOpenQaArtifact = useCallback(async (artifact: string) => {
     if (!isTauriAvailable()) {
-      setQaError("Opening artifacts requires the CodeVetter desktop app (Tauri).");
+      setQaError('Opening artifacts requires the CodeVetter desktop app (Tauri).');
       return;
     }
     try {
-      await openInApp("finder", artifact);
+      await openInApp('finder', artifact);
       setQaError(null);
     } catch (err) {
       setQaError(err instanceof Error ? err.message : String(err));
@@ -2490,11 +2493,11 @@ export default function QuickReview() {
 
   const handlePreviewQaArtifact = useCallback(async (artifact: string) => {
     if (!isTauriAvailable()) {
-      setQaError("Previewing artifacts requires the CodeVetter desktop app (Tauri).");
+      setQaError('Previewing artifacts requires the CodeVetter desktop app (Tauri).');
       return;
     }
     if (!canPreviewQaArtifact(artifact)) {
-      setQaError("Preview is only available for text-like artifacts.");
+      setQaError('Preview is only available for text-like artifacts.');
       return;
     }
     setQaArtifactPreviewLoading(true);
@@ -2517,11 +2520,11 @@ export default function QuickReview() {
 
   const handleOpenCommandSource = useCallback(async (sourcePath: string) => {
     if (!isTauriAvailable()) {
-      setError("Opening command sources requires the CodeVetter desktop app (Tauri).");
+      setError('Opening command sources requires the CodeVetter desktop app (Tauri).');
       return;
     }
     try {
-      await openInApp("finder", sourcePath);
+      await openInApp('finder', sourcePath);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -2529,29 +2532,26 @@ export default function QuickReview() {
   }, []);
 
   const handlePreviewCommandSource = useCallback(
-    async (
-      signal: NonNullable<RepoHistoryContext["command_signals"]>[number],
-      key: string,
-    ) => {
+    async (signal: NonNullable<RepoHistoryContext['command_signals']>[number], key: string) => {
       if (!signal.source_path) {
-        setError("No transcript source path is attached to this command.");
+        setError('No transcript source path is attached to this command.');
         return;
       }
       if (!isTauriAvailable()) {
-        setError("Previewing command sources requires the CodeVetter desktop app (Tauri).");
+        setError('Previewing command sources requires the CodeVetter desktop app (Tauri).');
         return;
       }
       const line = Math.max(1, signal.source_line ?? 1);
       setCommandSourcePreviewLoading(key);
       setError(null);
       try {
-        if (signal.source === "raw_session") {
+        if (signal.source === 'raw_session') {
           const preview = await readRawSessionContext(signal.source_path, line, 8, 12);
           setCommandSourcePreview({
             key,
             path: preview.file_path,
             line: preview.target_line,
-            language: "transcript",
+            language: 'transcript',
             items: preview.items,
           });
         } else {
@@ -2571,7 +2571,7 @@ export default function QuickReview() {
         setCommandSourcePreviewLoading(null);
       }
     },
-    [],
+    []
   );
 
   const applyQaToSelectedFinding = useCallback(() => {
@@ -2612,7 +2612,7 @@ export default function QuickReview() {
         evidenceLevel: evidence.level,
         evidenceStatus: evidence.status,
         artifact: evidence.artifact || null,
-      },
+      }
     );
   }, [
     activeProcedureSteps,
@@ -2643,27 +2643,27 @@ export default function QuickReview() {
         repoPath,
         reviewId,
         command,
-        stepId: "rerun_relevant_verification",
+        stepId: 'rerun_relevant_verification',
         timeoutMs: verificationCommandTimeoutMs,
         runId,
       });
       setStoredProcedureEvents((prev) => [run.event, ...prev]);
       const notes = [
         currentEvidence.notes.trim(),
-        "",
+        '',
         `Command: ${command}`,
         `Result: ${
-          run.passed ? "PASS" : run.canceled ? "CANCELED" : run.timed_out ? "TIMEOUT" : "FAIL"
+          run.passed ? 'PASS' : run.canceled ? 'CANCELED' : run.timed_out ? 'TIMEOUT' : 'FAIL'
         } (${run.duration_ms}ms, exit ${run.exit_code})`,
         `Artifact: ${run.artifact}`,
-        run.stderr_tail.trim() ? `stderr:\n${run.stderr_tail.trim()}` : "",
+        run.stderr_tail.trim() ? `stderr:\n${run.stderr_tail.trim()}` : '',
       ]
         .filter(Boolean)
-        .join("\n")
+        .join('\n')
         .trim();
       updateFindingEvidence(selectedFindingIdx, {
-        level: run.canceled ? currentEvidence.level : "test",
-        status: run.passed ? "not_reproduced" : run.canceled ? "not_checked" : "reproduced",
+        level: run.canceled ? currentEvidence.level : 'test',
+        status: run.passed ? 'not_reproduced' : run.canceled ? 'not_checked' : 'reproduced',
         artifact: run.artifact,
         notes,
       });
@@ -2691,7 +2691,7 @@ export default function QuickReview() {
     try {
       const result = await cancelReviewVerificationCommand(verificationCommandRunId);
       if (!result.canceled) {
-        setVerificationCommandError("Command already finished.");
+        setVerificationCommandError('Command already finished.');
       }
     } catch (err) {
       setVerificationCommandError(err instanceof Error ? err.message : String(err));
@@ -2714,17 +2714,15 @@ export default function QuickReview() {
   const toggleSelectAll = useCallback(() => {
     if (!result) return;
     setSelectedFindings((prev) =>
-      prev.size === result.findings.length
-        ? new Set()
-        : new Set(result.findings.map((_, i) => i)),
+      prev.size === result.findings.length ? new Set() : new Set(result.findings.map((_, i) => i))
     );
   }, [result]);
 
   const handleFixSelected = useCallback(async () => {
     if (!repoPath || !result || selectedFindings.size === 0) return;
     const preFixQaRun = qaRunHistory[0] ?? null;
-    const currentQaRequest = currentQaWorkflow(qaActiveWorkflowId || "manual");
-    setIsFixing("selected");
+    const currentQaRequest = currentQaWorkflow(qaActiveWorkflowId || 'manual');
+    setIsFixing('selected');
     setFixResult(null);
     setFixCompletedAt(null);
     setFixProgress([]);
@@ -2733,8 +2731,8 @@ export default function QuickReview() {
     // Listen for streaming progress events
     let unlisten: (() => void) | undefined;
     try {
-      const { listen } = await import("@tauri-apps/api/event");
-      unlisten = await listen<string>("fix-progress", (event) => {
+      const { listen } = await import('@tauri-apps/api/event');
+      unlisten = await listen<string>('fix-progress', (event) => {
         setFixProgress((prev) => {
           const next = [...prev, event.payload];
           // Keep last 50 lines
@@ -2755,20 +2753,17 @@ export default function QuickReview() {
       setFixResult(res);
       setFixCompletedAt(completedAt);
       void notifyIfEnabled(
-        "notify_task_complete",
+        'notify_task_complete',
         false,
-        "Fix complete",
-        `${res.findings_fixed} finding${res.findings_fixed === 1 ? "" : "s"} fixed across ${res.changed_files.length} file${res.changed_files.length === 1 ? "" : "s"}.`,
+        'Fix complete',
+        `${res.findings_fixed} finding${res.findings_fixed === 1 ? '' : 's'} fixed across ${res.changed_files.length} file${res.changed_files.length === 1 ? '' : 's'}.`
       );
-      recordProcedureExecutionEvents(
-        procedureEventsForFixResult(activeProcedureSteps, res),
-        {
-          agent: res.agent,
-          changedFiles: res.changed_files.length,
-          findingsFixed: res.findings_fixed,
-          usingWorktree: res.using_worktree ?? null,
-        },
-      );
+      recordProcedureExecutionEvents(procedureEventsForFixResult(activeProcedureSteps, res), {
+        agent: res.agent,
+        changedFiles: res.changed_files.length,
+        findingsFixed: res.findings_fixed,
+        usingWorktree: res.using_worktree ?? null,
+      });
       if (preFixQaRun) {
         setPostFixQaRunning(true);
         setQaError(null);
@@ -2778,7 +2773,7 @@ export default function QuickReview() {
           });
         } catch (qaErr) {
           setQaError(
-            `Post-fix QA rerun failed: ${qaErr instanceof Error ? qaErr.message : String(qaErr)}`,
+            `Post-fix QA rerun failed: ${qaErr instanceof Error ? qaErr.message : String(qaErr)}`
           );
         } finally {
           setPostFixQaRunning(false);
@@ -2787,10 +2782,10 @@ export default function QuickReview() {
     } catch (e) {
       setError(`Fix failed: ${String(e)}`);
       void notifyIfEnabled(
-        "notify_agent_error",
+        'notify_agent_error',
         true,
-        "Fix failed",
-        "The AI agent failed while applying the selected fixes.",
+        'Fix failed',
+        'The AI agent failed while applying the selected fixes.'
       );
     } finally {
       setIsFixing(null);
@@ -2809,27 +2804,33 @@ export default function QuickReview() {
     selectedFindings.size,
   ]);
 
-  const handleRevertFile = useCallback(async (filePath: string) => {
-    if (!fixResult?.worktree_path) return;
-    try {
-      await revertFiles(fixResult.worktree_path, [filePath]);
-      const remaining = await getLocalDiff(fixResult.worktree_path);
-      setFixResult({ ...fixResult, diff: remaining.diff, changed_files: remaining.files });
-    } catch (e) {
-      setError(`Revert failed: ${String(e)}`);
-    }
-  }, [fixResult]);
+  const handleRevertFile = useCallback(
+    async (filePath: string) => {
+      if (!fixResult?.worktree_path) return;
+      try {
+        await revertFiles(fixResult.worktree_path, [filePath]);
+        const remaining = await getLocalDiff(fixResult.worktree_path);
+        setFixResult({ ...fixResult, diff: remaining.diff, changed_files: remaining.files });
+      } catch (e) {
+        setError(`Revert failed: ${String(e)}`);
+      }
+    },
+    [fixResult]
+  );
 
-  const handleRevertHunk = useCallback(async (filePath: string, hunk: string) => {
-    if (!fixResult?.worktree_path) return;
-    try {
-      await revertDiffHunk(fixResult.worktree_path, filePath, hunk);
-      const remaining = await getLocalDiff(fixResult.worktree_path);
-      setFixResult({ ...fixResult, diff: remaining.diff, changed_files: remaining.files });
-    } catch (e) {
-      setError(`Hunk revert failed: ${String(e)}`);
-    }
-  }, [fixResult]);
+  const handleRevertHunk = useCallback(
+    async (filePath: string, hunk: string) => {
+      if (!fixResult?.worktree_path) return;
+      try {
+        await revertDiffHunk(fixResult.worktree_path, filePath, hunk);
+        const remaining = await getLocalDiff(fixResult.worktree_path);
+        setFixResult({ ...fixResult, diff: remaining.diff, changed_files: remaining.files });
+      } catch (e) {
+        setError(`Hunk revert failed: ${String(e)}`);
+      }
+    },
+    [fixResult]
+  );
 
   const handleMergeFix = useCallback(async () => {
     if (!repoPath || !fixResult?.worktree_branch) return;
@@ -2853,23 +2854,27 @@ export default function QuickReview() {
     }
   }, [repoPath, fixResult]);
 
-  const handleCommitFixes = useCallback(async () => {
+  const _handleCommitFixes = useCallback(async () => {
     if (!repoPath || !fixResult) return;
     try {
-      const { safeInvoke } = await import("@/lib/tauri-ipc");
+      const { safeInvoke } = await import('@/lib/tauri-ipc');
       // Stage changed files and commit
-      const files = fixResult.changed_files.map(f => f.path);
+      const files = fixResult.changed_files.map((f) => f.path);
       for (const file of files) {
-        await safeInvoke("run_git_command", { repoPath, args: ["add", file] }).catch(() => {});
+        await safeInvoke('run_git_command', { repoPath, args: ['add', file] }).catch(() => {});
       }
-      const msg = `fix: resolve ${fixResult.findings_fixed} code review finding${fixResult.findings_fixed !== 1 ? "s" : ""}`;
-      await safeInvoke("run_git_command", { repoPath, args: ["commit", "-m", msg] }).catch(() => {});
+      const msg = `fix: resolve ${fixResult.findings_fixed} code review finding${fixResult.findings_fixed !== 1 ? 's' : ''}`;
+      await safeInvoke('run_git_command', { repoPath, args: ['commit', '-m', msg] }).catch(
+        () => {}
+      );
       setFixResult(null);
       setFixCompletedAt(null);
       setError(null);
-    } catch (e) {
+    } catch (_e) {
       // Fallback: just tell the user to commit manually
-      setError(`Auto-commit not available. Run: cd ${repoPath} && git add -A && git commit -m "fix: resolve review findings"`);
+      setError(
+        `Auto-commit not available. Run: cd ${repoPath} && git add -A && git commit -m "fix: resolve review findings"`
+      );
     }
   }, [repoPath, fixResult]);
 
@@ -2877,11 +2882,11 @@ export default function QuickReview() {
     if (!repoPath || !isTauriAvailable()) return;
     try {
       // Try Cursor first, fall back to VS Code
-      const { invoke } = await import("@tauri-apps/api/core");
+      const { invoke } = await import('@tauri-apps/api/core');
       try {
-        await invoke("open_in_app", { appName: "cursor", path: repoPath });
+        await invoke('open_in_app', { appName: 'cursor', path: repoPath });
       } catch {
-        await invoke("open_in_app", { appName: "vscode", path: repoPath });
+        await invoke('open_in_app', { appName: 'vscode', path: repoPath });
       }
     } catch (e) {
       setError(`Could not open IDE: ${String(e)}`);
@@ -2891,14 +2896,14 @@ export default function QuickReview() {
   const handleCopyProof = useCallback(async () => {
     if (!result) return;
     const evidence = sortedFindings.map((finding, idx) => ({
-        ...defaultFindingEvidence,
-        ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-      }));
+      ...defaultFindingEvidence,
+      ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+    }));
     const activeFindingForProof =
       selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
     const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(
       result.review_memory_graph,
-      activeFindingForProof,
+      activeFindingForProof
     );
     const markdown = buildReviewerProofMarkdown({
       diffRange: result.diff_range,
@@ -2952,7 +2957,7 @@ export default function QuickReview() {
     };
     const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(
       result.review_memory_graph,
-      finding,
+      finding
     );
     const markdown = buildFindingHunkNoteMarkdown({
       diffRange: result.diff_range,
@@ -2970,13 +2975,7 @@ export default function QuickReview() {
     } catch {
       // clipboard unavailable — fail silently
     }
-  }, [
-    result,
-    selectedFindingIdx,
-    sortedFindings,
-    evidenceByFinding,
-    historyFindingSummaries,
-  ]);
+  }, [result, selectedFindingIdx, sortedFindings, evidenceByFinding, historyFindingSummaries]);
 
   const handleCopyFixPacket = useCallback(async () => {
     if (fixPacket.findings.length === 0) return;
@@ -3001,29 +3000,31 @@ export default function QuickReview() {
         const finding = sortedFindings[idx];
         return finding
           ? {
-            ...defaultFindingEvidence,
-            ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-          }
+              ...defaultFindingEvidence,
+              ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+            }
           : defaultFindingEvidence;
       });
       const browserEvidence = indexes.map((idx) => {
         const finding = sortedFindings[idx];
         return finding
           ? {
-            ...emptyBrowserEvidence(),
-            ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
-          }
+              ...emptyBrowserEvidence(),
+              ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
+            }
           : emptyBrowserEvidence();
       });
 
       const sourceLabel = [
         currentTaskContext.sourceLabel,
         `Timeline segment: ${item.label} (${item.status})`,
-      ].filter(Boolean).join(" · ");
+      ]
+        .filter(Boolean)
+        .join(' · ');
       const packet = buildAgentFixPacket({
         repoPath,
         diffRange: result?.diff_range || diffRange,
-        agent: result?.agent ?? "claude",
+        agent: result?.agent ?? 'claude',
         task: {
           ...currentTaskContext,
           sourceLabel,
@@ -3075,13 +3076,13 @@ export default function QuickReview() {
       result?.diff_range,
       sortedFindings,
       timelineSegmentFindingIndexes,
-    ],
+    ]
   );
 
   // Track which diff files are expanded
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
   const toggleFileExpanded = useCallback((path: string) => {
-    setExpandedFiles(prev => {
+    setExpandedFiles((prev) => {
       const next = new Set(prev);
       if (next.has(path)) next.delete(path);
       else next.add(path);
@@ -3091,10 +3092,7 @@ export default function QuickReview() {
 
   // Parse diff into files only when the fix diff changes, not on every render.
   const fixDiff = fixResult?.diff;
-  const diffFiles = useMemo(
-    () => (fixDiff ? parseDiffIntoFiles(fixDiff) : []),
-    [fixDiff],
-  );
+  const diffFiles = useMemo(() => (fixDiff ? parseDiffIntoFiles(fixDiff) : []), [fixDiff]);
 
   const hunkNavTargets = useMemo(
     () =>
@@ -3103,9 +3101,9 @@ export default function QuickReview() {
           key: `${file.path}:${hunkIndex}`,
           filePath: file.path,
           hunkIndex,
-        })),
+        }))
       ),
-    [diffFiles],
+    [diffFiles]
   );
   const [activeHunkNavIndex, setActiveHunkNavIndex] = useState(0);
   const hunkNavRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -3125,7 +3123,7 @@ export default function QuickReview() {
       return next;
     });
     const node = hunkNavRefs.current.get(target.key);
-    node?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    node?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [activeHunkNavIndex, fixResult, hunkNavTargets]);
 
   useEffect(() => {
@@ -3134,21 +3132,21 @@ export default function QuickReview() {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return false;
       const tag = target.tagName;
-      return tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
     }
     function onKeyDown(event: KeyboardEvent) {
       if (isInputFocused(event)) return;
-      if (event.key !== "[" && event.key !== "]") return;
+      if (event.key !== '[' && event.key !== ']') return;
       event.preventDefault();
       setActiveHunkNavIndex((prev) => {
-        if (event.key === "[") {
+        if (event.key === '[') {
           return Math.max(0, prev - 1);
         }
         return Math.min(hunkNavTargets.length - 1, prev + 1);
       });
     }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [fixResult, hunkNavTargets]);
 
   const handleReReview = useCallback(() => {
@@ -3157,8 +3155,8 @@ export default function QuickReview() {
     setSelectedFindings(new Set());
     setSelectedFindingIdx(null);
     setCodeLines([]);
-    setCodeFilePath("");
-    setCodeLanguage("");
+    setCodeFilePath('');
+    setCodeLanguage('');
     handleReview();
   }, [handleReview]);
 
@@ -3170,33 +3168,33 @@ export default function QuickReview() {
       const finding = sortedFindings[idx];
       if (!finding?.filePath || finding.line == null) {
         setCodeLines([]);
-        setCodeFilePath(finding?.filePath ?? "");
-        setCodeLanguage("");
+        setCodeFilePath(finding?.filePath ?? '');
+        setCodeLanguage('');
         return;
       }
       try {
         const res = await readFileAroundLine(
-          repoPath + "/" + finding.filePath,
+          `${repoPath}/${finding.filePath}`,
           finding.line,
           15,
-          15,
+          15
         );
         setCodeLines(res.lines);
         setCodeFilePath(res.file_path);
         setCodeLanguage(res.language);
       } catch (e) {
-        console.error("[Review] failed to load code:", e);
+        console.error('[Review] failed to load code:', e);
         setCodeLines([]);
         setCodeFilePath(finding.filePath);
-        setCodeLanguage("");
+        setCodeLanguage('');
       }
     },
-    [sortedFindings, repoPath],
+    [sortedFindings, repoPath]
   );
 
   useEffect(() => {
     if (
-      mode !== "view" ||
+      mode !== 'view' ||
       fixResult ||
       selectedFindingIdx !== null ||
       sortedFindings.length === 0
@@ -3214,54 +3212,48 @@ export default function QuickReview() {
       setSelectedFindingIdx(null);
       if (!repoPath) return;
       try {
-        const res = await readFileAroundLine(
-          repoPath + "/" + file,
-          line,
-          15,
-          15,
-        );
+        const res = await readFileAroundLine(`${repoPath}/${file}`, line, 15, 15);
         setCodeLines(res.lines);
         setCodeFilePath(res.file_path);
         setCodeLanguage(res.language);
       } catch (e) {
-        console.error("[Review] failed to load caller code:", e);
+        console.error('[Review] failed to load caller code:', e);
         setCodeLines([]);
         setCodeFilePath(file);
-        setCodeLanguage("");
+        setCodeLanguage('');
       }
     },
-    [repoPath],
+    [repoPath]
   );
 
   const handleTimelineJump = useCallback(
     async (jump: VerificationTimelineJumpTarget) => {
-      if (jump.kind === "finding") {
+      if (jump.kind === 'finding') {
         if (jump.findingIndex == null) return;
         await handleFindingClick(jump.findingIndex);
         return;
       }
 
-      if (jump.kind === "file") {
+      if (jump.kind === 'file') {
         if (!jump.path) return;
         setSelectedFindingIdx(null);
-        const targetPath = jump.path.startsWith("/") || !repoPath
-          ? jump.path
-          : `${repoPath}/${jump.path}`;
+        const targetPath =
+          jump.path.startsWith('/') || !repoPath ? jump.path : `${repoPath}/${jump.path}`;
         try {
           const res = await readFileAroundLine(targetPath, Math.max(1, jump.line ?? 1), 15, 15);
           setCodeLines(res.lines);
           setCodeFilePath(res.file_path);
           setCodeLanguage(res.language);
         } catch (e) {
-          console.error("[Review] failed to load timeline file:", e);
+          console.error('[Review] failed to load timeline file:', e);
           setCodeLines([]);
           setCodeFilePath(jump.path);
-          setCodeLanguage("");
+          setCodeLanguage('');
         }
         return;
       }
 
-      if (jump.kind === "artifact") {
+      if (jump.kind === 'artifact') {
         if (!jump.path) return;
         if (canPreviewQaArtifact(jump.path)) {
           await handlePreviewQaArtifact(jump.path);
@@ -3271,10 +3263,10 @@ export default function QuickReview() {
         return;
       }
 
-      if (jump.kind === "command_source") {
+      if (jump.kind === 'command_source') {
         if (!jump.path) return;
         if (!isTauriAvailable()) {
-          setError("Previewing command sources requires the CodeVetter desktop app (Tauri).");
+          setError('Previewing command sources requires the CodeVetter desktop app (Tauri).');
           return;
         }
         const key = `timeline:${jump.path}:${jump.line ?? 1}`;
@@ -3282,13 +3274,13 @@ export default function QuickReview() {
         setCommandSourcePreviewLoading(key);
         setError(null);
         try {
-          if (jump.source === "raw_session") {
+          if (jump.source === 'raw_session') {
             const preview = await readRawSessionContext(jump.path, line, 8, 12);
             setCommandSourcePreview({
               key,
               path: preview.file_path,
               line: preview.target_line,
-              language: "transcript",
+              language: 'transcript',
               items: preview.items,
             });
           } else {
@@ -3309,42 +3301,36 @@ export default function QuickReview() {
         }
       }
     },
-    [
-      handleFindingClick,
-      handleOpenQaArtifact,
-      handlePreviewQaArtifact,
-      repoPath,
-    ],
+    [handleFindingClick, handleOpenQaArtifact, handlePreviewQaArtifact, repoPath]
   );
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
   // ─── View mode layout ────────────────────────────────────────────────────
 
-  if (mode === "view" && result) {
-    const activeFinding =
-      selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
-    const activeCodePath = codeFilePath || activeFinding?.filePath || "";
+  if (mode === 'view' && result) {
+    const activeFinding = selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
+    const activeCodePath = codeFilePath || activeFinding?.filePath || '';
     const activeEvidence =
       activeFinding && selectedFindingIdx !== null
         ? {
-          ...defaultFindingEvidence,
-          ...evidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
-        }
+            ...defaultFindingEvidence,
+            ...evidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
+          }
         : defaultFindingEvidence;
     const activeBrowserEvidence =
       activeFinding && selectedFindingIdx !== null
         ? {
-          ...emptyBrowserEvidence(),
-          ...browserEvidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
-        }
+            ...emptyBrowserEvidence(),
+            ...browserEvidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
+          }
         : emptyBrowserEvidence();
     const evidenceCandidates = result.evidence_candidates ?? [];
     const evidenceProcedureSteps = result.evidence_procedure_steps ?? [];
     const reviewMemoryGraph = result.review_memory_graph;
     const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(
       reviewMemoryGraph,
-      activeFinding,
+      activeFinding
     );
     const procedureEventsByStep = procedureExecutionEvents.reduce<
       Record<string, ProcedureExecutionEvent[]>
@@ -3370,12 +3356,12 @@ export default function QuickReview() {
           <div className="min-w-0 flex-1">
             <div className="cv-label truncate text-slate-300">
               review result · {result.agent}
-              {result.risk_tier ? ` · ${result.risk_tier}` : ""}
+              {result.risk_tier ? ` · ${result.risk_tier}` : ''}
             </div>
             <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
               {result.review_mode
-                ? `${result.review_mode} · ${result.diff_range || diffRange || "local diff"}`
-                : result.diff_range || diffRange || "local diff"}
+                ? `${result.review_mode} · ${result.diff_range || diffRange || 'local diff'}`
+                : result.diff_range || diffRange || 'local diff'}
             </div>
           </div>
           <ScoreBadge score={Math.round(result.score)} size="sm" />
@@ -3389,2030 +3375,2052 @@ export default function QuickReview() {
 
         {/* Error banner */}
         {error && (
-          <div className="shrink-0 bg-red-500/10 px-4 py-2 text-xs text-red-400">
-            {error}
-          </div>
+          <div className="shrink-0 bg-red-500/10 px-4 py-2 text-xs text-red-400">{error}</div>
         )}
 
         {/* Editor + verdict body */}
-        <PanelGroup orientation="horizontal" className="min-h-0 flex-1 cv-frame overflow-hidden bg-[#07080a]">
+        <PanelGroup
+          orientation="horizontal"
+          className="min-h-0 flex-1 cv-frame overflow-hidden bg-[#07080a]"
+        >
           <Panel defaultSize={72} minSize={45}>
-          <div className="cv-scan flex h-full flex-col bg-[#050505]">
-            {/* Fix results view */}
-            {fixResult ? (
-              <div className="flex h-full flex-col">
-                {/* File-grouped diff */}
-                <div className="flex-1 overflow-y-auto">
-                  {diffFiles.length > 0 ? (
-                    <div className="divide-y divide-[#1a1a1a]">
-                      {diffFiles.map((file) => (
-                        <div key={file.path}>
-                          {/* File header */}
-                          <div
-                            className="sticky top-0 z-10 flex cursor-pointer items-center gap-2 border-b border-[var(--cv-line)] bg-[#07080a] px-4 py-2 hover:bg-white/[0.035]"
-                            onClick={() => toggleFileExpanded(file.path)}
-                          >
-                            {expandedFiles.has(file.path) || expandedFiles.size === 0 ? (
-                              <ChevronDown size={14} className="text-slate-500" />
-                            ) : (
-                              <ChevronRight size={14} className="text-slate-500" />
-                            )}
-                            <FileCode size={14} className="text-slate-500" />
-                            <span className="flex-1 font-mono text-[12px] text-slate-300">{file.path}</span>
-                            <span className="text-[11px] text-emerald-400">+{file.additions}</span>
-                            <span className="text-[11px] text-red-400">-{file.deletions}</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={(e) => { e.stopPropagation(); handleRevertFile(file.path); }}
-                              className="h-6 gap-1 px-2 text-[10px] text-slate-600 hover:text-red-400 hover:bg-red-500/10"
+            <div className="cv-scan flex h-full flex-col bg-[#050505]">
+              {/* Fix results view */}
+              {fixResult ? (
+                <div className="flex h-full flex-col">
+                  {/* File-grouped diff */}
+                  <div className="flex-1 overflow-y-auto">
+                    {diffFiles.length > 0 ? (
+                      <div className="divide-y divide-[#1a1a1a]">
+                        {diffFiles.map((file) => (
+                          <div key={file.path}>
+                            {/* File header */}
+                            <div
+                              className="sticky top-0 z-10 flex cursor-pointer items-center gap-2 border-b border-[var(--cv-line)] bg-[#07080a] px-4 py-2 hover:bg-white/[0.035]"
+                              onClick={() => toggleFileExpanded(file.path)}
                             >
-                              <Undo2 size={10} />
-                              Revert
-                            </Button>
-                          </div>
-                          {/* Hunks (expanded by default, collapsible) */}
-                          {(expandedFiles.has(file.path) || expandedFiles.size === 0) && (
-                            <div>
-                              {file.hunks.map((hunk, hi) => (
-                                <div
-                                  key={hi}
-                                  ref={(node) => {
-                                    const key = `${file.path}:${hi}`;
-                                    if (node) hunkNavRefs.current.set(key, node);
-                                    else hunkNavRefs.current.delete(key);
-                                  }}
-                                  className={cn(
-                                    hunkNavTargets[activeHunkNavIndex]?.key === `${file.path}:${hi}` &&
-                                      "ring-1 ring-cyan-500/40",
-                                  )}
-                                >
-                                  {hunk.lines.map((line, li) => {
-                                    const isHunkHeader = line.startsWith("@@");
-                                    return (
-                                      <div
-                                        key={`${hi}-${li}`}
-                                        className={cn(
-                                          "font-mono text-[12px] leading-[22px] pl-4 pr-4",
-                                          line.startsWith("+") && !line.startsWith("+++") && "bg-emerald-500/[0.07] text-emerald-400 border-l-2 border-emerald-500/30",
-                                          line.startsWith("-") && !line.startsWith("---") && "bg-red-500/[0.07] text-red-400 border-l-2 border-red-500/30",
-                                          isHunkHeader && "flex items-center gap-2 bg-[#0a0a0a] py-1 text-[11px] text-cyan-500/50 border-l-2 border-cyan-500/20",
-                                          !line.startsWith("+") && !line.startsWith("-") && !isHunkHeader && "text-slate-500 border-l-2 border-transparent",
-                                        )}
-                                      >
-                                        <span className="min-w-0 flex-1 truncate">{line}</span>
-                                        {isHunkHeader && (
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => handleRevertHunk(file.path, hunk.text)}
-                                            className="h-5 shrink-0 gap-1 px-1.5 text-[10px] text-slate-600 hover:bg-red-500/10 hover:text-red-400"
-                                          >
-                                            <Undo2 size={10} />
-                                            Revert hunk
-                                          </Button>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              ))}
+                              {expandedFiles.has(file.path) || expandedFiles.size === 0 ? (
+                                <ChevronDown size={14} className="text-slate-500" />
+                              ) : (
+                                <ChevronRight size={14} className="text-slate-500" />
+                              )}
+                              <FileCode size={14} className="text-slate-500" />
+                              <span className="flex-1 font-mono text-[12px] text-slate-300">
+                                {file.path}
+                              </span>
+                              <span className="text-[11px] text-emerald-400">
+                                +{file.additions}
+                              </span>
+                              <span className="text-[11px] text-red-400">-{file.deletions}</span>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRevertFile(file.path);
+                                }}
+                                className="h-6 gap-1 px-2 text-[10px] text-slate-600 hover:text-red-400 hover:bg-red-500/10"
+                              >
+                                <Undo2 size={10} />
+                                Revert
+                              </Button>
                             </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-4">
-                      <div className="mb-2 text-xs font-medium text-yellow-400">No file changes detected — agent output:</div>
-                      <pre className="whitespace-pre-wrap font-mono text-[12px] leading-5 text-slate-400">
-                        {fixResult.agent_output || "No output captured"}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-                {/* Bottom action bar */}
-                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={14} className="text-emerald-400" />
-                    <span className="text-[11px] text-slate-400">
-                      {diffFiles.length} file{diffFiles.length !== 1 ? "s" : ""} changed in {formatDuration(fixResult.duration_ms)}
-                    </span>
-                    <div className="ml-auto flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleReReview}
-                        disabled={isReviewing || !repoPath || !diffRange}
-                        className="gap-1 text-[11px] text-[var(--cv-accent)] hover:bg-cyan-500/10 hover:text-cyan-200 disabled:opacity-50"
-                      >
-                        {isReviewing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-                        Re-review
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleMergeFix}
-                        className="gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
-                      >
-                        <GitMerge size={12} />
-                        Merge
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleDiscardFix}
-                        className="gap-1 text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      >
-                        <Trash2 size={12} />
-                        Discard
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleOpenInIDE}
-                        className="gap-1 text-[11px] text-slate-400 hover:text-slate-200"
-                      >
-                        <ExternalLink size={12} />
-                        Open in IDE
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : isFixing ? (
-              <div className="flex h-full flex-col bg-[#050505]">
-                <div className="flex shrink-0 items-center gap-2 border-b border-[var(--cv-line)] px-4 py-2">
-                  <Loader2 size={14} className="animate-spin text-[var(--cv-accent)]" />
-                  <span className="text-xs font-medium text-[var(--cv-accent)]">Fixing with Claude...</span>
-                </div>
-                <div ref={fixLogRef} className="flex-1 overflow-y-auto p-4">
-                  {fixProgress.length > 0 ? (
-                    fixProgress.map((line, i) => (
-                      <div key={i} className="font-mono text-[11px] leading-5 text-slate-500">
-                        {line}
+                            {/* Hunks (expanded by default, collapsible) */}
+                            {(expandedFiles.has(file.path) || expandedFiles.size === 0) && (
+                              <div>
+                                {file.hunks.map((hunk, hi) => (
+                                  <div
+                                    key={hi}
+                                    ref={(node) => {
+                                      const key = `${file.path}:${hi}`;
+                                      if (node) hunkNavRefs.current.set(key, node);
+                                      else hunkNavRefs.current.delete(key);
+                                    }}
+                                    className={cn(
+                                      hunkNavTargets[activeHunkNavIndex]?.key ===
+                                        `${file.path}:${hi}` && 'ring-1 ring-cyan-500/40'
+                                    )}
+                                  >
+                                    {hunk.lines.map((line, li) => {
+                                      const isHunkHeader = line.startsWith('@@');
+                                      return (
+                                        <div
+                                          key={`${hi}-${li}`}
+                                          className={cn(
+                                            'font-mono text-[12px] leading-[22px] pl-4 pr-4',
+                                            line.startsWith('+') &&
+                                              !line.startsWith('+++') &&
+                                              'bg-emerald-500/[0.07] text-emerald-400 border-l-2 border-emerald-500/30',
+                                            line.startsWith('-') &&
+                                              !line.startsWith('---') &&
+                                              'bg-red-500/[0.07] text-red-400 border-l-2 border-red-500/30',
+                                            isHunkHeader &&
+                                              'flex items-center gap-2 bg-[#0a0a0a] py-1 text-[11px] text-cyan-500/50 border-l-2 border-cyan-500/20',
+                                            !line.startsWith('+') &&
+                                              !line.startsWith('-') &&
+                                              !isHunkHeader &&
+                                              'text-slate-500 border-l-2 border-transparent'
+                                          )}
+                                        >
+                                          <span className="min-w-0 flex-1 truncate">{line}</span>
+                                          {isHunkHeader && (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={() => handleRevertHunk(file.path, hunk.text)}
+                                              className="h-5 shrink-0 gap-1 px-1.5 text-[10px] text-slate-600 hover:bg-red-500/10 hover:text-red-400"
+                                            >
+                                              <Undo2 size={10} />
+                                              Revert hunk
+                                            </Button>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))
-                  ) : (
-                    <div className="flex items-center gap-2 text-slate-600 text-sm">
-                      <Loader2 size={16} className="animate-spin" />
-                      Waiting for output...
+                    ) : (
+                      <div className="p-4">
+                        <div className="mb-2 text-xs font-medium text-yellow-400">
+                          No file changes detected — agent output:
+                        </div>
+                        <pre className="whitespace-pre-wrap font-mono text-[12px] leading-5 text-slate-400">
+                          {fixResult.agent_output || 'No output captured'}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                  {/* Bottom action bar */}
+                  <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle size={14} className="text-emerald-400" />
+                      <span className="text-[11px] text-slate-400">
+                        {diffFiles.length} file{diffFiles.length !== 1 ? 's' : ''} changed in{' '}
+                        {formatDuration(fixResult.duration_ms)}
+                      </span>
+                      <div className="ml-auto flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleReReview}
+                          disabled={isReviewing || !repoPath || !diffRange}
+                          className="gap-1 text-[11px] text-[var(--cv-accent)] hover:bg-cyan-500/10 hover:text-cyan-200 disabled:opacity-50"
+                        >
+                          {isReviewing ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <RefreshCw size={12} />
+                          )}
+                          Re-review
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleMergeFix}
+                          className="gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                        >
+                          <GitMerge size={12} />
+                          Merge
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleDiscardFix}
+                          className="gap-1 text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        >
+                          <Trash2 size={12} />
+                          Discard
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleOpenInIDE}
+                          className="gap-1 text-[11px] text-slate-400 hover:text-slate-200"
+                        >
+                          <ExternalLink size={12} />
+                          Open in IDE
+                        </Button>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            ) : selectedFindingIdx !== null && activeFinding ? (
-              <>
-                {/* File path header + finding context */}
-                <div className="cv-terminal-bar h-11 shrink-0 px-4">
-                  <span className="cv-dot" />
-                  <span className="cv-dot" />
-                  <span className="cv-dot" />
-                  <span className="cv-label mx-auto">
-                    {activeCodePath || "source unavailable"}
-                  </span>
-                  {codeLanguage && <span className="cv-label">{codeLanguage}</span>}
-                </div>
-                <div className="shrink-0 border-b border-[var(--cv-line)] px-6 py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="cv-label mb-2">selected finding</div>
-                      <h2 className="truncate text-sm font-semibold text-slate-100">
-                        {activeFinding.title}
-                      </h2>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase",
-                        severityColor(activeFinding.severity),
-                      )}
-                    >
-                      {severityIcon(activeFinding.severity)}
-                      <span className="ml-1">{activeFinding.severity}</span>
-                    </Badge>
                   </div>
                 </div>
-                {/* Code lines */}
-                <div className="flex-1 overflow-y-auto bg-[#030405] px-6 py-5 font-mono text-[13px] leading-7">
-                  {codeLines.length > 0 ? (
-                    <div className="grid grid-cols-[42px_1fr] gap-x-4">
-                      {codeLines.map((cl) => (
-                        <div key={cl.line} className="contents">
-                          <span
-                            className={cn(
-                              "select-none text-right tabular-nums",
-                              cl.highlight ? "text-[var(--cv-danger)]/80" : "text-slate-700",
-                            )}
-                          >
-                            {cl.line}
-                          </span>
-                          <pre
-                            className={cn(
-                              "min-w-0 whitespace-pre border-l-2 px-3",
-                              cl.highlight
-                                ? "border-[var(--cv-danger)] bg-red-500/10 text-slate-100"
-                                : "border-transparent text-slate-300 hover:bg-white/[0.025]",
-                            )}
-                          >
-                            {renderCodeLine(cl.text, codeLanguage)}
-                          </pre>
+              ) : isFixing ? (
+                <div className="flex h-full flex-col bg-[#050505]">
+                  <div className="flex shrink-0 items-center gap-2 border-b border-[var(--cv-line)] px-4 py-2">
+                    <Loader2 size={14} className="animate-spin text-[var(--cv-accent)]" />
+                    <span className="text-xs font-medium text-[var(--cv-accent)]">
+                      Fixing with Claude...
+                    </span>
+                  </div>
+                  <div ref={fixLogRef} className="flex-1 overflow-y-auto p-4">
+                    {fixProgress.length > 0 ? (
+                      fixProgress.map((line, i) => (
+                        <div key={i} className="font-mono text-[11px] leading-5 text-slate-500">
+                          {line}
                         </div>
-                      ))}
+                      ))
+                    ) : (
+                      <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        <Loader2 size={16} className="animate-spin" />
+                        Waiting for output...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : selectedFindingIdx !== null && activeFinding ? (
+                <>
+                  {/* File path header + finding context */}
+                  <div className="cv-terminal-bar h-11 shrink-0 px-4">
+                    <span className="cv-dot" />
+                    <span className="cv-dot" />
+                    <span className="cv-dot" />
+                    <span className="cv-label mx-auto">
+                      {activeCodePath || 'source unavailable'}
+                    </span>
+                    {codeLanguage && <span className="cv-label">{codeLanguage}</span>}
+                  </div>
+                  <div className="shrink-0 border-b border-[var(--cv-line)] px-6 py-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="cv-label mb-2">selected finding</div>
+                        <h2 className="truncate text-sm font-semibold text-slate-100">
+                          {activeFinding.title}
+                        </h2>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
+                          severityColor(activeFinding.severity)
+                        )}
+                      >
+                        {severityIcon(activeFinding.severity)}
+                        <span className="ml-1">{activeFinding.severity}</span>
+                      </Badge>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-[42px_1fr] gap-x-4">
-                      <span className="text-right text-slate-700">
-                        {activeFinding.line ?? 1}
-                      </span>
-                      <span className="-mx-3 border-l-2 border-[var(--cv-danger)] bg-red-500/10 px-3 text-slate-500">
-                        No source snapshot is available for this finding.
-                      </span>
-                    </div>
-                  )}
+                  </div>
+                  {/* Code lines */}
+                  <div className="flex-1 overflow-y-auto bg-[#030405] px-6 py-5 font-mono text-[13px] leading-7">
+                    {codeLines.length > 0 ? (
+                      <div className="grid grid-cols-[42px_1fr] gap-x-4">
+                        {codeLines.map((cl) => (
+                          <div key={cl.line} className="contents">
+                            <span
+                              className={cn(
+                                'select-none text-right tabular-nums',
+                                cl.highlight ? 'text-[var(--cv-danger)]/80' : 'text-slate-700'
+                              )}
+                            >
+                              {cl.line}
+                            </span>
+                            <pre
+                              className={cn(
+                                'min-w-0 whitespace-pre border-l-2 px-3',
+                                cl.highlight
+                                  ? 'border-[var(--cv-danger)] bg-red-500/10 text-slate-100'
+                                  : 'border-transparent text-slate-300 hover:bg-white/[0.025]'
+                              )}
+                            >
+                              {renderCodeLine(cl.text, codeLanguage)}
+                            </pre>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-[42px_1fr] gap-x-4">
+                        <span className="text-right text-slate-700">{activeFinding.line ?? 1}</span>
+                        <span className="-mx-3 border-l-2 border-[var(--cv-danger)] bg-red-500/10 px-3 text-slate-500">
+                          No source snapshot is available for this finding.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex h-full flex-col">
+                  <div className="cv-terminal-bar h-11 px-4">
+                    <span className="cv-dot" />
+                    <span className="cv-dot" />
+                    <span className="cv-dot" />
+                    <span className="cv-label mx-auto">review result · select a comment</span>
+                    <span className="cv-label">⌘ K</span>
+                  </div>
+                  <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-[#030405] text-slate-600">
+                    <Zap size={24} className="text-slate-700" />
+                    <span className="text-sm">Select a review comment to inspect source</span>
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex h-full flex-col">
-                <div className="cv-terminal-bar h-11 px-4">
-                  <span className="cv-dot" />
-                  <span className="cv-dot" />
-                  <span className="cv-dot" />
-                  <span className="cv-label mx-auto">review result · select a comment</span>
-                  <span className="cv-label">⌘ K</span>
-                </div>
-                <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-[#030405] text-slate-600">
-                  <Zap size={24} className="text-slate-700" />
-                  <span className="text-sm">Select a review comment to inspect source</span>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           </Panel>
 
           <PanelResizeHandle className="w-1.5 cursor-col-resize bg-[var(--cv-line)] transition-colors hover:bg-cyan-500/30" />
 
           <Panel defaultSize={28} minSize={22}>
-          <aside className="flex h-full flex-col bg-white/[0.015]">
-            <div className="shrink-0 border-b border-[var(--cv-line)] p-6">
-              <div className="cv-label mb-5">Verdict</div>
-              {activeFinding ? (
-                <>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase",
-                      severityColor(activeFinding.severity),
-                    )}
-                  >
-                    {severityIcon(activeFinding.severity)}
-                    <span className="ml-1">{activeFinding.severity}</span>
-                  </Badge>
-                  <h2 className="mt-5 text-lg font-semibold leading-6 text-white">
-                    {activeFinding.title}
-                  </h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-400">
-                    {activeFinding.summary}
-                  </p>
-                  {activeFinding.filePath && (
-                    <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate-600">
-                      {activeFinding.filePath}
-                      {activeFinding.line != null && `:${activeFinding.line}`}
-                    </div>
-                  )}
-                  {activeFinding.suggestion && (
-                    <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
-                      <div className="cv-label mb-3">Suggested action</div>
-                      <p className="font-mono text-[12px] leading-6 text-slate-300">
-                        {activeFinding.suggestion}
-                      </p>
-                    </div>
-                  )}
-                  <div
-                    className="mt-6 border-t border-[var(--cv-line)] pt-5"
-                    data-testid="trex-sandbox-panel"
-                  >
-                    <SandboxRunner
-                      repoPath={repoPath}
-                      branch={selectedBranch || ""}
-                      baseBranch={baseBranch || null}
-                      reviewId={reviewId || null}
-                      onComplete={() => {
-                        // Refresh findings so the via-execution rows attach
-                        // to the existing list; QuickReview's history list
-                        // re-fetches when reviewId changes — bumping it is
-                        // enough here.
-                      }}
-                    />
-                  </div>
-                  <div
-                    className="mt-6 border-t border-[var(--cv-line)] pt-5"
-                    data-testid="synthetic-qa-panel"
-                  >
-                    <div className="mb-3 flex items-center gap-2">
-                      <MonitorPlay size={14} className="text-[var(--cv-accent)]" />
-                      <div className="cv-label text-slate-300">Synthetic user QA</div>
-                    </div>
-                    <p className="mb-3 text-[10px] leading-4 text-slate-500">
-                      Run a browser loop against a local dev server and attach pass/fail
-                      evidence to the selected finding.
-                    </p>
-                    <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-600">
-                      {qaWorkflowScopeLabel}
-                    </div>
-                    <label className="block space-y-1">
-                      <span className="cv-label">Workflow</span>
-                      <select
-                        value={qaActiveWorkflowId}
-                        onChange={(event) => handleSelectQaWorkflow(event.target.value)}
-                        className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                      >
-                        <option value="">Unsaved workflow</option>
-                        {qaWorkflows.map((workflow) => (
-                          <option key={workflow.id} value={workflow.id}>
-                            {workflow.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <div className="mt-2 flex items-end gap-2">
-                      <label className="min-w-0 flex-1 space-y-1">
-                        <span className="cv-label">Name</span>
-                        <input
-                          value={qaWorkflowName}
-                          onChange={(event) => setQaWorkflowName(event.target.value)}
-                          placeholder="Review shell"
-                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                        />
-                      </label>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 shrink-0 px-2 text-[10px]"
-                        onClick={handleSaveQaWorkflow}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 shrink-0 px-0 text-slate-600 hover:bg-red-500/10 hover:text-red-400"
-                        disabled={!qaActiveWorkflowId}
-                        onClick={handleDeleteQaWorkflow}
-                        title="Delete workflow"
-                      >
-                        <Trash2 size={13} />
-                      </Button>
-                    </div>
-                    <label className="mt-2 block space-y-1">
-                      <span className="cv-label">Target</span>
-                      <select
-                        value={qaActiveTargetId}
-                        onChange={(event) => handleSelectQaTarget(event.target.value)}
-                        className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                      >
-                        <option value="">Unsaved target</option>
-                        {qaTargets.map((target) => (
-                          <option key={target.id} value={target.id}>
-                            {target.name} · {target.route}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="block space-y-1">
-                      <span className="cv-label">Base URL</span>
-                      <input
-                        value={qaBaseUrl}
-                        onChange={(event) => setQaBaseUrl(event.target.value)}
-                        placeholder="http://localhost:1420"
-                        className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                      />
-                    </label>
-                    <label className="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
-                      <input
-                        type="checkbox"
-                        checked={qaAllowRemoteTarget}
-                        onChange={(event) => setQaAllowRemoteTarget(event.target.checked)}
-                        className="h-3 w-3 accent-[var(--cv-accent)]"
-                      />
-                      <span>Allow remote target</span>
-                      {!isLoopbackQaBaseUrl(qaBaseUrl) && !qaAllowRemoteTarget && (
-                        <span className="text-yellow-400">Remote URL blocked</span>
+            <aside className="flex h-full flex-col bg-white/[0.015]">
+              <div className="shrink-0 border-b border-[var(--cv-line)] p-6">
+                <div className="cv-label mb-5">Verdict</div>
+                {activeFinding ? (
+                  <>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
+                        severityColor(activeFinding.severity)
                       )}
-                    </label>
-                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                      <label className="space-y-1">
-                        <span className="cv-label">Target name</span>
-                        <input
-                          value={qaTargetName}
-                          onChange={(event) => setQaTargetName(event.target.value)}
-                          placeholder="Checkout happy path"
-                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                        />
-                      </label>
-                      <label className="space-y-1">
-                        <span className="cv-label">Route</span>
-                        <input
-                          value={qaTargetRoute}
-                          onChange={(event) => setQaTargetRoute(event.target.value)}
-                          placeholder="/review"
-                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                        />
-                      </label>
-                    </div>
-                    <label className="mt-2 block space-y-1">
-                      <span className="cv-label">Auth</span>
-                      <select
-                        value={qaAuthMode}
-                        onChange={(event) => setQaAuthMode(event.target.value as QaAuthMode)}
-                        className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                      >
-                        <option value="none">No auth</option>
-                        <option value="storage_state">Playwright storage state</option>
-                      </select>
-                    </label>
-                    {qaAuthMode === "storage_state" && (
-                      <label className="mt-2 block space-y-1">
-                        <span className="cv-label">Storage state</span>
-                        <input
-                          value={qaStorageStatePath}
-                          onChange={(event) => setQaStorageStatePath(event.target.value)}
-                          placeholder="/path/to/storage-state.json"
-                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                        />
-                      </label>
-                    )}
-                    <label className="mt-2 block space-y-1">
-                      <span className="cv-label">Loop</span>
-                      <select
-                        value={qaLoopId}
-                        onChange={(event) => {
-                          const nextLoop = SYNTHETIC_QA_LOOPS.find(
-                            (loop) => loop.id === event.target.value,
-                          );
-                          setQaLoopId(event.target.value);
-                          if (nextLoop) {
-                            setQaGoal(nextLoop.goal);
-                            setQaTargetRoute(nextLoop.route);
-                            setQaTargetName(nextLoop.label);
-                          }
-                        }}
-                        className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                      >
-                        {SYNTHETIC_QA_LOOPS.map((loop) => (
-                          <option key={loop.id} value={loop.id}>
-                            {loop.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="mt-2 block space-y-1">
-                      <span className="cv-label">Runner</span>
-                      <select
-                        value={qaRunnerType}
-                        onChange={(event) =>
-                          setQaRunnerType(
-                            event.target.value as QaRunnerType,
-                          )
-                        }
-                        className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                      >
-                        <option value="playwright_builtin">Built-in Playwright</option>
-                        <option value="repo_playwright">Repo Playwright spec</option>
-                        <option value="external_skill">External skill</option>
-                      </select>
-                    </label>
-                    {qaRunnerType === "repo_playwright" && (
-                      <div className="mt-2 space-y-2">
-                        <div className="flex items-end gap-2">
-                          <label className="min-w-0 flex-1 space-y-1">
-                            <span className="cv-label">Spec</span>
-                            <input
-                              value={qaRepoSpecPath}
-                              onChange={(event) => setQaRepoSpecPath(event.target.value)}
-                              placeholder="tests/review.spec.ts"
-                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                            />
-                          </label>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 shrink-0 px-2 text-[10px]"
-                            disabled={qaSpecLoading || !repoPath}
-                            onClick={() => void handleDiscoverQaSpecs()}
-                          >
-                            {qaSpecLoading ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                              <RefreshCw size={12} />
-                            )}
-                            Find
-                          </Button>
-                        </div>
-                        {qaSpecCandidates.length > 0 && (
-                          <select
-                            value={qaRepoSpecPath}
-                            onChange={(event) => setQaRepoSpecPath(event.target.value)}
-                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-[11px] text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                          >
-                            {qaSpecCandidates.map((spec) => (
-                              <option key={spec.path} value={spec.path}>
-                                {spec.path} · {spec.reason}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        <label className="block space-y-1">
-                          <span className="cv-label">Trace</span>
-                          <select
-                            value={qaRepoTraceMode}
-                            onChange={(event) =>
-                              setQaRepoTraceMode(event.target.value as QaRepoTraceMode)
-                            }
-                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                          >
-                            <option value="retain-on-failure">Retain on failure</option>
-                            <option value="on">Always capture</option>
-                            <option value="off">Off</option>
-                          </select>
-                        </label>
-                        {qaSpecError && (
-                          <p className="text-[10px] text-yellow-400">{qaSpecError}</p>
-                        )}
+                    >
+                      {severityIcon(activeFinding.severity)}
+                      <span className="ml-1">{activeFinding.severity}</span>
+                    </Badge>
+                    <h2 className="mt-5 text-lg font-semibold leading-6 text-white">
+                      {activeFinding.title}
+                    </h2>
+                    <p className="mt-3 text-sm leading-6 text-slate-400">{activeFinding.summary}</p>
+                    {activeFinding.filePath && (
+                      <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate-600">
+                        {activeFinding.filePath}
+                        {activeFinding.line != null && `:${activeFinding.line}`}
                       </div>
                     )}
-                    {qaRunnerType === "external_skill" && (
+                    {activeFinding.suggestion && (
+                      <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
+                        <div className="cv-label mb-3">Suggested action</div>
+                        <p className="font-mono text-[12px] leading-6 text-slate-300">
+                          {activeFinding.suggestion}
+                        </p>
+                      </div>
+                    )}
+                    <div
+                      className="mt-6 border-t border-[var(--cv-line)] pt-5"
+                      data-testid="trex-sandbox-panel"
+                    >
+                      <SandboxRunner
+                        repoPath={repoPath}
+                        branch={selectedBranch || ''}
+                        baseBranch={baseBranch || null}
+                        reviewId={reviewId || null}
+                        onComplete={() => {
+                          // Refresh findings so the via-execution rows attach
+                          // to the existing list; QuickReview's history list
+                          // re-fetches when reviewId changes — bumping it is
+                          // enough here.
+                        }}
+                      />
+                    </div>
+                    <div
+                      className="mt-6 border-t border-[var(--cv-line)] pt-5"
+                      data-testid="synthetic-qa-panel"
+                    >
+                      <div className="mb-3 flex items-center gap-2">
+                        <MonitorPlay size={14} className="text-[var(--cv-accent)]" />
+                        <div className="cv-label text-slate-300">Synthetic user QA</div>
+                      </div>
+                      <p className="mb-3 text-[10px] leading-4 text-slate-500">
+                        Run a browser loop against a local dev server and attach pass/fail evidence
+                        to the selected finding.
+                      </p>
+                      <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-600">
+                        {qaWorkflowScopeLabel}
+                      </div>
+                      <label className="block space-y-1">
+                        <span className="cv-label">Workflow</span>
+                        <select
+                          value={qaActiveWorkflowId}
+                          onChange={(event) => handleSelectQaWorkflow(event.target.value)}
+                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                        >
+                          <option value="">Unsaved workflow</option>
+                          {qaWorkflows.map((workflow) => (
+                            <option key={workflow.id} value={workflow.id}>
+                              {workflow.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <div className="mt-2 flex items-end gap-2">
+                        <label className="min-w-0 flex-1 space-y-1">
+                          <span className="cv-label">Name</span>
+                          <input
+                            value={qaWorkflowName}
+                            onChange={(event) => setQaWorkflowName(event.target.value)}
+                            placeholder="Review shell"
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
+                        </label>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 shrink-0 px-2 text-[10px]"
+                          onClick={handleSaveQaWorkflow}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 shrink-0 px-0 text-slate-600 hover:bg-red-500/10 hover:text-red-400"
+                          disabled={!qaActiveWorkflowId}
+                          onClick={handleDeleteQaWorkflow}
+                          title="Delete workflow"
+                        >
+                          <Trash2 size={13} />
+                        </Button>
+                      </div>
                       <label className="mt-2 block space-y-1">
-                        <span className="cv-label">Command</span>
+                        <span className="cv-label">Target</span>
+                        <select
+                          value={qaActiveTargetId}
+                          onChange={(event) => handleSelectQaTarget(event.target.value)}
+                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                        >
+                          <option value="">Unsaved target</option>
+                          {qaTargets.map((target) => (
+                            <option key={target.id} value={target.id}>
+                              {target.name} · {target.route}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="block space-y-1">
+                        <span className="cv-label">Base URL</span>
                         <input
-                          value={qaExternalCommand}
-                          onChange={(event) => setQaExternalCommand(event.target.value)}
-                          placeholder="claude-synthetic-qa"
+                          value={qaBaseUrl}
+                          onChange={(event) => setQaBaseUrl(event.target.value)}
+                          placeholder="http://localhost:1420"
                           className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
                         />
                       </label>
-                    )}
-                    <label className="mt-2 block space-y-1">
-                      <span className="cv-label">Goal</span>
-                      <textarea
-                        value={qaGoal}
-                        onChange={(event) => setQaGoal(event.target.value)}
-                        rows={3}
-                        className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                      />
-                    </label>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-[10px]"
-                        onClick={handleSaveQaTarget}
-                      >
-                        Save target
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 px-0 text-slate-600 hover:bg-red-500/10 hover:text-red-400"
-                        disabled={!qaActiveTargetId}
-                        onClick={handleDeleteQaTarget}
-                        title="Delete target"
-                      >
-                        <Trash2 size={12} />
-                      </Button>
-                      <span className="min-w-0 truncate font-mono text-[9px] text-slate-600">
-                        {qaTargets.length} saved
-                      </span>
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="mt-3 w-full border-[var(--cv-line)] text-xs"
-                      disabled={qaRunning}
-                      onClick={() => void handleRunSyntheticQa()}
-                    >
-                      {qaRunning ? (
-                        <>
-                          <Loader2 size={14} className="animate-spin" />
-                          Running loop…
-                        </>
-                      ) : (
-                        <>
-                          <MonitorPlay size={14} />
-                          Run QA loop
-                        </>
+                      <label className="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
+                        <input
+                          type="checkbox"
+                          checked={qaAllowRemoteTarget}
+                          onChange={(event) => setQaAllowRemoteTarget(event.target.checked)}
+                          className="h-3 w-3 accent-[var(--cv-accent)]"
+                        />
+                        <span>Allow remote target</span>
+                        {!isLoopbackQaBaseUrl(qaBaseUrl) && !qaAllowRemoteTarget && (
+                          <span className="text-yellow-400">Remote URL blocked</span>
+                        )}
+                      </label>
+                      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                        <label className="space-y-1">
+                          <span className="cv-label">Target name</span>
+                          <input
+                            value={qaTargetName}
+                            onChange={(event) => setQaTargetName(event.target.value)}
+                            placeholder="Checkout happy path"
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="cv-label">Route</span>
+                          <input
+                            value={qaTargetRoute}
+                            onChange={(event) => setQaTargetRoute(event.target.value)}
+                            placeholder="/review"
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
+                        </label>
+                      </div>
+                      <label className="mt-2 block space-y-1">
+                        <span className="cv-label">Auth</span>
+                        <select
+                          value={qaAuthMode}
+                          onChange={(event) => setQaAuthMode(event.target.value as QaAuthMode)}
+                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                        >
+                          <option value="none">No auth</option>
+                          <option value="storage_state">Playwright storage state</option>
+                        </select>
+                      </label>
+                      {qaAuthMode === 'storage_state' && (
+                        <label className="mt-2 block space-y-1">
+                          <span className="cv-label">Storage state</span>
+                          <input
+                            value={qaStorageStatePath}
+                            onChange={(event) => setQaStorageStatePath(event.target.value)}
+                            placeholder="/path/to/storage-state.json"
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
+                        </label>
                       )}
-                    </Button>
-                    {qaError && (
-                      <p className="mt-2 text-[10px] text-red-400">{qaError}</p>
-                    )}
-                    {qaLastRun && (
-                      <div
-                        className={cn(
-                          "mt-3 rounded-lg border p-2 text-[10px] leading-4",
-                          qaLastRun.pass
-                            ? "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-300"
-                            : "border-red-500/20 bg-red-500/[0.04] text-red-300",
-                        )}
-                      >
-                        <div className="font-mono uppercase tracking-wider">
-                          {qaLastRun.pass ? "PASS" : "FAIL"} · {qaLastRun.duration_ms}ms
-                        </div>
-                        <p className="mt-1 text-slate-400">{qaLastRun.notes}</p>
-                        {qaLastRun.screenshot_path && (
-                          <p className="mt-1 font-mono text-slate-500">
-                            {qaLastRun.screenshot_path}
-                          </p>
-                        )}
-                        {(qaLastRun.artifacts ?? []).length > 0 && (
-                          <div className="mt-2 space-y-1">
-                            <div className="font-mono uppercase tracking-wider text-slate-500">
-                              Artifacts
-                            </div>
-                            {(qaLastRun.artifacts ?? []).slice(0, 4).map((artifact) => (
-                              <div
-                                key={artifact}
-                                className="flex min-w-0 items-center gap-1.5 font-mono text-slate-500"
-                              >
-                                <span className="shrink-0 rounded border border-[var(--cv-line)] px-1 py-0.5 uppercase tracking-wider text-slate-400">
-                                  {qaArtifactLabel(artifact)}
-                                </span>
-                                <span className="min-w-0 truncate">{artifact}</span>
-                                {canPreviewQaArtifact(artifact) && (
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
-                                    title="Preview artifact"
-                                    disabled={qaArtifactPreviewLoading}
-                                    onClick={() => void handlePreviewQaArtifact(artifact)}
-                                  >
-                                    {qaArtifactPreviewLoading && qaArtifactPreview?.path === artifact ? (
-                                      <Loader2 size={11} className="animate-spin" />
-                                    ) : (
-                                      <FileCode size={11} />
-                                    )}
-                                  </Button>
-                                )}
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
-                                  title="Open artifact"
-                                  onClick={() => void handleOpenQaArtifact(artifact)}
-                                >
-                                  <ExternalLink size={11} />
-                                </Button>
-                              </div>
-                            ))}
-                            {qaArtifactPreview && (
-                              <div className="mt-2 rounded border border-[var(--cv-line)] bg-[#050505] p-2">
-                                <div className="mb-1 flex min-w-0 items-center gap-2 font-mono text-[9px] text-slate-500">
-                                  <span className="min-w-0 flex-1 truncate">
-                                    {qaArtifactPreview.path}
-                                  </span>
-                                  <span className="shrink-0">
-                                    {qaArtifactPreview.language} · {Math.min(60, qaArtifactPreview.totalLines)}/{qaArtifactPreview.totalLines} lines
-                                  </span>
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
-                                    title="Close preview"
-                                    onClick={() => setQaArtifactPreview(null)}
-                                  >
-                                    <Trash2 size={10} />
-                                  </Button>
-                                </div>
-                                <pre className="max-h-44 overflow-auto whitespace-pre-wrap rounded bg-black/40 p-2 font-mono text-[9px] leading-4 text-slate-300">
-                                  {qaArtifactPreview.content || "(empty file)"}
-                                </pre>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2 text-[10px]"
-                            disabled={selectedFindingIdx === null}
-                            onClick={applyQaToSelectedFinding}
-                          >
-                            Apply to selected finding
-                          </Button>
-                          {!qaLastRun.pass && (
+                      <label className="mt-2 block space-y-1">
+                        <span className="cv-label">Loop</span>
+                        <select
+                          value={qaLoopId}
+                          onChange={(event) => {
+                            const nextLoop = SYNTHETIC_QA_LOOPS.find(
+                              (loop) => loop.id === event.target.value
+                            );
+                            setQaLoopId(event.target.value);
+                            if (nextLoop) {
+                              setQaGoal(nextLoop.goal);
+                              setQaTargetRoute(nextLoop.route);
+                              setQaTargetName(nextLoop.label);
+                            }
+                          }}
+                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                        >
+                          {SYNTHETIC_QA_LOOPS.map((loop) => (
+                            <option key={loop.id} value={loop.id}>
+                              {loop.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="mt-2 block space-y-1">
+                        <span className="cv-label">Runner</span>
+                        <select
+                          value={qaRunnerType}
+                          onChange={(event) => setQaRunnerType(event.target.value as QaRunnerType)}
+                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                        >
+                          <option value="playwright_builtin">Built-in Playwright</option>
+                          <option value="repo_playwright">Repo Playwright spec</option>
+                          <option value="external_skill">External skill</option>
+                        </select>
+                      </label>
+                      {qaRunnerType === 'repo_playwright' && (
+                        <div className="mt-2 space-y-2">
+                          <div className="flex items-end gap-2">
+                            <label className="min-w-0 flex-1 space-y-1">
+                              <span className="cv-label">Spec</span>
+                              <input
+                                value={qaRepoSpecPath}
+                                onChange={(event) => setQaRepoSpecPath(event.target.value)}
+                                placeholder="tests/review.spec.ts"
+                                className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                              />
+                            </label>
                             <Button
                               type="button"
                               size="sm"
                               variant="ghost"
-                              className="h-7 px-2 text-[10px] text-yellow-400"
-                              onClick={addQaFailureFinding}
+                              className="h-8 shrink-0 px-2 text-[10px]"
+                              disabled={qaSpecLoading || !repoPath}
+                              onClick={() => void handleDiscoverQaSpecs()}
                             >
-                              Add QA finding
+                              {qaSpecLoading ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <RefreshCw size={12} />
+                              )}
+                              Find
                             </Button>
+                          </div>
+                          {qaSpecCandidates.length > 0 && (
+                            <select
+                              value={qaRepoSpecPath}
+                              onChange={(event) => setQaRepoSpecPath(event.target.value)}
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-[11px] text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                            >
+                              {qaSpecCandidates.map((spec) => (
+                                <option key={spec.path} value={spec.path}>
+                                  {spec.path} · {spec.reason}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          <label className="block space-y-1">
+                            <span className="cv-label">Trace</span>
+                            <select
+                              value={qaRepoTraceMode}
+                              onChange={(event) =>
+                                setQaRepoTraceMode(event.target.value as QaRepoTraceMode)
+                              }
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                            >
+                              <option value="retain-on-failure">Retain on failure</option>
+                              <option value="on">Always capture</option>
+                              <option value="off">Off</option>
+                            </select>
+                          </label>
+                          {qaSpecError && (
+                            <p className="text-[10px] text-yellow-400">{qaSpecError}</p>
                           )}
                         </div>
-                      </div>
-                    )}
-                    {qaRunHistory.length > 0 && (
-                      <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
-                        <div className="cv-label text-slate-500">Recent QA runs</div>
-                        <ul className="mt-1.5 space-y-1">
-                          {qaRunHistory.slice(0, 3).map((run) => (
-                            <li
-                              key={`${run.createdAt}-${run.loopId}`}
-                              className="flex items-start gap-2 text-[10px] leading-4 text-slate-400"
-                            >
-                              <span
-                                className={cn(
-                                  "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
-                                  run.pass ? "bg-emerald-400" : "bg-red-400",
-                                )}
-                              />
-                              <span className="min-w-0 flex-1">
-                                <span className="font-mono text-slate-500">
-                                  {run.runnerType}
-                                </span>{" "}
-                                {run.pass ? "passed" : "failed"} in {run.durationMs}ms
-                                {run.route ? ` · ${run.route}` : ""}
-                                {run.authMode === "storage_state" ? " · auth" : ""}
-                                {run.consoleErrors > 0 ? ` · ${run.consoleErrors} console` : ""}
-                                {(run.artifacts ?? []).length > 0
-                                  ? ` · ${(run.artifacts ?? []).length} artifact`
-                                  : ""}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {qaPostFixComparison && (
-                      <div
-                        className={cn(
-                          "mt-3 rounded-lg border p-2 text-[10px] leading-4",
-                          qaPostFixComparison.status === "fixed" ||
-                            qaPostFixComparison.status === "still_passing"
-                            ? "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-300"
-                            : qaPostFixComparison.status === "needs_rerun"
-                              ? "border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-300"
-                              : "border-red-500/20 bg-red-500/[0.04] text-red-300",
-                        )}
-                      >
-                        <div className="font-mono uppercase tracking-wider">
-                          Post-fix QA · {qaPostFixComparison.status.replace("_", " ")}
-                        </div>
-                        <p className="mt-1 text-slate-400">
-                          {qaPostFixComparison.summary}
-                        </p>
-                        {postFixQaRunning && (
-                          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-cyan-300">
-                            <Loader2 size={12} className="animate-spin" />
-                            Running the same QA flow after the fix…
-                          </div>
-                        )}
-                        <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
-                          <div className="rounded border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5">
-                            <div className="font-mono uppercase text-slate-500">Before</div>
-                            <div>
-                              {qaPostFixComparison.before.pass ? "PASS" : "FAIL"} ·{" "}
-                              {qaPostFixComparison.before.durationMs}ms
-                              {qaPostFixComparison.before.route
-                                ? ` · ${qaPostFixComparison.before.route}`
-                                : ""}
-                            </div>
-                          </div>
-                          <div className="rounded border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5">
-                            <div className="font-mono uppercase text-slate-500">After</div>
-                            {qaPostFixComparison.after ? (
-                              <div>
-                                {qaPostFixComparison.after.pass ? "PASS" : "FAIL"} ·{" "}
-                                {qaPostFixComparison.after.durationMs}ms
-                                {qaPostFixComparison.after.route
-                                  ? ` · ${qaPostFixComparison.after.route}`
-                                  : ""}
-                              </div>
-                            ) : (
-                              <div>Not run yet</div>
-                            )}
-                          </div>
-                        </div>
-                        {qaPostFixComparison.status === "needs_rerun" && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="mt-2 h-7 px-2 text-[10px] text-yellow-200"
-                            disabled={postFixQaRunning}
-                            onClick={() => void handleRunPostFixQa()}
-                          >
-                            {postFixQaRunning ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                              <RefreshCw size={12} />
-                            )}
-                            Run same flow now
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  {selectedFindingIdx !== null && (
-                    <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
-                      <div className="mb-3 flex items-center gap-2">
-                        <ClipboardCheck size={14} className="text-[var(--cv-accent)]" />
-                        <div className="cv-label text-slate-300">Verification evidence</div>
-                      </div>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        <label className="space-y-1">
-                          <span className="cv-label">Evidence level</span>
-                          <select
-                            value={activeEvidence.level}
-                            onChange={(event) =>
-                              updateFindingEvidence(selectedFindingIdx, {
-                                level: event.target.value as EvidenceLevel,
-                              })
-                            }
-                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                          >
-                            {evidenceLevels.map((level) => (
-                              <option key={level.value} value={level.value}>
-                                {level.label}
-                              </option>
-                            ))}
-                          </select>
+                      )}
+                      {qaRunnerType === 'external_skill' && (
+                        <label className="mt-2 block space-y-1">
+                          <span className="cv-label">Command</span>
+                          <input
+                            value={qaExternalCommand}
+                            onChange={(event) => setQaExternalCommand(event.target.value)}
+                            placeholder="claude-synthetic-qa"
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
                         </label>
-                        <label className="space-y-1">
-                          <span className="cv-label">Re-check status</span>
-                          <select
-                            value={activeEvidence.status}
-                            onChange={(event) =>
-                              updateFindingEvidence(selectedFindingIdx, {
-                                status: event.target.value as VerificationStatus,
-                              })
-                            }
-                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
-                          >
-                            {verificationStatuses.map((status) => (
-                              <option key={status.value} value={status.value}>
-                                {status.label}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-                      <label className="mt-3 block space-y-1">
-                        <span className="cv-label">Artifact</span>
-                        <input
-                          value={activeEvidence.artifact}
-                          onChange={(event) =>
-                            updateFindingEvidence(selectedFindingIdx, {
-                              artifact: event.target.value,
-                            })
-                          }
-                          placeholder="test command, screenshot path, console trace, replay URL"
-                          className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                        />
-                      </label>
-                      <label className="mt-3 block space-y-1">
-                        <span className="cv-label">QA steps / notes</span>
+                      )}
+                      <label className="mt-2 block space-y-1">
+                        <span className="cv-label">Goal</span>
                         <textarea
-                          value={activeEvidence.notes}
-                          onChange={(event) =>
-                            updateFindingEvidence(selectedFindingIdx, {
-                              notes: event.target.value,
-                            })
-                          }
-                          rows={4}
-                          placeholder="How to reproduce, what failed, and what passed after the fix."
+                          value={qaGoal}
+                          onChange={(event) => setQaGoal(event.target.value)}
+                          rows={3}
                           className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
                         />
                       </label>
-                      <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
-                        <label className="block space-y-1">
-                          <span className="cv-label">Local test command</span>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-[10px]"
+                          onClick={handleSaveQaTarget}
+                        >
+                          Save target
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 px-0 text-slate-600 hover:bg-red-500/10 hover:text-red-400"
+                          disabled={!qaActiveTargetId}
+                          onClick={handleDeleteQaTarget}
+                          title="Delete target"
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                        <span className="min-w-0 truncate font-mono text-[9px] text-slate-600">
+                          {qaTargets.length} saved
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="mt-3 w-full border-[var(--cv-line)] text-xs"
+                        disabled={qaRunning}
+                        onClick={() => void handleRunSyntheticQa()}
+                      >
+                        {qaRunning ? (
+                          <>
+                            <Loader2 size={14} className="animate-spin" />
+                            Running loop…
+                          </>
+                        ) : (
+                          <>
+                            <MonitorPlay size={14} />
+                            Run QA loop
+                          </>
+                        )}
+                      </Button>
+                      {qaError && <p className="mt-2 text-[10px] text-red-400">{qaError}</p>}
+                      {qaLastRun && (
+                        <div
+                          className={cn(
+                            'mt-3 rounded-lg border p-2 text-[10px] leading-4',
+                            qaLastRun.pass
+                              ? 'border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-300'
+                              : 'border-red-500/20 bg-red-500/[0.04] text-red-300'
+                          )}
+                        >
+                          <div className="font-mono uppercase tracking-wider">
+                            {qaLastRun.pass ? 'PASS' : 'FAIL'} · {qaLastRun.duration_ms}ms
+                          </div>
+                          <p className="mt-1 text-slate-400">{qaLastRun.notes}</p>
+                          {qaLastRun.screenshot_path && (
+                            <p className="mt-1 font-mono text-slate-500">
+                              {qaLastRun.screenshot_path}
+                            </p>
+                          )}
+                          {(qaLastRun.artifacts ?? []).length > 0 && (
+                            <div className="mt-2 space-y-1">
+                              <div className="font-mono uppercase tracking-wider text-slate-500">
+                                Artifacts
+                              </div>
+                              {(qaLastRun.artifacts ?? []).slice(0, 4).map((artifact) => (
+                                <div
+                                  key={artifact}
+                                  className="flex min-w-0 items-center gap-1.5 font-mono text-slate-500"
+                                >
+                                  <span className="shrink-0 rounded border border-[var(--cv-line)] px-1 py-0.5 uppercase tracking-wider text-slate-400">
+                                    {qaArtifactLabel(artifact)}
+                                  </span>
+                                  <span className="min-w-0 truncate">{artifact}</span>
+                                  {canPreviewQaArtifact(artifact) && (
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
+                                      title="Preview artifact"
+                                      disabled={qaArtifactPreviewLoading}
+                                      onClick={() => void handlePreviewQaArtifact(artifact)}
+                                    >
+                                      {qaArtifactPreviewLoading &&
+                                      qaArtifactPreview?.path === artifact ? (
+                                        <Loader2 size={11} className="animate-spin" />
+                                      ) : (
+                                        <FileCode size={11} />
+                                      )}
+                                    </Button>
+                                  )}
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
+                                    title="Open artifact"
+                                    onClick={() => void handleOpenQaArtifact(artifact)}
+                                  >
+                                    <ExternalLink size={11} />
+                                  </Button>
+                                </div>
+                              ))}
+                              {qaArtifactPreview && (
+                                <div className="mt-2 rounded border border-[var(--cv-line)] bg-[#050505] p-2">
+                                  <div className="mb-1 flex min-w-0 items-center gap-2 font-mono text-[9px] text-slate-500">
+                                    <span className="min-w-0 flex-1 truncate">
+                                      {qaArtifactPreview.path}
+                                    </span>
+                                    <span className="shrink-0">
+                                      {qaArtifactPreview.language} ·{' '}
+                                      {Math.min(60, qaArtifactPreview.totalLines)}/
+                                      {qaArtifactPreview.totalLines} lines
+                                    </span>
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
+                                      title="Close preview"
+                                      onClick={() => setQaArtifactPreview(null)}
+                                    >
+                                      <Trash2 size={10} />
+                                    </Button>
+                                  </div>
+                                  <pre className="max-h-44 overflow-auto whitespace-pre-wrap rounded bg-black/40 p-2 font-mono text-[9px] leading-4 text-slate-300">
+                                    {qaArtifactPreview.content || '(empty file)'}
+                                  </pre>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 text-[10px]"
+                              disabled={selectedFindingIdx === null}
+                              onClick={applyQaToSelectedFinding}
+                            >
+                              Apply to selected finding
+                            </Button>
+                            {!qaLastRun.pass && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-[10px] text-yellow-400"
+                                onClick={addQaFailureFinding}
+                              >
+                                Add QA finding
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {qaRunHistory.length > 0 && (
+                        <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
+                          <div className="cv-label text-slate-500">Recent QA runs</div>
+                          <ul className="mt-1.5 space-y-1">
+                            {qaRunHistory.slice(0, 3).map((run) => (
+                              <li
+                                key={`${run.createdAt}-${run.loopId}`}
+                                className="flex items-start gap-2 text-[10px] leading-4 text-slate-400"
+                              >
+                                <span
+                                  className={cn(
+                                    'mt-1 h-1.5 w-1.5 shrink-0 rounded-full',
+                                    run.pass ? 'bg-emerald-400' : 'bg-red-400'
+                                  )}
+                                />
+                                <span className="min-w-0 flex-1">
+                                  <span className="font-mono text-slate-500">{run.runnerType}</span>{' '}
+                                  {run.pass ? 'passed' : 'failed'} in {run.durationMs}ms
+                                  {run.route ? ` · ${run.route}` : ''}
+                                  {run.authMode === 'storage_state' ? ' · auth' : ''}
+                                  {run.consoleErrors > 0 ? ` · ${run.consoleErrors} console` : ''}
+                                  {(run.artifacts ?? []).length > 0
+                                    ? ` · ${(run.artifacts ?? []).length} artifact`
+                                    : ''}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {qaPostFixComparison && (
+                        <div
+                          className={cn(
+                            'mt-3 rounded-lg border p-2 text-[10px] leading-4',
+                            qaPostFixComparison.status === 'fixed' ||
+                              qaPostFixComparison.status === 'still_passing'
+                              ? 'border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-300'
+                              : qaPostFixComparison.status === 'needs_rerun'
+                                ? 'border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-300'
+                                : 'border-red-500/20 bg-red-500/[0.04] text-red-300'
+                          )}
+                        >
+                          <div className="font-mono uppercase tracking-wider">
+                            Post-fix QA · {qaPostFixComparison.status.replace('_', ' ')}
+                          </div>
+                          <p className="mt-1 text-slate-400">{qaPostFixComparison.summary}</p>
+                          {postFixQaRunning && (
+                            <div className="mt-2 flex items-center gap-1.5 text-[10px] text-cyan-300">
+                              <Loader2 size={12} className="animate-spin" />
+                              Running the same QA flow after the fix…
+                            </div>
+                          )}
+                          <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                            <div className="rounded border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5">
+                              <div className="font-mono uppercase text-slate-500">Before</div>
+                              <div>
+                                {qaPostFixComparison.before.pass ? 'PASS' : 'FAIL'} ·{' '}
+                                {qaPostFixComparison.before.durationMs}ms
+                                {qaPostFixComparison.before.route
+                                  ? ` · ${qaPostFixComparison.before.route}`
+                                  : ''}
+                              </div>
+                            </div>
+                            <div className="rounded border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5">
+                              <div className="font-mono uppercase text-slate-500">After</div>
+                              {qaPostFixComparison.after ? (
+                                <div>
+                                  {qaPostFixComparison.after.pass ? 'PASS' : 'FAIL'} ·{' '}
+                                  {qaPostFixComparison.after.durationMs}ms
+                                  {qaPostFixComparison.after.route
+                                    ? ` · ${qaPostFixComparison.after.route}`
+                                    : ''}
+                                </div>
+                              ) : (
+                                <div>Not run yet</div>
+                              )}
+                            </div>
+                          </div>
+                          {qaPostFixComparison.status === 'needs_rerun' && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="mt-2 h-7 px-2 text-[10px] text-yellow-200"
+                              disabled={postFixQaRunning}
+                              onClick={() => void handleRunPostFixQa()}
+                            >
+                              {postFixQaRunning ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <RefreshCw size={12} />
+                              )}
+                              Run same flow now
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {selectedFindingIdx !== null && (
+                      <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
+                        <div className="mb-3 flex items-center gap-2">
+                          <ClipboardCheck size={14} className="text-[var(--cv-accent)]" />
+                          <div className="cv-label text-slate-300">Verification evidence</div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <label className="space-y-1">
+                            <span className="cv-label">Evidence level</span>
+                            <select
+                              value={activeEvidence.level}
+                              onChange={(event) =>
+                                updateFindingEvidence(selectedFindingIdx, {
+                                  level: event.target.value as EvidenceLevel,
+                                })
+                              }
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                            >
+                              {evidenceLevels.map((level) => (
+                                <option key={level.value} value={level.value}>
+                                  {level.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className="cv-label">Re-check status</span>
+                            <select
+                              value={activeEvidence.status}
+                              onChange={(event) =>
+                                updateFindingEvidence(selectedFindingIdx, {
+                                  status: event.target.value as VerificationStatus,
+                                })
+                              }
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs text-slate-200 outline-none focus:border-[var(--cv-accent)]"
+                            >
+                              {verificationStatuses.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                  {status.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                        <label className="mt-3 block space-y-1">
+                          <span className="cv-label">Artifact</span>
                           <input
-                            value={verificationCommand}
-                            onChange={(event) => setVerificationCommand(event.target.value)}
-                            placeholder="npm run test:review-proof"
-                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                            value={activeEvidence.artifact}
+                            onChange={(event) =>
+                              updateFindingEvidence(selectedFindingIdx, {
+                                artifact: event.target.value,
+                              })
+                            }
+                            placeholder="test command, screenshot path, console trace, replay URL"
+                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
                           />
                         </label>
-                        {verificationCommandSuggestions.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {verificationCommandSuggestions.slice(0, 4).map((suggestion) => (
-                              <button
-                                key={suggestion.command}
-                                type="button"
-                                className="max-w-full truncate rounded border border-[var(--cv-line)] px-2 py-1 font-mono text-[10px] text-slate-400 hover:border-[var(--cv-accent)] hover:text-slate-200"
-                                title={[
-                                  suggestion.reason,
-                                  suggestion.source ? `source: ${suggestion.source}` : null,
-                                  typeof suggestion.score === "number"
-                                    ? `score: ${suggestion.score}`
-                                    : null,
-                                ]
-                                  .filter(Boolean)
-                                  .join(" · ")}
-                                onClick={() => setVerificationCommand(suggestion.command)}
-                              >
-                                {suggestion.command}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                        {verificationCommandSuggestionsLoading && (
-                          <p className="mt-1 text-[10px] text-slate-600">
-                            Finding command suggestions…
-                          </p>
-                        )}
-                        <div className="mt-2 flex items-center gap-2">
-                          <label className="flex shrink-0 items-center gap-1 text-[10px] text-slate-600">
-                            <span>Timeout</span>
+                        <label className="mt-3 block space-y-1">
+                          <span className="cv-label">QA steps / notes</span>
+                          <textarea
+                            value={activeEvidence.notes}
+                            onChange={(event) =>
+                              updateFindingEvidence(selectedFindingIdx, {
+                                notes: event.target.value,
+                              })
+                            }
+                            rows={4}
+                            placeholder="How to reproduce, what failed, and what passed after the fix."
+                            className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                          />
+                        </label>
+                        <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
+                          <label className="block space-y-1">
+                            <span className="cv-label">Local test command</span>
                             <input
-                              type="number"
-                              min={1}
-                              max={600}
-                              value={Math.round(verificationCommandTimeoutMs / 1000)}
-                              onChange={(event) =>
-                                setVerificationCommandTimeoutMs(
-                                  Math.max(1, Math.min(600, Number(event.target.value) || 120)) *
-                                    1000,
-                                )
-                              }
-                              className="h-7 w-16 rounded border border-[var(--cv-line)] bg-[#07080a] px-1.5 font-mono text-[10px] text-slate-300 outline-none focus:border-[var(--cv-accent)]"
+                              value={verificationCommand}
+                              onChange={(event) => setVerificationCommand(event.target.value)}
+                              placeholder="npm run test:review-proof"
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
                             />
-                            <span>s</span>
                           </label>
+                          {verificationCommandSuggestions.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {verificationCommandSuggestions.slice(0, 4).map((suggestion) => (
+                                <button
+                                  key={suggestion.command}
+                                  type="button"
+                                  className="max-w-full truncate rounded border border-[var(--cv-line)] px-2 py-1 font-mono text-[10px] text-slate-400 hover:border-[var(--cv-accent)] hover:text-slate-200"
+                                  title={[
+                                    suggestion.reason,
+                                    suggestion.source ? `source: ${suggestion.source}` : null,
+                                    typeof suggestion.score === 'number'
+                                      ? `score: ${suggestion.score}`
+                                      : null,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                                  onClick={() => setVerificationCommand(suggestion.command)}
+                                >
+                                  {suggestion.command}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {verificationCommandSuggestionsLoading && (
+                            <p className="mt-1 text-[10px] text-slate-600">
+                              Finding command suggestions…
+                            </p>
+                          )}
+                          <div className="mt-2 flex items-center gap-2">
+                            <label className="flex shrink-0 items-center gap-1 text-[10px] text-slate-600">
+                              <span>Timeout</span>
+                              <input
+                                type="number"
+                                min={1}
+                                max={600}
+                                value={Math.round(verificationCommandTimeoutMs / 1000)}
+                                onChange={(event) =>
+                                  setVerificationCommandTimeoutMs(
+                                    Math.max(1, Math.min(600, Number(event.target.value) || 120)) *
+                                      1000
+                                  )
+                                }
+                                className="h-7 w-16 rounded border border-[var(--cv-line)] bg-[#07080a] px-1.5 font-mono text-[10px] text-slate-300 outline-none focus:border-[var(--cv-accent)]"
+                              />
+                              <span>s</span>
+                            </label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-7 border-[var(--cv-line)] px-2 text-[10px]"
+                              disabled={
+                                verificationCommandRunning ||
+                                !repoPath ||
+                                !verificationCommand.trim()
+                              }
+                              onClick={() => void handleRunVerificationCommand()}
+                              title="Run this local command and capture its output as procedure evidence"
+                            >
+                              {verificationCommandRunning ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <RefreshCw size={12} />
+                              )}
+                              Run command
+                            </Button>
+                            {verificationCommandRunning && verificationCommandRunId && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-7 border-red-500/40 px-2 text-[10px] text-red-300 hover:border-red-400"
+                                disabled={verificationCommandCanceling}
+                                onClick={() => void handleCancelVerificationCommand()}
+                                title="Cancel the running local verification command"
+                              >
+                                {verificationCommandCanceling ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                  <X size={12} />
+                                )}
+                                Cancel
+                              </Button>
+                            )}
+                            <span className="min-w-0 truncate text-[10px] text-slate-600">
+                              Captures stdout/stderr to a log artifact
+                            </span>
+                          </div>
+                          {verificationCommandError && (
+                            <p className="mt-2 text-[10px] text-red-400">
+                              {verificationCommandError}
+                            </p>
+                          )}
+                        </div>
+                        <div className="mt-3 flex items-center gap-2">
                           <Button
                             type="button"
                             size="sm"
                             variant="outline"
                             className="h-7 border-[var(--cv-line)] px-2 text-[10px]"
                             disabled={
-                              verificationCommandRunning ||
-                              !repoPath ||
-                              !verificationCommand.trim()
+                              activeEvidence.status === 'not_checked' ||
+                              (!activeEvidence.artifact.trim() && !activeEvidence.notes.trim())
                             }
-                            onClick={() => void handleRunVerificationCommand()}
-                            title="Run this local command and capture its output as procedure evidence"
+                            onClick={handleRecordTestCommandEvent}
+                            title="Record this evidence as a durable procedure event"
                           >
-                            {verificationCommandRunning ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                              <RefreshCw size={12} />
-                            )}
-                            Run command
+                            <ClipboardCheck size={12} />
+                            Record test event
                           </Button>
-                          {verificationCommandRunning && verificationCommandRunId && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="h-7 border-red-500/40 px-2 text-[10px] text-red-300 hover:border-red-400"
-                              disabled={verificationCommandCanceling}
-                              onClick={() => void handleCancelVerificationCommand()}
-                              title="Cancel the running local verification command"
-                            >
-                              {verificationCommandCanceling ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              ) : (
-                                <X size={12} />
-                              )}
-                              Cancel
-                            </Button>
-                          )}
                           <span className="min-w-0 truncate text-[10px] text-slate-600">
-                            Captures stdout/stderr to a log artifact
+                            Links selected evidence to verification gates
                           </span>
                         </div>
-                        {verificationCommandError && (
-                          <p className="mt-2 text-[10px] text-red-400">
-                            {verificationCommandError}
-                          </p>
-                        )}
+                        <div className="mt-4 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-3">
+                          <div className="mb-2 flex items-center gap-2">
+                            <MonitorPlay size={13} className="text-[var(--cv-accent)]" />
+                            <div className="cv-label text-slate-300">
+                              Browser evidence references
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <label className="space-y-1">
+                              <span className="cv-label">Route</span>
+                              <input
+                                value={activeBrowserEvidence.route}
+                                onChange={(event) =>
+                                  updateBrowserEvidence(selectedFindingIdx, {
+                                    route: event.target.value,
+                                  })
+                                }
+                                placeholder="/checkout"
+                                className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                              />
+                            </label>
+                            <label className="space-y-1">
+                              <span className="cv-label">Screenshot / crop</span>
+                              <input
+                                value={activeBrowserEvidence.screenshotPath}
+                                onChange={(event) =>
+                                  updateBrowserEvidence(selectedFindingIdx, {
+                                    screenshotPath: event.target.value,
+                                  })
+                                }
+                                placeholder="artifacts/screenshot.png"
+                                className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                              />
+                            </label>
+                          </div>
+                          <label className="mt-2 block space-y-1">
+                            <span className="cv-label">DOM snippet</span>
+                            <textarea
+                              value={activeBrowserEvidence.domSnippet}
+                              onChange={(event) =>
+                                updateBrowserEvidence(selectedFindingIdx, {
+                                  domSnippet: event.target.value,
+                                })
+                              }
+                              rows={2}
+                              placeholder="<button disabled>Save</button>"
+                              className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                            />
+                          </label>
+                          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <label className="space-y-1">
+                              <span className="cv-label">Console errors</span>
+                              <textarea
+                                value={activeBrowserEvidence.consoleErrors}
+                                onChange={(event) =>
+                                  updateBrowserEvidence(selectedFindingIdx, {
+                                    consoleErrors: event.target.value,
+                                  })
+                                }
+                                rows={2}
+                                placeholder="One error per line."
+                                className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                              />
+                            </label>
+                            <label className="space-y-1">
+                              <span className="cv-label">Network failures</span>
+                              <textarea
+                                value={activeBrowserEvidence.networkFailures}
+                                onChange={(event) =>
+                                  updateBrowserEvidence(selectedFindingIdx, {
+                                    networkFailures: event.target.value,
+                                  })
+                                }
+                                rows={2}
+                                placeholder="POST /api/save 500"
+                                className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                              />
+                            </label>
+                          </div>
+                          <label className="mt-2 block space-y-1">
+                            <span className="cv-label">QA artifacts</span>
+                            <input
+                              value={activeBrowserEvidence.qaArtifacts}
+                              onChange={(event) =>
+                                updateBrowserEvidence(selectedFindingIdx, {
+                                  qaArtifacts: event.target.value,
+                                })
+                              }
+                              placeholder="trace.zip, playwright-report/index.html"
+                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
+                            />
+                          </label>
+                        </div>
+                        {activeEvidence.status === 'fixed' &&
+                          activeFinding &&
+                          (() => {
+                            const items = buildRevalidationChecklist(activeFinding, activeEvidence);
+                            const done = items.filter(
+                              (item) => activeEvidence.revalidation?.[item.id]
+                            ).length;
+                            const allDone = done === items.length;
+                            return (
+                              <div
+                                data-testid="revalidation-checklist"
+                                className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-3"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <ClipboardCheck
+                                    size={12}
+                                    className={cn(
+                                      'shrink-0',
+                                      allDone ? 'text-emerald-400' : 'text-[var(--cv-accent)]'
+                                    )}
+                                  />
+                                  <div className="cv-label text-slate-300">
+                                    Revalidation checklist
+                                  </div>
+                                  <span
+                                    className={cn(
+                                      'ml-auto font-mono text-[10px]',
+                                      allDone ? 'text-emerald-400' : 'text-slate-500'
+                                    )}
+                                  >
+                                    {done}/{items.length} {allDone ? 'verified' : 'done'}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                                  Quick checks derived from this finding&apos;s evidence so
+                                  &ldquo;fixed&rdquo; is provable, not just claimed.
+                                </p>
+                                <ul className="mt-2 space-y-1.5">
+                                  {items.map((item) => {
+                                    const checked = Boolean(activeEvidence.revalidation?.[item.id]);
+                                    return (
+                                      <li key={item.id}>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            toggleRevalidationItem(selectedFindingIdx, item.id)
+                                          }
+                                          className="flex w-full items-start gap-2 rounded text-left text-[11px] leading-4 text-slate-300 transition-colors hover:text-white"
+                                        >
+                                          {checked ? (
+                                            <CheckSquare2
+                                              size={13}
+                                              className="mt-px shrink-0 text-emerald-400"
+                                            />
+                                          ) : (
+                                            <Square
+                                              size={13}
+                                              className="mt-px shrink-0 text-slate-600"
+                                            />
+                                          )}
+                                          <span
+                                            className={cn(checked && 'text-slate-500 line-through')}
+                                          >
+                                            {item.label}
+                                          </span>
+                                        </button>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
+                            );
+                          })()}
                       </div>
-                      <div className="mt-3 flex items-center gap-2">
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
+                    <CheckCircle size={18} />
+                    No findings.
+                  </div>
+                )}
+              </div>
+
+              {(blastReport || blastLoading || blastError) && (
+                <div className="shrink-0 border-b border-[var(--cv-line)]">
+                  <BlastRadiusPanel
+                    report={blastReport}
+                    loading={blastLoading}
+                    error={blastError}
+                    onJump={handleJumpToCaller}
+                  />
+                </div>
+              )}
+
+              <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="cv-label">review comments</span>
+                  <span className="cv-label">{sortedFindings.length} total</span>
+                </div>
+                <div className="mb-3 rounded-xl border border-[var(--cv-line)] bg-[#050505] p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <ListOrdered size={14} className="text-[var(--cv-accent)]" />
+                      <span className="cv-label text-slate-300">patch queue</span>
+                    </div>
+                    <span className="font-mono text-[11px] text-slate-500">
+                      {patchQueue.length} selected
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-5 text-slate-500">
+                    {queueGuidance(patchQueue)}
+                  </p>
+                  {patchQueue.length > 0 && (
+                    <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
+                      <div className="flex items-center gap-2">
+                        <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
+                        <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                          fix packet
+                        </span>
                         <Button
                           type="button"
                           size="sm"
-                          variant="outline"
-                          className="h-7 border-[var(--cv-line)] px-2 text-[10px]"
-                          disabled={
-                            activeEvidence.status === "not_checked" ||
-                            (!activeEvidence.artifact.trim() && !activeEvidence.notes.trim())
-                          }
-                          onClick={handleRecordTestCommandEvent}
-                          title="Record this evidence as a durable procedure event"
+                          variant="ghost"
+                          className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
+                          onClick={handleCopyFixPacket}
                         >
-                          <ClipboardCheck size={12} />
-                          Record test event
-                        </Button>
-                        <span className="min-w-0 truncate text-[10px] text-slate-600">
-                          Links selected evidence to verification gates
-                        </span>
-                      </div>
-                      <div className="mt-4 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-3">
-                        <div className="mb-2 flex items-center gap-2">
-                          <MonitorPlay size={13} className="text-[var(--cv-accent)]" />
-                          <div className="cv-label text-slate-300">
-                            Browser evidence references
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <label className="space-y-1">
-                            <span className="cv-label">Route</span>
-                            <input
-                              value={activeBrowserEvidence.route}
-                              onChange={(event) =>
-                                updateBrowserEvidence(selectedFindingIdx, {
-                                  route: event.target.value,
-                                })
-                              }
-                              placeholder="/checkout"
-                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                            />
-                          </label>
-                          <label className="space-y-1">
-                            <span className="cv-label">Screenshot / crop</span>
-                            <input
-                              value={activeBrowserEvidence.screenshotPath}
-                              onChange={(event) =>
-                                updateBrowserEvidence(selectedFindingIdx, {
-                                  screenshotPath: event.target.value,
-                                })
-                              }
-                              placeholder="artifacts/screenshot.png"
-                              className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                            />
-                          </label>
-                        </div>
-                        <label className="mt-2 block space-y-1">
-                          <span className="cv-label">DOM snippet</span>
-                          <textarea
-                            value={activeBrowserEvidence.domSnippet}
-                            onChange={(event) =>
-                              updateBrowserEvidence(selectedFindingIdx, {
-                                domSnippet: event.target.value,
-                              })
-                            }
-                            rows={2}
-                            placeholder="<button disabled>Save</button>"
-                            className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                          />
-                        </label>
-                        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <label className="space-y-1">
-                            <span className="cv-label">Console errors</span>
-                            <textarea
-                              value={activeBrowserEvidence.consoleErrors}
-                              onChange={(event) =>
-                                updateBrowserEvidence(selectedFindingIdx, {
-                                  consoleErrors: event.target.value,
-                                })
-                              }
-                              rows={2}
-                              placeholder="One error per line."
-                              className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                            />
-                          </label>
-                          <label className="space-y-1">
-                            <span className="cv-label">Network failures</span>
-                            <textarea
-                              value={activeBrowserEvidence.networkFailures}
-                              onChange={(event) =>
-                                updateBrowserEvidence(selectedFindingIdx, {
-                                  networkFailures: event.target.value,
-                                })
-                              }
-                              rows={2}
-                              placeholder="POST /api/save 500"
-                              className="w-full resize-none rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                            />
-                          </label>
-                        </div>
-                        <label className="mt-2 block space-y-1">
-                          <span className="cv-label">QA artifacts</span>
-                          <input
-                            value={activeBrowserEvidence.qaArtifacts}
-                            onChange={(event) =>
-                              updateBrowserEvidence(selectedFindingIdx, {
-                                qaArtifacts: event.target.value,
-                              })
-                            }
-                            placeholder="trace.zip, playwright-report/index.html"
-                            className="w-full rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-[var(--cv-accent)]"
-                          />
-                        </label>
-                      </div>
-                      {activeEvidence.status === "fixed" && activeFinding && (() => {
-                        const items = buildRevalidationChecklist(activeFinding, activeEvidence);
-                        const done = items.filter(
-                          (item) => activeEvidence.revalidation?.[item.id],
-                        ).length;
-                        const allDone = done === items.length;
-                        return (
-                          <div
-                            data-testid="revalidation-checklist"
-                            className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-3"
-                          >
-                            <div className="flex items-center gap-2">
-                              <ClipboardCheck
-                                size={12}
-                                className={cn(
-                                  "shrink-0",
-                                  allDone ? "text-emerald-400" : "text-[var(--cv-accent)]",
-                                )}
-                              />
-                              <div className="cv-label text-slate-300">
-                                Revalidation checklist
-                              </div>
-                              <span
-                                className={cn(
-                                  "ml-auto font-mono text-[10px]",
-                                  allDone ? "text-emerald-400" : "text-slate-500",
-                                )}
-                              >
-                                {done}/{items.length} {allDone ? "verified" : "done"}
-                              </span>
-                            </div>
-                            <p className="mt-1 text-[10px] leading-4 text-slate-500">
-                              Quick checks derived from this finding&apos;s evidence so &ldquo;fixed&rdquo; is provable, not just claimed.
-                            </p>
-                            <ul className="mt-2 space-y-1.5">
-                              {items.map((item) => {
-                                const checked = Boolean(
-                                  activeEvidence.revalidation?.[item.id],
-                                );
-                                return (
-                                  <li key={item.id}>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        toggleRevalidationItem(selectedFindingIdx, item.id)
-                                      }
-                                      className="flex w-full items-start gap-2 rounded text-left text-[11px] leading-4 text-slate-300 transition-colors hover:text-white"
-                                    >
-                                      {checked ? (
-                                        <CheckSquare2
-                                          size={13}
-                                          className="mt-px shrink-0 text-emerald-400"
-                                        />
-                                      ) : (
-                                        <Square
-                                          size={13}
-                                          className="mt-px shrink-0 text-slate-600"
-                                        />
-                                      )}
-                                      <span
-                                        className={cn(
-                                          checked && "text-slate-500 line-through",
-                                        )}
-                                      >
-                                        {item.label}
-                                      </span>
-                                    </button>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
-                  <CheckCircle size={18} />
-                  No findings.
-                </div>
-              )}
-            </div>
-
-            {(blastReport || blastLoading || blastError) && (
-              <div className="shrink-0 border-b border-[var(--cv-line)]">
-                <BlastRadiusPanel
-                  report={blastReport}
-                  loading={blastLoading}
-                  error={blastError}
-                  onJump={handleJumpToCaller}
-                />
-              </div>
-            )}
-
-            <div className="min-h-0 flex-1 overflow-y-auto p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="cv-label">review comments</span>
-                <span className="cv-label">{sortedFindings.length} total</span>
-              </div>
-              <div className="mb-3 rounded-xl border border-[var(--cv-line)] bg-[#050505] p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <ListOrdered size={14} className="text-[var(--cv-accent)]" />
-                    <span className="cv-label text-slate-300">patch queue</span>
-                  </div>
-                  <span className="font-mono text-[11px] text-slate-500">
-                    {patchQueue.length} selected
-                  </span>
-                </div>
-                <p className="text-[11px] leading-5 text-slate-500">
-                  {queueGuidance(patchQueue)}
-                </p>
-                {patchQueue.length > 0 && (
-                  <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
-                    <div className="flex items-center gap-2">
-                      <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
-                      <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                        fix packet
-                      </span>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
-                        onClick={handleCopyFixPacket}
-                      >
-                        {packetCopied ? (
-                          <CheckCircle size={10} className="text-emerald-400" />
-                        ) : (
-                          <Copy size={10} />
-                        )}
-                        {packetCopied ? "Copied" : "Copy"}
-                      </Button>
-                    </div>
-                    <p className="mt-1 text-[10px] leading-4 text-slate-500">
-                      {fixPacket.routeAdvice}
-                    </p>
-                    {(taskGoal || taskAcceptance) && (
-                      <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-400">
-                        {taskGoal || taskAcceptance}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {patchQueue.length > 0 && (
-                  <>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {Object.entries(patchQueueSeverityCounts).map(([severity, count]) => (
-                        <Badge
-                          key={severity}
-                          variant="outline"
-                          className={cn(
-                            "rounded-full px-2 py-0.5 font-mono text-[9px] uppercase",
-                            severityColor(severity),
-                          )}
-                        >
-                          {severity} · {count}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="mt-3 space-y-1.5">
-                      {patchQueue.slice(0, 4).map((finding, queueIdx) => (
-                        <button
-                          key={`${finding.title}-${queueIdx}`}
-                          type="button"
-                          onClick={() => {
-                            const sortedIdx = sortedFindings.indexOf(finding);
-                            if (sortedIdx >= 0) handleFindingClick(sortedIdx);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-left hover:border-[var(--cv-line-strong)]"
-                        >
-                          <span className="font-mono text-[10px] text-slate-600">
-                            {queueIdx + 1}
-                          </span>
-                          <span className="min-w-0 flex-1 truncate text-[11px] text-slate-300">
-                            {finding.filePath || finding.title}
-                          </span>
-                          <span className="shrink-0 text-[10px] text-slate-600">
-                            {finding.line != null ? `:${finding.line}` : finding.severity}
-                          </span>
-                        </button>
-                      ))}
-                      {patchQueue.length > 4 && (
-                        <div className="px-2 text-[10px] text-slate-600">
-                          +{patchQueue.length - 4} more queued
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="space-y-2">
-                {sortedFindings.map((finding, idx) => {
-                  const evidence = {
-                    ...defaultFindingEvidence,
-                    ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-                  };
-                  const hasEvidence =
-                    evidence.status !== "not_checked" ||
-                    Boolean(evidence.artifact.trim()) ||
-                    Boolean(evidence.notes.trim());
-                  const historySummary = historyFindingSummaries.get(idx);
-                  const historySample =
-                    historySummary?.topDecision ??
-                    historySummary?.topCommit ??
-                    historySummary?.topClaim;
-                  return (
-                    <div
-                      key={idx}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleFindingClick(idx)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          handleFindingClick(idx);
-                        }
-                      }}
-                      className={cn(
-                        "w-full cursor-pointer border px-3 py-3 text-left transition-colors",
-                        selectedFindingIdx === idx
-                          ? "border-[rgba(125,211,252,0.42)] bg-cyan-500/10"
-                          : "border-[var(--cv-line)] bg-[#07080a] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]",
-                        selectedFindings.has(idx) && "shadow-[inset_3px_0_0_rgba(125,211,252,0.82)]",
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          aria-label={selectedFindings.has(idx) ? "Remove from fix selection" : "Select for fix"}
-                          aria-pressed={selectedFindings.has(idx)}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            toggleFinding(idx);
-                          }}
-                          className="shrink-0 text-slate-500 transition-colors hover:text-[var(--cv-accent)]"
-                        >
-                          {selectedFindings.has(idx) ? (
-                            <CheckSquare2 size={15} className="text-[var(--cv-accent)]" />
+                          {packetCopied ? (
+                            <CheckCircle size={10} className="text-emerald-400" />
                           ) : (
-                            <Square size={15} />
+                            <Copy size={10} />
                           )}
-                        </button>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold uppercase",
-                            severityColor(finding.severity),
-                          )}
-                        >
-                          {finding.severity}
-                        </Badge>
-                        {finding.discovery_method === "execution" && (
-                          <Badge
-                            variant="outline"
-                            className="shrink-0 rounded-full border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-cyan-200"
-                          >
-                            via execution
-                          </Badge>
-                        )}
-                        {hasEvidence && (
-                          <Badge
-                            variant="outline"
-                            className="shrink-0 rounded-full border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-cyan-300"
-                          >
-                            {evidence.status.replace("_", " ")}
-                          </Badge>
-                        )}
-                        <span className="truncate text-xs font-medium text-slate-100">
-                          {finding.title}
-                        </span>
+                          {packetCopied ? 'Copied' : 'Copy'}
+                        </Button>
                       </div>
-                      <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
-                        {finding.summary}
+                      <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                        {fixPacket.routeAdvice}
                       </p>
-                      {historySummary && (
-                        <div className="mt-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[9px] uppercase text-slate-600">
-                            <span>history</span>
-                            {historySummary.decisions > 0 && (
-                              <span className="text-cyan-400">
-                                {historySummary.decisions} decision
-                              </span>
+                      {(taskGoal || taskAcceptance) && (
+                        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-400">
+                          {taskGoal || taskAcceptance}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {patchQueue.length > 0 && (
+                    <>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {Object.entries(patchQueueSeverityCounts).map(([severity, count]) => (
+                          <Badge
+                            key={severity}
+                            variant="outline"
+                            className={cn(
+                              'rounded-full px-2 py-0.5 font-mono text-[9px] uppercase',
+                              severityColor(severity)
                             )}
-                            {historySummary.commits > 0 && (
-                              <span>{historySummary.commits} commit</span>
-                            )}
-                            {historySummary.recurring > 0 && (
-                              <span className="text-yellow-400">
-                                {historySummary.recurring} recurring
-                              </span>
-                            )}
-                            {historySummary.commands > 0 && (
-                              <span>{historySummary.commands} command</span>
-                            )}
-                            {historySummary.claims > 0 && (
-                              <span>{historySummary.claims} claim</span>
-                            )}
+                          >
+                            {severity} · {count}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="mt-3 space-y-1.5">
+                        {patchQueue.slice(0, 4).map((finding, queueIdx) => (
+                          <button
+                            key={`${finding.title}-${queueIdx}`}
+                            type="button"
+                            onClick={() => {
+                              const sortedIdx = sortedFindings.indexOf(finding);
+                              if (sortedIdx >= 0) handleFindingClick(sortedIdx);
+                            }}
+                            className="flex w-full items-center gap-2 rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-left hover:border-[var(--cv-line-strong)]"
+                          >
+                            <span className="font-mono text-[10px] text-slate-600">
+                              {queueIdx + 1}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-[11px] text-slate-300">
+                              {finding.filePath || finding.title}
+                            </span>
+                            <span className="shrink-0 text-[10px] text-slate-600">
+                              {finding.line != null ? `:${finding.line}` : finding.severity}
+                            </span>
+                          </button>
+                        ))}
+                        {patchQueue.length > 4 && (
+                          <div className="px-2 text-[10px] text-slate-600">
+                            +{patchQueue.length - 4} more queued
                           </div>
-                          {historySample && (
-                            <p className="mt-1 line-clamp-1 text-[10px] leading-4 text-slate-500">
-                              {historySample}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-              <div className="mb-2 flex items-center gap-2">
-                <ListOrdered size={12} className="shrink-0 text-[var(--cv-accent)]" />
-                <span className="cv-label text-slate-300">Agent status timeline</span>
-              </div>
-              <div className="grid grid-cols-1 gap-1.5">
-                {reviewTimeline.map((item) => {
-                  const segmentPacketCount = timelineSegmentFindingIndexes(item.id).length;
-                  const anchors = item.anchors ?? [];
-                  const anchorsExpanded = expandedTimelineItems.has(item.id);
-                  const visibleAnchors = visibleTimelineAnchors(anchors, anchorsExpanded);
-                  const hiddenAnchorCount = anchors.length - visibleAnchors.length;
-                  return (
-                    <div
-                      key={item.label}
-                      className="flex items-start gap-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
-                    >
-                    <span
-                      className={cn(
-                        "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
-                        item.status === "done" && "bg-emerald-400",
-                        item.status === "active" && "bg-cyan-300",
-                        item.status === "blocked" && "bg-red-400",
-                        item.status === "idle" && "bg-slate-600",
-                      )}
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex min-w-0 items-center gap-1">
-                        <span className="block min-w-0 flex-1 truncate text-[10px] text-slate-300">
-                          {item.label}
-                        </span>
-                        {segmentPacketCount > 0 && (
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
-                            title={`Copy fix packet from ${item.label} (${segmentPacketCount})`}
-                            onClick={() => void handleCopyTimelineSegmentPacket(item)}
-                          >
-                            {timelinePacketCopiedId === item.id ? (
-                              <CheckCircle size={10} className="text-emerald-400" />
-                            ) : (
-                              <ClipboardCheck size={10} />
-                            )}
-                          </Button>
                         )}
-                        {item.jump && (
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
-                            title={item.jump.label}
-                            onClick={() => void handleTimelineJump(item.jump!)}
-                          >
-                            <ExternalLink size={10} />
-                          </Button>
-                        )}
-                      </span>
-                      <span className="block truncate text-[10px] text-slate-600">
-                        {item.detail}
-                      </span>
-                      {anchors.length > 0 && (
-                        <span className="mt-1 block space-y-0.5">
-                          {visibleAnchors.map((anchor) => (
-                            <button
-                              key={anchor.id}
-                              type="button"
-                              disabled={!anchor.jump}
-                              className={cn(
-                                "block w-full truncate text-left font-mono text-[9px] text-slate-500",
-                                anchor.jump && "hover:text-slate-200",
-                                !anchor.jump && "cursor-default",
-                              )}
-                              title={[
-                                anchor.source,
-                                anchor.sourcePath,
-                                anchor.sourceLine != null ? `line ${anchor.sourceLine}` : null,
-                                anchor.eventId,
-                                ...(anchor.contextExcerpt ?? []).slice(0, 2),
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                              onClick={() => {
-                                if (anchor.jump) void handleTimelineJump(anchor.jump);
-                              }}
-                            >
-                              {[
-                                `${anchor.status ?? "unknown"} · ${anchor.label}`,
-                                anchor.contextExcerpt?.[0] ? `context: ${anchor.contextExcerpt[0]}` : null,
-                              ].filter(Boolean).join(" · ")}
-                            </button>
-                          ))}
-                          {shouldCollapseTimelineAnchors(anchors.length) && (
-                            <button
-                              type="button"
-                              className="block text-left text-[9px] text-cyan-400/80 hover:text-cyan-300"
-                              onClick={() =>
-                                setExpandedTimelineItems((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(item.id)) next.delete(item.id);
-                                  else next.add(item.id);
-                                  return next;
-                                })
-                              }
-                            >
-                              {anchorsExpanded
-                                ? "Show fewer anchors"
-                                : `Show ${hiddenAnchorCount} more anchor${hiddenAnchorCount === 1 ? "" : "s"}`}
-                            </button>
-                          )}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {reviewMemoryGraph && reviewMemoryGraph.nodes.length > 0 && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="mb-2 flex items-center gap-2">
-                  <GitBranch size={12} className="shrink-0 text-cyan-300" />
-                  <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                    Review memory graph · {reviewMemoryGraph.nodes.length} nodes
-                  </span>
-                  {reviewMemoryGraph.truncated && (
-                    <Badge variant="outline" className="rounded-full px-1.5 py-0 text-[9px]">
-                      capped
-                    </Badge>
+                      </div>
+                    </>
                   )}
                 </div>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {reviewMemoryGraph.nodes.slice(0, 5).map((node) => (
-                    <div
-                      key={node.id}
-                      className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="shrink-0 rounded bg-cyan-500/10 px-1.5 py-0.5 text-[9px] text-cyan-200">
-                          {node.kind}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-slate-300">
-                          {node.label}
-                        </span>
-                      </div>
-                      {node.detail && (
-                        <p className="mt-1 line-clamp-1 text-[10px] text-slate-500">
-                          {node.detail}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {reviewMemoryGraph.edges.length > 0 && (
-                  <div className="mt-2 font-mono text-[9px] text-slate-600">
-                    {reviewMemoryGraph.edges.slice(0, 3).map((edge) => (
-                      <div key={`${edge.from}-${edge.kind}-${edge.to}`} className="truncate">
-                        {edge.from} {"->"} {edge.to} · {edge.kind}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {focusedReviewMemoryGraph && focusedReviewMemoryGraph.nodes.length > 0 && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="mb-2 flex items-center gap-2">
-                  <GitBranch size={12} className="shrink-0 text-emerald-300" />
-                  <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                    Finding graph focus · {focusedReviewMemoryGraph.nodes.length} nodes
-                  </span>
-                  {focusedReviewMemoryGraph.truncated && (
-                    <Badge variant="outline" className="rounded-full px-1.5 py-0 text-[9px]">
-                      capped
-                    </Badge>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {focusedReviewMemoryGraph.nodes.slice(0, 4).map((node) => (
-                    <div
-                      key={node.id}
-                      className="rounded-lg border border-emerald-500/20 bg-[#050505] px-2 py-1.5"
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="shrink-0 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] text-emerald-200">
-                          {node.kind}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-slate-300">
-                          {node.label}
-                        </span>
-                      </div>
-                      {node.detail && (
-                        <p className="mt-1 line-clamp-1 text-[10px] text-slate-500">
-                          {node.detail}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {focusedReviewMemoryGraph.edges.length > 0 && (
-                  <div className="mt-2 font-mono text-[9px] text-slate-600">
-                    {focusedReviewMemoryGraph.edges.slice(0, 3).map((edge) => (
-                      <div key={`${edge.from}-${edge.kind}-${edge.to}`} className="truncate">
-                        {edge.from} {"->"} {edge.to} · {edge.kind}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {historyExplanations.length > 0 && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="mb-2 flex items-center gap-2">
-                  <History size={12} className="shrink-0 text-amber-300" />
-                  <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                    Why this code exists · {historyExplanations.length}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {historyExplanations.slice(0, 3).map((explanation) => (
-                    <div
-                      key={explanation.file}
-                      className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-slate-300">
-                          {explanation.file}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="shrink-0 rounded-full px-1.5 py-0 text-[9px] text-slate-500"
-                        >
-                          {explanation.confidence}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
-                        {explanation.summary}
-                      </p>
-                      {explanation.citations[0] && (
-                        <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
-                          {explanation.citations[0]}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  {selectedFindingHistoryExplanation && (
-                    <div className="rounded-lg border border-amber-500/20 bg-[#050505] px-2 py-1.5">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-amber-200">
-                          {selectedFindingHistoryExplanation.file}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="shrink-0 rounded-full px-1.5 py-0 text-[9px] text-amber-300/80"
-                        >
-                          selected
-                        </Badge>
-                      </div>
-                      <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
-                        {selectedFindingHistoryExplanation.summary}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {evidenceCandidates.length > 0 && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="mb-2 flex items-center gap-2">
-                  <AlertTriangle size={12} className="shrink-0 text-yellow-400" />
-                  <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                    Evidence candidates · {evidenceCandidates.length}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {evidenceCandidates.slice(0, 4).map((candidate) => {
-                    const candidateStatus =
-                      evidenceCandidateStatuses[candidate.id] ?? "open";
-
+                <div className="space-y-2">
+                  {sortedFindings.map((finding, idx) => {
+                    const evidence = {
+                      ...defaultFindingEvidence,
+                      ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+                    };
+                    const hasEvidence =
+                      evidence.status !== 'not_checked' ||
+                      Boolean(evidence.artifact.trim()) ||
+                      Boolean(evidence.notes.trim());
+                    const historySummary = historyFindingSummaries.get(idx);
+                    const historySample =
+                      historySummary?.topDecision ??
+                      historySummary?.topCommit ??
+                      historySummary?.topClaim;
                     return (
                       <div
-                        key={candidate.id}
-                        className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                        key={idx}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleFindingClick(idx)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            handleFindingClick(idx);
+                          }
+                        }}
+                        className={cn(
+                          'w-full cursor-pointer border px-3 py-3 text-left transition-colors',
+                          selectedFindingIdx === idx
+                            ? 'border-[rgba(125,211,252,0.42)] bg-cyan-500/10'
+                            : 'border-[var(--cv-line)] bg-[#07080a] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]',
+                          selectedFindings.has(idx) &&
+                            'shadow-[inset_3px_0_0_rgba(125,211,252,0.82)]'
+                        )}
                       >
-                        <div className="flex min-w-0 items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            aria-label={
+                              selectedFindings.has(idx)
+                                ? 'Remove from fix selection'
+                                : 'Select for fix'
+                            }
+                            aria-pressed={selectedFindings.has(idx)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleFinding(idx);
+                            }}
+                            className="shrink-0 text-slate-500 transition-colors hover:text-[var(--cv-accent)]"
+                          >
+                            {selectedFindings.has(idx) ? (
+                              <CheckSquare2 size={15} className="text-[var(--cv-accent)]" />
+                            ) : (
+                              <Square size={15} />
+                            )}
+                          </button>
                           <Badge
                             variant="outline"
                             className={cn(
-                              "shrink-0 rounded-full px-1.5 py-0 font-mono text-[9px] uppercase",
-                              severityColor(candidate.severity_hint),
+                              'shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold uppercase',
+                              severityColor(finding.severity)
                             )}
                           >
-                            {candidate.severity_hint}
+                            {finding.severity}
                           </Badge>
-                          <span className="min-w-0 flex-1 truncate text-[10px] text-slate-300">
-                            {evidenceCandidateLabel(candidate)}
-                          </span>
-                          <span className="shrink-0 font-mono text-[9px] text-slate-600">
-                            {Math.round(candidate.confidence * 100)}%
+                          {finding.discovery_method === 'execution' && (
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 rounded-full border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-cyan-200"
+                            >
+                              via execution
+                            </Badge>
+                          )}
+                          {hasEvidence && (
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 rounded-full border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-cyan-300"
+                            >
+                              {evidence.status.replace('_', ' ')}
+                            </Badge>
+                          )}
+                          <span className="truncate text-xs font-medium text-slate-100">
+                            {finding.title}
                           </span>
                         </div>
-                        <label className="mt-1.5 block space-y-1">
-                          <span className="sr-only">Candidate status</span>
-                          <select
-                            value={candidateStatus}
-                            onChange={(event) =>
-                              updateEvidenceCandidateStatus(
-                                candidate.id,
-                                event.target.value as EvidenceCandidateStatus,
-                              )
-                            }
-                            className="w-full rounded border border-[var(--cv-line)] bg-[#050505] px-1.5 py-1 text-[10px] text-slate-300 outline-none focus:border-[var(--cv-accent)]"
-                          >
-                            {evidenceCandidateStatusOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
-                          {candidate.why_it_matters}
+                        <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
+                          {finding.summary}
                         </p>
-                        {candidate.open_questions.length > 0 && (
-                          <p className="mt-1 line-clamp-1 text-[10px] leading-4 text-yellow-300/80">
-                            {candidate.open_questions[0]}
-                          </p>
-                        )}
-                        {candidate.evidence_refs.length > 0 && (
-                          <p
-                            className="mt-1 truncate font-mono text-[9px] text-slate-500"
-                            title={
-                              candidate.evidence_refs[0].detail ??
-                              candidate.evidence_refs[0].label
-                            }
-                          >
-                            {candidate.evidence_refs[0].kind}:{" "}
-                            {candidate.evidence_refs[0].label}
-                          </p>
-                        )}
-                        {candidate.affected_files.length > 0 && (
-                          <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
-                            {candidate.affected_files.slice(0, 3).join(", ")}
-                            {candidate.affected_files.length > 3
-                              ? ` (+${candidate.affected_files.length - 3})`
-                              : ""}
-                          </p>
+                        {historySummary && (
+                          <div className="mt-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[9px] uppercase text-slate-600">
+                              <span>history</span>
+                              {historySummary.decisions > 0 && (
+                                <span className="text-cyan-400">
+                                  {historySummary.decisions} decision
+                                </span>
+                              )}
+                              {historySummary.commits > 0 && (
+                                <span>{historySummary.commits} commit</span>
+                              )}
+                              {historySummary.recurring > 0 && (
+                                <span className="text-yellow-400">
+                                  {historySummary.recurring} recurring
+                                </span>
+                              )}
+                              {historySummary.commands > 0 && (
+                                <span>{historySummary.commands} command</span>
+                              )}
+                              {historySummary.claims > 0 && (
+                                <span>{historySummary.claims} claim</span>
+                              )}
+                            </div>
+                            {historySample && (
+                              <p className="mt-1 line-clamp-1 text-[10px] leading-4 text-slate-500">
+                                {historySample}
+                              </p>
+                            )}
+                          </div>
                         )}
                       </div>
                     );
                   })}
                 </div>
               </div>
-            )}
 
-            {/* Verification group — always-visible summary header + toggle.
-                Collapses the detail sections (gates, timeline, intent, risk
-                ledger) so the panel isn't four stacked equal-weight blocks. */}
-            {(sortedFindings.length > 0 ||
-              evidenceProcedureSteps.length > 0 ||
-              procedureExecutionEvents.length > 0 ||
-              intentReport ||
-              uncheckedFindings.length > 0) && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setVerificationOpen((o) => !o)}
-                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                  >
-                    {verificationOpen ? (
-                      <ChevronDown size={12} className="shrink-0 text-slate-500" />
-                    ) : (
-                      <ChevronRight size={12} className="shrink-0 text-slate-500" />
-                    )}
-                    <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
-                    <span className="cv-label shrink-0 text-slate-300">Verification</span>
-                    <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 font-mono text-[10px]">
-                      <span className="text-emerald-400">{evidenceCounts.fixed} fixed</span>
-                      <span className="text-slate-700">·</span>
-                      <span className="text-yellow-400">{evidenceCounts.reproduced} reproduced</span>
-                      <span className="text-slate-700">·</span>
-                      <span className="text-slate-500">{uncheckedFindings.length} unchecked</span>
-                    </span>
-                  </button>
-                  {sortedFindings.length > 0 && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleCopyProof}
-                        className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
-                      >
-                        {proofCopied ? (
-                          <CheckCircle size={10} className="text-emerald-400" />
-                        ) : (
-                          <Copy size={10} />
-                        )}
-                        {proofCopied ? "Copied!" : "Copy proof"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleCopyFindingNote}
-                        disabled={selectedFindingIdx === null}
-                        className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200 disabled:opacity-40"
-                        title={
-                          selectedFindingIdx === null
-                            ? "Select a finding to copy its context note"
-                            : "Copy selected finding context note"
-                        }
-                      >
-                        {findingNoteCopied ? (
-                          <CheckCircle size={10} className="text-emerald-400" />
-                        ) : (
-                          <FileCode size={10} />
-                        )}
-                        {findingNoteCopied ? "Copied!" : "Copy note"}
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {verificationOpen && evidenceProcedureSteps.length > 0 && (
               <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
                 <div className="mb-2 flex items-center gap-2">
-                  <ClipboardCheck size={12} className="shrink-0 text-cyan-300" />
-                  <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                    Procedure gates · {evidenceProcedureSteps.length}
-                  </span>
+                  <ListOrdered size={12} className="shrink-0 text-[var(--cv-accent)]" />
+                  <span className="cv-label text-slate-300">Agent status timeline</span>
                 </div>
                 <div className="grid grid-cols-1 gap-1.5">
-                  {evidenceProcedureSteps.slice(0, 4).map((step) => {
-                    const linkedEvents = procedureEventsByStep[step.id] ?? [];
-                    const effectiveStatus =
-                      linkedEvents.find((event) => event.status === "satisfied")?.status ??
-                      linkedEvents.find((event) => event.status === "blocked")?.status ??
-                      linkedEvents[0]?.status ??
-                      step.status;
-
+                  {reviewTimeline.map((item) => {
+                    const segmentPacketCount = timelineSegmentFindingIndexes(item.id).length;
+                    const anchors = item.anchors ?? [];
+                    const anchorsExpanded = expandedTimelineItems.has(item.id);
+                    const visibleAnchors = visibleTimelineAnchors(anchors, anchorsExpanded);
+                    const hiddenAnchorCount = anchors.length - visibleAnchors.length;
                     return (
                       <div
-                        key={step.id}
+                        key={item.label}
+                        className="flex items-start gap-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                      >
+                        <span
+                          className={cn(
+                            'mt-1 h-1.5 w-1.5 shrink-0 rounded-full',
+                            item.status === 'done' && 'bg-emerald-400',
+                            item.status === 'active' && 'bg-cyan-300',
+                            item.status === 'blocked' && 'bg-red-400',
+                            item.status === 'idle' && 'bg-slate-600'
+                          )}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="flex min-w-0 items-center gap-1">
+                            <span className="block min-w-0 flex-1 truncate text-[10px] text-slate-300">
+                              {item.label}
+                            </span>
+                            {segmentPacketCount > 0 && (
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
+                                title={`Copy fix packet from ${item.label} (${segmentPacketCount})`}
+                                onClick={() => void handleCopyTimelineSegmentPacket(item)}
+                              >
+                                {timelinePacketCopiedId === item.id ? (
+                                  <CheckCircle size={10} className="text-emerald-400" />
+                                ) : (
+                                  <ClipboardCheck size={10} />
+                                )}
+                              </Button>
+                            )}
+                            {item.jump && (
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-5 w-5 shrink-0 text-slate-500 hover:text-slate-200"
+                                title={item.jump.label}
+                                onClick={() => void handleTimelineJump(item.jump!)}
+                              >
+                                <ExternalLink size={10} />
+                              </Button>
+                            )}
+                          </span>
+                          <span className="block truncate text-[10px] text-slate-600">
+                            {item.detail}
+                          </span>
+                          {anchors.length > 0 && (
+                            <span className="mt-1 block space-y-0.5">
+                              {visibleAnchors.map((anchor) => (
+                                <button
+                                  key={anchor.id}
+                                  type="button"
+                                  disabled={!anchor.jump}
+                                  className={cn(
+                                    'block w-full truncate text-left font-mono text-[9px] text-slate-500',
+                                    anchor.jump && 'hover:text-slate-200',
+                                    !anchor.jump && 'cursor-default'
+                                  )}
+                                  title={[
+                                    anchor.source,
+                                    anchor.sourcePath,
+                                    anchor.sourceLine != null ? `line ${anchor.sourceLine}` : null,
+                                    anchor.eventId,
+                                    ...(anchor.contextExcerpt ?? []).slice(0, 2),
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                                  onClick={() => {
+                                    if (anchor.jump) void handleTimelineJump(anchor.jump);
+                                  }}
+                                >
+                                  {[
+                                    `${anchor.status ?? 'unknown'} · ${anchor.label}`,
+                                    anchor.contextExcerpt?.[0]
+                                      ? `context: ${anchor.contextExcerpt[0]}`
+                                      : null,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                                </button>
+                              ))}
+                              {shouldCollapseTimelineAnchors(anchors.length) && (
+                                <button
+                                  type="button"
+                                  className="block text-left text-[9px] text-cyan-400/80 hover:text-cyan-300"
+                                  onClick={() =>
+                                    setExpandedTimelineItems((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(item.id)) next.delete(item.id);
+                                      else next.add(item.id);
+                                      return next;
+                                    })
+                                  }
+                                >
+                                  {anchorsExpanded
+                                    ? 'Show fewer anchors'
+                                    : `Show ${hiddenAnchorCount} more anchor${hiddenAnchorCount === 1 ? '' : 's'}`}
+                                </button>
+                              )}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {reviewMemoryGraph && reviewMemoryGraph.nodes.length > 0 && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="mb-2 flex items-center gap-2">
+                    <GitBranch size={12} className="shrink-0 text-cyan-300" />
+                    <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                      Review memory graph · {reviewMemoryGraph.nodes.length} nodes
+                    </span>
+                    {reviewMemoryGraph.truncated && (
+                      <Badge variant="outline" className="rounded-full px-1.5 py-0 text-[9px]">
+                        capped
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {reviewMemoryGraph.nodes.slice(0, 5).map((node) => (
+                      <div
+                        key={node.id}
+                        className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="shrink-0 rounded bg-cyan-500/10 px-1.5 py-0.5 text-[9px] text-cyan-200">
+                            {node.kind}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-slate-300">
+                            {node.label}
+                          </span>
+                        </div>
+                        {node.detail && (
+                          <p className="mt-1 line-clamp-1 text-[10px] text-slate-500">
+                            {node.detail}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {reviewMemoryGraph.edges.length > 0 && (
+                    <div className="mt-2 font-mono text-[9px] text-slate-600">
+                      {reviewMemoryGraph.edges.slice(0, 3).map((edge) => (
+                        <div key={`${edge.from}-${edge.kind}-${edge.to}`} className="truncate">
+                          {edge.from} {'->'} {edge.to} · {edge.kind}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {focusedReviewMemoryGraph && focusedReviewMemoryGraph.nodes.length > 0 && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="mb-2 flex items-center gap-2">
+                    <GitBranch size={12} className="shrink-0 text-emerald-300" />
+                    <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                      Finding graph focus · {focusedReviewMemoryGraph.nodes.length} nodes
+                    </span>
+                    {focusedReviewMemoryGraph.truncated && (
+                      <Badge variant="outline" className="rounded-full px-1.5 py-0 text-[9px]">
+                        capped
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {focusedReviewMemoryGraph.nodes.slice(0, 4).map((node) => (
+                      <div
+                        key={node.id}
+                        className="rounded-lg border border-emerald-500/20 bg-[#050505] px-2 py-1.5"
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="shrink-0 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] text-emerald-200">
+                            {node.kind}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-slate-300">
+                            {node.label}
+                          </span>
+                        </div>
+                        {node.detail && (
+                          <p className="mt-1 line-clamp-1 text-[10px] text-slate-500">
+                            {node.detail}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {focusedReviewMemoryGraph.edges.length > 0 && (
+                    <div className="mt-2 font-mono text-[9px] text-slate-600">
+                      {focusedReviewMemoryGraph.edges.slice(0, 3).map((edge) => (
+                        <div key={`${edge.from}-${edge.kind}-${edge.to}`} className="truncate">
+                          {edge.from} {'->'} {edge.to} · {edge.kind}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {historyExplanations.length > 0 && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="mb-2 flex items-center gap-2">
+                    <History size={12} className="shrink-0 text-amber-300" />
+                    <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                      Why this code exists · {historyExplanations.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {historyExplanations.slice(0, 3).map((explanation) => (
+                      <div
+                        key={explanation.file}
+                        className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-slate-300">
+                            {explanation.file}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 rounded-full px-1.5 py-0 text-[9px] text-slate-500"
+                          >
+                            {explanation.confidence}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
+                          {explanation.summary}
+                        </p>
+                        {explanation.citations[0] && (
+                          <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
+                            {explanation.citations[0]}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                    {selectedFindingHistoryExplanation && (
+                      <div className="rounded-lg border border-amber-500/20 bg-[#050505] px-2 py-1.5">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-amber-200">
+                            {selectedFindingHistoryExplanation.file}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 rounded-full px-1.5 py-0 text-[9px] text-amber-300/80"
+                          >
+                            selected
+                          </Badge>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
+                          {selectedFindingHistoryExplanation.summary}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {evidenceCandidates.length > 0 && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="mb-2 flex items-center gap-2">
+                    <AlertTriangle size={12} className="shrink-0 text-yellow-400" />
+                    <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                      Evidence candidates · {evidenceCandidates.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {evidenceCandidates.slice(0, 4).map((candidate) => {
+                      const candidateStatus = evidenceCandidateStatuses[candidate.id] ?? 'open';
+
+                      return (
+                        <div
+                          key={candidate.id}
+                          className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'shrink-0 rounded-full px-1.5 py-0 font-mono text-[9px] uppercase',
+                                severityColor(candidate.severity_hint)
+                              )}
+                            >
+                              {candidate.severity_hint}
+                            </Badge>
+                            <span className="min-w-0 flex-1 truncate text-[10px] text-slate-300">
+                              {evidenceCandidateLabel(candidate)}
+                            </span>
+                            <span className="shrink-0 font-mono text-[9px] text-slate-600">
+                              {Math.round(candidate.confidence * 100)}%
+                            </span>
+                          </div>
+                          <label className="mt-1.5 block space-y-1">
+                            <span className="sr-only">Candidate status</span>
+                            <select
+                              value={candidateStatus}
+                              onChange={(event) =>
+                                updateEvidenceCandidateStatus(
+                                  candidate.id,
+                                  event.target.value as EvidenceCandidateStatus
+                                )
+                              }
+                              className="w-full rounded border border-[var(--cv-line)] bg-[#050505] px-1.5 py-1 text-[10px] text-slate-300 outline-none focus:border-[var(--cv-accent)]"
+                            >
+                              {evidenceCandidateStatusOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
+                            {candidate.why_it_matters}
+                          </p>
+                          {candidate.open_questions.length > 0 && (
+                            <p className="mt-1 line-clamp-1 text-[10px] leading-4 text-yellow-300/80">
+                              {candidate.open_questions[0]}
+                            </p>
+                          )}
+                          {candidate.evidence_refs.length > 0 && (
+                            <p
+                              className="mt-1 truncate font-mono text-[9px] text-slate-500"
+                              title={
+                                candidate.evidence_refs[0].detail ??
+                                candidate.evidence_refs[0].label
+                              }
+                            >
+                              {candidate.evidence_refs[0].kind}: {candidate.evidence_refs[0].label}
+                            </p>
+                          )}
+                          {candidate.affected_files.length > 0 && (
+                            <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
+                              {candidate.affected_files.slice(0, 3).join(', ')}
+                              {candidate.affected_files.length > 3
+                                ? ` (+${candidate.affected_files.length - 3})`
+                                : ''}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Verification group — always-visible summary header + toggle.
+                Collapses the detail sections (gates, timeline, intent, risk
+                ledger) so the panel isn't four stacked equal-weight blocks. */}
+              {(sortedFindings.length > 0 ||
+                evidenceProcedureSteps.length > 0 ||
+                procedureExecutionEvents.length > 0 ||
+                intentReport ||
+                uncheckedFindings.length > 0) && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setVerificationOpen((o) => !o)}
+                      className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                    >
+                      {verificationOpen ? (
+                        <ChevronDown size={12} className="shrink-0 text-slate-500" />
+                      ) : (
+                        <ChevronRight size={12} className="shrink-0 text-slate-500" />
+                      )}
+                      <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
+                      <span className="cv-label shrink-0 text-slate-300">Verification</span>
+                      <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 font-mono text-[10px]">
+                        <span className="text-emerald-400">{evidenceCounts.fixed} fixed</span>
+                        <span className="text-slate-700">·</span>
+                        <span className="text-yellow-400">
+                          {evidenceCounts.reproduced} reproduced
+                        </span>
+                        <span className="text-slate-700">·</span>
+                        <span className="text-slate-500">{uncheckedFindings.length} unchecked</span>
+                      </span>
+                    </button>
+                    {sortedFindings.length > 0 && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleCopyProof}
+                          className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
+                        >
+                          {proofCopied ? (
+                            <CheckCircle size={10} className="text-emerald-400" />
+                          ) : (
+                            <Copy size={10} />
+                          )}
+                          {proofCopied ? 'Copied!' : 'Copy proof'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleCopyFindingNote}
+                          disabled={selectedFindingIdx === null}
+                          className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200 disabled:opacity-40"
+                          title={
+                            selectedFindingIdx === null
+                              ? 'Select a finding to copy its context note'
+                              : 'Copy selected finding context note'
+                          }
+                        >
+                          {findingNoteCopied ? (
+                            <CheckCircle size={10} className="text-emerald-400" />
+                          ) : (
+                            <FileCode size={10} />
+                          )}
+                          {findingNoteCopied ? 'Copied!' : 'Copy note'}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {verificationOpen && evidenceProcedureSteps.length > 0 && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="mb-2 flex items-center gap-2">
+                    <ClipboardCheck size={12} className="shrink-0 text-cyan-300" />
+                    <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                      Procedure gates · {evidenceProcedureSteps.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {evidenceProcedureSteps.slice(0, 4).map((step) => {
+                      const linkedEvents = procedureEventsByStep[step.id] ?? [];
+                      const effectiveStatus =
+                        linkedEvents.find((event) => event.status === 'satisfied')?.status ??
+                        linkedEvents.find((event) => event.status === 'blocked')?.status ??
+                        linkedEvents[0]?.status ??
+                        step.status;
+
+                      return (
+                        <div
+                          key={step.id}
+                          className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span
+                              className={cn(
+                                'h-1.5 w-1.5 shrink-0 rounded-full',
+                                effectiveStatus === 'blocked'
+                                  ? 'bg-yellow-400'
+                                  : effectiveStatus === 'satisfied'
+                                    ? 'bg-emerald-400'
+                                    : 'bg-cyan-300'
+                              )}
+                            />
+                            <span className="min-w-0 flex-1 truncate text-[10px] text-slate-300">
+                              {step.procedure.replaceAll('_', ' ')}
+                            </span>
+                            <span className="shrink-0 font-mono text-[9px] uppercase text-slate-600">
+                              {effectiveStatus}
+                            </span>
+                          </div>
+                          <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
+                            {step.gate}
+                          </p>
+                          <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
+                            artifact: {step.artifact}
+                          </p>
+                          {linkedEvents.slice(0, 2).map((event) => (
+                            <p
+                              key={`${event.source}-${event.summary}`}
+                              className="mt-1 truncate text-[10px] leading-4 text-cyan-300/80"
+                            >
+                              {event.source}: {event.summary}
+                            </p>
+                          ))}
+                          {linkedEvents.length === 0 && step.blocked_on.length > 0 && (
+                            <p className="mt-1 truncate text-[10px] leading-4 text-yellow-300/80">
+                              blocked on: {step.blocked_on.join(', ')}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {verificationOpen && procedureExecutionEvents.length > 0 && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="mb-2 flex items-center gap-2">
+                    <History size={12} className="shrink-0 text-cyan-300" />
+                    <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                      Procedure event timeline · {procedureExecutionEvents.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {procedureExecutionEvents.slice(0, 8).map((event) => (
+                      <div
+                        key={procedureEventKey(event)}
                         className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
                       >
                         <div className="flex min-w-0 items-center gap-2">
                           <span
                             className={cn(
-                              "h-1.5 w-1.5 shrink-0 rounded-full",
-                              effectiveStatus === "blocked"
-                                ? "bg-yellow-400"
-                                : effectiveStatus === "satisfied"
-                                  ? "bg-emerald-400"
-                                  : "bg-cyan-300",
+                              'h-1.5 w-1.5 shrink-0 rounded-full',
+                              event.status === 'blocked'
+                                ? 'bg-yellow-400'
+                                : event.status === 'satisfied'
+                                  ? 'bg-emerald-400'
+                                  : 'bg-cyan-300'
                             )}
                           />
-                          <span className="min-w-0 flex-1 truncate text-[10px] text-slate-300">
-                            {step.procedure.replaceAll("_", " ")}
+                          <span className="min-w-0 flex-1 truncate font-mono text-[9px] text-slate-500">
+                            {procedureEventTimeLabel(event)} · {event.source}
                           </span>
                           <span className="shrink-0 font-mono text-[9px] uppercase text-slate-600">
-                            {effectiveStatus}
+                            {event.status}
                           </span>
                         </div>
-                        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500">
-                          {step.gate}
+                        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-400">
+                          {event.summary}
                         </p>
-                        <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
-                          artifact: {step.artifact}
-                        </p>
-                        {linkedEvents.slice(0, 2).map((event) => (
-                          <p
-                            key={`${event.source}-${event.summary}`}
-                            className="mt-1 truncate text-[10px] leading-4 text-cyan-300/80"
-                          >
-                            {event.source}: {event.summary}
-                          </p>
-                        ))}
-                        {linkedEvents.length === 0 && step.blocked_on.length > 0 && (
-                          <p className="mt-1 truncate text-[10px] leading-4 text-yellow-300/80">
-                            blocked on: {step.blocked_on.join(", ")}
+                        {event.artifact && (
+                          <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
+                            {event.artifact}
                           </p>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {verificationOpen && procedureExecutionEvents.length > 0 && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="mb-2 flex items-center gap-2">
-                  <History size={12} className="shrink-0 text-cyan-300" />
-                  <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                    Procedure event timeline · {procedureExecutionEvents.length}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {procedureExecutionEvents.slice(0, 8).map((event) => (
-                    <div
-                      key={procedureEventKey(event)}
-                      className="rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span
-                          className={cn(
-                            "h-1.5 w-1.5 shrink-0 rounded-full",
-                            event.status === "blocked"
-                              ? "bg-yellow-400"
-                              : event.status === "satisfied"
-                                ? "bg-emerald-400"
-                                : "bg-cyan-300",
-                          )}
-                        />
-                        <span className="min-w-0 flex-1 truncate font-mono text-[9px] text-slate-500">
-                          {procedureEventTimeLabel(event)} · {event.source}
-                        </span>
-                        <span className="shrink-0 font-mono text-[9px] uppercase text-slate-600">
-                          {event.status}
-                        </span>
-                      </div>
-                      <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-400">
-                        {event.summary}
-                      </p>
-                      {event.artifact && (
-                        <p className="mt-1 truncate font-mono text-[9px] text-slate-600">
-                          {event.artifact}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Intent-level verification gaps */}
-            {verificationOpen && intentReport && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <GitCommitHorizontal size={12} className="shrink-0 text-cyan-300" />
-                  <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
-                    Intent check · {intentReport.changedSurfaces.join(", ")}
-                  </span>
-                </div>
-                <p className="mt-1 truncate text-[10px] leading-4 text-slate-500">
-                  {intentReport.inferredIntent}
-                </p>
-                {intentReport.timeline.length > 0 && (
-                  <div className="mt-2 grid grid-cols-1 gap-1.5">
-                    {intentReport.timeline.slice(0, 5).map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-start gap-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
-                      >
-                        <span
-                          className={cn(
-                            "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
-                            item.status === "done" && "bg-emerald-400",
-                            item.status === "warning" && "bg-yellow-400",
-                            item.status === "missing" && "bg-slate-600",
-                          )}
-                        />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[10px] text-slate-300">
-                            {item.label}
-                          </span>
-                          <span className="block truncate text-[10px] text-slate-600">
-                            {item.detail}
-                          </span>
-                        </span>
-                      </div>
                     ))}
                   </div>
-                )}
-                {(intentReport.verificationGaps.length > 0 ||
-                  intentReport.suspectedRisks.length > 0) && (
+                </div>
+              )}
+
+              {/* Intent-level verification gaps */}
+              {verificationOpen && intentReport && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <GitCommitHorizontal size={12} className="shrink-0 text-cyan-300" />
+                    <span className="cv-label min-w-0 flex-1 truncate text-slate-300">
+                      Intent check · {intentReport.changedSurfaces.join(', ')}
+                    </span>
+                  </div>
+                  <p className="mt-1 truncate text-[10px] leading-4 text-slate-500">
+                    {intentReport.inferredIntent}
+                  </p>
+                  {intentReport.timeline.length > 0 && (
+                    <div className="mt-2 grid grid-cols-1 gap-1.5">
+                      {intentReport.timeline.slice(0, 5).map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-start gap-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+                        >
+                          <span
+                            className={cn(
+                              'mt-1 h-1.5 w-1.5 shrink-0 rounded-full',
+                              item.status === 'done' && 'bg-emerald-400',
+                              item.status === 'warning' && 'bg-yellow-400',
+                              item.status === 'missing' && 'bg-slate-600'
+                            )}
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[10px] text-slate-300">
+                              {item.label}
+                            </span>
+                            <span className="block truncate text-[10px] text-slate-600">
+                              {item.detail}
+                            </span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(intentReport.verificationGaps.length > 0 ||
+                    intentReport.suspectedRisks.length > 0) && (
                     <ul className="mt-1.5 space-y-1">
                       {[
                         ...intentReport.verificationGaps.slice(0, 2),
@@ -5425,91 +5433,95 @@ export default function QuickReview() {
                       ))}
                     </ul>
                   )}
-              </div>
-            )}
-
-            {/* Unchecked-finding risk summary — why "unchecked" still matters */}
-            {verificationOpen && uncheckedFindings.length > 0 && (
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle size={12} className="shrink-0 text-yellow-400" />
-                  <span className="cv-label text-slate-300">
-                    {uncheckedFindings.length} unchecked finding{uncheckedFindings.length !== 1 ? "s" : ""} — still on the risk ledger
-                  </span>
                 </div>
-                <ul className="mt-1.5 space-y-1">
-                  {uncheckedBySeverity.map(([severity, findings]) => {
-                    const sample = findings[0];
-                    const loc = sample?.filePath
-                      ? `${sample.filePath}${sample.line != null ? `:${sample.line}` : ""}`
-                      : sample?.title;
-                    return (
-                      <li key={severity} className="flex items-start gap-2">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "mt-0.5 shrink-0 rounded-full px-1.5 py-0 font-mono text-[9px] uppercase",
-                            severityColor(severity),
-                          )}
-                        >
-                          {severity} · {findings.length}
-                        </Badge>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[10px] leading-4 text-slate-400">
-                            {uncheckedRiskCopy(severity)}
-                          </p>
-                          {loc && (
-                            <p className="truncate font-mono text-[9px] text-slate-600">
-                              e.g. {loc}
-                              {findings.length > 1 ? ` (+${findings.length - 1} more)` : ""}
+              )}
+
+              {/* Unchecked-finding risk summary — why "unchecked" still matters */}
+              {verificationOpen && uncheckedFindings.length > 0 && (
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={12} className="shrink-0 text-yellow-400" />
+                    <span className="cv-label text-slate-300">
+                      {uncheckedFindings.length} unchecked finding
+                      {uncheckedFindings.length !== 1 ? 's' : ''} — still on the risk ledger
+                    </span>
+                  </div>
+                  <ul className="mt-1.5 space-y-1">
+                    {uncheckedBySeverity.map(([severity, findings]) => {
+                      const sample = findings[0];
+                      const loc = sample?.filePath
+                        ? `${sample.filePath}${sample.line != null ? `:${sample.line}` : ''}`
+                        : sample?.title;
+                      return (
+                        <li key={severity} className="flex items-start gap-2">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'mt-0.5 shrink-0 rounded-full px-1.5 py-0 font-mono text-[9px] uppercase',
+                              severityColor(severity)
+                            )}
+                          >
+                            {severity} · {findings.length}
+                          </Badge>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] leading-4 text-slate-400">
+                              {uncheckedRiskCopy(severity)}
                             </p>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
+                            {loc && (
+                              <p className="truncate font-mono text-[9px] text-slate-600">
+                                e.g. {loc}
+                                {findings.length > 1 ? ` (+${findings.length - 1} more)` : ''}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
 
-            <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] p-3">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={toggleSelectAll}
-                  className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
-                >
-                  {selectedFindings.size === sortedFindings.length && sortedFindings.length > 0 ? (
-                    <CheckSquare2 size={14} className="text-[var(--cv-accent)]" />
-                  ) : (
-                    <Square size={14} />
-                  )}
-                  All
-                </button>
-                <div className="relative ml-auto group">
-                  <Button
-                    size="sm"
-                    onClick={handleFixSelected}
-                    disabled={isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath}
-                    className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
+              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] p-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={toggleSelectAll}
+                    className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
                   >
-                    {isFixing === "selected" ? (
-                      <Loader2 size={14} className="animate-spin" />
+                    {selectedFindings.size === sortedFindings.length &&
+                    sortedFindings.length > 0 ? (
+                      <CheckSquare2 size={14} className="text-[var(--cv-accent)]" />
                     ) : (
-                      <Zap size={14} />
+                      <Square size={14} />
                     )}
-                    {isFixing === "selected"
-                      ? "Fixing..."
-                      : `Fix${selectedFindings.size > 0 ? ` (${selectedFindings.size})` : ""}`}
-                  </Button>
-                  {!viewHasRepoPath && (
-                    <div className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block">
-                      No repo path — can't apply fixes
-                    </div>
-                  )}
+                    All
+                  </button>
+                  <div className="relative ml-auto group">
+                    <Button
+                      size="sm"
+                      onClick={handleFixSelected}
+                      disabled={
+                        isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath
+                      }
+                      className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
+                    >
+                      {isFixing === 'selected' ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Zap size={14} />
+                      )}
+                      {isFixing === 'selected'
+                        ? 'Fixing...'
+                        : `Fix${selectedFindings.size > 0 ? ` (${selectedFindings.size})` : ''}`}
+                    </Button>
+                    {!viewHasRepoPath && (
+                      <div className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block">
+                        No repo path — can't apply fixes
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </aside>
+            </aside>
           </Panel>
         </PanelGroup>
       </div>
@@ -5527,9 +5539,7 @@ export default function QuickReview() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Zap size={16} className="text-[var(--cv-accent)]" />
-              <h1 className="cv-label text-slate-200">
-                Review
-              </h1>
+              <h1 className="cv-label text-slate-200">Review</h1>
             </div>
             {/* Rubric/standards is review config, not a top-level tab — reach
                 the editor from here. */}
@@ -5553,7 +5563,7 @@ export default function QuickReview() {
             onClick={handlePickFolder}
           >
             <FolderOpen size={16} />
-            {repoPath ? shortenPath(repoPath) : "Select repository..."}
+            {repoPath ? shortenPath(repoPath) : 'Select repository...'}
           </Button>
 
           {/* Fleet auto-link indicator — surfaces when CodeVetter recognised
@@ -5561,15 +5571,10 @@ export default function QuickReview() {
           {repoPath && detectedFleetProject?.project && (
             <div className="flex items-center gap-1.5 border border-cyan-500/20 bg-cyan-500/5 px-2 py-1 text-[10px] text-cyan-300">
               <Sparkles size={11} className="shrink-0" />
-              Linked to{" "}
-              <span className="font-mono">
-                {detectedFleetProject.project.name}
-              </span>
+              Linked to <span className="font-mono">{detectedFleetProject.project.name}</span>
               <span className="text-cyan-500/60">·</span>
               <span className="text-cyan-500/60">
-                {detectedFleetProject.source === "git_url"
-                  ? "auto"
-                  : "manual"}
+                {detectedFleetProject.source === 'git_url' ? 'auto' : 'manual'}
               </span>
             </div>
           )}
@@ -5586,39 +5591,37 @@ export default function QuickReview() {
               {/* Tabs */}
               <div className="grid grid-cols-2 gap-1 border border-[var(--cv-line)] bg-[#07080a] p-1">
                 <button
-                  onClick={() => setActiveTab("branches")}
+                  onClick={() => setActiveTab('branches')}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors",
-                    activeTab === "branches"
-                      ? "bg-cyan-500/10 text-[var(--cv-accent)] shadow-[inset_0_-1px_0_rgba(125,211,252,0.45)]"
-                      : "text-slate-500 hover:text-slate-300",
+                    'flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors',
+                    activeTab === 'branches'
+                      ? 'bg-cyan-500/10 text-[var(--cv-accent)] shadow-[inset_0_-1px_0_rgba(125,211,252,0.45)]'
+                      : 'text-slate-500 hover:text-slate-300'
                   )}
                 >
                   <GitBranch size={14} />
                   Branches
                 </button>
                 <button
-                  onClick={() => setActiveTab("prs")}
+                  onClick={() => setActiveTab('prs')}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors",
-                    activeTab === "prs"
-                      ? "bg-cyan-500/10 text-[var(--cv-accent)] shadow-[inset_0_-1px_0_rgba(125,211,252,0.45)]"
-                      : "text-slate-500 hover:text-slate-300",
+                    'flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors',
+                    activeTab === 'prs'
+                      ? 'bg-cyan-500/10 text-[var(--cv-accent)] shadow-[inset_0_-1px_0_rgba(125,211,252,0.45)]'
+                      : 'text-slate-500 hover:text-slate-300'
                   )}
                 >
                   <GitPullRequest size={14} />
                   PRs
                   {pullRequests.length > 0 && (
-                    <span className="ml-1 text-[10px] text-slate-500">
-                      {pullRequests.length}
-                    </span>
+                    <span className="ml-1 text-[10px] text-slate-500">{pullRequests.length}</span>
                   )}
                 </button>
               </div>
 
               {/* List */}
               <div className="max-h-[240px] overflow-y-auto border border-[var(--cv-line)] bg-[#07080a] p-2">
-                {activeTab === "branches" ? (
+                {activeTab === 'branches' ? (
                   branches.length === 0 ? (
                     <div className="px-3 py-4 text-center text-xs text-slate-500">
                       No branches found
@@ -5629,10 +5632,10 @@ export default function QuickReview() {
                         key={branch}
                         onClick={() => handleSelectBranch(branch)}
                         className={cn(
-                          "mb-2 flex w-full items-center gap-3 border px-3 py-2.5 text-left text-xs transition-colors last:mb-0",
+                          'mb-2 flex w-full items-center gap-3 border px-3 py-2.5 text-left text-xs transition-colors last:mb-0',
                           selectedBranch === branch
-                            ? "border-[rgba(125,211,252,0.42)] bg-cyan-500/10 text-[var(--cv-accent)]"
-                            : "border-[var(--cv-line)] bg-[#050608] text-slate-400 hover:border-[var(--cv-line-strong)] hover:bg-white/[0.04] hover:text-slate-200",
+                            ? 'border-[rgba(125,211,252,0.42)] bg-cyan-500/10 text-[var(--cv-accent)]'
+                            : 'border-[var(--cv-line)] bg-[#050608] text-slate-400 hover:border-[var(--cv-line-strong)] hover:bg-white/[0.04] hover:text-slate-200'
                         )}
                       >
                         <GitBranch size={14} className="shrink-0" />
@@ -5656,19 +5659,17 @@ export default function QuickReview() {
                     ))
                   )
                 ) : pullRequests.length === 0 ? (
-                  <div className="px-3 py-4 text-center text-xs text-slate-500">
-                    No open PRs
-                  </div>
+                  <div className="px-3 py-4 text-center text-xs text-slate-500">No open PRs</div>
                 ) : (
                   pullRequests.map((pr) => (
                     <button
                       key={pr.number}
                       onClick={() => handleSelectPR(pr)}
                       className={cn(
-                        "mb-2 flex w-full items-start gap-3 border px-3 py-3 text-left text-xs transition-colors last:mb-0",
+                        'mb-2 flex w-full items-start gap-3 border px-3 py-3 text-left text-xs transition-colors last:mb-0',
                         selectedBranch === pr.headRefName
-                          ? "border-[rgba(125,211,252,0.42)] bg-cyan-500/10 text-[var(--cv-accent)]"
-                          : "border-[var(--cv-line)] bg-[#050608] text-slate-400 hover:border-[var(--cv-line-strong)] hover:bg-white/[0.04] hover:text-slate-200",
+                          ? 'border-[rgba(125,211,252,0.42)] bg-cyan-500/10 text-[var(--cv-accent)]'
+                          : 'border-[var(--cv-line)] bg-[#050608] text-slate-400 hover:border-[var(--cv-line-strong)] hover:bg-white/[0.04] hover:text-slate-200'
                       )}
                     >
                       <GitPullRequest size={14} className="mt-0.5 shrink-0" />
@@ -5721,9 +5722,7 @@ export default function QuickReview() {
 
               {/* Change description */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-slate-400">
-                  Change description
-                </label>
+                <label className="text-[11px] font-medium text-slate-400">Change description</label>
                 <textarea
                   value={changeDesc}
                   onChange={(e) => setChangeDesc(e.target.value)}
@@ -5792,7 +5791,9 @@ export default function QuickReview() {
                 <div className="space-y-1 border border-[var(--cv-line)] bg-[#07080a] p-2 text-xs">
                   <div className="flex items-center gap-1.5 text-slate-400">
                     <History size={12} />
-                    <span className="font-medium">History context (read-only — mined for this diff)</span>
+                    <span className="font-medium">
+                      History context (read-only — mined for this diff)
+                    </span>
                     {historyLoading && <Loader2 size={12} className="animate-spin ml-1" />}
                   </div>
                   {!historyLoading && historyContext && (
@@ -5815,175 +5816,204 @@ export default function QuickReview() {
                                     summary.commits ? `${summary.commits} commit` : null,
                                     summary.agents ? `${summary.agents} agent` : null,
                                     summary.recurring ? `${summary.recurring} recurring` : null,
-                                  ].filter(Boolean).join(" · ")}
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')}
                                 </span>
                               </li>
                             ))}
                           </ul>
                         </div>
                       )}
-                      {historyContext.recent_commits && historyContext.recent_commits.length > 0 && (
-                        <div>
-                          <span className="text-slate-500">Recent commits:</span>
-                          <ul className="mt-0.5 list-disc pl-4 font-mono text-[9px] text-slate-400">
-                            {historyContext.recent_commits.slice(0, 4).map((c, i) => (
-                              <li key={i}>{c.file}: {c.sha} {c.subject} ({c.date})</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {historyContext.prior_decisions && historyContext.prior_decisions.length > 0 && (
-                        <div>
-                          <span className="text-slate-500">Prior decisions:</span>
-                          <ul className="mt-0.5 list-disc pl-4 font-mono text-[9px] text-slate-400">
-                            {historyContext.prior_decisions.slice(0, 3).map((d, i) => (
-                              <li key={i}>
-                                {d.file}{d.line ? `:${d.line}` : ""}: {d.text}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {historyContext.prior_agent_activity && historyContext.prior_agent_activity.length > 0 && (
-                        <div>
-                          <span className="text-slate-500">Prior agent:</span>{" "}
-                          {historyContext.prior_agent_activity[0].summary || "(summary)"}
-                        </div>
-                      )}
-                      {historyContext.command_signals && historyContext.command_signals.length > 0 && (
-                        <div>
-                          <span className="text-slate-500">Commands:</span>
-                          <div className="mt-0.5 font-mono text-[9px] text-slate-500">
-                            {[
-                              `${historyContext.command_signals.length} total`,
-                              `${historyContext.command_signals.filter((signal) => signal.source === "raw_session").length} raw session`,
-                              `${historyContext.command_signals.filter((signal) => signal.source === "output_structured").length} structured`,
-                            ].join(" · ")}
+                      {historyContext.recent_commits &&
+                        historyContext.recent_commits.length > 0 && (
+                          <div>
+                            <span className="text-slate-500">Recent commits:</span>
+                            <ul className="mt-0.5 list-disc pl-4 font-mono text-[9px] text-slate-400">
+                              {historyContext.recent_commits.slice(0, 4).map((c, i) => (
+                                <li key={i}>
+                                  {c.file}: {c.sha} {c.subject} ({c.date})
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                          <ul className="mt-0.5 list-disc pl-4 font-mono text-[9px] text-slate-400">
-                            {historyContext.command_signals.slice(0, 3).map((signal, i) => {
-                              const signalKey = `${signal.event_id ?? signal.date}-${i}`;
-                              return (
-                                <li key={signalKey}>
-                                  {signal.agent}: {signal.command}
-                                  {signal.status && signal.status !== "unknown"
-                                    ? ` · ${signal.status}`
-                                    : ""}
-                                  {signal.source
-                                    ? ` · ${signal.source}${signal.source_line ? `:${signal.source_line}` : ""}`
-                                    : ""}
-                                  {signal.artifacts && signal.artifacts.length > 0
-                                    ? ` · ${signal.artifacts.length} artifact · ${signal.artifacts[0]}`
-                                    : ""}
-                                  {signal.context_excerpt && signal.context_excerpt.length > 0 && (
-                                    <div className="mt-0.5 space-y-0.5 text-[9px] text-slate-500">
-                                      {signal.context_excerpt.slice(0, 2).map((excerpt) => (
-                                        <div key={excerpt} className="break-words">
-                                          {excerpt}
+                        )}
+                      {historyContext.prior_decisions &&
+                        historyContext.prior_decisions.length > 0 && (
+                          <div>
+                            <span className="text-slate-500">Prior decisions:</span>
+                            <ul className="mt-0.5 list-disc pl-4 font-mono text-[9px] text-slate-400">
+                              {historyContext.prior_decisions.slice(0, 3).map((d, i) => (
+                                <li key={i}>
+                                  {d.file}
+                                  {d.line ? `:${d.line}` : ''}: {d.text}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      {historyContext.prior_agent_activity &&
+                        historyContext.prior_agent_activity.length > 0 && (
+                          <div>
+                            <span className="text-slate-500">Prior agent:</span>{' '}
+                            {historyContext.prior_agent_activity[0].summary || '(summary)'}
+                          </div>
+                        )}
+                      {historyContext.command_signals &&
+                        historyContext.command_signals.length > 0 && (
+                          <div>
+                            <span className="text-slate-500">Commands:</span>
+                            <div className="mt-0.5 font-mono text-[9px] text-slate-500">
+                              {[
+                                `${historyContext.command_signals.length} total`,
+                                `${historyContext.command_signals.filter((signal) => signal.source === 'raw_session').length} raw session`,
+                                `${historyContext.command_signals.filter((signal) => signal.source === 'output_structured').length} structured`,
+                              ].join(' · ')}
+                            </div>
+                            <ul className="mt-0.5 list-disc pl-4 font-mono text-[9px] text-slate-400">
+                              {historyContext.command_signals.slice(0, 3).map((signal, i) => {
+                                const signalKey = `${signal.event_id ?? signal.date}-${i}`;
+                                return (
+                                  <li key={signalKey}>
+                                    {signal.agent}: {signal.command}
+                                    {signal.status && signal.status !== 'unknown'
+                                      ? ` · ${signal.status}`
+                                      : ''}
+                                    {signal.source
+                                      ? ` · ${signal.source}${signal.source_line ? `:${signal.source_line}` : ''}`
+                                      : ''}
+                                    {signal.artifacts && signal.artifacts.length > 0
+                                      ? ` · ${signal.artifacts.length} artifact · ${signal.artifacts[0]}`
+                                      : ''}
+                                    {signal.context_excerpt &&
+                                      signal.context_excerpt.length > 0 && (
+                                        <div className="mt-0.5 space-y-0.5 text-[9px] text-slate-500">
+                                          {signal.context_excerpt.slice(0, 2).map((excerpt) => (
+                                            <div key={excerpt} className="break-words">
+                                              {excerpt}
+                                            </div>
+                                          ))}
                                         </div>
-                                      ))}
+                                      )}
+                                    {signal.source_path && (
+                                      <>
+                                        <Button
+                                          type="button"
+                                          size="icon"
+                                          variant="ghost"
+                                          className="ml-1 inline-flex h-4 w-4 align-middle text-slate-500 hover:text-slate-200"
+                                          title="Preview transcript excerpt"
+                                          disabled={commandSourcePreviewLoading !== null}
+                                          onClick={() =>
+                                            void handlePreviewCommandSource(signal, signalKey)
+                                          }
+                                        >
+                                          {commandSourcePreviewLoading === signalKey ? (
+                                            <Loader2 size={10} className="animate-spin" />
+                                          ) : (
+                                            <FileCode size={10} />
+                                          )}
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          size="icon"
+                                          variant="ghost"
+                                          className="ml-0.5 inline-flex h-4 w-4 align-middle text-slate-500 hover:text-slate-200"
+                                          title="Open source transcript"
+                                          onClick={() =>
+                                            void handleOpenCommandSource(signal.source_path!)
+                                          }
+                                        >
+                                          <ExternalLink size={10} />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                            {commandSourcePreview && (
+                              <div className="mt-2 rounded border border-[var(--cv-line)] bg-[#050505] p-2 font-mono text-[9px] text-slate-400">
+                                <div className="mb-1 flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.12em] text-slate-600">
+                                  <span className="truncate" title={commandSourcePreview.path}>
+                                    {commandSourcePreview.path}:{commandSourcePreview.line}
+                                  </span>
+                                  <div className="flex shrink-0 items-center gap-1">
+                                    <span>{commandSourcePreview.language}</span>
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-4 w-4 text-slate-500 hover:text-slate-200"
+                                      title="Close transcript preview"
+                                      onClick={() => setCommandSourcePreview(null)}
+                                    >
+                                      <X size={10} />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="max-h-36 overflow-auto rounded bg-black/30">
+                                  {commandSourcePreview.items &&
+                                  commandSourcePreview.items.length > 0 ? (
+                                    commandSourcePreview.items.map((item) => (
+                                      <div
+                                        key={`${item.line}-${item.kind}`}
+                                        className={cn(
+                                          'grid grid-cols-[34px_66px_1fr] gap-2 px-2 py-1',
+                                          item.highlight && 'bg-amber-500/10 text-amber-200'
+                                        )}
+                                      >
+                                        <span className="text-right text-slate-600">
+                                          {item.line}
+                                        </span>
+                                        <span className="uppercase text-slate-600">
+                                          {item.kind}
+                                        </span>
+                                        <span className="min-w-0 break-words">
+                                          <span className="text-slate-500">{item.role}</span>
+                                          {item.status && item.status !== 'unknown' ? (
+                                            <span className="text-slate-500"> · {item.status}</span>
+                                          ) : null}
+                                          {item.artifacts && item.artifacts.length > 0 ? (
+                                            <span className="text-slate-500">
+                                              {' '}
+                                              · {item.artifacts.length} artifact
+                                            </span>
+                                          ) : null}
+                                          <span className="block whitespace-pre-wrap">
+                                            {item.text}
+                                          </span>
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : commandSourcePreview.lines &&
+                                    commandSourcePreview.lines.length > 0 ? (
+                                    commandSourcePreview.lines.map((line) => (
+                                      <div
+                                        key={line.line}
+                                        className={cn(
+                                          'grid grid-cols-[34px_1fr] gap-2 px-2 py-0.5',
+                                          line.highlight && 'bg-amber-500/10 text-amber-200'
+                                        )}
+                                      >
+                                        <span className="text-right text-slate-600">
+                                          {line.line}
+                                        </span>
+                                        <span className="break-all whitespace-pre-wrap">
+                                          {line.text}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="px-2 py-1 text-slate-600">
+                                      (no excerpt available)
                                     </div>
                                   )}
-                                  {signal.source_path && (
-                                    <>
-                                      <Button
-                                        type="button"
-                                        size="icon"
-                                        variant="ghost"
-                                        className="ml-1 inline-flex h-4 w-4 align-middle text-slate-500 hover:text-slate-200"
-                                        title="Preview transcript excerpt"
-                                        disabled={commandSourcePreviewLoading !== null}
-                                        onClick={() => void handlePreviewCommandSource(signal, signalKey)}
-                                      >
-                                        {commandSourcePreviewLoading === signalKey ? (
-                                          <Loader2 size={10} className="animate-spin" />
-                                        ) : (
-                                          <FileCode size={10} />
-                                        )}
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        size="icon"
-                                        variant="ghost"
-                                        className="ml-0.5 inline-flex h-4 w-4 align-middle text-slate-500 hover:text-slate-200"
-                                        title="Open source transcript"
-                                        onClick={() => void handleOpenCommandSource(signal.source_path!)}
-                                      >
-                                        <ExternalLink size={10} />
-                                      </Button>
-                                    </>
-                                  )}
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          {commandSourcePreview && (
-                            <div className="mt-2 rounded border border-[var(--cv-line)] bg-[#050505] p-2 font-mono text-[9px] text-slate-400">
-                              <div className="mb-1 flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.12em] text-slate-600">
-                                <span className="truncate" title={commandSourcePreview.path}>
-                                  {commandSourcePreview.path}:{commandSourcePreview.line}
-                                </span>
-                                <div className="flex shrink-0 items-center gap-1">
-                                  <span>{commandSourcePreview.language}</span>
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-4 w-4 text-slate-500 hover:text-slate-200"
-                                    title="Close transcript preview"
-                                    onClick={() => setCommandSourcePreview(null)}
-                                  >
-                                    <X size={10} />
-                                  </Button>
                                 </div>
                               </div>
-                              <div className="max-h-36 overflow-auto rounded bg-black/30">
-                                {commandSourcePreview.items && commandSourcePreview.items.length > 0 ? (
-                                  commandSourcePreview.items.map((item) => (
-                                    <div
-                                      key={`${item.line}-${item.kind}`}
-                                      className={cn(
-                                        "grid grid-cols-[34px_66px_1fr] gap-2 px-2 py-1",
-                                        item.highlight && "bg-amber-500/10 text-amber-200",
-                                      )}
-                                    >
-                                      <span className="text-right text-slate-600">{item.line}</span>
-                                      <span className="uppercase text-slate-600">
-                                        {item.kind}
-                                      </span>
-                                      <span className="min-w-0 break-words">
-                                        <span className="text-slate-500">{item.role}</span>
-                                        {item.status && item.status !== "unknown" ? (
-                                          <span className="text-slate-500"> · {item.status}</span>
-                                        ) : null}
-                                        {item.artifacts && item.artifacts.length > 0 ? (
-                                          <span className="text-slate-500"> · {item.artifacts.length} artifact</span>
-                                        ) : null}
-                                        <span className="block whitespace-pre-wrap">{item.text}</span>
-                                      </span>
-                                    </div>
-                                  ))
-                                ) : commandSourcePreview.lines && commandSourcePreview.lines.length > 0 ? (
-                                  commandSourcePreview.lines.map((line) => (
-                                    <div
-                                      key={line.line}
-                                      className={cn(
-                                        "grid grid-cols-[34px_1fr] gap-2 px-2 py-0.5",
-                                        line.highlight && "bg-amber-500/10 text-amber-200",
-                                      )}
-                                    >
-                                      <span className="text-right text-slate-600">{line.line}</span>
-                                      <span className="break-all whitespace-pre-wrap">{line.text}</span>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <div className="px-2 py-1 text-slate-600">(no excerpt available)</div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                            )}
+                          </div>
+                        )}
                       {historyContext.agent_claims && historyContext.agent_claims.length > 0 && (
                         <div>
                           <span className="text-slate-500">Agent claims:</span>
@@ -5992,31 +6022,39 @@ export default function QuickReview() {
                               <li key={`${claim.date}-${i}`}>
                                 {claim.agent}: {claim.claim}
                                 {claim.source
-                                  ? ` · ${claim.source}${claim.source_line ? `:${claim.source_line}` : ""}`
-                                  : ""}
+                                  ? ` · ${claim.source}${claim.source_line ? `:${claim.source_line}` : ''}`
+                                  : ''}
                               </li>
                             ))}
                           </ul>
                         </div>
                       )}
-                      {historyContext.recurring_failures && historyContext.recurring_failures.length > 0 && (
-                        <div>
-                          <span className="text-slate-500">Recurring:</span>{" "}
-                          {historyContext.recurring_failures.map((r, i) => `${r.file}(${r.count})`).join(", ")}
-                        </div>
-                      )}
+                      {historyContext.recurring_failures &&
+                        historyContext.recurring_failures.length > 0 && (
+                          <div>
+                            <span className="text-slate-500">Recurring:</span>{' '}
+                            {historyContext.recurring_failures
+                              .map((r, _i) => `${r.file}(${r.count})`)
+                              .join(', ')}
+                          </div>
+                        )}
                       {historyContext.prompt_snippet && (
                         <div className="text-[9px] text-slate-500">
                           Prompt snippet: {historyContext.prompt_snippet.length} chars (injected)
                         </div>
                       )}
-                      {historyContext.skipped_sensitive && historyContext.skipped_sensitive.length > 0 && (
-                        <div className="text-amber-400/70">Skipped secret/env: {historyContext.skipped_sensitive.join(", ")}</div>
-                      )}
+                      {historyContext.skipped_sensitive &&
+                        historyContext.skipped_sensitive.length > 0 && (
+                          <div className="text-amber-400/70">
+                            Skipped secret/env: {historyContext.skipped_sensitive.join(', ')}
+                          </div>
+                        )}
                     </div>
                   )}
                   {!historyLoading && !historyContext && (
-                    <div className="pl-1 text-[10px] text-slate-500">No prior signals for these files (or first review).</div>
+                    <div className="pl-1 text-[10px] text-slate-500">
+                      No prior signals for these files (or first review).
+                    </div>
                   )}
                 </div>
               )}
@@ -6027,12 +6065,8 @@ export default function QuickReview() {
                 disabled={!diffRange || isReviewing}
                 className="w-full gap-2 bg-white text-black hover:bg-slate-200 disabled:opacity-50"
               >
-                {isReviewing ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Zap size={16} />
-                )}
-                {isReviewing ? "Reviewing..." : "Review with Claude"}
+                {isReviewing ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
+                {isReviewing ? 'Reviewing...' : 'Review with Claude'}
               </Button>
 
               {/* Error */}
@@ -6061,7 +6095,7 @@ export default function QuickReview() {
                 className="flex w-full items-center justify-between text-[11px] font-medium text-slate-400 hover:text-slate-200"
               >
                 <span>Past Reviews ({pastReviews.length})</span>
-                <span className="text-slate-600">{showHistory ? "▼" : "▶"}</span>
+                <span className="text-slate-600">{showHistory ? '▼' : '▶'}</span>
               </button>
               {showHistory && (
                 <div className="space-y-1">
@@ -6070,21 +6104,22 @@ export default function QuickReview() {
                       key={r.id}
                       onClick={() => handleLoadPastReview(r.id)}
                       className={cn(
-                        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
+                        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors',
                         result?.review_id === r.id
-                          ? "bg-cyan-500/10 text-[var(--cv-accent)]"
-                          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
+                          ? 'bg-cyan-500/10 text-[var(--cv-accent)]'
+                          : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
                       )}
                     >
                       <ScoreBadge score={Math.round(r.score_composite ?? 0)} size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="truncate">
                           {r.repo_path
-                            ? shortenPath(r.repo_path).split("/").pop()
-                            : r.source_label ?? "Review"}
+                            ? shortenPath(r.repo_path).split('/').pop()
+                            : (r.source_label ?? 'Review')}
                         </div>
                         <div className="text-[10px] text-slate-600">
-                          {r.findings_count ?? 0} findings · {formatRelativeTime(r.completed_at ?? r.created_at)}
+                          {r.findings_count ?? 0} findings ·{' '}
+                          {formatRelativeTime(r.completed_at ?? r.created_at)}
                         </div>
                       </div>
                     </button>
@@ -6101,9 +6136,7 @@ export default function QuickReview() {
         {isReviewing ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">
             <Loader2 size={32} className="animate-spin text-[var(--cv-accent)]" />
-            <span className="text-sm text-slate-400">
-              Reviewing with Claude...
-            </span>
+            <span className="text-sm text-slate-400">Reviewing with Claude...</span>
           </div>
         ) : (
           <div className="flex h-full flex-col">
@@ -6122,13 +6155,23 @@ export default function QuickReview() {
                 </div>
                 <div className="grid grid-cols-[42px_1fr] gap-x-4">
                   <span className="text-right text-slate-700">36</span>
-                  <span><span className="text-purple-400">import</span> {`{`} db {`}`} <span className="text-purple-400">from</span> <span className="text-emerald-400">"@/lib/sql"</span>;</span>
+                  <span>
+                    <span className="text-purple-400">import</span> {`{`} db {`}`}{' '}
+                    <span className="text-purple-400">from</span>{' '}
+                    <span className="text-emerald-400">"@/lib/sql"</span>;
+                  </span>
                   <span className="text-right text-slate-700">37</span>
                   <span />
                   <span className="text-right text-slate-700">38</span>
-                  <span><span className="text-purple-400">async function</span> <span className="text-cyan-300">validateSession</span>(token: <span className="text-yellow-300">string</span>) {`{`}</span>
+                  <span>
+                    <span className="text-purple-400">async function</span>{' '}
+                    <span className="text-cyan-300">validateSession</span>(token:{' '}
+                    <span className="text-yellow-300">string</span>) {`{`}
+                  </span>
                   <span className="text-right text-[var(--cv-danger)]/70">40</span>
-                  <span className="-mx-3 border-l-2 border-[var(--cv-danger)] bg-red-500/10 px-3 text-slate-200">const query = `SELECT * FROM sessions WHERE token = '${"{token}"}'`;</span>
+                  <span className="-mx-3 border-l-2 border-[var(--cv-danger)] bg-red-500/10 px-3 text-slate-200">
+                    const query = `SELECT * FROM sessions WHERE token = '${'{token}'}'`;
+                  </span>
                 </div>
               </div>
               <aside className="hidden bg-white/[0.015] p-6 xl:block">
@@ -6139,12 +6182,13 @@ export default function QuickReview() {
                 </Badge>
                 <h2 className="mt-5 text-lg font-semibold text-white">SQL injection vector</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Select a repository and diff to run the real review against
-                  your local code.
+                  Select a repository and diff to run the real review against your local code.
                 </p>
                 <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
                   <div className="cv-label mb-3">Suggested actions</div>
-                  <button className="h-10 w-full bg-white text-sm font-medium text-black">Apply Patch</button>
+                  <button className="h-10 w-full bg-white text-sm font-medium text-black">
+                    Apply Patch
+                  </button>
                 </div>
               </aside>
             </div>
@@ -6157,7 +6201,7 @@ export default function QuickReview() {
 
 // ─── FindingItem ──────────────────────────────────────────────────────────────
 
-function FindingItem({
+function _FindingItem({
   finding,
   selected,
   onToggle,
@@ -6169,24 +6213,20 @@ function FindingItem({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-[#0a0a0a] p-4 transition-colors",
-        selected ? "border-amber-500/30" : "border-[#1a1a1a]",
+        'rounded-lg border bg-[#0a0a0a] p-4 transition-colors',
+        selected ? 'border-amber-500/30' : 'border-[#1a1a1a]'
       )}
     >
       {/* Header: checkbox + severity badge + title */}
       <div className="flex items-start gap-2">
         <button onClick={onToggle} className="mt-0.5 shrink-0 text-slate-500 hover:text-amber-400">
-          {selected ? (
-            <CheckSquare2 size={16} className="text-amber-400" />
-          ) : (
-            <Square size={16} />
-          )}
+          {selected ? <CheckSquare2 size={16} className="text-amber-400" /> : <Square size={16} />}
         </button>
         <Badge
           variant="outline"
           className={cn(
-            "shrink-0 text-[10px] font-semibold uppercase",
-            severityColor(finding.severity),
+            'shrink-0 text-[10px] font-semibold uppercase',
+            severityColor(finding.severity)
           )}
         >
           {finding.severity}
@@ -6195,9 +6235,7 @@ function FindingItem({
       </div>
 
       {/* Summary */}
-      <p className="mt-2 text-xs leading-relaxed text-slate-400">
-        {finding.summary}
-      </p>
+      <p className="mt-2 text-xs leading-relaxed text-slate-400">{finding.summary}</p>
 
       {/* File + line */}
       {finding.filePath && (

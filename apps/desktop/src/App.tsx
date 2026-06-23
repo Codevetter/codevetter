@@ -1,29 +1,38 @@
-import { Component, type ErrorInfo, lazy, type ReactNode, Suspense, useCallback, useEffect, useState } from "react";
-import { Link,Outlet, Route, Routes } from "react-router-dom";
+import {
+  Component,
+  type ErrorInfo,
+  lazy,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+import { Link, Outlet, Route, Routes } from 'react-router-dom';
 
-import CommandPalette from "@/components/command-palette";
-import KeyboardShortcuts from "@/components/keyboard-shortcuts";
-import Onboarding from "@/components/onboarding";
-import Sidebar from "@/components/sidebar";
-import UpdateChecker from "@/components/update-checker";
-import { trackAppLaunch } from "@/lib/analytics";
-import { getPreference, isTauriAvailable } from "@/lib/tauri-ipc";
-import { useWindowVisibilityClass } from "@/lib/use-visibility";
+import CommandPalette from '@/components/command-palette';
+import KeyboardShortcuts from '@/components/keyboard-shortcuts';
+import Onboarding from '@/components/onboarding';
+import Sidebar from '@/components/sidebar';
+import UpdateChecker from '@/components/update-checker';
+import { trackAppLaunch } from '@/lib/analytics';
+import { getPreference, isTauriAvailable } from '@/lib/tauri-ipc';
+import { useWindowVisibilityClass } from '@/lib/use-visibility';
 // Pages are lazy-loaded so the initial bundle isn't dominated by the large
 // review/unpack screens — only the route the user lands on is fetched.
-const AgentMemories = lazy(() => import("@/pages/AgentMemories"));
-const Fleet = lazy(() => import("@/pages/Fleet"));
-const Ops = lazy(() => import("@/pages/Ops"));
-const TRex = lazy(() => import("@/pages/TRex"));
-const Home = lazy(() => import("@/pages/Home"));
-const Intel = lazy(() => import("@/pages/Intel"));
-const IntentDebugger = lazy(() => import("@/pages/IntentDebugger"));
-const QaReplay = lazy(() => import("@/pages/QaReplay"));
-const QuickReview = lazy(() => import("@/pages/QuickReview"));
-const RepoUnpacked = lazy(() => import("@/pages/RepoUnpacked"));
-const Roadmap = lazy(() => import("@/pages/Roadmap"));
-const Rubrics = lazy(() => import("@/pages/Rubrics"));
-const Settings = lazy(() => import("@/pages/Settings"));
+const AgentMemories = lazy(() => import('@/pages/AgentMemories'));
+const Fleet = lazy(() => import('@/pages/Fleet'));
+const Ops = lazy(() => import('@/pages/Ops'));
+const TRex = lazy(() => import('@/pages/TRex'));
+const Home = lazy(() => import('@/pages/Home'));
+const Intel = lazy(() => import('@/pages/Intel'));
+const IntentDebugger = lazy(() => import('@/pages/IntentDebugger'));
+const QaReplay = lazy(() => import('@/pages/QaReplay'));
+const QuickReview = lazy(() => import('@/pages/QuickReview'));
+const RepoUnpacked = lazy(() => import('@/pages/RepoUnpacked'));
+const Roadmap = lazy(() => import('@/pages/Roadmap'));
+const Rubrics = lazy(() => import('@/pages/Rubrics'));
+const Settings = lazy(() => import('@/pages/Settings'));
 
 /** Hook: open/close command palette via Cmd+K */
 function useCommandPalette() {
@@ -31,13 +40,13 @@ function useCommandPalette() {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setIsOpen((prev) => !prev);
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const close = useCallback(() => setIsOpen(false), []);
@@ -50,7 +59,7 @@ function useOnboarding() {
 
   useEffect(() => {
     (async () => {
-      if (localStorage.getItem("onboarding_complete") === "true") {
+      if (localStorage.getItem('onboarding_complete') === 'true') {
         setReady(true);
         return;
       }
@@ -59,9 +68,9 @@ function useOnboarding() {
         return;
       }
       try {
-        const completed = await getPreference("onboarding_complete");
-        if (completed === "true") {
-          localStorage.setItem("onboarding_complete", "true");
+        const completed = await getPreference('onboarding_complete');
+        if (completed === 'true') {
+          localStorage.setItem('onboarding_complete', 'true');
         } else {
           setShowOnboarding(true);
         }
@@ -75,10 +84,7 @@ function useOnboarding() {
   return { showOnboarding, setShowOnboarding, ready };
 }
 
-class RouteErrorBoundary extends Component<
-  { children: ReactNode },
-  { error: Error | null }
-> {
+class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null };
 
   static getDerivedStateFromError(error: Error) {
@@ -87,7 +93,7 @@ class RouteErrorBoundary extends Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     // Full detail goes to the console (DevTools) — never to the user.
-    console.error("[CodeVetter] Route error boundary caught:", error, info);
+    console.error('[CodeVetter] Route error boundary caught:', error, info);
   }
 
   render() {
@@ -96,8 +102,8 @@ class RouteErrorBoundary extends Component<
         <div className="flex flex-col items-center justify-center h-full p-8 text-center">
           <h2 className="text-lg font-semibold text-red-400 mb-2">Something went wrong</h2>
           <p className="text-sm text-slate-400 mb-4 max-w-md">
-            This screen hit an unexpected error. Your saved data is safe — try
-            again, and if it keeps happening, restart the app.
+            This screen hit an unexpected error. Your saved data is safe — try again, and if it
+            keeps happening, restart the app.
           </p>
           <button
             onClick={() => this.setState({ error: null })}
@@ -158,9 +164,7 @@ function Shell() {
   return (
     <div className="flex h-full w-full bg-[var(--bg-main)] text-[var(--text-primary)]">
       <UpdateChecker />
-      {showOnboarding && (
-        <Onboarding onComplete={() => setShowOnboarding(false)} />
-      )}
+      {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
       <Sidebar />
       <main className="flex-1 h-full overflow-y-auto">
         <RouteErrorBoundary>

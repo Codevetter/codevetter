@@ -10,27 +10,20 @@
     "bench:curation": "node scripts/report-benchmark-curation.mjs",
     "bench:new-case": "node scripts/create-benchmark-case.mjs",
     "test:benchmark": "node --test scripts/run-catch-rate-benchmark.test.mjs",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "lint": "biome check .",
+    "format": "biome format --write ."
   },
   "license": "ISC",
   "lint-staged": {
     "apps/desktop/src/**/*.{ts,tsx}": [
-      "eslint --quiet --max-warnings 50"
+      "biome check --write"
     ]
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
-    "eslint": "^9.39.4",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-promise": "7.2.1",
-    "eslint-plugin-react-hooks": "7.1.1",
-    "eslint-plugin-react-refresh": "0.5.2",
-    "eslint-plugin-simple-import-sort": "13.0.0",
-    "globals": "17.5.0",
+    "@biomejs/biome": "^2.5.1",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "typescript-eslint": "8.59.0"
+    "lint-staged": "^16.4.0"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "^4.2.4",

@@ -9,24 +9,13 @@ import {
   Send,
   Sparkles,
   TrendingUp,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   type FleetProjectStats,
   type FleetRollup,
@@ -38,7 +27,7 @@ import {
   pushChangelogEntry,
   type WeeklyFleetMarkdown,
   type WindowReport,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
 function fmtNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -47,15 +36,15 @@ function fmtNum(n: number): string {
 }
 
 function fmtPct(part: number, whole: number): string {
-  if (whole <= 0) return "—";
+  if (whole <= 0) return '—';
   return `${((part / whole) * 100).toFixed(1)}%`;
 }
 
 function accelerationColor(delta: number): string {
-  if (delta >= 50) return "border-emerald-500/40 bg-emerald-500/10 text-emerald-200";
-  if (delta > 0) return "border-cyan-500/40 bg-cyan-500/10 text-cyan-200";
-  if (delta > -20) return "border-slate-500/40 bg-slate-500/10 text-slate-300";
-  return "border-red-500/40 bg-red-500/10 text-red-200";
+  if (delta >= 50) return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200';
+  if (delta > 0) return 'border-cyan-500/40 bg-cyan-500/10 text-cyan-200';
+  if (delta > -20) return 'border-slate-500/40 bg-slate-500/10 text-slate-300';
+  return 'border-red-500/40 bg-red-500/10 text-red-200';
 }
 
 export default function Fleet() {
@@ -67,7 +56,7 @@ export default function Fleet() {
   const [report, setReport] = useState<WeeklyFleetMarkdown | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [pushTarget, setPushTarget] = useState<string>("");
+  const [pushTarget, setPushTarget] = useState<string>('');
   const [pushing, setPushing] = useState(false);
   const [pushed, setPushed] = useState<string | null>(null);
 
@@ -124,7 +113,7 @@ export default function Fleet() {
         project_id: pushTarget,
         title: `Fleet weekly report · ${new Date().toISOString().slice(0, 10)}`,
         content: report.markdown,
-        type: "improvement",
+        type: 'improvement',
         published: false,
       });
       setPushed(pushTarget);
@@ -151,14 +140,8 @@ export default function Fleet() {
     }
   }, [refresh]);
 
-  const linkedProjects = useMemo(
-    () => rollup?.projects.filter((p) => p.linked) ?? [],
-    [rollup],
-  );
-  const unlinkedProjects = useMemo(
-    () => rollup?.projects.filter((p) => !p.linked) ?? [],
-    [rollup],
-  );
+  const linkedProjects = useMemo(() => rollup?.projects.filter((p) => p.linked) ?? [], [rollup]);
+  const unlinkedProjects = useMemo(() => rollup?.projects.filter((p) => !p.linked) ?? [], [rollup]);
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -176,9 +159,9 @@ export default function Fleet() {
               </Badge>
             </div>
             <p className="mt-1 max-w-2xl text-sm text-[var(--text-secondary)]">
-              Every fleet project, side by side. Linked repos (mapped via
-              SaaS Maker project slug ↔ local path) run intel attribution
-              locally; unlinked projects are listed so you can link them.
+              Every fleet project, side by side. Linked repos (mapped via SaaS Maker project slug ↔
+              local path) run intel attribution locally; unlinked projects are listed so you can
+              link them.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -196,13 +179,7 @@ export default function Fleet() {
               )}
               Link all repos
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={refresh}
-              disabled={loading}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={refresh} disabled={loading}>
               {loading ? (
                 <Loader2 size={14} className="mr-1.5 animate-spin" />
               ) : (
@@ -217,24 +194,22 @@ export default function Fleet() {
           <div className="mb-4 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
             <div className="flex items-center gap-2 font-medium">
               <CheckCircle2 size={16} className="shrink-0 text-emerald-300" />
-              Linked {linkResult.linked.length} of {linkResult.scanned_repo_count}{" "}
-              local repos
+              Linked {linkResult.linked.length} of {linkResult.scanned_repo_count} local repos
               {linkResult.unmatched_repo_count > 0
                 ? ` · ${linkResult.unmatched_repo_count} unmatched`
-                : ""}
+                : ''}
             </div>
             {linkResult.git_url_supported ? (
               <p className="mt-1 text-xs text-cyan-200/80">
                 Backfilled git_url onto {linkResult.backfilled_count} project
-                {linkResult.backfilled_count === 1 ? "" : "s"} on the fleet spine.
+                {linkResult.backfilled_count === 1 ? '' : 's'} on the fleet spine.
               </p>
             ) : (
               <p className="mt-1 text-xs text-amber-200/90">
-                Saved locally only — the SaaS Maker API doesn&apos;t expose{" "}
-                <span className="font-mono">git_url</span> yet, so nothing was
-                written to the spine. Merge &amp; deploy{" "}
-                <span className="font-mono">feat/projects-git-url</span> to enable
-                fleet-wide backfill.
+                Saved locally only — the SaaS Maker API doesn&apos;t expose{' '}
+                <span className="font-mono">git_url</span> yet, so nothing was written to the spine.
+                Merge &amp; deploy <span className="font-mono">feat/projects-git-url</span> to
+                enable fleet-wide backfill.
               </p>
             )}
             {linkResult.linked.length > 0 && (
@@ -246,7 +221,7 @@ export default function Fleet() {
                     title={l.repo_path}
                   >
                     {l.project_name}
-                    {l.backfilled ? " ✓" : ""}
+                    {l.backfilled ? ' ✓' : ''}
                   </span>
                 ))}
               </div>
@@ -269,15 +244,14 @@ export default function Fleet() {
               Linked projects ({linkedProjects.length})
             </CardTitle>
             <CardDescription className="text-xs">
-              Sorted by 30-day commit volume. AI acceleration compares
-              commits/day after first AI-co-authored commit vs before.
+              Sorted by 30-day commit volume. AI acceleration compares commits/day after first
+              AI-co-authored commit vs before.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                <Loader2 size={14} className="animate-spin" /> Reading git
-                logs across the fleet…
+                <Loader2 size={14} className="animate-spin" /> Reading git logs across the fleet…
               </div>
             ) : linkedProjects.length === 0 ? (
               <p className="text-xs text-[var(--text-secondary)]">
@@ -299,9 +273,8 @@ export default function Fleet() {
               Weekly fleet report
             </CardTitle>
             <CardDescription className="text-xs">
-              One markdown summary across every linked project. Copy it to
-              your editor, or push it directly as a SaaS Maker changelog
-              entry on the project of your choice.
+              One markdown summary across every linked project. Copy it to your editor, or push it
+              directly as a SaaS Maker changelog entry on the project of your choice.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -384,19 +357,19 @@ export default function Fleet() {
                   <span>
                     <span className="font-mono text-[var(--text-primary)]">
                       {report.project_count}
-                    </span>{" "}
+                    </span>{' '}
                     projects
                   </span>
                   <span>
                     <span className="font-mono text-[var(--text-primary)]">
                       {report.total_commits}
-                    </span>{" "}
+                    </span>{' '}
                     commits
                   </span>
                   <span>
                     <span className="font-mono text-[var(--cv-accent)]">
                       {report.total_ai_commits}
-                    </span>{" "}
+                    </span>{' '}
                     AI · {fmtPct(report.total_ai_commits, report.total_commits)}
                   </span>
                 </div>
@@ -416,9 +389,9 @@ export default function Fleet() {
                 Unlinked fleet projects ({unlinkedProjects.length})
               </CardTitle>
               <CardDescription className="text-xs">
-                Visible in SaaS Maker but no local repo mapped yet. Open one
-                in <span className="font-mono">/review</span> or{" "}
-                <span className="font-mono">/intel</span> and CodeVetter auto-links via{" "}
+                Visible in SaaS Maker but no local repo mapped yet. Open one in{' '}
+                <span className="font-mono">/review</span> or{' '}
+                <span className="font-mono">/intel</span> and CodeVetter auto-links via{' '}
                 <span className="font-mono">git remote origin</span>.
               </CardDescription>
             </CardHeader>
@@ -431,7 +404,7 @@ export default function Fleet() {
                   >
                     <div className="truncate font-medium">{p.project.name}</div>
                     <div className="truncate font-mono text-[10px] text-[var(--text-secondary)]">
-                      {p.project.slug ?? "—"}
+                      {p.project.slug ?? '—'}
                     </div>
                   </div>
                 ))}
@@ -477,12 +450,10 @@ function ProjectRow({ row }: { row: FleetProjectStats }) {
       <td className="px-3 py-1.5">
         <div className="font-medium text-slate-100">{row.project.name}</div>
         <div className="truncate font-mono text-[10px] text-[var(--text-secondary)]">
-          {row.repo_path ?? "—"}
+          {row.repo_path ?? '—'}
         </div>
         {row.error && (
-          <div className="mt-0.5 font-mono text-[10px] text-amber-300/80">
-            {row.error}
-          </div>
+          <div className="mt-0.5 font-mono text-[10px] text-amber-300/80">{row.error}</div>
         )}
       </td>
       <td className="px-3 py-1.5 text-right">
@@ -508,19 +479,19 @@ function ProjectRow({ row }: { row: FleetProjectStats }) {
                 variant="outline"
                 className={`font-mono text-[10px] ${accelerationColor(row.acceleration.velocity_delta_pct)}`}
               >
-                {row.acceleration.velocity_delta_pct > 0 ? "+" : ""}
+                {row.acceleration.velocity_delta_pct > 0 ? '+' : ''}
                 {row.acceleration.velocity_delta_pct}%
               </Badge>
             </TooltipTrigger>
             <TooltipContent side="left" className="text-[10px]">
               <div>First AI commit: {row.acceleration.first_ai_commit_date}</div>
               <div>
-                Before: {row.acceleration.before_commits_per_day.toFixed(2)}/day
-                over {row.acceleration.before_day_count}d
+                Before: {row.acceleration.before_commits_per_day.toFixed(2)}/day over{' '}
+                {row.acceleration.before_day_count}d
               </div>
               <div>
-                After: {row.acceleration.after_commits_per_day.toFixed(2)}/day
-                over {row.acceleration.after_day_count}d
+                After: {row.acceleration.after_commits_per_day.toFixed(2)}/day over{' '}
+                {row.acceleration.after_day_count}d
               </div>
             </TooltipContent>
           </Tooltip>
@@ -537,9 +508,7 @@ function WindowMini({ w }: { w: WindowReport | null }) {
   return (
     <div className="space-y-0.5">
       <div className="font-mono text-xs">{w.total_commits}</div>
-      <div className="font-mono text-[9px] text-[var(--text-secondary)]">
-        {w.ai_commits} AI
-      </div>
+      <div className="font-mono text-[9px] text-[var(--text-secondary)]">{w.ai_commits} AI</div>
     </div>
   );
 }

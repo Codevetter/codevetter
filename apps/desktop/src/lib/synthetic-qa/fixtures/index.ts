@@ -1,6 +1,6 @@
-import type { SyntheticQaFixture } from "../types";
-import { REVIEW_BROKEN_FIXTURE } from "./review-broken";
-import { REVIEW_HAPPY_FIXTURE } from "./review-happy";
+import type { SyntheticQaFixture } from '../types';
+import { REVIEW_BROKEN_FIXTURE } from './review-broken';
+import { REVIEW_HAPPY_FIXTURE } from './review-happy';
 
 export const SYNTHETIC_QA_FIXTURES: SyntheticQaFixture[] = [
   REVIEW_HAPPY_FIXTURE,

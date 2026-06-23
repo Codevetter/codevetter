@@ -1,9 +1,9 @@
-import { CheckCircle2, ClipboardCheck, Plus, Save } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, ClipboardCheck, Plus, Save } from 'lucide-react';
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   DEFAULT_STANDARDS_PACKS,
   getActiveStandardsPack,
@@ -12,14 +12,14 @@ import {
   type ReviewConfig,
   saveReviewConfig,
   type StandardsPack,
-} from "@/lib/review-service";
+} from '@/lib/review-service';
 
 function fallbackConfig(): ReviewConfig {
   return {
-    gatewayBaseUrl: "",
-    gatewayApiKey: "",
-    gatewayModel: "auto",
-    reviewTone: "direct",
+    gatewayBaseUrl: '',
+    gatewayApiKey: '',
+    gatewayModel: 'auto',
+    reviewTone: 'direct',
     activeStandardsPack: DEFAULT_STANDARDS_PACKS[0].id,
     standardsPacks: [],
   };
@@ -30,25 +30,26 @@ function loadRubricConfig(): ReviewConfig {
   return {
     ...fallbackConfig(),
     ...(loaded ?? {}),
-    activeStandardsPack:
-      loaded?.activeStandardsPack ?? DEFAULT_STANDARDS_PACKS[0].id,
+    activeStandardsPack: loaded?.activeStandardsPack ?? DEFAULT_STANDARDS_PACKS[0].id,
     standardsPacks: loaded?.standardsPacks ?? [],
   };
 }
 
 function makePackId(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 48) || `custom-${Date.now()}`;
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 48) || `custom-${Date.now()}`
+  );
 }
 
 export default function Rubrics() {
   const [config, setConfig] = useState<ReviewConfig>(loadRubricConfig);
-  const [draftName, setDraftName] = useState("");
-  const [draftFocus, setDraftFocus] = useState("");
-  const [draftChecks, setDraftChecks] = useState("");
+  const [draftName, setDraftName] = useState('');
+  const [draftFocus, setDraftFocus] = useState('');
+  const [draftChecks, setDraftChecks] = useState('');
   const [saved, setSaved] = useState(false);
 
   const packs = getStandardsPacks(config);
@@ -67,7 +68,7 @@ export default function Rubrics() {
 
   function addCustomPack() {
     const checks = draftChecks
-      .split("\n")
+      .split('\n')
       .map((line) => line.trim())
       .filter(Boolean);
 
@@ -87,9 +88,9 @@ export default function Rubrics() {
       activeStandardsPack: pack.id,
       standardsPacks: [...(config.standardsPacks ?? []), pack],
     });
-    setDraftName("");
-    setDraftFocus("");
-    setDraftChecks("");
+    setDraftName('');
+    setDraftFocus('');
+    setDraftChecks('');
   }
 
   return (
@@ -109,8 +110,7 @@ export default function Rubrics() {
               Rubrics and standards packs
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
-              Pick the standard CodeVetter should apply when it asks a CLI agent
-              to review a diff.
+              Pick the standard CodeVetter should apply when it asks a CLI agent to review a diff.
             </p>
           </div>
           {saved && (
@@ -129,27 +129,21 @@ export default function Rubrics() {
                 <Card
                   key={pack.id}
                   className={`border p-5 ${
-                    active
-                      ? "border-cyan-400/40 bg-cyan-400/10"
-                      : "border-[#1a1a1a] bg-[#0f1117]"
+                    active ? 'border-cyan-400/40 bg-cyan-400/10' : 'border-[#1a1a1a] bg-[#0f1117]'
                   }`}
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h2 className="text-lg font-semibold text-slate-100">
-                        {pack.name}
-                      </h2>
-                      <p className="mt-2 text-sm leading-6 text-slate-400">
-                        {pack.focus}
-                      </p>
+                      <h2 className="text-lg font-semibold text-slate-100">{pack.name}</h2>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">{pack.focus}</p>
                     </div>
                     <Button
                       type="button"
                       onClick={() => selectPack(pack.id)}
                       className="shrink-0"
-                      variant={active ? "secondary" : "default"}
+                      variant={active ? 'secondary' : 'default'}
                     >
-                      {active ? "Active" : "Use pack"}
+                      {active ? 'Active' : 'Use pack'}
                     </Button>
                   </div>
                   <ul className="mt-4 space-y-2 text-sm text-slate-300">
@@ -168,9 +162,7 @@ export default function Rubrics() {
           <Card className="h-fit border-[#1a1a1a] bg-[#0f1117] p-5">
             <div className="flex items-center gap-2">
               <Plus size={18} className="text-cyan-200" />
-              <h2 className="text-lg font-semibold text-slate-100">
-                Custom pack
-              </h2>
+              <h2 className="text-lg font-semibold text-slate-100">Custom pack</h2>
             </div>
             <div className="mt-5 space-y-4">
               <Input

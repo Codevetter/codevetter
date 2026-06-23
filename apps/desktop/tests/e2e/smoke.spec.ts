@@ -1,12 +1,7 @@
-import { test, expect } from "@playwright/test";
-import {
-  ConsoleErrorCollector,
-  navigateTo,
-  waitForNoSpinners,
-  showNavBar,
-} from "./helpers";
+import { test, expect } from '@playwright/test';
+import { ConsoleErrorCollector, navigateTo, waitForNoSpinners, showNavBar } from './helpers';
 
-test.describe("Smoke tests", () => {
+test.describe('Smoke tests', () => {
   const consoleErrors = new ConsoleErrorCollector();
 
   test.beforeEach(async ({ page }) => {
@@ -20,60 +15,56 @@ test.describe("Smoke tests", () => {
 
   // ─── Page load tests ────────────────────────────────────────────────────
 
-  test("Home page loads without errors", async ({ page }) => {
-    await navigateTo(page, "/");
+  test('Home page loads without errors', async ({ page }) => {
+    await navigateTo(page, '/');
     await waitForNoSpinners(page);
 
-    await expect(
-      page.getByRole("button", { name: /Re-index local data|Indexing/ })
-    ).toBeVisible();
-    await expect(page.getByText("Provider telemetry")).toBeVisible();
+    await expect(page.getByRole('button', { name: /Re-index local data|Indexing/ })).toBeVisible();
+    await expect(page.getByText('Provider telemetry')).toBeVisible();
   });
 
-  test("Review page loads without errors", async ({ page }) => {
-    await navigateTo(page, "/review");
+  test('Review page loads without errors', async ({ page }) => {
+    await navigateTo(page, '/review');
     await waitForNoSpinners(page);
 
-    await expect(page.locator("h1", { hasText: "Review" })).toBeVisible();
+    await expect(page.locator('h1', { hasText: 'Review' })).toBeVisible();
   });
 
-  test("Settings page loads without errors", async ({ page }) => {
-    await navigateTo(page, "/settings");
+  test('Settings page loads without errors', async ({ page }) => {
+    await navigateTo(page, '/settings');
     await waitForNoSpinners(page);
 
-    await expect(page.locator("text=General").first()).toBeVisible();
+    await expect(page.locator('text=General').first()).toBeVisible();
   });
 
   // ─── Navigation bar tests ──────────────────────────────────────────────
 
-  test("Floating nav bar is visible with all nav items", async ({ page }) => {
-    await navigateTo(page, "/");
+  test('Floating nav bar is visible with all nav items', async ({ page }) => {
+    await navigateTo(page, '/');
     await showNavBar(page);
 
-    const nav = page.locator("nav");
+    const nav = page.locator('nav');
     await expect(nav).toBeVisible();
 
     // Nav links: Home, Review, Roadmap, Rubrics, Unpack, Intel, Fleet,
     // Ask, Ops, Personas, T-Rex, Memories, Settings. The signed-in avatar
     // chip only renders when authenticated; unsigned-in nav has exactly 13.
-    const links = nav.locator("a");
+    const links = nav.locator('a');
     await expect(links).toHaveCount(13);
   });
 
-  test("Nav bar shows current page name", async ({ page }) => {
-    await navigateTo(page, "/settings");
+  test('Nav bar shows current page name', async ({ page }) => {
+    await navigateTo(page, '/settings');
     await showNavBar(page);
 
-    const nav = page.locator("nav");
-    await expect(
-      nav.locator("span.font-medium", { hasText: "Settings" })
-    ).toBeVisible();
+    const nav = page.locator('nav');
+    await expect(nav.locator('span.font-medium', { hasText: 'Settings' })).toBeVisible();
   });
 
   // ─── No console errors across all pages ────────────────────────────────
 
-  test("No unexpected console errors on any page", async ({ page }) => {
-    const routes = ["/", "/review", "/settings"];
+  test('No unexpected console errors on any page', async ({ page }) => {
+    const routes = ['/', '/review', '/settings'];
 
     for (const route of routes) {
       await navigateTo(page, route);

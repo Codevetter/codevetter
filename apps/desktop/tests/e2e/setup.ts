@@ -1,8 +1,8 @@
-import { spawn, ChildProcess } from "child_process";
-import path from "path";
-import os from "os";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import { spawn, ChildProcess } from 'node:child_process';
+import path from 'node:path';
+import os from 'node:os';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,22 +16,20 @@ let tauriDriver: ChildProcess | null = null;
 export async function startTauriDriver(port = 4444): Promise<void> {
   if (tauriDriver) return;
 
-  tauriDriver = spawn("tauri-driver", ["--port", String(port)], {
-    stdio: ["ignore", "pipe", "pipe"],
+  tauriDriver = spawn('tauri-driver', ['--port', String(port)], {
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
 
-  tauriDriver.stderr?.on("data", (data: Buffer) => {
+  tauriDriver.stderr?.on('data', (data: Buffer) => {
     const msg = data.toString();
     if (process.env.DEBUG_TAURI_DRIVER) {
-      console.error("[tauri-driver]", msg);
+      console.error('[tauri-driver]', msg);
     }
   });
 
-  tauriDriver.on("error", (err) => {
-    console.error("Failed to start tauri-driver:", err.message);
-    console.error(
-      "Install it with: cargo install tauri-driver"
-    );
+  tauriDriver.on('error', (err) => {
+    console.error('Failed to start tauri-driver:', err.message);
+    console.error('Install it with: cargo install tauri-driver');
     tauriDriver = null;
   });
 
@@ -47,9 +45,7 @@ export async function startTauriDriver(port = 4444): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
 
-  throw new Error(
-    `tauri-driver did not become ready on port ${port} after ${maxAttempts * 250}ms`
-  );
+  throw new Error(`tauri-driver did not become ready on port ${port} after ${maxAttempts * 250}ms`);
 }
 
 /**
@@ -57,7 +53,7 @@ export async function startTauriDriver(port = 4444): Promise<void> {
  */
 export async function stopTauriDriver(): Promise<void> {
   if (!tauriDriver) return;
-  tauriDriver.kill("SIGTERM");
+  tauriDriver.kill('SIGTERM');
   tauriDriver = null;
   // Give it a moment to clean up
   await new Promise((resolve) => setTimeout(resolve, 500));
@@ -70,21 +66,21 @@ export async function stopTauriDriver(): Promise<void> {
  * Checks arch-specific path first, then falls back to default target path.
  */
 export function getAppBinaryPath(): string {
-  const arch = os.arch() === "arm64" ? "aarch64" : "x86_64";
+  const arch = os.arch() === 'arm64' ? 'aarch64' : 'x86_64';
   const tauriTarget = `${arch}-apple-darwin`;
 
   // Tauri v2 build output location (arch-specific)
   const archPath = path.resolve(
     __dirname,
-    "../../src-tauri/target",
+    '../../src-tauri/target',
     tauriTarget,
-    "release/bundle/macos/CodeVetter.app/Contents/MacOS/CodeVetter"
+    'release/bundle/macos/CodeVetter.app/Contents/MacOS/CodeVetter'
   );
 
   // Fallback: default target (no triple)
   const defaultPath = path.resolve(
     __dirname,
-    "../../src-tauri/target/release/bundle/macos/CodeVetter.app/Contents/MacOS/CodeVetter"
+    '../../src-tauri/target/release/bundle/macos/CodeVetter.app/Contents/MacOS/CodeVetter'
   );
 
   if (fs.existsSync(archPath)) return archPath;
@@ -99,7 +95,7 @@ export function getAppBinaryPath(): string {
  */
 export function getTauriCapabilities() {
   return {
-    "tauri:options": {
+    'tauri:options': {
       application: getAppBinaryPath(),
     },
   };

@@ -1,36 +1,36 @@
-import { AlertTriangle, ExternalLink, ListTodo, Loader2, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { AlertTriangle, ExternalLink, ListTodo, Loader2, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   getSaasMakerStatus,
   isTauriAvailable,
   listSaasMakerTasks,
   type SaasMakerStatus,
   type SaasMakerTask,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
 function statusColor(status?: string | null): string {
-  switch ((status ?? "").toLowerCase()) {
-    case "done":
-      return "border-emerald-500/40 bg-emerald-500/10 text-emerald-200";
-    case "in_progress":
-      return "border-cyan-500/40 bg-cyan-500/10 text-cyan-200";
+  switch ((status ?? '').toLowerCase()) {
+    case 'done':
+      return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200';
+    case 'in_progress':
+      return 'border-cyan-500/40 bg-cyan-500/10 text-cyan-200';
     default:
-      return "border-slate-500/40 bg-slate-500/10 text-slate-200";
+      return 'border-slate-500/40 bg-slate-500/10 text-slate-200';
   }
 }
 
 function priorityColor(priority?: string | null): string {
-  switch ((priority ?? "").toLowerCase()) {
-    case "high":
-      return "border-red-500/40 bg-red-500/10 text-red-200";
-    case "low":
-      return "border-slate-500/40 bg-slate-500/10 text-slate-300";
+  switch ((priority ?? '').toLowerCase()) {
+    case 'high':
+      return 'border-red-500/40 bg-red-500/10 text-red-200';
+    case 'low':
+      return 'border-slate-500/40 bg-slate-500/10 text-slate-300';
     default:
-      return "border-amber-500/40 bg-amber-500/10 text-amber-200";
+      return 'border-amber-500/40 bg-amber-500/10 text-amber-200';
   }
 }
 
@@ -39,7 +39,7 @@ export default function SaasMakerTasksPanel() {
   const [status, setStatus] = useState<SaasMakerStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [slug, setSlug] = useState("");
+  const [slug, setSlug] = useState('');
 
   const refresh = useCallback(async () => {
     if (!isTauriAvailable()) return;
@@ -90,31 +90,24 @@ export default function SaasMakerTasksPanel() {
           disabled={loading}
           className="h-7"
         >
-          {loading ? (
-            <Loader2 size={12} className="animate-spin" />
-          ) : (
-            <RefreshCw size={12} />
-          )}
+          {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
         </Button>
       </div>
 
       <div className="mb-3 flex items-center gap-2">
         <Input
           value={slug}
-          placeholder={status?.project_slug ?? "project-slug"}
+          placeholder={status?.project_slug ?? 'project-slug'}
           onChange={(e) => setSlug(e.target.value)}
           className="h-7 max-w-xs font-mono text-[10px]"
         />
-        <span className="text-[10px] text-slate-500">
-          override project slug, then refresh
-        </span>
+        <span className="text-[10px] text-slate-500">override project slug, then refresh</span>
       </div>
 
       {!status?.configured && (
         <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
-          SaaS Maker not configured. Set{" "}
-          <span className="font-mono">SAASMAKER_SESSION_TOKEN</span> or open
-          Settings → Integrations.
+          SaaS Maker not configured. Set <span className="font-mono">SAASMAKER_SESSION_TOKEN</span>{' '}
+          or open Settings → Integrations.
         </div>
       )}
 
@@ -144,33 +137,28 @@ export default function SaasMakerTasksPanel() {
             </thead>
             <tbody>
               {tasks.map((t) => (
-                <tr
-                  key={t.id}
-                  className="border-b border-[var(--cv-line)]/40 last:border-0"
-                >
+                <tr key={t.id} className="border-b border-[var(--cv-line)]/40 last:border-0">
                   <td className="px-2 py-1.5">
                     <div className="truncate font-medium text-slate-100">{t.title}</div>
                     {t.description && (
-                      <div className="line-clamp-1 text-[10px] text-slate-500">
-                        {t.description}
-                      </div>
+                      <div className="line-clamp-1 text-[10px] text-slate-500">{t.description}</div>
                     )}
                   </td>
                   <td className="px-2 py-1.5">
                     <Badge variant="outline" className={`text-[9px] ${statusColor(t.status)}`}>
-                      {t.status ?? "—"}
+                      {t.status ?? '—'}
                     </Badge>
                   </td>
                   <td className="px-2 py-1.5">
                     <Badge variant="outline" className={`text-[9px] ${priorityColor(t.priority)}`}>
-                      {t.priority ?? "—"}
+                      {t.priority ?? '—'}
                     </Badge>
                   </td>
                   <td className="px-2 py-1.5 font-mono text-[10px] text-slate-400">
-                    {t.project_slug ?? "—"}
+                    {t.project_slug ?? '—'}
                   </td>
                   <td className="px-2 py-1.5 font-mono text-[10px] text-slate-400">
-                    {t.updated_at?.slice(0, 10) ?? "—"}
+                    {t.updated_at?.slice(0, 10) ?? '—'}
                   </td>
                   <td className="px-2 py-1.5 text-right">
                     {t.pr_url && (

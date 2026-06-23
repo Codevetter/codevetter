@@ -1,61 +1,68 @@
-import { Activity, FlaskConical, GitCommitHorizontal, Loader2, RefreshCw, Search } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  Activity,
+  FlaskConical,
+  GitCommitHorizontal,
+  Loader2,
+  RefreshCw,
+  Search,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-import SaasMakerTasksPanel from "@/components/SaasMakerTasksPanel";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import SaasMakerTasksPanel from '@/components/SaasMakerTasksPanel';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type {
   SessionAdapterRun,
   SessionMessageArchiveSearchRow,
   SessionScorecard,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 import {
   getAiSessionScorecard,
   isTauriAvailable,
   listAiSessionAdapterRuns,
   listenToSessionArchiveUpdates,
   searchSessionMessageArchive,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 import {
   AdapterSourceHealthPanel,
   RoadmapReleaseBanner,
   SessionScorecardPanel,
   VerificationWorkbenchPanel,
-} from "@/pages/Home";
+} from '@/pages/Home';
 
 const ADAPTER_FILTERS = [
-  { value: "", label: "All adapters" },
-  { value: "claude-code", label: "Claude" },
-  { value: "codex", label: "Codex" },
-  { value: "cursor", label: "Cursor" },
+  { value: '', label: 'All adapters' },
+  { value: 'claude-code', label: 'Claude' },
+  { value: 'codex', label: 'Codex' },
+  { value: 'cursor', label: 'Cursor' },
 ];
 
 const KIND_FILTERS = [
-  { value: "", label: "All kinds" },
-  { value: "message", label: "Messages" },
-  { value: "tool_call", label: "Tool calls" },
-  { value: "tool_result", label: "Tool results" },
-  { value: "compaction", label: "Compactions" },
+  { value: '', label: 'All kinds' },
+  { value: 'message', label: 'Messages' },
+  { value: 'tool_call', label: 'Tool calls' },
+  { value: 'tool_result', label: 'Tool results' },
+  { value: 'compaction', label: 'Compactions' },
 ];
 
 function formatArchiveTimestamp(value: string | null | undefined): string {
-  if (!value) return "no timestamp";
+  if (!value) return 'no timestamp';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 
 function ArchiveSearchPanel() {
-  const [query, setQuery] = useState("");
-  const [adapterId, setAdapterId] = useState("");
-  const [kind, setKind] = useState("");
+  const [query, setQuery] = useState('');
+  const [adapterId, setAdapterId] = useState('');
+  const [kind, setKind] = useState('');
   const [results, setResults] = useState<SessionMessageArchiveSearchRow[]>([]);
   const [searched, setSearched] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -77,13 +84,13 @@ function ArchiveSearchPanel() {
         trimmed,
         adapterId || undefined,
         kind || undefined,
-        25,
+        25
       );
       setResults(rows);
       setSearched(true);
     } catch (err) {
-      console.error("[CodeVetter] Archive search failed:", err);
-      setError("Archive search failed. Try a simpler query.");
+      console.error('[CodeVetter] Archive search failed:', err);
+      setError('Archive search failed. Try a simpler query.');
     } finally {
       setSearching(false);
     }
@@ -121,7 +128,7 @@ function ArchiveSearchPanel() {
         <span className="ml-auto hidden text-[10px] text-slate-600 sm:inline">
           {archiveUpdatedAt
             ? `updated ${formatArchiveTimestamp(archiveUpdatedAt)}`
-            : "local messages + tool calls"}
+            : 'local messages + tool calls'}
         </span>
       </div>
       <div className="grid gap-3 border-b border-[#171717] bg-[#08090a] p-4 lg:grid-cols-[1fr_170px_170px_auto]">
@@ -129,7 +136,7 @@ function ArchiveSearchPanel() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
+            if (event.key === 'Enter') {
               event.preventDefault();
               void runSearch();
             }
@@ -210,7 +217,7 @@ function ArchiveSearchPanel() {
                 {row.source_line != null && <span>line {row.source_line}</span>}
               </div>
               <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-xs leading-5 text-slate-300">
-                {row.content_text || row.tool_name || row.raw_type || "Archived event"}
+                {row.content_text || row.tool_name || row.raw_type || 'Archived event'}
               </p>
             </div>
           </div>
@@ -247,7 +254,7 @@ export default function Roadmap() {
       setScorecard(scorecardResult);
       setAdapterRuns(adapterRunsResult);
     } catch (err) {
-      console.error("[CodeVetter] Roadmap load failed:", err);
+      console.error('[CodeVetter] Roadmap load failed:', err);
       setError("Couldn't load roadmap telemetry. Your saved data is safe.");
     } finally {
       setLoading(false);
@@ -275,7 +282,7 @@ export default function Roadmap() {
             disabled={loading}
             className="h-10 shrink-0 justify-center gap-2 border-[#262626] bg-[#08090a] px-4 text-slate-300 hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
           >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
             Refresh
           </Button>
         </div>

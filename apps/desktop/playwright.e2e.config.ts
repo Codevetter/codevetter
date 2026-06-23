@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig } from '@playwright/test';
 
 /**
  * Playwright config for e2e tests.
@@ -15,16 +15,16 @@ import { defineConfig } from "@playwright/test";
  *    as a complement to the native app tests
  */
 export default defineConfig({
-  testDir: "./tests/e2e",
+  testDir: './tests/e2e',
   timeout: 60_000,
   retries: 0,
   use: {
-    baseURL: "http://localhost:4444",
-    trace: "on-first-retry",
+    baseURL: 'http://localhost:4444',
+    trace: 'on-first-retry',
   },
   projects: [
     {
-      name: "tauri-webdriver",
+      name: 'tauri-webdriver',
       testMatch: /.*\.pw\.spec\.ts/,
     },
   ],

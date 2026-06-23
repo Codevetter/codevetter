@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo,useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { getPreference,setPreference } from "@/lib/tauri-ipc";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -59,7 +58,7 @@ function filterAndSort(items: CommandItem[], query: string): CommandItem[] {
 
 export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -75,14 +74,56 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
 
     return [
       // Navigation
-      { id: "nav-home", label: "Go to Home", icon: "\u2302", shortcut: "g h", group: "Navigation", action: go("/") },
-      { id: "nav-review", label: "Go to Review", icon: "\u2714", shortcut: "g r", group: "Navigation", action: go("/review") },
-      { id: "nav-roadmap", label: "Go to Roadmap", icon: "\u25ce", shortcut: "g m", group: "Navigation", action: go("/roadmap") },
-      { id: "nav-agent-memories", label: "Go to Agent Memories", icon: "\u25A3", shortcut: "g a", group: "Navigation", action: go("/agent-memories") },
-      { id: "nav-settings", label: "Go to Settings", icon: "\u2638", shortcut: "g ,", group: "Navigation", action: go("/settings") },
+      {
+        id: 'nav-home',
+        label: 'Go to Home',
+        icon: '\u2302',
+        shortcut: 'g h',
+        group: 'Navigation',
+        action: go('/'),
+      },
+      {
+        id: 'nav-review',
+        label: 'Go to Review',
+        icon: '\u2714',
+        shortcut: 'g r',
+        group: 'Navigation',
+        action: go('/review'),
+      },
+      {
+        id: 'nav-roadmap',
+        label: 'Go to Roadmap',
+        icon: '\u25ce',
+        shortcut: 'g m',
+        group: 'Navigation',
+        action: go('/roadmap'),
+      },
+      {
+        id: 'nav-agent-memories',
+        label: 'Go to Agent Memories',
+        icon: '\u25A3',
+        shortcut: 'g a',
+        group: 'Navigation',
+        action: go('/agent-memories'),
+      },
+      {
+        id: 'nav-settings',
+        label: 'Go to Settings',
+        icon: '\u2638',
+        shortcut: 'g ,',
+        group: 'Navigation',
+        action: go('/settings'),
+      },
 
       // Actions
-      { id: "act-start-review", label: "Start Review", description: "Run a code review", icon: "\u2714", group: "Actions", action: go("/review") },
+      {
+        id: 'act-start-review',
+        label: 'Start Review',
+        description: 'Run a code review',
+        icon: '\u2714',
+        group: 'Actions',
+        action: go('/review'),
+      },
     ];
   }, [navigate, onClose]);
 
@@ -91,7 +132,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
   // Reset state when palette opens
   useEffect(() => {
     if (isOpen) {
-      setQuery("");
+      setQuery('');
       setSelectedIndex(0);
       // Small delay so the DOM is painted before we focus
       requestAnimationFrame(() => inputRef.current?.focus());
@@ -109,27 +150,27 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
   useEffect(() => {
     if (!listRef.current) return;
     const el = listRef.current.querySelector(`[data-index="${selectedIndex}"]`);
-    el?.scrollIntoView({ block: "nearest" });
+    el?.scrollIntoView({ block: 'nearest' });
   }, [selectedIndex]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       switch (e.key) {
-        case "ArrowDown":
+        case 'ArrowDown':
           e.preventDefault();
           setSelectedIndex((i) => (i + 1) % Math.max(1, filtered.length));
           break;
-        case "ArrowUp":
+        case 'ArrowUp':
           e.preventDefault();
           setSelectedIndex((i) => (i - 1 + filtered.length) % Math.max(1, filtered.length));
           break;
-        case "Enter":
+        case 'Enter':
           e.preventDefault();
           if (filtered[selectedIndex]) {
             filtered[selectedIndex].action();
           }
           break;
-        case "Escape":
+        case 'Escape':
           e.preventDefault();
           onClose();
           break;
@@ -153,7 +194,12 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent
         hideClose
         className="max-w-lg mx-4 p-0 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden top-[30%] translate-y-0"
@@ -161,7 +207,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       >
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[#1a1a1a]">
-          <span className="text-slate-500 text-sm">{"\u2315"}</span>
+          <span className="text-slate-500 text-sm">{'\u2315'}</span>
           <Input
             ref={inputRef}
             type="text"
@@ -173,7 +219,10 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
               setSelectedIndex(0);
             }}
           />
-          <Badge variant="outline" className="text-[10px] font-mono text-slate-600 bg-[#1a1a1a] rounded px-1.5 py-0.5">
+          <Badge
+            variant="outline"
+            className="text-[10px] font-mono text-slate-600 bg-[#1a1a1a] rounded px-1.5 py-0.5"
+          >
             ESC
           </Badge>
         </div>
@@ -181,9 +230,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
         {/* Results */}
         <div ref={listRef} className="max-h-[360px] overflow-y-auto py-2">
           {filtered.length === 0 && (
-            <div className="px-4 py-8 text-center text-sm text-slate-600">
-              No matching commands
-            </div>
+            <div className="px-4 py-8 text-center text-sm text-slate-600">No matching commands</div>
           )}
 
           {groups.map((group) => (
@@ -200,8 +247,8 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
                     data-index={globalIndex}
                     className={`w-full flex items-center gap-3 px-3 py-2 h-auto text-left justify-start rounded-none transition-colors cursor-pointer ${
                       isSelected
-                        ? "bg-amber-500/10 text-slate-100"
-                        : "text-slate-400 hover:bg-[#111111]"
+                        ? 'bg-amber-500/10 text-slate-100'
+                        : 'text-slate-400 hover:bg-[#111111]'
                     }`}
                     onClick={() => item.action()}
                     onMouseEnter={() => setSelectedIndex(globalIndex)}
@@ -214,7 +261,10 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
                       </span>
                     )}
                     {item.shortcut && (
-                      <Badge variant="outline" className="text-[11px] text-slate-600 font-mono shrink-0 rounded px-1 py-0">
+                      <Badge
+                        variant="outline"
+                        className="text-[11px] text-slate-600 font-mono shrink-0 rounded px-1 py-0"
+                      >
                         {item.shortcut}
                       </Badge>
                     )}

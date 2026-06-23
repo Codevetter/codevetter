@@ -8,10 +8,9 @@
  *   CLOUDFLARE_API_TOKEN=... node scripts/purge-edge-cache.mjs --zone-id <id>
  */
 
-const ZONE_ID =
-  process.argv.includes('--zone-id')
-    ? process.argv[process.argv.indexOf('--zone-id') + 1]
-    : process.env.CLOUDFLARE_ZONE_ID_CODEVETTER ?? 'c1e6464302240c22f727ce64262136fe';
+const ZONE_ID = process.argv.includes('--zone-id')
+  ? process.argv[process.argv.indexOf('--zone-id') + 1]
+  : (process.env.CLOUDFLARE_ZONE_ID_CODEVETTER ?? 'c1e6464302240c22f727ce64262136fe');
 
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 if (!TOKEN) {
