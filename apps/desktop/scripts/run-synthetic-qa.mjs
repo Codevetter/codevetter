@@ -8,44 +8,42 @@
  *
  * Prints one JSON line to stdout (SyntheticQaRunResult shape).
  */
-import { chromium } from "playwright";
-import fs from "node:fs";
-import path from "node:path";
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const LOOPS = {
-  "codevetter-review-shell": {
-    route: "/review",
-    goal:
-      "Open the Review page in a real browser, confirm the shell renders, and collect console errors.",
+  'codevetter-review-shell': {
+    route: '/review',
+    goal: 'Open the Review page in a real browser, confirm the shell renders, and collect console errors.',
     async assert(page) {
-      await page.waitForSelector("main", { timeout: 10_000 });
-      const heading = page.locator("h1", { hasText: "Review" });
-      await heading.waitFor({ state: "visible", timeout: 10_000 });
+      await page.waitForSelector('main', { timeout: 10_000 });
+      const heading = page.locator('h1', { hasText: 'Review' });
+      await heading.waitFor({ state: 'visible', timeout: 10_000 });
     },
   },
-  "generic-page-smoke": {
-    route: "/",
-    goal:
-      "Open the selected route in a real browser, confirm the page renders, and collect console errors.",
+  'generic-page-smoke': {
+    route: '/',
+    goal: 'Open the selected route in a real browser, confirm the page renders, and collect console errors.',
     async assert(page) {
-      await page.waitForLoadState("domcontentloaded", { timeout: 10_000 });
-      await page.locator("body").waitFor({ state: "visible", timeout: 10_000 });
-      const text = await page.locator("body").innerText({ timeout: 5_000 });
-      if (!text.trim()) throw new Error("Page body rendered with no visible text.");
+      await page.waitForLoadState('domcontentloaded', { timeout: 10_000 });
+      await page.locator('body').waitFor({ state: 'visible', timeout: 10_000 });
+      const text = await page.locator('body').innerText({ timeout: 5_000 });
+      if (!text.trim()) throw new Error('Page body rendered with no visible text.');
     },
   },
 };
 
 const IGNORED_CONSOLE = [
-  "TAURI_NOT_AVAILABLE",
-  "__TAURI__",
-  "ipc://localhost",
-  "tauri://localhost",
-  "[vite]",
-  "Failed to fetch",
-  "NetworkError",
-  "net::ERR_",
-  "ResizeObserver loop",
+  'TAURI_NOT_AVAILABLE',
+  '__TAURI__',
+  'ipc://localhost',
+  'tauri://localhost',
+  '[vite]',
+  'Failed to fetch',
+  'NetworkError',
+  'net::ERR_',
+  'ResizeObserver loop',
 ];
 
 function parseArgs() {
@@ -54,15 +52,22 @@ function parseArgs() {
     const idx = argv.indexOf(name);
     return idx >= 0 ? argv[idx + 1] : undefined;
   };
-  const usesFlags = argv.some((arg) => arg.startsWith("--"));
-  const baseUrl = (flag("--base-url") ?? (usesFlags ? undefined : argv[0]) ?? "http://localhost:1420").replace(/\/$/, "");
-  const loopId = flag("--loop-id") ?? (usesFlags ? undefined : argv[1]) ?? "codevetter-review-shell";
+  const usesFlags = argv.some((arg) => arg.startsWith('--'));
+  const baseUrl = (
+    flag('--base-url') ??
+    (usesFlags ? undefined : argv[0]) ??
+    'http://localhost:1420'
+  ).replace(/\/$/, '');
+  const loopId =
+    flag('--loop-id') ?? (usesFlags ? undefined : argv[1]) ?? 'codevetter-review-shell';
   const artifactDir =
-    flag("--artifact-dir") ?? (usesFlags ? undefined : argv[2]) ?? path.join(process.cwd(), "synthetic-qa-artifacts", String(Date.now()));
-  const goal = flag("--goal");
-  const route = flag("--route");
-  const authMode = flag("--auth-mode") ?? "none";
-  const storageState = flag("--storage-state");
+    flag('--artifact-dir') ??
+    (usesFlags ? undefined : argv[2]) ??
+    path.join(process.cwd(), 'synthetic-qa-artifacts', String(Date.now()));
+  const goal = flag('--goal');
+  const route = flag('--route');
+  const authMode = flag('--auth-mode') ?? 'none';
+  const storageState = flag('--storage-state');
   return { baseUrl, loopId, artifactDir, goal, route, authMode, storageState };
 }
 
@@ -82,39 +87,41 @@ async function main() {
   let browser;
   let context;
   const targetRoute = route || loop.route;
-  const normalizedRoute = targetRoute.startsWith("/") ? targetRoute : `/${targetRoute}`;
+  const normalizedRoute = targetRoute.startsWith('/') ? targetRoute : `/${targetRoute}`;
   const targetUrl = `${baseUrl}${normalizedRoute}`;
 
   try {
-    if (authMode === "storage_state") {
-      if (!storageState) throw new Error("--storage-state is required when --auth-mode storage_state");
+    if (authMode === 'storage_state') {
+      if (!storageState)
+        throw new Error('--storage-state is required when --auth-mode storage_state');
       if (!fs.existsSync(storageState)) throw new Error(`storage state not found: ${storageState}`);
-    } else if (authMode !== "none") {
+    } else if (authMode !== 'none') {
       throw new Error(`unsupported auth mode: ${authMode}`);
     }
 
     browser = await chromium.launch({ headless: true });
     context = await browser.newContext({
       viewport: { width: 1280, height: 800 },
-      colorScheme: "dark",
-      ...(authMode === "storage_state" ? { storageState } : {}),
+      colorScheme: 'dark',
+      ...(authMode === 'storage_state' ? { storageState } : {}),
     });
     const page = await context.newPage();
 
-    page.on("console", (msg) => {
-      if (msg.type() !== "error") return;
+    page.on('console', (msg) => {
+      if (msg.type() !== 'error') return;
       const text = msg.text();
       if (IGNORED_CONSOLE.some((p) => text.includes(p))) return;
       consoleErrors.push(text);
     });
 
-    await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 15_000 });
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15_000 });
     await loop.assert(page);
 
     const pass = consoleErrors.length === 0;
-    const assertionSummary = loopId === "codevetter-review-shell"
-      ? 'Heading "Review" visible.'
-      : "Page rendered with visible content.";
+    const assertionSummary =
+      loopId === 'codevetter-review-shell'
+        ? 'Heading "Review" visible.'
+        : 'Page rendered with visible content.';
     const notes = pass
       ? `Loaded ${targetUrl}. ${assertionSummary} No unexpected console errors.`
       : `Loaded ${targetUrl}. ${assertionSummary} ${consoleErrors.length} console error(s) recorded.`;
@@ -137,7 +144,7 @@ async function main() {
     };
 
     if (!pass) {
-      const shot = path.join(artifactDir, "failure.png");
+      const shot = path.join(artifactDir, 'failure.png');
       await page.screenshot({ path: shot, fullPage: true });
       result.screenshot_path = shot;
       result.artifacts.push(shot);
@@ -152,7 +159,7 @@ async function main() {
       const pages = browser ? browser.contexts().flatMap((c) => c.pages()) : [];
       const page = pages[0];
       if (page) {
-        const shot = path.join(artifactDir, "failure.png");
+        const shot = path.join(artifactDir, 'failure.png');
         await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
         screenshotPath = shot;
       }
@@ -171,7 +178,7 @@ async function main() {
       duration_ms: Date.now() - started,
       trace: {
         final_url: targetUrl,
-        page_title: "",
+        page_title: '',
         console_errors: consoleErrors,
       },
       error: message,

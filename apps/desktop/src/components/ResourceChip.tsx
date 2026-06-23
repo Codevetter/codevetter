@@ -1,12 +1,8 @@
-import { Activity, ArrowDown, ArrowUp, Cpu, HardDrive, MemoryStick, Monitor, Wifi } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Activity, ArrowDown, Cpu, HardDrive, MemoryStick, Monitor, Wifi } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { getResourceSnapshot, isTauriAvailable, type ResourceSnapshot } from "@/lib/tauri-ipc";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { getResourceSnapshot, isTauriAvailable, type ResourceSnapshot } from '@/lib/tauri-ipc';
 
 const REFRESH_MS = 2000;
 
@@ -18,28 +14,28 @@ function bytes(n: number): string {
 }
 
 function rate(n: number | null): string {
-  if (n == null) return "—";
+  if (n == null) return '—';
   if (n >= 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1)}M/s`;
   if (n >= 1024) return `${(n / 1024).toFixed(0)}K/s`;
   return `${n}B/s`;
 }
 
 function cpuTone(pct: number): string {
-  if (pct >= 70) return "text-rose-300";
-  if (pct >= 30) return "text-amber-300";
-  return "text-slate-300";
+  if (pct >= 70) return 'text-rose-300';
+  if (pct >= 30) return 'text-amber-300';
+  return 'text-slate-300';
 }
 
 function ramTone(b: number): string {
-  if (b >= 1.5 * 1024 ** 3) return "text-rose-300";
-  if (b >= 500 * 1024 ** 2) return "text-amber-300";
-  return "text-slate-300";
+  if (b >= 1.5 * 1024 ** 3) return 'text-rose-300';
+  if (b >= 500 * 1024 ** 2) return 'text-amber-300';
+  return 'text-slate-300';
 }
 
 function ioTone(b: number): string {
-  if (b >= 50 * 1024 ** 2) return "text-rose-300";
-  if (b >= 5 * 1024 ** 2) return "text-amber-300";
-  return "text-slate-300";
+  if (b >= 50 * 1024 ** 2) return 'text-rose-300';
+  if (b >= 5 * 1024 ** 2) return 'text-amber-300';
+  return 'text-slate-300';
 }
 
 export default function ResourceChip() {
@@ -79,13 +75,13 @@ export default function ResourceChip() {
       setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === 'Escape') setOpen(false);
     }
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
@@ -131,14 +127,34 @@ export default function ResourceChip() {
           </div>
 
           <div className="grid grid-cols-2 gap-x-3 gap-y-2 border-b border-[var(--cv-line)] pb-3">
-            <Metric icon={<Cpu size={12} />} label="CPU" value={`${snap.cpu_percent.toFixed(1)}%`} tone={cpuTone(snap.cpu_percent)} />
-            <Metric icon={<MemoryStick size={12} />} label="RAM" value={bytes(snap.ram_bytes)} tone={ramTone(snap.ram_bytes)} />
-            <Metric icon={<ArrowDown size={12} />} label="Disk read" value={rate(snap.disk_read_per_sec)} tone={ioTone(snap.disk_read_per_sec)} />
-            <Metric icon={<HardDrive size={12} />} label="Disk write" value={rate(snap.disk_write_per_sec)} tone={ioTone(snap.disk_write_per_sec)} />
+            <Metric
+              icon={<Cpu size={12} />}
+              label="CPU"
+              value={`${snap.cpu_percent.toFixed(1)}%`}
+              tone={cpuTone(snap.cpu_percent)}
+            />
+            <Metric
+              icon={<MemoryStick size={12} />}
+              label="RAM"
+              value={bytes(snap.ram_bytes)}
+              tone={ramTone(snap.ram_bytes)}
+            />
+            <Metric
+              icon={<ArrowDown size={12} />}
+              label="Disk read"
+              value={rate(snap.disk_read_per_sec)}
+              tone={ioTone(snap.disk_read_per_sec)}
+            />
+            <Metric
+              icon={<HardDrive size={12} />}
+              label="Disk write"
+              value={rate(snap.disk_write_per_sec)}
+              tone={ioTone(snap.disk_write_per_sec)}
+            />
             <Metric
               icon={<Monitor size={12} />}
               label="GPU"
-              value={snap.gpu_percent == null ? "—" : `${snap.gpu_percent.toFixed(0)}%`}
+              value={snap.gpu_percent == null ? '—' : `${snap.gpu_percent.toFixed(0)}%`}
               tone="text-slate-300"
             />
             <Metric
@@ -146,7 +162,7 @@ export default function ResourceChip() {
               label="Network"
               value={
                 snap.net_in_per_sec == null
-                  ? "—"
+                  ? '—'
                   : `↓${rate(snap.net_in_per_sec)} ↑${rate(snap.net_out_per_sec)}`
               }
               tone="text-slate-300"
@@ -168,7 +184,7 @@ export default function ResourceChip() {
                     className="flex items-center justify-between font-mono text-[10px] text-slate-400"
                   >
                     <span className="truncate pr-2">
-                      <span className="text-slate-600">{c.pid}</span>{" "}
+                      <span className="text-slate-600">{c.pid}</span>{' '}
                       <span className="text-slate-300">{c.name}</span>
                     </span>
                     <span className="flex shrink-0 items-center gap-2">

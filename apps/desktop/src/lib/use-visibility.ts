@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 /** True when the app window is hidden / minimized / occluded. */
 export function isWindowHidden(): boolean {
-  return typeof document !== "undefined" && document.hidden;
+  return typeof document !== 'undefined' && document.hidden;
 }
 
 /**
@@ -14,11 +14,11 @@ export function isWindowHidden(): boolean {
 export function useWindowVisibilityClass(): void {
   useEffect(() => {
     const apply = () => {
-      document.documentElement.classList.toggle("cv-hidden", isWindowHidden());
+      document.documentElement.classList.toggle('cv-hidden', isWindowHidden());
     };
     apply();
-    document.addEventListener("visibilitychange", apply);
-    return () => document.removeEventListener("visibilitychange", apply);
+    document.addEventListener('visibilitychange', apply);
+    return () => document.removeEventListener('visibilitychange', apply);
   }, []);
 }
 
@@ -54,10 +54,10 @@ export function useVisibilityInterval(callback: () => void, ms: number): void {
       }
     };
     if (!isWindowHidden()) start();
-    document.addEventListener("visibilitychange", sync);
+    document.addEventListener('visibilitychange', sync);
     return () => {
       stop();
-      document.removeEventListener("visibilitychange", sync);
+      document.removeEventListener('visibilitychange', sync);
     };
   }, [ms]);
 }

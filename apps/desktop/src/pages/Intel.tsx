@@ -7,25 +7,14 @@ import {
   Sparkles,
   User,
   Users,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   attributeRepoCommits,
   type AuthorRow,
@@ -42,11 +31,11 @@ import {
   setPreference,
   type WeeklyVelocityBucket,
   type WindowReport,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
-const REPO_PATH_KEY = "intel_last_repo";
+const REPO_PATH_KEY = 'intel_last_repo';
 
-const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function fmtNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -55,56 +44,55 @@ function fmtNum(n: number): string {
 }
 
 function fmtPct(part: number, whole: number): string {
-  if (whole <= 0) return "—";
+  if (whole <= 0) return '—';
   return `${((part / whole) * 100).toFixed(1)}%`;
 }
 
 const TOOL_COLORS: Record<string, string> = {
-  "claude-code": "#7dd3fc",
-  codex: "#a78bfa",
-  cursor: "#facc15",
-  devin: "#fb923c",
-  aider: "#34d399",
-  windsurf: "#22d3ee",
-  human: "#475569",
-  automation: "#374151",
-  grok: "#94a3b8",
-  unknown: "#6b7280",
+  'claude-code': '#7dd3fc',
+  codex: '#a78bfa',
+  cursor: '#facc15',
+  devin: '#fb923c',
+  aider: '#34d399',
+  windsurf: '#22d3ee',
+  human: '#475569',
+  automation: '#374151',
+  grok: '#94a3b8',
+  unknown: '#6b7280',
 };
 
 function toolColor(tool: string): string {
-  return TOOL_COLORS[tool] ?? "#6b7280";
+  return TOOL_COLORS[tool] ?? '#6b7280';
 }
 
 function prettyTool(tool: string): string {
   switch (tool) {
-    case "claude-code":
-      return "Claude Code";
-    case "codex":
-      return "Codex";
-    case "cursor":
-      return "Cursor";
-    case "devin":
-      return "Devin";
-    case "aider":
-      return "Aider";
-    case "windsurf":
-      return "Windsurf";
-    case "human":
-      return "Human";
-    case "automation":
-      return "Automation";
-    case "grok":
-      return "Grok";
+    case 'claude-code':
+      return 'Claude Code';
+    case 'codex':
+      return 'Codex';
+    case 'cursor':
+      return 'Cursor';
+    case 'devin':
+      return 'Devin';
+    case 'aider':
+      return 'Aider';
+    case 'windsurf':
+      return 'Windsurf';
+    case 'human':
+      return 'Human';
+    case 'automation':
+      return 'Automation';
+    case 'grok':
+      return 'Grok';
     default:
       return tool;
   }
 }
 
 export default function Intel() {
-  const [repoPath, setRepoPath] = useState("");
-  const [detectedFleetProject, setDetectedFleetProject] =
-    useState<RepoDetectResult | null>(null);
+  const [repoPath, setRepoPath] = useState('');
+  const [detectedFleetProject, setDetectedFleetProject] = useState<RepoDetectResult | null>(null);
   const [attribution, setAttribution] = useState<RepoAttributionReport | null>(null);
   const [dora, setDora] = useState<DoraMetrics | null>(null);
   const [attrLoading, setAttrLoading] = useState(false);
@@ -153,10 +141,10 @@ export default function Intel() {
 
   const handlePick = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError("Intel requires the desktop app.");
+      setError('Intel requires the desktop app.');
       return;
     }
-    const picked = await pickDirectory("Select a repository to analyze");
+    const picked = await pickDirectory('Select a repository to analyze');
     if (picked) {
       setRepoPath(picked);
       void persistRepoPath(picked);
@@ -165,11 +153,11 @@ export default function Intel() {
 
   const handleRun = useCallback(async () => {
     if (!repoPath.trim()) {
-      setError("Pick a repo first.");
+      setError('Pick a repo first.');
       return;
     }
     if (!isTauriAvailable()) {
-      setError("Attribution requires the desktop app.");
+      setError('Attribution requires the desktop app.');
       return;
     }
     setError(null);
@@ -198,9 +186,7 @@ export default function Intel() {
           <div>
             <div className="flex items-center gap-2">
               <Sparkles size={22} className="text-[var(--cv-accent)]" />
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Engineering Intelligence
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Engineering Intelligence</h1>
               <Badge
                 variant="outline"
                 className="border-cyan-500/40 bg-cyan-500/10 text-[10px] uppercase tracking-wider text-[var(--cv-accent)]"
@@ -209,9 +195,8 @@ export default function Intel() {
               </Badge>
             </div>
             <p className="mt-1 max-w-2xl text-sm text-[var(--text-secondary)]">
-              How much of your recent code was AI-led vs. human-led, who shipped
-              what, and where the work actually concentrates. Computed locally
-              from your existing git history.
+              How much of your recent code was AI-led vs. human-led, who shipped what, and where the
+              work actually concentrates. Computed locally from your existing git history.
             </p>
           </div>
         </header>
@@ -223,11 +208,10 @@ export default function Intel() {
               Repo Attribution
             </CardTitle>
             <CardDescription className="text-xs">
-              Single <span className="font-mono">git log</span> pass; classifies
-              commits via Co-Authored-By trailers and known AI tool markers;
-              splits into{" "}
-              <span className="font-mono">All / 1Y / 90D / 30D / 7D</span>{" "}
-              windows so the trend is visible at a glance.
+              Single <span className="font-mono">git log</span> pass; classifies commits via
+              Co-Authored-By trailers and known AI tool markers; splits into{' '}
+              <span className="font-mono">All / 1Y / 90D / 30D / 7D</span> windows so the trend is
+              visible at a glance.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -270,13 +254,10 @@ export default function Intel() {
             {detectedFleetProject?.project && (
               <div className="flex items-center gap-1.5 rounded-md border border-cyan-500/20 bg-cyan-500/5 px-2 py-1 text-[10px] text-cyan-300">
                 <Sparkles size={11} className="shrink-0" />
-                Linked to{" "}
-                <span className="font-mono">
-                  {detectedFleetProject.project.name}
-                </span>
+                Linked to <span className="font-mono">{detectedFleetProject.project.name}</span>
                 <span className="text-cyan-500/60">·</span>
                 <span className="text-cyan-500/60">
-                  {detectedFleetProject.source === "git_url" ? "auto" : "manual"}
+                  {detectedFleetProject.source === 'git_url' ? 'auto' : 'manual'}
                 </span>
               </div>
             )}
@@ -286,9 +267,7 @@ export default function Intel() {
                 <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                 <div>
                   <div className="font-medium">Couldn&apos;t finish that.</div>
-                  <div className="mt-0.5 font-mono text-xs text-red-300/80">
-                    {error}
-                  </div>
+                  <div className="mt-0.5 font-mono text-xs text-red-300/80">{error}</div>
                 </div>
               </div>
             )}
@@ -301,8 +280,8 @@ export default function Intel() {
             ) : (
               <p className="text-xs text-[var(--text-secondary)]">
                 {attrLoading
-                  ? "Reading git log…"
-                  : "Pick a repo and hit Run. First pass on a real repo of yours is a good baseline."}
+                  ? 'Reading git log…'
+                  : 'Pick a repo and hit Run. First pass on a real repo of yours is a good baseline.'}
               </p>
             )}
           </CardContent>
@@ -338,49 +317,47 @@ function AttributionResult({ report }: { report: RepoAttributionReport }) {
 
 function WindowsTable({ windows }: { windows: WindowReport[] }) {
   // Order: all, 1y, 90d, 30d, 7d
-  const ordered = ["all", "1y", "90d", "30d", "7d"]
+  const ordered = ['all', '1y', '90d', '30d', '7d']
     .map((label) => windows.find((w) => w.label === label))
     .filter((w): w is WindowReport => Boolean(w));
 
   if (ordered.length === 0) return null;
 
   const rows: Array<{ label: string; value: (w: WindowReport) => string }> = [
-    { label: "commits", value: (w) => fmtNum(w.total_commits) },
+    { label: 'commits', value: (w) => fmtNum(w.total_commits) },
     {
-      label: "AI",
+      label: 'AI',
       value: (w) =>
         `${fmtNum(w.ai_commits)} · ${fmtPct(w.ai_commits, w.ai_commits + w.human_commits)}`,
     },
     {
-      label: "human",
+      label: 'human',
       value: (w) =>
         `${fmtNum(w.human_commits)} · ${fmtPct(w.human_commits, w.ai_commits + w.human_commits)}`,
     },
     {
-      label: "AI lines",
+      label: 'AI lines',
       value: (w) => `+${fmtNum(w.ai_additions)} / −${fmtNum(w.ai_deletions)}`,
     },
     {
-      label: "human lines",
-      value: (w) =>
-        `+${fmtNum(w.human_additions)} / −${fmtNum(w.human_deletions)}`,
+      label: 'human lines',
+      value: (w) => `+${fmtNum(w.human_additions)} / −${fmtNum(w.human_deletions)}`,
     },
-    { label: "active days", value: (w) => String(w.active_days) },
+    { label: 'active days', value: (w) => String(w.active_days) },
     {
-      label: "commit size p50/p95",
-      value: (w) =>
-        `${fmtNum(w.commit_size_p50)} / ${fmtNum(w.commit_size_p95)}`,
+      label: 'commit size p50/p95',
+      value: (w) => `${fmtNum(w.commit_size_p50)} / ${fmtNum(w.commit_size_p95)}`,
     },
     {
-      label: "largest commit",
+      label: 'largest commit',
       value: (w) => fmtNum(w.commit_size_max),
     },
     {
-      label: "revert / fixup",
+      label: 'revert / fixup',
       value: (w) =>
         `${w.revert_or_fixup_commits} · ${fmtPct(w.revert_or_fixup_commits, w.total_commits)}`,
     },
-    { label: "bots", value: (w) => String(w.automation_commits) },
+    { label: 'bots', value: (w) => String(w.automation_commits) },
   ];
 
   return (
@@ -388,9 +365,7 @@ function WindowsTable({ windows }: { windows: WindowReport[] }) {
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-[var(--cv-line)]">
-            <th className="px-3 py-2 text-left font-normal text-[var(--text-secondary)]">
-              metric
-            </th>
+            <th className="px-3 py-2 text-left font-normal text-[var(--text-secondary)]">metric</th>
             {ordered.map((w) => (
               <th
                 key={w.label}
@@ -404,9 +379,7 @@ function WindowsTable({ windows }: { windows: WindowReport[] }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.label} className="border-b border-[var(--cv-line)]/40 last:border-0">
-              <td className="px-3 py-1.5 text-[var(--text-secondary)]">
-                {r.label}
-              </td>
+              <td className="px-3 py-1.5 text-[var(--text-secondary)]">{r.label}</td>
               {ordered.map((w) => (
                 <td key={w.label} className="px-3 py-1.5 text-right font-mono">
                   {r.value(w)}
@@ -417,9 +390,7 @@ function WindowsTable({ windows }: { windows: WindowReport[] }) {
 
           {/* tool mix row spans the same columns with stacked bars */}
           <tr>
-            <td className="px-3 py-2 text-[var(--text-secondary)] align-top">
-              tool mix
-            </td>
+            <td className="px-3 py-2 text-[var(--text-secondary)] align-top">tool mix</td>
             {ordered.map((w) => (
               <td key={w.label} className="px-3 py-2">
                 <ToolMixBar window={w} />
@@ -434,7 +405,7 @@ function WindowsTable({ windows }: { windows: WindowReport[] }) {
 
 function ToolMixBar({ window: w }: { window: WindowReport }) {
   const total = w.ai_commits + w.human_commits;
-  const filtered = w.by_tool.filter((t) => t.tool !== "automation");
+  const filtered = w.by_tool.filter((t) => t.tool !== 'automation');
   if (total === 0 || filtered.length === 0) {
     return <div className="text-right text-[10px] text-[var(--text-secondary)]">—</div>;
   }
@@ -465,13 +436,13 @@ function ToolMixBar({ window: w }: { window: WindowReport }) {
         {filtered
           .slice(0, 2)
           .map((t) => `${prettyTool(t.tool)} ${t.commits}`)
-          .join(" · ")}
+          .join(' · ')}
       </div>
     </div>
   );
 }
 
-function DailySparkline({ series }: { series: RepoAttributionReport["daily_series"] }) {
+function DailySparkline({ series }: { series: RepoAttributionReport['daily_series'] }) {
   // Bucket the 90-day series into ~30 buckets for visual clarity.
   const buckets = useMemo(() => {
     const target = 30;
@@ -482,7 +453,7 @@ function DailySparkline({ series }: { series: RepoAttributionReport["daily_serie
       out.push({
         ai: slice.reduce((s, d) => s + d.ai_commits, 0),
         human: slice.reduce((s, d) => s + d.human_commits, 0),
-        label: slice[0]?.date ?? "",
+        label: slice[0]?.date ?? '',
       });
     }
     return out;
@@ -504,18 +475,18 @@ function DailySparkline({ series }: { series: RepoAttributionReport["daily_serie
               <TooltipTrigger asChild>
                 <div
                   className="flex h-full flex-1 flex-col justify-end overflow-hidden rounded-sm bg-[var(--bg-surface)]"
-                  style={{ minWidth: "4px" }}
+                  style={{ minWidth: '4px' }}
                 >
                   {humanPct > 0 && (
                     <div
                       className="bg-slate-500/60"
-                      style={{ height: `${humanPct}%`, minHeight: "1px" }}
+                      style={{ height: `${humanPct}%`, minHeight: '1px' }}
                     />
                   )}
                   {aiPct > 0 && (
                     <div
                       className="bg-[var(--cv-accent)]"
-                      style={{ height: `${aiPct}%`, minHeight: "1px" }}
+                      style={{ height: `${aiPct}%`, minHeight: '1px' }}
                     />
                   )}
                 </div>
@@ -531,11 +502,7 @@ function DailySparkline({ series }: { series: RepoAttributionReport["daily_serie
   );
 }
 
-function WeeklyVelocityChart({
-  buckets,
-}: {
-  buckets: WeeklyVelocityBucket[];
-}) {
+function WeeklyVelocityChart({ buckets }: { buckets: WeeklyVelocityBucket[] }) {
   const max = Math.max(1, ...buckets.map((b) => b.total_commits));
   return (
     <div className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-raised)] p-3">
@@ -543,49 +510,44 @@ function WeeklyVelocityChart({
       <div className="flex h-20 items-end gap-1">
         {buckets.map((b, i) => {
           const heightPct = (b.total_commits / max) * 100;
-          const aiPct =
-            b.total_commits === 0 ? 0 : (b.ai_commits / b.total_commits) * heightPct;
+          const aiPct = b.total_commits === 0 ? 0 : (b.ai_commits / b.total_commits) * heightPct;
           const humanPct =
-            b.total_commits === 0
-              ? 0
-              : (b.human_commits / b.total_commits) * heightPct;
+            b.total_commits === 0 ? 0 : (b.human_commits / b.total_commits) * heightPct;
           const autoPct = heightPct - aiPct - humanPct;
           return (
             <Tooltip key={i}>
               <TooltipTrigger asChild>
                 <div
                   className="flex h-full flex-1 flex-col justify-end overflow-hidden rounded-sm bg-[var(--bg-surface)]"
-                  style={{ minWidth: "6px" }}
+                  style={{ minWidth: '6px' }}
                 >
                   {autoPct > 0 && (
-                    <div
-                      className="bg-slate-700/60"
-                      style={{ height: `${autoPct}%` }}
-                    />
+                    <div className="bg-slate-700/60" style={{ height: `${autoPct}%` }} />
                   )}
                   {humanPct > 0 && (
                     <div
                       className="bg-slate-500/60"
-                      style={{ height: `${humanPct}%`, minHeight: "1px" }}
+                      style={{ height: `${humanPct}%`, minHeight: '1px' }}
                     />
                   )}
                   {aiPct > 0 && (
                     <div
                       className="bg-[var(--cv-accent)]"
-                      style={{ height: `${aiPct}%`, minHeight: "1px" }}
+                      style={{ height: `${aiPct}%`, minHeight: '1px' }}
                     />
                   )}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-[10px]">
-                w/o {b.week_start}: {b.total_commits} commits · AI {b.ai_commits} / human {b.human_commits} · +{fmtNum(b.additions)} / −{fmtNum(b.deletions)}
+                w/o {b.week_start}: {b.total_commits} commits · AI {b.ai_commits} / human{' '}
+                {b.human_commits} · +{fmtNum(b.additions)} / −{fmtNum(b.deletions)}
               </TooltipContent>
             </Tooltip>
           );
         })}
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-[var(--text-secondary)]">
-        <span>{buckets[0]?.week_start.slice(5) ?? ""}</span>
+        <span>{buckets[0]?.week_start.slice(5) ?? ''}</span>
         <span>now</span>
       </div>
     </div>
@@ -604,7 +566,7 @@ function DayOfWeekChart({ histogram }: { histogram: number[] }) {
               <div className="flex h-full flex-1 flex-col items-center justify-end">
                 <div
                   className="w-full rounded-sm bg-[var(--cv-accent)]/70"
-                  style={{ height: `${(n / max) * 100}%`, minHeight: "2px" }}
+                  style={{ height: `${(n / max) * 100}%`, minHeight: '2px' }}
                 />
               </div>
             </TooltipTrigger>
@@ -641,7 +603,7 @@ function HourOfWeekHeatmap({ grid }: { grid: number[][] }) {
                 const intensity = cell / max;
                 const bg =
                   cell === 0
-                    ? "rgba(125,211,252,0)"
+                    ? 'rgba(125,211,252,0)'
                     : `rgba(125,211,252,${0.15 + intensity * 0.85})`;
                 return (
                   <Tooltip key={h}>
@@ -651,14 +613,12 @@ function HourOfWeekHeatmap({ grid }: { grid: number[][] }) {
                         style={{
                           backgroundColor: bg,
                           border:
-                            cell === 0
-                              ? "1px solid var(--bg-surface)"
-                              : "1px solid transparent",
+                            cell === 0 ? '1px solid var(--bg-surface)' : '1px solid transparent',
                         }}
                       />
                     </TooltipTrigger>
                     <TooltipContent side="top" className="text-[10px]">
-                      {WEEKDAY_LABELS[wd]} {String(h).padStart(2, "0")}:00 · {cell} commits
+                      {WEEKDAY_LABELS[wd]} {String(h).padStart(2, '0')}:00 · {cell} commits
                     </TooltipContent>
                   </Tooltip>
                 );
@@ -702,26 +662,15 @@ function TopDirectoriesSection({ dirs }: { dirs: DirectoryChurn[] }) {
               const churn = d.additions + d.deletions;
               const pct = (churn / max) * 100;
               return (
-                <tr
-                  key={d.path}
-                  className="border-b border-[var(--cv-line)]/40 last:border-0"
-                >
+                <tr key={d.path} className="border-b border-[var(--cv-line)]/40 last:border-0">
                   <td className="px-3 py-1.5 font-mono text-[11px]">{d.path}</td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    {d.commits.toLocaleString()}
-                  </td>
+                  <td className="px-3 py-1.5 text-right font-mono">{d.commits.toLocaleString()}</td>
                   <td className="px-3 py-1.5 text-right font-mono text-[var(--cv-accent)]">
                     {d.ai_commits} ({fmtPct(d.ai_commits, d.ai_commits + d.human_commits)})
                   </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    {d.human_commits}
-                  </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    +{fmtNum(d.additions)}
-                  </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    −{fmtNum(d.deletions)}
-                  </td>
+                  <td className="px-3 py-1.5 text-right font-mono">{d.human_commits}</td>
+                  <td className="px-3 py-1.5 text-right font-mono">+{fmtNum(d.additions)}</td>
+                  <td className="px-3 py-1.5 text-right font-mono">−{fmtNum(d.deletions)}</td>
                   <td className="px-3 py-1.5">
                     <div className="h-1.5 w-32 rounded-full bg-[var(--bg-surface)]">
                       <div
@@ -772,36 +721,26 @@ function AuthorsSection({ authors }: { authors: AuthorRow[] }) {
                   className="border-b border-[var(--cv-line)]/40 last:border-0"
                 >
                   <td className="px-3 py-1.5">
-                    <div className="font-medium">{a.name || "(unknown)"}</div>
+                    <div className="font-medium">{a.name || '(unknown)'}</div>
                     <div className="font-mono text-[10px] text-[var(--text-secondary)]">
-                      {a.email || "—"}
+                      {a.email || '—'}
                     </div>
                   </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    {a.commits.toLocaleString()}
-                  </td>
+                  <td className="px-3 py-1.5 text-right font-mono">{a.commits.toLocaleString()}</td>
                   <td className="px-3 py-1.5 text-right font-mono text-[var(--cv-accent)]">
                     {a.ai_commits} ({fmtPct(a.ai_commits, totalNonAuto)})
                   </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    {a.human_commits}
-                  </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    +{fmtNum(a.additions)}
-                  </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    −{fmtNum(a.deletions)}
-                  </td>
-                  <td className="px-3 py-1.5 text-right font-mono">
-                    {a.active_days}
-                  </td>
+                  <td className="px-3 py-1.5 text-right font-mono">{a.human_commits}</td>
+                  <td className="px-3 py-1.5 text-right font-mono">+{fmtNum(a.additions)}</td>
+                  <td className="px-3 py-1.5 text-right font-mono">−{fmtNum(a.deletions)}</td>
+                  <td className="px-3 py-1.5 text-right font-mono">{a.active_days}</td>
                   <td className="px-3 py-1.5 text-right font-mono text-[var(--text-secondary)]">
                     {a.last_commit}
                   </td>
                   <td className="px-3 py-1.5">
                     <div className="flex h-1.5 w-32 overflow-hidden rounded-full bg-[var(--bg-surface)]">
                       {a.tool_mix
-                        .filter((t) => t.tool !== "automation")
+                        .filter((t) => t.tool !== 'automation')
                         .map((t) => {
                           const total = totalNonAuto || 1;
                           const pct = (t.commits / total) * 100;
@@ -855,8 +794,7 @@ function TopFilesSection({ files }: { files: FileChurn[] }) {
                   {f.path}
                 </span>
                 <span className="font-mono text-[10px] text-[var(--text-secondary)]">
-                  +{fmtNum(f.additions)} / −{fmtNum(f.deletions)} · {f.commits}{" "}
-                  commits
+                  +{fmtNum(f.additions)} / −{fmtNum(f.deletions)} · {f.commits} commits
                 </span>
               </div>
             );
@@ -874,7 +812,7 @@ void User;
 // ─── DORA section (v1.1.79) ────────────────────────────────────────────────
 
 function fmtHours(h: number | null): string {
-  if (h == null) return "—";
+  if (h == null) return '—';
   if (h < 1) return `${(h * 60).toFixed(0)} min`;
   if (h < 48) return `${h.toFixed(1)}h`;
   const days = h / 24;
@@ -883,17 +821,17 @@ function fmtHours(h: number | null): string {
 }
 
 function deployBucketColor(per_week: number): string {
-  if (per_week >= 7) return "text-emerald-300"; // Elite (≥1/day)
-  if (per_week >= 1) return "text-cyan-300"; // High (weekly)
-  if (per_week >= 0.25) return "text-amber-300"; // Medium (monthly)
-  return "text-red-300"; // Low (<monthly)
+  if (per_week >= 7) return 'text-emerald-300'; // Elite (≥1/day)
+  if (per_week >= 1) return 'text-cyan-300'; // High (weekly)
+  if (per_week >= 0.25) return 'text-amber-300'; // Medium (monthly)
+  return 'text-red-300'; // Low (<monthly)
 }
 
 function deployBucketLabel(per_week: number): string {
-  if (per_week >= 7) return "Elite";
-  if (per_week >= 1) return "High";
-  if (per_week >= 0.25) return "Medium";
-  return "Low";
+  if (per_week >= 7) return 'Elite';
+  if (per_week >= 1) return 'High';
+  if (per_week >= 0.25) return 'Medium';
+  return 'Low';
 }
 
 function DoraSection({ metrics }: { metrics: DoraMetrics }) {
@@ -926,10 +864,10 @@ function DoraSection({ metrics }: { metrics: DoraMetrics }) {
           sub="releases needing hotfix"
           color={
             metrics.change_failure_rate_pct < 15
-              ? "text-emerald-300"
+              ? 'text-emerald-300'
               : metrics.change_failure_rate_pct < 30
-                ? "text-amber-300"
-                : "text-red-300"
+                ? 'text-amber-300'
+                : 'text-red-300'
           }
         />
       </div>
@@ -946,7 +884,7 @@ function DoraSection({ metrics }: { metrics: DoraMetrics }) {
                       className="w-full rounded-sm bg-[var(--cv-accent)]/70"
                       style={{
                         height: `${(w.deploys / maxWeekly) * 100}%`,
-                        minHeight: w.deploys > 0 ? "2px" : "0",
+                        minHeight: w.deploys > 0 ? '2px' : '0',
                       }}
                     />
                   </div>
@@ -963,17 +901,14 @@ function DoraSection({ metrics }: { metrics: DoraMetrics }) {
           <div className="cv-label mb-2">Recent releases</div>
           {metrics.recent_releases.length === 0 ? (
             <p className="text-[11px] text-[var(--text-secondary)]">
-              No semver-shaped tags in this window. Looks for{" "}
-              <span className="font-mono">v1.2.3</span>,{" "}
+              No semver-shaped tags in this window. Looks for{' '}
+              <span className="font-mono">v1.2.3</span>,{' '}
               <span className="font-mono">1.2.3-rc.1</span>, etc.
             </p>
           ) : (
             <div className="space-y-1 font-mono text-[11px]">
               {metrics.recent_releases.slice(0, 8).map((r) => (
-                <div
-                  key={r.tag}
-                  className="flex items-center justify-between gap-2"
-                >
+                <div key={r.tag} className="flex items-center justify-between gap-2">
                   <span className="text-[var(--cv-accent)]">{r.tag}</span>
                   <span className="text-[var(--text-secondary)]">
                     {r.created_at.slice(0, 10)} · {r.commits_since_previous} commits

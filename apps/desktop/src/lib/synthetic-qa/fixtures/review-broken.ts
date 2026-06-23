@@ -1,4 +1,4 @@
-import type { SyntheticQaFixture } from "../types";
+import type { SyntheticQaFixture } from '../types';
 
 /**
  * Broken-path replay: same recorded steps as the happy fixture, but the
@@ -31,60 +31,59 @@ const SNAPSHOT_HTML = `<!doctype html>
 </html>`;
 
 export const REVIEW_BROKEN_FIXTURE: SyntheticQaFixture = {
-  id: "replay-review-broken",
-  label: "Replay · Review shell with missing action (broken path)",
-  route: "/review",
-  goal:
-    "Replay the same recorded session against a regressed snapshot where the run-review button has been deleted and an error banner is rendered.",
-  variant: "broken",
+  id: 'replay-review-broken',
+  label: 'Replay · Review shell with missing action (broken path)',
+  route: '/review',
+  goal: 'Replay the same recorded session against a regressed snapshot where the run-review button has been deleted and an error banner is rendered.',
+  variant: 'broken',
   steps: [
     {
-      action: "visit",
-      description: "Navigate to /review.",
-      target: "/review",
+      action: 'visit',
+      description: 'Navigate to /review.',
+      target: '/review',
     },
     {
-      action: "wait",
-      description: "Wait for the review shell to mount.",
-      target: "[data-testid=review-shell]",
+      action: 'wait',
+      description: 'Wait for the review shell to mount.',
+      target: '[data-testid=review-shell]',
     },
     {
-      action: "click",
-      description: "Attempt to click the run-review button (will be missing).",
+      action: 'click',
+      description: 'Attempt to click the run-review button (will be missing).',
       target: '[data-action="run-review"]',
     },
   ],
   snapshot_html: SNAPSHOT_HTML,
   observations: [
     {
-      kind: "contains_text",
+      kind: 'contains_text',
       description: "Page heading shows 'Review'.",
-      needle: "<h1>Review</h1>",
+      needle: '<h1>Review</h1>',
     },
     {
-      kind: "contains_text",
-      description: "Diff input is rendered.",
+      kind: 'contains_text',
+      description: 'Diff input is rendered.',
       needle: 'id="diff-input"',
     },
     {
-      kind: "contains_text",
-      description: "Run-review action button is present.",
+      kind: 'contains_text',
+      description: 'Run-review action button is present.',
       needle: 'data-action="run-review"',
     },
     {
-      kind: "contains_text",
-      description: "Findings pane shows empty-state copy.",
-      needle: "No findings yet",
+      kind: 'contains_text',
+      description: 'Findings pane shows empty-state copy.',
+      needle: 'No findings yet',
     },
     {
-      kind: "not_contains_text",
-      description: "No uncaught error banner is rendered.",
+      kind: 'not_contains_text',
+      description: 'No uncaught error banner is rendered.',
       needle: 'data-testid="error-banner"',
     },
     {
-      kind: "regex_match",
-      description: "Document title mentions CodeVetter and Review.",
-      pattern: "<title>CodeVetter[^<]*Review</title>",
+      kind: 'regex_match',
+      description: 'Document title mentions CodeVetter and Review.',
+      pattern: '<title>CodeVetter[^<]*Review</title>',
     },
   ],
 };

@@ -4,14 +4,14 @@ import type {
   SyntheticQaObservationResult,
   SyntheticQaRunResult,
   SyntheticQaStepResult,
-} from "./types";
+} from './types';
 
 function evaluateObservation(
   observation: SyntheticQaObservation,
-  html: string,
+  html: string
 ): SyntheticQaObservationResult {
   switch (observation.kind) {
-    case "contains_text": {
+    case 'contains_text': {
       const pass = html.includes(observation.needle);
       return {
         kind: observation.kind,
@@ -22,7 +22,7 @@ function evaluateObservation(
           : `Expected snapshot to contain "${observation.needle}".`,
       };
     }
-    case "not_contains_text": {
+    case 'not_contains_text': {
       const pass = !html.includes(observation.needle);
       return {
         kind: observation.kind,
@@ -33,16 +33,16 @@ function evaluateObservation(
           : `Snapshot unexpectedly contains "${observation.needle}".`,
       };
     }
-    case "regex_match": {
-      const re = new RegExp(observation.pattern, observation.flags ?? "");
+    case 'regex_match': {
+      const re = new RegExp(observation.pattern, observation.flags ?? '');
       const pass = re.test(html);
       return {
         kind: observation.kind,
         description: observation.description,
         pass,
         detail: pass
-          ? `Matched /${observation.pattern}/${observation.flags ?? ""}.`
-          : `Expected snapshot to match /${observation.pattern}/${observation.flags ?? ""}.`,
+          ? `Matched /${observation.pattern}/${observation.flags ?? ''}.`
+          : `Expected snapshot to match /${observation.pattern}/${observation.flags ?? ''}.`,
       };
     }
   }
@@ -61,11 +61,11 @@ export function runFixture(fixture: SyntheticQaFixture): SyntheticQaRunResult {
     index,
     action: step.action,
     description: step.description,
-    status: "ok",
+    status: 'ok',
   }));
 
   const observations = fixture.observations.map((o) =>
-    evaluateObservation(o, fixture.snapshot_html),
+    evaluateObservation(o, fixture.snapshot_html)
   );
 
   const failed = observations.filter((o) => !o.pass);
@@ -76,7 +76,7 @@ export function runFixture(fixture: SyntheticQaFixture): SyntheticQaRunResult {
     `Steps recorded: ${steps.length}. Observations evaluated: ${observations.length}. Failed: ${failed.length}.`,
   ];
   if (failed.length > 0) {
-    notesLines.push("", "Failed observations:");
+    notesLines.push('', 'Failed observations:');
     for (const o of failed) {
       notesLines.push(`  - ${o.description} — ${o.detail}`);
     }
@@ -88,7 +88,7 @@ export function runFixture(fixture: SyntheticQaFixture): SyntheticQaRunResult {
     route: fixture.route,
     goal: fixture.goal,
     pass,
-    notes: notesLines.join("\n"),
+    notes: notesLines.join('\n'),
     screenshot_path: null,
     artifacts: [],
     duration_ms: Date.now() - started,
@@ -105,5 +105,5 @@ export function runFixture(fixture: SyntheticQaFixture): SyntheticQaRunResult {
 
 function extractTitle(html: string): string {
   const match = html.match(/<title>([^<]*)<\/title>/i);
-  return match ? match[1].trim() : "";
+  return match ? match[1].trim() : '';
 }

@@ -1,10 +1,10 @@
-import { BookOpenText, Copy, ExternalLink, FolderOpen, RefreshCw, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { BookOpenText, Copy, ExternalLink, FolderOpen, RefreshCw, Search } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   type AgentMemoryDocument,
   type AgentMemorySource,
@@ -12,49 +12,49 @@ import {
   listAgentMemorySources,
   openInApp,
   readAgentMemorySource,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
 function formatBytes(bytes: number | null): string {
-  if (bytes == null) return "";
+  if (bytes == null) return '';
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${bytes} B`;
 }
 
 function formatModified(value: string | null): string {
-  if (!value) return "not found";
+  if (!value) return 'not found';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 
 function displayPath(path: string): string {
-  return path.replace(/^\/Users\/[^/]+/, "~");
+  return path.replace(/^\/Users\/[^/]+/, '~');
 }
 
 function sourceTone(source: AgentMemorySource): string {
-  if (!source.exists) return "border-[#1a1a1a] bg-[#0b0d12] text-slate-500";
-  if (!source.readable) return "border-red-500/25 bg-red-500/5 text-red-200";
-  return "border-[#222] bg-[#10131a] text-slate-100 hover:border-[var(--cv-accent)]/50";
+  if (!source.exists) return 'border-[#1a1a1a] bg-[#0b0d12] text-slate-500';
+  if (!source.readable) return 'border-red-500/25 bg-red-500/5 text-red-200';
+  return 'border-[#222] bg-[#10131a] text-slate-100 hover:border-[var(--cv-accent)]/50';
 }
 
 export default function AgentMemories() {
   const [sources, setSources] = useState<AgentMemorySource[]>([]);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [document, setDocument] = useState<AgentMemoryDocument | null>(null);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [reading, setReading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadSources = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError("Agent Memories requires the desktop app.");
+      setError('Agent Memories requires the desktop app.');
       return;
     }
 
@@ -121,14 +121,8 @@ export default function AgentMemories() {
     const needle = query.trim().toLowerCase();
     if (!needle) return sources;
     return sources.filter((source) => {
-      const haystack = [
-        source.tool,
-        source.label,
-        source.path,
-        source.preview,
-        source.note,
-      ]
-        .join(" ")
+      const haystack = [source.tool, source.label, source.path, source.preview, source.note]
+        .join(' ')
         .toLowerCase();
       return haystack.includes(needle);
     });
@@ -160,7 +154,11 @@ export default function AgentMemories() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {Object.entries(toolCounts).map(([tool, count]) => (
-              <Badge key={tool} variant="secondary" className="border-[#242424] bg-[#10131a] text-slate-300">
+              <Badge
+                key={tool}
+                variant="secondary"
+                className="border-[#242424] bg-[#10131a] text-slate-300"
+              >
                 {tool} {count}
               </Badge>
             ))}
@@ -171,7 +169,7 @@ export default function AgentMemories() {
               onClick={() => void loadSources()}
               disabled={loading}
             >
-              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
               Refresh
             </Button>
           </div>
@@ -187,7 +185,10 @@ export default function AgentMemories() {
           <Card className="overflow-hidden border-[#1a1a1a] bg-[#0b0d12] shadow-none">
             <div className="border-b border-[#1a1a1a] p-3">
               <div className="relative">
-                <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Search
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                />
                 <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -196,7 +197,7 @@ export default function AgentMemories() {
                 />
               </div>
               <p className="mt-2 text-[11px] text-slate-500">
-                {existingCount} readable source{existingCount === 1 ? "" : "s"} found
+                {existingCount} readable source{existingCount === 1 ? '' : 's'} found
               </p>
             </div>
             <div className="max-h-[560px] overflow-y-auto p-2">
@@ -209,7 +210,7 @@ export default function AgentMemories() {
                     disabled={!source.readable}
                     onClick={() => setSelectedPath(source.path)}
                     className={`mb-2 w-full rounded-md border p-3 text-left transition-colors ${sourceTone(source)} ${
-                      active ? "ring-1 ring-[var(--cv-accent)]/60" : ""
+                      active ? 'ring-1 ring-[var(--cv-accent)]/60' : ''
                     }`}
                   >
                     <div className="flex min-w-0 items-start justify-between gap-3">
@@ -229,7 +230,9 @@ export default function AgentMemories() {
                       </span>
                     </div>
                     <p className="mt-2 max-h-10 overflow-hidden text-xs leading-5 text-slate-400">
-                      {source.exists ? source.preview || source.note : "Not present on this machine."}
+                      {source.exists
+                        ? source.preview || source.note
+                        : 'Not present on this machine.'}
                     </p>
                   </button>
                 );
@@ -244,10 +247,10 @@ export default function AgentMemories() {
             <div className="flex min-h-14 items-center justify-between gap-3 border-b border-[#1a1a1a] px-4 py-3">
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">
-                  {document?.source.label ?? "Select a memory source"}
+                  {document?.source.label ?? 'Select a memory source'}
                 </div>
                 <div className="truncate font-mono text-[11px] text-slate-500">
-                  {document ? displayPath(document.source.path) : "Read-only local source viewer"}
+                  {document ? displayPath(document.source.path) : 'Read-only local source viewer'}
                 </div>
               </div>
               {document && (
@@ -264,7 +267,7 @@ export default function AgentMemories() {
                     variant="ghost"
                     size="sm"
                     className="h-8 px-2 text-slate-400 hover:text-slate-100"
-                    onClick={() => void openInApp("finder", document.source.path)}
+                    onClick={() => void openInApp('finder', document.source.path)}
                   >
                     <FolderOpen size={14} />
                   </Button>
@@ -298,9 +301,7 @@ export default function AgentMemories() {
               ) : (
                 <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 text-center text-slate-500">
                   <ExternalLink size={20} />
-                  <p className="max-w-sm text-sm">
-                    Pick a readable source from the left.
-                  </p>
+                  <p className="max-w-sm text-sm">Pick a readable source from the left.</p>
                 </div>
               )}
             </div>

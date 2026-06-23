@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-const DEFAULT_FIXTURE = "benchmarks/agent-prs/sample.json";
+const DEFAULT_FIXTURE = 'benchmarks/agent-prs/sample.json';
 
 function readJsonFile(filePath) {
   const abs = path.resolve(process.cwd(), filePath);
-  return JSON.parse(fs.readFileSync(abs, "utf8"));
+  return JSON.parse(fs.readFileSync(abs, 'utf8'));
 }
 
 function readFixture(fixturePath) {
@@ -20,65 +20,65 @@ function readFixture(fixturePath) {
     return {
       name: `CodeVetter benchmark case from ${fixturePath}`,
       version: 1,
-      notes: "Generated from one per-case benchmark fixture file.",
+      notes: 'Generated from one per-case benchmark fixture file.',
       cases: [parsed],
     };
   }
 
   const cases = fs
     .readdirSync(abs)
-    .filter((name) => name.endsWith(".json") && !name.startsWith("_"))
+    .filter((name) => name.endsWith('.json') && !name.startsWith('_'))
     .sort()
     .map((name) => readJsonFile(path.join(abs, name)));
   if (!cases.length) {
     throw new Error(
-      `No benchmark case JSON files found in ${fixturePath}. Add per-case .json files or pass a combined fixture file.`,
+      `No benchmark case JSON files found in ${fixturePath}. Add per-case .json files or pass a combined fixture file.`
     );
   }
 
   return {
     name: `CodeVetter benchmark cases from ${fixturePath}`,
     version: 1,
-    notes: "Generated from per-case benchmark fixture files.",
+    notes: 'Generated from per-case benchmark fixture files.',
     cases,
   };
 }
 
 function parseArgs(argv) {
   const args = [...argv];
-  const fixture = args.find((arg) => !arg.startsWith("--")) ?? DEFAULT_FIXTURE;
-  const reviewerArg = args.find((arg) => arg.startsWith("--reviewer="));
-  const reviewer = reviewerArg?.slice("--reviewer=".length) ?? null;
-  const baselineArg = args.find((arg) => arg.startsWith("--baseline="));
-  const baseline = baselineArg?.slice("--baseline=".length) ?? null;
-  const evidenceComparisonArg = args.find((arg) => arg.startsWith("--evidence-comparison="));
+  const fixture = args.find((arg) => !arg.startsWith('--')) ?? DEFAULT_FIXTURE;
+  const reviewerArg = args.find((arg) => arg.startsWith('--reviewer='));
+  const reviewer = reviewerArg?.slice('--reviewer='.length) ?? null;
+  const baselineArg = args.find((arg) => arg.startsWith('--baseline='));
+  const baseline = baselineArg?.slice('--baseline='.length) ?? null;
+  const evidenceComparisonArg = args.find((arg) => arg.startsWith('--evidence-comparison='));
   const evidenceComparison = evidenceComparisonArg
-    ? parseEvidenceComparison(evidenceComparisonArg.slice("--evidence-comparison=".length))
+    ? parseEvidenceComparison(evidenceComparisonArg.slice('--evidence-comparison='.length))
     : null;
-  const minRateArg = args.find((arg) => arg.startsWith("--min-rate="));
-  const minRate = minRateArg ? Number(minRateArg.slice("--min-rate=".length)) : null;
-  const maxFalsePositivesArg = args.find((arg) => arg.startsWith("--max-false-positives="));
+  const minRateArg = args.find((arg) => arg.startsWith('--min-rate='));
+  const minRate = minRateArg ? Number(minRateArg.slice('--min-rate='.length)) : null;
+  const maxFalsePositivesArg = args.find((arg) => arg.startsWith('--max-false-positives='));
   const maxFalsePositives = maxFalsePositivesArg
-    ? Number(maxFalsePositivesArg.slice("--max-false-positives=".length))
+    ? Number(maxFalsePositivesArg.slice('--max-false-positives='.length))
     : null;
-  const maxRedundantMatchesArg = args.find((arg) => arg.startsWith("--max-redundant-matches="));
+  const maxRedundantMatchesArg = args.find((arg) => arg.startsWith('--max-redundant-matches='));
   const maxRedundantMatches = maxRedundantMatchesArg
-    ? Number(maxRedundantMatchesArg.slice("--max-redundant-matches=".length))
+    ? Number(maxRedundantMatchesArg.slice('--max-redundant-matches='.length))
     : null;
   const minSeverityRates = args
-    .filter((arg) => arg.startsWith("--min-severity-rate="))
+    .filter((arg) => arg.startsWith('--min-severity-rate='))
     .map((arg) => {
-      const raw = arg.slice("--min-severity-rate=".length);
-      const [severity, rate] = raw.split(":");
+      const raw = arg.slice('--min-severity-rate='.length);
+      const [severity, rate] = raw.split(':');
       return { severity, rate: Number(rate), raw };
     });
-  const formatArg = args.find((arg) => arg.startsWith("--format="));
-  const format = formatArg?.slice("--format=".length) ?? "text";
-  const outArg = args.find((arg) => arg.startsWith("--out="));
-  const out = outArg?.slice("--out=".length) ?? null;
-  const json = args.includes("--json");
-  const strict = !args.includes("--no-strict");
-  const requireRationales = args.includes("--require-rationales");
+  const formatArg = args.find((arg) => arg.startsWith('--format='));
+  const format = formatArg?.slice('--format='.length) ?? 'text';
+  const outArg = args.find((arg) => arg.startsWith('--out='));
+  const out = outArg?.slice('--out='.length) ?? null;
+  const json = args.includes('--json');
+  const strict = !args.includes('--no-strict');
+  const requireRationales = args.includes('--require-rationales');
   return {
     fixture,
     reviewer,
@@ -97,15 +97,15 @@ function parseArgs(argv) {
 }
 
 function parseEvidenceComparison(raw) {
-  const [withEvidence, withoutEvidence] = raw.split(":");
+  const [withEvidence, withoutEvidence] = raw.split(':');
   if (!withEvidence || !withoutEvidence) {
-    return { raw, error: "expected with_evidence:without_evidence" };
+    return { raw, error: 'expected with_evidence:without_evidence' };
   }
   return { raw, withEvidence, withoutEvidence };
 }
 
 function assertObject(value, pathLabel, errors) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     errors.push(`${pathLabel} must be an object`);
     return false;
   }
@@ -113,23 +113,23 @@ function assertObject(value, pathLabel, errors) {
 }
 
 function assertString(value, pathLabel, errors) {
-  if (typeof value !== "string" || value.trim() === "") {
+  if (typeof value !== 'string' || value.trim() === '') {
     errors.push(`${pathLabel} must be a non-empty string`);
   }
 }
 
 function assertPublishableString(value, pathLabel, errors) {
   assertString(value, pathLabel, errors);
-  if (typeof value === "string" && /\bTODO\b/i.test(value)) {
+  if (typeof value === 'string' && /\bTODO\b/i.test(value)) {
     errors.push(`${pathLabel} must not contain TODO placeholder text`);
   }
 }
 
 function validateFixture(data, { strict, requireRationales }) {
   const errors = [];
-  if (!assertObject(data, "fixture", errors)) return errors;
+  if (!assertObject(data, 'fixture', errors)) return errors;
   if (!Array.isArray(data.cases) || data.cases.length === 0) {
-    errors.push("cases must be a non-empty array");
+    errors.push('cases must be a non-empty array');
     return errors;
   }
 
@@ -189,7 +189,7 @@ function validateFixture(data, { strict, requireRationales }) {
           assertPublishableString(
             finding.match_rationale,
             `${findingPath}.match_rationale`,
-            errors,
+            errors
           );
         }
       }
@@ -204,7 +204,7 @@ function validateFixture(data, { strict, requireRationales }) {
 }
 
 function severityBucket(issue) {
-  return issue.severity ?? "unknown";
+  return issue.severity ?? 'unknown';
 }
 
 function roundMetric(value) {
@@ -240,7 +240,7 @@ function summarizeReviewer(cases, reviewer) {
     }
 
     const falsePositiveCount = findings.filter(
-      (finding) => !(finding.matched_ground_truth ?? []).length,
+      (finding) => !(finding.matched_ground_truth ?? []).length
     ).length;
 
     rows.push({
@@ -328,26 +328,28 @@ function printSummary(summary, comparison = null) {
   console.log(`Reviewer: ${summary.reviewer}`);
   console.log(`Overall: ${summary.caught}/${summary.total} (${pct(summary.rate)})`);
   console.log(`Precision: ${pct(summary.precision)} · F1: ${pct(summary.f1)}`);
-  console.log(`False positives: ${summary.false_positives} · Redundant matches: ${summary.redundant_matches}`);
+  console.log(
+    `False positives: ${summary.false_positives} · Redundant matches: ${summary.redundant_matches}`
+  );
   if (comparison) {
     const sign = (n) => (n > 0 ? `+${n}` : `${n}`);
     console.log(
       `Vs ${comparison.baseline}: caught ${sign(comparison.caught_delta)}, rate ${sign(
-        Math.round(comparison.rate_delta * 1000) / 10,
-      )}pp, false positives ${sign(comparison.false_positive_delta)}, redundant ${sign(comparison.redundant_match_delta)}`,
+        Math.round(comparison.rate_delta * 1000) / 10
+      )}pp, false positives ${sign(comparison.false_positive_delta)}, redundant ${sign(comparison.redundant_match_delta)}`
     );
   }
-  console.log("");
-  console.log("By severity:");
+  console.log('');
+  console.log('By severity:');
   for (const row of summary.by_severity) {
     console.log(`- ${row.severity}: ${row.caught}/${row.total} (${pct(row.rate)})`);
   }
-  console.log("");
-  console.log("Cases:");
+  console.log('');
+  console.log('Cases:');
   for (const row of summary.cases) {
-    const missed = row.missed.length ? ` missed=${row.missed.join(",")}` : "";
-    const fp = row.false_positives ? ` false_positives=${row.false_positives}` : "";
-    const redundant = row.redundant_matches ? ` redundant=${row.redundant_matches}` : "";
+    const missed = row.missed.length ? ` missed=${row.missed.join(',')}` : '';
+    const fp = row.false_positives ? ` false_positives=${row.false_positives}` : '';
+    const redundant = row.redundant_matches ? ` redundant=${row.redundant_matches}` : '';
     console.log(`- ${row.id}: ${row.caught}/${row.expected}${missed}${fp}${redundant}`);
   }
 }
@@ -356,37 +358,32 @@ function printEvidenceComparison(comparison) {
   if (!comparison) return;
   const pct = (n) => `${Math.round(n * 1000) / 10}pp`;
   const sign = (n) => (n > 0 ? `+${n}` : `${n}`);
-  console.log("");
-  console.log("Evidence search comparison:");
+  console.log('');
+  console.log('Evidence search comparison:');
   console.log(
     `${comparison.with_evidence} vs ${comparison.without_evidence}: caught ${sign(
-      comparison.caught_delta,
+      comparison.caught_delta
     )}, rate ${pct(comparison.rate_delta)}, precision ${pct(
-      comparison.precision_delta,
+      comparison.precision_delta
     )}, F1 ${pct(comparison.f1_delta)}, false positives ${sign(
-      comparison.false_positive_delta,
-    )}, redundant ${sign(comparison.redundant_match_delta)}`,
+      comparison.false_positive_delta
+    )}, redundant ${sign(comparison.redundant_match_delta)}`
   );
   for (const row of comparison.cases) {
     if (!row.newly_caught.length && !row.regressed.length) continue;
     console.log(
-      `- ${row.id}: newly_caught=${row.newly_caught.join(",") || "-"} regressed=${
-        row.regressed.join(",") || "-"
-      }`,
+      `- ${row.id}: newly_caught=${row.newly_caught.join(',') || '-'} regressed=${
+        row.regressed.join(',') || '-'
+      }`
     );
   }
 }
 
 function markdownReport({ fixture, summaries, evidence_comparison }) {
   const pct = (n) => `${Math.round(n * 1000) / 10}%`;
-  const lines = [
-    "# CodeVetter Catch-Rate Benchmark Report",
-    "",
-    `Fixture: \`${fixture}\``,
-    "",
-  ];
+  const lines = ['# CodeVetter Catch-Rate Benchmark Report', '', `Fixture: \`${fixture}\``, ''];
   for (const summary of summaries) {
-    lines.push(`## ${summary.reviewer}`, "");
+    lines.push(`## ${summary.reviewer}`, '');
     lines.push(`Overall: **${summary.caught}/${summary.total} (${pct(summary.rate)})**`);
     lines.push(`Precision: **${pct(summary.precision)}**`);
     lines.push(`F1: **${pct(summary.f1)}**`);
@@ -395,48 +392,48 @@ function markdownReport({ fixture, summaries, evidence_comparison }) {
     if (summary.comparison) {
       const delta = Math.round(summary.comparison.rate_delta * 1000) / 10;
       lines.push(
-        `Baseline: \`${summary.comparison.baseline}\` (${summary.comparison.caught_delta >= 0 ? "+" : ""}${summary.comparison.caught_delta} caught, ${delta >= 0 ? "+" : ""}${delta}pp, ${summary.comparison.false_positive_delta >= 0 ? "+" : ""}${summary.comparison.false_positive_delta} false positives, ${summary.comparison.redundant_match_delta >= 0 ? "+" : ""}${summary.comparison.redundant_match_delta} redundant)`,
+        `Baseline: \`${summary.comparison.baseline}\` (${summary.comparison.caught_delta >= 0 ? '+' : ''}${summary.comparison.caught_delta} caught, ${delta >= 0 ? '+' : ''}${delta}pp, ${summary.comparison.false_positive_delta >= 0 ? '+' : ''}${summary.comparison.false_positive_delta} false positives, ${summary.comparison.redundant_match_delta >= 0 ? '+' : ''}${summary.comparison.redundant_match_delta} redundant)`
       );
     }
-    lines.push("", "| Severity | Caught | Total | Rate |", "|---|---:|---:|---:|");
+    lines.push('', '| Severity | Caught | Total | Rate |', '|---|---:|---:|---:|');
     for (const row of summary.by_severity) {
       lines.push(`| ${row.severity} | ${row.caught} | ${row.total} | ${pct(row.rate)} |`);
     }
-    lines.push("", "| Case | Caught | Expected | Missed | False positives | Redundant |", "|---|---:|---:|---|---:|---:|");
+    lines.push(
+      '',
+      '| Case | Caught | Expected | Missed | False positives | Redundant |',
+      '|---|---:|---:|---|---:|---:|'
+    );
     for (const row of summary.cases) {
       lines.push(
-        `| ${row.id} | ${row.caught} | ${row.expected} | ${row.missed.join(", ") || "-"} | ${row.false_positives} | ${row.redundant_matches} |`,
+        `| ${row.id} | ${row.caught} | ${row.expected} | ${row.missed.join(', ') || '-'} | ${row.false_positives} | ${row.redundant_matches} |`
       );
     }
-    lines.push("");
+    lines.push('');
   }
   if (evidence_comparison) {
     const delta = Math.round(evidence_comparison.rate_delta * 1000) / 10;
     const precisionDelta = Math.round(evidence_comparison.precision_delta * 1000) / 10;
     const f1Delta = Math.round(evidence_comparison.f1_delta * 1000) / 10;
-    lines.push("## Evidence Search Comparison", "");
+    lines.push('## Evidence Search Comparison', '');
     lines.push(
-      `With evidence: \`${evidence_comparison.with_evidence}\` · Without evidence: \`${evidence_comparison.without_evidence}\``,
+      `With evidence: \`${evidence_comparison.with_evidence}\` · Without evidence: \`${evidence_comparison.without_evidence}\``
     );
     lines.push(
-      `Caught delta: **${evidence_comparison.caught_delta >= 0 ? "+" : ""}${evidence_comparison.caught_delta}** · Rate delta: **${delta >= 0 ? "+" : ""}${delta}pp** · Precision delta: **${precisionDelta >= 0 ? "+" : ""}${precisionDelta}pp** · F1 delta: **${f1Delta >= 0 ? "+" : ""}${f1Delta}pp**`,
+      `Caught delta: **${evidence_comparison.caught_delta >= 0 ? '+' : ''}${evidence_comparison.caught_delta}** · Rate delta: **${delta >= 0 ? '+' : ''}${delta}pp** · Precision delta: **${precisionDelta >= 0 ? '+' : ''}${precisionDelta}pp** · F1 delta: **${f1Delta >= 0 ? '+' : ''}${f1Delta}pp**`
     );
     lines.push(
-      `False-positive delta: **${evidence_comparison.false_positive_delta >= 0 ? "+" : ""}${evidence_comparison.false_positive_delta}** · Redundant-match delta: **${evidence_comparison.redundant_match_delta >= 0 ? "+" : ""}${evidence_comparison.redundant_match_delta}**`,
+      `False-positive delta: **${evidence_comparison.false_positive_delta >= 0 ? '+' : ''}${evidence_comparison.false_positive_delta}** · Redundant-match delta: **${evidence_comparison.redundant_match_delta >= 0 ? '+' : ''}${evidence_comparison.redundant_match_delta}**`
     );
-    lines.push(
-      "",
-      "| Case | Caught delta | Newly caught | Regressed |",
-      "|---|---:|---|---|",
-    );
+    lines.push('', '| Case | Caught delta | Newly caught | Regressed |', '|---|---:|---|---|');
     for (const row of evidence_comparison.cases) {
       lines.push(
-        `| ${row.id} | ${row.caught_delta >= 0 ? "+" : ""}${row.caught_delta} | ${row.newly_caught.join(", ") || "-"} | ${row.regressed.join(", ") || "-"} |`,
+        `| ${row.id} | ${row.caught_delta >= 0 ? '+' : ''}${row.caught_delta} | ${row.newly_caught.join(', ') || '-'} | ${row.regressed.join(', ') || '-'} |`
       );
     }
-    lines.push("");
+    lines.push('');
   }
-  return `${lines.join("\n").trim()}\n`;
+  return `${lines.join('\n').trim()}\n`;
 }
 
 function payloadFor({ fixture, summaries, baselineSummary, evidenceComparisonSummary }) {
@@ -471,8 +468,8 @@ const {
   strict,
   requireRationales,
 } = parseArgs(process.argv.slice(2));
-if (!["text", "json", "markdown"].includes(format)) {
-  console.error("--format must be one of: text, json, markdown");
+if (!['text', 'json', 'markdown'].includes(format)) {
+  console.error('--format must be one of: text, json, markdown');
   process.exit(1);
 }
 let data;
@@ -484,7 +481,7 @@ try {
 }
 const validationErrors = validateFixture(data, { strict, requireRationales });
 if (validationErrors.length) {
-  console.error("Invalid benchmark fixture:");
+  console.error('Invalid benchmark fixture:');
   for (const error of validationErrors) console.error(`- ${error}`);
   process.exit(1);
 }
@@ -492,31 +489,29 @@ if (validationErrors.length) {
 const reviewers = reviewer
   ? [reviewer]
   : Array.from(
-      new Set(
-        (data.cases ?? []).flatMap((testCase) => Object.keys(testCase.reviews ?? {})),
-      ),
+      new Set((data.cases ?? []).flatMap((testCase) => Object.keys(testCase.reviews ?? {})))
     );
 const availableReviewers = new Set(
-  (data.cases ?? []).flatMap((testCase) => Object.keys(testCase.reviews ?? {})),
+  (data.cases ?? []).flatMap((testCase) => Object.keys(testCase.reviews ?? {}))
 );
 
 if (reviewer && !availableReviewers.has(reviewer)) {
   console.error(
-    `Reviewer "${reviewer}" not found. Available reviewers: ${Array.from(availableReviewers).join(", ")}`,
+    `Reviewer "${reviewer}" not found. Available reviewers: ${Array.from(availableReviewers).join(', ')}`
   );
   process.exit(1);
 }
 
 if (baseline && !availableReviewers.has(baseline)) {
   console.error(
-    `Baseline "${baseline}" not found. Available reviewers: ${Array.from(availableReviewers).join(", ")}`,
+    `Baseline "${baseline}" not found. Available reviewers: ${Array.from(availableReviewers).join(', ')}`
   );
   process.exit(1);
 }
 
 if (evidenceComparison?.error) {
   console.error(
-    `--evidence-comparison must use with_evidence:without_evidence, got "${evidenceComparison.raw}"`,
+    `--evidence-comparison must use with_evidence:without_evidence, got "${evidenceComparison.raw}"`
   );
   process.exit(1);
 }
@@ -526,8 +521,8 @@ if (evidenceComparison) {
     if (!availableReviewers.has(name)) {
       console.error(
         `Evidence comparison reviewer "${name}" not found. Available reviewers: ${Array.from(
-          availableReviewers,
-        ).join(", ")}`,
+          availableReviewers
+        ).join(', ')}`
       );
       process.exit(1);
     }
@@ -535,7 +530,7 @@ if (evidenceComparison) {
 }
 
 if (!reviewers.length) {
-  console.error("No reviewers found. Add reviews.<reviewer> findings to the fixture.");
+  console.error('No reviewers found. Add reviews.<reviewer> findings to the fixture.');
   process.exit(1);
 }
 
@@ -545,13 +540,15 @@ if (evidenceComparison) {
   reviewerNames.add(evidenceComparison.withoutEvidence);
 }
 
-const summaries = Array.from(reviewerNames).map((name) => summarizeReviewer(data.cases ?? [], name));
+const summaries = Array.from(reviewerNames).map((name) =>
+  summarizeReviewer(data.cases ?? [], name)
+);
 const baselineSummary = baseline ? summarizeReviewer(data.cases ?? [], baseline) : null;
 const summaryByReviewer = new Map(summaries.map((summary) => [summary.reviewer, summary]));
 const evidenceComparisonSummary = evidenceComparison
   ? compareEvidenceSummaries(
       summaryByReviewer.get(evidenceComparison.withEvidence),
-      summaryByReviewer.get(evidenceComparison.withoutEvidence),
+      summaryByReviewer.get(evidenceComparison.withoutEvidence)
     )
   : null;
 const payload = payloadFor({
@@ -561,17 +558,17 @@ const payload = payloadFor({
   evidenceComparisonSummary,
 });
 
-if (json || format === "json") {
+if (json || format === 'json') {
   const content = JSON.stringify(payload, null, 2);
-  if (out) writeOut(out, content + "\n");
+  if (out) writeOut(out, `${content}\n`);
   console.log(content);
-} else if (format === "markdown") {
+} else if (format === 'markdown') {
   const content = markdownReport(payload);
   if (out) writeOut(out, content);
   console.log(content.trimEnd());
 } else {
   for (const [idx, summary] of summaries.entries()) {
-    if (idx > 0) console.log("\n---\n");
+    if (idx > 0) console.log('\n---\n');
     printSummary(summary, compareSummaries(summary, baselineSummary));
   }
   printEvidenceComparison(evidenceComparisonSummary);
@@ -580,7 +577,7 @@ if (json || format === "json") {
 
 if (minRate !== null) {
   if (!Number.isFinite(minRate) || minRate < 0 || minRate > 1) {
-    console.error("--min-rate must be a number from 0 to 1");
+    console.error('--min-rate must be a number from 0 to 1');
     process.exit(1);
   }
   const failing = summaries.filter((summary) => summary.rate < minRate);
@@ -588,7 +585,7 @@ if (minRate !== null) {
     console.error(
       `Benchmark failed minimum catch rate ${minRate}: ${failing
         .map((summary) => `${summary.reviewer}=${summary.rate.toFixed(3)}`)
-        .join(", ")}`,
+        .join(', ')}`
     );
     process.exit(1);
   }
@@ -596,7 +593,7 @@ if (minRate !== null) {
 
 if (maxFalsePositives !== null) {
   if (!Number.isInteger(maxFalsePositives) || maxFalsePositives < 0) {
-    console.error("--max-false-positives must be a non-negative integer");
+    console.error('--max-false-positives must be a non-negative integer');
     process.exit(1);
   }
   const failing = summaries.filter((summary) => summary.false_positives > maxFalsePositives);
@@ -604,7 +601,7 @@ if (maxFalsePositives !== null) {
     console.error(
       `Benchmark failed false-positive gate ${maxFalsePositives}: ${failing
         .map((summary) => `${summary.reviewer}=${summary.false_positives}`)
-        .join(", ")}`,
+        .join(', ')}`
     );
     process.exit(1);
   }
@@ -612,7 +609,7 @@ if (maxFalsePositives !== null) {
 
 if (maxRedundantMatches !== null) {
   if (!Number.isInteger(maxRedundantMatches) || maxRedundantMatches < 0) {
-    console.error("--max-redundant-matches must be a non-negative integer");
+    console.error('--max-redundant-matches must be a non-negative integer');
     process.exit(1);
   }
   const failing = summaries.filter((summary) => summary.redundant_matches > maxRedundantMatches);
@@ -620,7 +617,7 @@ if (maxRedundantMatches !== null) {
     console.error(
       `Benchmark failed redundant-match gate ${maxRedundantMatches}: ${failing
         .map((summary) => `${summary.reviewer}=${summary.redundant_matches}`)
-        .join(", ")}`,
+        .join(', ')}`
     );
     process.exit(1);
   }
@@ -642,9 +639,7 @@ if (minSeverityRates.length) {
     }
   }
   if (failures.length) {
-    console.error(
-      `Benchmark failed severity catch-rate gates: ${failures.join(", ")}`,
-    );
+    console.error(`Benchmark failed severity catch-rate gates: ${failures.join(', ')}`);
     process.exit(1);
   }
 }

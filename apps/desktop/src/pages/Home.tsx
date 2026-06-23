@@ -12,13 +12,13 @@ import {
   RefreshCw,
   SearchCheck,
   Terminal,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import type {
   AccountUsage,
   AgentDayUsage,
@@ -34,7 +34,7 @@ import type {
   TokenUsageStats,
   TriggerIndexResult,
   WeekBucket,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 import {
   checkAccountUsage,
   checkLiveUsage,
@@ -49,8 +49,8 @@ import {
   listProviderAccounts,
   listProviderUsageLedger,
   triggerIndex,
-} from "@/lib/tauri-ipc";
-import { isWindowHidden, useVisibilityInterval } from "@/lib/use-visibility";
+} from '@/lib/tauri-ipc';
+import { isWindowHidden, useVisibilityInterval } from '@/lib/use-visibility';
 
 // ─── Usage helpers ──────────────────────────────────────────────────────────
 
@@ -66,40 +66,40 @@ function formatMoney(n: number): string {
   if (n >= 100) return `$${Math.round(n).toLocaleString()}`;
   if (n >= 1) return `$${n.toFixed(2)}`;
   if (n > 0) return `${(n * 100).toFixed(1)}¢`;
-  return "$0";
+  return '$0';
 }
 
 function formatShortDateTime(value: string | null | undefined): string {
-  if (!value) return "not indexed";
+  if (!value) return 'not indexed';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 
 function planLabel(plan: string | null): string {
-  if (!plan) return "";
+  if (!plan) return '';
   const labels: Record<string, string> = {
-    max: "Max",
-    pro: "Pro",
-    prolite: "Pro",
-    plus: "Plus",
-    team: "Team",
-    teams: "Team",
-    enterprise: "Enterprise",
-    business: "Business",
-    free: "Free",
-    go: "Go",
+    max: 'Max',
+    pro: 'Pro',
+    prolite: 'Pro',
+    plus: 'Plus',
+    team: 'Team',
+    teams: 'Team',
+    enterprise: 'Enterprise',
+    business: 'Business',
+    free: 'Free',
+    go: 'Go',
   };
   return labels[plan.toLowerCase()] ?? plan;
 }
 
 function formatDuration(secs: number): string {
-  if (secs <= 0) return "now";
+  if (secs <= 0) return 'now';
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
   if (h > 0) return `${h}h ${m}m`;
@@ -117,22 +117,22 @@ function UsageBar({
   pct: number;
   label: string;
   resetLabel?: string;
-  color: "amber" | "red";
+  color: 'amber' | 'red';
   windowTotalSecs?: number;
   resetsInSecs?: number;
 }) {
   const colorMap = {
     amber: {
-      fill: "linear-gradient(90deg, #8f6b28 0%, #d6a947 58%, #f2c766 100%)",
-      text: "text-[#f0bf5b]",
-      track: "rgba(214, 169, 71, 0.11)",
-      glow: "0 0 16px rgba(214, 169, 71, 0.18)",
+      fill: 'linear-gradient(90deg, #8f6b28 0%, #d6a947 58%, #f2c766 100%)',
+      text: 'text-[#f0bf5b]',
+      track: 'rgba(214, 169, 71, 0.11)',
+      glow: '0 0 16px rgba(214, 169, 71, 0.18)',
     },
     red: {
-      fill: "linear-gradient(90deg, #9f2e2d 0%, #e44c3f 58%, #ff7a59 100%)",
-      text: "text-[#ff725f]",
-      track: "rgba(228, 76, 63, 0.12)",
-      glow: "0 0 18px rgba(228, 76, 63, 0.22)",
+      fill: 'linear-gradient(90deg, #9f2e2d 0%, #e44c3f 58%, #ff7a59 100%)',
+      text: 'text-[#ff725f]',
+      track: 'rgba(228, 76, 63, 0.12)',
+      glow: '0 0 18px rgba(228, 76, 63, 0.22)',
     },
   };
   const c = colorMap[color];
@@ -143,7 +143,7 @@ function UsageBar({
   // end-of-window headroom when safe, and a concrete countdown when on
   // track to hit the cap.
   let paceLabel: string | null = null;
-  let paceColor = "text-slate-500";
+  let paceColor = 'text-slate-500';
   if (
     windowTotalSecs &&
     windowTotalSecs > 0 &&
@@ -161,22 +161,22 @@ function UsageBar({
         // rate = pct/elapsed per second → secs to reach 100% = (100-pct)/rate
         const secsToCap = ((100 - pct) * elapsed) / pct;
         if (secsToCap <= 0) {
-          paceLabel = "at limit";
-          paceColor = "text-[#ff725f]";
+          paceLabel = 'at limit';
+          paceColor = 'text-[#ff725f]';
         } else if (secsToCap < resetsInSecs) {
           paceLabel = `caps in ${formatDuration(secsToCap)}`;
-          paceColor = "text-[#ff725f]/90";
+          paceColor = 'text-[#ff725f]/90';
         } else {
           // Tipped just over but slow enough to coast to reset
-          paceLabel = "on pace";
-          paceColor = "text-slate-500";
+          paceLabel = 'on pace';
+          paceColor = 'text-slate-500';
         }
       } else if (projectedEndPct >= 95) {
-        paceLabel = "on pace";
-        paceColor = "text-slate-500";
+        paceLabel = 'on pace';
+        paceColor = 'text-slate-500';
       } else {
         paceLabel = `${Math.round(100 - projectedEndPct)}% headroom`;
-        paceColor = "text-emerald-400/80";
+        paceColor = 'text-emerald-400/80';
       }
     }
   }
@@ -190,14 +190,10 @@ function UsageBar({
             {Math.round(pct)}% used
           </span>
           {paceLabel && (
-            <span className={`text-[10px] tabular-nums ${paceColor}`}>
-              {paceLabel}
-            </span>
+            <span className={`text-[10px] tabular-nums ${paceColor}`}>{paceLabel}</span>
           )}
           {resetLabel && (
-            <span className="text-[10px] text-slate-600 tabular-nums">
-              {resetLabel}
-            </span>
+            <span className="text-[10px] text-slate-600 tabular-nums">{resetLabel}</span>
           )}
         </div>
       </div>
@@ -240,7 +236,7 @@ function AccountUsageRow({
   // Turn a raw live-usage error into an actionable hint.
   const liveErrorHint = liveError
     ? /401|expired|invalid|re-?authenticate/i.test(liveError)
-      ? "Live windows unavailable — stored Claude credential is expired. Re-authenticate Claude Code (run `claude`, then /login)."
+      ? 'Live windows unavailable — stored Claude credential is expired. Re-authenticate Claude Code (run `claude`, then /login).'
       : `Live usage unavailable: ${liveError}`
     : null;
   const weekSessions = usage?.week_sessions ?? 0;
@@ -249,11 +245,11 @@ function AccountUsageRow({
   const plan = usage?.plan ?? account.plan;
 
   // Live rate limit data — supported for all providers now
-  const isLiveSupported = ["anthropic", "openai", "google", "cursor"].includes(account.provider);
+  const isLiveSupported = ['anthropic', 'openai', 'google', 'cursor'].includes(account.provider);
   const hasLive = liveUsage?.supported === true;
   const fiveH = liveUsage?.five_h;
   const sevenD = liveUsage?.seven_d;
-  const isRateLimited = liveUsage?.status === "rate_limited";
+  const isRateLimited = liveUsage?.status === 'rate_limited';
 
   // Gemini-specific live data
   const geminiToday = liveUsage?.today;
@@ -266,9 +262,9 @@ function AccountUsageRow({
   const cursorTokens = liveUsage?.cursor_tokens;
 
   // Determine bar color based on utilization
-  function barColor(pct: number): "amber" | "red" {
-    if (pct >= 90) return "red";
-    return "amber";
+  function barColor(pct: number): 'amber' | 'red' {
+    if (pct >= 90) return 'red';
+    return 'amber';
   }
 
   return (
@@ -278,32 +274,30 @@ function AccountUsageRow({
         <span
           className={`h-2 w-2 shrink-0 rounded-full ${
             isRateLimited
-              ? "bg-red-500 animate-pulse"
+              ? 'bg-red-500 animate-pulse'
               : hasLive
-              ? "bg-emerald-500"
-              : account.provider === "anthropic"
-              ? "bg-amber-400"
-              : account.provider === "google"
-              ? "bg-blue-400"
-              : account.provider === "cursor"
-              ? "bg-violet-400"
-              : "bg-emerald-400"
+                ? 'bg-emerald-500'
+                : account.provider === 'anthropic'
+                  ? 'bg-amber-400'
+                  : account.provider === 'google'
+                    ? 'bg-blue-400'
+                    : account.provider === 'cursor'
+                      ? 'bg-violet-400'
+                      : 'bg-emerald-400'
           }`}
         />
-        <span className="text-[13px] font-medium text-slate-200 truncate">
-          {account.name}
-        </span>
+        <span className="text-[13px] font-medium text-slate-200 truncate">{account.name}</span>
         {plan && (
           <Badge
             variant="outline"
             className={`text-[10px] font-semibold uppercase tracking-wide border-0 ${
-              account.provider === "anthropic"
-                ? "bg-amber-500/15 text-amber-400"
-                : account.provider === "google"
-                ? "bg-blue-500/15 text-blue-400"
-                : account.provider === "cursor"
-                ? "bg-violet-500/15 text-violet-300"
-                : "bg-emerald-500/15 text-emerald-400"
+              account.provider === 'anthropic'
+                ? 'bg-amber-500/15 text-amber-400'
+                : account.provider === 'google'
+                  ? 'bg-blue-500/15 text-blue-400'
+                  : account.provider === 'cursor'
+                    ? 'bg-violet-500/15 text-violet-300'
+                    : 'bg-emerald-500/15 text-emerald-400'
             }`}
           >
             {planLabel(plan)}
@@ -317,24 +311,25 @@ function AccountUsageRow({
             onClick={onCheckLive}
             disabled={checkingLive}
             className={`h-auto px-1.5 py-0.5 text-[10px] ${
-              account.provider === "anthropic"
-                ? "text-amber-400/70 hover:text-amber-400"
-                : account.provider === "google"
-                ? "text-blue-400/70 hover:text-blue-400"
-                : account.provider === "cursor"
-                ? "text-violet-300/70 hover:text-violet-300"
-                : "text-emerald-400/70 hover:text-emerald-400"
+              account.provider === 'anthropic'
+                ? 'text-amber-400/70 hover:text-amber-400'
+                : account.provider === 'google'
+                  ? 'text-blue-400/70 hover:text-blue-400'
+                  : account.provider === 'cursor'
+                    ? 'text-violet-300/70 hover:text-violet-300'
+                    : 'text-emerald-400/70 hover:text-emerald-400'
             }`}
-            title={account.provider === "openai"
-              ? "Check live usage from OpenAI"
-              : account.provider === "google"
-              ? "Check live usage from Google"
-              : account.provider === "cursor"
-              ? "Check live plan usage from Cursor"
-              : "Check live usage (makes a small API call)"
+            title={
+              account.provider === 'openai'
+                ? 'Check live usage from OpenAI'
+                : account.provider === 'google'
+                  ? 'Check live usage from Google'
+                  : account.provider === 'cursor'
+                    ? 'Check live plan usage from Cursor'
+                    : 'Check live usage (makes a small API call)'
             }
           >
-            {checkingLive ? "..." : "Refresh"}
+            {checkingLive ? '...' : 'Refresh'}
           </Button>
         )}
       </div>
@@ -345,11 +340,11 @@ function AccountUsageRow({
           <UsageBar
             pct={fiveH.utilization_pct}
             label={
-              account.provider === "anthropic"
-                ? "5-hour window"
-                : account.provider === "cursor"
-                ? "Monthly plan"
-                : "Primary window"
+              account.provider === 'anthropic'
+                ? '5-hour window'
+                : account.provider === 'cursor'
+                  ? 'Monthly plan'
+                  : 'Primary window'
             }
             resetLabel={
               fiveH.resets_in_secs != null && fiveH.resets_in_secs > 0
@@ -357,16 +352,14 @@ function AccountUsageRow({
                 : undefined
             }
             color={barColor(fiveH.utilization_pct)}
-            windowTotalSecs={
-              account.provider === "cursor" ? 30 * 24 * 3600 : 5 * 3600
-            }
+            windowTotalSecs={account.provider === 'cursor' ? 30 * 24 * 3600 : 5 * 3600}
             resetsInSecs={fiveH.resets_in_secs ?? undefined}
           />
         )}
         {hasLive && sevenD?.utilization_pct != null && (
           <UsageBar
             pct={sevenD.utilization_pct}
-            label={account.provider === "anthropic" ? "7-day window" : "Secondary window"}
+            label={account.provider === 'anthropic' ? '7-day window' : 'Secondary window'}
             resetLabel={
               sevenD.resets_in_secs != null && sevenD.resets_in_secs > 0
                 ? `resets in ${formatDuration(sevenD.resets_in_secs)}`
@@ -379,7 +372,7 @@ function AccountUsageRow({
         )}
 
         {/* ── Gemini-specific usage display ────────────────────── */}
-        {account.provider === "google" && (hasLive || quotaBuckets) && (
+        {account.provider === 'google' && (hasLive || quotaBuckets) && (
           <div className="flex flex-col gap-2">
             {/* Today summary — single compact row */}
             {geminiToday && (
@@ -387,9 +380,9 @@ function AccountUsageRow({
                 <span className="text-[11px] text-slate-400">Today</span>
                 <div className="flex items-center gap-3 text-[11px] tabular-nums">
                   <span className="text-slate-500">
-                    {geminiToday.sessions} session{geminiToday.sessions !== 1 ? "s" : ""}
-                    {" · "}
-                    {geminiToday.messages} msg{geminiToday.messages !== 1 ? "s" : ""}
+                    {geminiToday.sessions} session{geminiToday.sessions !== 1 ? 's' : ''}
+                    {' · '}
+                    {geminiToday.messages} msg{geminiToday.messages !== 1 ? 's' : ''}
                   </span>
                   <span className="text-blue-400 font-semibold">
                     {formatTokens(geminiToday.tokens.total)}
@@ -407,91 +400,106 @@ function AccountUsageRow({
                 {geminiToday.tokens.cached > 0 && (
                   <>
                     <span className="text-slate-700">·</span>
-                    <span className="text-emerald-500/60">{formatTokens(geminiToday.tokens.cached)} cached</span>
+                    <span className="text-emerald-500/60">
+                      {formatTokens(geminiToday.tokens.cached)} cached
+                    </span>
                   </>
                 )}
                 {geminiToday.tokens.thoughts > 0 && (
                   <>
                     <span className="text-slate-700">·</span>
-                    <span className="text-purple-400/60">{formatTokens(geminiToday.tokens.thoughts)} thinking</span>
+                    <span className="text-purple-400/60">
+                      {formatTokens(geminiToday.tokens.thoughts)} thinking
+                    </span>
                   </>
                 )}
               </div>
             )}
 
             {/* Per-model quota bars — real usage % from Google API */}
-            {quotaBuckets && quotaBuckets.length > 0 && (() => {
-              // Collapse to one Pro + one Flash — variants share the same quota
-              const proBucket = quotaBuckets.find((b) => b.model_id.includes("pro"));
-              const flashBucket = quotaBuckets.find((b) => b.model_id.includes("flash") && !b.model_id.includes("lite"));
-              const dedupedBuckets = [
-                proBucket ? { ...proBucket, model_id: "Pro" } : null,
-                flashBucket ? { ...flashBucket, model_id: "Flash" } : null,
-              ].filter(Boolean) as typeof quotaBuckets;
-              return (
-              <div className="flex flex-col gap-2 mt-0.5">
-                {dedupedBuckets.map((b) => {
-                  const pct = b.used_pct ?? 0;
-                  const atLimit = b.remaining_fraction === 0;
-                  const resetLabel = b.reset_time
-                    ? (() => {
-                        const resetMs = new Date(b.reset_time).getTime() - Date.now();
-                        if (resetMs <= 0) return undefined;
-                        return `resets in ${formatDuration(Math.round(resetMs / 1000))}`;
-                      })()
-                    : undefined;
-                  return (
-                    <UsageBar
-                      key={b.model_id}
-                      pct={pct}
-                      label={b.model_id}
-                      resetLabel={atLimit ? "Limit" : resetLabel}
-                      color={pct >= 90 ? "red" : "amber"}
-                    />
-                  );
-                })}
-              </div>
-              );
-            })()}
+            {quotaBuckets &&
+              quotaBuckets.length > 0 &&
+              (() => {
+                // Collapse to one Pro + one Flash — variants share the same quota
+                const proBucket = quotaBuckets.find((b) => b.model_id.includes('pro'));
+                const flashBucket = quotaBuckets.find(
+                  (b) => b.model_id.includes('flash') && !b.model_id.includes('lite')
+                );
+                const dedupedBuckets = [
+                  proBucket ? { ...proBucket, model_id: 'Pro' } : null,
+                  flashBucket ? { ...flashBucket, model_id: 'Flash' } : null,
+                ].filter(Boolean) as typeof quotaBuckets;
+                return (
+                  <div className="flex flex-col gap-2 mt-0.5">
+                    {dedupedBuckets.map((b) => {
+                      const pct = b.used_pct ?? 0;
+                      const atLimit = b.remaining_fraction === 0;
+                      const resetLabel = b.reset_time
+                        ? (() => {
+                            const resetMs = new Date(b.reset_time).getTime() - Date.now();
+                            if (resetMs <= 0) return undefined;
+                            return `resets in ${formatDuration(Math.round(resetMs / 1000))}`;
+                          })()
+                        : undefined;
+                      return (
+                        <UsageBar
+                          key={b.model_id}
+                          pct={pct}
+                          label={b.model_id}
+                          resetLabel={atLimit ? 'Limit' : resetLabel}
+                          color={pct >= 90 ? 'red' : 'amber'}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
             {/* Fallback: show local model breakdown if no quota API data */}
-            {!quotaBuckets && geminiModels && geminiModels.length > 0 && (() => {
-              const maxTokens = Math.max(...geminiModels.map((m) => m.tokens.total));
-              return (
-                <div className="flex flex-col gap-1 mt-0.5">
-                  {geminiModels.map((m) => {
-                    const pct = maxTokens > 0 ? (m.tokens.total / maxTokens) * 100 : 0;
-                    return (
-                      <div key={m.model} className="flex items-center gap-2 min-w-0">
-                        <span className="text-[10px] text-slate-400 truncate w-28 shrink-0" title={m.model}>
-                          {m.model}
-                        </span>
-                        <div
-                          className="flex-1 h-1 overflow-hidden rounded-full"
-                          style={{ backgroundColor: "rgba(214, 169, 71, 0.11)" }}
-                        >
+            {!quotaBuckets &&
+              geminiModels &&
+              geminiModels.length > 0 &&
+              (() => {
+                const maxTokens = Math.max(...geminiModels.map((m) => m.tokens.total));
+                return (
+                  <div className="flex flex-col gap-1 mt-0.5">
+                    {geminiModels.map((m) => {
+                      const pct = maxTokens > 0 ? (m.tokens.total / maxTokens) * 100 : 0;
+                      return (
+                        <div key={m.model} className="flex items-center gap-2 min-w-0">
+                          <span
+                            className="text-[10px] text-slate-400 truncate w-28 shrink-0"
+                            title={m.model}
+                          >
+                            {m.model}
+                          </span>
                           <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, pct)}%`,
-                              background: "linear-gradient(90deg, #8f6b28 0%, #d6a947 60%, #f2c766 100%)",
-                            }}
-                          />
+                            className="flex-1 h-1 overflow-hidden rounded-full"
+                            style={{ backgroundColor: 'rgba(214, 169, 71, 0.11)' }}
+                          >
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.min(100, pct)}%`,
+                                background:
+                                  'linear-gradient(90deg, #8f6b28 0%, #d6a947 60%, #f2c766 100%)',
+                              }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-slate-500 tabular-nums shrink-0 w-10 text-right">
+                            {formatTokens(m.tokens.total)}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-slate-500 tabular-nums shrink-0 w-10 text-right">
-                          {formatTokens(m.tokens.total)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
+                      );
+                    })}
+                  </div>
+                );
+              })()}
           </div>
         )}
 
         {/* ── Cursor-specific plan usage (live from api2.cursor.sh) ─── */}
-        {account.provider === "cursor" && (cursorPlan || cursorTokens) && (
+        {account.provider === 'cursor' && (cursorPlan || cursorTokens) && (
           <div className="flex flex-col gap-2">
             {/* Tokens row — this is the "millions" figure cursor.com shows. */}
             {cursorTokens && cursorTokens.total > 0 && (
@@ -525,13 +533,12 @@ function AccountUsageRow({
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-slate-400">Plan spend</span>
                 <div className="flex items-center gap-2 tabular-nums">
-                  {cursorPlan.total_spend_cents != null &&
-                    cursorPlan.limit_cents != null && (
-                      <span className="text-slate-500">
-                        ${(cursorPlan.total_spend_cents / 100).toFixed(2)} /
-                        ${(cursorPlan.limit_cents / 100).toFixed(2)}
-                      </span>
-                    )}
+                  {cursorPlan.total_spend_cents != null && cursorPlan.limit_cents != null && (
+                    <span className="text-slate-500">
+                      ${(cursorPlan.total_spend_cents / 100).toFixed(2)} / $
+                      {(cursorPlan.limit_cents / 100).toFixed(2)}
+                    </span>
+                  )}
                   {cursorPlan.total_pct_used != null && (
                     <span className="font-semibold text-violet-300">
                       {cursorPlan.total_pct_used.toFixed(1)}%
@@ -548,12 +555,10 @@ function AccountUsageRow({
                   const t = m.input_tokens + m.output_tokens + m.cache_read_tokens;
                   return (
                     <div
-                      key={m.model ?? "unknown"}
+                      key={m.model ?? 'unknown'}
                       className="flex items-center justify-between text-[10px] tabular-nums"
                     >
-                      <span className="text-slate-500 truncate">
-                        {m.model ?? "unknown"}
-                      </span>
+                      <span className="text-slate-500 truncate">{m.model ?? 'unknown'}</span>
                       <span className="text-slate-600">{formatTokens(t)}</span>
                     </div>
                   );
@@ -561,13 +566,10 @@ function AccountUsageRow({
               </div>
             )}
             {cursorPlan?.display_message && (
-              <div className="text-[10px] text-slate-600 italic">
-                {cursorPlan.display_message}
-              </div>
+              <div className="text-[10px] text-slate-600 italic">{cursorPlan.display_message}</div>
             )}
             <div className="text-[10px] text-slate-700">
-              {weekSessions} session{weekSessions === 1 ? "" : "s"} indexed
-              this week
+              {weekSessions} session{weekSessions === 1 ? '' : 's'} indexed this week
             </div>
           </div>
         )}
@@ -576,7 +578,7 @@ function AccountUsageRow({
         {/* Cursor: skip the local "tokens this week" line — Cursor doesn't
             expose per-message tokens locally, so the live plan-usage block
             above is the source of truth. */}
-        {!isSharedUsage && account.provider !== "cursor" ? (
+        {!isSharedUsage && account.provider !== 'cursor' ? (
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-3">
               <span className="text-[10px] text-slate-600 tabular-nums">
@@ -600,7 +602,10 @@ function AccountUsageRow({
                 {profileBreakdown.map((profile) => {
                   const profileTokens = profile.week_input_tokens + profile.week_output_tokens;
                   return (
-                    <div key={profile.profile} className="flex items-center justify-between gap-2 min-w-0">
+                    <div
+                      key={profile.profile}
+                      className="flex items-center justify-between gap-2 min-w-0"
+                    >
                       <span className="text-[10px] text-slate-500 truncate" title={profile.profile}>
                         {profile.profile}
                       </span>
@@ -616,7 +621,8 @@ function AccountUsageRow({
         ) : (
           <div className="flex items-center gap-3">
             <span className="text-[10px] text-slate-700 italic">
-              local stats shared with other {account.provider === "anthropic" ? "Claude" : "accounts"}
+              local stats shared with other{' '}
+              {account.provider === 'anthropic' ? 'Claude' : 'accounts'}
             </span>
           </div>
         )}
@@ -624,7 +630,6 @@ function AccountUsageRow({
     </div>
   );
 }
-
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -640,14 +645,13 @@ let _cachedDashboard: {
 // ─── Agent palette (shared by the usage chart + the per-agent split) ─────────
 
 const AGENT_PALETTE: Record<string, { bar: string; label: string; estimated?: boolean }> = {
-  "claude-code": { bar: "#d6a947", label: "Claude" },
-  codex: { bar: "#31c6b7", label: "Codex" },
-  cursor: { bar: "#a78bfa", label: "Cursor", estimated: true },
-  grok: { bar: "#5da6f5", label: "Grok", estimated: true },
+  'claude-code': { bar: '#d6a947', label: 'Claude' },
+  codex: { bar: '#31c6b7', label: 'Codex' },
+  cursor: { bar: '#a78bfa', label: 'Cursor', estimated: true },
+  grok: { bar: '#5da6f5', label: 'Grok', estimated: true },
 };
 
-const agentPaletteFor = (agent: string) =>
-  AGENT_PALETTE[agent] ?? { bar: "#64748b", label: agent };
+const agentPaletteFor = (agent: string) => AGENT_PALETTE[agent] ?? { bar: '#64748b', label: agent };
 
 // ─── TokenUsageChart (inline, pure SVG, no deps) ────────────────────────────
 //
@@ -666,10 +670,10 @@ function TokenUsageChart({
   weekly: WeekBucket[];
   agentByDay: AgentDayUsage[];
 }) {
-  const [mode, setMode] = useState<"daily" | "weekly">("daily");
+  const [mode, setMode] = useState<'daily' | 'weekly'>('daily');
   const [hover, setHover] = useState<number | null>(null);
   const [pinned, setPinned] = useState<number | null>(null);
-  const data = mode === "daily" ? daily : weekly;
+  const data = mode === 'daily' ? daily : weekly;
   // Bars represent API-equivalent USD cost per day. Linear scale clamped to a
   // robust ceiling (~the busiest *normal* day) so one outlier run doesn't
   // flatten every other day into a sliver; days above the ceiling clip with a
@@ -684,7 +688,7 @@ function TokenUsageChart({
     ? Math.max(
         sortedVals[Math.min(sortedVals.length - 1, Math.floor(sortedVals.length * 0.92))],
         max * 0.15,
-        0.0001,
+        0.0001
       )
     : 0.0001;
   const barFrac = (v: number) => Math.min(1, v / axisMax);
@@ -699,11 +703,11 @@ function TokenUsageChart({
   // Per-bucket agent split. Daily buckets match a single date; weekly buckets
   // aggregate all agent rows whose date falls inside the Mon–Sun window.
   const bucketAgents = (
-    bucket: DayBucket | WeekBucket | null,
+    bucket: DayBucket | WeekBucket | null
   ): { agent: string; generated: number; cost: number }[] => {
     if (!bucket) return [];
     const inBucket = (date: string) => {
-      if ("date" in bucket) return date === bucket.date;
+      if ('date' in bucket) return date === bucket.date;
       const start = bucket.week_start;
       const end = new Date(`${start}T00:00:00`);
       end.setDate(end.getDate() + 7);
@@ -726,7 +730,7 @@ function TokenUsageChart({
   };
   const activeAgents = bucketAgents(hovered);
 
-  const trendWindow = mode === "daily" ? 7 : 4;
+  const trendWindow = mode === 'daily' ? 7 : 4;
   const trendPairs = data
     .slice(Math.max(1, n - trendWindow))
     .map((bucket, offset) => {
@@ -736,10 +740,11 @@ function TokenUsageChart({
       return ((bucket.generated - previous) / previous) * 100;
     })
     .filter((value): value is number => value !== null && Number.isFinite(value));
-  const trendPct = trendPairs.length > 0
-    ? trendPairs.reduce((sum, value) => sum + value, 0) / trendPairs.length
-    : null;
-  const trendLabel = mode === "daily" ? "avg day-over-day, last 7d" : "avg week-over-week, last 4w";
+  const trendPct =
+    trendPairs.length > 0
+      ? trendPairs.reduce((sum, value) => sum + value, 0) / trendPairs.length
+      : null;
+  const trendLabel = mode === 'daily' ? 'avg day-over-day, last 7d' : 'avg week-over-week, last 4w';
 
   // ViewBox in nice round units — scales responsively.
   const W = 600;
@@ -750,12 +755,25 @@ function TokenUsageChart({
   const barW = n > 0 ? (W - padX * 2) / n : 0;
   const chartH = H - padTop - padBottom;
 
-  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
 
   const labelFor = (d: { date?: string; week_start?: string }): string => {
-    const iso = d.date ?? d.week_start ?? "";
-    if (!iso) return "";
-    const [, mm, dd] = iso.split("-");
+    const iso = d.date ?? d.week_start ?? '';
+    if (!iso) return '';
+    const [, mm, dd] = iso.split('-');
     const mIdx = parseInt(mm, 10) - 1;
     const day = parseInt(dd, 10);
     return `${MONTHS[mIdx] ?? mm} ${day}`;
@@ -765,7 +783,7 @@ function TokenUsageChart({
   // Weekly: label every other bar, plus the most recent.
   const shouldLabel = (i: number, iso: string): boolean => {
     if (i === n - 1 || i === 0) return true;
-    if (mode === "weekly") return i % 2 === 0;
+    if (mode === 'weekly') return i % 2 === 0;
     // daily: Monday or 1st of month
     const dt = new Date(`${iso}T00:00:00`);
     return dt.getDay() === 1 || dt.getDate() === 1;
@@ -783,34 +801,32 @@ function TokenUsageChart({
         <div className="flex items-center gap-2.5">
           <div>
             <div className="text-[11px] text-slate-500">
-              Spend · API-equivalent{pinned != null ? " · 📌 pinned" : ""}
+              Spend · API-equivalent{pinned != null ? ' · 📌 pinned' : ''}
             </div>
             <div className="text-xs text-slate-400 tabular-nums">
               {hovered
                 ? `${labelFor(hovered)} · ${formatMoney(hovered.cost)} · ${formatTokens(hovered.generated)} gen`
-                : `${mode === "daily" ? "Last 30 days" : "Last 12 weeks"} · ${formatMoney(total)} · ${formatTokens(totalGen)} generated`}
+                : `${mode === 'daily' ? 'Last 30 days' : 'Last 12 weeks'} · ${formatMoney(total)} · ${formatTokens(totalGen)} generated`}
             </div>
           </div>
           {trendPct != null && Number.isFinite(trendPct) && (
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums ${
                 trendPct > 5
-                  ? "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30"
+                  ? 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30'
                   : trendPct < -5
-                  ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30"
-                  : "bg-slate-500/10 text-slate-300 ring-1 ring-slate-500/30"
+                    ? 'bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30'
+                    : 'bg-slate-500/10 text-slate-300 ring-1 ring-slate-500/30'
               }`}
               title={trendLabel}
             >
-              <span aria-hidden>
-                {trendPct > 5 ? "▲" : trendPct < -5 ? "▼" : "•"}
-              </span>
-              {`${trendPct > 0 ? "+" : ""}${trendPct.toFixed(0)}% avg`}
+              <span aria-hidden>{trendPct > 5 ? '▲' : trendPct < -5 ? '▼' : '•'}</span>
+              {`${trendPct > 0 ? '+' : ''}${trendPct.toFixed(0)}% avg`}
             </span>
           )}
         </div>
         <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
-          {(["daily", "weekly"] as const).map((m) => (
+          {(['daily', 'weekly'] as const).map((m) => (
             <button
               key={m}
               onClick={() => {
@@ -818,12 +834,10 @@ function TokenUsageChart({
                 setHover(null);
               }}
               className={`px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors ${
-                mode === m
-                  ? "bg-cyan-500/10 text-cyan-300"
-                  : "text-slate-500 hover:text-slate-300"
+                mode === m ? 'bg-cyan-500/10 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
-              {m === "daily" ? "Daily" : "Weekly"}
+              {m === 'daily' ? 'Daily' : 'Weekly'}
             </button>
           ))}
         </div>
@@ -863,15 +877,7 @@ function TokenUsageChart({
           </filter>
         </defs>
         {gridlines.map((y, i) => (
-          <line
-            key={i}
-            x1={padX}
-            x2={W - padX}
-            y1={y}
-            y2={y}
-            stroke="#1a1a1a"
-            strokeWidth={0.5}
-          />
+          <line key={i} x1={padX} x2={W - padX} y1={y} y2={y} stroke="#1a1a1a" strokeWidth={0.5} />
         ))}
         {data.map((d, i) => {
           const ratio = barFrac(d.cost); // clamped 0..1 (linear, capped axis) — $ height
@@ -884,12 +890,12 @@ function TokenUsageChart({
           const isPinned = pinned === i;
           const isLatest = i === n - 1;
           const grad = isActive
-            ? "url(#bar-grad-hover)"
+            ? 'url(#bar-grad-hover)'
             : ratio >= 0.7
-            ? "url(#bar-grad-hot)"
-            : ratio >= 0.35
-            ? "url(#bar-grad-warm)"
-            : "url(#bar-grad-cool)";
+              ? 'url(#bar-grad-hot)'
+              : ratio >= 0.35
+                ? 'url(#bar-grad-warm)'
+                : 'url(#bar-grad-cool)';
           return (
             <g key={i}>
               {/* Full-height hit target so mouse doesn't need to land on a short bar. */}
@@ -899,7 +905,7 @@ function TokenUsageChart({
                 width={barW}
                 height={chartH}
                 fill="transparent"
-                style={{ cursor: "pointer" }}
+                style={{ cursor: 'pointer' }}
                 onMouseEnter={() => setHover(i)}
                 onClick={() => setPinned((p) => (p === i ? null : i))}
               />
@@ -912,7 +918,7 @@ function TokenUsageChart({
                 opacity={barOpacity(ratio, isActive)}
                 pointerEvents="none"
                 rx={1}
-                filter={isActive || (isLatest && d.cost > 0) ? "url(#bar-glow)" : undefined}
+                filter={isActive || (isLatest && d.cost > 0) ? 'url(#bar-glow)' : undefined}
               />
               {/* Clip marker: this day exceeds the capped axis (an outlier). */}
               {clipped && (
@@ -959,7 +965,7 @@ function TokenUsageChart({
         )}
         {/* Tick marks */}
         {data.map((_, i) => {
-          if (i % (mode === "daily" ? 5 : 1) !== 0 && i !== n - 1) return null;
+          if (i % (mode === 'daily' ? 5 : 1) !== 0 && i !== n - 1) return null;
           const x = padX + i * barW + barW / 2;
           return (
             <line
@@ -975,9 +981,10 @@ function TokenUsageChart({
         })}
         {/* X-axis labels */}
         {data.map((d, i) => {
-          const iso = (d as { date?: string; week_start?: string }).date
-            ?? (d as { date?: string; week_start?: string }).week_start
-            ?? "";
+          const iso =
+            (d as { date?: string; week_start?: string }).date ??
+            (d as { date?: string; week_start?: string }).week_start ??
+            '';
           if (!shouldLabel(i, iso)) return null;
           const x = padX + i * barW + barW / 2;
           const isHover = hover === i;
@@ -990,7 +997,7 @@ function TokenUsageChart({
               textAnchor="middle"
               fontSize={9}
               fontWeight={isHover || isLast ? 600 : 400}
-              fill={isHover ? "#f2c766" : isLast ? "#cbd5e1" : "#64748b"}
+              fill={isHover ? '#f2c766' : isLast ? '#cbd5e1' : '#64748b'}
             >
               {labelFor(d)}
             </text>
@@ -1023,9 +1030,7 @@ function TokenUsageChart({
               const pct = hovered.cost > 0 ? (a.cost / hovered.cost) * 100 : 0;
               return (
                 <div key={a.agent} className="flex items-center gap-2 text-[11px]">
-                  <span className="w-14 shrink-0 truncate text-slate-300">
-                    {palette.label}
-                  </span>
+                  <span className="w-14 shrink-0 truncate text-slate-300">{palette.label}</span>
                   <div className="h-2 flex-1 overflow-hidden rounded-sm bg-[#13151b]">
                     <div
                       className="h-full rounded-sm transition-all"
@@ -1069,9 +1074,7 @@ function TokenUsageChart({
 type AgentSegment = { agent: string; tokens: number; estimated: boolean };
 
 function StackedBar({ title, segments }: { title: string; segments: AgentSegment[] }) {
-  const filtered = segments
-    .filter((s) => s.tokens > 0)
-    .sort((a, b) => b.tokens - a.tokens);
+  const filtered = segments.filter((s) => s.tokens > 0).sort((a, b) => b.tokens - a.tokens);
   const grandTotal = filtered.reduce((acc, s) => acc + s.tokens, 0);
   if (filtered.length === 0 || grandTotal === 0) return null;
 
@@ -1084,7 +1087,7 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
         <div className="text-[11px] text-slate-500">{title}</div>
         <div className="text-xs text-slate-400 tabular-nums">
           {formatMoney(grandTotal)} · {filtered.length} agent
-          {filtered.length === 1 ? "" : "s"}
+          {filtered.length === 1 ? '' : 's'}
         </div>
       </div>
       {/* Stacked bar */}
@@ -1095,7 +1098,7 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
           return (
             <div
               key={s.agent}
-              title={`${palette.label}: ${formatMoney(s.tokens)} (${pct.toFixed(0)}%)${s.estimated ? " · est." : ""}`}
+              title={`${palette.label}: ${formatMoney(s.tokens)} (${pct.toFixed(0)}%)${s.estimated ? ' · est.' : ''}`}
               style={{ width: `${pct}%`, backgroundColor: palette.bar }}
               className="h-full transition-all"
             />
@@ -1109,13 +1112,10 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
           const pct = (s.tokens / grandTotal) * 100;
           return (
             <div key={s.agent} className="flex items-center gap-1.5 text-[11px]">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: palette.bar }}
-              />
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: palette.bar }} />
               <span className="text-slate-300">
                 {palette.label}
-                {s.estimated ? "*" : ""}
+                {s.estimated ? '*' : ''}
               </span>
               <span className="tabular-nums text-slate-500">
                 {formatMoney(s.tokens)} · {pct.toFixed(0)}%
@@ -1135,9 +1135,7 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
 
 function WeeklyAgentSplit() {
   const [rows, setRows] = useState<AgentUsageRow[] | null>(null);
-  const [cursorLedger, setCursorLedger] = useState<ProviderUsageLedgerRow | null>(
-    null,
-  );
+  const [cursorLedger, setCursorLedger] = useState<ProviderUsageLedgerRow | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1146,17 +1144,14 @@ function WeeklyAgentSplit() {
       try {
         const [r, ledger] = await Promise.all([
           getAgentUsageBreakdown(),
-          listProviderUsageLedger(50).catch(
-            () => [] as ProviderUsageLedgerRow[],
-          ),
+          listProviderUsageLedger(50).catch(() => [] as ProviderUsageLedgerRow[]),
         ]);
         // Most-recent cursor billing-cycle row from the live API — the real
         // Cursor usage. cc_sessions only has the chars÷4 CLI estimate.
         const cursor =
           ledger
-            .filter((l) => l.provider === "cursor")
-            .sort((a, b) => b.observed_at.localeCompare(a.observed_at))[0] ??
-          null;
+            .filter((l) => l.provider === 'cursor')
+            .sort((a, b) => b.observed_at.localeCompare(a.observed_at))[0] ?? null;
         if (!cancelled) {
           setRows(r);
           setCursorLedger(cursor);
@@ -1176,8 +1171,8 @@ function WeeklyAgentSplit() {
     }, 60_000);
     void (async () => {
       try {
-        const { listen } = await import("@tauri-apps/api/event");
-        const un = await listen("session_archive_updated", () => void fetchRows());
+        const { listen } = await import('@tauri-apps/api/event');
+        const un = await listen('session_archive_updated', () => void fetchRows());
         if (cancelled) un();
         else unlisten = un;
       } catch {
@@ -1200,14 +1195,11 @@ function WeeklyAgentSplit() {
     cursorLedger && cursorLedger.cost_usd != null ? cursorLedger.cost_usd : null;
   const segments: AgentSegment[] = rows.map((r) => ({
     agent: r.agent_type,
-    tokens:
-      r.agent_type === "cursor" && cursorLedgerCost != null
-        ? cursorLedgerCost
-        : r.cost,
+    tokens: r.agent_type === 'cursor' && cursorLedgerCost != null ? cursorLedgerCost : r.cost,
     estimated: AGENT_PALETTE[r.agent_type]?.estimated ?? false,
   }));
-  if (cursorLedgerCost != null && !rows.some((r) => r.agent_type === "cursor")) {
-    segments.push({ agent: "cursor", tokens: cursorLedgerCost, estimated: false });
+  if (cursorLedgerCost != null && !rows.some((r) => r.agent_type === 'cursor')) {
+    segments.push({ agent: 'cursor', tokens: cursorLedgerCost, estimated: false });
   }
 
   if (!segments.some((s) => s.tokens > 0)) return null;
@@ -1253,7 +1245,7 @@ function HBarList({
             </div>
             <span className="w-24 shrink-0 text-right tabular-nums text-slate-500">
               {format(r.value)}
-              {r.sub ? ` · ${r.sub}` : ""}
+              {r.sub ? ` · ${r.sub}` : ''}
             </span>
           </div>
         );
@@ -1265,12 +1257,12 @@ function HBarList({
 /** Map a model id to a brand-ish accent color. */
 function modelColor(model: string): string {
   const m = model.toLowerCase();
-  if (/(opus|sonnet|haiku|claude|fable)/.test(m)) return "#d6a947";
-  if (/(gpt|o3|o1|codex)/.test(m)) return "#31c6b7";
-  if (/grok/.test(m)) return "#5da6f5";
-  if (/(composer|cursor)/.test(m)) return "#a78bfa";
-  if (/gemini/.test(m)) return "#f472b6";
-  return "#64748b";
+  if (/(opus|sonnet|haiku|claude|fable)/.test(m)) return '#d6a947';
+  if (/(gpt|o3|o1|codex)/.test(m)) return '#31c6b7';
+  if (/grok/.test(m)) return '#5da6f5';
+  if (/(composer|cursor)/.test(m)) return '#a78bfa';
+  if (/gemini/.test(m)) return '#f472b6';
+  return '#64748b';
 }
 
 /** GitHub-style calendar heatmap of daily spend ($, last ~26 weeks). */
@@ -1291,7 +1283,7 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
   start.setDate(start.getDate() - start.getDay()); // back up to Sunday
 
   const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
   const weeks: { date: string; value: number; future: boolean }[][] = [];
   const cur = new Date(start);
@@ -1306,8 +1298,8 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
   }
 
   const cellColor = (value: number, future: boolean) => {
-    if (future) return "transparent";
-    if (value <= 0) return "#13151b";
+    if (future) return 'transparent';
+    if (value <= 0) return '#13151b';
     const t = Math.min(1, Math.log10(value + 1) / logMax);
     const level = Math.max(1, Math.ceil(t * 4));
     const alpha = [0, 0.28, 0.48, 0.72, 1][level];
@@ -1324,7 +1316,10 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
             <span
               key={l}
               className="h-2.5 w-2.5 rounded-[2px]"
-              style={{ backgroundColor: l === 0 ? "#13151b" : `rgba(212,160,57,${[0, 0.28, 0.48, 0.72, 1][l]})` }}
+              style={{
+                backgroundColor:
+                  l === 0 ? '#13151b' : `rgba(212,160,57,${[0, 0.28, 0.48, 0.72, 1][l]})`,
+              }}
             />
           ))}
           <span>more</span>
@@ -1336,7 +1331,7 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
             {col.map((cell) => (
               <div
                 key={cell.date}
-                title={cell.future ? "" : `${cell.date} · ${formatMoney(cell.value)}`}
+                title={cell.future ? '' : `${cell.date} · ${formatMoney(cell.value)}`}
                 className="h-2.5 w-2.5 rounded-[2px]"
                 style={{ backgroundColor: cellColor(cell.value, cell.future) }}
               />
@@ -1353,10 +1348,10 @@ function UsageByProject({ data }: { data: ProjectUsage[] }) {
   const max = Math.max(0.0001, ...data.map((d) => d.cost));
   const rows = data.map((p) => ({
     key: p.project_id,
-    label: p.display_name || p.dir_path.split("/").pop() || "unknown",
+    label: p.display_name || p.dir_path.split('/').pop() || 'unknown',
     value: p.cost,
     sub: `${p.sessions}s`,
-    color: "#d6a947",
+    color: '#d6a947',
   }));
   return (
     <div>
@@ -1385,28 +1380,29 @@ function UsageByModel({ data }: { data: ModelUsage[] }) {
 }
 
 function scoreTone(score: number): string {
-  if (score >= 80) return "text-emerald-300";
-  if (score >= 60) return "text-amber-300";
-  return "text-red-300";
+  if (score >= 80) return 'text-emerald-300';
+  if (score >= 60) return 'text-amber-300';
+  return 'text-red-300';
 }
 
-const ROADMAP_RELEASE_VERSION = "1.1.51";
+const ROADMAP_RELEASE_VERSION = '1.1.51';
 
 const ROADMAP_RELEASE_ITEMS = [
   {
-    label: "Archive search",
-    detail: "Search normalized local agent messages and tool calls from Roadmap.",
-    href: "/roadmap",
+    label: 'Archive search',
+    detail: 'Search normalized local agent messages and tool calls from Roadmap.',
+    href: '/roadmap',
   },
   {
-    label: "Live archive refresh",
-    detail: "Startup, periodic, and manual indexes emit archive events for active search refresh.",
-    href: "/roadmap",
+    label: 'Live archive refresh',
+    detail: 'Startup, periodic, and manual indexes emit archive events for active search refresh.',
+    href: '/roadmap',
   },
   {
-    label: "Transcript replay packets",
-    detail: "Evidence rows now group adjacent transcript command events into bounded multi-turn replay packets.",
-    href: "/review",
+    label: 'Transcript replay packets',
+    detail:
+      'Evidence rows now group adjacent transcript command events into bounded multi-turn replay packets.',
+    href: '/review',
   },
 ];
 
@@ -1428,7 +1424,9 @@ export function RoadmapReleaseBanner() {
             Verification work is now visible from launch.
           </h2>
           <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">
-            The recent roadmap slices are no longer only buried inside Review state. Roadmap exposes the shipped verification spine, archive search, and live source-health surfaces while Home opens directly into usage telemetry.
+            The recent roadmap slices are no longer only buried inside Review state. Roadmap exposes
+            the shipped verification spine, archive search, and live source-health surfaces while
+            Home opens directly into usage telemetry.
           </p>
         </div>
         <div className="grid gap-px bg-[#18130b] md:grid-cols-3">
@@ -1457,60 +1455,56 @@ export function RoadmapReleaseBanner() {
   );
 }
 
-export function VerificationWorkbenchPanel({
-  scorecard,
-}: {
-  scorecard: SessionScorecard | null;
-}) {
+export function VerificationWorkbenchPanel({ scorecard }: { scorecard: SessionScorecard | null }) {
   const sessionCount = scorecard?.sessions_analyzed ?? 0;
   const tools = [
     {
-      id: "evidence",
-      label: "Evidence search",
-      surface: "Review",
-      href: "/review",
+      id: 'evidence',
+      label: 'Evidence search',
+      surface: 'Review',
+      href: '/review',
       Icon: SearchCheck,
-      status: "Risk candidates",
+      status: 'Risk candidates',
     },
     {
-      id: "timeline",
-      label: "Agent timeline",
-      surface: "Review",
-      href: "/review",
+      id: 'timeline',
+      label: 'Agent timeline',
+      surface: 'Review',
+      href: '/review',
       Icon: GitBranch,
-      status: "Command anchors",
+      status: 'Command anchors',
     },
     {
-      id: "qa",
-      label: "Synthetic QA",
-      surface: "Review",
-      href: "/review",
+      id: 'qa',
+      label: 'Synthetic QA',
+      surface: 'Review',
+      href: '/review',
       Icon: MonitorPlay,
-      status: "Post-fix compare",
+      status: 'Post-fix compare',
     },
     {
-      id: "graph",
-      label: "Memory graph",
-      surface: "Repo Unpacked",
-      href: "/unpack",
+      id: 'graph',
+      label: 'Memory graph',
+      surface: 'Repo Unpacked',
+      href: '/unpack',
       Icon: Network,
-      status: "JSON + sidecar",
+      status: 'JSON + sidecar',
     },
     {
-      id: "history",
-      label: "History brief",
-      surface: "Repo Unpacked",
-      href: "/unpack",
+      id: 'history',
+      label: 'History brief',
+      surface: 'Repo Unpacked',
+      href: '/unpack',
       Icon: FileClock,
-      status: "Cited local context",
+      status: 'Cited local context',
     },
     {
-      id: "sessions",
-      label: "AI sessions",
-      surface: "Home",
-      href: "/",
+      id: 'sessions',
+      label: 'AI sessions',
+      surface: 'Home',
+      href: '/',
       Icon: BrainCircuit,
-      status: sessionCount > 0 ? `${sessionCount} indexed` : "Index ready",
+      status: sessionCount > 0 ? `${sessionCount} indexed` : 'Index ready',
     },
   ];
 
@@ -1550,13 +1544,11 @@ export function VerificationWorkbenchPanel({
 export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScorecard | null }) {
   if (!scorecard || scorecard.sessions_analyzed === 0) return null;
   const adapters = scorecard.adapters ?? [];
-  const topDimensions = [...scorecard.dimensions]
-    .sort((a, b) => a.score - b.score)
-    .slice(0, 3);
+  const topDimensions = [...scorecard.dimensions].sort((a, b) => a.score - b.score).slice(0, 3);
   const topRecommendation = scorecard.recommendations[0];
   const adapterWarningCount = adapters.reduce(
     (sum, adapter) => sum + adapter.parse_warnings.length,
-    0,
+    0
   );
 
   return (
@@ -1570,8 +1562,7 @@ export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScoreca
             </div>
             <div className="truncate text-xs text-slate-400">
               {scorecard.sessions_analyzed} indexed session
-              {scorecard.sessions_analyzed === 1 ? "" : "s"} · schema v
-              {scorecard.schema_version}
+              {scorecard.sessions_analyzed === 1 ? '' : 's'} · schema v{scorecard.schema_version}
             </div>
           </div>
         </div>
@@ -1594,7 +1585,7 @@ export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScoreca
           ))}
           {adapterWarningCount > 0 && (
             <span className="text-[10px] text-amber-300/80">
-              {adapterWarningCount} adapter warning{adapterWarningCount === 1 ? "" : "s"}
+              {adapterWarningCount} adapter warning{adapterWarningCount === 1 ? '' : 's'}
             </span>
           )}
         </div>
@@ -1645,7 +1636,7 @@ export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScoreca
 function formatSignedDelta(value: number): string {
   if (value > 0) return `+${formatTokens(value)}`;
   if (value < 0) return `-${formatTokens(Math.abs(value))}`;
-  return "0";
+  return '0';
 }
 
 function adapterRunTimestamp(run: SessionAdapterRun): string {
@@ -1664,7 +1655,7 @@ function adapterRunHistories(runs: SessionAdapterRun[]): Array<{
   return [...byAdapter.entries()]
     .flatMap(([adapterId, history]) => {
       const sorted = [...history].sort((a, b) =>
-        adapterRunTimestamp(b).localeCompare(adapterRunTimestamp(a)),
+        adapterRunTimestamp(b).localeCompare(adapterRunTimestamp(a))
       );
       const latest = sorted[0];
       if (!latest) return [];
@@ -1706,11 +1697,11 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
             </div>
           </div>
           <div className="mt-2 text-[10px] text-slate-600">
-            {trackedRuns} recent run{trackedRuns === 1 ? "" : "s"} tracked for trend checks
+            {trackedRuns} recent run{trackedRuns === 1 ? '' : 's'} tracked for trend checks
           </div>
           {totalWarnings > 0 && (
             <div className="mt-2 text-[10px] text-amber-300/80">
-              {totalWarnings} parse warning{totalWarnings === 1 ? "" : "s"}
+              {totalWarnings} parse warning{totalWarnings === 1 ? '' : 's'}
             </div>
           )}
         </div>
@@ -1719,7 +1710,7 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
           {histories.map(({ adapterId, latest, history }) => {
             const previous = history[1];
             const firstWarning = latest.parse_warnings[0];
-            const samplePath = latest.sample_source_paths[0] ?? latest.source_roots[0] ?? "";
+            const samplePath = latest.sample_source_paths[0] ?? latest.source_roots[0] ?? '';
             const recentRuns = history.slice(0, 4);
             const maxMessages = Math.max(1, ...recentRuns.map((run) => run.messages_indexed));
             const warningDelta = previous
@@ -1731,17 +1722,15 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
             const messagesDelta = previous
               ? latest.messages_indexed - previous.messages_indexed
               : latest.messages_indexed;
-            let healthLabel = "ok";
+            let healthLabel = 'ok';
             if (firstWarning) {
-              healthLabel = warningDelta > 0 ? "watch" : "warn";
+              healthLabel = warningDelta > 0 ? 'watch' : 'warn';
             }
             return (
               <div key={latest.id} className="min-w-0 bg-[#08090a] px-3 py-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-slate-200">
-                      {adapterId}
-                    </div>
+                    <div className="truncate text-sm font-medium text-slate-200">{adapterId}</div>
                     <div className="mt-0.5 truncate text-[10px] text-slate-600">
                       {formatShortDateTime(adapterRunTimestamp(latest))}
                     </div>
@@ -1750,8 +1739,8 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
                     variant="outline"
                     className={`shrink-0 rounded-full px-1.5 py-0 text-[9px] uppercase ${
                       firstWarning
-                        ? "border-amber-500/25 text-amber-300/80"
-                        : "border-emerald-500/25 text-emerald-300/80"
+                        ? 'border-amber-500/25 text-amber-300/80'
+                        : 'border-emerald-500/25 text-emerald-300/80'
                     }`}
                   >
                     {healthLabel}
@@ -1760,20 +1749,21 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
                 <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] text-slate-500">
                   <span>{latest.sessions_indexed} sessions</span>
                   <span>{formatTokens(latest.messages_indexed)} messages</span>
-                  <span>{latest.supports_incremental ? "incremental" : "full scan"}</span>
+                  <span>{latest.supports_incremental ? 'incremental' : 'full scan'}</span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] text-slate-600">
                   <span title="Latest run compared with the previous adapter run">
                     {formatSignedDelta(sessionsDelta)} sessions
                   </span>
                   <span>{formatSignedDelta(messagesDelta)} messages</span>
-                  <span
-                    className={warningDelta > 0 ? "text-amber-300/80" : "text-emerald-300/70"}
-                  >
+                  <span className={warningDelta > 0 ? 'text-amber-300/80' : 'text-emerald-300/70'}>
                     {formatSignedDelta(warningDelta)} warnings
                   </span>
                 </div>
-                <div className="mt-3 flex h-10 items-end gap-1" aria-label={`${adapterId} recent runs`}>
+                <div
+                  className="mt-3 flex h-10 items-end gap-1"
+                  aria-label={`${adapterId} recent runs`}
+                >
                   {recentRuns.map((run) => {
                     const height = 10 + Math.round((run.messages_indexed / maxMessages) * 30);
                     const hasWarnings = run.parse_warnings.length > 0;
@@ -1781,7 +1771,7 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
                       <div
                         key={run.id}
                         className={`min-w-0 flex-1 rounded-sm ${
-                          hasWarnings ? "bg-amber-300/45" : "bg-emerald-300/45"
+                          hasWarnings ? 'bg-amber-300/45' : 'bg-emerald-300/45'
                         }`}
                         style={{ height }}
                         title={`${formatShortDateTime(adapterRunTimestamp(run))}: ${run.sessions_indexed} sessions, ${formatTokens(run.messages_indexed)} messages, ${run.parse_warnings.length} warnings`}
@@ -1790,7 +1780,10 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
                   })}
                 </div>
                 {samplePath && (
-                  <div className="mt-2 truncate font-mono text-[10px] text-slate-600" title={samplePath}>
+                  <div
+                    className="mt-2 truncate font-mono text-[10px] text-slate-600"
+                    title={samplePath}
+                  >
                     {samplePath}
                   </div>
                 )}
@@ -1805,7 +1798,7 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
                   </summary>
                   <div className="mt-2 space-y-1.5">
                     {history.slice(0, 3).map((run) => {
-                      const detailPath = run.sample_source_paths[0] ?? run.source_roots[0] ?? "";
+                      const detailPath = run.sample_source_paths[0] ?? run.source_roots[0] ?? '';
                       return (
                         <div
                           key={run.id}
@@ -1829,7 +1822,10 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
                             )}
                           </div>
                           {detailPath && (
-                            <div className="mt-1 truncate font-mono text-[9px] text-slate-700" title={detailPath}>
+                            <div
+                              className="mt-1 truncate font-mono text-[9px] text-slate-700"
+                              title={detailPath}
+                            >
                               {detailPath}
                             </div>
                           )}
@@ -1853,13 +1849,19 @@ export default function Home() {
   const isInitialLoad = useRef(true);
 
   // Data state — initialize from cache if available
-  const [tokenUsage, setTokenUsage] = useState<TokenUsageStats | null>(_cachedDashboard?.tokenUsage ?? null);
+  const [tokenUsage, setTokenUsage] = useState<TokenUsageStats | null>(
+    _cachedDashboard?.tokenUsage ?? null
+  );
   const [agentByDay, setAgentByDay] = useState<AgentDayUsage[]>([]);
   const [projectUsage, setProjectUsage] = useState<ProjectUsage[]>([]);
   const [modelUsage, setModelUsage] = useState<ModelUsage[]>([]);
   const [accounts, setAccounts] = useState<ProviderAccount[]>(_cachedDashboard?.accounts ?? []);
-  const [accountUsages, setAccountUsages] = useState<Record<string, AccountUsage>>(_cachedDashboard?.usages ?? {});
-  const [liveUsages, setLiveUsages] = useState<Record<string, LiveUsageResult>>(_cachedDashboard?.liveUsages ?? {});
+  const [accountUsages, setAccountUsages] = useState<Record<string, AccountUsage>>(
+    _cachedDashboard?.usages ?? {}
+  );
+  const [liveUsages, setLiveUsages] = useState<Record<string, LiveUsageResult>>(
+    _cachedDashboard?.liveUsages ?? {}
+  );
   const [liveErrors, setLiveErrors] = useState<Record<string, string>>({});
   const [checkingLiveFor, setCheckingLiveFor] = useState<string | null>(null);
 
@@ -1867,9 +1869,7 @@ export default function Home() {
   const [loading, setLoading] = useState(_cachedDashboard === null);
   const [error, setError] = useState<string | null>(null);
   const [indexing, setIndexing] = useState(false);
-  const [indexResult, setIndexResult] = useState<TriggerIndexResult | null>(
-    null
-  );
+  const [indexResult, setIndexResult] = useState<TriggerIndexResult | null>(null);
 
   // ─── Load all dashboard data ────────────────────────────────────────────
 
@@ -1889,26 +1889,22 @@ export default function Home() {
         cachedAccounts.map(async (a) => [a.id, await checkAccountUsage(a.id)] as const)
       );
 
-      const [
-        tokenUsageResult,
-        accountsResult,
-        cachedUsagesResult,
-      ] = await Promise.all([
+      const [tokenUsageResult, accountsResult, cachedUsagesResult] = await Promise.all([
         getTokenUsageStats().then(
-          (v) => ({ status: "fulfilled" as const, value: v }),
-          (e) => ({ status: "rejected" as const, reason: e })
+          (v) => ({ status: 'fulfilled' as const, value: v }),
+          (e) => ({ status: 'rejected' as const, reason: e })
         ),
         detectProviderAccounts()
           .then((v) => v.accounts)
           .catch(() => listProviderAccounts())
           .then(
-            (v) => ({ status: "fulfilled" as const, value: v }),
-            (e) => ({ status: "rejected" as const, reason: e })
+            (v) => ({ status: 'fulfilled' as const, value: v }),
+            (e) => ({ status: 'rejected' as const, reason: e })
           ),
         cachedUsagePromise,
       ]);
 
-      if (tokenUsageResult.status === "fulfilled") {
+      if (tokenUsageResult.status === 'fulfilled') {
         setTokenUsage(tokenUsageResult.value);
       }
 
@@ -1927,13 +1923,13 @@ export default function Home() {
       // Seed usage map with cached-ID results that came back alongside the rest.
       const usageMap: Record<string, AccountUsage> = {};
       cachedUsagesResult.forEach((r) => {
-        if (r.status === "fulfilled") {
+        if (r.status === 'fulfilled') {
           const [id, usage] = r.value;
           usageMap[id] = usage;
         }
       });
 
-      if (accountsResult.status === "fulfilled") {
+      if (accountsResult.status === 'fulfilled') {
         const accts = accountsResult.value;
 
         setAccounts(accts);
@@ -1947,7 +1943,7 @@ export default function Home() {
             missing.map((a) => checkAccountUsage(a.id))
           );
           extraResults.forEach((r, i) => {
-            if (r.status === "fulfilled") {
+            if (r.status === 'fulfilled') {
               usageMap[missing[i].id] = r.value;
             }
           });
@@ -1959,27 +1955,21 @@ export default function Home() {
 
       // If critical reads failed, surface a friendly message — full detail
       // goes to the console, never the raw IPC error to the user.
-      if (tokenUsageResult.status === "rejected") {
-        console.error("[CodeVetter] Usage load failed:", tokenUsageResult.reason);
+      if (tokenUsageResult.status === 'rejected') {
+        console.error('[CodeVetter] Usage load failed:', tokenUsageResult.reason);
         const msg =
           tokenUsageResult.reason instanceof Error
             ? tokenUsageResult.reason.message
             : String(tokenUsageResult.reason);
-        if (msg === "TAURI_NOT_AVAILABLE") {
-          setError(
-            "Tauri APIs not available. Run inside the desktop app to see live data."
-          );
+        if (msg === 'TAURI_NOT_AVAILABLE') {
+          setError('Tauri APIs not available. Run inside the desktop app to see live data.');
         } else {
-          setError(
-            "Couldn't load your dashboard. Your saved data is safe — try again."
-          );
+          setError("Couldn't load your dashboard. Your saved data is safe — try again.");
         }
       }
     } catch (err) {
-      console.error("[CodeVetter] Dashboard load failed:", err);
-      setError(
-        "Couldn't load your dashboard. Your saved data is safe — try again."
-      );
+      console.error('[CodeVetter] Dashboard load failed:', err);
+      setError("Couldn't load your dashboard. Your saved data is safe — try again.");
     } finally {
       setLoading(false);
       isInitialLoad.current = false;
@@ -2029,7 +2019,7 @@ export default function Home() {
 
   const refreshLiveUsage = useCallback(async (accts: ProviderAccount[]) => {
     const supported = accts.filter((a) =>
-      ["anthropic", "openai", "google", "cursor"].includes(a.provider)
+      ['anthropic', 'openai', 'google', 'cursor'].includes(a.provider)
     );
     if (supported.length === 0) return;
 
@@ -2039,7 +2029,7 @@ export default function Home() {
     setLiveUsages((prev) => {
       const next = { ...prev };
       results.forEach((r, i) => {
-        if (r.status === "fulfilled") {
+        if (r.status === 'fulfilled') {
           next[supported[i].id] = r.value;
         }
       });
@@ -2050,7 +2040,7 @@ export default function Home() {
     setLiveErrors((prev) => {
       const next = { ...prev };
       results.forEach((r, i) => {
-        if (r.status === "rejected") next[supported[i].id] = String(r.reason);
+        if (r.status === 'rejected') next[supported[i].id] = String(r.reason);
         else delete next[supported[i].id];
       });
       return next;
@@ -2084,7 +2074,7 @@ export default function Home() {
       // Refresh dashboard after indexing (no spinners — user sees "Indexing..." state)
       await refreshDashboard();
     } catch (err) {
-      console.error("Trigger index failed:", err);
+      console.error('Trigger index failed:', err);
     } finally {
       setIndexing(false);
     }
@@ -2111,8 +2101,8 @@ export default function Home() {
                 disabled={indexing}
                 className="h-10 shrink-0 justify-center gap-2 border-white/70 bg-white px-5 text-black shadow-[0_0_0_1px_rgba(125,211,252,0.08),0_18px_40px_-30px_rgba(125,211,252,0.85)] transition-all duration-150 hover:border-[var(--cv-accent)] hover:bg-[var(--cv-accent)] hover:text-[#031016] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.32),0_0_28px_rgba(125,211,252,0.24)] focus-visible:ring-1 focus-visible:ring-[var(--cv-accent)] active:translate-y-px disabled:border-white/20 disabled:bg-white/45 disabled:text-black/55 disabled:shadow-none"
               >
-                <RefreshCw size={15} className={indexing ? "animate-spin" : ""} />
-                {indexing ? "Indexing..." : "Re-index local data"}
+                <RefreshCw size={15} className={indexing ? 'animate-spin' : ''} />
+                {indexing ? 'Indexing...' : 'Re-index local data'}
               </Button>
               <Link
                 to="/roadmap"
@@ -2128,10 +2118,30 @@ export default function Home() {
               counts (generated) live in the hover title. */}
           <div className="grid grid-cols-2 gap-px bg-[#171717] lg:grid-cols-4">
             {[
-              { label: "Today", cost: tokenUsage?.today_cost ?? 0, gen: tokenUsage?.today_generated ?? 0, color: "text-cyan-400" },
-              { label: "This week", cost: tokenUsage?.week_cost ?? 0, gen: tokenUsage?.week_generated ?? 0, color: "text-emerald-400" },
-              { label: "This month", cost: tokenUsage?.month_cost ?? 0, gen: tokenUsage?.month_generated ?? 0, color: "text-yellow-400" },
-              { label: "This year", cost: tokenUsage?.year_cost ?? 0, gen: tokenUsage?.year_generated ?? 0, color: "text-rose-400" },
+              {
+                label: 'Today',
+                cost: tokenUsage?.today_cost ?? 0,
+                gen: tokenUsage?.today_generated ?? 0,
+                color: 'text-cyan-400',
+              },
+              {
+                label: 'This week',
+                cost: tokenUsage?.week_cost ?? 0,
+                gen: tokenUsage?.week_generated ?? 0,
+                color: 'text-emerald-400',
+              },
+              {
+                label: 'This month',
+                cost: tokenUsage?.month_cost ?? 0,
+                gen: tokenUsage?.month_generated ?? 0,
+                color: 'text-yellow-400',
+              },
+              {
+                label: 'This year',
+                cost: tokenUsage?.year_cost ?? 0,
+                gen: tokenUsage?.year_generated ?? 0,
+                color: 'text-rose-400',
+              },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -2140,180 +2150,193 @@ export default function Home() {
               >
                 <span className="cv-label mr-2 truncate">{stat.label}</span>
                 <span className={`shrink-0 text-base font-semibold tabular-nums ${stat.color}`}>
-                  {loading && !tokenUsage ? "--" : formatMoney(stat.cost)}
+                  {loading && !tokenUsage ? '--' : formatMoney(stat.cost)}
                 </span>
               </div>
             ))}
           </div>
         </section>
 
-      {/* Index result banner */}
-      {indexResult && (
-        <div className="cv-panel flex items-center gap-3 px-4 py-3">
-          <span className="text-emerald-400 text-sm">{"\u2714"}</span>
-          <p className="text-xs text-emerald-300">
-            Indexed {indexResult.indexed_sessions} sessions and{" "}
-            {indexResult.indexed_messages} messages across{" "}
-            {indexResult.projects_scanned} projects.
-          </p>
-          <button
-            onClick={() => setIndexResult(null)}
-            className="ml-auto text-xs text-emerald-400/50 hover:text-emerald-400"
-          >
-            {"\u2715"}
-          </button>
-        </div>
-      )}
-
-      {/* Error banner */}
-      {error && (
-        <div className="cv-panel flex items-center gap-3 border-red-500/25 bg-red-500/5 px-4 py-3">
-          <span className="text-red-400 text-sm">{"\u26A0"}</span>
-          <p className="text-xs text-red-300">{error}</p>
-          <button
-            onClick={() => loadDashboard()}
-            className="ml-auto text-xs text-red-400/50 hover:text-red-400"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {/* Usage — remaining per account */}
-      <div className="cv-frame overflow-hidden">
-        <div className="cv-terminal-bar h-10 px-4">
-          <Activity size={14} className="text-[var(--cv-accent)]" />
-          <span className="cv-label">provider telemetry</span>
-          <div className="ml-auto flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-auto px-1.5 py-0.5 text-[11px] text-slate-500 hover:text-slate-300"
-              onClick={async () => {
-                try {
-                  // Re-detect accounts AND re-index sessions
-                  const [result] = await Promise.all([
-                    detectProviderAccounts(),
-                    triggerIndex(),
-                  ]);
-                  setAccounts(result.accounts);
-                  if (result.accounts.length > 0) {
-                    const usageResults = await Promise.allSettled(
-                      result.accounts.map((a) => checkAccountUsage(a.id))
-                    );
-                    const usageMap: Record<string, AccountUsage> = {};
-                    usageResults.forEach((r, i) => {
-                      if (r.status === "fulfilled") {
-                        usageMap[result.accounts[i].id] = r.value;
-                      }
-                    });
-                    setAccountUsages(usageMap);
-                  }
-                  // Refresh dashboard data after index
-                  refreshDashboard();
-                } catch (err) {
-                  console.error("Detection failed:", err);
-                }
-              }}
+        {/* Index result banner */}
+        {indexResult && (
+          <div className="cv-panel flex items-center gap-3 px-4 py-3">
+            <span className="text-emerald-400 text-sm">{'\u2714'}</span>
+            <p className="text-xs text-emerald-300">
+              Indexed {indexResult.indexed_sessions} sessions and {indexResult.indexed_messages}{' '}
+              messages across {indexResult.projects_scanned} projects.
+            </p>
+            <button
+              onClick={() => setIndexResult(null)}
+              className="ml-auto text-xs text-emerald-400/50 hover:text-emerald-400"
             >
-              Re-detect
-            </Button>
+              {'\u2715'}
+            </button>
           </div>
-        </div>
-        {loading ? (
-          <Card className="flex items-center justify-center rounded-none border-0 bg-transparent py-8">
-            <svg className="h-4 w-4 animate-spin text-slate-500" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-          </Card>
-        ) : (
-          <Card className="overflow-hidden rounded-none border-0 bg-transparent">
-            {accounts.length === 0 ? (
-              <CardContent className="flex flex-col items-center justify-center py-5 p-5">
-                <Terminal className="mb-2 h-6 w-6 text-slate-600" />
-                <p className="text-[11px] text-slate-500">No CLI accounts detected</p>
-                <p className="text-[11px] text-slate-600 mt-0.5">Log into Claude Code, Codex, Cursor, or Gemini to auto-detect</p>
-              </CardContent>
-            ) : (
-              accounts.map((account, idx) => {
-                // If multiple accounts share the same provider, only the first shows local stats
-                const isFirstOfProvider = accounts.findIndex((a) => a.provider === account.provider) === idx;
-                const hasSiblings = accounts.filter((a) => a.provider === account.provider).length > 1;
-                return (
-                <AccountUsageRow
-                  key={account.id}
-                  account={account}
-                  usage={accountUsages[account.id] ?? null}
-                  liveUsage={liveUsages[account.id] ?? null}
-                  liveError={liveErrors[account.id] ?? null}
-                  checkingLive={checkingLiveFor === account.id}
-                  isSharedUsage={hasSiblings && !isFirstOfProvider}
-                  onCheckLive={async () => {
-                    setCheckingLiveFor(account.id);
-                    try {
-                      const result = await checkLiveUsage(account.provider, account.api_key ?? undefined);
-                      setLiveUsages((prev) => ({ ...prev, [account.id]: result }));
-                      setLiveErrors((prev) => {
-                        const next = { ...prev };
-                        delete next[account.id];
-                        return next;
-                      });
-                    } catch (err) {
-                      setLiveErrors((prev) => ({ ...prev, [account.id]: String(err) }));
-                    } finally {
-                      setCheckingLiveFor(null);
-                    }
-                  }}
-                  onDelete={async () => {
-                    try {
-                      await deleteProviderAccount(account.id);
-                      refreshDashboard();
-                    } catch (err) {
-                      console.error("Failed to delete account:", err);
-                    }
-                  }}
-                />
-              );})
-
-            )}
-          </Card>
         )}
-      </div>
 
-      {/* Token usage chart */}
-      {tokenUsage && (
-        <div className="cv-frame overflow-hidden">
-          <div className="cv-terminal-bar h-10 px-4">
-            <BarChart3 size={14} className="text-[var(--cv-accent)]" />
-            <span className="cv-label">indexed local token burn</span>
+        {/* Error banner */}
+        {error && (
+          <div className="cv-panel flex items-center gap-3 border-red-500/25 bg-red-500/5 px-4 py-3">
+            <span className="text-red-400 text-sm">{'\u26A0'}</span>
+            <p className="text-xs text-red-300">{error}</p>
+            <button
+              onClick={() => loadDashboard()}
+              className="ml-auto text-xs text-red-400/50 hover:text-red-400"
+            >
+              Retry
+            </button>
           </div>
-          <TokenUsageChart
-            daily={tokenUsage.daily_series}
-            weekly={tokenUsage.weekly_series}
-            agentByDay={agentByDay}
-          />
-          <WeeklyAgentSplit />
-        </div>
-      )}
+        )}
 
-      {/* Activity heatmap + project/model breakdowns */}
-      {(agentByDay.length > 0 || projectUsage.length > 0 || modelUsage.length > 0) && (
+        {/* Usage — remaining per account */}
         <div className="cv-frame overflow-hidden">
           <div className="cv-terminal-bar h-10 px-4">
             <Activity size={14} className="text-[var(--cv-accent)]" />
-            <span className="cv-label">usage explorer · generated tokens</span>
-          </div>
-          <div className="space-y-5 p-4">
-            <UsageCalendarHeatmap data={agentByDay} />
-            <div className="grid gap-5 md:grid-cols-2">
-              <UsageByProject data={projectUsage} />
-              <UsageByModel data={modelUsage} />
+            <span className="cv-label">provider telemetry</span>
+            <div className="ml-auto flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto px-1.5 py-0.5 text-[11px] text-slate-500 hover:text-slate-300"
+                onClick={async () => {
+                  try {
+                    // Re-detect accounts AND re-index sessions
+                    const [result] = await Promise.all([detectProviderAccounts(), triggerIndex()]);
+                    setAccounts(result.accounts);
+                    if (result.accounts.length > 0) {
+                      const usageResults = await Promise.allSettled(
+                        result.accounts.map((a) => checkAccountUsage(a.id))
+                      );
+                      const usageMap: Record<string, AccountUsage> = {};
+                      usageResults.forEach((r, i) => {
+                        if (r.status === 'fulfilled') {
+                          usageMap[result.accounts[i].id] = r.value;
+                        }
+                      });
+                      setAccountUsages(usageMap);
+                    }
+                    // Refresh dashboard data after index
+                    refreshDashboard();
+                  } catch (err) {
+                    console.error('Detection failed:', err);
+                  }
+                }}
+              >
+                Re-detect
+              </Button>
             </div>
           </div>
+          {loading ? (
+            <Card className="flex items-center justify-center rounded-none border-0 bg-transparent py-8">
+              <svg className="h-4 w-4 animate-spin text-slate-500" viewBox="0 0 24 24" fill="none">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+            </Card>
+          ) : (
+            <Card className="overflow-hidden rounded-none border-0 bg-transparent">
+              {accounts.length === 0 ? (
+                <CardContent className="flex flex-col items-center justify-center py-5 p-5">
+                  <Terminal className="mb-2 h-6 w-6 text-slate-600" />
+                  <p className="text-[11px] text-slate-500">No CLI accounts detected</p>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Log into Claude Code, Codex, Cursor, or Gemini to auto-detect
+                  </p>
+                </CardContent>
+              ) : (
+                accounts.map((account, idx) => {
+                  // If multiple accounts share the same provider, only the first shows local stats
+                  const isFirstOfProvider =
+                    accounts.findIndex((a) => a.provider === account.provider) === idx;
+                  const hasSiblings =
+                    accounts.filter((a) => a.provider === account.provider).length > 1;
+                  return (
+                    <AccountUsageRow
+                      key={account.id}
+                      account={account}
+                      usage={accountUsages[account.id] ?? null}
+                      liveUsage={liveUsages[account.id] ?? null}
+                      liveError={liveErrors[account.id] ?? null}
+                      checkingLive={checkingLiveFor === account.id}
+                      isSharedUsage={hasSiblings && !isFirstOfProvider}
+                      onCheckLive={async () => {
+                        setCheckingLiveFor(account.id);
+                        try {
+                          const result = await checkLiveUsage(
+                            account.provider,
+                            account.api_key ?? undefined
+                          );
+                          setLiveUsages((prev) => ({ ...prev, [account.id]: result }));
+                          setLiveErrors((prev) => {
+                            const next = { ...prev };
+                            delete next[account.id];
+                            return next;
+                          });
+                        } catch (err) {
+                          setLiveErrors((prev) => ({ ...prev, [account.id]: String(err) }));
+                        } finally {
+                          setCheckingLiveFor(null);
+                        }
+                      }}
+                      onDelete={async () => {
+                        try {
+                          await deleteProviderAccount(account.id);
+                          refreshDashboard();
+                        } catch (err) {
+                          console.error('Failed to delete account:', err);
+                        }
+                      }}
+                    />
+                  );
+                })
+              )}
+            </Card>
+          )}
         </div>
-      )}
 
+        {/* Token usage chart */}
+        {tokenUsage && (
+          <div className="cv-frame overflow-hidden">
+            <div className="cv-terminal-bar h-10 px-4">
+              <BarChart3 size={14} className="text-[var(--cv-accent)]" />
+              <span className="cv-label">indexed local token burn</span>
+            </div>
+            <TokenUsageChart
+              daily={tokenUsage.daily_series}
+              weekly={tokenUsage.weekly_series}
+              agentByDay={agentByDay}
+            />
+            <WeeklyAgentSplit />
+          </div>
+        )}
+
+        {/* Activity heatmap + project/model breakdowns */}
+        {(agentByDay.length > 0 || projectUsage.length > 0 || modelUsage.length > 0) && (
+          <div className="cv-frame overflow-hidden">
+            <div className="cv-terminal-bar h-10 px-4">
+              <Activity size={14} className="text-[var(--cv-accent)]" />
+              <span className="cv-label">usage explorer · generated tokens</span>
+            </div>
+            <div className="space-y-5 p-4">
+              <UsageCalendarHeatmap data={agentByDay} />
+              <div className="grid gap-5 md:grid-cols-2">
+                <UsageByProject data={projectUsage} />
+                <UsageByModel data={modelUsage} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

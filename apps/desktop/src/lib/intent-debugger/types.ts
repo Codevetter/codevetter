@@ -1,25 +1,25 @@
 export interface CommitIntentFixture {
   id: string;
-  author: "agent" | "human";
+  author: 'agent' | 'human';
   sha: string;
   message: string;
   changedFiles: Array<{
     path: string;
     additions: number;
     deletions: number;
-    surface: "ui" | "api" | "test" | "docs" | "config";
+    surface: 'ui' | 'api' | 'test' | 'docs' | 'config';
   }>;
   evidence: Array<{
-    kind: "test" | "screenshot" | "manual" | "none";
+    kind: 'test' | 'screenshot' | 'manual' | 'none';
     label: string;
-    status: "pass" | "fail" | "missing";
+    status: 'pass' | 'fail' | 'missing';
   }>;
 }
 
 export interface CommitIntentReport {
   id: string;
   sha: string;
-  author: CommitIntentFixture["author"];
+  author: CommitIntentFixture['author'];
   inferredIntent: string;
   changedSurfaces: string[];
   suspectedRisks: string[];
@@ -37,8 +37,8 @@ export interface ReviewIntentInput {
     filePath?: string;
   }>;
   evidence: Array<{
-    level: "static" | "test" | "browser" | "runtime";
-    status: "not_checked" | "reproduced" | "fixed" | "not_reproduced";
+    level: 'static' | 'test' | 'browser' | 'runtime';
+    status: 'not_checked' | 'reproduced' | 'fixed' | 'not_reproduced';
   }>;
   history?: {
     recentCommits: number;
@@ -83,10 +83,10 @@ export interface ReviewIntentInput {
 
 export interface ReviewTimelineItem {
   id: string;
-  phase: "intent" | "history" | "review" | "qa" | "fix" | "evidence";
+  phase: 'intent' | 'history' | 'review' | 'qa' | 'fix' | 'evidence';
   label: string;
   detail: string;
-  status: "done" | "warning" | "missing";
+  status: 'done' | 'warning' | 'missing';
 }
 
 export interface ReviewIntentReport {

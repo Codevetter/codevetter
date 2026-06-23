@@ -1,25 +1,25 @@
-import type { AgentStep } from "@/lib/tauri-ipc";
+import type { AgentStep } from '@/lib/tauri-ipc';
 
 export function describeAction(step: AgentStep): string {
   const { action } = step;
   switch (action.type) {
-    case "click":
+    case 'click':
       return `click ${action.selector}`;
-    case "type":
+    case 'type':
       return `type "${action.text}" → ${action.selector}`;
-    case "key":
+    case 'key':
       return `press ${action.key}`;
-    case "scroll":
+    case 'scroll':
       return `scroll ${action.delta}px`;
-    case "goto":
+    case 'goto':
       return `goto ${action.url}`;
-    case "done":
-      return "done";
-    case "give_up":
-      return "gave up";
+    case 'done':
+      return 'done';
+    case 'give_up':
+      return 'gave up';
   }
 }
 
 export function actionReasoning(step: AgentStep): string {
-  return step.action.reasoning ?? "";
+  return step.action.reasoning ?? '';
 }

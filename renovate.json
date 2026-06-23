@@ -1,5 +1,3 @@
 {
-  "extends": [
-    "github>sarthakagrawal927/foundry-renovate-config"
-  ]
+  "extends": ["github>sarthakagrawal927/foundry-renovate-config"]
 }

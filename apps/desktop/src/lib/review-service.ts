@@ -13,7 +13,7 @@ export interface ReviewConfig {
   standardsPacks?: StandardsPack[];
 }
 
-const STORAGE_KEY = "codevetter_review_config";
+const STORAGE_KEY = 'codevetter_review_config';
 
 export interface StandardsPack {
   id: string;
@@ -24,33 +24,33 @@ export interface StandardsPack {
 
 export const DEFAULT_STANDARDS_PACKS: StandardsPack[] = [
   {
-    id: "product-safety",
-    name: "Product Safety",
-    focus: "User-facing regressions, broken flows, data loss, and confusing states.",
+    id: 'product-safety',
+    name: 'Product Safety',
+    focus: 'User-facing regressions, broken flows, data loss, and confusing states.',
     checks: [
-      "Flag behavior changes that can break an existing user workflow.",
-      "Check loading, empty, error, and permission states for user-facing screens.",
-      "Prioritize concrete reproduction steps over style commentary.",
+      'Flag behavior changes that can break an existing user workflow.',
+      'Check loading, empty, error, and permission states for user-facing screens.',
+      'Prioritize concrete reproduction steps over style commentary.',
     ],
   },
   {
-    id: "security-boundary",
-    name: "Security Boundary",
-    focus: "Auth, authorization, secret handling, trust boundaries, and injection risk.",
+    id: 'security-boundary',
+    name: 'Security Boundary',
+    focus: 'Auth, authorization, secret handling, trust boundaries, and injection risk.',
     checks: [
-      "Verify server-side authorization, not just hidden client controls.",
-      "Flag secrets, tokens, PII, or prompts that can leak into logs or analytics.",
-      "Check untrusted input before database, shell, network, or model calls.",
+      'Verify server-side authorization, not just hidden client controls.',
+      'Flag secrets, tokens, PII, or prompts that can leak into logs or analytics.',
+      'Check untrusted input before database, shell, network, or model calls.',
     ],
   },
   {
-    id: "agent-handoff",
-    name: "Agent Handoff",
-    focus: "Review quality for multi-agent workflows and future task continuity.",
+    id: 'agent-handoff',
+    name: 'Agent Handoff',
+    focus: 'Review quality for multi-agent workflows and future task continuity.',
     checks: [
-      "Call out missing tests or verification commands the next agent must run.",
-      "Prefer findings with file paths, line numbers, and a bounded fix.",
-      "Separate real blockers from optional cleanup so agents do not waste context.",
+      'Call out missing tests or verification commands the next agent must run.',
+      'Prefer findings with file paths, line numbers, and a bounded fix.',
+      'Separate real blockers from optional cleanup so agents do not waste context.',
     ],
   },
 ];
@@ -85,45 +85,40 @@ export function getStandardsPacks(config: ReviewConfig | null): StandardsPack[] 
 
 export function getActiveStandardsPack(config: ReviewConfig | null): StandardsPack {
   const packs = getStandardsPacks(config);
-  return (
-    packs.find((pack) => pack.id === config?.activeStandardsPack) ??
-    packs[0]
-  );
+  return packs.find((pack) => pack.id === config?.activeStandardsPack) ?? packs[0];
 }
 
 export function buildActiveStandardsContext(): string {
   const config = loadReviewConfig();
   const pack = getActiveStandardsPack(config);
-  const customRules = (config?.customRules ?? [])
-    .map((rule) => rule.trim())
-    .filter(Boolean);
+  const customRules = (config?.customRules ?? []).map((rule) => rule.trim()).filter(Boolean);
 
   const lines = [
-    "CodeVetter review standards pack:",
+    'CodeVetter review standards pack:',
     `- Pack: ${pack.name}`,
     `- Focus: ${pack.focus}`,
     ...pack.checks.map((check) => `- Check: ${check}`),
     ...customRules.map((rule) => `- Custom rule: ${rule}`),
   ];
 
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 export const PROVIDER_PRESETS: Record<string, { baseUrl: string; model: string }> = {
-  "free-ai": {
-    baseUrl: "https://free-ai-gateway.sarthakagrawal927.workers.dev/v1",
-    model: "auto",
+  'free-ai': {
+    baseUrl: 'https://free-ai-gateway.sarthakagrawal927.workers.dev/v1',
+    model: 'auto',
   },
   anthropic: {
-    baseUrl: "https://api.anthropic.com/v1",
-    model: "claude-sonnet-4-20250514",
+    baseUrl: 'https://api.anthropic.com/v1',
+    model: 'claude-sonnet-4-20250514',
   },
   openai: {
-    baseUrl: "https://api.openai.com/v1",
-    model: "gpt-4o",
+    baseUrl: 'https://api.openai.com/v1',
+    model: 'gpt-4o',
   },
   openrouter: {
-    baseUrl: "https://openrouter.ai/api/v1",
-    model: "anthropic/claude-sonnet-4-20250514",
+    baseUrl: 'https://openrouter.ai/api/v1',
+    model: 'anthropic/claude-sonnet-4-20250514',
   },
 };

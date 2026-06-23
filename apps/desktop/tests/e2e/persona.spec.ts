@@ -1,8 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from '@playwright/test';
 
-import { ConsoleErrorCollector, navigateTo, waitForNoSpinners } from "./helpers";
+import { ConsoleErrorCollector, navigateTo, waitForNoSpinners } from './helpers';
 
-test.describe("Personas page", () => {
+test.describe('Personas page', () => {
   const consoleErrors = new ConsoleErrorCollector();
 
   test.beforeEach(async ({ page }) => {
@@ -14,16 +14,12 @@ test.describe("Personas page", () => {
     consoleErrors.assertNoErrors();
   });
 
-  test("/personas renders configuration and accepts owner/repo", async ({
-    page,
-  }) => {
-    await navigateTo(page, "/personas");
+  test('/personas renders configuration and accepts owner/repo', async ({ page }) => {
+    await navigateTo(page, '/personas');
     await waitForNoSpinners(page);
 
-    await expect(page.locator("h1", { hasText: "Personas" })).toBeVisible();
-    await expect(
-      page.getByPlaceholder("sarthak-fleet/CodeVetter"),
-    ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Generate" })).toBeVisible();
+    await expect(page.locator('h1', { hasText: 'Personas' })).toBeVisible();
+    await expect(page.getByPlaceholder('sarthak-fleet/CodeVetter')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Generate' })).toBeVisible();
   });
 });

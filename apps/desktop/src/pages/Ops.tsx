@@ -8,19 +8,13 @@ import {
   RefreshCw,
   Save,
   Send,
-} from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   type AgentObservability,
   type BillingSnapshot,
@@ -34,17 +28,17 @@ import {
   setWebhookConfig,
   type TaskTypeStats,
   type WebhookConfig,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
 function fmtUsd(cents: number | null): string {
-  if (cents == null) return "—";
+  if (cents == null) return '—';
   const usd = cents / 100;
   if (usd >= 1000) return `$${(usd / 1000).toFixed(1)}k`;
   return `$${usd.toFixed(2)}`;
 }
 
 function fmtSeconds(s: number | null): string {
-  if (s == null) return "—";
+  if (s == null) return '—';
   if (s < 60) return `${s.toFixed(0)}s`;
   if (s < 3600) return `${(s / 60).toFixed(1)}m`;
   return `${(s / 3600).toFixed(1)}h`;
@@ -65,9 +59,8 @@ export default function Ops() {
           </Badge>
         </div>
         <p className="mt-1 max-w-2xl text-sm text-[var(--text-secondary)]">
-          Real provider billing pulls, per-task agent observability, and
-          outbound webhook notifications — one operational dashboard for the
-          CodeVetter machine.
+          Real provider billing pulls, per-task agent observability, and outbound webhook
+          notifications — one operational dashboard for the CodeVetter machine.
         </p>
       </header>
 
@@ -81,8 +74,8 @@ export default function Ops() {
 // ─── Billing ────────────────────────────────────────────────────────────────
 
 function BillingCard() {
-  const [anthropic, setAnthropic] = useState("");
-  const [openai, setOpenai] = useState("");
+  const [anthropic, setAnthropic] = useState('');
+  const [openai, setOpenai] = useState('');
   const [anthropicConfigured, setAnthropicConfigured] = useState(false);
   const [openaiConfigured, setOpenaiConfigured] = useState(false);
   const [snapshots, setSnapshots] = useState<BillingSnapshot[]>([]);
@@ -125,8 +118,8 @@ function BillingCard() {
         anthropic_admin_key: anthropic || null,
         openai_admin_key: openai || null,
       });
-      setAnthropic("");
-      setOpenai("");
+      setAnthropic('');
+      setOpenai('');
       await loadConfig();
       await refresh();
     } catch (e) {
@@ -144,9 +137,9 @@ function BillingCard() {
           Provider billing
         </CardTitle>
         <CardDescription className="text-xs">
-          Pulls the actual invoice from Anthropic + OpenAI Admin APIs instead
-          of estimating from JSONL totals. Keys live in local preferences;
-          never sent anywhere except the provider's own API.
+          Pulls the actual invoice from Anthropic + OpenAI Admin APIs instead of estimating from
+          JSONL totals. Keys live in local preferences; never sent anywhere except the provider's
+          own API.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -159,7 +152,7 @@ function BillingCard() {
         <div className="space-y-2">
           <div>
             <label className="cv-label mb-1 block">
-              Anthropic admin key{" "}
+              Anthropic admin key{' '}
               {anthropicConfigured && (
                 <Badge
                   variant="outline"
@@ -173,17 +166,13 @@ function BillingCard() {
               type="password"
               value={anthropic}
               onChange={(e) => setAnthropic(e.target.value)}
-              placeholder={
-                anthropicConfigured
-                  ? "(stored — replace to update)"
-                  : "sk-ant-admin-…"
-              }
+              placeholder={anthropicConfigured ? '(stored — replace to update)' : 'sk-ant-admin-…'}
               className="font-mono text-xs"
             />
           </div>
           <div>
             <label className="cv-label mb-1 block">
-              OpenAI admin key{" "}
+              OpenAI admin key{' '}
               {openaiConfigured && (
                 <Badge
                   variant="outline"
@@ -197,25 +186,13 @@ function BillingCard() {
               type="password"
               value={openai}
               onChange={(e) => setOpenai(e.target.value)}
-              placeholder={
-                openaiConfigured ? "(stored — replace to update)" : "sk-admin-…"
-              }
+              placeholder={openaiConfigured ? '(stored — replace to update)' : 'sk-admin-…'}
               className="font-mono text-xs"
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={refresh}
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <RefreshCw size={12} />
-              )}
+            <Button type="button" variant="outline" size="sm" onClick={refresh} disabled={loading}>
+              {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
             </Button>
             <Button type="button" size="sm" onClick={handleSave} disabled={saving}>
               {saving ? (
@@ -264,9 +241,7 @@ function BillingCard() {
                   </div>
                 )}
                 {s.error && (
-                  <div className="mt-1 font-mono text-[10px] text-amber-300/80">
-                    {s.error}
-                  </div>
+                  <div className="mt-1 font-mono text-[10px] text-amber-300/80">{s.error}</div>
                 )}
               </div>
             ))}
@@ -309,9 +284,9 @@ function ObservabilityCard() {
           Agent observability ({windowDays}d)
         </CardTitle>
         <CardDescription className="text-xs">
-          Latency + success rate per task type. Sources:{" "}
-          <span className="font-mono">local_reviews</span>,{" "}
-          <span className="font-mono">repo_unpacked_reports</span>,{" "}
+          Latency + success rate per task type. Sources:{' '}
+          <span className="font-mono">local_reviews</span>,{' '}
+          <span className="font-mono">repo_unpacked_reports</span>,{' '}
           <span className="font-mono">cc_sessions</span>.
         </CardDescription>
       </CardHeader>
@@ -325,26 +300,16 @@ function ObservabilityCard() {
                 onClick={() => setWindowDays(d)}
                 className={
                   windowDays === d
-                    ? "rounded bg-cyan-500/10 px-2 py-1 font-medium text-[var(--cv-accent)]"
-                    : "rounded px-2 py-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    ? 'rounded bg-cyan-500/10 px-2 py-1 font-medium text-[var(--cv-accent)]'
+                    : 'rounded px-2 py-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 }
               >
                 {d}d
               </button>
             ))}
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={refresh}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <RefreshCw size={12} />
-            )}
+          <Button type="button" variant="outline" size="sm" onClick={refresh} disabled={loading}>
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
           </Button>
         </div>
 
@@ -377,21 +342,14 @@ function ObservabilityTable({ rows }: { rows: TaskTypeStats[] }) {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr
-              key={r.task_type}
-              className="border-b border-[var(--cv-line)]/40 last:border-0"
-            >
+            <tr key={r.task_type} className="border-b border-[var(--cv-line)]/40 last:border-0">
               <td className="px-3 py-1.5 font-mono">{r.task_type}</td>
               <td className="px-3 py-1.5 text-right font-mono">{r.session_count}</td>
               <td className="px-3 py-1.5 text-right font-mono text-emerald-200">
                 {r.success_count}
               </td>
-              <td className="px-3 py-1.5 text-right font-mono text-red-200">
-                {r.failure_count}
-              </td>
-              <td className="px-3 py-1.5 text-right font-mono">
-                {r.success_rate_pct.toFixed(1)}%
-              </td>
+              <td className="px-3 py-1.5 text-right font-mono text-red-200">{r.failure_count}</td>
+              <td className="px-3 py-1.5 text-right font-mono">{r.success_rate_pct.toFixed(1)}%</td>
               <td className="px-3 py-1.5 text-right font-mono">
                 {fmtSeconds(r.median_duration_seconds)}
               </td>
@@ -409,8 +367,8 @@ function ObservabilityTable({ rows }: { rows: TaskTypeStats[] }) {
 // ─── Webhook notifications ──────────────────────────────────────────────────
 
 function WebhookCard() {
-  const [url, setUrl] = useState("");
-  const [flavor, setFlavor] = useState("slack");
+  const [url, setUrl] = useState('');
+  const [flavor, setFlavor] = useState('slack');
   const [config, setConfig] = useState<WebhookConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -435,7 +393,7 @@ function WebhookCard() {
     try {
       const c = await setWebhookConfig(url, flavor);
       setConfig(c);
-      setUrl("");
+      setUrl('');
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -449,10 +407,10 @@ function WebhookCard() {
     setError(null);
     try {
       await sendWebhookNotification({
-        title: "CodeVetter test",
+        title: 'CodeVetter test',
         message:
-          "If you see this, the webhook is wired up correctly. T-Rex BLOCK verdicts and high-severity findings will land here too.",
-        severity: "info",
+          'If you see this, the webhook is wired up correctly. T-Rex BLOCK verdicts and high-severity findings will land here too.',
+        severity: 'info',
       });
       setTested(true);
       setTimeout(() => setTested(false), 2000);
@@ -471,9 +429,8 @@ function WebhookCard() {
           Notifications
         </CardTitle>
         <CardDescription className="text-xs">
-          Outbound webhook for Slack, Discord, or a generic JSON POST.
-          T-Rex BLOCK + high-severity Review findings fire here in future
-          releases; today the Test button validates the wire.
+          Outbound webhook for Slack, Discord, or a generic JSON POST. T-Rex BLOCK + high-severity
+          Review findings fire here in future releases; today the Test button validates the wire.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -501,7 +458,7 @@ function WebhookCard() {
               type="password"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder={config?.url_preview ?? "https://hooks.slack.com/services/…"}
+              placeholder={config?.url_preview ?? 'https://hooks.slack.com/services/…'}
               className="font-mono text-xs"
             />
           </div>

@@ -1,7 +1,7 @@
-import assert from "node:assert/strict";
-import { beforeEach, describe, it } from "node:test";
+import assert from 'node:assert/strict';
+import { beforeEach, describe, it } from 'node:test';
 
-import { trackAppLaunch, trackCoreAction } from "./analytics";
+import { trackAppLaunch, trackCoreAction } from './analytics';
 
 class MemoryStorage {
   private store = new Map<string, string>();
@@ -41,10 +41,10 @@ beforeEach(() => {
 
 const names = () => events.map((e) => e.event);
 
-describe("trackAppLaunch", () => {
-  it("emits signup only on the very first launch", () => {
+describe('trackAppLaunch', () => {
+  it('emits signup only on the very first launch', () => {
     trackAppLaunch();
-    assert.deepEqual(names(), ["signup"]);
+    assert.deepEqual(names(), ['signup']);
 
     events = [];
     trackAppLaunch();
@@ -52,33 +52,33 @@ describe("trackAppLaunch", () => {
     assert.deepEqual(names(), []);
   });
 
-  it("emits returned on later launches once the install has activated", () => {
+  it('emits returned on later launches once the install has activated', () => {
     trackAppLaunch(); // signup
-    trackCoreAction("review_run"); // activated + core_action
+    trackCoreAction('review_run'); // activated + core_action
     events = [];
 
     trackAppLaunch();
-    assert.deepEqual(names(), ["returned"]);
+    assert.deepEqual(names(), ['returned']);
   });
 });
 
-describe("trackCoreAction", () => {
-  it("emits activated once, then core_action on every call", () => {
-    trackCoreAction("review_run");
-    assert.deepEqual(names(), ["activated", "core_action"]);
+describe('trackCoreAction', () => {
+  it('emits activated once, then core_action on every call', () => {
+    trackCoreAction('review_run');
+    assert.deepEqual(names(), ['activated', 'core_action']);
 
     events = [];
-    trackCoreAction("repo_unpack");
+    trackCoreAction('repo_unpack');
     // Already activated — no second activated event.
-    assert.deepEqual(names(), ["core_action"]);
-    assert.equal(events[0].properties.action, "repo_unpack");
+    assert.deepEqual(names(), ['core_action']);
+    assert.equal(events[0].properties.action, 'repo_unpack');
   });
 
-  it("tags every event with the CodeVetter project id", () => {
-    trackCoreAction("review_run");
+  it('tags every event with the CodeVetter project id', () => {
+    trackCoreAction('review_run');
     assert.ok(events.length > 0);
     for (const event of events) {
-      assert.equal(event.properties.project_id, "CodeVetter");
+      assert.equal(event.properties.project_id, 'CodeVetter');
     }
   });
 });

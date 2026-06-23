@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Centralized keyboard shortcut manager.
@@ -11,7 +11,7 @@ export default function KeyboardShortcuts() {
   useEffect(() => {
     function isInputFocused(e: KeyboardEvent): boolean {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
       if ((e.target as HTMLElement)?.isContentEditable) return true;
       return false;
     }
@@ -20,23 +20,23 @@ export default function KeyboardShortcuts() {
       const meta = e.metaKey || e.ctrlKey;
 
       // Cmd+, — settings
-      if (meta && !e.shiftKey && e.key === ",") {
+      if (meta && !e.shiftKey && e.key === ',') {
         e.preventDefault();
-        navigate("/settings");
+        navigate('/settings');
         return;
       }
 
       // Cmd+F — focus search
-      if (meta && !e.shiftKey && e.key === "f") {
-        window.dispatchEvent(new CustomEvent("codevetter:focus-search"));
+      if (meta && !e.shiftKey && e.key === 'f') {
+        window.dispatchEvent(new CustomEvent('codevetter:focus-search'));
         return;
       }
 
       if (isInputFocused(e)) return;
     }
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [navigate]);
 
   return null;

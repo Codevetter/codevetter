@@ -7,12 +7,12 @@ import {
   Loader2,
   PlayCircle,
   XCircle,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   isTauriAvailable,
   listenToSandboxSteps,
@@ -20,7 +20,7 @@ import {
   type SandboxRunResult,
   type SandboxStep,
   type SandboxVerdict,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
 interface Props {
   repoPath: string;
@@ -38,13 +38,13 @@ interface PhaseEvent {
 }
 
 const PHASE_LABELS: Record<string, string> = {
-  setup: "Setting up worktree",
-  install: "Installing dependencies",
-  dev_server: "Starting dev server",
-  browser: "Driving browser",
-  tests: "Running project tests",
-  synthesize: "Synthesizing verdict",
-  done: "Done",
+  setup: 'Setting up worktree',
+  install: 'Installing dependencies',
+  dev_server: 'Starting dev server',
+  browser: 'Driving browser',
+  tests: 'Running project tests',
+  synthesize: 'Synthesizing verdict',
+  done: 'Done',
 };
 
 const VERDICT_LOOK: Record<
@@ -52,25 +52,25 @@ const VERDICT_LOOK: Record<
   { label: string; icon: typeof CheckCircle2; color: string; bg: string; border: string }
 > = {
   APPROVE: {
-    label: "APPROVE",
+    label: 'APPROVE',
     icon: CheckCircle2,
-    color: "text-emerald-300",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/40",
+    color: 'text-emerald-300',
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500/40',
   },
   NEEDS_REVIEW: {
-    label: "NEEDS REVIEW",
+    label: 'NEEDS REVIEW',
     icon: AlertTriangle,
-    color: "text-amber-300",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/40",
+    color: 'text-amber-300',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/40',
   },
   BLOCK: {
-    label: "BLOCK",
+    label: 'BLOCK',
     icon: XCircle,
-    color: "text-red-300",
-    bg: "bg-red-500/10",
-    border: "border-red-500/40",
+    color: 'text-red-300',
+    bg: 'bg-red-500/10',
+    border: 'border-red-500/40',
   },
 };
 
@@ -91,7 +91,7 @@ export default function SandboxRunner({
     drive_browser: true,
     run_tests: true,
   });
-  const [startPath, setStartPath] = useState<string>("");
+  const [startPath, setStartPath] = useState<string>('');
   const [showSteps, setShowSteps] = useState(false);
   const [showTestOutput, setShowTestOutput] = useState(false);
   const unlistenRef = useRef<(() => void) | null>(null);
@@ -108,16 +108,16 @@ export default function SandboxRunner({
 
   const canRun = useMemo(
     () => Boolean(repoPath && branch) && !running,
-    [repoPath, branch, running],
+    [repoPath, branch, running]
   );
 
   const handleRun = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError("Sandbox requires the desktop app.");
+      setError('Sandbox requires the desktop app.');
       return;
     }
     if (!repoPath || !branch) {
-      setError("Need a repo path and a selected branch.");
+      setError('Need a repo path and a selected branch.');
       return;
     }
     setError(null);
@@ -128,11 +128,8 @@ export default function SandboxRunner({
 
     const unlisten = await listenToSandboxSteps((step) => {
       setSteps((prev) => [...prev, step]);
-      if (step.kind === "phase") {
-        setPhases((prev) => [
-          ...prev,
-          { phase: step.phase, detail: step.detail, ts: Date.now() },
-        ]);
+      if (step.kind === 'phase') {
+        setPhases((prev) => [...prev, { phase: step.phase, detail: step.detail, ts: Date.now() }]);
       }
     });
     unlistenRef.current = unlisten;
@@ -177,13 +174,7 @@ export default function SandboxRunner({
             Beta
           </Badge>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleRun}
-          disabled={!canRun}
-          className="h-7"
-        >
+        <Button type="button" size="sm" onClick={handleRun} disabled={!canRun} className="h-7">
           {running ? (
             <>
               <Loader2 size={12} className="mr-1.5 animate-spin" />
@@ -199,10 +190,9 @@ export default function SandboxRunner({
       </div>
 
       <p className="mb-3 text-[10px] text-[var(--text-secondary)]">
-        Checks out <span className="font-mono">{branch || "—"}</span> in a
-        worktree, spins up the dev server, drives a real browser, runs your
-        tests, then returns a verdict so you don&apos;t have to read every
-        finding.
+        Checks out <span className="font-mono">{branch || '—'}</span> in a worktree, spins up the
+        dev server, drives a real browser, runs your tests, then returns a verdict so you don&apos;t
+        have to read every finding.
       </p>
 
       {/* Options */}
@@ -251,9 +241,7 @@ export default function SandboxRunner({
       {result && <VerdictBanner result={result} />}
 
       {/* Live phase log (during run) */}
-      {(running || phases.length > 0) && (
-        <PhaseTimeline phases={phases} running={running} />
-      )}
+      {(running || phases.length > 0) && <PhaseTimeline phases={phases} running={running} />}
 
       {/* Findings (if any) */}
       {result && result.findings.length > 0 && (
@@ -269,11 +257,11 @@ export default function SandboxRunner({
                   <Badge
                     variant="outline"
                     className={
-                      f.severity === "high"
-                        ? "border-red-500/40 bg-red-500/10 text-[10px] text-red-200"
-                        : f.severity === "low"
-                          ? "border-slate-500/40 bg-slate-500/10 text-[10px] text-slate-300"
-                          : "border-amber-500/40 bg-amber-500/10 text-[10px] text-amber-200"
+                      f.severity === 'high'
+                        ? 'border-red-500/40 bg-red-500/10 text-[10px] text-red-200'
+                        : f.severity === 'low'
+                          ? 'border-slate-500/40 bg-slate-500/10 text-[10px] text-slate-300'
+                          : 'border-amber-500/40 bg-amber-500/10 text-[10px] text-amber-200'
                     }
                   >
                     {f.severity}
@@ -299,22 +287,20 @@ export default function SandboxRunner({
       )}
 
       {/* Collapsible step trace */}
-      {steps.filter((s) => s.kind === "agent").length > 0 && (
+      {steps.filter((s) => s.kind === 'agent').length > 0 && (
         <Collapsible
           open={showSteps}
           toggle={() => setShowSteps(!showSteps)}
-          label={`Browser steps (${steps.filter((s) => s.kind === "agent").length})`}
+          label={`Browser steps (${steps.filter((s) => s.kind === 'agent').length})`}
         >
           <div className="mt-1 space-y-1 font-mono text-[10px]">
             {steps
-              .filter((s): s is Extract<SandboxStep, { kind: "agent" }> => s.kind === "agent")
+              .filter((s): s is Extract<SandboxStep, { kind: 'agent' }> => s.kind === 'agent')
               .map((s, i) => (
                 <div key={i} className="text-[var(--text-secondary)]">
-                  <span className="text-[var(--cv-accent)]">{s.step.index}.</span>{" "}
+                  <span className="text-[var(--cv-accent)]">{s.step.index}.</span>{' '}
                   {s.step.action.type} @ {s.step.url}
-                  {s.step.error && (
-                    <span className="text-red-300"> [error: {s.step.error}]</span>
-                  )}
+                  {s.step.error && <span className="text-red-300"> [error: {s.step.error}]</span>}
                 </div>
               ))}
           </div>
@@ -328,20 +314,18 @@ export default function SandboxRunner({
           toggle={() => setShowTestOutput(!showTestOutput)}
           label={`Test output — ${
             result.test_result.skipped_reason
-              ? "skipped"
+              ? 'skipped'
               : result.test_result.exit_code === 0
-                ? "passed"
+                ? 'passed'
                 : `exit ${result.test_result.exit_code}`
           }`}
         >
           <div className="mt-1 font-mono text-[10px]">
             <div className="text-[var(--text-secondary)]">
-              $ {result.test_result.command || "(no command)"}
+              $ {result.test_result.command || '(no command)'}
             </div>
             {result.test_result.skipped_reason && (
-              <div className="mt-1 text-amber-300/80">
-                {result.test_result.skipped_reason}
-              </div>
+              <div className="mt-1 text-amber-300/80">{result.test_result.skipped_reason}</div>
             )}
             {result.test_result.stdout_tail && (
               <pre className="mt-1 whitespace-pre-wrap text-[var(--text-primary)]">
@@ -375,8 +359,8 @@ function OptionCheckbox({
     <label
       className={
         disabled
-          ? "flex cursor-not-allowed items-center gap-1.5 opacity-50"
-          : "flex cursor-pointer items-center gap-1.5"
+          ? 'flex cursor-not-allowed items-center gap-1.5 opacity-50'
+          : 'flex cursor-pointer items-center gap-1.5'
       }
     >
       <input
@@ -415,13 +399,7 @@ function VerdictBanner({ result }: { result: SandboxRunResult }) {
   );
 }
 
-function PhaseTimeline({
-  phases,
-  running,
-}: {
-  phases: PhaseEvent[];
-  running: boolean;
-}) {
+function PhaseTimeline({ phases, running }: { phases: PhaseEvent[]; running: boolean }) {
   if (phases.length === 0) return null;
   return (
     <div className="mb-2 rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)] p-2">
@@ -429,17 +407,18 @@ function PhaseTimeline({
       <ol className="space-y-0.5">
         {phases.map((p, i) => {
           const isLast = i === phases.length - 1;
-          const stillRunning = running && isLast && p.phase !== "done";
+          const stillRunning = running && isLast && p.phase !== 'done';
           return (
             <li key={i} className="flex items-start gap-2 text-[11px]">
               {stillRunning ? (
-                <Loader2 size={11} className="mt-0.5 shrink-0 animate-spin text-[var(--cv-accent)]" />
+                <Loader2
+                  size={11}
+                  className="mt-0.5 shrink-0 animate-spin text-[var(--cv-accent)]"
+                />
               ) : (
                 <CheckCircle2 size={11} className="mt-0.5 shrink-0 text-emerald-400/60" />
               )}
-              <span className="text-[var(--text-primary)]">
-                {PHASE_LABELS[p.phase] ?? p.phase}
-              </span>
+              <span className="text-[var(--text-primary)]">{PHASE_LABELS[p.phase] ?? p.phase}</span>
               {p.detail && (
                 <span className="font-mono text-[10px] text-[var(--text-secondary)]">
                   · {p.detail}

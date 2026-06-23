@@ -1,13 +1,13 @@
-import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   isPermissionGranted,
   requestPermission,
   sendNotification,
-} from "@tauri-apps/plugin-notification";
+} from '@tauri-apps/plugin-notification';
 
-import type { CommitIntentFixture } from "@/lib/intent-debugger/types";
-import { buildActiveStandardsContext } from "@/lib/review-service";
+import type { CommitIntentFixture } from '@/lib/intent-debugger/types';
+import { buildActiveStandardsContext } from '@/lib/review-service';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -15,21 +15,17 @@ import { buildActiveStandardsContext } from "@/lib/review-service";
  * Safely invoke a Tauri command. Returns `undefined` when running outside
  * of the Tauri webview (e.g. SSR, `next dev`, or Storybook).
  */
-export async function safeInvoke<T>(
-  cmd: string,
-  args?: Record<string, unknown>
-): Promise<T> {
+export async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   try {
     return await invoke<T>(cmd, args);
   } catch (err) {
     // If Tauri APIs simply aren't available (SSR / browser dev), throw a
     // distinguishable error so callers can show a fallback UI.
     if (
-      typeof window === "undefined" ||
-      typeof (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ ===
-        "undefined"
+      typeof window === 'undefined' ||
+      typeof (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ === 'undefined'
     ) {
-      throw new Error("TAURI_NOT_AVAILABLE", { cause: err });
+      throw new Error('TAURI_NOT_AVAILABLE', { cause: err });
     }
     throw err;
   }
@@ -40,9 +36,8 @@ export async function safeInvoke<T>(
  */
 export function isTauriAvailable(): boolean {
   return (
-    typeof window !== "undefined" &&
-    typeof (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ !==
-      "undefined"
+    typeof window !== 'undefined' &&
+    typeof (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ !== 'undefined'
   );
 }
 
@@ -114,7 +109,7 @@ export interface SessionScoreDimension {
   id: string;
   label: string;
   score: number;
-  status: "strong" | "watch" | "needs_work" | string;
+  status: 'strong' | 'watch' | 'needs_work' | string;
   evidence_refs: SessionEvidenceRef[];
   anti_gaming: string;
   next_action: string;
@@ -122,8 +117,8 @@ export interface SessionScoreDimension {
 
 export interface SessionRecommendation {
   id: string;
-  severity: "high" | "medium" | "low" | string;
-  target: "developer" | "repo_readiness" | string;
+  severity: 'high' | 'medium' | 'low' | string;
+  target: 'developer' | 'repo_readiness' | string;
   title: string;
   next_action: string;
   evidence_refs: SessionEvidenceRef[];
@@ -260,7 +255,7 @@ export interface ResourceSnapshot {
 }
 
 export async function getResourceSnapshot(): Promise<ResourceSnapshot> {
-  return safeInvoke<ResourceSnapshot>("get_resource_snapshot");
+  return safeInvoke<ResourceSnapshot>('get_resource_snapshot');
 }
 
 export interface TriggerIndexResult {
@@ -402,9 +397,9 @@ export interface LinearUser {
 
 export async function getLocalDiff(
   repoPath: string,
-  diffRange?: string,
+  diffRange?: string
 ): Promise<{ diff: string; files: Array<{ path: string; status: string }>; empty: boolean }> {
-  return safeInvoke("get_local_diff", {
+  return safeInvoke('get_local_diff', {
     repoPath,
     diffRange: diffRange ?? null,
   });
@@ -434,13 +429,13 @@ export interface SaveReviewInput {
 export async function saveReview(
   input: SaveReviewInput
 ): Promise<{ review_id: string; status: string; score: number; findings_count: number }> {
-  return safeInvoke("save_review", input as unknown as Record<string, unknown>);
+  return safeInvoke('save_review', input as unknown as Record<string, unknown>);
 }
 
 export async function getReview(
   id: string
 ): Promise<{ review: LocalReviewRow; findings: LocalReviewFindingRow[] }> {
-  return safeInvoke("get_review", { id });
+  return safeInvoke('get_review', { id });
 }
 
 export async function listReviews(
@@ -448,7 +443,7 @@ export async function listReviews(
   offset?: number,
   repoPath?: string
 ): Promise<LocalReviewRow[]> {
-  const resp = await safeInvoke<ReviewsResponse>("list_reviews", {
+  const resp = await safeInvoke<ReviewsResponse>('list_reviews', {
     limit: limit ?? 50,
     offset: offset ?? 0,
     repo_path: repoPath ?? null,
@@ -467,7 +462,7 @@ export interface CliReviewFinding {
   line?: number;
   confidence?: number;
   /** "inspection" (LLM review) or "execution" (T-Rex sandbox). Undefined on legacy rows; treat as "inspection". */
-  discovery_method?: "inspection" | "execution";
+  discovery_method?: 'inspection' | 'execution';
 }
 
 export interface EvidenceCandidate {
@@ -505,7 +500,7 @@ export interface ReviewProcedureEvent {
   id: string;
   review_id: string;
   step_id: string;
-  status: "satisfied" | "blocked" | "observed";
+  status: 'satisfied' | 'blocked' | 'observed';
   source: string;
   summary: string;
   artifact?: string | null;
@@ -586,7 +581,7 @@ export interface ReviewProcedureEvent {
   id: string;
   review_id: string;
   step_id: string;
-  status: "satisfied" | "blocked" | "observed";
+  status: 'satisfied' | 'blocked' | 'observed';
   source: string;
   summary: string;
   artifact?: string | null;
@@ -656,13 +651,13 @@ export interface CliReviewResult {
 export async function recordReviewProcedureEvent(input: {
   reviewId: string;
   stepId: string;
-  status: ReviewProcedureEvent["status"];
+  status: ReviewProcedureEvent['status'];
   source: string;
   summary: string;
   artifact?: string | null;
   metadata?: Record<string, unknown> | null;
 }): Promise<ReviewProcedureEvent> {
-  return safeInvoke("record_review_procedure_event", {
+  return safeInvoke('record_review_procedure_event', {
     reviewId: input.reviewId,
     stepId: input.stepId,
     status: input.status,
@@ -673,12 +668,10 @@ export async function recordReviewProcedureEvent(input: {
   });
 }
 
-export async function listReviewProcedureEvents(
-  reviewId: string,
-): Promise<ReviewProcedureEvent[]> {
+export async function listReviewProcedureEvents(reviewId: string): Promise<ReviewProcedureEvent[]> {
   const resp = await safeInvoke<{ events: ReviewProcedureEvent[] }>(
-    "list_review_procedure_events",
-    { reviewId },
+    'list_review_procedure_events',
+    { reviewId }
   );
   return resp.events;
 }
@@ -712,18 +705,18 @@ export async function suggestReviewVerificationCommands(input: {
     command: string;
     date?: string;
     source?: string;
-    status?: "passed" | "failed" | "stale" | "unknown";
+    status?: 'passed' | 'failed' | 'stale' | 'unknown';
     artifacts?: string[];
   }>;
 }): Promise<ReviewVerificationCommandSuggestion[]> {
   const resp = await safeInvoke<{ commands: ReviewVerificationCommandSuggestion[] }>(
-    "suggest_review_verification_commands",
+    'suggest_review_verification_commands',
     {
       repoPath: input.repoPath,
       changedFiles: input.changedFiles ?? null,
       findingFilePath: input.findingFilePath ?? null,
       historyCommands: input.historyCommands ?? null,
-    },
+    }
   );
   return resp.commands;
 }
@@ -736,7 +729,7 @@ export async function runReviewVerificationCommand(input: {
   timeoutMs?: number | null;
   runId?: string | null;
 }): Promise<ReviewVerificationCommandResult> {
-  return safeInvoke("run_review_verification_command", {
+  return safeInvoke('run_review_verification_command', {
     repoPath: input.repoPath,
     reviewId: input.reviewId,
     command: input.command,
@@ -747,9 +740,9 @@ export async function runReviewVerificationCommand(input: {
 }
 
 export async function cancelReviewVerificationCommand(
-  runId: string,
+  runId: string
 ): Promise<{ run_id: string; canceled: boolean; reason?: string; pid?: number }> {
-  return safeInvoke("cancel_review_verification_command", { runId });
+  return safeInvoke('cancel_review_verification_command', { runId });
 }
 
 // History context signals for review intent (recent commits on touched files,
@@ -792,7 +785,7 @@ export interface RepoHistoryContext {
     session_id?: string | null;
     review_id?: string | null;
     exit_code?: number | null;
-    status?: "passed" | "failed" | "stale" | "unknown";
+    status?: 'passed' | 'failed' | 'stale' | 'unknown';
     status_reason?: string;
     artifacts?: string[];
     context_excerpt?: string[];
@@ -819,11 +812,11 @@ export interface RepoHistoryContext {
 export interface RawSessionContextItem {
   line: number;
   role: string;
-  kind: "command" | "result" | "message" | "raw";
+  kind: 'command' | 'result' | 'message' | 'raw';
   text: string;
-  status?: "passed" | "failed" | "stale" | "unknown";
+  status?: 'passed' | 'failed' | 'stale' | 'unknown';
   artifacts?: string[];
-  relative_position?: "before" | "target" | "after";
+  relative_position?: 'before' | 'target' | 'after';
   distance_to_target?: number;
   nearest_command_line?: number | null;
   highlight: boolean;
@@ -874,14 +867,14 @@ export async function runCliReview(
   agent?: string,
   options?: {
     qaRuns?: ReviewQaRunEvidence[];
-  },
+  }
 ): Promise<CliReviewResult> {
   const standardsContext = buildActiveStandardsContext();
   const projectWithStandards = projectDescription.trim()
     ? `${projectDescription}\n\n${standardsContext}`
     : standardsContext;
 
-  return safeInvoke("run_cli_review", {
+  return safeInvoke('run_cli_review', {
     repoPath,
     diffRange,
     projectDescription: projectWithStandards,
@@ -894,20 +887,17 @@ export async function runCliReview(
 export async function fixFindings(
   repoPath: string,
   findings: Array<CliReviewFinding & Record<string, unknown>>,
-  agent?: string,
+  agent?: string
 ): Promise<FixFindingsResult> {
-  return safeInvoke("fix_findings", {
+  return safeInvoke('fix_findings', {
     repoPath,
     findings,
     agent: agent ?? null,
   });
 }
 
-export async function revertFiles(
-  repoPath: string,
-  files: string[],
-): Promise<RevertFilesResult> {
-  return safeInvoke("revert_files", {
+export async function revertFiles(repoPath: string, files: string[]): Promise<RevertFilesResult> {
+  return safeInvoke('revert_files', {
     repoPath,
     files,
   });
@@ -916,9 +906,9 @@ export async function revertFiles(
 export async function revertDiffHunk(
   repoPath: string,
   filePath: string,
-  hunk: string,
+  hunk: string
 ): Promise<RevertDiffHunkResult> {
-  return safeInvoke("revert_diff_hunk", {
+  return safeInvoke('revert_diff_hunk', {
     repoPath,
     filePath,
     hunk,
@@ -927,7 +917,7 @@ export async function revertDiffHunk(
 
 // ─── Blast Radius (graph-aware PR analysis) ──────────────────────────────────
 
-export type BlastRisk = "safe" | "medium" | "high";
+export type BlastRisk = 'safe' | 'medium' | 'high';
 
 export interface BlastCallerSite {
   file: string;
@@ -955,9 +945,9 @@ export interface BlastRadiusReport {
 
 export async function analyzeBlastRadius(
   repoPath: string,
-  diffRange: string,
+  diffRange: string
 ): Promise<BlastRadiusReport> {
-  return safeInvoke("analyze_blast_radius", {
+  return safeInvoke('analyze_blast_radius', {
     repoPath,
     diffRange,
   });
@@ -965,9 +955,9 @@ export async function analyzeBlastRadius(
 
 export async function getRepoHistoryContext(
   repoPath: string,
-  diffRange: string,
+  diffRange: string
 ): Promise<RepoHistoryContext> {
-  return safeInvoke("get_repo_history_context", {
+  return safeInvoke('get_repo_history_context', {
     repoPath,
     diffRange,
   });
@@ -977,9 +967,9 @@ export async function readRawSessionContext(
   filePath: string,
   line: number,
   contextBefore?: number,
-  contextAfter?: number,
+  contextAfter?: number
 ): Promise<RawSessionContextResult> {
-  return safeInvoke("read_raw_session_context", {
+  return safeInvoke('read_raw_session_context', {
     filePath,
     line,
     contextBefore: contextBefore ?? 8,
@@ -990,17 +980,17 @@ export async function readRawSessionContext(
 export async function mergeFix(
   repoPath: string,
   worktreeBranch: string,
-  worktreePath: string,
+  worktreePath: string
 ): Promise<{ success: boolean; merged: boolean }> {
-  return safeInvoke("merge_fix", { repoPath, worktreeBranch, worktreePath });
+  return safeInvoke('merge_fix', { repoPath, worktreeBranch, worktreePath });
 }
 
 export async function discardFix(
   repoPath: string,
   worktreeBranch: string,
-  worktreePath: string,
+  worktreePath: string
 ): Promise<{ success: boolean; discarded: boolean }> {
-  return safeInvoke("discard_fix", { repoPath, worktreeBranch, worktreePath });
+  return safeInvoke('discard_fix', { repoPath, worktreeBranch, worktreePath });
 }
 
 // ─── Session Commands ────────────────────────────────────────────────────────
@@ -1011,7 +1001,7 @@ export async function listSessions(
   limit?: number,
   offset?: number
 ): Promise<SessionRow[]> {
-  const resp = await safeInvoke<SessionsResponse>("list_sessions", {
+  const resp = await safeInvoke<SessionsResponse>('list_sessions', {
     query: query ?? null,
     project: project ?? null,
     limit: limit ?? 50,
@@ -1022,15 +1012,12 @@ export async function listSessions(
 
 export async function listSessionMessageArchive(
   sessionId: string,
-  limit?: number,
+  limit?: number
 ): Promise<SessionMessageArchiveRow[]> {
-  const resp = await safeInvoke<SessionMessageArchiveResponse>(
-    "list_session_message_archive",
-    {
-      sessionId,
-      limit: limit ?? 200,
-    },
-  );
+  const resp = await safeInvoke<SessionMessageArchiveResponse>('list_session_message_archive', {
+    sessionId,
+    limit: limit ?? 200,
+  });
   return resp.messages;
 }
 
@@ -1038,24 +1025,24 @@ export async function searchSessionMessageArchive(
   query: string,
   adapterId?: string,
   kind?: string,
-  limit?: number,
+  limit?: number
 ): Promise<SessionMessageArchiveSearchRow[]> {
   const resp = await safeInvoke<SessionMessageArchiveSearchResponse>(
-    "search_session_message_archive",
+    'search_session_message_archive',
     {
       query,
       adapterId: adapterId ?? null,
       kind: kind ?? null,
       limit: limit ?? 50,
-    },
+    }
   );
   return resp.results;
 }
 
 export async function listenToSessionArchiveUpdates(
-  handler: (event: SessionArchiveUpdatedEvent) => void,
+  handler: (event: SessionArchiveUpdatedEvent) => void
 ): Promise<UnlistenFn> {
-  return listen<SessionArchiveUpdatedEvent>("session_archive_updated", (event) => {
+  return listen<SessionArchiveUpdatedEvent>('session_archive_updated', (event) => {
     handler(event.payload);
   });
 }
@@ -1063,11 +1050,11 @@ export async function listenToSessionArchiveUpdates(
 export async function getSession(
   id: string
 ): Promise<{ session: SessionRow; messages: MessageRow[] }> {
-  return safeInvoke<SessionDetailResponse>("get_session", { id });
+  return safeInvoke<SessionDetailResponse>('get_session', { id });
 }
 
 export async function searchMessages(query: string): Promise<SearchResult[]> {
-  const resp = await safeInvoke<SearchResponse>("search_messages", { query });
+  const resp = await safeInvoke<SearchResponse>('search_messages', { query });
   return resp.results;
 }
 
@@ -1075,7 +1062,7 @@ export async function getAiSessionScorecard(input?: {
   project?: string | null;
   limit?: number | null;
 }): Promise<SessionScorecard> {
-  return safeInvoke("get_ai_session_scorecard", {
+  return safeInvoke('get_ai_session_scorecard', {
     project: input?.project ?? null,
     limit: input?.limit ?? 50,
   });
@@ -1085,13 +1072,10 @@ export async function listAiSessionAdapterRuns(input?: {
   project?: string | null;
   limit?: number | null;
 }): Promise<SessionAdapterRun[]> {
-  const resp = await safeInvoke<{ runs: SessionAdapterRun[] }>(
-    "list_ai_session_adapter_runs",
-    {
-      project: input?.project ?? null,
-      limit: input?.limit ?? 20,
-    },
-  );
+  const resp = await safeInvoke<{ runs: SessionAdapterRun[] }>('list_ai_session_adapter_runs', {
+    project: input?.project ?? null,
+    limit: input?.limit ?? 20,
+  });
   return resp.runs;
 }
 
@@ -1110,15 +1094,15 @@ export async function listSessionSubagents(
   sessionId: string,
   projectPath: string
 ): Promise<SubagentSummary[]> {
-  const resp = await safeInvoke<{ subagents: SubagentSummary[] }>(
-    "list_session_subagents",
-    { sessionId: sessionId, projectPath: projectPath }
-  );
+  const resp = await safeInvoke<{ subagents: SubagentSummary[] }>('list_session_subagents', {
+    sessionId: sessionId,
+    projectPath: projectPath,
+  });
   return resp.subagents;
 }
 
 export async function deleteSession(sessionId: string): Promise<{ deleted: boolean }> {
-  return safeInvoke("delete_session", { sessionId: sessionId });
+  return safeInvoke('delete_session', { sessionId: sessionId });
 }
 
 // ─── Session Merge Commands ──────────────────────────────────────────────────
@@ -1128,7 +1112,7 @@ export async function mergeSessions(
   targetProjectId: string,
   mergedName?: string
 ): Promise<{ merged_session_id: string }> {
-  return safeInvoke("merge_sessions", {
+  return safeInvoke('merge_sessions', {
     sessionIds: sessionIds,
     targetProjectId: targetProjectId,
     mergedName: mergedName ?? null,
@@ -1139,7 +1123,7 @@ export async function mergeProjects(
   sourceProjectIds: string[],
   targetProjectId: string
 ): Promise<{ moved_sessions: number }> {
-  return safeInvoke("merge_projects", {
+  return safeInvoke('merge_projects', {
     sourceProjectIds: sourceProjectIds,
     targetProjectId: targetProjectId,
   });
@@ -1148,31 +1132,31 @@ export async function mergeProjects(
 // ─── Indexing Commands ───────────────────────────────────────────────────────
 
 export async function triggerIndex(): Promise<TriggerIndexResult> {
-  return safeInvoke<TriggerIndexResult>("trigger_index");
+  return safeInvoke<TriggerIndexResult>('trigger_index');
 }
 
 export async function getTokenUsageStats(): Promise<TokenUsageStats> {
-  return safeInvoke<TokenUsageStats>("get_token_usage_stats");
+  return safeInvoke<TokenUsageStats>('get_token_usage_stats');
 }
 
 export async function getAgentUsageBreakdown(): Promise<AgentUsageRow[]> {
-  return safeInvoke<AgentUsageRow[]>("get_agent_usage_breakdown");
+  return safeInvoke<AgentUsageRow[]>('get_agent_usage_breakdown');
 }
 
 export async function getAgentUsageByDay(days?: number): Promise<AgentDayUsage[]> {
-  return safeInvoke<AgentDayUsage[]>("get_agent_usage_by_day", {
+  return safeInvoke<AgentDayUsage[]>('get_agent_usage_by_day', {
     days: days ?? null,
   });
 }
 
 export async function getUsageByProject(limit?: number): Promise<ProjectUsage[]> {
-  return safeInvoke<ProjectUsage[]>("get_usage_by_project", {
+  return safeInvoke<ProjectUsage[]>('get_usage_by_project', {
     limit: limit ?? null,
   });
 }
 
 export async function getUsageByModel(): Promise<ModelUsage[]> {
-  return safeInvoke<ModelUsage[]>("get_usage_by_model");
+  return safeInvoke<ModelUsage[]>('get_usage_by_model');
 }
 
 // ─── Engineering Intelligence (/intel) ──────────────────────────────────────
@@ -1293,46 +1277,37 @@ export interface PricingRow {
   cache_write_per_mtok: number;
 }
 
-export async function attributeRepoCommits(
-  repoPath: string,
-): Promise<RepoAttributionReport> {
-  return safeInvoke<RepoAttributionReport>("attribute_repo_commits", {
+export async function attributeRepoCommits(repoPath: string): Promise<RepoAttributionReport> {
+  return safeInvoke<RepoAttributionReport>('attribute_repo_commits', {
     repoPath,
   });
 }
 
-export async function getToolBreakdown(
-  sinceDays: number | null,
-): Promise<ToolBreakdownRow[]> {
-  return safeInvoke<ToolBreakdownRow[]>("get_tool_breakdown", { sinceDays });
+export async function getToolBreakdown(sinceDays: number | null): Promise<ToolBreakdownRow[]> {
+  return safeInvoke<ToolBreakdownRow[]>('get_tool_breakdown', { sinceDays });
 }
 
 export async function getPricingTable(): Promise<PricingRow[]> {
-  return safeInvoke<PricingRow[]>("get_pricing_table");
+  return safeInvoke<PricingRow[]>('get_pricing_table');
 }
 
-export async function sendTrayNotification(
-  title: string,
-  body: string
-): Promise<void> {
+export async function sendTrayNotification(title: string, body: string): Promise<void> {
   let permissionGranted = await isPermissionGranted();
   if (!permissionGranted) {
     const permission = await requestPermission();
-    permissionGranted = permission === "granted";
+    permissionGranted = permission === 'granted';
   }
 
   if (!permissionGranted) {
-    throw new Error("NOTIFICATION_PERMISSION_DENIED");
+    throw new Error('NOTIFICATION_PERMISSION_DENIED');
   }
 
   sendNotification({ title, body });
 }
 
 export async function getIndexStats(): Promise<IndexStats> {
-  return safeInvoke<IndexStats>("get_index_stats");
+  return safeInvoke<IndexStats>('get_index_stats');
 }
-
-
 
 // ─── Provider Account Commands ──────────────────────────────────────────────
 
@@ -1354,7 +1329,7 @@ export interface AccountUsage {
   plan: string | null;
   // Baseline
   weekly_baseline: number | null;
-  baseline_source: "custom" | "avg_4w" | "last_week" | "none";
+  baseline_source: 'custom' | 'avg_4w' | 'last_week' | 'none';
   last_week_cost: number;
   avg_week_cost: number;
   // This week
@@ -1385,7 +1360,7 @@ export interface AccountUsage {
 }
 
 export async function listProviderAccounts(): Promise<ProviderAccount[]> {
-  const resp = await safeInvoke<{ accounts: ProviderAccount[] }>("list_provider_accounts");
+  const resp = await safeInvoke<{ accounts: ProviderAccount[] }>('list_provider_accounts');
   return resp.accounts;
 }
 
@@ -1397,7 +1372,7 @@ export async function createProviderAccount(opts: {
   plan?: string;
   weeklyLimit?: number;
 }): Promise<{ id: string; account: ProviderAccount }> {
-  return safeInvoke("create_provider_account", {
+  return safeInvoke('create_provider_account', {
     name: opts.name,
     provider: opts.provider,
     apiKey: opts.apiKey ?? null,
@@ -1416,7 +1391,7 @@ export async function updateProviderAccount(opts: {
   plan?: string;
   weeklyLimit?: number;
 }): Promise<{ id: string }> {
-  return safeInvoke("update_provider_account", {
+  return safeInvoke('update_provider_account', {
     id: opts.id,
     name: opts.name,
     provider: opts.provider,
@@ -1428,11 +1403,11 @@ export async function updateProviderAccount(opts: {
 }
 
 export async function deleteProviderAccount(id: string): Promise<void> {
-  await safeInvoke("delete_provider_account", { id });
+  await safeInvoke('delete_provider_account', { id });
 }
 
 export async function checkAccountUsage(accountId: string): Promise<AccountUsage> {
-  return safeInvoke("check_account_usage", { accountId: accountId });
+  return safeInvoke('check_account_usage', { accountId: accountId });
 }
 
 export interface RateLimitWindow {
@@ -1459,12 +1434,26 @@ export interface LiveUsageResult {
   today?: {
     sessions: number;
     messages: number;
-    tokens: { input: number; output: number; cached: number; thoughts: number; tool: number; total: number };
+    tokens: {
+      input: number;
+      output: number;
+      cached: number;
+      thoughts: number;
+      tool: number;
+      total: number;
+    };
   };
   models?: Array<{
     model: string;
     requests: number;
-    tokens: { input: number; output: number; cached: number; thoughts: number; tool: number; total: number };
+    tokens: {
+      input: number;
+      output: number;
+      cached: number;
+      thoughts: number;
+      tool: number;
+      total: number;
+    };
   }>;
   api?: {
     supported: boolean;
@@ -1517,8 +1506,11 @@ export interface LiveUsageResult {
   };
 }
 
-export async function checkLiveUsage(provider: string, credentialKey?: string): Promise<LiveUsageResult> {
-  return safeInvoke("check_live_usage", { provider, credentialKey: credentialKey ?? null });
+export async function checkLiveUsage(
+  provider: string,
+  credentialKey?: string
+): Promise<LiveUsageResult> {
+  return safeInvoke('check_live_usage', { provider, credentialKey: credentialKey ?? null });
 }
 
 export interface ProviderUsageLedgerRow {
@@ -1540,13 +1532,10 @@ export interface ProviderUsageLedgerRow {
   observed_at: string;
 }
 
-export async function listProviderUsageLedger(
-  limit?: number,
-): Promise<ProviderUsageLedgerRow[]> {
-  const resp = await safeInvoke<{ rows: ProviderUsageLedgerRow[] }>(
-    "list_provider_usage_ledger",
-    { limit: limit ?? 12 },
-  );
+export async function listProviderUsageLedger(limit?: number): Promise<ProviderUsageLedgerRow[]> {
+  const resp = await safeInvoke<{ rows: ProviderUsageLedgerRow[] }>('list_provider_usage_ledger', {
+    limit: limit ?? 12,
+  });
   return resp.rows;
 }
 
@@ -1564,24 +1553,18 @@ export async function detectProviderAccounts(): Promise<{
   created: number;
   accounts: ProviderAccount[];
 }> {
-  return safeInvoke("detect_provider_accounts");
+  return safeInvoke('detect_provider_accounts');
 }
 
 // ─── Preferences Commands ────────────────────────────────────────────────────
 
 export async function getPreference(key: string): Promise<string | null> {
-  const resp = await safeInvoke<{ key: string; value: string | null }>(
-    "get_preference",
-    { key }
-  );
+  const resp = await safeInvoke<{ key: string; value: string | null }>('get_preference', { key });
   return resp.value;
 }
 
-export async function setPreference(
-  key: string,
-  value: string
-): Promise<void> {
-  return safeInvoke("set_preference", { key, value });
+export async function setPreference(key: string, value: string): Promise<void> {
+  return safeInvoke('set_preference', { key, value });
 }
 
 // ─── Setup / Onboarding Commands ────────────────────────────────────────────
@@ -1593,7 +1576,7 @@ export interface PrerequisiteStatus {
 }
 
 export async function checkPrerequisites(): Promise<PrerequisiteStatus> {
-  return safeInvoke("check_prerequisites");
+  return safeInvoke('check_prerequisites');
 }
 
 // ─── Git Commands ───────────────────────────────────────────────────────────
@@ -1603,10 +1586,8 @@ export interface GitBranchesResult {
   current: string | null;
 }
 
-export async function listGitBranches(
-  repoPath: string
-): Promise<GitBranchesResult> {
-  return safeInvoke("list_git_branches", { repoPath: repoPath });
+export async function listGitBranches(repoPath: string): Promise<GitBranchesResult> {
+  return safeInvoke('list_git_branches', { repoPath: repoPath });
 }
 
 export interface GitRemoteInfo {
@@ -1615,10 +1596,8 @@ export interface GitRemoteInfo {
   repo: string;
 }
 
-export async function getGitRemoteInfo(
-  repoPath: string
-): Promise<GitRemoteInfo> {
-  return safeInvoke("get_git_remote_info", { repoPath: repoPath });
+export async function getGitRemoteInfo(repoPath: string): Promise<GitRemoteInfo> {
+  return safeInvoke('get_git_remote_info', { repoPath: repoPath });
 }
 
 export interface PullRequest {
@@ -1629,13 +1608,10 @@ export interface PullRequest {
   author: { login: string } | null;
 }
 
-export async function listPullRequests(
-  repoPath: string
-): Promise<PullRequest[]> {
-  const resp = await safeInvoke<{ pull_requests: PullRequest[] }>(
-    "list_pull_requests",
-    { repoPath: repoPath }
-  );
+export async function listPullRequests(repoPath: string): Promise<PullRequest[]> {
+  const resp = await safeInvoke<{ pull_requests: PullRequest[] }>('list_pull_requests', {
+    repoPath: repoPath,
+  });
   return resp.pull_requests;
 }
 
@@ -1650,10 +1626,10 @@ export async function listCommitIntents(
   repoPath: string,
   limit = 8
 ): Promise<CommitIntentFixture[]> {
-  const resp = await safeInvoke<{ commits: CommitIntentFixture[] }>(
-    "list_commit_intents",
-    { repoPath, limit }
-  );
+  const resp = await safeInvoke<{ commits: CommitIntentFixture[] }>('list_commit_intents', {
+    repoPath,
+    limit,
+  });
   return resp.commits;
 }
 
@@ -1661,20 +1637,20 @@ export async function listCommitIntents(
 
 export interface GitHubAuthStatus {
   connected: boolean;
-  method: "pat" | "env" | "gh_cli" | null;
+  method: 'pat' | 'env' | 'gh_cli' | null;
   username: string | null;
   scopes: string | null;
 }
 
 export async function checkGitHubAuth(): Promise<GitHubAuthStatus> {
-  return safeInvoke("check_github_auth");
+  return safeInvoke('check_github_auth');
 }
 
 export async function syncGitHubToken(): Promise<{
   synced: boolean;
   username: string;
 }> {
-  return safeInvoke("sync_github_token");
+  return safeInvoke('sync_github_token');
 }
 
 // ─── Directory Picker ───────────────────────────────────────────────────────
@@ -1683,15 +1659,13 @@ export async function syncGitHubToken(): Promise<{
  * Opens a native OS directory picker dialog.
  * Returns the selected path, or null if cancelled.
  */
-export async function pickDirectory(
-  title?: string
-): Promise<string | null> {
+export async function pickDirectory(title?: string): Promise<string | null> {
   try {
-    const { open } = await import("@tauri-apps/plugin-dialog");
+    const { open } = await import('@tauri-apps/plugin-dialog');
     const selected = await open({
       directory: true,
       multiple: false,
-      title: title ?? "Select Directory",
+      title: title ?? 'Select Directory',
     });
     // open() returns string | string[] | null
     if (Array.isArray(selected)) return selected[0] ?? null;
@@ -1706,7 +1680,7 @@ export async function pickDirectory(
 export function onIndexComplete(
   callback: (result: TriggerIndexResult) => void
 ): Promise<UnlistenFn> {
-  return listen<TriggerIndexResult>("index-complete", (event) => {
+  return listen<TriggerIndexResult>('index-complete', (event) => {
     callback(event.payload);
   });
 }
@@ -1731,17 +1705,14 @@ export async function listDirectoryTree(
   repoPath: string,
   maxDepth?: number
 ): Promise<{ entries: FileEntry[] }> {
-  return safeInvoke("list_directory_tree", {
+  return safeInvoke('list_directory_tree', {
     repoPath: repoPath,
     maxDepth: maxDepth ?? null,
   });
 }
 
-export async function readFilePreview(
-  filePath: string,
-  maxLines?: number
-): Promise<FilePreview> {
-  return safeInvoke("read_file_preview", {
+export async function readFilePreview(filePath: string, maxLines?: number): Promise<FilePreview> {
+  return safeInvoke('read_file_preview', {
     filePath: filePath,
     maxLines: maxLines ?? null,
   });
@@ -1764,9 +1735,9 @@ export async function readFileAroundLine(
   filePath: string,
   line: number,
   contextBefore?: number,
-  contextAfter?: number,
+  contextAfter?: number
 ): Promise<FileAroundLineResult> {
-  return safeInvoke("read_file_around_line", {
+  return safeInvoke('read_file_around_line', {
     filePath,
     line,
     contextBefore: contextBefore ?? 10,
@@ -1774,11 +1745,8 @@ export async function readFileAroundLine(
   });
 }
 
-export async function openInApp(
-  appName: string,
-  path: string
-): Promise<{ success: boolean }> {
-  return safeInvoke("open_in_app", { appName: appName, path });
+export async function openInApp(appName: string, path: string): Promise<{ success: boolean }> {
+  return safeInvoke('open_in_app', { appName: appName, path });
 }
 
 // ─── Agent Memories ────────────────────────────────────────────────────────
@@ -1805,11 +1773,11 @@ export interface AgentMemoryDocument {
 }
 
 export async function listAgentMemorySources(): Promise<AgentMemorySource[]> {
-  return safeInvoke("list_agent_memory_sources");
+  return safeInvoke('list_agent_memory_sources');
 }
 
 export async function readAgentMemorySource(path: string): Promise<AgentMemoryDocument> {
-  return safeInvoke("read_agent_memory_source", { path });
+  return safeInvoke('read_agent_memory_source', { path });
 }
 
 // ─── GitHub PR & CI Operations ──────────────────────────────────────────────
@@ -1845,8 +1813,12 @@ export async function createPullRequest(
   baseBranch: string,
   headBranch: string
 ): Promise<{ url: string; number: number; html_url: string }> {
-  return safeInvoke("create_pull_request", {
-    repoPath: repoPath, title, body, baseBranch: baseBranch, headBranch: headBranch,
+  return safeInvoke('create_pull_request', {
+    repoPath: repoPath,
+    title,
+    body,
+    baseBranch: baseBranch,
+    headBranch: headBranch,
   });
 }
 
@@ -1854,16 +1826,14 @@ export async function listPullRequestsForRepo(
   repoPath: string,
   state?: string
 ): Promise<{ prs: PullRequestInfo[] }> {
-  return safeInvoke("list_pull_requests_for_repo", {
-    repoPath: repoPath, state: state ?? null,
+  return safeInvoke('list_pull_requests_for_repo', {
+    repoPath: repoPath,
+    state: state ?? null,
   });
 }
 
-export async function getPullRequest(
-  repoPath: string,
-  prNumber: number
-): Promise<PullRequestInfo> {
-  return safeInvoke("get_pull_request", { repoPath: repoPath, prNumber: prNumber });
+export async function getPullRequest(repoPath: string, prNumber: number): Promise<PullRequestInfo> {
+  return safeInvoke('get_pull_request', { repoPath: repoPath, prNumber: prNumber });
 }
 
 export async function mergePullRequest(
@@ -1871,35 +1841,38 @@ export async function mergePullRequest(
   prNumber: number,
   method: string
 ): Promise<{ success: boolean }> {
-  return safeInvoke("merge_pull_request", { repoPath: repoPath, prNumber: prNumber, method });
+  return safeInvoke('merge_pull_request', { repoPath: repoPath, prNumber: prNumber, method });
 }
 
 export async function listCiChecks(
   repoPath: string,
   prNumber: number
 ): Promise<{ checks: CICheck[] }> {
-  return safeInvoke("list_ci_checks", { repoPath: repoPath, prNumber: prNumber });
+  return safeInvoke('list_ci_checks', { repoPath: repoPath, prNumber: prNumber });
 }
 
 export async function rerunFailedChecks(
   repoPath: string,
   prNumber: number
 ): Promise<{ success: boolean; rerun_count: number }> {
-  return safeInvoke("rerun_failed_checks", { repoPath: repoPath, prNumber: prNumber });
+  return safeInvoke('rerun_failed_checks', { repoPath: repoPath, prNumber: prNumber });
 }
 
 // ─── Linear Integration (Settings only) ─────────────────────────────────────
 
 export async function startLinearOAuth(): Promise<{ success: boolean; error?: string }> {
-  return safeInvoke("start_linear_oauth", {});
+  return safeInvoke('start_linear_oauth', {});
 }
 
 export async function disconnectLinear(): Promise<void> {
-  return safeInvoke("disconnect_linear", {});
+  return safeInvoke('disconnect_linear', {});
 }
 
-export async function checkLinearConnection(): Promise<{ connected: boolean; user?: { id: string; name: string; email: string } }> {
-  return safeInvoke("check_linear_connection", {});
+export async function checkLinearConnection(): Promise<{
+  connected: boolean;
+  user?: { id: string; name: string; email: string };
+}> {
+  return safeInvoke('check_linear_connection', {});
 }
 
 // ── Agent Talks ──────────────────────────────────────────────────
@@ -1930,23 +1903,18 @@ export interface AgentTalk {
 }
 
 export async function getTalk(id: string): Promise<AgentTalk | null> {
-  return safeInvoke("get_talk", { id });
+  return safeInvoke('get_talk', { id });
 }
 
-export async function listProjectTalks(
-  projectPath: string,
-  limit?: number
-): Promise<AgentTalk[]> {
-  return safeInvoke("list_project_talks", {
+export async function listProjectTalks(projectPath: string, limit?: number): Promise<AgentTalk[]> {
+  return safeInvoke('list_project_talks', {
     projectPath,
     limit: limit ?? null,
   });
 }
 
-export async function getLatestTalk(
-  projectPath: string
-): Promise<AgentTalk | null> {
-  return safeInvoke("get_latest_talk", { projectPath });
+export async function getLatestTalk(projectPath: string): Promise<AgentTalk | null> {
+  return safeInvoke('get_latest_talk', { projectPath });
 }
 
 // ─── Repo Unpacked ──────────────────────────────────────────────────────────
@@ -1987,7 +1955,7 @@ export interface UnpackDirSummary {
 export interface UnpackQaReadinessSignal {
   id: string;
   label: string;
-  status: "ready" | "partial" | "missing" | string;
+  status: 'ready' | 'partial' | 'missing' | string;
   detail: string;
   sources: string[];
 }
@@ -2001,7 +1969,7 @@ export interface UnpackQaSuggestedFlow {
 
 export interface UnpackQaReadiness {
   score: number;
-  status: "ready" | "partial" | "missing" | string;
+  status: 'ready' | 'partial' | 'missing' | string;
   summary: string;
   signals: UnpackQaReadinessSignal[];
   suggested_flows: UnpackQaSuggestedFlow[];
@@ -2147,17 +2115,15 @@ export interface GenerateUnpackResult {
   inventory: UnpackRepoInventory;
 }
 
-export async function scanRepoInventory(
-  repoPath: string,
-): Promise<UnpackRepoInventory> {
-  return safeInvoke("scan_repo_inventory", { repoPath });
+export async function scanRepoInventory(repoPath: string): Promise<UnpackRepoInventory> {
+  return safeInvoke('scan_repo_inventory', { repoPath });
 }
 
 export async function generateUnpackReport(
   repoPath: string,
-  agent?: string,
+  agent?: string
 ): Promise<GenerateUnpackResult> {
-  return safeInvoke("generate_unpack_report", {
+  return safeInvoke('generate_unpack_report', {
     repoPath,
     agent: agent ?? null,
   });
@@ -2165,41 +2131,32 @@ export async function generateUnpackReport(
 
 export async function listRepoUnpackReports(
   repoPath?: string,
-  limit?: number,
+  limit?: number
 ): Promise<UnpackReportSummary[]> {
-  const resp = await safeInvoke<{ reports: UnpackReportSummary[] }>(
-    "list_repo_unpack_reports",
-    {
-      repoPath: repoPath ?? null,
-      limit: limit ?? null,
-    },
-  );
+  const resp = await safeInvoke<{ reports: UnpackReportSummary[] }>('list_repo_unpack_reports', {
+    repoPath: repoPath ?? null,
+    limit: limit ?? null,
+  });
   return resp.reports;
 }
 
-export async function getRepoUnpackReport(
-  id: string,
-): Promise<UnpackReportRecord> {
-  return safeInvoke("get_repo_unpack_report", { id });
+export async function getRepoUnpackReport(id: string): Promise<UnpackReportRecord> {
+  return safeInvoke('get_repo_unpack_report', { id });
 }
 
-export async function deleteRepoUnpackReport(
-  id: string,
-): Promise<{ deleted: boolean }> {
-  return safeInvoke("delete_repo_unpack_report", { id });
+export async function deleteRepoUnpackReport(id: string): Promise<{ deleted: boolean }> {
+  return safeInvoke('delete_repo_unpack_report', { id });
 }
 
 export async function exportRepoUnpackReport(
   id: string,
-  format: "markdown" | "html" | "repo_graph_json" | "agent_context_markdown",
+  format: 'markdown' | 'html' | 'repo_graph_json' | 'agent_context_markdown'
 ): Promise<{ content: string; format: string }> {
-  return safeInvoke("export_repo_unpack_report", { id, format });
+  return safeInvoke('export_repo_unpack_report', { id, format });
 }
 
-export async function importRepoGraphJson(
-  content: string,
-): Promise<ImportRepoGraphResult> {
-  return safeInvoke("import_repo_graph_json", { content });
+export async function importRepoGraphJson(content: string): Promise<ImportRepoGraphResult> {
+  return safeInvoke('import_repo_graph_json', { content });
 }
 
 // ─── Synthetic user QA ─────────────────────────────────────────────────────
@@ -2250,9 +2207,9 @@ export interface PlaywrightSpecCandidate {
 }
 
 export async function discoverPlaywrightSpecs(
-  repoPath: string,
+  repoPath: string
 ): Promise<{ specs: PlaywrightSpecCandidate[] }> {
-  return safeInvoke("discover_playwright_specs", { repoPath });
+  return safeInvoke('discover_playwright_specs', { repoPath });
 }
 
 export async function recordSyntheticQaRun(input: {
@@ -2261,7 +2218,7 @@ export async function recordSyntheticQaRun(input: {
   baseUrl?: string | null;
   run: SyntheticQaRunResult;
 }): Promise<StoredSyntheticQaRun> {
-  const resp = await safeInvoke<{ run: StoredSyntheticQaRun }>("record_synthetic_qa_run", {
+  const resp = await safeInvoke<{ run: StoredSyntheticQaRun }>('record_synthetic_qa_run', {
     input: {
       review_id: input.reviewId ?? null,
       repo_path: input.repoPath ?? null,
@@ -2274,15 +2231,12 @@ export async function recordSyntheticQaRun(input: {
 
 export async function listSyntheticQaRuns(
   reviewId: string,
-  limit?: number,
+  limit?: number
 ): Promise<StoredSyntheticQaRun[]> {
-  const resp = await safeInvoke<{ runs: StoredSyntheticQaRun[] }>(
-    "list_synthetic_qa_runs",
-    {
-      reviewId,
-      limit: limit ?? 8,
-    },
-  );
+  const resp = await safeInvoke<{ runs: StoredSyntheticQaRun[] }>('list_synthetic_qa_runs', {
+    reviewId,
+    limit: limit ?? 8,
+  });
   return resp.runs;
 }
 
@@ -2290,19 +2244,19 @@ export async function runSyntheticQa(
   baseUrl: string,
   loopId?: string,
   options?: {
-    runnerType?: "playwright_builtin" | "external_skill" | "repo_playwright";
+    runnerType?: 'playwright_builtin' | 'external_skill' | 'repo_playwright';
     goal?: string;
     externalCommand?: string;
-    authMode?: "none" | "storage_state";
+    authMode?: 'none' | 'storage_state';
     storageStatePath?: string;
     targetRoute?: string;
     repoPath?: string;
     specPath?: string;
     allowRemoteTarget?: boolean;
-    repoTraceMode?: "off" | "on" | "retain-on-failure";
-  },
+    repoTraceMode?: 'off' | 'on' | 'retain-on-failure';
+  }
 ): Promise<SyntheticQaRunResult> {
-  return safeInvoke("run_synthetic_qa", {
+  return safeInvoke('run_synthetic_qa', {
     baseUrl,
     loopId: loopId ?? null,
     runnerType: options?.runnerType ?? null,
@@ -2322,23 +2276,16 @@ export async function runSyntheticQa(
 // Drives the user's installed Chrome via chromiumoxide; routes brain calls
 // through ../local-ai (claude/codex). Streams per-step events on `agent:step`.
 
-export type AgentActionType =
-  | "click"
-  | "type"
-  | "key"
-  | "scroll"
-  | "goto"
-  | "done"
-  | "give_up";
+export type AgentActionType = 'click' | 'type' | 'key' | 'scroll' | 'goto' | 'done' | 'give_up';
 
 export type AgentAction =
-  | { type: "click"; selector: string; reasoning: string }
-  | { type: "type"; selector: string; text: string; reasoning: string }
-  | { type: "key"; key: string; reasoning: string }
-  | { type: "scroll"; delta: number; reasoning: string }
-  | { type: "goto"; url: string; reasoning: string }
-  | { type: "done"; reasoning: string }
-  | { type: "give_up"; reasoning: string };
+  | { type: 'click'; selector: string; reasoning: string }
+  | { type: 'type'; selector: string; text: string; reasoning: string }
+  | { type: 'key'; key: string; reasoning: string }
+  | { type: 'scroll'; delta: number; reasoning: string }
+  | { type: 'goto'; url: string; reasoning: string }
+  | { type: 'done'; reasoning: string }
+  | { type: 'give_up'; reasoning: string };
 
 export interface AgentStep {
   index: number;
@@ -2363,7 +2310,7 @@ export interface AgentRunInput {
   url: string;
   goal: string;
   persona?: string | null;
-  provider: "claude" | "codex" | "gemini";
+  provider: 'claude' | 'codex' | 'gemini';
   model?: string | null;
   max_steps?: number | null;
   /** When set, the agent spawns the project's dev command (npm run dev /
@@ -2385,14 +2332,12 @@ export interface AgentRunResult {
 }
 
 export async function agentRunTask(input: AgentRunInput): Promise<AgentRunResult> {
-  return safeInvoke<AgentRunResult>("agent_run_task", { input });
+  return safeInvoke<AgentRunResult>('agent_run_task', { input });
 }
 
 /** Subscribe to streaming agent steps for the current run. */
-export async function listenToAgentSteps(
-  handler: (step: AgentStep) => void,
-): Promise<UnlistenFn> {
-  return listen<AgentStep>("agent:step", (evt) => handler(evt.payload));
+export async function listenToAgentSteps(handler: (step: AgentStep) => void): Promise<UnlistenFn> {
+  return listen<AgentStep>('agent:step', (evt) => handler(evt.payload));
 }
 
 // ─── T-Rex sandbox (/review → Test branch) ──────────────────────────────────
@@ -2404,7 +2349,7 @@ export interface SandboxOptions {
   browser_goal?: string | null;
   start_path?: string | null;
   max_steps?: number | null;
-  provider?: "claude" | "codex";
+  provider?: 'claude' | 'codex';
   test_cmd?: string | null;
 }
 
@@ -2436,7 +2381,7 @@ export interface ExecutionFinding {
   evidence?: string | null;
 }
 
-export type SandboxVerdict = "APPROVE" | "NEEDS_REVIEW" | "BLOCK";
+export type SandboxVerdict = 'APPROVE' | 'NEEDS_REVIEW' | 'BLOCK';
 
 export interface SandboxRunResult {
   run_id: string;
@@ -2455,27 +2400,23 @@ export interface SandboxRunResult {
 }
 
 export type SandboxStep =
-  | { kind: "phase"; phase: string; detail: string | null }
-  | { kind: "agent"; step: AgentStep }
-  | { kind: "test_log"; line: string };
+  | { kind: 'phase'; phase: string; detail: string | null }
+  | { kind: 'agent'; step: AgentStep }
+  | { kind: 'test_log'; line: string };
 
-export async function runBranchSandbox(
-  input: SandboxRunInput,
-): Promise<SandboxRunResult> {
-  return safeInvoke<SandboxRunResult>("run_branch_sandbox", { input });
+export async function runBranchSandbox(input: SandboxRunInput): Promise<SandboxRunResult> {
+  return safeInvoke<SandboxRunResult>('run_branch_sandbox', { input });
 }
 
-export async function detectTestCommand(
-  repoPath: string,
-): Promise<string | null> {
-  return safeInvoke<string | null>("detect_test_command", { repoPath });
+export async function detectTestCommand(repoPath: string): Promise<string | null> {
+  return safeInvoke<string | null>('detect_test_command', { repoPath });
 }
 
 /** Subscribe to streaming sandbox progress events. */
 export async function listenToSandboxSteps(
-  handler: (step: SandboxStep) => void,
+  handler: (step: SandboxStep) => void
 ): Promise<UnlistenFn> {
-  return listen<SandboxStep>("sandbox:step", (evt) => handler(evt.payload));
+  return listen<SandboxStep>('sandbox:step', (evt) => handler(evt.payload));
 }
 
 // ─── SaaS Maker wireup ──────────────────────────────────────────────────────
@@ -2497,7 +2438,7 @@ export interface SaasMakerStatus {
   configured: boolean;
   base_url: string;
   project_slug: string | null;
-  token_source: "env" | "preferences" | "none";
+  token_source: 'env' | 'preferences' | 'none';
 }
 
 export interface SaasMakerSetConfig {
@@ -2514,19 +2455,15 @@ export interface PushFindingResult {
 }
 
 export async function getSaasMakerStatus(): Promise<SaasMakerStatus> {
-  return safeInvoke<SaasMakerStatus>("get_saas_maker_status");
+  return safeInvoke<SaasMakerStatus>('get_saas_maker_status');
 }
 
-export async function setSaasMakerConfig(
-  config: SaasMakerSetConfig,
-): Promise<SaasMakerStatus> {
-  return safeInvoke<SaasMakerStatus>("set_saas_maker_config", { config });
+export async function setSaasMakerConfig(config: SaasMakerSetConfig): Promise<SaasMakerStatus> {
+  return safeInvoke<SaasMakerStatus>('set_saas_maker_config', { config });
 }
 
-export async function listSaasMakerTasks(
-  projectSlug?: string | null,
-): Promise<SaasMakerTask[]> {
-  return safeInvoke<SaasMakerTask[]>("list_saas_maker_tasks", {
+export async function listSaasMakerTasks(projectSlug?: string | null): Promise<SaasMakerTask[]> {
+  return safeInvoke<SaasMakerTask[]>('list_saas_maker_tasks', {
     projectSlug: projectSlug ?? null,
   });
 }
@@ -2536,7 +2473,7 @@ export async function pushFindingToSaasMaker(args: {
   finding_id: string;
   project_slug?: string | null;
 }): Promise<PushFindingResult> {
-  return safeInvoke<PushFindingResult>("push_finding_to_saas_maker", {
+  return safeInvoke<PushFindingResult>('push_finding_to_saas_maker', {
     input: args,
   });
 }
@@ -2549,21 +2486,21 @@ export interface SaasMakerProject {
 }
 
 export interface UpdateTaskPatch {
-  status?: "todo" | "in_progress" | "done" | null;
-  priority?: "low" | "medium" | "high" | null;
+  status?: 'todo' | 'in_progress' | 'done' | null;
+  priority?: 'low' | 'medium' | 'high' | null;
   title?: string | null;
   description?: string | null;
 }
 
 export async function listSaasMakerProjects(): Promise<SaasMakerProject[]> {
-  return safeInvoke<SaasMakerProject[]>("list_saas_maker_projects");
+  return safeInvoke<SaasMakerProject[]>('list_saas_maker_projects');
 }
 
 export async function updateSaasMakerTask(
   taskId: string,
-  patch: UpdateTaskPatch,
+  patch: UpdateTaskPatch
 ): Promise<SaasMakerTask> {
-  return safeInvoke<SaasMakerTask>("update_saas_maker_task", {
+  return safeInvoke<SaasMakerTask>('update_saas_maker_task', {
     taskId,
     patch,
   });
@@ -2585,9 +2522,9 @@ export interface SignInStart {
 }
 
 export type SignInResult =
-  | { status: "approved"; user: SaasMakerUser }
-  | { status: "expired" }
-  | { status: "cancelled" };
+  | { status: 'approved'; user: SaasMakerUser }
+  | { status: 'expired' }
+  | { status: 'cancelled' };
 
 export interface RepoDetectResult {
   project: SaasMakerProject | null;
@@ -2596,34 +2533,27 @@ export interface RepoDetectResult {
 }
 
 export async function startSaasMakerSignin(): Promise<SignInStart> {
-  return safeInvoke<SignInStart>("start_saas_maker_signin");
+  return safeInvoke<SignInStart>('start_saas_maker_signin');
 }
 
-export async function pollSaasMakerSignin(
-  code: string,
-): Promise<SignInResult> {
-  return safeInvoke<SignInResult>("poll_saas_maker_signin", { code });
+export async function pollSaasMakerSignin(code: string): Promise<SignInResult> {
+  return safeInvoke<SignInResult>('poll_saas_maker_signin', { code });
 }
 
 export async function signOutOfSaasMaker(): Promise<void> {
-  return safeInvoke<void>("sign_out_of_saas_maker");
+  return safeInvoke<void>('sign_out_of_saas_maker');
 }
 
 export async function getCurrentUser(): Promise<SaasMakerUser | null> {
-  return safeInvoke<SaasMakerUser | null>("get_current_user");
+  return safeInvoke<SaasMakerUser | null>('get_current_user');
 }
 
-export async function detectProjectForRepo(
-  repoPath: string,
-): Promise<RepoDetectResult> {
-  return safeInvoke<RepoDetectResult>("detect_project_for_repo", { repoPath });
+export async function detectProjectForRepo(repoPath: string): Promise<RepoDetectResult> {
+  return safeInvoke<RepoDetectResult>('detect_project_for_repo', { repoPath });
 }
 
-export async function setRepoProjectMapping(
-  repoPath: string,
-  projectSlug: string,
-): Promise<void> {
-  return safeInvoke<void>("set_repo_project_mapping", {
+export async function setRepoProjectMapping(repoPath: string, projectSlug: string): Promise<void> {
+  return safeInvoke<void>('set_repo_project_mapping', {
     repoPath,
     projectSlug,
   });
@@ -2653,7 +2583,7 @@ export interface LinkAllResult {
  * each repo's origin URL onto the project.
  */
 export async function linkAllReposToFleet(): Promise<LinkAllResult> {
-  return safeInvoke<LinkAllResult>("link_all_repos_to_fleet");
+  return safeInvoke<LinkAllResult>('link_all_repos_to_fleet');
 }
 
 // ─── v1.1.78: cross-fleet rollup + AI acceleration + weekly markdown ────────
@@ -2667,10 +2597,8 @@ export interface AiAcceleration {
   after_day_count: number;
 }
 
-export async function getAiAcceleration(
-  repoPath: string,
-): Promise<AiAcceleration | null> {
-  return safeInvoke<AiAcceleration | null>("get_ai_acceleration", { repoPath });
+export async function getAiAcceleration(repoPath: string): Promise<AiAcceleration | null> {
+  return safeInvoke<AiAcceleration | null>('get_ai_acceleration', { repoPath });
 }
 
 export interface LinkedRepo {
@@ -2714,21 +2642,19 @@ export interface PushChangelogInput {
 }
 
 export async function listLinkedRepos(): Promise<LinkedRepo[]> {
-  return safeInvoke<LinkedRepo[]>("list_linked_repos");
+  return safeInvoke<LinkedRepo[]>('list_linked_repos');
 }
 
 export async function getFleetRollup(): Promise<FleetRollup> {
-  return safeInvoke<FleetRollup>("get_fleet_rollup");
+  return safeInvoke<FleetRollup>('get_fleet_rollup');
 }
 
 export async function generateWeeklyFleetMarkdown(): Promise<WeeklyFleetMarkdown> {
-  return safeInvoke<WeeklyFleetMarkdown>("generate_weekly_fleet_markdown");
+  return safeInvoke<WeeklyFleetMarkdown>('generate_weekly_fleet_markdown');
 }
 
-export async function pushChangelogEntry(
-  input: PushChangelogInput,
-): Promise<unknown> {
-  return safeInvoke<unknown>("push_changelog_entry", { input });
+export async function pushChangelogEntry(input: PushChangelogInput): Promise<unknown> {
+  return safeInvoke<unknown>('push_changelog_entry', { input });
 }
 
 // ─── v1.1.79: DORA metrics ──────────────────────────────────────────────────
@@ -2759,11 +2685,8 @@ export interface DoraMetrics {
   weekly_deploy_counts: WeeklyDeploy[];
 }
 
-export async function getDoraMetrics(
-  repoPath: string,
-  windowDays?: number,
-): Promise<DoraMetrics> {
-  return safeInvoke<DoraMetrics>("get_dora_metrics", {
+export async function getDoraMetrics(repoPath: string, windowDays?: number): Promise<DoraMetrics> {
+  return safeInvoke<DoraMetrics>('get_dora_metrics', {
     repoPath,
     windowDays: windowDays ?? null,
   });
@@ -2815,48 +2738,39 @@ export interface WebhookConfig {
 export interface SendNotificationInput {
   title: string;
   message: string;
-  severity?: "info" | "warning" | "critical";
+  severity?: 'info' | 'warning' | 'critical';
 }
 
 export async function getBillingConfig(): Promise<BillingConfig> {
-  return safeInvoke<BillingConfig>("get_billing_config");
+  return safeInvoke<BillingConfig>('get_billing_config');
 }
 
-export async function setBillingConfig(
-  input: SetBillingConfigInput,
-): Promise<BillingConfig> {
-  return safeInvoke<BillingConfig>("set_billing_config", { input });
+export async function setBillingConfig(input: SetBillingConfigInput): Promise<BillingConfig> {
+  return safeInvoke<BillingConfig>('set_billing_config', { input });
 }
 
 export async function getBillingSnapshots(): Promise<BillingSnapshot[]> {
-  return safeInvoke<BillingSnapshot[]>("get_billing_snapshots");
+  return safeInvoke<BillingSnapshot[]>('get_billing_snapshots');
 }
 
-export async function getAgentObservability(
-  windowDays?: number,
-): Promise<AgentObservability> {
-  return safeInvoke<AgentObservability>("get_agent_observability", {
+export async function getAgentObservability(windowDays?: number): Promise<AgentObservability> {
+  return safeInvoke<AgentObservability>('get_agent_observability', {
     windowDays: windowDays ?? null,
   });
 }
 
 export async function getWebhookConfig(): Promise<WebhookConfig> {
-  return safeInvoke<WebhookConfig>("get_webhook_config");
+  return safeInvoke<WebhookConfig>('get_webhook_config');
 }
 
-export async function setWebhookConfig(
-  url: string,
-  flavor: string,
-): Promise<WebhookConfig> {
-  return safeInvoke<WebhookConfig>("set_webhook_config", {
+export async function setWebhookConfig(url: string, flavor: string): Promise<WebhookConfig> {
+  return safeInvoke<WebhookConfig>('set_webhook_config', {
     input: { url, flavor },
   });
 }
 
-export async function sendWebhookNotification(
-  input: SendNotificationInput,
-): Promise<void> {
-  return safeInvoke<void>("send_notification", { input });
+export async function sendWebhookNotification(input: SendNotificationInput): Promise<void> {
+  return safeInvoke<void>('send_notification', { input });
 }
 
 // ─── T-Rex v2 watcher (v1.1.83) ────────────────────────────────────────────
@@ -2876,10 +2790,10 @@ export interface TrexPrRun {
   repo_path: string;
   pr_number: number;
   head_sha: string;
-  verdict: "APPROVE" | "NEEDS_REVIEW" | "BLOCK" | string;
+  verdict: 'APPROVE' | 'NEEDS_REVIEW' | 'BLOCK' | string;
   confidence: number;
   summary: string;
-  status_state: "success" | "pending" | "failure" | null;
+  status_state: 'success' | 'pending' | 'failure' | null;
   status_error: string | null;
   duration_ms: number;
   ran_at: string;
@@ -2891,26 +2805,21 @@ export interface StartTrexWatcherInput {
   base_branch?: string;
 }
 
-export async function startTrexWatcher(
-  input: StartTrexWatcherInput,
-): Promise<TrexWatcher> {
-  return safeInvoke<TrexWatcher>("start_trex_watcher", { input });
+export async function startTrexWatcher(input: StartTrexWatcherInput): Promise<TrexWatcher> {
+  return safeInvoke<TrexWatcher>('start_trex_watcher', { input });
 }
 
 export async function stopTrexWatcher(repoPath: string): Promise<void> {
-  await safeInvoke<void>("stop_trex_watcher", { repoPath });
+  await safeInvoke<void>('stop_trex_watcher', { repoPath });
 }
 
 export async function listTrexWatchers(): Promise<TrexWatcher[]> {
-  return (await safeInvoke<TrexWatcher[]>("list_trex_watchers", {})) ?? [];
+  return (await safeInvoke<TrexWatcher[]>('list_trex_watchers', {})) ?? [];
 }
 
-export async function listTrexPrRuns(
-  repoPath?: string,
-  limit?: number,
-): Promise<TrexPrRun[]> {
+export async function listTrexPrRuns(repoPath?: string, limit?: number): Promise<TrexPrRun[]> {
   return (
-    (await safeInvoke<TrexPrRun[]>("list_trex_pr_runs", {
+    (await safeInvoke<TrexPrRun[]>('list_trex_pr_runs', {
       repoPath,
       limit,
     })) ?? []
@@ -2918,7 +2827,5 @@ export async function listTrexPrRuns(
 }
 
 export async function forcePollTrexWatcher(repoPath: string): Promise<number> {
-  return (
-    (await safeInvoke<number>("force_poll_trex_watcher", { repoPath })) ?? 0
-  );
+  return (await safeInvoke<number>('force_poll_trex_watcher', { repoPath })) ?? 0;
 }

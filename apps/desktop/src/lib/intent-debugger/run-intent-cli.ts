@@ -1,18 +1,18 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-import { COMMIT_INTENT_FIXTURES, getCommitIntentFixture } from "./fixtures";
-import { buildCommitIntentReport, renderCommitIntentMarkdown } from "./report";
+import { COMMIT_INTENT_FIXTURES, getCommitIntentFixture } from './fixtures';
+import { buildCommitIntentReport, renderCommitIntentMarkdown } from './report';
 
 function usage(): never {
   process.stderr.write(
     [
-      "Usage: npm run intent-debugger -- <fixture-id|all> [artifactDir]",
-      "",
-      "Available fixtures:",
+      'Usage: npm run intent-debugger -- <fixture-id|all> [artifactDir]',
+      '',
+      'Available fixtures:',
       ...COMMIT_INTENT_FIXTURES.map((fixture) => `  - ${fixture.id} (${fixture.author})`),
-      "",
-    ].join("\n"),
+      '',
+    ].join('\n')
   );
   process.exit(64);
 }
@@ -20,9 +20,9 @@ function usage(): never {
 function main() {
   const id = process.argv[2];
   if (!id) usage();
-  const outDir = process.argv[3] ?? path.join(process.cwd(), "intent-debugger-artifacts");
-  const fixture = id === "all" ? null : getCommitIntentFixture(id);
-  const fixtures = id === "all" ? COMMIT_INTENT_FIXTURES : fixture ? [fixture] : [];
+  const outDir = process.argv[3] ?? path.join(process.cwd(), 'intent-debugger-artifacts');
+  const fixture = id === 'all' ? null : getCommitIntentFixture(id);
+  const fixtures = id === 'all' ? COMMIT_INTENT_FIXTURES : fixture ? [fixture] : [];
   if (fixtures.length === 0) usage();
 
   fs.mkdirSync(outDir, { recursive: true });
@@ -32,7 +32,7 @@ function main() {
     return report;
   });
   process.stdout.write(JSON.stringify({ outDir, reports }, null, 2));
-  process.stdout.write("\n");
+  process.stdout.write('\n');
 }
 
 main();

@@ -1,12 +1,12 @@
-import type { UnlistenFn } from "@tauri-apps/api/event";
-import { Bot, ChevronRight, Loader2, Play, Square } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { UnlistenFn } from '@tauri-apps/api/event';
+import { Bot, ChevronRight, Loader2, Play, Square } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { actionReasoning, describeAction } from "@/lib/agent-action-format";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { actionReasoning, describeAction } from '@/lib/agent-action-format';
 import {
   type AgentRunInput,
   type AgentRunResult,
@@ -14,13 +14,13 @@ import {
   type AgentStep,
   isTauriAvailable,
   listenToAgentSteps,
-} from "@/lib/tauri-ipc";
+} from '@/lib/tauri-ipc';
 
-type RunState = "idle" | "running" | "completed" | "gave_up" | "errored";
+type RunState = 'idle' | 'running' | 'completed' | 'gave_up' | 'errored';
 
 const PROVIDERS = [
-  { value: "claude" as const, label: "Claude CLI", note: "DOM only — no screenshots" },
-  { value: "codex" as const, label: "Codex CLI", note: "Vision via attached screenshots" },
+  { value: 'claude' as const, label: 'Claude CLI', note: 'DOM only — no screenshots' },
+  { value: 'codex' as const, label: 'Codex CLI', note: 'Vision via attached screenshots' },
 ];
 
 interface Props {
@@ -29,16 +29,16 @@ interface Props {
 }
 
 export function LiveAgentRunner({
-  defaultUrl = "https://codevetter.com",
-  defaultGoal = "Figure out what this product does and find the download link",
+  defaultUrl = 'https://codevetter.com',
+  defaultGoal = 'Figure out what this product does and find the download link',
 }: Props) {
   const [url, setUrl] = useState(defaultUrl);
   const [goal, setGoal] = useState(defaultGoal);
-  const [persona, setPersona] = useState("");
-  const [projectDir, setProjectDir] = useState("");
-  const [provider, setProvider] = useState<"claude" | "codex">("claude");
+  const [persona, setPersona] = useState('');
+  const [projectDir, setProjectDir] = useState('');
+  const [provider, setProvider] = useState<'claude' | 'codex'>('claude');
   const [maxSteps, setMaxSteps] = useState(20);
-  const [state, setState] = useState<RunState>("idle");
+  const [state, setState] = useState<RunState>('idle');
   const [steps, setSteps] = useState<AgentStep[]>([]);
   const [result, setResult] = useState<AgentRunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,18 +55,18 @@ export function LiveAgentRunner({
 
   const handleRun = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError("Run inside the CodeVetter desktop app — live agent needs the Tauri backend.");
+      setError('Run inside the CodeVetter desktop app — live agent needs the Tauri backend.');
       return;
     }
     if (!url.trim() || !goal.trim()) {
-      setError("URL and goal are required.");
+      setError('URL and goal are required.');
       return;
     }
 
     setSteps([]);
     setResult(null);
     setError(null);
-    setState("running");
+    setState('running');
 
     unlistenRef.current?.();
     unlistenRef.current = await listenToAgentSteps((step) => {
@@ -86,17 +86,17 @@ export function LiveAgentRunner({
     try {
       const run = await agentRunTask(input);
       setResult(run);
-      setState(run.completed ? "completed" : run.gave_up ? "gave_up" : "errored");
+      setState(run.completed ? 'completed' : run.gave_up ? 'gave_up' : 'errored');
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
-      setState("errored");
+      setState('errored');
     } finally {
       unlistenRef.current?.();
       unlistenRef.current = null;
     }
   }, [url, goal, persona, projectDir, provider, maxSteps]);
 
-  const running = state === "running";
+  const running = state === 'running';
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr]">
@@ -109,9 +109,7 @@ export function LiveAgentRunner({
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-200">
               Live agent
             </p>
-            <p className="text-xs text-slate-500">
-              Real Chrome · spawns claude/codex CLI directly
-            </p>
+            <p className="text-xs text-slate-500">Real Chrome · spawns claude/codex CLI directly</p>
           </div>
         </div>
 
@@ -166,8 +164,8 @@ export function LiveAgentRunner({
                 disabled={running}
                 className={`rounded-md border p-2.5 text-left text-xs transition-colors ${
                   provider === p.value
-                    ? "border-violet-400/40 bg-violet-400/10 text-slate-100"
-                    : "border-[#1a1a1a] bg-[#08090d] text-slate-400 hover:border-violet-400/20"
+                    ? 'border-violet-400/40 bg-violet-400/10 text-slate-100'
+                    : 'border-[#1a1a1a] bg-[#08090d] text-slate-400 hover:border-violet-400/20'
                 }`}
               >
                 <div className="font-semibold">{p.label}</div>
@@ -190,12 +188,7 @@ export function LiveAgentRunner({
           />
         </Field>
 
-        <Button
-          type="button"
-          onClick={handleRun}
-          disabled={running}
-          className="w-full"
-        >
+        <Button type="button" onClick={handleRun} disabled={running} className="w-full">
           {running ? (
             <>
               <Loader2 size={14} className="mr-2 animate-spin" />
@@ -220,23 +213,21 @@ export function LiveAgentRunner({
         <header className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-100">
-              {result ? result.goal : "Trace"}
+              {result ? result.goal : 'Trace'}
             </h2>
             <p className="mt-1 text-xs text-slate-500 font-mono">
-              {steps.length} step{steps.length === 1 ? "" : "s"}
+              {steps.length} step{steps.length === 1 ? '' : 's'}
               {result && ` · ${(result.duration_ms / 1000).toFixed(1)}s`}
             </p>
           </div>
           {result && (
             <Badge
-              variant={
-                result.completed ? "secondary" : result.gave_up ? "destructive" : "outline"
-              }
+              variant={result.completed ? 'secondary' : result.gave_up ? 'destructive' : 'outline'}
             >
-              {result.completed ? "DONE" : result.gave_up ? "GAVE UP" : "INCOMPLETE"}
+              {result.completed ? 'DONE' : result.gave_up ? 'GAVE UP' : 'INCOMPLETE'}
             </Badge>
           )}
-          {state === "running" && !result && (
+          {state === 'running' && !result && (
             <Badge variant="outline" className="border-violet-400/30 text-violet-200">
               <Square size={10} className="mr-1.5" />
               Live
@@ -248,20 +239,17 @@ export function LiveAgentRunner({
 
         {steps.length === 0 ? (
           <div className="py-10 text-center text-xs text-slate-500">
-            {state === "running"
-              ? "Waiting for the first step…"
-              : "Run the agent to see the step trace stream in."}
+            {state === 'running'
+              ? 'Waiting for the first step…'
+              : 'Run the agent to see the step trace stream in.'}
           </div>
         ) : (
           <ol className="space-y-2 text-sm text-slate-300">
             {steps.map((step) => (
-              <li
-                key={step.index}
-                className="rounded-md border border-[#1a1a1a] bg-[#08090d] p-3"
-              >
+              <li key={step.index} className="rounded-md border border-[#1a1a1a] bg-[#08090d] p-3">
                 <div className="flex items-start gap-2">
                   <span className="mt-0.5 font-mono text-[10px] text-slate-500">
-                    {String(step.index + 1).padStart(2, "0")}
+                    {String(step.index + 1).padStart(2, '0')}
                   </span>
                   <ChevronRight size={12} className="mt-1 shrink-0 text-slate-600" />
                   <div className="min-w-0 flex-1">
@@ -276,9 +264,7 @@ export function LiveAgentRunner({
                       )}
                     </div>
                     {actionReasoning(step) && (
-                      <p className="mt-1 text-xs text-slate-400">
-                        {actionReasoning(step)}
-                      </p>
+                      <p className="mt-1 text-xs text-slate-400">{actionReasoning(step)}</p>
                     )}
                     <p className="mt-1 text-[10px] font-mono text-slate-500">
                       {step.url} · {step.elapsed_ms}ms
@@ -288,9 +274,7 @@ export function LiveAgentRunner({
                         </span>
                       )}
                     </p>
-                    {step.error && (
-                      <p className="mt-1 text-[10px] text-red-300">{step.error}</p>
-                    )}
+                    {step.error && <p className="mt-1 text-[10px] text-red-300">{step.error}</p>}
                     {step.screenshot_data_url && (
                       <StepThumbnail
                         src={step.screenshot_data_url}
@@ -320,7 +304,7 @@ function StepThumbnail({ src, alt }: { src: string; alt: string }) {
         src={src}
         alt={alt}
         loading="lazy"
-        className={`block ${expanded ? "max-h-none" : "max-h-32"} w-full object-cover object-top`}
+        className={`block ${expanded ? 'max-h-none' : 'max-h-32'} w-full object-cover object-top`}
       />
     </button>
   );

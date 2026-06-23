@@ -1,67 +1,67 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 
-import { COMMIT_INTENT_FIXTURES } from "./fixtures";
+import { COMMIT_INTENT_FIXTURES } from './fixtures';
 import {
   buildCommitIntentReport,
   buildReviewIntentReport,
   renderCommitIntentMarkdown,
-} from "./report";
+} from './report';
 
-describe("buildCommitIntentReport", () => {
-  it("flags agent-authored UI changes as needing flow proof", () => {
+describe('buildCommitIntentReport', () => {
+  it('flags agent-authored UI changes as needing flow proof', () => {
     const report = buildCommitIntentReport(COMMIT_INTENT_FIXTURES[0]);
 
-    assert.equal(report.author, "agent");
-    assert.ok(report.changedSurfaces.includes("ui"));
+    assert.equal(report.author, 'agent');
+    assert.ok(report.changedSurfaces.includes('ui'));
     assert.ok(report.suspectedRisks.some((risk) => /Agent-authored UI change/.test(risk)));
     assert.equal(report.verificationGaps.length, 0);
   });
 
-  it("surfaces missing verification evidence for human changes", () => {
+  it('surfaces missing verification evidence for human changes', () => {
     const report = buildCommitIntentReport(COMMIT_INTENT_FIXTURES[1]);
 
-    assert.equal(report.author, "human");
+    assert.equal(report.author, 'human');
     assert.ok(report.verificationGaps.some((gap) => /npm run lint/.test(gap)));
     assert.match(renderCommitIntentMarkdown(report), /Verification gaps/);
   });
 });
 
-describe("buildReviewIntentReport", () => {
-  it("flags UI reviews without browser proof", () => {
+describe('buildReviewIntentReport', () => {
+  it('flags UI reviews without browser proof', () => {
     const report = buildReviewIntentReport({
-      reviewId: "review-1",
-      diffRange: "HEAD~1",
-      changeDescription: "Improve the settings page",
-      reviewMode: "specialist-lite",
-      riskTier: "lite",
+      reviewId: 'review-1',
+      diffRange: 'HEAD~1',
+      changeDescription: 'Improve the settings page',
+      reviewMode: 'specialist-lite',
+      riskTier: 'lite',
       findings: [
         {
-          severity: "medium",
-          title: "Missing empty state",
-          filePath: "src/pages/Settings.tsx",
+          severity: 'medium',
+          title: 'Missing empty state',
+          filePath: 'src/pages/Settings.tsx',
         },
       ],
-      evidence: [{ level: "static", status: "not_checked" }],
+      evidence: [{ level: 'static', status: 'not_checked' }],
       qaRuns: [],
       blast: { totalCallers: 0, totalSymbols: 1, changedFiles: 1 },
     });
 
-    assert.ok(report.changedSurfaces.includes("ui"));
+    assert.ok(report.changedSurfaces.includes('ui'));
     assert.ok(report.verificationGaps.some((gap) => /browser\/user-flow/.test(gap)));
     assert.ok(report.verificationGaps.some((gap) => /unchecked/.test(gap)));
-    assert.ok(report.timeline.some((item) => item.id === "qa" && item.status === "missing"));
+    assert.ok(report.timeline.some((item) => item.id === 'qa' && item.status === 'missing'));
   });
 
-  it("flags sensitive high-risk findings without evidence", () => {
+  it('flags sensitive high-risk findings without evidence', () => {
     const report = buildReviewIntentReport({
-      reviewId: "review-2",
-      diffRange: "main..HEAD",
-      changeDescription: "",
-      reviewMode: "specialist-full",
-      riskTier: "full-sensitive",
+      reviewId: 'review-2',
+      diffRange: 'main..HEAD',
+      changeDescription: '',
+      reviewMode: 'specialist-full',
+      riskTier: 'full-sensitive',
       changedLines: 30,
-      sensitivePaths: ["src-tauri/src/commands/auth.rs"],
+      sensitivePaths: ['src-tauri/src/commands/auth.rs'],
       history: {
         recentCommits: 2,
         priorDecisions: 1,
@@ -70,27 +70,27 @@ describe("buildReviewIntentReport", () => {
       },
       findings: [
         {
-          severity: "high",
-          title: "Token leak",
-          filePath: "src-tauri/src/commands/auth.rs",
+          severity: 'high',
+          title: 'Token leak',
+          filePath: 'src-tauri/src/commands/auth.rs',
         },
       ],
-      evidence: [{ level: "static", status: "not_checked" }],
+      evidence: [{ level: 'static', status: 'not_checked' }],
       blast: { totalCallers: 8, totalSymbols: 1, changedFiles: 1 },
     });
 
-    assert.ok(report.changedSurfaces.includes("sensitive"));
+    assert.ok(report.changedSurfaces.includes('sensitive'));
     assert.ok(report.suspectedRisks.some((risk) => /Sensitive path/.test(risk)));
     assert.ok(report.verificationGaps.some((gap) => /Original goal/.test(gap)));
     assert.ok(report.verificationGaps.some((gap) => /high-risk/.test(gap)));
-    assert.ok(report.timeline.some((item) => item.id === "history" && item.status === "done"));
+    assert.ok(report.timeline.some((item) => item.id === 'history' && item.status === 'done'));
   });
 
-  it("adds transcript command and claim signals to the timeline", () => {
+  it('adds transcript command and claim signals to the timeline', () => {
     const report = buildReviewIntentReport({
-      reviewId: "review-3",
-      diffRange: "HEAD",
-      changeDescription: "Verify the settings update",
+      reviewId: 'review-3',
+      diffRange: 'HEAD',
+      changeDescription: 'Verify the settings update',
       findings: [],
       evidence: [],
       history: {
@@ -104,13 +104,13 @@ describe("buildReviewIntentReport", () => {
         commandArtifacts: 2,
         rawSessionCommands: 1,
         structuredCommands: 1,
-        latestCommand: "npm run build",
-        latestClaim: "Implemented settings persistence",
+        latestCommand: 'npm run build',
+        latestClaim: 'Implemented settings persistence',
       },
       blast: null,
     });
 
-    const transcript = report.timeline.find((item) => item.id === "agent-transcript");
+    const transcript = report.timeline.find((item) => item.id === 'agent-transcript');
     assert.ok(transcript);
     assert.match(transcript.detail, /npm run build/);
     assert.match(transcript.detail, /1 pass/);

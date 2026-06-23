@@ -7,13 +7,13 @@ export interface SyntheticQaTrace {
 
 export interface SyntheticQaStepResult {
   index: number;
-  action: SyntheticQaStep["action"];
+  action: SyntheticQaStep['action'];
   description: string;
-  status: "ok" | "skipped";
+  status: 'ok' | 'skipped';
 }
 
 export interface SyntheticQaObservationResult {
-  kind: SyntheticQaObservation["kind"];
+  kind: SyntheticQaObservation['kind'];
   description: string;
   pass: boolean;
   detail: string;
@@ -49,7 +49,7 @@ export interface SyntheticQaLoopDef {
 
 /** A single deterministic user step in a fixture replay. */
 export interface SyntheticQaStep {
-  action: "visit" | "click" | "fill" | "wait";
+  action: 'visit' | 'click' | 'fill' | 'wait';
   description: string;
   target?: string;
   value?: string;
@@ -61,17 +61,17 @@ export interface SyntheticQaStep {
  */
 export type SyntheticQaObservation =
   | {
-      kind: "contains_text";
+      kind: 'contains_text';
       description: string;
       needle: string;
     }
   | {
-      kind: "not_contains_text";
+      kind: 'not_contains_text';
       description: string;
       needle: string;
     }
   | {
-      kind: "regex_match";
+      kind: 'regex_match';
       description: string;
       pattern: string;
       flags?: string;
@@ -87,7 +87,7 @@ export interface SyntheticQaFixture {
   route: string;
   goal: string;
   /** Whether this fixture intentionally encodes a broken UI variant. */
-  variant: "happy" | "broken";
+  variant: 'happy' | 'broken';
   steps: SyntheticQaStep[];
   snapshot_html: string;
   observations: SyntheticQaObservation[];

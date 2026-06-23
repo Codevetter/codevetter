@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-const DEFAULT_FIXTURE = "benchmarks/agent-prs/cases";
-const REQUIRED_REVIEWERS = ["codevetter", "coderabbit_free", "claude_code_review"];
+const DEFAULT_FIXTURE = 'benchmarks/agent-prs/cases';
+const REQUIRED_REVIEWERS = ['codevetter', 'coderabbit_free', 'claude_code_review'];
 
 function parseArgs(argv) {
-  const fixture = argv.find((arg) => !arg.startsWith("--")) ?? DEFAULT_FIXTURE;
-  const formatArg = argv.find((arg) => arg.startsWith("--format="));
-  const format = formatArg?.slice("--format=".length) ?? "text";
+  const fixture = argv.find((arg) => !arg.startsWith('--')) ?? DEFAULT_FIXTURE;
+  const formatArg = argv.find((arg) => arg.startsWith('--format='));
+  const format = formatArg?.slice('--format='.length) ?? 'text';
   return { fixture, format };
 }
 
 function readJsonFile(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
 function readCases(fixturePath) {
@@ -25,7 +25,7 @@ function readCases(fixturePath) {
   if (stat.isDirectory()) {
     return fs
       .readdirSync(abs)
-      .filter((name) => name.endsWith(".json") && !name.startsWith("_"))
+      .filter((name) => name.endsWith('.json') && !name.startsWith('_'))
       .sort()
       .map((name) => readJsonFile(path.join(abs, name)));
   }
@@ -34,19 +34,19 @@ function readCases(fixturePath) {
 }
 
 function hasValue(value) {
-  return typeof value === "string" && value.trim() !== "" && !/\bTODO\b/i.test(value);
+  return typeof value === 'string' && value.trim() !== '' && !/\bTODO\b/i.test(value);
 }
 
 function caseIssues(testCase) {
   const issues = [];
-  if (!hasValue(testCase.id)) issues.push("missing id");
-  if (!hasValue(testCase.title)) issues.push("missing title");
-  if (!hasValue(testCase.source?.repo)) issues.push("missing source.repo");
-  if (!hasValue(testCase.source?.pr_url)) issues.push("missing source.pr_url");
-  if (!hasValue(testCase.source?.diff_range)) issues.push("missing source.diff_range");
-  if (!hasValue(testCase.source?.agent)) issues.push("missing source.agent");
+  if (!hasValue(testCase.id)) issues.push('missing id');
+  if (!hasValue(testCase.title)) issues.push('missing title');
+  if (!hasValue(testCase.source?.repo)) issues.push('missing source.repo');
+  if (!hasValue(testCase.source?.pr_url)) issues.push('missing source.pr_url');
+  if (!hasValue(testCase.source?.diff_range)) issues.push('missing source.diff_range');
+  if (!hasValue(testCase.source?.agent)) issues.push('missing source.agent');
   if (!hasValue(testCase.source?.raw_diff_artifact)) {
-    issues.push("missing source.raw_diff_artifact");
+    issues.push('missing source.raw_diff_artifact');
   }
   for (const reviewer of REQUIRED_REVIEWERS) {
     if (!hasValue(testCase.source?.review_output_artifacts?.[reviewer])) {
@@ -55,7 +55,7 @@ function caseIssues(testCase) {
   }
 
   if (!Array.isArray(testCase.ground_truth) || testCase.ground_truth.length === 0) {
-    issues.push("missing ground_truth");
+    issues.push('missing ground_truth');
   } else {
     for (const [idx, issue] of testCase.ground_truth.entries()) {
       if (!hasValue(issue.id)) issues.push(`ground_truth[${idx}] missing id`);
@@ -100,8 +100,8 @@ function caseIssues(testCase) {
 
 function summarize(cases) {
   const rows = cases.map((testCase) => ({
-    id: testCase.id ?? "(missing id)",
-    title: testCase.title ?? "",
+    id: testCase.id ?? '(missing id)',
+    title: testCase.title ?? '',
     issues: caseIssues(testCase),
   }));
   const ready = rows.filter((row) => row.issues.length === 0).length;
@@ -114,8 +114,8 @@ function summarize(cases) {
 }
 
 const { fixture, format } = parseArgs(process.argv.slice(2));
-if (!["text", "json"].includes(format)) {
-  console.error("--format must be one of: text, json");
+if (!['text', 'json'].includes(format)) {
+  console.error('--format must be one of: text, json');
   process.exit(1);
 }
 
@@ -128,7 +128,7 @@ try {
 }
 
 const report = summarize(cases);
-if (format === "json") {
+if (format === 'json') {
   console.log(JSON.stringify({ fixture, ...report }, null, 2));
 } else {
   console.log(`Benchmark curation: ${report.ready_cases}/${report.total_cases} ready`);
@@ -136,7 +136,7 @@ if (format === "json") {
     console.log(`Incomplete: ${report.incomplete_cases}`);
   }
   for (const row of report.rows) {
-    const status = row.issues.length === 0 ? "ready" : `${row.issues.length} issue(s)`;
+    const status = row.issues.length === 0 ? 'ready' : `${row.issues.length} issue(s)`;
     console.log(`- ${row.id}: ${status}`);
     for (const issue of row.issues.slice(0, 5)) {
       console.log(`  - ${issue}`);

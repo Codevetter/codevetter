@@ -1,13 +1,9 @@
-import type { CliReviewFinding } from "@/lib/tauri-ipc";
+import type { CliReviewFinding } from '@/lib/tauri-ipc';
 
-import type { SyntheticQaRunResult } from "./types";
+import type { SyntheticQaRunResult } from './types';
 
-export type EvidenceLevel = "static" | "test" | "browser" | "runtime";
-export type VerificationStatus =
-  | "not_checked"
-  | "reproduced"
-  | "fixed"
-  | "not_reproduced";
+export type EvidenceLevel = 'static' | 'test' | 'browser' | 'runtime';
+export type VerificationStatus = 'not_checked' | 'reproduced' | 'fixed' | 'not_reproduced';
 
 export interface FindingEvidence {
   level: EvidenceLevel;
@@ -18,10 +14,8 @@ export interface FindingEvidence {
 }
 
 /** Map a synthetic QA run into the existing verification-evidence fields. */
-export function syntheticQaToFindingEvidence(
-  run: SyntheticQaRunResult,
-): FindingEvidence {
-  const status: VerificationStatus = run.pass ? "not_reproduced" : "reproduced";
+export function syntheticQaToFindingEvidence(run: SyntheticQaRunResult): FindingEvidence {
+  const status: VerificationStatus = run.pass ? 'not_reproduced' : 'reproduced';
   const artifacts = [
     ...(run.artifacts ?? []),
     ...(run.screenshot_path ? [run.screenshot_path] : []),
@@ -32,40 +26,38 @@ export function syntheticQaToFindingEvidence(
     `Synthetic QA · ${run.loop_id}`,
     `Goal: ${run.goal}`,
     `Route: ${run.route}`,
-    `Result: ${run.pass ? "PASS" : "FAIL"} (${run.duration_ms}ms)`,
-    "",
+    `Result: ${run.pass ? 'PASS' : 'FAIL'} (${run.duration_ms}ms)`,
+    '',
     run.notes,
   ];
   if (run.trace.console_errors.length > 0) {
-    noteLines.push("", "Console errors:", ...run.trace.console_errors.map((e) => `  - ${e}`));
+    noteLines.push('', 'Console errors:', ...run.trace.console_errors.map((e) => `  - ${e}`));
   }
   if (artifacts.length > 0) {
-    noteLines.push("", "Artifacts:", ...artifacts.map((path) => `  - ${path}`));
+    noteLines.push('', 'Artifacts:', ...artifacts.map((path) => `  - ${path}`));
   }
   if (run.error) {
-    noteLines.push("", `Runner: ${run.error}`);
+    noteLines.push('', `Runner: ${run.error}`);
   }
 
   return {
-    level: "browser",
+    level: 'browser',
     status,
     artifact,
-    notes: noteLines.join("\n").trim(),
+    notes: noteLines.join('\n').trim(),
     revalidation: {},
   };
 }
 
 /** Optional finding when the loop fails and nothing was selected to attach to. */
-export function syntheticQaFailureFinding(
-  run: SyntheticQaRunResult,
-): CliReviewFinding {
+export function syntheticQaFailureFinding(run: SyntheticQaRunResult): CliReviewFinding {
   return {
-    severity: "warning",
+    severity: 'warning',
     title: `Synthetic QA failed: ${run.goal}`,
     summary: run.notes,
     suggestion:
-      "Inspect the screenshot/trace in verification evidence, fix the UI regression, then re-run the loop.",
-    filePath: "apps/desktop/src/pages/QuickReview.tsx",
+      'Inspect the screenshot/trace in verification evidence, fix the UI regression, then re-run the loop.',
+    filePath: 'apps/desktop/src/pages/QuickReview.tsx',
     confidence: 0.9,
   };
 }
