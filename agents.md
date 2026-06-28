@@ -15,7 +15,7 @@ AI desktop code review tool for agent-generated code — runs offline as a Tauri
 - Auth: None (local desktop app; LLM API keys stored in user settings)
 - Testing: Playwright (e2e)
 - Deploy: GitHub Releases (Tauri build + `@tauri-apps/plugin-updater` auto-updater)
-- Package manager: npm workspaces (root) — NOT pnpm
+- Package manager: pnpm (workspaces root; `packageManager: pnpm@10.33.2` in package.json)
 
 ## Repo structure
 ```
@@ -37,14 +37,14 @@ docs/                   # Architecture, testing, development docs
 ## Key commands
 ```bash
 # From apps/desktop/
-npm run dev           # Vite dev server (port 1420)
-npm run tauri:dev     # Full Tauri app in dev mode (requires Rust toolchain)
-npm run tauri:build   # Production Tauri binary
-npm run test          # Playwright e2e tests
-npm run lint          # ESLint
+pnpm dev           # Vite dev server (port 1420)
+pnpm tauri:dev     # Full Tauri app in dev mode (requires Rust toolchain)
+pnpm tauri:build   # Production Tauri binary
+pnpm test          # Playwright e2e tests
+pnpm lint          # ESLint
 
 # From repo root
-npm install           # Install all workspace deps
+pnpm install           # Install all workspace deps
 ```
 
 ## Architecture notes
