@@ -4,11 +4,13 @@ import {
   FolderOpen,
   GitCommit,
   Loader2,
+  ScanSearch,
   Sparkles,
   User,
   Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -199,6 +201,13 @@ export default function Intel() {
               work actually concentrates. Computed locally from your existing git history.
             </p>
           </div>
+          <Link
+            to="/unpack"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)] px-3 text-xs text-slate-300 transition-colors hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
+          >
+            <ScanSearch size={13} className="text-[var(--cv-accent)]" />
+            Repo brief
+          </Link>
         </header>
 
         <Card className="mb-4 border-[var(--cv-line)] bg-[var(--bg-surface)]">

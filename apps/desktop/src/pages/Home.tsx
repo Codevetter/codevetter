@@ -222,6 +222,7 @@ function AccountUsageRow({
   onCheckLive,
   checkingLive,
   onDelete: _onDelete,
+  onHide,
   isSharedUsage,
 }: {
   account: ProviderAccount;
@@ -231,6 +232,7 @@ function AccountUsageRow({
   onCheckLive: () => void;
   checkingLive: boolean;
   onDelete: () => void;
+  onHide: () => void;
   isSharedUsage: boolean;
 }) {
   // Turn a raw live-usage error into an actionable hint.
@@ -308,6 +310,15 @@ function AccountUsageRow({
           </Badge>
         )}
         <span className="flex-1" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onHide}
+          className="h-auto px-1.5 py-0.5 text-[10px] text-slate-600 hover:text-slate-300"
+          title={`Hide ${account.name} from telemetry`}
+        >
+          Hide
+        </Button>
         {isLiveSupported && (
           <Button
             variant="ghost"
@@ -656,48 +667,72 @@ const AGENT_PALETTE: Record<string, { bar: string; label: string; estimated?: bo
   cursor: { bar: '#a78bfa', label: 'Cursor', estimated: true },
   grok: { bar: '#5da6f5', label: 'Grok', estimated: true },
   devin: { bar: '#fb923c', label: 'Devin' },
+  google: { bar: '#60a5fa', label: 'Gemini', estimated: true },
+  openai: { bar: '#34d399', label: 'OpenAI' },
+  openrouter: { bar: '#f472b6', label: 'OpenRouter' },
 };
 
 const agentPaletteFor = (agent: string) => AGENT_PALETTE[agent] ?? { bar: '#64748b', label: agent };
 
+function telemetryKeyForProvider(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return 'claude-code';
+    default:
+      return provider;
+  }
+}
+
 // ─── Agent visibility filter (localStorage-backed, temporary hide) ───────────
 
 const HIDDEN_AGENTS_KEY = 'cv_hidden_agents';
+const HIDDEN_TELEMETRY_ITEMS_KEY = 'cv_hidden_telemetry_items';
 
-function useHiddenAgents() {
+function useHiddenSet(storageKey: string) {
   const [hidden, setHidden] = useState<Set<string>>(() => {
     try {
-      const raw = localStorage.getItem(HIDDEN_AGENTS_KEY);
+      const raw = localStorage.getItem(storageKey);
       return raw ? new Set(raw.split(',').filter(Boolean)) : new Set();
     } catch {
       return new Set();
     }
   });
 
-  const toggle = useCallback((agent: string) => {
-    setHidden((prev) => {
-      const next = new Set(prev);
-      if (next.has(agent)) next.delete(agent);
-      else next.add(agent);
-      try {
-        localStorage.setItem(HIDDEN_AGENTS_KEY, [...next].join(','));
-      } catch {
-        // ignore quota / disabled storage
-      }
-      return next;
-    });
-  }, []);
+  const toggle = useCallback(
+    (agent: string) => {
+      setHidden((prev) => {
+        const next = new Set(prev);
+        if (next.has(agent)) next.delete(agent);
+        else next.add(agent);
+        try {
+          localStorage.setItem(storageKey, [...next].join(','));
+        } catch {
+          // ignore quota / disabled storage
+        }
+        return next;
+      });
+    },
+    [storageKey]
+  );
 
   const showAll = useCallback(() => {
     setHidden(new Set());
     try {
-      localStorage.removeItem(HIDDEN_AGENTS_KEY);
+      localStorage.removeItem(storageKey);
     } catch {
       // ignore
     }
-  }, []);
+  }, [storageKey]);
 
   return { hidden, toggle, showAll } as const;
+}
+
+function useHiddenAgents() {
+  return useHiddenSet(HIDDEN_AGENTS_KEY);
+}
+
+function useHiddenTelemetryItems() {
+  return useHiddenSet(HIDDEN_TELEMETRY_ITEMS_KEY);
 }
 
 /** Toggle chips for each known agent — click to hide/show from the breakdowns. */
@@ -743,6 +778,57 @@ function AgentFilterChips({
         <button
           onClick={onShowAll}
           className="ml-1 rounded-full px-2 py-0.5 text-[10px] text-amber-300/80 ring-1 ring-amber-500/30 hover:bg-amber-500/10"
+        >
+          show all
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Toggle chips for individual telemetry rows. Multiple accounts can share a provider. */
+function TelemetryItemFilterChips({
+  accounts,
+  hidden,
+  onToggle,
+  onShowAll,
+}: {
+  accounts: ProviderAccount[];
+  hidden: Set<string>;
+  onToggle: (accountId: string) => void;
+  onShowAll: () => void;
+}) {
+  if (accounts.length === 0) return null;
+  const anyHidden = hidden.size > 0;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 px-4 py-2 border-b border-[#1a1a1a]">
+      <span className="text-[10px] text-slate-600 mr-0.5">items:</span>
+      {accounts.map((account) => {
+        const palette = agentPaletteFor(telemetryKeyForProvider(account.provider));
+        const isHidden = hidden.has(account.id);
+        return (
+          <button
+            key={account.id}
+            onClick={() => onToggle(account.id)}
+            className={`inline-flex max-w-48 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-all ${
+              isHidden
+                ? 'bg-[#0b0d12] text-slate-600 ring-1 ring-[#1a1a1a] line-through'
+                : 'bg-[#13151b] text-slate-300 ring-1 ring-[#2a2a2a] hover:ring-[#3a3a3a]'
+            }`}
+            title={isHidden ? `Show ${account.name}` : `Hide ${account.name}`}
+          >
+            <span
+              className="h-1.5 w-1.5 shrink-0 rounded-full transition-opacity"
+              style={{ backgroundColor: palette.bar, opacity: isHidden ? 0.3 : 1 }}
+            />
+            <span className="truncate">{account.name}</span>
+          </button>
+        );
+      })}
+      {anyHidden && (
+        <button
+          onClick={onShowAll}
+          className="ml-1 text-[10px] text-[var(--cv-accent)] hover:text-slate-100"
         >
           show all
         </button>
@@ -1955,6 +2041,11 @@ const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes
 export default function Home() {
   const isInitialLoad = useRef(true);
   const { hidden: hiddenAgents, toggle: toggleAgent, showAll } = useHiddenAgents();
+  const {
+    hidden: hiddenTelemetryItems,
+    toggle: toggleTelemetryItem,
+    showAll: showAllTelemetryItems,
+  } = useHiddenTelemetryItems();
 
   // Data state — initialize from cache if available
   const [tokenUsage, setTokenUsage] = useState<TokenUsageStats | null>(
@@ -1972,6 +2063,7 @@ export default function Home() {
   );
   const [liveErrors, setLiveErrors] = useState<Record<string, string>>({});
   const [checkingLiveFor, setCheckingLiveFor] = useState<string | null>(null);
+  const visibleAccounts = accounts.filter((account) => !hiddenTelemetryItems.has(account.id));
 
   // UI state — skip loading spinner if we have cached data
   const [loading, setLoading] = useState(_cachedDashboard === null);
@@ -2354,6 +2446,12 @@ export default function Home() {
             </Card>
           ) : (
             <Card className="overflow-hidden rounded-none border-0 bg-transparent">
+              <TelemetryItemFilterChips
+                accounts={accounts}
+                hidden={hiddenTelemetryItems}
+                onToggle={toggleTelemetryItem}
+                onShowAll={showAllTelemetryItems}
+              />
               {accounts.length === 0 ? (
                 <CardContent className="flex flex-col items-center justify-center py-5 p-5">
                   <Terminal className="mb-2 h-6 w-6 text-slate-600" />
@@ -2362,13 +2460,26 @@ export default function Home() {
                     Log into Claude Code, Codex, Cursor, Gemini, or Devin to auto-detect
                   </p>
                 </CardContent>
+              ) : visibleAccounts.length === 0 ? (
+                <CardContent className="flex flex-col items-center justify-center py-5 p-5">
+                  <Terminal className="mb-2 h-6 w-6 text-slate-600" />
+                  <p className="text-[11px] text-slate-500">All telemetry rows are hidden</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2 h-7 px-2 text-[11px] text-[var(--cv-accent)]"
+                    onClick={showAllTelemetryItems}
+                  >
+                    Show all
+                  </Button>
+                </CardContent>
               ) : (
-                accounts.map((account, idx) => {
+                visibleAccounts.map((account, idx) => {
                   // If multiple accounts share the same provider, only the first shows local stats
                   const isFirstOfProvider =
-                    accounts.findIndex((a) => a.provider === account.provider) === idx;
+                    visibleAccounts.findIndex((a) => a.provider === account.provider) === idx;
                   const hasSiblings =
-                    accounts.filter((a) => a.provider === account.provider).length > 1;
+                    visibleAccounts.filter((a) => a.provider === account.provider).length > 1;
                   return (
                     <AccountUsageRow
                       key={account.id}
@@ -2378,6 +2489,7 @@ export default function Home() {
                       liveError={liveErrors[account.id] ?? null}
                       checkingLive={checkingLiveFor === account.id}
                       isSharedUsage={hasSiblings && !isFirstOfProvider}
+                      onHide={() => toggleTelemetryItem(account.id)}
                       onCheckLive={async () => {
                         setCheckingLiveFor(account.id);
                         try {

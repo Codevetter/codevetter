@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import SaasMakerTasksPanel from '@/components/SaasMakerTasksPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -235,6 +236,10 @@ export default function Fleet() {
             <div className="font-mono text-xs">{error}</div>
           </div>
         )}
+
+        <div className="mb-4">
+          <SaasMakerTasksPanel />
+        </div>
 
         {/* Linked projects table */}
         <Card className="mb-4 border-[var(--cv-line)] bg-[var(--bg-surface)]">

@@ -191,6 +191,7 @@ export default function App() {
       <Route element={<Shell />}>
         <Route path="/" element={<Home />} />
         <Route path="/review" element={<QuickReview />} />
+        <Route path="/workbench" element={<Roadmap />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/rubrics" element={<Rubrics />} />
         <Route path="/unpack" element={<RepoUnpacked />} />

@@ -1,12 +1,11 @@
 import {
   Eye,
   Home,
-  Map,
+  MonitorPlay,
   Rocket,
   ScanSearch,
   Settings,
   ShieldCheck,
-  Sparkles,
   Zap,
 } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
@@ -21,14 +20,26 @@ interface NavItem {
   href: string;
   icon: ReactNode;
   shortcut: string;
+  match?: string[];
 }
 
 const navItems: NavItem[] = [
   { label: 'Home', href: '/', icon: <Home size={18} />, shortcut: 'H' },
   { label: 'Review', href: '/review', icon: <Zap size={18} />, shortcut: 'R' },
-  { label: 'Roadmap', href: '/roadmap', icon: <Map size={18} />, shortcut: 'M' },
-  { label: 'Unpack', href: '/unpack', icon: <ScanSearch size={18} />, shortcut: 'U' },
-  { label: 'Intel', href: '/intel', icon: <Sparkles size={18} />, shortcut: 'I' },
+  {
+    label: 'Workbench',
+    href: '/workbench',
+    icon: <MonitorPlay size={18} />,
+    shortcut: 'W',
+    match: ['/workbench', '/roadmap'],
+  },
+  {
+    label: 'Repo',
+    href: '/unpack',
+    icon: <ScanSearch size={18} />,
+    shortcut: 'P',
+    match: ['/unpack', '/intel'],
+  },
   { label: 'Fleet', href: '/fleet', icon: <Rocket size={18} />, shortcut: 'F' },
   { label: 'T-Rex', href: '/trex', icon: <Eye size={18} />, shortcut: 'T' },
   { label: 'Settings', href: '/settings', icon: <Settings size={18} />, shortcut: ',' },
@@ -46,7 +57,8 @@ export default function Sidebar() {
 
   function isActive(href: string): boolean {
     if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
+    const item = navItems.find((navItem) => navItem.href === href);
+    return (item?.match ?? [href]).some((prefix) => pathname.startsWith(prefix));
   }
 
   // Find current page label

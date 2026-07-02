@@ -38,6 +38,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -581,6 +582,13 @@ export default function RepoUnpacked() {
               cites at least one source file.
             </p>
           </div>
+          <Link
+            to="/intel"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)] px-3 text-xs text-slate-300 transition-colors hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
+          >
+            <GitCommit size={13} className="text-[var(--cv-accent)]" />
+            Attribution
+          </Link>
         </header>
 
         <RepoPicker

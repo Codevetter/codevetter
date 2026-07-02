@@ -9,7 +9,6 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import SaasMakerTasksPanel from '@/components/SaasMakerTasksPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +36,8 @@ const ADAPTER_FILTERS = [
   { value: 'claude-code', label: 'Claude' },
   { value: 'codex', label: 'Codex' },
   { value: 'cursor', label: 'Cursor' },
+  { value: 'devin', label: 'Devin' },
+  { value: 'grok', label: 'Grok' },
 ];
 
 const KIND_FILTERS = [
@@ -270,9 +271,9 @@ export default function Roadmap() {
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="cv-label text-slate-500">roadmap</div>
+            <div className="cv-label text-slate-500">workbench</div>
             <h1 className="mt-1 truncate text-lg font-semibold tracking-normal text-slate-100">
-              Shipped verification surfaces
+              Verification tools
             </h1>
           </div>
           <Button
@@ -311,7 +312,6 @@ export default function Roadmap() {
           </Link>
         </div>
 
-        <SaasMakerTasksPanel />
         <RoadmapReleaseBanner />
         <VerificationWorkbenchPanel scorecard={scorecard} />
         <SessionScorecardPanel scorecard={scorecard} />
