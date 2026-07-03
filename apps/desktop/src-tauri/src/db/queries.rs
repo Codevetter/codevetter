@@ -2675,6 +2675,75 @@ mod tests {
     }
 
     #[test]
+    fn standards_pack_usage_groups_reviews_and_findings() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+
+        let mk = |pack: Option<&str>| {
+            create_local_review(
+                &conn,
+                &LocalReviewInput {
+                    review_type: Some("cli".to_string()),
+                    source_label: Some("HEAD".to_string()),
+                    repo_path: Some("/tmp/repo".to_string()),
+                    repo_full_name: None,
+                    pr_number: None,
+                    agent_used: Some("claude".to_string()),
+                    status: Some("completed".to_string()),
+                    standards_pack: pack.map(str::to_string),
+                },
+            )
+            .expect("review")
+        };
+        let add_finding = |review_id: &str| {
+            insert_review_finding(
+                &conn,
+                &LocalReviewFindingInput {
+                    review_id: review_id.to_string(),
+                    severity: "high".to_string(),
+                    title: "t".to_string(),
+                    summary: "s".to_string(),
+                    suggestion: None,
+                    file_path: None,
+                    line: None,
+                    confidence: None,
+                    fingerprint: None,
+                    discovery_method: None,
+                },
+            )
+            .expect("finding");
+        };
+
+        // Product Safety: 2 reviews, 3 findings total.
+        let a = mk(Some("Product Safety"));
+        add_finding(&a);
+        add_finding(&a);
+        let b = mk(Some("Product Safety"));
+        add_finding(&b);
+        // Security Boundary: 1 review, 0 findings.
+        mk(Some("Security Boundary"));
+        // A NULL-pack review is excluded entirely.
+        mk(None);
+
+        let usage = get_standards_pack_usage(&conn).expect("usage");
+        assert_eq!(usage.len(), 2, "NULL-pack review is not grouped");
+
+        let ps = usage
+            .iter()
+            .find(|r| r.standards_pack == "Product Safety")
+            .expect("product safety row");
+        assert_eq!(ps.review_count, 2);
+        assert_eq!(ps.total_findings, 3);
+
+        let sb = usage
+            .iter()
+            .find(|r| r.standards_pack == "Security Boundary")
+            .expect("security boundary row");
+        assert_eq!(sb.review_count, 1);
+        assert_eq!(sb.total_findings, 0);
+    }
+
+    #[test]
     fn synthetic_qa_run_round_trips_for_review() {
         let conn = Connection::open_in_memory().expect("memory db");
         schema::run_migrations(&conn).expect("schema");
