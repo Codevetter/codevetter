@@ -321,17 +321,6 @@ export interface AgentDayUsage {
   cost: number;
 }
 
-/** All-time generated/cache tokens + USD cost grouped by project. */
-export interface ProjectUsage {
-  project_id: string;
-  display_name: string;
-  dir_path: string;
-  sessions: number;
-  generated: number;
-  cache: number;
-  cost: number;
-}
-
 /** All-time generated/cache tokens + USD cost grouped by model. */
 export interface ModelUsage {
   model: string;
@@ -1146,12 +1135,6 @@ export async function getAgentUsageBreakdown(): Promise<AgentUsageRow[]> {
 export async function getAgentUsageByDay(days?: number): Promise<AgentDayUsage[]> {
   return safeInvoke<AgentDayUsage[]>('get_agent_usage_by_day', {
     days: days ?? null,
-  });
-}
-
-export async function getUsageByProject(limit?: number): Promise<ProjectUsage[]> {
-  return safeInvoke<ProjectUsage[]>('get_usage_by_project', {
-    limit: limit ?? null,
   });
 }
 

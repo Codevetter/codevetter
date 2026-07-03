@@ -29,6 +29,26 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         [],
     );
 
+    // v1.1.100: per-model token usage within a session. cc_sessions.model_used
+    // is last-model-wins, which misattributes multi-model Claude sessions (a
+    // session that switched opus→fable mid-way booked ALL its tokens/cost to
+    // fable). By-model analytics prefer these rows and fall back to model_used
+    // only for sessions without them. Populated by the indexer per message and
+    // backfilled once from existing Claude JSONL files.
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS session_model_usage (
+            session_id TEXT NOT NULL REFERENCES cc_sessions(id) ON DELETE CASCADE,
+            model TEXT NOT NULL,
+            message_count INTEGER NOT NULL DEFAULT 0,
+            input_tokens INTEGER NOT NULL DEFAULT 0,
+            output_tokens INTEGER NOT NULL DEFAULT 0,
+            cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+            cache_creation_tokens INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (session_id, model)
+        )",
+        [],
+    );
+
     // Stop the indexer pegging the CPU on "unarchivable" sessions. A handful of
     // sessions (malformed / archive-less transcripts — e.g. a 118 MB codex log)
     // have message_count>0 but produce ZERO archive rows and never get a byte

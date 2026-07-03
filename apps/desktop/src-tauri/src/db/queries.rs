@@ -2210,46 +2210,90 @@ pub fn get_agent_usage_by_day(
     Ok(rows)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProjectUsage {
-    pub project_id: String,
-    pub display_name: String,
-    pub dir_path: String,
-    pub sessions: i64,
-    pub generated: i64,
-    pub cache: i64,
-    pub cost: f64,
+/// One model's token usage within one session (row shape for
+/// `session_model_usage`). `input_tokens` includes cache read/creation tokens,
+/// mirroring the cc_sessions totals.
+#[derive(Debug, Clone, Default)]
+pub struct SessionModelUsageDelta {
+    pub model: String,
+    pub message_count: i64,
+    pub input_tokens: i64,
+    pub output_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub cache_creation_tokens: i64,
 }
 
-/// All-time generated/cache tokens + USD cost grouped by project, top `limit` by cost.
-pub fn get_usage_by_project(
+/// Replace a session's per-model usage rows with a freshly parsed breakdown
+/// (full-reparse path — mirrors how archive rows are replaced).
+pub fn replace_session_model_usage(
     conn: &Connection,
-    limit: i64,
-) -> Result<Vec<ProjectUsage>, rusqlite::Error> {
+    session_id: &str,
+    usage: &[SessionModelUsageDelta],
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "DELETE FROM session_model_usage WHERE session_id = ?1",
+        params![session_id],
+    )?;
+    add_session_model_usage(conn, session_id, usage)
+}
+
+/// Add per-model usage deltas from an incremental tail parse (Claude reports
+/// per-message deltas, so summing is correct — cumulative-total adapters must
+/// not populate model_usage).
+pub fn add_session_model_usage(
+    conn: &Connection,
+    session_id: &str,
+    usage: &[SessionModelUsageDelta],
+) -> Result<(), rusqlite::Error> {
+    if usage.is_empty() {
+        return Ok(());
+    }
     let mut stmt = conn.prepare(
-        "SELECT p.id, p.display_name, p.dir_path,
-                COUNT(s.id),
-                COALESCE(SUM(MAX(COALESCE(s.total_input_tokens,0) - COALESCE(s.cache_read_tokens,0), 0)
-                         + COALESCE(s.total_output_tokens,0)), 0) AS generated,
-                COALESCE(SUM(COALESCE(s.cache_read_tokens,0)), 0) AS cache,
-                COALESCE(SUM(COALESCE(s.estimated_cost_usd,0.0)), 0.0) AS cost
-         FROM cc_sessions s
-         JOIN cc_projects p ON p.id = s.project_id
-         GROUP BY p.id
-         HAVING generated > 0
-         ORDER BY cost DESC
-         LIMIT ?1",
+        "INSERT INTO session_model_usage
+            (session_id, model, message_count, input_tokens, output_tokens,
+             cache_read_tokens, cache_creation_tokens)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+         ON CONFLICT(session_id, model) DO UPDATE SET
+            message_count = message_count + excluded.message_count,
+            input_tokens = input_tokens + excluded.input_tokens,
+            output_tokens = output_tokens + excluded.output_tokens,
+            cache_read_tokens = cache_read_tokens + excluded.cache_read_tokens,
+            cache_creation_tokens = cache_creation_tokens + excluded.cache_creation_tokens",
+    )?;
+    for u in usage {
+        stmt.execute(params![
+            session_id,
+            u.model,
+            u.message_count,
+            u.input_tokens,
+            u.output_tokens,
+            u.cache_read_tokens,
+            u.cache_creation_tokens,
+        ])?;
+    }
+    Ok(())
+}
+
+/// A session's per-model usage rows (empty when the session has no breakdown —
+/// non-Claude agents, or a Claude session whose file vanished before backfill).
+pub fn get_session_model_usage(
+    conn: &Connection,
+    session_id: &str,
+) -> Result<Vec<SessionModelUsageDelta>, rusqlite::Error> {
+    let mut stmt = conn.prepare(
+        "SELECT model, message_count, input_tokens, output_tokens,
+                cache_read_tokens, cache_creation_tokens
+         FROM session_model_usage WHERE session_id = ?1",
     )?;
     let rows = stmt
-        .query_map(params![limit], |r| {
-            Ok(ProjectUsage {
-                project_id: r.get(0)?,
-                display_name: r.get(1)?,
-                dir_path: r.get(2)?,
-                sessions: r.get(3)?,
-                generated: r.get(4)?,
-                cache: r.get(5)?,
-                cost: r.get(6)?,
+        .query_map(params![session_id], |r| {
+            Ok(SessionModelUsageDelta {
+                model: r.get(0)?,
+                message_count: r.get(1)?,
+                input_tokens: r.get(2)?,
+                output_tokens: r.get(3)?,
+                cache_read_tokens: r.get(4)?,
+                cache_creation_tokens: r.get(5)?,
             })
         })?
         .collect::<Result<Vec<_>, _>>()?;
@@ -2265,32 +2309,73 @@ pub struct ModelUsage {
     pub cost: f64,
 }
 
-/// All-time generated/cache tokens + USD cost grouped by model_used, by cost desc.
-pub fn get_usage_by_model(conn: &Connection) -> Result<Vec<ModelUsage>, rusqlite::Error> {
+/// All-time generated/cache tokens + USD cost grouped by model, by cost desc.
+///
+/// Prefers the per-message `session_model_usage` breakdown so multi-model
+/// Claude sessions split correctly; sessions without breakdown rows fall back
+/// to session-level `model_used`. Cost is recomputed from the grouped token
+/// sums via `estimate` (exact: pricing is linear in tokens), so the split
+/// never depends on the stored single-model per-session cost. `<synthetic>`
+/// (Claude Code's internal non-API marker) is folded into "unknown".
+pub fn get_usage_by_model(
+    conn: &Connection,
+    estimate: impl Fn(&str, i64, i64, i64, i64) -> f64,
+) -> Result<Vec<ModelUsage>, rusqlite::Error> {
     let mut stmt = conn.prepare(
-        "SELECT COALESCE(NULLIF(model_used, ''), 'unknown') AS model,
-                COUNT(*),
-                COALESCE(SUM(MAX(COALESCE(total_input_tokens,0) - COALESCE(cache_read_tokens,0), 0)
-                         + COALESCE(total_output_tokens,0)), 0) AS generated,
-                COALESCE(SUM(COALESCE(cache_read_tokens,0)), 0) AS cache,
-                COALESCE(SUM(COALESCE(estimated_cost_usd,0.0)), 0.0) AS cost
-         FROM cc_sessions
-         GROUP BY model
-         HAVING generated > 0
-         ORDER BY cost DESC",
+        "SELECT model, COUNT(DISTINCT session_id),
+                COALESCE(SUM(input_tokens), 0), COALESCE(SUM(output_tokens), 0),
+                COALESCE(SUM(cache_read_tokens), 0), COALESCE(SUM(cache_creation_tokens), 0)
+         FROM (
+            SELECT CASE WHEN model = '<synthetic>' THEN 'unknown' ELSE model END AS model,
+                   session_id, input_tokens, output_tokens,
+                   cache_read_tokens, cache_creation_tokens
+            FROM session_model_usage
+            UNION ALL
+            SELECT CASE WHEN COALESCE(NULLIF(s.model_used, ''), 'unknown') = '<synthetic>'
+                        THEN 'unknown'
+                        ELSE COALESCE(NULLIF(s.model_used, ''), 'unknown') END,
+                   s.id, COALESCE(s.total_input_tokens, 0), COALESCE(s.total_output_tokens, 0),
+                   COALESCE(s.cache_read_tokens, 0), COALESCE(s.cache_creation_tokens, 0)
+            FROM cc_sessions s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM session_model_usage u WHERE u.session_id = s.id
+            )
+         )
+         GROUP BY model",
     )?;
-    let rows = stmt
+    let raw = stmt
         .query_map([], |r| {
-            Ok(ModelUsage {
-                model: r.get(0)?,
-                sessions: r.get(1)?,
-                generated: r.get(2)?,
-                cache: r.get(3)?,
-                cost: r.get(4)?,
-            })
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, i64>(1)?,
+                r.get::<_, i64>(2)?,
+                r.get::<_, i64>(3)?,
+                r.get::<_, i64>(4)?,
+                r.get::<_, i64>(5)?,
+            ))
         })?
         .collect::<Result<Vec<_>, _>>()?;
-    Ok(rows)
+    let mut out: Vec<ModelUsage> = raw
+        .into_iter()
+        .map(|(model, sessions, input, output, cache_read, cache_creation)| {
+            let generated = (input - cache_read - cache_creation).max(0) + output;
+            let cost = estimate(&model, input, output, cache_read, cache_creation);
+            ModelUsage {
+                model,
+                sessions,
+                generated,
+                cache: cache_read,
+                cost,
+            }
+        })
+        .filter(|m| m.generated > 0)
+        .collect();
+    out.sort_by(|a, b| {
+        b.cost
+            .partial_cmp(&a.cost)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+    Ok(out)
 }
 
 // ─────────────────────────────────────────────────────────────────

@@ -144,6 +144,10 @@ fn main() {
                             // cumulative-add bug (one-time), then refresh stored
                             // per-session $ cost if the price table changed.
                             crate::commands::history::fix_codex_token_totals(&conn);
+                            // One-time per-model usage backfill (v1.1.100) —
+                            // must precede the cost recompute so multi-model
+                            // sessions reprice from their per-model split.
+                            crate::commands::history::backfill_session_model_usage(&conn);
                             crate::commands::history::recompute_all_session_costs(&conn);
                             log::info!("Storage cleanup done.");
                         }
@@ -333,7 +337,6 @@ fn main() {
             commands::history::get_token_usage_stats,
             commands::history::get_agent_usage_breakdown,
             commands::history::get_agent_usage_by_day,
-            commands::history::get_usage_by_project,
             commands::history::get_usage_by_model,
             // Engineering Intelligence (/intel)
             commands::intel::attribute_repo_commits,
