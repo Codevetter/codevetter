@@ -59,6 +59,21 @@ import {
 } from '@/lib/quick-review-format';
 import { diffRangeFromSourceLabel, repoPrefKey } from '@/lib/quick-review-state';
 import {
+  defaultFindingEvidence,
+  emptyBrowserEvidence,
+  type EvidenceLevel,
+  type FindingEvidence,
+  isLoopbackQaBaseUrl,
+  type QaAuthMode,
+  type QaPreset,
+  type QaRepoTraceMode,
+  type QaRunHistoryEntry,
+  type QaRunnerType,
+  type QaTargetPreset,
+  type QaWorkflowPreset,
+  type VerificationStatus,
+} from '@/lib/quick-review-types';
+import {
   buildCodebaseHistoryExplanations,
   buildFindingHunkNoteMarkdown,
   buildFocusedReviewMemoryGraph,
@@ -139,12 +154,6 @@ import { cn } from '@/lib/utils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-type EvidenceLevel = 'static' | 'test' | 'browser' | 'runtime';
-type VerificationStatus = 'not_checked' | 'reproduced' | 'fixed' | 'not_reproduced';
-type QaRunnerType = 'playwright_builtin' | 'external_skill' | 'repo_playwright';
-type QaAuthMode = 'none' | 'storage_state';
-type QaRepoTraceMode = 'off' | 'retain-on-failure' | 'on';
-
 const evidenceCandidateStatusOptions: Array<{
   value: EvidenceCandidateStatus;
   label: string;
@@ -155,82 +164,6 @@ const evidenceCandidateStatusOptions: Array<{
   { value: 'rejected', label: 'Rejected' },
   { value: 'irrelevant', label: 'Irrelevant' },
 ];
-
-interface FindingEvidence {
-  level: EvidenceLevel;
-  status: VerificationStatus;
-  artifact: string;
-  notes: string;
-  // Which revalidation checklist items the user has ticked off after marking
-  // the finding "fixed". Keyed by the stable item id from buildRevalidationChecklist.
-  revalidation: Record<string, boolean>;
-}
-
-const defaultFindingEvidence: FindingEvidence = {
-  level: 'static',
-  status: 'not_checked',
-  artifact: '',
-  notes: '',
-  revalidation: {},
-};
-
-const emptyBrowserEvidence = (): BrowserEvidenceRef => ({
-  route: '',
-  screenshotPath: '',
-  domSnippet: '',
-  consoleErrors: '',
-  networkFailures: '',
-  qaArtifacts: '',
-});
-
-interface QaPreset {
-  baseUrl: string;
-  loopId: string;
-  runnerType: QaRunnerType;
-  goal: string;
-  externalCommand: string;
-  repoSpecPath: string;
-  authMode: QaAuthMode;
-  storageStatePath: string;
-  targetRoute: string;
-  allowRemoteTarget: boolean;
-  repoTraceMode: QaRepoTraceMode;
-}
-
-interface QaTargetPreset {
-  id: string;
-  name: string;
-  route: string;
-  goal: string;
-}
-
-interface QaWorkflowPreset extends QaPreset {
-  id: string;
-  name: string;
-  targets?: QaTargetPreset[];
-  updatedAt: string;
-}
-
-interface QaRunHistoryEntry {
-  createdAt: string;
-  loopId: string;
-  runnerType: string;
-  baseUrl: string;
-  goal: string;
-  route?: string;
-  authMode?: QaAuthMode;
-  pass: boolean;
-  durationMs: number;
-  notes: string;
-  screenshotPath: string | null;
-  artifacts?: string[];
-  consoleErrors: number;
-  externalCommand?: string;
-  repoSpecPath?: string;
-  repoTraceMode?: QaRepoTraceMode;
-  storageStatePath?: string;
-  allowRemoteTarget?: boolean;
-}
 
 function qaRequestFromHistory(
   run: Pick<QaRunHistoryEntry, 'baseUrl' | 'loopId' | 'runnerType' | 'goal'> &
@@ -544,21 +477,6 @@ function procedureEventsForFindingEvidence(
       createdAt: new Date().toISOString(),
     },
   ];
-}
-
-function isLoopbackQaBaseUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return (
-      url.hostname === 'localhost' ||
-      url.hostname === '127.0.0.1' ||
-      url.hostname === '::1' ||
-      url.hostname.endsWith('.localhost') ||
-      url.hostname.startsWith('127.')
-    );
-  } catch {
-    return false;
-  }
 }
 
 const evidenceLevels: Array<{ value: EvidenceLevel; label: string }> = [
