@@ -67,7 +67,11 @@ function buildSearchRegex(needle: string): { re: RegExp | null; error: string | 
   const regexMatch = needle.match(/^\/(.+)\/([gimsuy]*)$/);
   if (regexMatch) {
     try {
-      const re = new RegExp(regexMatch[1], regexMatch[2] || 'gi');
+      // Force the global flag: HighlightedLine iterates with exec(), which
+      // never advances lastIndex on a non-global regex (infinite loop).
+      const userFlags = regexMatch[2] || 'i';
+      const flags = userFlags.includes('g') ? userFlags : `${userFlags}g`;
+      const re = new RegExp(regexMatch[1], flags);
       return { re, error: null };
     } catch {
       return { re: null, error: 'Invalid regex' };
