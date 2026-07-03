@@ -26,7 +26,6 @@ import type {
   DayBucket,
   LiveUsageResult,
   ModelUsage,
-  ProjectUsage,
   ProviderAccount,
   ProviderUsageLedgerRow,
   SessionAdapterRun,
@@ -44,7 +43,6 @@ import {
   getAgentUsageByDay,
   getTokenUsageStats,
   getUsageByModel,
-  getUsageByProject,
   isTauriAvailable,
   listProviderAccounts,
   listProviderUsageLedger,
@@ -1628,24 +1626,6 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
   );
 }
 
-/** Top projects by all-time spend ($). */
-function UsageByProject({ data }: { data: ProjectUsage[] }) {
-  const max = Math.max(0.0001, ...data.map((d) => d.cost));
-  const rows = data.map((p) => ({
-    key: p.project_id,
-    label: p.display_name || p.dir_path.split('/').pop() || 'unknown',
-    value: p.cost,
-    sub: `${p.sessions}s`,
-    color: '#d6a947',
-  }));
-  return (
-    <div>
-      <div className="mb-2 text-[11px] text-slate-500">Top projects · all time</div>
-      <HBarList rows={rows} max={max} empty="No project usage yet." format={formatMoney} />
-    </div>
-  );
-}
-
 /** Usage by model ($). */
 function UsageByModel({ data }: { data: ModelUsage[] }) {
   const max = Math.max(0.0001, ...data.map((d) => d.cost));
@@ -2144,7 +2124,6 @@ export default function Home() {
     _cachedDashboard?.tokenUsage ?? null
   );
   const [agentByDay, setAgentByDay] = useState<AgentDayUsage[]>([]);
-  const [projectUsage, setProjectUsage] = useState<ProjectUsage[]>([]);
   const [modelUsage, setModelUsage] = useState<ModelUsage[]>([]);
   const [accounts, setAccounts] = useState<ProviderAccount[]>(_cachedDashboard?.accounts ?? []);
   const [accountUsages, setAccountUsages] = useState<Record<string, AccountUsage>>(
@@ -2204,9 +2183,6 @@ export default function Home() {
       // load independently and never block or fail the core dashboard.
       void getAgentUsageByDay(180)
         .then((v) => setAgentByDay(v))
-        .catch(() => undefined);
-      void getUsageByProject(8)
-        .then((v) => setProjectUsage(v))
         .catch(() => undefined);
       void getUsageByModel()
         .then((v) => setModelUsage(v))
@@ -2640,8 +2616,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Activity heatmap + project/model breakdowns */}
-        {(agentByDay.length > 0 || projectUsage.length > 0 || modelUsage.length > 0) && (
+        {/* Activity heatmap + model breakdown */}
+        {(agentByDay.length > 0 || modelUsage.length > 0) && (
           <div className="cv-frame overflow-hidden">
             <div className="cv-terminal-bar h-10 px-4">
               <Activity size={14} className="text-[var(--cv-accent)]" />
@@ -2649,10 +2625,7 @@ export default function Home() {
             </div>
             <div className="space-y-5 p-4">
               <UsageCalendarHeatmap data={agentByDay} />
-              <div className="grid gap-5 md:grid-cols-2">
-                <UsageByProject data={projectUsage} />
-                <UsageByModel data={modelUsage} />
-              </div>
+              <UsageByModel data={modelUsage} />
             </div>
           </div>
         )}

@@ -33,6 +33,24 @@ pub struct RawSessionAdapterSummary {
     /// is what inflated one Codex session to 61.5B tokens / $35k.
     #[serde(default)]
     pub tokens_are_cumulative: bool,
+    /// Per-model breakdown of the token fields above, keyed by model id.
+    /// Claude sessions can span multiple models (mid-session /model switches,
+    /// subagent turns), so session-level `model_used` (last model wins)
+    /// misattributes cost. Empty for adapters whose transcripts don't carry a
+    /// per-message model; consumers fall back to `model_used` when empty.
+    #[serde(default)]
+    pub model_usage: BTreeMap<String, ModelTokenUsage>,
+}
+
+/// Token usage attributed to one model within a session. Same semantics as the
+/// session totals: `input_tokens` includes cache read + cache creation tokens.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct ModelTokenUsage {
+    pub message_count: i64,
+    pub input_tokens: i64,
+    pub output_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub cache_creation_tokens: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -80,6 +98,7 @@ fn empty_summary(adapter_id: &str, agent_type: &str, source_ref: &str) -> RawSes
         archive_messages: Vec::new(),
         parse_warnings: Vec::new(),
         tokens_are_cumulative: false,
+        model_usage: BTreeMap::new(),
     }
 }
 
@@ -412,6 +431,28 @@ impl SessionSourceAdapter for ClaudeCodeAdapter {
             summary.cache_read_tokens += cache_read;
             summary.cache_creation_tokens += cache_creation;
 
+            // Attribute this message's tokens to its own model. `<synthetic>`
+            // is Claude Code's marker for internal non-API messages, not a
+            // billable model — bucket it (and missing models) under "unknown".
+            if input + cache_creation + cache_read + output > 0 {
+                let model_key = parsed
+                    .get("message")
+                    .and_then(|message| message.get("model"))
+                    .and_then(|v| v.as_str())
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty() && *s != "<synthetic>")
+                    .unwrap_or("unknown");
+                let entry = summary
+                    .model_usage
+                    .entry(model_key.to_string())
+                    .or_default();
+                entry.message_count += 1;
+                entry.input_tokens += input + cache_creation + cache_read;
+                entry.output_tokens += output;
+                entry.cache_read_tokens += cache_read;
+                entry.cache_creation_tokens += cache_creation;
+            }
+
             if let Some(model) = parsed
                 .get("message")
                 .and_then(|message| message.get("model"))
@@ -728,6 +769,52 @@ mod tests {
             Some("summary")
         );
         assert!(summary.parse_warnings.is_empty());
+        // Per-model attribution: both usage-bearing messages are sonnet.
+        let sonnet = summary.model_usage.get("claude-sonnet-4").expect("sonnet row");
+        assert_eq!(sonnet.message_count, 2);
+        assert_eq!(sonnet.input_tokens, 135);
+        assert_eq!(sonnet.output_tokens, 40);
+        assert_eq!(sonnet.cache_read_tokens, 25);
+        assert_eq!(sonnet.cache_creation_tokens, 10);
+    }
+
+    #[test]
+    fn multi_model_claude_session_splits_usage_per_model() {
+        // A session that switches models mid-way must NOT book everything to
+        // the last model seen (the bug that misattributed opus usage to
+        // fable). `<synthetic>` and model-less usage fold into "unknown".
+        let raw = concat!(
+            r#"{"type":"message","sessionId":"s1","timestamp":"2026-06-12T16:00:00Z","message":{"role":"assistant","model":"claude-opus-4-7","usage":{"input_tokens":10,"cache_read_input_tokens":1000,"output_tokens":50}}}"#,
+            "\n",
+            r#"{"type":"message","sessionId":"s1","timestamp":"2026-06-12T16:01:00Z","message":{"role":"assistant","model":"claude-fable-5","usage":{"input_tokens":5,"cache_read_input_tokens":200,"output_tokens":25}}}"#,
+            "\n",
+            r#"{"type":"message","sessionId":"s1","timestamp":"2026-06-12T16:02:00Z","message":{"role":"assistant","model":"<synthetic>","usage":{"input_tokens":3,"output_tokens":1}}}"#,
+            "\n",
+        );
+        let summary = ClaudeCodeAdapter.parse_raw("/fixtures/multi-model.jsonl", raw);
+
+        // Session-level model_used stays last-wins (display fallback only).
+        assert_eq!(summary.model_used.as_deref(), Some("<synthetic>"));
+
+        let opus = summary.model_usage.get("claude-opus-4-7").expect("opus row");
+        assert_eq!(opus.input_tokens, 1010);
+        assert_eq!(opus.cache_read_tokens, 1000);
+        assert_eq!(opus.output_tokens, 50);
+
+        let fable = summary.model_usage.get("claude-fable-5").expect("fable row");
+        assert_eq!(fable.input_tokens, 205);
+        assert_eq!(fable.output_tokens, 25);
+
+        let unknown = summary.model_usage.get("unknown").expect("unknown row");
+        assert_eq!(unknown.input_tokens, 3);
+        assert_eq!(unknown.output_tokens, 1);
+        assert!(summary.model_usage.get("<synthetic>").is_none());
+
+        // The split reconciles with the session totals.
+        let split_input: i64 = summary.model_usage.values().map(|u| u.input_tokens).sum();
+        assert_eq!(split_input, summary.total_input_tokens);
+        let split_output: i64 = summary.model_usage.values().map(|u| u.output_tokens).sum();
+        assert_eq!(split_output, summary.total_output_tokens);
     }
 
     #[test]

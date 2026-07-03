@@ -693,23 +693,15 @@ pub async fn get_agent_usage_by_day(
     queries::get_agent_usage_by_day(&conn, days.unwrap_or(30)).map_err(|e| e.to_string())
 }
 
-/// All-time generated/cache tokens grouped by project, top `limit` (default 12).
-#[tauri::command]
-pub async fn get_usage_by_project(
-    db: State<'_, DbState>,
-    limit: Option<i64>,
-) -> Result<Vec<queries::ProjectUsage>, String> {
-    let conn = conn_lock(&db)?;
-    queries::get_usage_by_project(&conn, limit.unwrap_or(12)).map_err(|e| e.to_string())
-}
-
-/// All-time generated/cache tokens grouped by model.
+/// All-time generated/cache tokens grouped by model (per-message attribution
+/// where a session_model_usage breakdown exists; costs priced live from the
+/// current table so the split never inherits stale per-session costs).
 #[tauri::command]
 pub async fn get_usage_by_model(
     db: State<'_, DbState>,
 ) -> Result<Vec<queries::ModelUsage>, String> {
     let conn = conn_lock(&db)?;
-    queries::get_usage_by_model(&conn).map_err(|e| e.to_string())
+    queries::get_usage_by_model(&conn, estimate_cost).map_err(|e| e.to_string())
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -894,6 +886,9 @@ fn estimate_cost(
     // PRICING_REV in recompute_all_session_costs whenever these change so the
     // stored estimated_cost_usd is refreshed for already-indexed sessions.
     let (input_price, output_price, cache_read_price, cache_write_price) = match model {
+        // Claude Fable 5 / Mythos 5 are $10/$50 (above Opus tier); cache-read
+        // 0.1× input, cache-write 1.25× input.
+        m if m.contains("fable") || m.contains("mythos") => (10.0, 50.0, 1.0, 12.5),
         // Claude Opus 4.6+ dropped to $5/$25 (older Opus was $15/$75).
         m if m.contains("opus") => (5.0, 25.0, 0.50, 6.25),
         m if m.contains("sonnet") => (3.0, 15.0, 0.30, 3.75),
@@ -931,7 +926,40 @@ fn estimate_cost(
 /// sessions get their stored `estimated_cost_usd` refreshed (otherwise mtime-skip
 /// keeps the old cost). Rev 2 = Opus $5/$25 + Haiku 4.5 $1/$5 + o3 $2/$8.
 /// Rev 3 = GLM-5.2 $1.40/$4.40 + Devin-internal models.
-const PRICING_REV: &str = "3";
+/// Rev 4 = Fable/Mythos 5 $10/$50 (was falling to the sonnet default) + session
+/// costs now sum per-model rows when a `session_model_usage` breakdown exists.
+const PRICING_REV: &str = "4";
+
+/// Estimated cost for one session: per-model when a breakdown exists (correct
+/// for multi-model Claude sessions), else session-level `model_used` pricing.
+fn estimate_session_cost(
+    conn: &rusqlite::Connection,
+    session_id: &str,
+    model_used: &str,
+    total_input: i64,
+    output_tokens: i64,
+    cache_read: i64,
+    cache_creation: i64,
+) -> f64 {
+    if let Ok(rows) = queries::get_session_model_usage(conn, session_id) {
+        if !rows.is_empty() {
+            let cost: f64 = rows
+                .iter()
+                .map(|u| {
+                    estimate_cost(
+                        &u.model,
+                        u.input_tokens,
+                        u.output_tokens,
+                        u.cache_read_tokens,
+                        u.cache_creation_tokens,
+                    )
+                })
+                .sum();
+            return (cost * 100.0).round() / 100.0;
+        }
+    }
+    estimate_cost(model_used, total_input, output_tokens, cache_read, cache_creation)
+}
 
 /// Recompute `estimated_cost_usd` for every session from its stored token counts
 /// and model, using the current price table — a pure DB pass, no file re-read.
@@ -978,7 +1006,9 @@ pub fn recompute_all_session_costs(conn: &rusqlite::Connection) {
         Err(_) => return,
     };
     for (id, model, total_input, output, cache_read, cache_creation) in rows {
-        let cost = estimate_cost(
+        let cost = estimate_session_cost(
+            conn,
+            &id,
             model.as_deref().unwrap_or(""),
             total_input,
             output,
@@ -994,6 +1024,133 @@ pub fn recompute_all_session_costs(conn: &rusqlite::Connection) {
         let _ = queries::set_preference(conn, "pricing_rev", PRICING_REV);
         log::info!("Recomputed session costs for pricing rev {PRICING_REV}");
     }
+}
+
+/// Bump to re-run `backfill_session_model_usage` (gated by a preference).
+const MODEL_USAGE_BACKFILL_REV: &str = "1";
+
+/// One-time backfill of `session_model_usage` for already-indexed Claude
+/// sessions (v1.1.100). Session-level `model_used` is last-model-wins, so a
+/// session that switched models mid-way (e.g. opus→fable) booked ALL its
+/// tokens/cost to the final model — the by-model panel was misattributed for
+/// every multi-model session. Streams each Claude JSONL once, extracting only
+/// per-message model + usage (no archive rows), then replaces that session's
+/// breakdown rows and refreshes its stored cost. Runs in the background
+/// storage-cleanup thread; sessions whose transcript file no longer exists
+/// keep the session-level fallback attribution.
+pub fn backfill_session_model_usage(conn: &rusqlite::Connection) {
+    if let Ok(Some(rev)) = queries::get_preference(conn, "model_usage_backfill_rev") {
+        if rev == MODEL_USAGE_BACKFILL_REV {
+            return;
+        }
+    }
+    let sessions: Vec<(String, String)> = {
+        let mut stmt = match conn.prepare(
+            "SELECT id, jsonl_path FROM cc_sessions
+             WHERE agent_type = 'claude-code' AND jsonl_path IS NOT NULL",
+        ) {
+            Ok(s) => s,
+            Err(e) => {
+                log::warn!("model-usage backfill prepare failed: {e}");
+                return;
+            }
+        };
+        let mapped =
+            match stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))) {
+                Ok(mapped) => mapped.filter_map(Result::ok).collect(),
+                Err(e) => {
+                    log::warn!("model-usage backfill query failed: {e}");
+                    return;
+                }
+            };
+        mapped
+    };
+    let total = sessions.len();
+    let mut filled = 0usize;
+    for (id, path) in sessions {
+        let map = match scan_claude_model_usage(std::path::Path::new(&path)) {
+            Ok(map) => map,
+            Err(_) => continue, // file gone/unreadable → keep session-level fallback
+        };
+        if map.is_empty() {
+            continue;
+        }
+        let deltas = model_usage_deltas(&map);
+        if queries::replace_session_model_usage(conn, &id, &deltas).is_err() {
+            continue;
+        }
+        // Refresh the stored cost now that the split exists, so ordering with
+        // recompute_all_session_costs doesn't matter.
+        if let Ok((ti, to, cr, cc, model)) = queries::get_session_token_totals(conn, &id) {
+            let cost =
+                estimate_session_cost(conn, &id, model.as_deref().unwrap_or(""), ti, to, cr, cc);
+            let _ = queries::set_session_cost(conn, &id, cost);
+        }
+        filled += 1;
+    }
+    let _ = queries::set_preference(conn, "model_usage_backfill_rev", MODEL_USAGE_BACKFILL_REV);
+    log::info!("Model-usage backfill filled {filled}/{total} Claude sessions (rev {MODEL_USAGE_BACKFILL_REV})");
+}
+
+/// Stream one Claude JSONL and accumulate per-message model→usage. Reads line
+/// by line (no whole-file allocation — transcripts reach 200+ MB) and parses
+/// only the fields needed, mirroring the ClaudeCodeAdapter attribution rule:
+/// tokens go to `message.model`, with `<synthetic>`/missing → "unknown".
+fn scan_claude_model_usage(
+    path: &std::path::Path,
+) -> Result<
+    std::collections::BTreeMap<String, crate::commands::session_adapters::ModelTokenUsage>,
+    String,
+> {
+    use std::io::BufRead;
+    let file = std::fs::File::open(path).map_err(|e| e.to_string())?;
+    let reader = std::io::BufReader::new(file);
+    let mut map: std::collections::BTreeMap<
+        String,
+        crate::commands::session_adapters::ModelTokenUsage,
+    > = std::collections::BTreeMap::new();
+    for line in reader.lines() {
+        let line = match line {
+            Ok(l) => l,
+            Err(_) => break, // torn tail / invalid UTF-8 → stop at last clean line
+        };
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let parsed: serde_json::Value = match serde_json::from_str(trimmed) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let message = parsed.get("message");
+        let usage = message.and_then(|m| m.get("usage"));
+        let get = |key: &str| {
+            usage
+                .and_then(|u| u.get(key))
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+        };
+        let input = get("input_tokens");
+        let cache_creation = get("cache_creation_input_tokens");
+        let cache_read = get("cache_read_input_tokens");
+        let output = get("output_tokens");
+        if input + cache_creation + cache_read + output == 0 {
+            continue;
+        }
+        let model_key = message
+            .and_then(|m| m.get("model"))
+            .and_then(|v| v.as_str())
+            .map(str::trim)
+            .filter(|s| !s.is_empty() && *s != "<synthetic>")
+            .unwrap_or("unknown");
+        let entry = map.entry(model_key.to_string()).or_default();
+        entry.message_count += 1;
+        entry.input_tokens += input + cache_creation + cache_read;
+        entry.output_tokens += output;
+        entry.cache_read_tokens += cache_read;
+        entry.cache_creation_tokens += cache_creation;
+    }
+    Ok(map)
 }
 
 /// One-time repair of Codex token totals (v1.1.99). Codex reports SESSION-CUMULATIVE
@@ -1121,13 +1278,32 @@ fn upsert_adapter_summary_session(
     // old day buckets instead of incrementing on top of stale counts.
     let _ = queries::reset_session_days(conn, &sid);
 
-    let estimated_cost = estimate_cost(
-        summary.model_used.as_deref().unwrap_or(""),
-        summary.total_input_tokens,
-        summary.total_output_tokens,
-        summary.cache_read_tokens,
-        summary.cache_creation_tokens,
-    );
+    // Multi-model sessions cost the sum of their per-model parts; fall back to
+    // session-level model_used pricing when the adapter has no breakdown.
+    let usage_deltas = model_usage_deltas(&summary.model_usage);
+    let estimated_cost = if usage_deltas.is_empty() {
+        estimate_cost(
+            summary.model_used.as_deref().unwrap_or(""),
+            summary.total_input_tokens,
+            summary.total_output_tokens,
+            summary.cache_read_tokens,
+            summary.cache_creation_tokens,
+        )
+    } else {
+        let cost: f64 = usage_deltas
+            .iter()
+            .map(|u| {
+                estimate_cost(
+                    &u.model,
+                    u.input_tokens,
+                    u.output_tokens,
+                    u.cache_read_tokens,
+                    u.cache_creation_tokens,
+                )
+            })
+            .sum();
+        (cost * 100.0).round() / 100.0
+    };
 
     queries::upsert_session(
         conn,
@@ -1170,12 +1346,32 @@ fn upsert_adapter_summary_session(
         archive_messages,
     )?;
 
+    // Full reparse → replace (not add) the per-model breakdown, mirroring how
+    // archive rows are replaced. Empty for non-Claude adapters, which clears
+    // nothing since such sessions never had rows.
+    queries::replace_session_model_usage(conn, &sid, &usage_deltas).map_err(|e| e.to_string())?;
+
     Ok(IndexedAdapterSession {
         session_id: sid,
         source_ref,
         messages_indexed: message_count,
         parse_warnings,
     })
+}
+
+fn model_usage_deltas(
+    map: &std::collections::BTreeMap<String, crate::commands::session_adapters::ModelTokenUsage>,
+) -> Vec<queries::SessionModelUsageDelta> {
+    map.iter()
+        .map(|(model, u)| queries::SessionModelUsageDelta {
+            model: model.clone(),
+            message_count: u.message_count,
+            input_tokens: u.input_tokens,
+            output_tokens: u.output_tokens,
+            cache_read_tokens: u.cache_read_tokens,
+            cache_creation_tokens: u.cache_creation_tokens,
+        })
+        .collect()
 }
 
 fn replace_archive_messages(
@@ -1386,11 +1582,17 @@ fn index_session_incremental<A: SessionSourceAdapter>(
     )
     .map_err(|e| e.to_string())?;
 
+    // Claude reports per-message deltas, so per-model tail usage is additive.
+    // Cumulative-total adapters (Codex) leave model_usage empty → no-op.
+    queries::add_session_model_usage(conn, &meta.id, &model_usage_deltas(&summary.model_usage))
+        .map_err(|e| e.to_string())?;
+
     // Recompute cost from the NEW totals so it matches a one-shot full re-index
     // exactly (estimate_cost rounds to cents — a per-delta round would drift).
     let (ti, to, cr, cc, model) =
         queries::get_session_token_totals(conn, &meta.id).map_err(|e| e.to_string())?;
-    let cost = estimate_cost(model.as_deref().unwrap_or(""), ti, to, cr, cc);
+    let cost =
+        estimate_session_cost(conn, &meta.id, model.as_deref().unwrap_or(""), ti, to, cr, cc);
     queries::set_session_cost(conn, &meta.id, cost).map_err(|e| e.to_string())?;
 
     Ok(IndexedAdapterSession {
@@ -1788,6 +1990,7 @@ fn parse_grok_session_dir(
         parse_warnings: Vec::new(),
         // Grok token counts are summed per-turn estimates, not a running total.
         tokens_are_cumulative: false,
+        model_usage: std::collections::BTreeMap::new(),
     })
 }
 
@@ -2208,6 +2411,7 @@ fn index_devin_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), 
             archive_messages: Vec::new(),
             parse_warnings: Vec::new(),
             tokens_are_cumulative: false,
+            model_usage: std::collections::BTreeMap::new(),
         };
 
         match upsert_adapter_summary_session(
@@ -2426,6 +2630,7 @@ fn index_cursor_agent_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64,
                 archive_messages: Vec::new(),
                 parse_warnings: Vec::new(),
                 tokens_are_cumulative: false,
+                model_usage: std::collections::BTreeMap::new(),
             };
 
             match upsert_adapter_summary_session(
