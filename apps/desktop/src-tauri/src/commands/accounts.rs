@@ -115,15 +115,15 @@ pub async fn check_account_usage(
         _ => "claude-code",
     };
 
-    let now = chrono::Utc::now();
-
     use chrono::{Datelike, Duration};
-    let today = now.date_naive();
+    // Local-calendar day/week boundaries converted to UTC instants — matches
+    // the attribution used by the rest of the dashboard (get_token_usage_stats).
+    let today = chrono::Local::now().date_naive();
     let monday = today - Duration::days(today.weekday().num_days_from_monday() as i64);
-    let week_start_str = format!("{}T00:00:00Z", monday.format("%Y-%m-%d"));
+    let week_start_str = crate::timeutil::local_day_start_utc(monday);
 
     let last_monday = monday - Duration::days(7);
-    let last_week_start = format!("{}T00:00:00Z", last_monday.format("%Y-%m-%d"));
+    let last_week_start = crate::timeutil::local_day_start_utc(last_monday);
 
     // Day of week: 1=Mon .. 7=Sun
     let day_of_week = today.weekday().num_days_from_monday() + 1; // 1-indexed
@@ -173,7 +173,7 @@ pub async fn check_account_usage(
 
     // ── 4-week average (more stable baseline) ───────────────────────────
     let four_weeks_ago = monday - Duration::days(28);
-    let four_week_start = format!("{}T00:00:00Z", four_weeks_ago.format("%Y-%m-%d"));
+    let four_week_start = crate::timeutil::local_day_start_utc(four_weeks_ago);
     let four_week_total: f64 = conn
         .query_row(
             "SELECT COALESCE(SUM(estimated_cost_usd), 0)
@@ -241,7 +241,7 @@ pub async fn check_account_usage(
         .unwrap_or((0.0, 0, 0, None, 0));
 
     // ── Today's cost ────────────────────────────────────────────────────
-    let today_start = format!("{}T00:00:00Z", today.format("%Y-%m-%d"));
+    let today_start = crate::timeutil::local_day_start_utc(today);
     let today_cost: f64 = conn
         .query_row(
             "SELECT COALESCE(SUM(estimated_cost_usd), 0)

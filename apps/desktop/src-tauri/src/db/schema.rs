@@ -91,6 +91,8 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         [],
     );
 
+    repair_inflated_session_day_counts(conn);
+
     // T-Rex: discovery_method tags findings as 'inspection' (the default,
     // legacy LLM review pass) vs 'execution' (the sandbox runner caught it).
     let _ = conn.execute(
@@ -190,6 +192,53 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
     );
 
     Ok(())
+}
+
+/// Repair `cc_session_days.msg_count` rows inflated by the pre-v1.1.98
+/// re-parse bug: every indexing pass re-bumped the same day buckets
+/// (`bump_session_day` adds on conflict), so long-lived May-2026 sessions
+/// accumulated counts up to ~40,000× their real message count. The source
+/// JSONL files have since rotated away, so true per-day counts are
+/// unrecoverable — instead rescale each corrupt session's rows to sum to its
+/// `message_count`, preserving the observed per-day proportions (exact for
+/// single-day sessions). `msg_count` is only ever used as a within-session
+/// day weight, so magnitude repair is what matters.
+///
+/// Idempotent and cheap: repaired sessions no longer exceed the 2× guard
+/// (sane sessions have day_sum <= message_count), and it self-heals if the
+/// inflation bug ever reappears.
+fn repair_inflated_session_day_counts(conn: &Connection) {
+    let corrupt: Vec<(String, i64, i64)> = match conn
+        .prepare(
+            "SELECT d.session_id, SUM(d.msg_count), MAX(s.message_count, 1)
+             FROM cc_session_days d
+             JOIN cc_sessions s ON s.id = d.session_id
+             GROUP BY d.session_id
+             HAVING SUM(d.msg_count) > MAX(s.message_count, 1) * 2",
+        )
+        .and_then(|mut stmt| {
+            stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
+                .collect::<Result<Vec<_>, _>>()
+        }) {
+        Ok(rows) => rows,
+        Err(e) => {
+            log::warn!("inflated day-count scan failed: {e}");
+            return;
+        }
+    };
+    if corrupt.is_empty() {
+        return;
+    }
+    let n = corrupt.len();
+    for (session_id, day_sum, message_count) in corrupt {
+        let _ = conn.execute(
+            "UPDATE cc_session_days
+             SET msg_count = MAX(1, CAST(ROUND(msg_count * ?2 / ?3) AS INTEGER))
+             WHERE session_id = ?1",
+            rusqlite::params![session_id, message_count as f64, day_sum as f64],
+        );
+    }
+    log::info!("Rescaled inflated cc_session_days buckets for {n} sessions");
 }
 
 /// One-time cleanup: remove non-message metadata rows that used to be indexed
@@ -866,3 +915,104 @@ CREATE TABLE IF NOT EXISTS repo_unpacked_reports (
 CREATE INDEX IF NOT EXISTS idx_repo_unpacked_repo_path
     ON repo_unpacked_reports(repo_path, created_at DESC);
 "#;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_conn() -> Connection {
+        let conn = Connection::open_in_memory().expect("memory db");
+        run_migrations(&conn).expect("schema");
+        conn.execute(
+            "INSERT INTO cc_projects (id, display_name, dir_path, created_at)
+             VALUES ('p', 'P', '/p', '2026-01-01T00:00:00Z')",
+            [],
+        )
+        .expect("project");
+        conn
+    }
+
+    fn insert_session(conn: &Connection, id: &str, message_count: i64) {
+        conn.execute(
+            "INSERT INTO cc_sessions (id, project_id, message_count) VALUES (?1, 'p', ?2)",
+            rusqlite::params![id, message_count],
+        )
+        .expect("session");
+    }
+
+    fn day_counts(conn: &Connection, session_id: &str) -> Vec<(String, i64)> {
+        let mut stmt = conn
+            .prepare("SELECT day, msg_count FROM cc_session_days WHERE session_id = ?1 ORDER BY day")
+            .expect("prepare");
+        stmt.query_map(rusqlite::params![session_id], |r| Ok((r.get(0)?, r.get(1)?)))
+            .expect("query")
+            .collect::<Result<Vec<_>, _>>()
+            .expect("rows")
+    }
+
+    #[test]
+    fn inflated_day_counts_rescale_to_message_count_preserving_proportions() {
+        let conn = test_conn();
+        // Corrupt: re-parse bug inflated day buckets ~500× (4:1 across days).
+        insert_session(&conn, "corrupt", 100);
+        conn.execute_batch(
+            "INSERT INTO cc_session_days (session_id, day, msg_count) VALUES
+                ('corrupt', '2026-05-10', 40000),
+                ('corrupt', '2026-05-11', 10000);",
+        )
+        .expect("day rows");
+        // Sane: day sum below message_count — must be untouched.
+        insert_session(&conn, "sane", 100);
+        conn.execute_batch(
+            "INSERT INTO cc_session_days (session_id, day, msg_count) VALUES
+                ('sane', '2026-06-10', 60),
+                ('sane', '2026-06-11', 40);",
+        )
+        .expect("day rows");
+
+        repair_inflated_session_day_counts(&conn);
+
+        assert_eq!(
+            day_counts(&conn, "corrupt"),
+            vec![
+                ("2026-05-10".to_string(), 80),
+                ("2026-05-11".to_string(), 20)
+            ]
+        );
+        assert_eq!(
+            day_counts(&conn, "sane"),
+            vec![
+                ("2026-06-10".to_string(), 60),
+                ("2026-06-11".to_string(), 40)
+            ]
+        );
+
+        // Idempotent: a second pass (e.g. next app start) changes nothing.
+        repair_inflated_session_day_counts(&conn);
+        assert_eq!(
+            day_counts(&conn, "corrupt"),
+            vec![
+                ("2026-05-10".to_string(), 80),
+                ("2026-05-11".to_string(), 20)
+            ]
+        );
+    }
+
+    #[test]
+    fn zero_message_count_session_rescales_to_minimum_weights() {
+        let conn = test_conn();
+        insert_session(&conn, "zero", 0);
+        conn.execute(
+            "INSERT INTO cc_session_days (session_id, day, msg_count)
+             VALUES ('zero', '2026-05-12', 5000)",
+            [],
+        )
+        .expect("day row");
+
+        repair_inflated_session_day_counts(&conn);
+
+        // message_count=0 clamps to 1; the single day keeps weight 1 (>0 so
+        // proration still attributes the session fully to its only day).
+        assert_eq!(day_counts(&conn, "zero"), vec![("2026-05-12".to_string(), 1)]);
+    }
+}

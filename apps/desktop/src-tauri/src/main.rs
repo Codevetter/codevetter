@@ -5,6 +5,7 @@ mod agent;
 mod commands;
 mod db;
 mod talk;
+mod timeutil;
 
 use std::sync::{Arc, Mutex};
 use tauri::Manager;

@@ -1954,18 +1954,10 @@ pub struct AgentUsageRow {
 }
 
 pub fn get_agent_usage_breakdown(conn: &Connection) -> Result<Vec<AgentUsageRow>, rusqlite::Error> {
-    use chrono::{Datelike, Duration, Local, TimeZone, Utc};
+    use chrono::{Datelike, Duration, Local};
     let today = Local::now().date_naive();
     let monday = today - Duration::days(today.weekday().num_days_from_monday() as i64);
-    // Local Monday midnight expressed in UTC — `last_message` is stored as a
-    // UTC "…Z" timestamp, so a bare local date with a Z suffix would start
-    // the week hours early (5.5h in IST). Second-precision format still
-    // compares lexically against the stored millisecond timestamps.
-    let week_start = Local
-        .from_local_datetime(&monday.and_hms_opt(0, 0, 0).unwrap())
-        .earliest()
-        .map(|dt| dt.with_timezone(&Utc).format("%Y-%m-%dT%H:%M:%S").to_string())
-        .unwrap_or_else(|| format!("{}T00:00:00", monday.format("%Y-%m-%d")));
+    let week_start = crate::timeutil::local_day_start_utc(monday);
 
     // MAX(x, 0) guards the rare case where cache_read exceeds recorded input.
     let mut stmt = conn.prepare(

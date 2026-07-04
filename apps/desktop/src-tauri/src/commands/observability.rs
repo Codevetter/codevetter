@@ -366,10 +366,8 @@ pub async fn get_agent_observability(
     let mut rows: Vec<TaskTypeStats> = Vec::new();
 
     // ── Reviews (status, duration from started_at→completed_at).
-    let cutoff = format!(
-        "{}T00:00:00Z",
-        (chrono::Utc::now().date_naive() - chrono::Duration::days(window as i64))
-            .format("%Y-%m-%d")
+    let cutoff = crate::timeutil::local_day_start_utc(
+        chrono::Local::now().date_naive() - chrono::Duration::days(window as i64),
     );
 
     let review_rows = conn
