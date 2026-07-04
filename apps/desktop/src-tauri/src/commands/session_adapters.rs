@@ -536,6 +536,17 @@ impl SessionSourceAdapter for CodexAdapter {
                 continue;
             }
 
+            // Newer Codex CLIs dropped `model` from session_meta (it only has
+            // model_provider, which the fallback above maps to the o3-era
+            // default) and record the real model id on per-turn turn_context
+            // rows instead. Last turn wins, overriding the fallback.
+            if msg_type == "turn_context" {
+                if let Some(model) = value_string(payload, "model") {
+                    summary.model_used = Some(model);
+                }
+                continue;
+            }
+
             if msg_type == "event_msg" {
                 let sub_type = payload
                     .and_then(|p| p.get("type"))
@@ -776,6 +787,27 @@ mod tests {
         assert_eq!(sonnet.output_tokens, 40);
         assert_eq!(sonnet.cache_read_tokens, 25);
         assert_eq!(sonnet.cache_creation_tokens, 10);
+    }
+
+    #[test]
+    fn codex_turn_context_model_overrides_provider_fallback() {
+        // Newer Codex CLIs omit `model` from session_meta (only
+        // model_provider), which the fallback maps to the o3-era default —
+        // the real model lives on per-turn turn_context rows and must win.
+        let raw = concat!(
+            r#"{"type":"session_meta","payload":{"id":"c1","cwd":"/repo","model_provider":"openai"}}"#,
+            "\n",
+            r#"{"type":"turn_context","payload":{"model":"gpt-5.5","effort":"high"}}"#,
+            "\n",
+            r#"{"type":"response_item","timestamp":"2026-07-04T10:00:00Z","payload":{"role":"assistant","usage":{"input_tokens":10,"output_tokens":5}}}"#,
+        );
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-gpt55.jsonl", raw);
+        assert_eq!(summary.model_used.as_deref(), Some("gpt-5.5"));
+
+        // Legacy files without turn_context keep the o3 fallback.
+        let legacy = r#"{"type":"session_meta","payload":{"id":"c2","cwd":"/repo","model_provider":"openai"}}"#;
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-legacy.jsonl", legacy);
+        assert_eq!(summary.model_used.as_deref(), Some("o3"));
     }
 
     #[test]

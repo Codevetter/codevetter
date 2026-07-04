@@ -1410,9 +1410,16 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
   );
 }
 
-function WeeklyAgentSplit({ hiddenAgents }: { hiddenAgents: Set<string> }) {
+function WeeklyAgentSplit({
+  hiddenAgents,
+  agentByDay,
+}: {
+  hiddenAgents: Set<string>;
+  agentByDay: AgentDayUsage[];
+}) {
   const [rows, setRows] = useState<AgentUsageRow[] | null>(null);
   const [cursorLedger, setCursorLedger] = useState<ProviderUsageLedgerRow | null>(null);
+  const [range, setRange] = useState<ModelRangeKey>('d30');
 
   useEffect(() => {
     let cancelled = false;
@@ -1470,26 +1477,56 @@ function WeeklyAgentSplit({ hiddenAgents }: { hiddenAgents: Set<string> }) {
   // billed cost, use that as the source of truth instead.
   const cursorLedgerCost =
     cursorLedger && cursorLedger.cost_usd != null ? cursorLedger.cost_usd : null;
-  const segments: AgentSegment[] = rows
-    .filter((r) => !hiddenAgents.has(r.agent_type))
-    .map((r) => ({
-      agent: r.agent_type,
-      tokens: r.agent_type === 'cursor' && cursorLedgerCost != null ? cursorLedgerCost : r.cost,
-      estimated: AGENT_PALETTE[r.agent_type]?.estimated ?? false,
+  let segments: AgentSegment[];
+  if (range === 'all') {
+    segments = rows
+      .filter((r) => !hiddenAgents.has(r.agent_type))
+      .map((r) => ({
+        agent: r.agent_type,
+        tokens: r.agent_type === 'cursor' && cursorLedgerCost != null ? cursorLedgerCost : r.cost,
+        estimated: AGENT_PALETTE[r.agent_type]?.estimated ?? false,
+      }));
+    if (
+      cursorLedgerCost != null &&
+      !hiddenAgents.has('cursor') &&
+      !rows.some((r) => r.agent_type === 'cursor')
+    ) {
+      segments.push({ agent: 'cursor', tokens: cursorLedgerCost, estimated: false });
+    }
+  } else {
+    // Rolling window summed client-side from the per-day drill-down (the same
+    // day attribution as the daily chart). Cursor keeps its local estimate
+    // here — the ledger figure is a whole billing cycle, not window-sliceable.
+    const days = MODEL_RANGES.find((r) => r.key === range)?.days ?? 30;
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - (days - 1));
+    const since = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+    const acc = new Map<string, number>();
+    for (const r of agentByDay) {
+      if (r.date < since || hiddenAgents.has(r.agent_type)) continue;
+      acc.set(r.agent_type, (acc.get(r.agent_type) ?? 0) + r.cost);
+    }
+    segments = [...acc.entries()].map(([agent, cost]) => ({
+      agent,
+      tokens: cost,
+      estimated: AGENT_PALETTE[agent]?.estimated ?? false,
     }));
-  if (
-    cursorLedgerCost != null &&
-    !hiddenAgents.has('cursor') &&
-    !rows.some((r) => r.agent_type === 'cursor')
-  ) {
-    segments.push({ agent: 'cursor', tokens: cursorLedgerCost, estimated: false });
   }
 
-  if (!segments.some((s) => s.tokens > 0)) return null;
+  const rangeLabel = MODEL_RANGES.find((r) => r.key === range)?.label.toLowerCase() ?? 'all time';
+  const hasData = segments.some((s) => s.tokens > 0);
 
   return (
     <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
-      <StackedBar title="By agent · all time · spend" segments={segments} />
+      <div className="mb-1 flex justify-end">
+        <RangeToggle value={range} onChange={setRange} />
+      </div>
+      {hasData ? (
+        <StackedBar title={`By agent · ${rangeLabel} · spend`} segments={segments} />
+      ) : (
+        <div className="text-[11px] text-slate-600">No agent spend in this window.</div>
+      )}
     </Card>
   );
 }
@@ -1626,7 +1663,8 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
   );
 }
 
-/** Spend-by-model time windows. Keys map to the `days` arg of getUsageByModel. */
+/** Spend time windows shared by the by-model and by-agent panels. `days`
+ * maps to the getUsageByModel arg; client-side windows use it as a day span. */
 const MODEL_RANGES = [
   { key: 'd7', label: '1w', days: 7 },
   { key: 'd30', label: '30d', days: 30 },
@@ -1634,6 +1672,31 @@ const MODEL_RANGES = [
   { key: 'all', label: 'All time', days: undefined },
 ] as const;
 type ModelRangeKey = (typeof MODEL_RANGES)[number]['key'];
+
+/** Compact 1w/30d/90d/all pill group used on the spend panels. */
+function RangeToggle({
+  value,
+  onChange,
+}: {
+  value: ModelRangeKey;
+  onChange: (next: ModelRangeKey) => void;
+}) {
+  return (
+    <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
+      {MODEL_RANGES.map((r) => (
+        <button
+          key={r.key}
+          onClick={() => onChange(r.key)}
+          className={`rounded-sm px-2 py-0.5 text-[10px] font-medium transition-colors ${
+            value === r.key ? 'bg-cyan-500/10 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+          }`}
+        >
+          {r.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 type ModelUsageRanges = Record<ModelRangeKey, ModelUsage[]>;
 
 const EMPTY_MODEL_USAGE_RANGES: ModelUsageRanges = {
@@ -1662,21 +1725,7 @@ function UsageByModel({ ranges }: { ranges: ModelUsageRanges }) {
         <div className="text-[11px] text-slate-500">
           By model · spend{total > 0 ? ` · ${formatMoney(total)}` : ''}
         </div>
-        <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
-          {MODEL_RANGES.map((r) => (
-            <button
-              key={r.key}
-              onClick={() => setRange(r.key)}
-              className={`rounded-sm px-2 py-0.5 text-[10px] font-medium transition-colors ${
-                range === r.key
-                  ? 'bg-cyan-500/10 text-cyan-300'
-                  : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <RangeToggle value={range} onChange={setRange} />
       </div>
       <HBarList
         rows={rows}
@@ -2656,7 +2705,7 @@ export default function Home() {
               agentByDay={agentByDay}
               hiddenAgents={hiddenAgents}
             />
-            <WeeklyAgentSplit hiddenAgents={hiddenAgents} />
+            <WeeklyAgentSplit hiddenAgents={hiddenAgents} agentByDay={agentByDay} />
           </div>
         )}
 

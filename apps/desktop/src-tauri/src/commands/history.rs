@@ -909,6 +909,15 @@ fn estimate_cost(
         m if m.contains("sonnet") => (3.0, 15.0, 0.30, 3.75),
         // Haiku 4.5 is $1/$5 (older Haiku 3.5 was $0.25/$1.25).
         m if m.contains("haiku") => (1.0, 5.0, 0.10, 1.25),
+        // GPT-5 mini class (gpt-5-mini, gpt-5.4-mini, …): $0.25/$2 — must
+        // match before the base-model arms so "gpt-5.5-mini" never bills at
+        // the full gpt-5.5 rate.
+        m if m.contains("gpt-5") && m.contains("mini") => (0.25, 2.0, 0.025, 0.25),
+        // GPT-5.5 (Codex CLI default, mid-2026): $5/$30, cached input $0.50.
+        // OpenAI bills cache writes at the normal input rate.
+        m if m.contains("gpt-5.5") => (5.0, 30.0, 0.50, 5.0),
+        // GPT-5 family fallback (gpt-5, gpt-5.1, gpt-5.4, …): $1.25/$10.
+        m if m.contains("gpt-5") => (1.25, 10.0, 0.125, 1.25),
         m if m.contains("gpt-4o") => (2.5, 10.0, 1.25, 2.5),
         m if m.contains("gpt-4.1") => (2.0, 8.0, 0.5, 2.0),
         // OpenAI o3 repriced to $2/$8 (cached input $0.50).
@@ -952,7 +961,11 @@ fn estimate_cost(
 /// Rev 5 = `<synthetic>` prices to $0 (was sonnet default), Opus 4.1/4.0/3
 /// restored to $15/$75, Grok CLI fast models (grok-code/build/composer) at
 /// grok-code-fast pricing instead of grok-4.
-const PRICING_REV: &str = "5";
+/// Rev 6 = GPT-5.5 $5/$30 (cached $0.50) + GPT-5 family $1.25/$10 — paired
+/// with the codex model backfill that relabels o3-defaulted sessions to the
+/// real model recorded on their turn_context rows.
+/// Rev 7 = GPT-5 mini class ($0.25/$2) split out of the family fallback.
+const PRICING_REV: &str = "7";
 
 /// Estimated cost for one session: per-model when a breakdown exists (correct
 /// for multi-model Claude sessions), else session-level `model_used` pricing.
@@ -1114,6 +1127,105 @@ pub fn backfill_session_model_usage(conn: &rusqlite::Connection) {
     }
     let _ = queries::set_preference(conn, "model_usage_backfill_rev", MODEL_USAGE_BACKFILL_REV);
     log::info!("Model-usage backfill filled {filled}/{total} Claude sessions (rev {MODEL_USAGE_BACKFILL_REV})");
+}
+
+/// Bump to re-run `backfill_codex_session_models` (gated by a preference).
+/// Rev 2 = also refreshes each relabelled session's stored cost in place, so
+/// the repricing no longer depends on recompute_all_session_costs running
+/// afterwards (its pricing_rev gate may already be satisfied).
+const CODEX_MODEL_BACKFILL_REV: &str = "2";
+
+/// One-time repair of `model_used` for already-indexed Codex sessions. Newer
+/// Codex CLIs stopped writing `model` on session_meta (it only carries
+/// model_provider), so the adapter's o3-era fallback labelled every OpenAI
+/// session "o3" even when the real model — recorded on per-turn
+/// `turn_context` rows — was gpt-5.5. Streams each transcript, takes the last
+/// turn_context model, and relabels the session. Sessions whose file has
+/// rotated away keep the o3 fallback. Must run before
+/// `recompute_all_session_costs` so the pricing pass books corrected models.
+pub fn backfill_codex_session_models(conn: &rusqlite::Connection) {
+    if let Ok(Some(rev)) = queries::get_preference(conn, "codex_model_backfill_rev") {
+        if rev == CODEX_MODEL_BACKFILL_REV {
+            return;
+        }
+    }
+    let sessions: Vec<(String, String)> = {
+        let mut stmt = match conn.prepare(
+            "SELECT id, jsonl_path FROM cc_sessions
+             WHERE agent_type = 'codex' AND jsonl_path IS NOT NULL",
+        ) {
+            Ok(s) => s,
+            Err(e) => {
+                log::warn!("codex model backfill prepare failed: {e}");
+                return;
+            }
+        };
+        let rows =
+            match stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))) {
+                Ok(mapped) => mapped.filter_map(Result::ok).collect(),
+                Err(e) => {
+                    log::warn!("codex model backfill query failed: {e}");
+                    return;
+                }
+            };
+        rows
+    };
+    let total = sessions.len();
+    let mut relabelled = 0usize;
+    for (id, path) in sessions {
+        let Some(model) = scan_codex_turn_context_model(std::path::Path::new(&path)) else {
+            continue; // file gone or no turn_context rows → keep fallback label
+        };
+        if let Ok(n) = conn.execute(
+            "UPDATE cc_sessions SET model_used = ?2
+             WHERE id = ?1 AND COALESCE(model_used, '') <> ?2",
+            rusqlite::params![id, model],
+        ) {
+            relabelled += usize::from(n > 0);
+        }
+        // Reprice in place regardless of whether the label just changed — an
+        // interrupted earlier pass can leave sessions relabelled but still
+        // priced under the old model, and recompute_all_session_costs won't
+        // re-run once its pricing_rev gate is satisfied.
+        if let Ok((ti, to, cr, cc, m)) = queries::get_session_token_totals(conn, &id) {
+            let cost = estimate_session_cost(conn, &id, m.as_deref().unwrap_or(""), ti, to, cr, cc);
+            let _ = queries::set_session_cost(conn, &id, cost);
+        }
+    }
+    let _ = queries::set_preference(conn, "codex_model_backfill_rev", CODEX_MODEL_BACKFILL_REV);
+    log::info!(
+        "Codex model backfill relabelled {relabelled}/{total} sessions (rev {CODEX_MODEL_BACKFILL_REV})"
+    );
+}
+
+/// Stream one Codex JSONL and return the model recorded on its last
+/// `turn_context` row. Reads line by line (codex logs reach 100+ MB) with a
+/// cheap substring pre-filter so non-matching lines are never JSON-parsed.
+fn scan_codex_turn_context_model(path: &std::path::Path) -> Option<String> {
+    use std::io::BufRead;
+    let file = std::fs::File::open(path).ok()?;
+    let reader = std::io::BufReader::new(file);
+    let mut model = None;
+    for line in reader.lines() {
+        let Ok(line) = line else { break };
+        if !line.contains("\"turn_context\"") {
+            continue;
+        }
+        let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&line) else {
+            continue;
+        };
+        if parsed.get("type").and_then(|v| v.as_str()) != Some("turn_context") {
+            continue;
+        }
+        if let Some(m) = parsed
+            .get("payload")
+            .and_then(|p| p.get("model"))
+            .and_then(|v| v.as_str())
+        {
+            model = Some(m.to_string());
+        }
+    }
+    model
 }
 
 /// Stream one Claude JSONL and accumulate per-message model→usage. Reads line
@@ -3697,6 +3809,15 @@ mod tests {
         assert!(near(estimate_cost("claude-haiku-4-5-20251001", 1_000_000, 0, 0, 0), 1.0));
         // OpenAI o3 (codex) is $2/$8.
         assert!(near(estimate_cost("o3", 1_000_000, 0, 0, 0), 2.0));
+        // GPT-5.5 (codex mid-2026) is $5/$30, cached input $0.50; the generic
+        // gpt-5 family arm must NOT swallow it.
+        assert!(near(estimate_cost("gpt-5.5", 1_000_000, 0, 0, 0), 5.0));
+        assert!(near(estimate_cost("gpt-5.5", 0, 1_000_000, 0, 0), 30.0));
+        assert!(near(estimate_cost("gpt-5.5", 1_000_000, 0, 1_000_000, 0), 0.50));
+        assert!(near(estimate_cost("gpt-5", 1_000_000, 0, 0, 0), 1.25));
+        // Mini class beats both the 5.5 and family arms.
+        assert!(near(estimate_cost("gpt-5.4-mini", 1_000_000, 0, 0, 0), 0.25));
+        assert!(near(estimate_cost("gpt-5.5-mini", 0, 1_000_000, 0, 0), 2.0));
         // GLM-5.2 (Devin) is $1.40/$4.40, cached $0.26.
         assert!(near(estimate_cost("glm-5-2", 1_000_000, 0, 0, 0), 1.4));
         assert!(near(estimate_cost("glm-5-2", 0, 1_000_000, 0, 0), 4.4));
