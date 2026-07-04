@@ -1426,7 +1426,7 @@ fn query_tool_breakdown(
     let cutoff = since_days.map(|d| {
         use chrono::{Duration, Local};
         let cut = Local::now().date_naive() - Duration::days(d as i64);
-        format!("{}T00:00:00Z", cut.format("%Y-%m-%d"))
+        crate::timeutil::local_day_start_utc(cut)
     });
 
     // 1. Per-(tool, session) cost rows — used for tool totals, percentiles
