@@ -149,6 +149,10 @@ fn main() {
                             // must precede the cost recompute so multi-model
                             // sessions reprice from their per-model split.
                             crate::commands::history::backfill_session_model_usage(&conn);
+                            // Relabel o3-defaulted Codex sessions from their
+                            // turn_context rows BEFORE the cost recompute so
+                            // rev-6 pricing books the corrected models.
+                            crate::commands::history::backfill_codex_session_models(&conn);
                             crate::commands::history::recompute_all_session_costs(&conn);
                             log::info!("Storage cleanup done.");
                         }
