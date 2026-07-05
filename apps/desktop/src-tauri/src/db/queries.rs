@@ -364,13 +364,9 @@ pub struct SessionMeta {
 
 #[derive(Debug, Clone)]
 pub struct LiveSessionSource {
-    pub id: String,
     pub project_id: String,
     pub agent_type: String,
     pub jsonl_path: String,
-    pub file_mtime: Option<String>,
-    pub message_count: i64,
-    pub archived_message_count: i64,
 }
 
 #[derive(Debug, Clone)]
@@ -414,8 +410,7 @@ pub fn list_live_session_sources(
     limit: i64,
 ) -> Result<Vec<LiveSessionSource>, rusqlite::Error> {
     let mut stmt = conn.prepare(
-        "SELECT id, project_id, agent_type, jsonl_path, file_mtime, message_count,
-                (SELECT COUNT(*) FROM session_message_archive a WHERE a.session_id = cc_sessions.id)
+        "SELECT project_id, agent_type, jsonl_path
          FROM cc_sessions
          WHERE jsonl_path IS NOT NULL
            AND agent_type IN ('claude-code', 'codex')
@@ -431,13 +426,9 @@ pub fn list_live_session_sources(
     )?;
     let rows = stmt.query_map(params![since, limit.max(1)], |row| {
         Ok(LiveSessionSource {
-            id: row.get(0)?,
-            project_id: row.get(1)?,
-            agent_type: row.get(2)?,
-            jsonl_path: row.get(3)?,
-            file_mtime: row.get(4)?,
-            message_count: row.get(5)?,
-            archived_message_count: row.get(6)?,
+            project_id: row.get(0)?,
+            agent_type: row.get(1)?,
+            jsonl_path: row.get(2)?,
         })
     })?;
     rows.collect()
@@ -2402,67 +2393,112 @@ pub struct ModelUsage {
 /// activity on days >= `since` (same `cc_session_days` attribution as
 /// `get_token_usage_stats`, so windows agree with the daily chart). `None`
 /// keeps the exact all-time totals, including sessions without day rows.
+/// `exclude_agents` drops sessions whose `agent_type` is in the list (synced
+/// with the Home agent filter chips). When `day_start` and `day_end_exclusive`
+/// are both set they take precedence over `since` and attribute only activity
+/// on days in `[start, end)` (same day attribution as the daily chart).
 pub fn get_usage_by_model(
     conn: &Connection,
     estimate: impl Fn(&str, i64, i64, i64, i64) -> f64,
     since: Option<&str>,
+    day_start: Option<&str>,
+    day_end_exclusive: Option<&str>,
+    exclude_agents: &[String],
 ) -> Result<Vec<ModelUsage>, rusqlite::Error> {
-    let sql = if since.is_some() {
-        "WITH frac AS (
-             SELECT session_id,
-                    SUM(CASE WHEN day >= ?1 THEN msg_count ELSE 0 END) * 1.0
-                        / SUM(msg_count) AS f
-             FROM cc_session_days
-             GROUP BY session_id
-             HAVING SUM(CASE WHEN day >= ?1 THEN msg_count ELSE 0 END) > 0
-         )
-         SELECT model, COUNT(DISTINCT session_id),
-                COALESCE(SUM(input_tokens * f), 0), COALESCE(SUM(output_tokens * f), 0),
-                COALESCE(SUM(cache_read_tokens * f), 0),
-                COALESCE(SUM(cache_creation_tokens * f), 0)
-         FROM (
-            SELECT CASE WHEN u.model = '<synthetic>' THEN 'synthetic' ELSE u.model END AS model,
-                   u.session_id, u.input_tokens, u.output_tokens,
-                   u.cache_read_tokens, u.cache_creation_tokens, w.f AS f
-            FROM session_model_usage u
-            JOIN frac w ON w.session_id = u.session_id
-            UNION ALL
-            SELECT CASE WHEN COALESCE(NULLIF(s.model_used, ''), 'unknown') = '<synthetic>'
-                        THEN 'synthetic'
-                        ELSE COALESCE(NULLIF(s.model_used, ''), 'unknown') END,
-                   s.id, COALESCE(s.total_input_tokens, 0), COALESCE(s.total_output_tokens, 0),
-                   COALESCE(s.cache_read_tokens, 0), COALESCE(s.cache_creation_tokens, 0),
-                   w.f
-            FROM cc_sessions s
-            JOIN frac w ON w.session_id = s.id
-            WHERE NOT EXISTS (
-                SELECT 1 FROM session_model_usage u WHERE u.session_id = s.id
-            )
-         )
-         GROUP BY model"
-    } else {
-        "SELECT model, COUNT(DISTINCT session_id),
-                COALESCE(SUM(input_tokens), 0.0), COALESCE(SUM(output_tokens), 0.0),
-                COALESCE(SUM(cache_read_tokens), 0.0), COALESCE(SUM(cache_creation_tokens), 0.0)
-         FROM (
-            SELECT CASE WHEN model = '<synthetic>' THEN 'synthetic' ELSE model END AS model,
-                   session_id, input_tokens, output_tokens,
-                   cache_read_tokens, cache_creation_tokens
-            FROM session_model_usage
-            UNION ALL
-            SELECT CASE WHEN COALESCE(NULLIF(s.model_used, ''), 'unknown') = '<synthetic>'
-                        THEN 'synthetic'
-                        ELSE COALESCE(NULLIF(s.model_used, ''), 'unknown') END,
-                   s.id, COALESCE(s.total_input_tokens, 0), COALESCE(s.total_output_tokens, 0),
-                   COALESCE(s.cache_read_tokens, 0), COALESCE(s.cache_creation_tokens, 0)
-            FROM cc_sessions s
-            WHERE NOT EXISTS (
-                SELECT 1 FROM session_model_usage u WHERE u.session_id = s.id
-            )
-         )
-         GROUP BY model"
+    let day_range = match (day_start, day_end_exclusive) {
+        (Some(s), Some(e)) if !s.is_empty() && !e.is_empty() => Some((s, e)),
+        _ => None,
     };
-    let mut stmt = conn.prepare(sql)?;
+    let exclude_start = if day_range.is_some() {
+        3
+    } else if since.is_some() {
+        2
+    } else {
+        1
+    };
+    let agent_filter = if exclude_agents.is_empty() {
+        String::new()
+    } else {
+        let placeholders: Vec<String> = (0..exclude_agents.len())
+            .map(|i| format!("?{}", exclude_start + i))
+            .collect();
+        format!(" AND s.agent_type NOT IN ({})", placeholders.join(", "))
+    };
+
+    let frac_body = if day_range.is_some() {
+        "SUM(CASE WHEN day >= ?1 AND day < ?2 THEN msg_count ELSE 0 END) * 1.0
+                            / SUM(msg_count) AS f
+                 FROM cc_session_days
+                 GROUP BY session_id
+                 HAVING SUM(CASE WHEN day >= ?1 AND day < ?2 THEN msg_count ELSE 0 END) > 0"
+    } else {
+        "SUM(CASE WHEN day >= ?1 THEN msg_count ELSE 0 END) * 1.0
+                            / SUM(msg_count) AS f
+                 FROM cc_session_days
+                 GROUP BY session_id
+                 HAVING SUM(CASE WHEN day >= ?1 THEN msg_count ELSE 0 END) > 0"
+    };
+
+    let sql = if day_range.is_some() || since.is_some() {
+        format!(
+            "WITH frac AS (
+                 SELECT session_id,
+                        {frac_body}
+             )
+             SELECT model, COUNT(DISTINCT session_id),
+                    COALESCE(SUM(input_tokens * f), 0), COALESCE(SUM(output_tokens * f), 0),
+                    COALESCE(SUM(cache_read_tokens * f), 0),
+                    COALESCE(SUM(cache_creation_tokens * f), 0)
+             FROM (
+                SELECT CASE WHEN u.model = '<synthetic>' THEN 'synthetic' ELSE u.model END AS model,
+                       u.session_id, u.input_tokens, u.output_tokens,
+                       u.cache_read_tokens, u.cache_creation_tokens, w.f AS f
+                FROM session_model_usage u
+                JOIN cc_sessions s ON s.id = u.session_id
+                JOIN frac w ON w.session_id = u.session_id
+                WHERE 1=1{agent_filter}
+                UNION ALL
+                SELECT CASE WHEN COALESCE(NULLIF(s.model_used, ''), 'unknown') = '<synthetic>'
+                            THEN 'synthetic'
+                            ELSE COALESCE(NULLIF(s.model_used, ''), 'unknown') END,
+                       s.id, COALESCE(s.total_input_tokens, 0), COALESCE(s.total_output_tokens, 0),
+                       COALESCE(s.cache_read_tokens, 0), COALESCE(s.cache_creation_tokens, 0),
+                       w.f
+                FROM cc_sessions s
+                JOIN frac w ON w.session_id = s.id
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM session_model_usage u WHERE u.session_id = s.id
+                ){agent_filter}
+             )
+             GROUP BY model"
+        )
+    } else {
+        format!(
+            "SELECT model, COUNT(DISTINCT session_id),
+                    COALESCE(SUM(input_tokens), 0.0), COALESCE(SUM(output_tokens), 0.0),
+                    COALESCE(SUM(cache_read_tokens), 0.0), COALESCE(SUM(cache_creation_tokens), 0.0)
+             FROM (
+                SELECT CASE WHEN u.model = '<synthetic>' THEN 'synthetic' ELSE u.model END AS model,
+                       u.session_id, u.input_tokens, u.output_tokens,
+                       u.cache_read_tokens, u.cache_creation_tokens
+                FROM session_model_usage u
+                JOIN cc_sessions s ON s.id = u.session_id
+                WHERE 1=1{agent_filter}
+                UNION ALL
+                SELECT CASE WHEN COALESCE(NULLIF(s.model_used, ''), 'unknown') = '<synthetic>'
+                            THEN 'synthetic'
+                            ELSE COALESCE(NULLIF(s.model_used, ''), 'unknown') END,
+                       s.id, COALESCE(s.total_input_tokens, 0), COALESCE(s.total_output_tokens, 0),
+                       COALESCE(s.cache_read_tokens, 0), COALESCE(s.cache_creation_tokens, 0)
+                FROM cc_sessions s
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM session_model_usage u WHERE u.session_id = s.id
+                ){agent_filter}
+             )
+             GROUP BY model"
+        )
+    };
+    let mut stmt = conn.prepare(&sql)?;
     // Prorated sums are fractional; read f64 and round once per model bucket.
     let map_row = |r: &rusqlite::Row| -> rusqlite::Result<(String, i64, i64, i64, i64, i64)> {
         Ok((
@@ -2474,25 +2510,37 @@ pub fn get_usage_by_model(
             r.get::<_, f64>(5)?.round() as i64,
         ))
     };
-    let raw = match since {
-        Some(s) => stmt
-            .query_map(params![s], map_row)?
-            .collect::<Result<Vec<_>, _>>()?,
-        None => stmt.query_map([], map_row)?.collect::<Result<Vec<_>, _>>()?,
-    };
+    let since_owned = since.map(|s| s.to_string());
+    let day_start_owned = day_range.map(|(s, _)| s.to_string());
+    let day_end_owned = day_range.map(|(_, e)| e.to_string());
+    let mut query_params: Vec<&dyn rusqlite::ToSql> = Vec::new();
+    if let (Some(ref ds), Some(ref de)) = (&day_start_owned, &day_end_owned) {
+        query_params.push(ds);
+        query_params.push(de);
+    } else if let Some(ref s) = since_owned {
+        query_params.push(s);
+    }
+    for agent in exclude_agents {
+        query_params.push(agent);
+    }
+    let raw = stmt
+        .query_map(rusqlite::params_from_iter(query_params.iter()), map_row)?
+        .collect::<Result<Vec<_>, _>>()?;
     let mut out: Vec<ModelUsage> = raw
         .into_iter()
-        .map(|(model, sessions, input, output, cache_read, cache_creation)| {
-            let generated = (input - cache_read - cache_creation).max(0) + output;
-            let cost = estimate(&model, input, output, cache_read, cache_creation);
-            ModelUsage {
-                model,
-                sessions,
-                generated,
-                cache: cache_read,
-                cost,
-            }
-        })
+        .map(
+            |(model, sessions, input, output, cache_read, cache_creation)| {
+                let generated = (input - cache_read - cache_creation).max(0) + output;
+                let cost = estimate(&model, input, output, cache_read, cache_creation);
+                ModelUsage {
+                    model,
+                    sessions,
+                    generated,
+                    cache: cache_read,
+                    cost,
+                }
+            },
+        )
         .filter(|m| m.generated > 0)
         .collect();
     out.sort_by(|a, b| {
@@ -2796,6 +2844,84 @@ mod tests {
         assert_eq!(cache, 900_000, "cache tokens preserved");
         // Metadata from the quick pass still updates.
         assert_eq!(cwd.as_deref(), Some("/repo/cwd"));
+    }
+
+    #[test]
+    fn model_usage_filters_agents_and_day_ranges() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        upsert_project(
+            &conn,
+            &ProjectInput {
+                id: "p".to_string(),
+                display_name: "P".to_string(),
+                dir_path: "/p".to_string(),
+                session_count: None,
+                last_activity: None,
+                created_at: "2026-01-01T00:00:00Z".to_string(),
+            },
+        )
+        .expect("project");
+
+        let insert_session = |id: &str, agent: &str, model: &str, input: i64| {
+            upsert_session(
+                &conn,
+                &SessionInput {
+                    id: id.to_string(),
+                    project_id: "p".to_string(),
+                    agent_type: Some(agent.to_string()),
+                    jsonl_path: Some(format!("/p/{id}.jsonl")),
+                    git_branch: None,
+                    cwd: None,
+                    cli_version: None,
+                    first_message: None,
+                    last_message: None,
+                    message_count: Some(10),
+                    total_input_tokens: Some(input),
+                    total_output_tokens: Some(100),
+                    model_used: Some(model.to_string()),
+                    slug: None,
+                    file_size_bytes: None,
+                    indexed_at: None,
+                    file_mtime: None,
+                    cache_read_tokens: Some(0),
+                    cache_creation_tokens: Some(0),
+                    compaction_count: None,
+                    estimated_cost_usd: None,
+                },
+            )
+            .expect("session");
+        };
+        insert_session("claude", "claude-code", "claude-sonnet-4", 1_000);
+        insert_session("codex", "codex", "gpt-5", 2_000);
+
+        conn.execute(
+            "INSERT INTO cc_session_days (session_id, day, msg_count)
+             VALUES ('claude', '2026-01-02', 10), ('codex', '2026-01-03', 10)",
+            [],
+        )
+        .expect("days");
+
+        let estimate = |_: &str, input: i64, _: i64, _: i64, _: i64| input as f64 / 1_000.0;
+        let exclude_codex = vec!["codex".to_string()];
+        let filtered = get_usage_by_model(&conn, estimate, None, None, None, &exclude_codex)
+            .expect("filtered model usage");
+        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered[0].model, "claude-sonnet-4");
+        assert_eq!(filtered[0].cost, 1.0);
+
+        let day_rows = get_usage_by_model(
+            &conn,
+            estimate,
+            None,
+            Some("2026-01-03"),
+            Some("2026-01-04"),
+            &[],
+        )
+        .expect("day model usage");
+        assert_eq!(day_rows.len(), 1);
+        assert_eq!(day_rows[0].model, "gpt-5");
+        assert_eq!(day_rows[0].cost, 2.0);
     }
 
     #[test]

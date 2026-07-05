@@ -2,19 +2,13 @@ import {
   Activity,
   ArrowRight,
   BarChart3,
-  BrainCircuit,
   CheckCircle2,
-  FileClock,
-  GitBranch,
   Map as MapIcon,
-  MonitorPlay,
-  Network,
   RefreshCw,
-  SearchCheck,
   Terminal,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +42,7 @@ import {
   listProviderUsageLedger,
   triggerIndex,
 } from '@/lib/tauri-ipc';
+import { computeUsagePaceLabel, resolveUsageWindowTotalSecs } from '@/lib/usage-pace';
 import { isWindowHidden, useVisibilityInterval } from '@/lib/use-visibility';
 
 // ─── Usage helpers ──────────────────────────────────────────────────────────
@@ -135,49 +130,14 @@ function UsageBar({
   };
   const c = colorMap[color];
 
-  // Pace projection: at the current burn rate, where does usage land when
-  // the window resets? Replaces a confusing "X% ahead of pace" readout —
-  // that delta only made sense if you mentally extrapolated. Show projected
-  // end-of-window headroom when safe, and a concrete countdown when on
-  // track to hit the cap.
-  let paceLabel: string | null = null;
-  let paceColor = 'text-slate-500';
-  if (
-    windowTotalSecs &&
-    windowTotalSecs > 0 &&
-    resetsInSecs != null &&
-    resetsInSecs > 0 &&
-    resetsInSecs <= windowTotalSecs
-  ) {
-    const elapsed = windowTotalSecs - resetsInSecs;
-    // Suppress until ≥10 min elapsed AND ≥0.5% used — rate is noisy below
-    // that and used to flicker between "ahead/behind pace" states.
-    if (elapsed >= 10 * 60 && pct >= 0.5) {
-      const projectedEndPct = pct * (windowTotalSecs / elapsed);
-      if (projectedEndPct >= 100) {
-        // Burn rate projects to hit the cap. When?
-        // rate = pct/elapsed per second → secs to reach 100% = (100-pct)/rate
-        const secsToCap = ((100 - pct) * elapsed) / pct;
-        if (secsToCap <= 0) {
-          paceLabel = 'at limit';
-          paceColor = 'text-[#ff725f]';
-        } else if (secsToCap < resetsInSecs) {
-          paceLabel = `caps in ${formatDuration(secsToCap)}`;
-          paceColor = 'text-[#ff725f]/90';
-        } else {
-          // Tipped just over but slow enough to coast to reset
-          paceLabel = 'on pace';
-          paceColor = 'text-slate-500';
-        }
-      } else if (projectedEndPct >= 95) {
-        paceLabel = 'on pace';
-        paceColor = 'text-slate-500';
-      } else {
-        paceLabel = `${Math.round(100 - projectedEndPct)}% headroom`;
-        paceColor = 'text-emerald-400/80';
-      }
-    }
-  }
+  const pace = computeUsagePaceLabel(pct, windowTotalSecs, resetsInSecs);
+  const paceLabel = pace.label;
+  const paceColor =
+    pace.tone === 'warn'
+      ? 'text-[#ff725f]/90'
+      : pace.tone === 'ok'
+        ? 'text-emerald-400/80'
+        : 'text-slate-500';
 
   return (
     <div className="flex flex-col gap-1">
@@ -297,10 +257,15 @@ function AccountUsageRow({
   const weekSessions = usage?.week_sessions ?? 0;
   const weekTokens = (usage?.week_input_tokens ?? 0) + (usage?.week_output_tokens ?? 0);
   const profileBreakdown = usage?.profile_breakdown ?? [];
-  const plan = account.provider === 'devin' ? null : (usage?.plan ?? account.plan);
+  const plan =
+    account.provider === 'devin' || account.provider === 'grok'
+      ? (liveUsage?.quota_plan ?? usage?.plan ?? account.plan)
+      : (usage?.plan ?? account.plan);
 
-  // Live rate limit data — supported for all providers now
-  const isLiveSupported = ['anthropic', 'openai', 'google', 'cursor'].includes(account.provider);
+  // Live rate limit data — supported for providers with quota APIs or local caches
+  const isLiveSupported = ['anthropic', 'openai', 'google', 'cursor', 'devin', 'grok'].includes(
+    account.provider
+  );
   const hasLive = liveUsage?.supported === true;
   const fiveH = liveUsage?.five_h;
   const sevenD = liveUsage?.seven_d;
@@ -403,7 +368,11 @@ function AccountUsageRow({
                   ? 'Check live usage from Google'
                   : account.provider === 'cursor'
                     ? 'Check live plan usage from Cursor'
-                    : 'Check live usage (makes a small API call)'
+                    : account.provider === 'devin'
+                      ? 'Refresh Devin quota from Codeium'
+                      : account.provider === 'grok'
+                        ? 'Refresh Grok credit usage from CLI logs'
+                        : 'Check live usage (makes a small API call)'
             }
           >
             {checkingLive ? '...' : 'Refresh'}
@@ -421,7 +390,11 @@ function AccountUsageRow({
                 ? '5-hour window'
                 : account.provider === 'cursor'
                   ? 'Monthly plan'
-                  : 'Primary window'
+                  : account.provider === 'devin'
+                    ? 'Weekly quota'
+                    : account.provider === 'grok'
+                      ? 'Monthly credits'
+                      : 'Primary window'
             }
             resetLabel={
               fiveH.resets_in_secs != null && fiveH.resets_in_secs > 0
@@ -429,23 +402,45 @@ function AccountUsageRow({
                 : undefined
             }
             color={barColor(fiveH.utilization_pct)}
-            windowTotalSecs={account.provider === 'cursor' ? 30 * 24 * 3600 : 5 * 3600}
+            windowTotalSecs={resolveUsageWindowTotalSecs(
+              account.provider,
+              'primary',
+              fiveH.window_total_secs
+            )}
             resetsInSecs={fiveH.resets_in_secs ?? undefined}
           />
         )}
-        {hasLive && sevenD?.utilization_pct != null && (
+        {hasLive && sevenD?.utilization_pct != null && account.provider !== 'grok' && (
           <UsageBar
             pct={sevenD.utilization_pct}
-            label={account.provider === 'anthropic' ? '7-day window' : 'Secondary window'}
+            label={
+              account.provider === 'anthropic'
+                ? '7-day window'
+                : account.provider === 'devin'
+                  ? 'Daily quota'
+                  : 'Secondary window'
+            }
             resetLabel={
               sevenD.resets_in_secs != null && sevenD.resets_in_secs > 0
                 ? `resets in ${formatDuration(sevenD.resets_in_secs)}`
                 : undefined
             }
             color={barColor(sevenD.utilization_pct)}
-            windowTotalSecs={7 * 24 * 3600}
+            windowTotalSecs={resolveUsageWindowTotalSecs(
+              account.provider,
+              'secondary',
+              sevenD.window_total_secs
+            )}
             resetsInSecs={sevenD.resets_in_secs ?? undefined}
           />
+        )}
+        {account.provider === 'grok' && liveUsage?.grok_billing && (
+          <div className="text-[10px] text-slate-600 tabular-nums">
+            {liveUsage.grok_billing.credit_remaining_percent.toFixed(0)}% credits remaining
+            {liveUsage.grok_billing.billing_period_end
+              ? ` · resets ${new Date(liveUsage.grok_billing.billing_period_end).toLocaleDateString()}`
+              : ''}
+          </div>
         )}
 
         {/* ── Gemini-specific usage display ────────────────────── */}
@@ -760,9 +755,9 @@ function telemetryKeyForProvider(provider: string): string {
 function telemetrySourceNote(provider: string): string | null {
   switch (provider) {
     case 'devin':
-      return 'Source: local Devin sessions.db, assistant messages deduped by message id; no live quota API.';
+      return 'Quota: Codeium GetPlanStatus (same as Devin /usage). Tokens: local sessions.db.';
     case 'grok':
-      return 'Source: local Grok sessions, input estimated from per-turn context and output from chat history.';
+      return 'Credits: Grok CLI billing log (creditUsagePercent). Tokens: local session estimates.';
     case 'cursor':
       return 'Source: Cursor plan API when refreshed; local session tokens are partial estimates.';
     case 'google':
@@ -830,16 +825,24 @@ function AgentFilterChips({
   hidden,
   onToggle,
   onShowAll,
+  embedded = false,
 }: {
   agents: string[];
   hidden: Set<string>;
   onToggle: (agent: string) => void;
   onShowAll: () => void;
+  embedded?: boolean;
 }) {
   if (agents.length === 0) return null;
   const anyHidden = hidden.size > 0;
   return (
-    <div className="flex flex-wrap items-center gap-1.5 px-4 py-2 border-b border-[#1a1a1a]">
+    <div
+      className={
+        embedded
+          ? 'flex flex-wrap items-center gap-1.5'
+          : 'flex flex-wrap items-center gap-1.5 border-b border-[#1a1a1a] px-4 py-2'
+      }
+    >
       <span className="text-[10px] text-slate-600 mr-0.5">agents:</span>
       {agents.map((agent) => {
         const palette = agentPaletteFor(agent);
@@ -928,24 +931,36 @@ function TelemetryItemFilterChips({
 
 // ─── TokenUsageChart (inline, pure SVG, no deps) ────────────────────────────
 //
-// Bars show cache-FREE generated tokens (real input + output) — the intuitive
-// "what I actually spent" number. Cache reads (re-sent context, ~96% of the
-// cache-inclusive total) are surfaced separately in the subtitle so the headline
-// isn't a misleading multi-billion figure. Hovering a bar shows that bucket's
-// per-agent split; clicking pins a fuller breakdown panel below the chart.
+// Bars show API-equivalent USD cost per bucket. Hovering previews that bucket in
+// the agent/model breakdown panels below; clicking pins it.
 
 function TokenUsageChart({
   daily,
   weekly,
-  agentByDay,
-  hiddenAgents,
+  mode: controlledMode,
+  onModeChange,
+  rangeLabel,
+  pinDate,
+  onPinDateChange,
+  onHoverDateChange,
+  hideGranularityToggle = false,
 }: {
   daily: DayBucket[];
   weekly: WeekBucket[];
-  agentByDay: AgentDayUsage[];
-  hiddenAgents: Set<string>;
+  mode?: 'daily' | 'weekly';
+  onModeChange?: (mode: 'daily' | 'weekly') => void;
+  rangeLabel?: string;
+  pinDate?: string | null;
+  onPinDateChange?: (date: string | null) => void;
+  onHoverDateChange?: (date: string | null) => void;
+  hideGranularityToggle?: boolean;
 }) {
-  const [mode, setMode] = useState<'daily' | 'weekly'>('daily');
+  const [internalMode, setInternalMode] = useState<'daily' | 'weekly'>('daily');
+  const mode = controlledMode ?? internalMode;
+  const setMode = (next: 'daily' | 'weekly') => {
+    if (onModeChange) onModeChange(next);
+    else setInternalMode(next);
+  };
   const [hover, setHover] = useState<number | null>(null);
   const [pinned, setPinned] = useState<number | null>(null);
   const data = mode === 'daily' ? daily : weekly;
@@ -975,37 +990,6 @@ function TokenUsageChart({
   const activeIdx = hover ?? pinned;
   const hovered = activeIdx != null ? data[activeIdx] : null;
 
-  // Per-bucket agent split. Daily buckets match a single date; weekly buckets
-  // aggregate all agent rows whose date falls inside the Mon–Sun window.
-  const bucketAgents = (
-    bucket: DayBucket | WeekBucket | null
-  ): { agent: string; generated: number; cost: number }[] => {
-    if (!bucket) return [];
-    const inBucket = (date: string) => {
-      if ('date' in bucket) return date === bucket.date;
-      const start = bucket.week_start;
-      const end = new Date(`${start}T00:00:00`);
-      end.setDate(end.getDate() + 7);
-      const endStr = end.toISOString().slice(0, 10);
-      return date >= start && date < endStr;
-    };
-    const acc = new Map<string, { generated: number; cost: number }>();
-    for (const row of agentByDay) {
-      if (hiddenAgents.has(row.agent_type)) continue;
-      if (!inBucket(row.date)) continue;
-      const prev = acc.get(row.agent_type) ?? { generated: 0, cost: 0 };
-      acc.set(row.agent_type, {
-        generated: prev.generated + row.generated,
-        cost: prev.cost + row.cost,
-      });
-    }
-    return [...acc.entries()]
-      .map(([agent, v]) => ({ agent, ...v }))
-      .filter((a) => a.cost > 0 || a.generated > 0)
-      .sort((a, b) => b.cost - a.cost);
-  };
-  const activeAgents = bucketAgents(hovered);
-
   const trendWindow = mode === 'daily' ? 7 : 4;
   const trendPairs = data
     .slice(Math.max(1, n - trendWindow))
@@ -1021,6 +1005,42 @@ function TokenUsageChart({
       ? trendPairs.reduce((sum, value) => sum + value, 0) / trendPairs.length
       : null;
   const trendLabel = mode === 'daily' ? 'avg day-over-day, last 7d' : 'avg week-over-week, last 4w';
+
+  const bucketDate = (bucket: DayBucket | WeekBucket | null): string | null => {
+    if (!bucket) return null;
+    return 'date' in bucket ? bucket.date : bucket.week_start;
+  };
+
+  useEffect(() => {
+    if (pinDate == null) {
+      setPinned(null);
+      return;
+    }
+    const idx = data.findIndex((d) => bucketDate(d) === pinDate);
+    if (idx >= 0) setPinned(idx);
+  }, [pinDate, data, mode]);
+
+  const togglePin = (i: number) => {
+    setPinned((p) => {
+      const next = p === i ? null : i;
+      const date = next != null ? bucketDate(data[next]) : null;
+      onPinDateChange?.(date);
+      onHoverDateChange?.(null);
+      return next;
+    });
+  };
+
+  const previewBucket = (i: number) => {
+    setHover(i);
+    onHoverDateChange?.(bucketDate(data[i]));
+  };
+
+  const clearPreview = () => {
+    setHover(null);
+    if (pinned == null) onHoverDateChange?.(null);
+  };
+
+  const periodLabel = rangeLabel ?? (mode === 'daily' ? 'Last 30 days' : 'Last 12 weeks');
 
   // ViewBox in nice round units — scales responsively.
   const W = 600;
@@ -1082,7 +1102,7 @@ function TokenUsageChart({
             <div className="text-xs text-slate-400 tabular-nums">
               {hovered
                 ? `${labelFor(hovered)} · ${formatMoney(hovered.cost)} · ${formatTokens(hovered.generated)} gen`
-                : `${mode === 'daily' ? 'Last 30 days' : 'Last 12 weeks'} · ${formatMoney(total)} · ${formatTokens(totalGen)} generated`}
+                : `${periodLabel} · ${formatMoney(total)} · ${formatTokens(totalGen)} generated`}
             </div>
           </div>
           {trendPct != null && Number.isFinite(trendPct) && (
@@ -1101,29 +1121,33 @@ function TokenUsageChart({
             </span>
           )}
         </div>
-        <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
-          {(['daily', 'weekly'] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => {
-                setMode(m);
-                setHover(null);
-              }}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-sm transition-colors ${
-                mode === m ? 'bg-cyan-500/10 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              {m === 'daily' ? 'Daily' : 'Weekly'}
-            </button>
-          ))}
-        </div>
+        {!hideGranularityToggle && (
+          <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
+            {(['daily', 'weekly'] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => {
+                  setMode(m);
+                  setHover(null);
+                }}
+                className={`rounded-sm px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  mode === m
+                    ? 'bg-cyan-500/10 text-cyan-300'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                {m === 'daily' ? 'Daily' : 'Weekly'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-40"
         preserveAspectRatio="none"
-        onMouseLeave={() => setHover(null)}
+        onMouseLeave={clearPreview}
       >
         <defs>
           {/* Per-bucket gradients keep the bars vivid at the top, fading
@@ -1182,8 +1206,8 @@ function TokenUsageChart({
                 height={chartH}
                 fill="transparent"
                 style={{ cursor: 'pointer' }}
-                onMouseEnter={() => setHover(i)}
-                onClick={() => setPinned((p) => (p === i ? null : i))}
+                onMouseEnter={() => previewBucket(i)}
+                onClick={() => togglePin(i)}
               />
               <rect
                 x={x}
@@ -1280,53 +1304,6 @@ function TokenUsageChart({
           );
         })}
       </svg>
-
-      {/* Per-bucket agent split — hover previews, click pins. */}
-      {hovered && activeAgents.length > 0 && (
-        <div className="mt-3 rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="text-[11px] font-medium text-slate-300">
-              {labelFor(hovered)} · by agent
-            </div>
-            <div className="flex items-center gap-2 text-[10px] text-slate-500">
-              <span className="tabular-nums">{formatMoney(hovered.cost)}</span>
-              {pinned != null && (
-                <button
-                  onClick={() => setPinned(null)}
-                  className="rounded px-1.5 py-0.5 text-amber-300/80 ring-1 ring-amber-500/30 hover:bg-amber-500/10"
-                >
-                  unpin
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            {activeAgents.map((a) => {
-              const palette = agentPaletteFor(a.agent);
-              const pct = hovered.cost > 0 ? (a.cost / hovered.cost) * 100 : 0;
-              return (
-                <div key={a.agent} className="flex items-center gap-2 text-[11px]">
-                  <span className="w-14 shrink-0 truncate text-slate-300">{palette.label}</span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-sm bg-[#13151b]">
-                    <div
-                      className="h-full rounded-sm transition-all"
-                      style={{ width: `${Math.max(pct, 1.5)}%`, backgroundColor: palette.bar }}
-                    />
-                  </div>
-                  <span className="w-24 shrink-0 text-right tabular-nums text-slate-500">
-                    {formatMoney(a.cost)} · {pct.toFixed(0)}%
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          {!pinned && (
-            <div className="mt-2 text-[10px] text-slate-600">
-              Click a bar to pin this breakdown.
-            </div>
-          )}
-        </div>
-      )}
     </Card>
   );
 }
@@ -1413,15 +1390,23 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
 function WeeklyAgentSplit({
   hiddenAgents,
   agentByDay,
+  range,
+  focusDate,
+  focusMode,
+  active,
 }: {
   hiddenAgents: Set<string>;
   agentByDay: AgentDayUsage[];
+  range: ModelRangeKey;
+  focusDate?: string | null;
+  focusMode?: 'daily' | 'weekly';
+  active: boolean;
 }) {
   const [rows, setRows] = useState<AgentUsageRow[] | null>(null);
   const [cursorLedger, setCursorLedger] = useState<ProviderUsageLedgerRow | null>(null);
-  const [range, setRange] = useState<ModelRangeKey>('d30');
 
   useEffect(() => {
+    if (!active) return;
     let cancelled = false;
     let unlisten: (() => void) | undefined;
     const fetchRows = async () => {
@@ -1468,7 +1453,7 @@ function WeeklyAgentSplit({
       clearInterval(interval);
       unlisten?.();
     };
-  }, []);
+  }, [active]);
 
   if (!rows) return null;
 
@@ -1478,7 +1463,19 @@ function WeeklyAgentSplit({
   const cursorLedgerCost =
     cursorLedger && cursorLedger.cost_usd != null ? cursorLedger.cost_usd : null;
   let segments: AgentSegment[];
-  if (range === 'all') {
+  if (focusDate && focusMode) {
+    const acc = new Map<string, number>();
+    for (const r of agentByDay) {
+      if (hiddenAgents.has(r.agent_type)) continue;
+      if (!agentDayInFocus(r.date, focusDate, focusMode)) continue;
+      acc.set(r.agent_type, (acc.get(r.agent_type) ?? 0) + r.cost);
+    }
+    segments = [...acc.entries()].map(([agent, cost]) => ({
+      agent,
+      tokens: cost,
+      estimated: AGENT_PALETTE[agent]?.estimated ?? false,
+    }));
+  } else if (range === 'all') {
     segments = rows
       .filter((r) => !hiddenAgents.has(r.agent_type))
       .map((r) => ({
@@ -1515,19 +1512,23 @@ function WeeklyAgentSplit({
   }
 
   const rangeLabel = MODEL_RANGES.find((r) => r.key === range)?.label.toLowerCase() ?? 'all time';
+  const focusLabel =
+    focusDate && focusMode
+      ? focusMode === 'weekly'
+        ? `week of ${formatChartDateLabel(focusDate)}`
+        : formatChartDateLabel(focusDate)
+      : null;
+  const title = focusLabel
+    ? `By agent · ${focusLabel} · spend`
+    : `By agent · ${rangeLabel} · spend`;
   const hasData = segments.some((s) => s.tokens > 0);
 
-  return (
-    <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
-      <div className="mb-1 flex justify-end">
-        <RangeToggle value={range} onChange={setRange} />
-      </div>
-      {hasData ? (
-        <StackedBar title={`By agent · ${rangeLabel} · spend`} segments={segments} />
-      ) : (
-        <div className="text-[11px] text-slate-600">No agent spend in this window.</div>
-      )}
-    </Card>
+  return hasData ? (
+    <StackedBar title={title} segments={segments} />
+  ) : (
+    <div className="text-[11px] text-slate-600">
+      {focusLabel ? `No agent spend for ${focusLabel}.` : 'No agent spend in this window.'}
+    </div>
   );
 }
 
@@ -1577,21 +1578,200 @@ function HBarList({
 /** Map a model id to a brand-ish accent color. */
 function modelColor(model: string): string {
   const m = model.toLowerCase();
-  if (/(opus|sonnet|haiku|claude|fable)/.test(m)) return '#d6a947';
-  if (/(gpt|o3|o1|codex)/.test(m)) return '#31c6b7';
+  if (m === 'synthetic') return '#475569';
+  if (m === 'unknown' || m === '') return '#64748b';
+  if (/(opus|sonnet|haiku|claude|fable|mythos)/.test(m)) return '#d6a947';
+  if (/(gpt|o3|o1|o4|codex)/.test(m)) return '#31c6b7';
   if (/grok/.test(m)) return '#5da6f5';
   if (/(composer|cursor)/.test(m)) return '#a78bfa';
+  if (/(glm|compactor|swe|model_private|devin)/.test(m)) return '#22d3ee';
   if (/gemini/.test(m)) return '#f472b6';
   return '#64748b';
 }
 
-/** GitHub-style calendar heatmap of daily spend ($, last ~26 weeks). */
-function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
+function formatModelLabel(model: string): string {
+  if (!model || model === 'unknown') return 'unknown · est. sonnet';
+  return model;
+}
+
+function isoDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+const CHART_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+function formatChartDateLabel(iso: string): string {
+  const [, mm, dd] = iso.split('-');
+  const mIdx = parseInt(mm, 10) - 1;
+  const day = parseInt(dd, 10);
+  return `${CHART_MONTHS[mIdx] ?? mm} ${day}`;
+}
+
+function agentDayInFocus(date: string, focusDate: string, focusMode: 'daily' | 'weekly'): boolean {
+  if (focusMode === 'daily') return date === focusDate;
+  const end = new Date(`${focusDate}T00:00:00`);
+  end.setDate(end.getDate() + 7);
+  const endStr = isoDate(end);
+  return date >= focusDate && date < endStr;
+}
+
+function modelFocusDayRange(
+  focusDate: string,
+  focusMode: 'daily' | 'weekly'
+): { start: string; end: string } {
+  const end = new Date(`${focusDate}T00:00:00`);
+  end.setDate(end.getDate() + (focusMode === 'weekly' ? 7 : 1));
+  return { start: focusDate, end: isoDate(end) };
+}
+
+function rangeSinceDate(range: ModelRangeKey): string | null {
+  const days = MODEL_RANGES.find((r) => r.key === range)?.days;
+  if (days == null) return null;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+  return isoDate(start);
+}
+
+function usageRangeLabel(range: ModelRangeKey): string {
+  const entry = MODEL_RANGES.find((r) => r.key === range);
+  if (!entry || entry.key === 'all') return 'all time';
+  return `last ${entry.label}`;
+}
+
+function buildDailySeries(
+  agentByDay: AgentDayUsage[],
+  hiddenAgents: Set<string>,
+  range: ModelRangeKey
+): DayBucket[] {
+  const days = MODEL_RANGES.find((r) => r.key === range)?.days;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dayMap = new Map<string, { generated: number; cache: number; cost: number }>();
+  for (const r of agentByDay) {
+    if (hiddenAgents.has(r.agent_type)) continue;
+    const prev = dayMap.get(r.date) ?? { generated: 0, cache: 0, cost: 0 };
+    dayMap.set(r.date, {
+      generated: prev.generated + r.generated,
+      cache: prev.cache + r.cache,
+      cost: prev.cost + r.cost,
+    });
+  }
+
+  let span: number = days ?? 30;
+  if (days == null) {
+    const dates = [...dayMap.keys()].sort();
+    if (dates.length === 0) span = 30;
+    else {
+      const minD = new Date(`${dates[0]}T00:00:00`);
+      span = Math.min(180, Math.ceil((today.getTime() - minD.getTime()) / 86_400_000) + 1);
+    }
+  }
+
+  const series: DayBucket[] = [];
+  for (let i = span - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const date = isoDate(d);
+    const v = dayMap.get(date) ?? { generated: 0, cache: 0, cost: 0 };
+    series.push({
+      date,
+      tokens: v.generated + v.cache,
+      generated: v.generated,
+      cache: v.cache,
+      cost: v.cost,
+    });
+  }
+  return series;
+}
+
+function buildWeeklySeries(
+  agentByDay: AgentDayUsage[],
+  hiddenAgents: Set<string>,
+  range: ModelRangeKey
+): WeekBucket[] {
+  const days = MODEL_RANGES.find((r) => r.key === range)?.days;
+  let weekCount = 12;
+  if (days != null) weekCount = Math.max(1, Math.ceil(days / 7));
+  else weekCount = 26;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const monday = new Date(today);
+  monday.setDate(monday.getDate() - monday.getDay());
+
+  const dayMap = new Map<string, { generated: number; cache: number; cost: number }>();
+  for (const r of agentByDay) {
+    if (hiddenAgents.has(r.agent_type)) continue;
+    const prev = dayMap.get(r.date) ?? { generated: 0, cache: 0, cost: 0 };
+    dayMap.set(r.date, {
+      generated: prev.generated + r.generated,
+      cache: prev.cache + r.cache,
+      cost: prev.cost + r.cost,
+    });
+  }
+
+  const series: WeekBucket[] = [];
+  for (let i = weekCount - 1; i >= 0; i--) {
+    const ws = new Date(monday);
+    ws.setDate(ws.getDate() - i * 7);
+    const we = new Date(ws);
+    we.setDate(we.getDate() + 7);
+    const wsS = isoDate(ws);
+    const weS = isoDate(we);
+
+    let tokens = 0;
+    let generated = 0;
+    let cache = 0;
+    let cost = 0;
+    for (const [date, v] of dayMap) {
+      if (date >= wsS && date < weS) {
+        tokens += v.generated + v.cache;
+        generated += v.generated;
+        cache += v.cache;
+        cost += v.cost;
+      }
+    }
+    series.push({ week_start: wsS, tokens, generated, cache, cost });
+  }
+  return series;
+}
+
+/** Compact 26-week rhythm strip — highlights the active range window. */
+function UsageRhythmStrip({
+  data,
+  hiddenAgents,
+  range,
+  highlightDate,
+  onSelectDate,
+}: {
+  data: AgentDayUsage[];
+  hiddenAgents: Set<string>;
+  range: ModelRangeKey;
+  highlightDate?: string | null;
+  onSelectDate?: (date: string) => void;
+}) {
   const byDate = new Map<string, number>();
   for (const r of data) {
+    if (hiddenAgents.has(r.agent_type)) continue;
     byDate.set(r.date, (byDate.get(r.date) ?? 0) + r.cost);
   }
   if (byDate.size === 0) return null;
+  const rangeSince = rangeSinceDate(range);
   const max = Math.max(...byDate.values(), 0.0001);
   const logMax = Math.log10(max + 1);
 
@@ -1617,25 +1797,36 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
     weeks.push(col);
   }
 
-  const cellColor = (value: number, future: boolean) => {
+  const cellColor = (value: number, future: boolean, inRange: boolean) => {
     if (future) return 'transparent';
-    if (value <= 0) return '#13151b';
+    if (value <= 0) return inRange ? '#1a1710' : '#13151b';
     const t = Math.min(1, Math.log10(value + 1) / logMax);
     const level = Math.max(1, Math.ceil(t * 4));
     const alpha = [0, 0.28, 0.48, 0.72, 1][level];
-    return `rgba(212,160,57,${alpha})`;
+    const base = inRange ? 1 : 0.72;
+    return `rgba(212,160,57,${alpha * base})`;
+  };
+
+  const inActiveRange = (date: string) => {
+    if (!rangeSince) return false;
+    return date >= rangeSince;
   };
 
   return (
-    <div>
-      <div className="mb-2 flex items-end justify-between">
-        <div className="text-[11px] text-slate-500">Daily activity · last 26 weeks</div>
-        <div className="flex items-center gap-1 text-[10px] text-slate-600">
+    <div className="border-t border-[#1a1a1a] px-4 py-3">
+      <div className="mb-2 flex items-end justify-between gap-3">
+        <div className="text-[11px] text-slate-500">
+          26-week rhythm
+          {rangeSince ? (
+            <span className="text-slate-600"> · {usageRangeLabel(range)} highlighted</span>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-1 text-[10px] text-slate-600">
           <span>less</span>
           {[0, 1, 2, 3, 4].map((l) => (
             <span
               key={l}
-              className="h-2.5 w-2.5 rounded-[2px]"
+              className="h-2 w-2 rounded-[2px]"
               style={{
                 backgroundColor:
                   l === 0 ? '#13151b' : `rgba(212,160,57,${[0, 0.28, 0.48, 0.72, 1][l]})`,
@@ -1645,20 +1836,216 @@ function UsageCalendarHeatmap({ data }: { data: AgentDayUsage[] }) {
           <span>more</span>
         </div>
       </div>
-      <div className="flex gap-[3px] overflow-x-auto pb-1">
+      <div className="flex gap-[2px] overflow-x-auto pb-0.5">
         {weeks.map((col, wi) => (
-          <div key={wi} className="flex flex-col gap-[3px]">
-            {col.map((cell) => (
-              <div
-                key={cell.date}
-                title={cell.future ? '' : `${cell.date} · ${formatMoney(cell.value)}`}
-                className="h-2.5 w-2.5 rounded-[2px]"
-                style={{ backgroundColor: cellColor(cell.value, cell.future) }}
-              />
-            ))}
+          <div key={wi} className="flex flex-col gap-[2px]">
+            {col.map((cell) => {
+              const inRange = inActiveRange(cell.date);
+              const isPinned = highlightDate === cell.date;
+              return (
+                <button
+                  key={cell.date}
+                  type="button"
+                  disabled={cell.future}
+                  title={cell.future ? '' : `${cell.date} · ${formatMoney(cell.value)}`}
+                  onClick={() => !cell.future && onSelectDate?.(cell.date)}
+                  className={`h-2 w-2 rounded-[2px] transition-all ${
+                    cell.future
+                      ? 'cursor-default'
+                      : 'cursor-pointer hover:ring-1 hover:ring-[var(--cv-accent)]/50'
+                  } ${isPinned ? 'ring-1 ring-[var(--cv-accent)]' : inRange ? 'ring-1 ring-[var(--cv-accent)]/25' : ''}`}
+                  style={{ backgroundColor: cellColor(cell.value, cell.future, inRange) }}
+                />
+              );
+            })}
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function GranularityToggle({
+  value,
+  onChange,
+}: {
+  value: 'daily' | 'weekly';
+  onChange: (next: 'daily' | 'weekly') => void;
+}) {
+  return (
+    <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
+      {(['daily', 'weekly'] as const).map((m) => (
+        <button
+          key={m}
+          onClick={() => onChange(m)}
+          className={`rounded-sm px-2 py-0.5 text-[10px] font-medium transition-colors ${
+            value === m ? 'bg-cyan-500/10 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+          }`}
+        >
+          {m === 'daily' ? 'Daily' : 'Weekly'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function LocalUsagePanel({
+  tokenUsage,
+  agentByDay,
+  modelUsage,
+  hiddenAgents,
+  onToggleAgent,
+  onShowAllAgents,
+  active,
+}: {
+  tokenUsage: TokenUsageStats;
+  agentByDay: AgentDayUsage[];
+  modelUsage: ModelUsageRanges;
+  hiddenAgents: Set<string>;
+  onToggleAgent: (agent: string) => void;
+  onShowAllAgents: () => void;
+  active: boolean;
+}) {
+  const [range, setRange] = useState<ModelRangeKey>('d30');
+  const [granularity, setGranularity] = useState<'daily' | 'weekly'>('daily');
+  const [pinDate, setPinDate] = useState<string | null>(null);
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
+  const focusDate = hoverDate ?? pinDate;
+
+  useEffect(() => {
+    if (range === 'd7') setGranularity('daily');
+  }, [range]);
+
+  useEffect(() => {
+    setPinDate(null);
+    setHoverDate(null);
+  }, [range, granularity]);
+
+  const agents = useMemo(
+    () => [...new Set(agentByDay.map((r) => r.agent_type))].sort(),
+    [agentByDay]
+  );
+
+  const dailySeries = useMemo(
+    () =>
+      agentByDay.length > 0
+        ? buildDailySeries(agentByDay, hiddenAgents, range)
+        : tokenUsage.daily_series,
+    [agentByDay, hiddenAgents, range, tokenUsage.daily_series]
+  );
+
+  const weeklySeries = useMemo(
+    () =>
+      agentByDay.length > 0
+        ? buildWeeklySeries(agentByDay, hiddenAgents, range)
+        : tokenUsage.weekly_series,
+    [agentByDay, hiddenAgents, range, tokenUsage.weekly_series]
+  );
+
+  const showRhythm = agentByDay.length > 0;
+  const showBreakdowns = agentByDay.length > 0 || modelUsage.all.length > 0;
+
+  const [focusModelData, setFocusModelData] = useState<ModelUsage[] | null>(null);
+  const [focusModelLoading, setFocusModelLoading] = useState(false);
+
+  useEffect(() => {
+    if (!active || !focusDate || !isTauriAvailable()) {
+      setFocusModelData(null);
+      setFocusModelLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setFocusModelLoading(true);
+    const { start, end } = modelFocusDayRange(focusDate, granularity);
+    void getUsageByModel(undefined, [...hiddenAgents], start, end)
+      .then((rows) => {
+        if (!cancelled) setFocusModelData(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setFocusModelData([]);
+      })
+      .finally(() => {
+        if (!cancelled) setFocusModelLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [active, focusDate, granularity, hiddenAgents]);
+
+  return (
+    <div className="cv-frame overflow-hidden">
+      <div className="cv-terminal-bar h-10 px-4">
+        <BarChart3 size={14} className="text-[var(--cv-accent)]" />
+        <span className="cv-label">local usage · indexed spend</span>
+      </div>
+
+      <div className="flex flex-col gap-2 border-b border-[#1a1a1a] px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <AgentFilterChips
+          agents={agents}
+          hidden={hiddenAgents}
+          onToggle={onToggleAgent}
+          onShowAll={onShowAllAgents}
+          embedded
+        />
+        <div className="flex shrink-0 items-center gap-2">
+          <RangeToggle value={range} onChange={setRange} />
+          {range !== 'd7' && <GranularityToggle value={granularity} onChange={setGranularity} />}
+        </div>
+      </div>
+
+      <TokenUsageChart
+        daily={dailySeries}
+        weekly={weeklySeries}
+        mode={granularity}
+        onModeChange={setGranularity}
+        rangeLabel={usageRangeLabel(range)}
+        pinDate={pinDate}
+        onPinDateChange={setPinDate}
+        onHoverDateChange={setHoverDate}
+        hideGranularityToggle
+      />
+
+      {showRhythm && (
+        <UsageRhythmStrip
+          data={agentByDay}
+          hiddenAgents={hiddenAgents}
+          range={range}
+          highlightDate={granularity === 'daily' ? focusDate : null}
+          onSelectDate={(date) => {
+            setPinDate(date);
+            setHoverDate(null);
+          }}
+        />
+      )}
+
+      {showBreakdowns && (
+        <div className="grid gap-5 border-t border-[#1a1a1a] p-4 lg:grid-cols-2">
+          <div>
+            {agentByDay.length > 0 ? (
+              <WeeklyAgentSplit
+                hiddenAgents={hiddenAgents}
+                agentByDay={agentByDay}
+                range={range}
+                focusDate={focusDate}
+                focusMode={focusDate ? granularity : undefined}
+                active={active}
+              />
+            ) : (
+              <div className="text-[11px] text-slate-600">No agent spend in this window.</div>
+            )}
+          </div>
+          <div>
+            <UsageByModel
+              ranges={modelUsage}
+              range={range}
+              focusDate={focusDate}
+              focusMode={granularity}
+              focusData={focusModelData}
+              focusLoading={focusModelLoading}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1706,31 +2093,80 @@ const EMPTY_MODEL_USAGE_RANGES: ModelUsageRanges = {
   all: [],
 };
 
-/** Usage by model ($) with a 1w / 30d / 90d / all-time window toggle. */
-function UsageByModel({ ranges }: { ranges: ModelUsageRanges }) {
-  const [range, setRange] = useState<ModelRangeKey>('d30');
-  const data = ranges[range];
-  const max = Math.max(0.0001, ...data.map((d) => d.cost));
-  const rows = data.slice(0, 8).map((m) => ({
+const MODEL_BREAKDOWN_TOP_N = 8;
+
+/** Usage by model ($) — range synced with the parent panel. */
+function UsageByModel({
+  ranges,
+  range,
+  focusDate,
+  focusMode,
+  focusData,
+  focusLoading,
+}: {
+  ranges: ModelUsageRanges;
+  range: ModelRangeKey;
+  focusDate?: string | null;
+  focusMode?: 'daily' | 'weekly';
+  focusData?: ModelUsage[] | null;
+  focusLoading?: boolean;
+}) {
+  const focused = Boolean(focusDate && !focusLoading && focusData);
+  const data = focusDate != null ? (focusLoading ? [] : (focusData ?? [])) : ranges[range];
+  const top = data.slice(0, MODEL_BREAKDOWN_TOP_N);
+  const rest = data.slice(MODEL_BREAKDOWN_TOP_N);
+  const rows = top.map((m) => ({
     key: m.model,
-    label: m.model,
+    label: formatModelLabel(m.model),
     value: m.cost,
     sub: `${m.sessions}s`,
     color: modelColor(m.model),
   }));
+  if (rest.length > 0) {
+    const overflowCost = rest.reduce((acc, m) => acc + m.cost, 0);
+    const overflowSessions = rest.reduce((acc, m) => acc + m.sessions, 0);
+    rows.push({
+      key: '__overflow__',
+      label: `+${rest.length} other model${rest.length === 1 ? '' : 's'}`,
+      value: overflowCost,
+      sub: `${overflowSessions}s`,
+      color: '#475569',
+    });
+  }
+  const max = Math.max(0.0001, ...rows.map((d) => d.value));
   const total = data.reduce((acc, m) => acc + m.cost, 0);
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <div className="text-[11px] text-slate-500">
           By model · spend{total > 0 ? ` · ${formatMoney(total)}` : ''}
+          {data.length > MODEL_BREAKDOWN_TOP_N ? (
+            <span className="text-slate-600"> · {data.length} models</span>
+          ) : null}
+          {focusDate ? (
+            <span className="text-slate-600">
+              {' '}
+              ·{' '}
+              {focusMode === 'weekly'
+                ? `week of ${formatChartDateLabel(focusDate)}`
+                : formatChartDateLabel(focusDate)}
+              {focused ? ' spend' : focusLoading ? ' · loading…' : ''}
+            </span>
+          ) : null}
         </div>
-        <RangeToggle value={range} onChange={setRange} />
       </div>
       <HBarList
         rows={rows}
         max={max}
-        empty={range === 'all' ? 'No model usage yet.' : 'No model usage in this window.'}
+        empty={
+          focusDate
+            ? focusLoading
+              ? 'Loading model spend…'
+              : 'No model spend on this day.'
+            : range === 'all'
+              ? 'No model usage yet.'
+              : 'No model usage in this window.'
+        }
         format={formatMoney}
       />
     </div>
@@ -1810,92 +2246,6 @@ export function RoadmapReleaseBanner() {
         </div>
       </div>
     </section>
-  );
-}
-
-export function VerificationWorkbenchPanel({ scorecard }: { scorecard: SessionScorecard | null }) {
-  const sessionCount = scorecard?.sessions_analyzed ?? 0;
-  const tools = [
-    {
-      id: 'evidence',
-      label: 'Evidence search',
-      surface: 'Review',
-      href: '/review',
-      Icon: SearchCheck,
-      status: 'Risk candidates',
-    },
-    {
-      id: 'timeline',
-      label: 'Agent timeline',
-      surface: 'Review',
-      href: '/review',
-      Icon: GitBranch,
-      status: 'Command anchors',
-    },
-    {
-      id: 'qa',
-      label: 'Synthetic QA',
-      surface: 'Review',
-      href: '/review',
-      Icon: MonitorPlay,
-      status: 'Post-fix compare',
-    },
-    {
-      id: 'graph',
-      label: 'Memory graph',
-      surface: 'Repo Unpacked',
-      href: '/unpack',
-      Icon: Network,
-      status: 'JSON + sidecar',
-    },
-    {
-      id: 'history',
-      label: 'History brief',
-      surface: 'Repo Unpacked',
-      href: '/unpack',
-      Icon: FileClock,
-      status: 'Cited local context',
-    },
-    {
-      id: 'sessions',
-      label: 'AI sessions',
-      surface: 'Home',
-      href: '/',
-      Icon: BrainCircuit,
-      status: sessionCount > 0 ? `${sessionCount} indexed` : 'Index ready',
-    },
-  ];
-
-  return (
-    <div className="cv-panel overflow-hidden">
-      <div className="grid gap-px bg-[#151515] md:grid-cols-3 xl:grid-cols-6">
-        {tools.map(({ id, label, surface, href, Icon, status }) => (
-          <Link
-            key={id}
-            to={href}
-            className="group min-h-28 bg-[#08090a] px-3 py-3 transition-colors hover:bg-[#0d1012]"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <Icon size={15} className="text-[var(--cv-accent)]" />
-              <ArrowRight
-                size={13}
-                className="text-slate-700 transition-colors group-hover:text-[var(--cv-accent)]"
-              />
-            </div>
-            <div className="mt-4 text-sm font-medium text-slate-200">{label}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              <Badge
-                variant="outline"
-                className="rounded-full border-[#252525] px-1.5 py-0 text-[9px] uppercase text-slate-500"
-              >
-                {surface}
-              </Badge>
-              <span className="min-w-0 truncate text-[10px] text-slate-500">{status}</span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -2204,6 +2554,8 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
 const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes
 
 export default function Home() {
+  const { pathname } = useLocation();
+  const isHomeActive = pathname === '/';
   const isInitialLoad = useRef(true);
   const { hidden: hiddenAgents, toggle: toggleAgent, showAll } = useHiddenAgents();
   const {
@@ -2276,9 +2628,6 @@ export default function Home() {
       // load independently and never block or fail the core dashboard.
       void getAgentUsageByDay(180)
         .then((v) => setAgentByDay(v))
-        .catch(() => undefined);
-      void Promise.all(MODEL_RANGES.map((r) => getUsageByModel(r.days)))
-        .then(([d7, d30, d90, all]) => setModelUsage({ d7, d30, d90, all }))
         .catch(() => undefined);
 
       // Seed usage map with cached-ID results that came back alongside the rest.
@@ -2356,6 +2705,7 @@ export default function Home() {
 
   // Initial load — skip if cache is fresh (< 3 min old)
   useEffect(() => {
+    if (!isHomeActive) return;
     if (_cachedDashboard && Date.now() - _cachedDashboard.fetchedAt < CACHE_TTL_MS) {
       // Cache is fresh, no fetch needed
       return;
@@ -2364,23 +2714,68 @@ export default function Home() {
       void loadDashboard();
     }, 0);
     return () => clearTimeout(timeout);
-  }, [loadDashboard]);
+  }, [isHomeActive, loadDashboard]);
+
+  // Model breakdown — refetch when agent filters change and after index events.
+  const fetchModelUsage = useCallback(async (exclude: string[]) => {
+    const [d7, d30, d90, all] = await Promise.all(
+      MODEL_RANGES.map((r) => getUsageByModel(r.days, exclude))
+    );
+    setModelUsage({ d7, d30, d90, all });
+  }, []);
+
+  useEffect(() => {
+    if (!isHomeActive) return;
+    let cancelled = false;
+    let unlisten: (() => void) | undefined;
+    const run = () => {
+      void fetchModelUsage([...hiddenAgents])
+        .catch(() => undefined)
+        .then(() => {
+          if (cancelled) return;
+        });
+    };
+    run();
+    const interval = setInterval(() => {
+      if (isWindowHidden()) return;
+      run();
+    }, 60_000);
+    void (async () => {
+      try {
+        const { listen } = await import('@tauri-apps/api/event');
+        const un = await listen('session_archive_updated', () => run());
+        if (cancelled) un();
+        else unlisten = un;
+      } catch {
+        // Event API unavailable (browser preview) — periodic fallback still runs.
+      }
+    })();
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      unlisten?.();
+    };
+  }, [isHomeActive, hiddenAgents, fetchModelUsage]);
 
   // ─── Periodic background sync every 60s ───────────────────────────────
   // Keeps token-usage counters near-realtime. Paused while the window is
   // hidden (battery) — no point polling when the user isn't looking; it
   // catches up immediately on return.
 
-  useVisibilityInterval(() => {
-    if (!isTauriAvailable()) return;
-    refreshDashboard();
-  }, 60_000);
+  useVisibilityInterval(
+    () => {
+      if (!isTauriAvailable()) return;
+      refreshDashboard();
+    },
+    60_000,
+    isHomeActive
+  );
 
   // ─── Auto-refresh live usage every 60s ─────────────────────────────────
 
   const refreshLiveUsage = useCallback(async (accts: ProviderAccount[]) => {
     const supported = accts.filter((a) =>
-      ['anthropic', 'openai', 'google', 'cursor'].includes(a.provider)
+      ['anthropic', 'openai', 'google', 'cursor', 'devin', 'grok'].includes(a.provider)
     );
     if (supported.length === 0) return;
 
@@ -2410,19 +2805,23 @@ export default function Home() {
 
   // Fetch live usage immediately once accounts are loaded.
   useEffect(() => {
-    if (!isTauriAvailable() || accounts.length === 0) return;
+    if (!isHomeActive || !isTauriAvailable() || accounts.length === 0) return;
     const initialTimeout = setTimeout(() => {
       void refreshLiveUsage(accounts);
     }, 0);
     return () => clearTimeout(initialTimeout);
-  }, [accounts, refreshLiveUsage]);
+  }, [isHomeActive, accounts, refreshLiveUsage]);
 
   // Then refresh every 60s — but only while the window is visible (battery);
   // hitting provider APIs in the background is wasted work + network.
-  useVisibilityInterval(() => {
-    if (!isTauriAvailable() || accounts.length === 0) return;
-    void refreshLiveUsage(accounts);
-  }, 60_000);
+  useVisibilityInterval(
+    () => {
+      if (!isTauriAvailable() || accounts.length === 0) return;
+      void refreshLiveUsage(accounts);
+    },
+    60_000,
+    isHomeActive
+  );
 
   // ─── Trigger re-index ──────────────────────────────────────────────────
 
@@ -2444,7 +2843,7 @@ export default function Home() {
   // ─── Render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full overflow-y-auto overflow-x-hidden px-5 pb-8 pt-16">
+    <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden px-5 pb-8 pt-16">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
         <section className="cv-frame overflow-hidden bg-[#07090b]">
           <div className="flex flex-col gap-3 border-b border-[#1c1c1c] px-4 py-3 md:flex-row md:items-center md:justify-between">
@@ -2686,41 +3085,16 @@ export default function Home() {
           )}
         </div>
 
-        {/* Token usage chart */}
         {tokenUsage && (
-          <div className="cv-frame overflow-hidden">
-            <div className="cv-terminal-bar h-10 px-4">
-              <BarChart3 size={14} className="text-[var(--cv-accent)]" />
-              <span className="cv-label">indexed local token burn</span>
-            </div>
-            <AgentFilterChips
-              agents={[...new Set(agentByDay.map((r) => r.agent_type))].sort()}
-              hidden={hiddenAgents}
-              onToggle={toggleAgent}
-              onShowAll={showAll}
-            />
-            <TokenUsageChart
-              daily={tokenUsage.daily_series}
-              weekly={tokenUsage.weekly_series}
-              agentByDay={agentByDay}
-              hiddenAgents={hiddenAgents}
-            />
-            <WeeklyAgentSplit hiddenAgents={hiddenAgents} agentByDay={agentByDay} />
-          </div>
-        )}
-
-        {/* Activity heatmap + model breakdown */}
-        {(agentByDay.length > 0 || modelUsage.all.length > 0) && (
-          <div className="cv-frame overflow-hidden">
-            <div className="cv-terminal-bar h-10 px-4">
-              <Activity size={14} className="text-[var(--cv-accent)]" />
-              <span className="cv-label">usage explorer · generated tokens</span>
-            </div>
-            <div className="space-y-5 p-4">
-              <UsageCalendarHeatmap data={agentByDay} />
-              <UsageByModel ranges={modelUsage} />
-            </div>
-          </div>
+          <LocalUsagePanel
+            tokenUsage={tokenUsage}
+            agentByDay={agentByDay}
+            modelUsage={modelUsage}
+            hiddenAgents={hiddenAgents}
+            onToggleAgent={toggleAgent}
+            onShowAllAgents={showAll}
+            active={isHomeActive}
+          />
         )}
       </div>
     </div>

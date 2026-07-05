@@ -2,6 +2,7 @@ use crate::db::queries::{self, ProviderAccountRow};
 use crate::DbState;
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
+use std::io::BufRead;
 use tauri::State;
 
 #[tauri::command]
@@ -758,10 +759,8 @@ fn detect_cursor_account() -> Option<DetectedAccount> {
 
 /// Detect Devin CLI account from `~/.config/devin/config.json` + sessions DB.
 ///
-/// Devin doesn't expose a public usage API, so live-usage isn't supported —
-/// but we can detect the install via the sessions DB and read the org_id +
-/// configured model from config.json so the Provider Telemetry row shows
-/// real local weekly usage stats (tokens, cost, sessions) indexed from
+/// Live quota comes from Codeium `GetPlanStatus` (same source as Devin's
+/// `/usage` dashboard). Local weekly stats are indexed from
 /// `~/.local/share/devin/cli/sessions.db`.
 fn detect_devin_account() -> Option<DetectedAccount> {
     let db_path = crate::commands::history::resolve_devin_sessions_db();
@@ -793,9 +792,7 @@ fn detect_devin_account() -> Option<DetectedAccount> {
 
     // Use org_id as the dedup key (stored as api_key in the DB). Fall back
     // to a fixed local sentinel so a single install still has a stable key.
-    let dedup_key = org_id
-        .clone()
-        .unwrap_or_else(|| "devin-local".to_string());
+    let dedup_key = org_id.clone().unwrap_or_else(|| "devin-local".to_string());
 
     Some(DetectedAccount {
         provider: "devin".to_string(),
@@ -809,15 +806,16 @@ fn detect_devin_account() -> Option<DetectedAccount> {
 
 /// Detect Grok CLI from local session history.
 ///
-/// Grok does not expose a local auth/usage API that we can safely query here,
-/// but CodeVetter already indexes `~/.grok/sessions` into `cc_sessions`. A
-/// synthetic local account makes that indexed telemetry visible alongside
-/// Claude/Codex/Devin provider rows.
+/// Live credit usage is read from Grok CLI billing logs (`~/.grok/logs/
+/// unified.jsonl`) — the same `creditUsagePercent` the Grok TUI shows.
+/// Indexed session telemetry comes from `~/.grok/sessions`.
 fn detect_grok_account() -> Option<DetectedAccount> {
     let home = std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
         .ok()?;
-    let sessions_dir = std::path::PathBuf::from(home).join(".grok").join("sessions");
+    let sessions_dir = std::path::PathBuf::from(home)
+        .join(".grok")
+        .join("sessions");
     if !sessions_dir.exists() {
         return None;
     }
@@ -1284,7 +1282,10 @@ async fn refresh_anthropic_token(service: String) -> Result<String, String> {
 
     let status = resp.status().as_u16();
     if status == 429 {
-        return Err("Claude's token-refresh endpoint is rate-limited right now — try again in a minute.".to_string());
+        return Err(
+            "Claude's token-refresh endpoint is rate-limited right now — try again in a minute."
+                .to_string(),
+        );
     }
     if !resp.status().is_success() {
         let body = resp.text().await.unwrap_or_default();
@@ -1311,7 +1312,10 @@ async fn refresh_anthropic_token(service: String) -> Result<String, String> {
         .and_then(|v| v.as_str())
         .map(String::from)
         .unwrap_or(refresh_token);
-    let expires_in = body.get("expires_in").and_then(|v| v.as_i64()).unwrap_or(3600);
+    let expires_in = body
+        .get("expires_in")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(3600);
     let new_expires_at = chrono::Utc::now().timestamp_millis() + expires_in * 1000;
 
     let access_for_store = new_access.clone();
@@ -1342,6 +1346,8 @@ pub async fn check_live_usage(
         "anthropic" => check_live_usage_anthropic(credential_key).await,
         "openai" => check_live_usage_openai().await,
         "cursor" => check_live_usage_cursor().await,
+        "devin" => check_live_usage_devin().await,
+        "grok" => check_live_usage_grok().await,
         "google" => {
             let local = check_live_usage_gemini_local().await;
             let api = check_live_usage_gemini_api().await;
@@ -1397,10 +1403,15 @@ pub async fn check_live_usage(
     };
 
     if let Ok(value) = &result {
-        if let Ok(conn) = db.0.lock() {
-            if let Err(error) = persist_live_usage_ledger(&conn, &provider, value) {
-                log::warn!("Failed to persist {provider} usage ledger row: {error}");
+        if let Ok(conn) = db.0.try_lock() {
+            let _ = conn.busy_timeout(std::time::Duration::from_millis(250));
+            let persist_result = persist_live_usage_ledger(&conn, &provider, value);
+            let _ = conn.busy_timeout(std::time::Duration::from_millis(30_000));
+            if let Err(error) = persist_result {
+                log::debug!("Skipped {provider} usage ledger row during DB contention: {error}");
             }
+        } else {
+            log::debug!("Skipped {provider} usage ledger row because DB is busy");
         }
     }
 
@@ -2461,4 +2472,318 @@ fn base64_decode(input: &str) -> Option<Vec<u8>> {
         }
     }
     Some(out)
+}
+
+fn parse_toml_quoted_value(content: &str, key: &str) -> Option<String> {
+    for line in content.lines() {
+        let line = line.trim();
+        if !line.starts_with(key) {
+            continue;
+        }
+        let (_, rhs) = line.split_once('=')?;
+        return Some(rhs.trim().trim_matches('"').to_string());
+    }
+    None
+}
+
+fn read_devin_credentials() -> Result<(String, String), String> {
+    let home = std::env::var("HOME").map_err(|_| "HOME not set".to_string())?;
+    let path = std::path::PathBuf::from(&home)
+        .join(".local")
+        .join("share")
+        .join("devin")
+        .join("credentials.toml");
+    let content = std::fs::read_to_string(&path)
+        .map_err(|e| format!("Cannot read Devin credentials at {}: {e}", path.display()))?;
+    let token = parse_toml_quoted_value(&content, "windsurf_api_key")
+        .filter(|t| !t.is_empty())
+        .ok_or_else(|| "No windsurf_api_key in Devin credentials.toml".to_string())?;
+    let api_server = parse_toml_quoted_value(&content, "api_server_url")
+        .unwrap_or_else(|| "https://server.codeium.com".to_string());
+    Ok((token, api_server))
+}
+
+fn grok_home_dir() -> Result<std::path::PathBuf, String> {
+    let home = std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
+        .map_err(|_| "HOME not set".to_string())?;
+    Ok(std::path::PathBuf::from(home).join(".grok"))
+}
+
+fn read_latest_grok_billing_log() -> Option<(Value, String)> {
+    let log_path = grok_home_dir().ok()?.join("logs").join("unified.jsonl");
+    let file = std::fs::File::open(log_path).ok()?;
+    let reader = std::io::BufReader::new(file);
+    let mut latest: Option<(Value, String)> = None;
+    for line in reader.lines().map_while(Result::ok) {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+        let Ok(parsed) = serde_json::from_str::<Value>(line) else {
+            continue;
+        };
+        if parsed.get("msg").and_then(|v| v.as_str()) != Some("billing: fetched credits config") {
+            continue;
+        }
+        let ts = parsed
+            .get("ts")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        latest = Some((parsed, ts));
+    }
+    latest
+}
+
+const SECS_PER_DAY: i64 = 86_400;
+const SECS_PER_WEEK: i64 = 7 * SECS_PER_DAY;
+const SECS_PER_MONTH: i64 = 30 * SECS_PER_DAY;
+
+fn build_rate_window(
+    utilization_pct: Option<f64>,
+    reset_at_epoch: Option<i64>,
+    window_total_secs: Option<i64>,
+) -> Value {
+    let now_epoch = chrono::Utc::now().timestamp();
+    let resets_in_secs = reset_at_epoch.map(|e| (e - now_epoch).max(0));
+    let is_rate_limited = utilization_pct.map_or(false, |p| p >= 100.0);
+    json!({
+        "utilization": utilization_pct.map(|p| p / 100.0),
+        "utilization_pct": utilization_pct,
+        "reset_at": reset_at_epoch,
+        "resets_in_secs": resets_in_secs,
+        "window_total_secs": window_total_secs,
+        "status": if is_rate_limited { "rate_limited" } else { "allowed" },
+    })
+}
+
+fn parse_rfc3339_epoch(value: Option<&Value>) -> Option<i64> {
+    let raw = value.and_then(|v| v.as_str())?;
+    chrono::DateTime::parse_from_rfc3339(raw)
+        .ok()
+        .map(|dt| dt.timestamp())
+}
+
+/// Devin live quota via Codeium `GetPlanStatus` (weekly + daily remaining %).
+async fn check_live_usage_devin() -> Result<Value, String> {
+    let (token, api_server) = read_devin_credentials()?;
+    let url = format!("{api_server}/exa.seat_management_pb.SeatManagementService/GetPlanStatus");
+
+    let resp = reqwest::Client::new()
+        .post(&url)
+        .header("x-auth-token", token)
+        .header("Content-Type", "application/json")
+        .header("Connect-Protocol-Version", "1")
+        .body("{}")
+        .send()
+        .await
+        .map_err(|e| format!("Devin GetPlanStatus failed: {e}"))?;
+
+    let status_code = resp.status().as_u16();
+    if status_code == 401 || status_code == 403 {
+        return Err(
+            "Devin token rejected — run `devin auth login` to refresh credentials.".to_string(),
+        );
+    }
+    if !resp.status().is_success() {
+        let body = resp.text().await.unwrap_or_default();
+        return Err(format!(
+            "Devin GetPlanStatus returned {status_code}: {body}"
+        ));
+    }
+
+    let body: Value = resp
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse Devin GetPlanStatus: {e}"))?;
+
+    let plan_status = body
+        .get("planStatus")
+        .ok_or_else(|| "Devin GetPlanStatus missing planStatus".to_string())?;
+
+    let weekly_remaining = json_f64(plan_status.get("weeklyQuotaRemainingPercent"));
+    let daily_remaining = json_f64(plan_status.get("dailyQuotaRemainingPercent"));
+    let weekly_used = weekly_remaining.map(|r| (100.0 - r).clamp(0.0, 100.0));
+    let daily_used = daily_remaining.map(|r| (100.0 - r).clamp(0.0, 100.0));
+
+    let plan_name = plan_status
+        .pointer("/planInfo/planName")
+        .and_then(|v| v.as_str())
+        .map(String::from);
+    let plan_end = plan_status.get("planEnd").and_then(|v| v.as_str());
+    let weekly_reset_epoch = plan_status.get("weeklyQuotaResetAtUnix").and_then(json_i64);
+    let daily_reset_epoch = plan_status.get("dailyQuotaResetAtUnix").and_then(json_i64);
+
+    let status = if weekly_remaining.map_or(false, |r| r <= 0.0)
+        || daily_remaining.map_or(false, |r| r <= 0.0)
+    {
+        "rate_limited"
+    } else {
+        "allowed"
+    };
+
+    Ok(json!({
+        "supported": true,
+        "status": status,
+        "source": "codeium_get_plan_status",
+        "quota_plan": plan_name,
+        "five_h": build_rate_window(weekly_used, weekly_reset_epoch, Some(SECS_PER_WEEK)),
+        "seven_d": build_rate_window(daily_used, daily_reset_epoch, Some(SECS_PER_DAY)),
+        "checked_at": chrono::Utc::now().to_rfc3339(),
+        "devin_plan": {
+            "plan_name": plan_name,
+            "plan_end": plan_end,
+            "weekly_remaining_pct": weekly_remaining,
+            "daily_remaining_pct": daily_remaining,
+            "weekly_reset_at_unix": weekly_reset_epoch,
+            "daily_reset_at_unix": daily_reset_epoch,
+        },
+    }))
+}
+
+/// Grok live credit usage from CLI billing logs (`creditUsagePercent`).
+async fn check_live_usage_grok() -> Result<Value, String> {
+    let grok_home = grok_home_dir()?;
+    if !grok_home.join("sessions").exists() {
+        return Err("Grok not detected — no ~/.grok/sessions directory.".to_string());
+    }
+
+    let (billing_log, fetched_at) = read_latest_grok_billing_log().ok_or_else(|| {
+        "No Grok billing data yet — open Grok CLI and run /usage once to populate ~/.grok/logs/unified.jsonl.".to_string()
+    })?;
+
+    let config = billing_log
+        .pointer("/ctx/config")
+        .ok_or_else(|| "Grok billing log entry missing ctx.config".to_string())?;
+
+    let used_pct = json_f64(config.get("creditUsagePercent"))
+        .ok_or_else(|| "Grok billing log missing creditUsagePercent".to_string())?;
+    let remaining_pct = (100.0 - used_pct).clamp(0.0, 100.0);
+
+    let subscription_tier = billing_log
+        .pointer("/ctx/subscriptionTier")
+        .and_then(|v| v.as_str())
+        .map(String::from);
+
+    let period_end = config
+        .get("billingPeriodEnd")
+        .or_else(|| config.pointer("/currentPeriod/end"))
+        .and_then(|v| v.as_str());
+    let period_start = config
+        .get("billingPeriodStart")
+        .or_else(|| config.pointer("/currentPeriod/start"))
+        .and_then(|v| v.as_str());
+    let reset_at_epoch = period_end.and_then(|s| {
+        chrono::DateTime::parse_from_rfc3339(s)
+            .ok()
+            .map(|dt| dt.timestamp())
+    });
+    let window_total_secs = match (
+        parse_rfc3339_epoch(config.get("billingPeriodStart")),
+        parse_rfc3339_epoch(config.pointer("/currentPeriod/start")),
+        reset_at_epoch,
+    ) {
+        (Some(start), _, Some(end)) | (_, Some(start), Some(end)) if end > start => {
+            Some(end - start)
+        }
+        (_, _, Some(end)) => {
+            let now = chrono::Utc::now().timestamp();
+            let remaining = (end - now).max(0);
+            // If usage is mid-cycle, infer window length from remaining time when start is absent.
+            if used_pct > 0.0 && used_pct < 100.0 {
+                let elapsed = ((remaining as f64) * used_pct / (100.0 - used_pct)) as i64;
+                Some((elapsed + remaining).max(SECS_PER_DAY))
+            } else {
+                Some(SECS_PER_MONTH)
+            }
+        }
+        _ => Some(SECS_PER_MONTH),
+    };
+
+    let status = if used_pct >= 100.0 {
+        "rate_limited"
+    } else {
+        "allowed"
+    };
+
+    Ok(json!({
+        "supported": true,
+        "status": status,
+        "source": "grok_cli_billing_log",
+        "quota_plan": subscription_tier,
+        "five_h": build_rate_window(Some(used_pct), reset_at_epoch, window_total_secs),
+        "checked_at": if fetched_at.is_empty() {
+            chrono::Utc::now().to_rfc3339()
+        } else {
+            fetched_at
+        },
+        "grok_billing": {
+            "credit_usage_percent": used_pct,
+            "credit_remaining_percent": remaining_pct,
+            "subscription_tier": subscription_tier,
+            "billing_period_end": period_end,
+            "billing_period_start": period_start,
+            "window_total_secs": window_total_secs,
+        },
+    }))
+}
+
+fn json_f64(value: Option<&Value>) -> Option<f64> {
+    value.and_then(|v| {
+        v.as_f64()
+            .or_else(|| v.as_str().and_then(|s| s.parse().ok()))
+    })
+}
+
+fn json_i64(value: &Value) -> Option<i64> {
+    value
+        .as_i64()
+        .or_else(|| value.as_str().and_then(|s| s.parse().ok()))
+        .or_else(|| value.as_f64().map(|f| f as i64))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_devin_credentials_toml_values() {
+        let content = r#"
+            windsurf_api_key = "devin-token"
+            api_server_url = "https://server.codeium.com"
+        "#;
+
+        assert_eq!(
+            parse_toml_quoted_value(content, "windsurf_api_key").as_deref(),
+            Some("devin-token")
+        );
+        assert_eq!(
+            parse_toml_quoted_value(content, "api_server_url").as_deref(),
+            Some("https://server.codeium.com")
+        );
+        assert_eq!(parse_toml_quoted_value(content, "missing"), None);
+    }
+
+    #[test]
+    fn json_number_helpers_accept_strings_and_numbers() {
+        assert_eq!(json_f64(Some(&json!("42.5"))), Some(42.5));
+        assert_eq!(json_f64(Some(&json!(12.25))), Some(12.25));
+        assert_eq!(json_i64(&json!("1700000000")), Some(1_700_000_000));
+        assert_eq!(json_i64(&json!(42.9)), Some(42));
+    }
+
+    #[test]
+    fn rate_window_marks_exhausted_quota() {
+        let window = build_rate_window(
+            Some(100.0),
+            Some(chrono::Utc::now().timestamp() + 60),
+            Some(60),
+        );
+
+        assert_eq!(window["status"].as_str(), Some("rate_limited"));
+        assert_eq!(window["utilization_pct"].as_f64(), Some(100.0));
+        assert_eq!(window["window_total_secs"].as_i64(), Some(60));
+        assert!(window["resets_in_secs"].as_i64().unwrap_or_default() <= 60);
+    }
 }

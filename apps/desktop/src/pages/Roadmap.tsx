@@ -23,7 +23,6 @@ import {
   AdapterSourceHealthPanel,
   RoadmapReleaseBanner,
   SessionScorecardPanel,
-  VerificationWorkbenchPanel,
 } from '@/pages/Home';
 
 const ADAPTER_FILTERS = [
@@ -323,13 +322,13 @@ export default function Roadmap() {
   }, [loadRoadmap]);
 
   return (
-    <div className="min-h-full overflow-y-auto overflow-x-hidden px-5 pb-8 pt-20">
+    <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden px-5 pb-8 pt-20">
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="cv-label text-slate-500">workbench</div>
+            <div className="cv-label text-slate-500">roadmap</div>
             <h1 className="mt-1 truncate text-lg font-semibold tracking-normal text-slate-100">
-              Verification tools
+              Verification telemetry
             </h1>
           </div>
           <Button
@@ -353,7 +352,6 @@ export default function Roadmap() {
 
         <RoadmapReleaseBanner />
         <FindingDispositionPanel stats={dispositionStats} />
-        <VerificationWorkbenchPanel scorecard={scorecard} />
         <SessionScorecardPanel scorecard={scorecard} />
         <AdapterSourceHealthPanel runs={adapterRuns} />
         <ArchiveSearchPanel />

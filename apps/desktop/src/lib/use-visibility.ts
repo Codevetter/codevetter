@@ -28,7 +28,7 @@ export function useWindowVisibilityClass(): void {
  * fires `callback` once immediately to catch up, then resumes ticking. Use for
  * dashboard/polling refreshes that are pointless when the user isn't looking.
  */
-export function useVisibilityInterval(callback: () => void, ms: number): void {
+export function useVisibilityInterval(callback: () => void, ms: number, enabled = true): void {
   const saved = useRef(callback);
   useEffect(() => {
     saved.current = callback;
@@ -46,18 +46,18 @@ export function useVisibilityInterval(callback: () => void, ms: number): void {
       }
     };
     const sync = () => {
-      if (isWindowHidden()) {
+      if (!enabled || isWindowHidden()) {
         stop();
       } else {
         saved.current(); // catch up on resume
         start();
       }
     };
-    if (!isWindowHidden()) start();
+    if (enabled && !isWindowHidden()) start();
     document.addEventListener('visibilitychange', sync);
     return () => {
       stop();
       document.removeEventListener('visibilitychange', sync);
     };
-  }, [ms]);
+  }, [ms, enabled]);
 }
