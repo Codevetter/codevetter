@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": true,
@@ -19,11 +19,11 @@
       "!**/package-lock.json",
       "!**/tsconfig.tsbuildinfo",
       "!**/.claude/worktrees",
-      "!apps/desktop/src-tauri/gen/schemas/**",
+      "!apps/desktop/src-tauri/gen/schemas",
       "!**/*.css",
       "!**/*.astro",
       "!**/design.html",
-      "!benchmark/cases/**"
+      "!benchmark/cases"
     ]
   },
   "formatter": {
