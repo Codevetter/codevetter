@@ -47,7 +47,7 @@ export class ConsoleErrorCollector {
 
 /**
  * Navigate to a page and wait for the app shell to be ready.
- * The sidebar auto-hides after 2s, so we don't wait for it to be visible.
+ * The persistent nav is outside main content, so readiness is anchored to main.
  */
 export async function navigateTo(page: Page, path: string) {
   await page.goto(path);
@@ -70,8 +70,7 @@ export async function waitForNoSpinners(page: Page, timeout = 5_000) {
 }
 
 /**
- * Show the floating nav bar by moving mouse to top of viewport.
- * The sidebar auto-hides after 2s; we need to hover near top to reveal it.
+ * Keep older tests explicit about interacting near the persistent nav.
  */
 export async function showNavBar(page: Page) {
   await page.mouse.move(640, 10);

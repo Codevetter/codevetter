@@ -99,7 +99,7 @@ export default function ResourceChip() {
           <button
             ref={buttonRef}
             onClick={() => setOpen((o) => !o)}
-            className="flex items-center gap-2 rounded-full bg-white/[0.03] px-2.5 py-1 font-mono text-[10px] text-slate-400 hover:bg-white/[0.07]"
+            className="hidden h-10 items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.035] px-3 font-mono text-[10px] text-slate-400 transition-colors hover:border-cyan-300/18 hover:bg-white/[0.07] xl:flex"
           >
             <span className={`flex items-center gap-1 ${cpuTone(snap.cpu_percent)}`}>
               <Cpu size={11} /> {snap.cpu_percent.toFixed(0)}%

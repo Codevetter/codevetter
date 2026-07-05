@@ -545,7 +545,7 @@ test.describe('Repo Unpacked page', () => {
 
     await page
       .locator('aside')
-      .getByRole('button', { name: /world-class-repo/i })
+      .getByRole('button', { name: /^world-class-repo/i })
       .click();
     await expect(page.getByRole('button', { name: /QA posture/i })).toBeVisible();
     await page.getByRole('button', { name: /QA posture/i }).click();

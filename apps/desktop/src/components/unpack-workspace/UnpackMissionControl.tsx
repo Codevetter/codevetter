@@ -81,30 +81,30 @@ function MetricTile({
   return (
     <div
       className={cn(
-        'rounded-lg border px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]',
+        'rounded-xl border px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]',
         tone.border,
         tone.bg
       )}
     >
       <div
         className={cn(
-          'flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider',
+          'flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider',
           tone.text
         )}
       >
         {icon}
         {label}
       </div>
-      <div className="mt-1 text-lg font-semibold tabular-nums text-[var(--text-primary)]">
+      <div className="mt-2 text-2xl font-semibold tabular-nums text-[var(--text-primary)]">
         {value}
       </div>
       {pct != null ? (
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/30">
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/30">
           <div className={cn('h-full rounded-full', tone.bar)} style={{ width: `${pct}%` }} />
         </div>
       ) : null}
       {detail ? (
-        <div className="mt-0.5 text-[10px] text-[var(--text-secondary)]">{detail}</div>
+        <div className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{detail}</div>
       ) : null}
     </div>
   );
@@ -164,17 +164,17 @@ function LanguageComposition({ inventory }: { inventory: UnpackRepoInventory }) 
   const colors = ['bg-cyan-300', 'bg-violet-300', 'bg-emerald-300', 'bg-amber-300', 'bg-rose-300'];
 
   return (
-    <div className="border-t border-[var(--cv-line)] px-3 pb-3">
-      <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
+    <div className="border-t border-[var(--cv-line)] px-5 pb-5 pt-1">
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
         <span className="font-semibold text-[var(--text-secondary)]">Language mix</span>
         {languages.map((language, index) => (
-          <span key={language.language} className="inline-flex items-center gap-1">
-            <span className={cn('h-1.5 w-1.5 rounded-full', colors[index] ?? 'bg-slate-400')} />
+          <span key={language.language} className="inline-flex items-center gap-1.5">
+            <span className={cn('h-2 w-2 rounded-full', colors[index] ?? 'bg-slate-400')} />
             {language.language}
           </span>
         ))}
       </div>
-      <div className="flex h-2 overflow-hidden rounded-full bg-black/30">
+      <div className="flex h-3 overflow-hidden rounded-full bg-black/30">
         {languages.map((language, index) => (
           <div
             key={language.language}
@@ -214,20 +214,20 @@ export function UnpackMissionControl({
   const canRunAi = Boolean(inventory) && !isBusy;
 
   return (
-    <section className="cv-frame cv-glow-edge cv-scan overflow-hidden rounded-lg">
-      <div className="cv-terminal-bar px-4 py-2.5">
+    <section className="cv-frame cv-glow-edge cv-scan overflow-hidden rounded-xl">
+      <div className="cv-terminal-bar px-5 py-3">
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
           unpack console
         </span>
         <span className="ml-auto font-mono text-[10px] text-cyan-300/70">local-first</span>
       </div>
-      <div className="border-b border-[var(--cv-line)] bg-gradient-to-br from-[var(--bg-raised)]/80 via-transparent to-cyan-500/[0.04] px-4 py-3 sm:px-5">
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+      <div className="border-b border-[var(--cv-line)] bg-gradient-to-br from-[var(--bg-raised)]/80 via-transparent to-cyan-500/[0.04] px-5 py-5">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex min-w-0 items-center gap-2 text-base font-semibold text-[var(--text-primary)]">
-                  <Layers size={16} className="text-[var(--cv-accent)]" />
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex min-w-0 items-center gap-2 text-xl font-semibold text-[var(--text-primary)]">
+                  <Layers size={18} className="text-[var(--cv-accent)]" />
                   <span className="truncate">{inventory?.repo_name ?? 'Repo unpack'}</span>
                 </div>
                 <Badge
@@ -253,7 +253,7 @@ export function UnpackMissionControl({
                   </Badge>
                 ) : null}
               </div>
-              <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-[var(--text-secondary)]">
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
                 {lastUpdated ? (
                   <>
                     Last snapshot <span className="text-[var(--text-primary)]">{lastUpdated}</span>
@@ -270,7 +270,7 @@ export function UnpackMissionControl({
             </div>
 
             <div className="flex flex-col gap-3 sm:items-end">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -290,25 +290,11 @@ export function UnpackMissionControl({
               </div>
             </div>
           </div>
-          <UnpackAiPanel
-            canRun={canRunAi}
-            isSummarizing={phase === 'generating'}
-            isAsking={phase === 'asking'}
-            agent={agent}
-            model={model}
-            question={askQuestion}
-            answers={askAnswers}
-            onAgentChange={onAgentChange}
-            onModelChange={onModelChange}
-            onSummarize={onSummarize}
-            onQuestionChange={onAskQuestionChange}
-            onAsk={onAsk}
-          />
         </div>
       </div>
 
       {inventory ? (
-        <div className="grid gap-2 p-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-5">
           <MetricTile
             label="Files"
             value={files.toLocaleString()}
@@ -367,6 +353,22 @@ export function UnpackMissionControl({
         </div>
       ) : null}
       {inventory ? <LanguageComposition inventory={inventory} /> : null}
+      <div className="border-t border-[var(--cv-line)] p-5">
+        <UnpackAiPanel
+          canRun={canRunAi}
+          isSummarizing={phase === 'generating'}
+          isAsking={phase === 'asking'}
+          agent={agent}
+          model={model}
+          question={askQuestion}
+          answers={askAnswers}
+          onAgentChange={onAgentChange}
+          onModelChange={onModelChange}
+          onSummarize={onSummarize}
+          onQuestionChange={onAskQuestionChange}
+          onAsk={onAsk}
+        />
+      </div>
     </section>
   );
 }
