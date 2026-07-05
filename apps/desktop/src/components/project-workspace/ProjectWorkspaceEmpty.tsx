@@ -15,10 +15,7 @@ export function ProjectWorkspaceEmpty({
   return (
     <div className="cv-frame cv-glow-edge mx-auto mt-24 max-w-lg overflow-hidden rounded-lg text-center">
       <div className="cv-terminal-bar px-4 py-2.5">
-        <span className="cv-dot bg-red-500/50" />
-        <span className="cv-dot bg-amber-400/50" />
-        <span className="cv-dot bg-emerald-400/50" />
-        <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
           project intake
         </span>
       </div>

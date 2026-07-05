@@ -34,10 +34,7 @@ export function ProjectSidebar({ className }: { className?: string }) {
       )}
     >
       <div className="cv-terminal-bar px-3 py-3">
-        <span className="cv-dot bg-red-500/50" />
-        <span className="cv-dot bg-amber-400/50" />
-        <span className="cv-dot bg-emerald-400/50" />
-        <span className="ml-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
           workspace
         </span>
       </div>
@@ -85,12 +82,11 @@ export function ProjectSidebar({ className }: { className?: string }) {
         ) : (
           filtered.map((p) => {
             const active = p.repo_path === selectedRepoPath;
-            const snapshots = p.unpack_snapshot_count + p.intel_snapshot_count;
             return (
               <div
                 key={p.id}
                 className={cn(
-                  'group mb-1 rounded-lg border transition-colors',
+                  'group relative mb-1 rounded-lg border transition-colors',
                   active
                     ? 'border-cyan-400/45 bg-cyan-400/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
                     : 'border-transparent bg-white/[0.015] hover:border-[var(--cv-line)] hover:bg-white/[0.035]'
@@ -99,7 +95,7 @@ export function ProjectSidebar({ className }: { className?: string }) {
                 <button
                   type="button"
                   onClick={() => selectProject(p.repo_path)}
-                  className="w-full px-3 py-2.5 text-left"
+                  className="w-full px-3 py-2.5 pr-9 text-left"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <FolderGit2
@@ -114,40 +110,25 @@ export function ProjectSidebar({ className }: { className?: string }) {
                     <div className="truncate text-sm font-medium text-slate-200">
                       {p.display_name}
                     </div>
-                    {snapshots > 0 ? (
-                      <span className="ml-auto shrink-0 rounded border border-cyan-500/15 bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-200/80">
-                        {snapshots}
-                      </span>
-                    ) : null}
                   </div>
                   <div className="mt-0.5 truncate font-mono text-[10px] text-slate-600">
                     {p.repo_path}
                   </div>
                 </button>
-                <div className="flex items-center justify-between gap-2 border-t border-[var(--cv-line)]/50 px-3 py-1.5">
-                  <div className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--text-muted)]">
-                    <span className="rounded border border-[var(--cv-line)] bg-black/20 px-1.5 py-0.5">
-                      U {p.unpack_snapshot_count}
-                    </span>
-                    <span className="rounded border border-[var(--cv-line)] bg-black/20 px-1.5 py-0.5">
-                      I {p.intel_snapshot_count}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="rounded p-1 text-[var(--text-muted)] opacity-0 transition hover:bg-red-500/10 hover:text-red-300 group-hover:opacity-100"
-                    title="Remove project from CodeVetter"
-                    aria-label={`Remove ${p.display_name} from CodeVetter`}
-                    onClick={() => {
-                      const ok = window.confirm(
-                        `Remove ${p.display_name} from CodeVetter? This only removes the project from the sidebar; it does not delete files.`
-                      );
-                      if (ok) void removeProject(p.repo_path);
-                    }}
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="absolute right-2 top-2 rounded p-1 text-[var(--text-muted)] opacity-0 transition hover:bg-red-500/10 hover:text-red-300 group-hover:opacity-100"
+                  title="Remove project from CodeVetter"
+                  aria-label={`Remove ${p.display_name} from CodeVetter`}
+                  onClick={() => {
+                    const ok = window.confirm(
+                      `Remove ${p.display_name} from CodeVetter? This only removes the project from the sidebar; it does not delete files.`
+                    );
+                    if (ok) void removeProject(p.repo_path);
+                  }}
+                >
+                  <Trash2 size={12} />
+                </button>
               </div>
             );
           })
