@@ -21,7 +21,6 @@ import { useWindowVisibilityClass } from '@/lib/use-visibility';
 // Pages are lazy-loaded so the initial bundle isn't dominated by the large
 // review/unpack screens — only the route the user lands on is fetched.
 const AgentMemories = lazy(() => import('@/pages/AgentMemories'));
-const Fleet = lazy(() => import('@/pages/Fleet'));
 const Ops = lazy(() => import('@/pages/Ops'));
 const TRex = lazy(() => import('@/pages/TRex'));
 const Home = lazy(() => import('@/pages/Home'));
@@ -194,7 +193,6 @@ export default function App() {
         <Route path="/rubrics" element={<Rubrics />} />
         <Route path="/unpack" element={<RepoUnpacked />} />
         <Route path="/intel" element={<Intel />} />
-        <Route path="/fleet" element={<Fleet />} />
         <Route path="/ops" element={<Ops />} />
         <Route path="/trex" element={<TRex />} />
         <Route path="/agent-memories" element={<AgentMemories />} />

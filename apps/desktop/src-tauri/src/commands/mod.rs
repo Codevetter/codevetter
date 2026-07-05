@@ -6,7 +6,6 @@ pub mod blast_radius;
 pub mod dora;
 pub mod evidence_pattern;
 pub mod files;
-pub mod fleet;
 pub mod git;
 pub mod github_ops;
 pub mod history;

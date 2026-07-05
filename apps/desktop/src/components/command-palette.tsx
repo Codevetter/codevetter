@@ -109,15 +109,6 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
         action: go('/unpack'),
       },
       {
-        id: 'nav-fleet',
-        label: 'Go to Fleet',
-        description: 'Fleet projects, tasks, and reports',
-        icon: '\u25B2',
-        shortcut: 'g f',
-        group: 'Navigation',
-        action: go('/fleet'),
-      },
-      {
         id: 'nav-agent-memories',
         label: 'Go to Agent Memories',
         icon: '\u25A3',
