@@ -1,4 +1,4 @@
-import { Eye, Home, MonitorPlay, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
+import { Eye, Home, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -17,13 +17,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Home', href: '/', icon: <Home size={18} />, shortcut: 'H' },
   { label: 'Review', href: '/review', icon: <Zap size={18} />, shortcut: 'R' },
-  {
-    label: 'Workbench',
-    href: '/workbench',
-    icon: <MonitorPlay size={18} />,
-    shortcut: 'W',
-    match: ['/workbench', '/roadmap'],
-  },
   {
     label: 'Repo',
     href: '/unpack',
@@ -76,6 +69,11 @@ export default function Sidebar() {
         if (gTimer.current) clearTimeout(gTimer.current);
 
         const key = e.key.toLowerCase();
+        if (key === 'i') {
+          e.preventDefault();
+          navigate('/unpack?section=intel');
+          return;
+        }
         const match = navItems.find((item) => item.shortcut.toLowerCase() === key);
         if (match) {
           e.preventDefault();

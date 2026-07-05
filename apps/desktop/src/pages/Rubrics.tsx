@@ -45,7 +45,7 @@ function makePackId(name: string) {
   );
 }
 
-export default function Rubrics() {
+export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
   const [config, setConfig] = useState<ReviewConfig>(loadRubricConfig);
   const [draftName, setDraftName] = useState('');
   const [draftFocus, setDraftFocus] = useState('');
@@ -94,32 +94,46 @@ export default function Rubrics() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] px-6 py-16 text-slate-100">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-200">
-                <ClipboardCheck size={20} />
+    <div
+      className={
+        embedded
+          ? 'px-4 py-6 text-slate-100'
+          : 'min-h-screen bg-[var(--bg-main)] px-6 py-16 text-slate-100'
+      }
+    >
+      <div className={embedded ? 'mx-auto max-w-6xl space-y-6' : 'mx-auto max-w-6xl space-y-8'}>
+        {!embedded && (
+          <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-200">
+                  <ClipboardCheck size={20} />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">
+                  Review standards
+                </p>
               </div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">
-                Review standards
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+                Rubrics and standards packs
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+                Pick the standard CodeVetter should apply when it asks a CLI agent to review a diff.
               </p>
             </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-              Rubrics and standards packs
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
-              Pick the standard CodeVetter should apply when it asks a CLI agent to review a diff.
-            </p>
-          </div>
-          {saved && (
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-medium text-emerald-200">
-              <CheckCircle2 size={14} />
-              Saved
-            </span>
-          )}
-        </header>
+            {saved && (
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-medium text-emerald-200">
+                <CheckCircle2 size={14} />
+                Saved
+              </span>
+            )}
+          </header>
+        )}
+        {embedded && saved && (
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-medium text-emerald-200">
+            <CheckCircle2 size={14} />
+            Saved
+          </span>
+        )}
 
         <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="grid gap-4">

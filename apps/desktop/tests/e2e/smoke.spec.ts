@@ -46,9 +46,9 @@ test.describe('Smoke tests', () => {
     const nav = page.locator('nav');
     await expect(nav).toBeVisible();
 
-    // Nav links: Home, Review, Workbench, Repo, T-Rex, Settings.
+    // Nav links: Home, Review, Repo, T-Rex, Settings (5).
     const links = nav.locator('a');
-    await expect(links).toHaveCount(6);
+    await expect(links).toHaveCount(5);
   });
 
   test('Nav bar shows current page name', async ({ page }) => {

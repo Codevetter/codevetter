@@ -1,8 +1,19 @@
-import { ArrowLeft, CheckCircle, CheckSquare2, Loader2, Square, Zap } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle,
+  CheckSquare2,
+  ClipboardCheck,
+  Loader2,
+  Square,
+  Zap,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels';
 
 import BlastRadiusPanel from '@/components/blast-radius-panel';
+import { ProjectWorkspaceEmpty } from '@/components/project-workspace/ProjectWorkspaceEmpty';
+import { ProjectWorkspaceShell } from '@/components/project-workspace/ProjectWorkspaceShell';
 import AgentStatusTimeline from '@/components/quick-review/AgentStatusTimeline';
 import CreatePreviewPanel from '@/components/quick-review/CreatePreviewPanel';
 import EvidenceInsightsPanel from '@/components/quick-review/EvidenceInsightsPanel';
@@ -24,6 +35,7 @@ import {
   type TaskContext,
 } from '@/lib/agent-fix-packet';
 import { trackCoreAction } from '@/lib/analytics';
+import { useProjectWorkspace } from '@/lib/project-workspace';
 import { buildReviewIntentReport } from '@/lib/intent-debugger/report';
 import { parseDiffIntoFiles } from '@/lib/quick-review-code';
 import {
@@ -102,7 +114,11 @@ import type {
 } from '@/lib/tauri-ipc';
 import {
   analyzeBlastRadius,
+  unpackDeepGraphDetectChanges,
+  unpackDeepGraphStatus,
+  type UnpackDeepGraphDetectChanges,
   cancelReviewVerificationCommand,
+  deleteReview,
   detectProjectForRepo,
   discardFix,
   discoverPlaywrightSpecs,
@@ -119,7 +135,6 @@ import {
   listSyntheticQaRuns,
   mergeFix,
   openInApp,
-  pickDirectory,
   readFileAroundLine,
   readFilePreview,
   readRawSessionContext,
@@ -162,10 +177,16 @@ async function notifyIfEnabled(
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function QuickReview() {
+  const {
+    selectedRepoPath,
+    selectedProject,
+    selectProject,
+    ready: workspaceReady,
+  } = useProjectWorkspace();
+  const repoPath = selectedRepoPath ?? '';
+
   // Mode: "create" shows the form, "view" shows past review results
   const [mode, setMode] = useState<'create' | 'view'>('create');
-
-  const [repoPath, setRepoPath] = useState('');
   // SaaS Maker fleet auto-detect: null = unknown, populated after `detectProjectForRepo`.
   const [detectedFleetProject, setDetectedFleetProject] = useState<RepoDetectResult | null>(null);
   const [branches, setBranches] = useState<string[]>([]);
@@ -194,6 +215,8 @@ export default function QuickReview() {
   const [blastReport, setBlastReport] = useState<BlastRadiusReport | null>(null);
   const [blastLoading, setBlastLoading] = useState(false);
   const [blastError, setBlastError] = useState<string | null>(null);
+  const [deepGraphImpact, setDeepGraphImpact] = useState<UnpackDeepGraphDetectChanges | null>(null);
+  const [deepGraphImpactLoading, setDeepGraphImpactLoading] = useState(false);
 
   // Repo history context (read-only signals for review input: commits, prior agents, recurring)
   const [historyContext, setHistoryContext] = useState<RepoHistoryContext | null>(null);
@@ -312,8 +335,6 @@ export default function QuickReview() {
   // ─── Load saved folder + branches on mount ───────────────────────────────
 
   const loadFolderData = useCallback(async (dir: string) => {
-    setRepoPath(dir);
-
     // Fire-and-forget: ask the fleet which project this repo belongs to and
     // surface the link if we have one. Soft-failure: if not signed in or
     // the fleet doesn't know this repo, just stays null.
@@ -396,11 +417,9 @@ export default function QuickReview() {
   }, []);
 
   useEffect(() => {
-    if (!isTauriAvailable()) return;
-    void getPreference('quick_review_last_folder')
-      .then((dir) => (dir ? loadFolderData(dir) : undefined))
-      .catch(() => {});
-  }, [loadFolderData]);
+    if (!workspaceReady || !selectedRepoPath || !isTauriAvailable()) return;
+    void loadFolderData(selectedRepoPath);
+  }, [workspaceReady, selectedRepoPath, loadFolderData]);
 
   // Auto-load history signals when repo + diffRange ready (read-only panel in input)
   useEffect(() => {
@@ -468,9 +487,9 @@ export default function QuickReview() {
         setDiffRange(diffRangeFromSourceLabel(review.source_label));
         setViewHasRepoPath(!!review.repo_path);
         if (review.repo_path) {
+          selectProject(review.repo_path);
           await loadFolderData(review.repo_path);
         } else {
-          setRepoPath('');
           setBranches([]);
           setCurrentBranch('');
           setBaseBranch('main');
@@ -485,41 +504,27 @@ export default function QuickReview() {
         setError("Couldn't open that review. Try again, or pick another one.");
       }
     },
-    [loadFolderData]
+    [loadFolderData, selectProject]
   );
 
-  // ─── Folder picker ───────────────────────────────────────────────────────
-
-  const handlePickFolder = useCallback(async () => {
-    if (!isTauriAvailable()) {
-      setError('Not running in Tauri');
-      return;
-    }
-    try {
-      const dir = await pickDirectory('Select a git repository');
-      if (!dir) return;
-
-      setResult(null);
-      setError(null);
-      setSelectedBranch('');
-      setDiffRange('');
-      setMode('create');
-      setHistoryContext(null);
-
-      await loadFolderData(dir);
-
-      // Persist last used folder
-      setPreference('quick_review_last_folder', dir).catch(() => {});
-    } catch (e) {
-      console.error('[CodeVetter] Folder pick failed:', e);
-      const msg = String(e);
-      if (msg.includes('TAURI_NOT_AVAILABLE')) {
-        setError('Not running in Tauri — run inside the desktop app to pick a repository.');
-      } else {
-        setError("Couldn't open that folder. Make sure it's a valid git repository and try again.");
+  const handleDeletePastReview = useCallback(
+    async (id: string) => {
+      const ok = window.confirm('Delete this saved review? This only removes the local report.');
+      if (!ok) return;
+      try {
+        await deleteReview(id);
+        setPastReviews((prev) => prev.filter((r) => r.id !== id));
+        if (result?.review_id === id) {
+          setResult(null);
+          setMode('create');
+        }
+      } catch (e) {
+        console.error('[CodeVetter] Failed to delete past review:', e);
+        setError("Couldn't delete that review. Try again.");
       }
-    }
-  }, [loadFolderData]);
+    },
+    [result?.review_id]
+  );
 
   // ─── Branch/PR selection ─────────────────────────────────────────────────
 
@@ -575,6 +580,22 @@ export default function QuickReview() {
     setBlastReport(null);
     setBlastError(null);
     setBlastLoading(true);
+    setDeepGraphImpact(null);
+    setDeepGraphImpactLoading(true);
+
+    const deepGraphBaseRef = diffRange.includes('...')
+      ? diffRange.split('...')[0]
+      : diffRange.includes('..')
+        ? diffRange.split('..')[0]
+        : null;
+    void unpackDeepGraphStatus(repoPath)
+      .then((status) => {
+        if (!status.indexed) return null;
+        return unpackDeepGraphDetectChanges(repoPath, 'compare', deepGraphBaseRef);
+      })
+      .then((impact) => setDeepGraphImpact(impact))
+      .catch(() => setDeepGraphImpact(null))
+      .finally(() => setDeepGraphImpactLoading(false));
 
     // Kick off blast-radius analysis in parallel with the LLM review.
     // It's deterministic and fast (git grep), so it usually returns first.
@@ -2646,416 +2667,450 @@ export default function QuickReview() {
     }, {});
 
     return (
-      <div className="flex h-full flex-col px-4 pb-4 pt-20">
-        {/* Result header */}
-        <div className="cv-frame mb-3 flex h-12 shrink-0 items-center gap-3 overflow-hidden px-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1 text-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
-            onClick={handleNewReview}
+      <ProjectWorkspaceShell mainClassName="overflow-hidden">
+        <div className="flex h-full flex-col px-4 pb-4">
+          {/* Result header */}
+          <div className="cv-frame mb-3 flex h-12 shrink-0 items-center gap-3 overflow-hidden px-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
+              onClick={handleNewReview}
+            >
+              <ArrowLeft size={14} />
+              Back
+            </Button>
+            <div className="h-6 w-px bg-[var(--cv-line)]" />
+            <div className="min-w-0 flex-1">
+              <div className="cv-label truncate text-slate-300">
+                review result · {result.agent}
+                {result.risk_tier ? ` · ${result.risk_tier}` : ''}
+              </div>
+              <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
+                {result.review_mode
+                  ? `${result.review_mode} · ${result.diff_range || diffRange || 'local diff'}`
+                  : result.diff_range || diffRange || 'local diff'}
+              </div>
+            </div>
+            <ScoreBadge score={Math.round(result.score)} size="sm" />
+            <div className="cv-label hidden sm:block">
+              {result.findings_count ?? sortedFindings.length} findings
+            </div>
+            <div className="cv-label hidden lg:block">
+              {evidenceCounts.reproduced} reproduced · {evidenceCounts.fixed} fixed
+            </div>
+          </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="shrink-0 bg-red-500/10 px-4 py-2 text-xs text-red-400">{error}</div>
+          )}
+
+          {/* Editor + verdict body */}
+          <PanelGroup
+            orientation="horizontal"
+            className="min-h-0 flex-1 cv-frame overflow-hidden bg-[#07080a]"
           >
-            <ArrowLeft size={14} />
-            Back
-          </Button>
-          <div className="h-6 w-px bg-[var(--cv-line)]" />
-          <div className="min-w-0 flex-1">
-            <div className="cv-label truncate text-slate-300">
-              review result · {result.agent}
-              {result.risk_tier ? ` · ${result.risk_tier}` : ''}
-            </div>
-            <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
-              {result.review_mode
-                ? `${result.review_mode} · ${result.diff_range || diffRange || 'local diff'}`
-                : result.diff_range || diffRange || 'local diff'}
-            </div>
-          </div>
-          <ScoreBadge score={Math.round(result.score)} size="sm" />
-          <div className="cv-label hidden sm:block">
-            {result.findings_count ?? sortedFindings.length} findings
-          </div>
-          <div className="cv-label hidden lg:block">
-            {evidenceCounts.reproduced} reproduced · {evidenceCounts.fixed} fixed
-          </div>
-        </div>
+            <Panel defaultSize={72} minSize={45}>
+              <ReviewEditorPanel
+                fixResult={fixResult}
+                diffFiles={diffFiles}
+                expandedFiles={expandedFiles}
+                toggleFileExpanded={toggleFileExpanded}
+                handleRevertFile={handleRevertFile}
+                handleRevertHunk={handleRevertHunk}
+                hunkNavRefs={hunkNavRefs}
+                hunkNavTargets={hunkNavTargets}
+                activeHunkNavIndex={activeHunkNavIndex}
+                handleReReview={handleReReview}
+                isReviewing={isReviewing}
+                repoPath={repoPath}
+                diffRange={diffRange}
+                handleMergeFix={handleMergeFix}
+                handleDiscardFix={handleDiscardFix}
+                handleOpenInIDE={handleOpenInIDE}
+                isFixing={isFixing}
+                fixLogRef={fixLogRef}
+                fixProgress={fixProgress}
+                selectedFindingIdx={selectedFindingIdx}
+                activeFinding={activeFinding}
+                activeCodePath={activeCodePath}
+                codeLanguage={codeLanguage}
+                codeLines={codeLines}
+              />
+            </Panel>
 
-        {/* Error banner */}
-        {error && (
-          <div className="shrink-0 bg-red-500/10 px-4 py-2 text-xs text-red-400">{error}</div>
-        )}
+            <PanelResizeHandle className="w-1.5 cursor-col-resize bg-[var(--cv-line)] transition-colors hover:bg-cyan-500/30" />
 
-        {/* Editor + verdict body */}
-        <PanelGroup
-          orientation="horizontal"
-          className="min-h-0 flex-1 cv-frame overflow-hidden bg-[#07080a]"
-        >
-          <Panel defaultSize={72} minSize={45}>
-            <ReviewEditorPanel
-              fixResult={fixResult}
-              diffFiles={diffFiles}
-              expandedFiles={expandedFiles}
-              toggleFileExpanded={toggleFileExpanded}
-              handleRevertFile={handleRevertFile}
-              handleRevertHunk={handleRevertHunk}
-              hunkNavRefs={hunkNavRefs}
-              hunkNavTargets={hunkNavTargets}
-              activeHunkNavIndex={activeHunkNavIndex}
-              handleReReview={handleReReview}
-              isReviewing={isReviewing}
-              repoPath={repoPath}
-              diffRange={diffRange}
-              handleMergeFix={handleMergeFix}
-              handleDiscardFix={handleDiscardFix}
-              handleOpenInIDE={handleOpenInIDE}
-              isFixing={isFixing}
-              fixLogRef={fixLogRef}
-              fixProgress={fixProgress}
-              selectedFindingIdx={selectedFindingIdx}
-              activeFinding={activeFinding}
-              activeCodePath={activeCodePath}
-              codeLanguage={codeLanguage}
-              codeLines={codeLines}
-            />
-          </Panel>
-
-          <PanelResizeHandle className="w-1.5 cursor-col-resize bg-[var(--cv-line)] transition-colors hover:bg-cyan-500/30" />
-
-          <Panel defaultSize={28} minSize={22}>
-            <aside className="flex h-full flex-col bg-white/[0.015]">
-              <div className="shrink-0 border-b border-[var(--cv-line)] p-6">
-                <div className="cv-label mb-5">Verdict</div>
-                {activeFinding ? (
-                  <>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
-                        severityColor(activeFinding.severity)
+            <Panel defaultSize={28} minSize={22}>
+              <aside className="flex h-full flex-col bg-white/[0.015]">
+                <div className="shrink-0 border-b border-[var(--cv-line)] p-6">
+                  <div className="cv-label mb-5">Verdict</div>
+                  {activeFinding ? (
+                    <>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
+                          severityColor(activeFinding.severity)
+                        )}
+                      >
+                        {severityIcon(activeFinding.severity)}
+                        <span className="ml-1">{activeFinding.severity}</span>
+                      </Badge>
+                      <h2 className="mt-5 text-lg font-semibold leading-6 text-white">
+                        {activeFinding.title}
+                      </h2>
+                      <p className="mt-3 text-sm leading-6 text-slate-400">
+                        {activeFinding.summary}
+                      </p>
+                      {activeFinding.filePath && (
+                        <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate-600">
+                          {activeFinding.filePath}
+                          {activeFinding.line != null && `:${activeFinding.line}`}
+                        </div>
                       )}
-                    >
-                      {severityIcon(activeFinding.severity)}
-                      <span className="ml-1">{activeFinding.severity}</span>
-                    </Badge>
-                    <h2 className="mt-5 text-lg font-semibold leading-6 text-white">
-                      {activeFinding.title}
-                    </h2>
-                    <p className="mt-3 text-sm leading-6 text-slate-400">{activeFinding.summary}</p>
-                    {activeFinding.filePath && (
-                      <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate-600">
-                        {activeFinding.filePath}
-                        {activeFinding.line != null && `:${activeFinding.line}`}
+                      {activeFinding.suggestion && (
+                        <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
+                          <div className="cv-label mb-3">Suggested action</div>
+                          <p className="font-mono text-[12px] leading-6 text-slate-300">
+                            {activeFinding.suggestion}
+                          </p>
+                        </div>
+                      )}
+                      <div
+                        className="mt-6 border-t border-[var(--cv-line)] pt-5"
+                        data-testid="trex-sandbox-panel"
+                      >
+                        <SandboxRunner
+                          repoPath={repoPath}
+                          branch={selectedBranch || ''}
+                          baseBranch={baseBranch || null}
+                          reviewId={reviewId || null}
+                          onComplete={() => {
+                            // Refresh findings so the via-execution rows attach
+                            // to the existing list; QuickReview's history list
+                            // re-fetches when reviewId changes — bumping it is
+                            // enough here.
+                          }}
+                        />
                       </div>
-                    )}
-                    {activeFinding.suggestion && (
-                      <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
-                        <div className="cv-label mb-3">Suggested action</div>
-                        <p className="font-mono text-[12px] leading-6 text-slate-300">
-                          {activeFinding.suggestion}
-                        </p>
-                      </div>
-                    )}
-                    <div
-                      className="mt-6 border-t border-[var(--cv-line)] pt-5"
-                      data-testid="trex-sandbox-panel"
-                    >
-                      <SandboxRunner
-                        repoPath={repoPath}
-                        branch={selectedBranch || ''}
-                        baseBranch={baseBranch || null}
-                        reviewId={reviewId || null}
-                        onComplete={() => {
-                          // Refresh findings so the via-execution rows attach
-                          // to the existing list; QuickReview's history list
-                          // re-fetches when reviewId changes — bumping it is
-                          // enough here.
-                        }}
-                      />
-                    </div>
-                    <SyntheticQaPanel
-                      qaWorkflowScopeLabel={qaWorkflowScopeLabel}
-                      qaActiveWorkflowId={qaActiveWorkflowId}
-                      qaWorkflows={qaWorkflows}
-                      qaWorkflowName={qaWorkflowName}
-                      setQaWorkflowName={setQaWorkflowName}
-                      handleSelectQaWorkflow={handleSelectQaWorkflow}
-                      handleSaveQaWorkflow={handleSaveQaWorkflow}
-                      handleDeleteQaWorkflow={handleDeleteQaWorkflow}
-                      qaActiveTargetId={qaActiveTargetId}
-                      qaTargets={qaTargets}
-                      handleSelectQaTarget={handleSelectQaTarget}
-                      qaBaseUrl={qaBaseUrl}
-                      setQaBaseUrl={setQaBaseUrl}
-                      qaAllowRemoteTarget={qaAllowRemoteTarget}
-                      setQaAllowRemoteTarget={setQaAllowRemoteTarget}
-                      qaTargetName={qaTargetName}
-                      setQaTargetName={setQaTargetName}
-                      qaTargetRoute={qaTargetRoute}
-                      setQaTargetRoute={setQaTargetRoute}
-                      qaAuthMode={qaAuthMode}
-                      setQaAuthMode={setQaAuthMode}
-                      qaStorageStatePath={qaStorageStatePath}
-                      setQaStorageStatePath={setQaStorageStatePath}
-                      qaLoopId={qaLoopId}
-                      setQaLoopId={setQaLoopId}
-                      setQaGoal={setQaGoal}
-                      qaGoal={qaGoal}
-                      qaRunnerType={qaRunnerType}
-                      setQaRunnerType={setQaRunnerType}
-                      qaRepoSpecPath={qaRepoSpecPath}
-                      setQaRepoSpecPath={setQaRepoSpecPath}
-                      qaSpecLoading={qaSpecLoading}
-                      qaSpecCandidates={qaSpecCandidates}
-                      qaSpecError={qaSpecError}
-                      handleDiscoverQaSpecs={handleDiscoverQaSpecs}
-                      qaRepoTraceMode={qaRepoTraceMode}
-                      setQaRepoTraceMode={setQaRepoTraceMode}
-                      qaExternalCommand={qaExternalCommand}
-                      setQaExternalCommand={setQaExternalCommand}
-                      handleSaveQaTarget={handleSaveQaTarget}
-                      handleDeleteQaTarget={handleDeleteQaTarget}
-                      handleRunSyntheticQa={handleRunSyntheticQa}
-                      qaRunning={qaRunning}
-                      qaError={qaError}
-                      qaLastRun={qaLastRun}
-                      qaArtifactPreview={qaArtifactPreview}
-                      qaArtifactPreviewLoading={qaArtifactPreviewLoading}
-                      handlePreviewQaArtifact={handlePreviewQaArtifact}
-                      handleOpenQaArtifact={handleOpenQaArtifact}
-                      setQaArtifactPreview={setQaArtifactPreview}
-                      selectedFindingIdx={selectedFindingIdx}
-                      applyQaToSelectedFinding={applyQaToSelectedFinding}
-                      addQaFailureFinding={addQaFailureFinding}
-                      qaRunHistory={qaRunHistory}
-                      qaPostFixComparison={qaPostFixComparison}
-                      postFixQaRunning={postFixQaRunning}
-                      handleRunPostFixQa={handleRunPostFixQa}
-                      repoPath={repoPath}
-                    />
-                    {selectedFindingIdx !== null && (
-                      <VerificationEvidencePanel
+                      <SyntheticQaPanel
+                        qaWorkflowScopeLabel={qaWorkflowScopeLabel}
+                        qaActiveWorkflowId={qaActiveWorkflowId}
+                        qaWorkflows={qaWorkflows}
+                        qaWorkflowName={qaWorkflowName}
+                        setQaWorkflowName={setQaWorkflowName}
+                        handleSelectQaWorkflow={handleSelectQaWorkflow}
+                        handleSaveQaWorkflow={handleSaveQaWorkflow}
+                        handleDeleteQaWorkflow={handleDeleteQaWorkflow}
+                        qaActiveTargetId={qaActiveTargetId}
+                        qaTargets={qaTargets}
+                        handleSelectQaTarget={handleSelectQaTarget}
+                        qaBaseUrl={qaBaseUrl}
+                        setQaBaseUrl={setQaBaseUrl}
+                        qaAllowRemoteTarget={qaAllowRemoteTarget}
+                        setQaAllowRemoteTarget={setQaAllowRemoteTarget}
+                        qaTargetName={qaTargetName}
+                        setQaTargetName={setQaTargetName}
+                        qaTargetRoute={qaTargetRoute}
+                        setQaTargetRoute={setQaTargetRoute}
+                        qaAuthMode={qaAuthMode}
+                        setQaAuthMode={setQaAuthMode}
+                        qaStorageStatePath={qaStorageStatePath}
+                        setQaStorageStatePath={setQaStorageStatePath}
+                        qaLoopId={qaLoopId}
+                        setQaLoopId={setQaLoopId}
+                        setQaGoal={setQaGoal}
+                        qaGoal={qaGoal}
+                        qaRunnerType={qaRunnerType}
+                        setQaRunnerType={setQaRunnerType}
+                        qaRepoSpecPath={qaRepoSpecPath}
+                        setQaRepoSpecPath={setQaRepoSpecPath}
+                        qaSpecLoading={qaSpecLoading}
+                        qaSpecCandidates={qaSpecCandidates}
+                        qaSpecError={qaSpecError}
+                        handleDiscoverQaSpecs={handleDiscoverQaSpecs}
+                        qaRepoTraceMode={qaRepoTraceMode}
+                        setQaRepoTraceMode={setQaRepoTraceMode}
+                        qaExternalCommand={qaExternalCommand}
+                        setQaExternalCommand={setQaExternalCommand}
+                        handleSaveQaTarget={handleSaveQaTarget}
+                        handleDeleteQaTarget={handleDeleteQaTarget}
+                        handleRunSyntheticQa={handleRunSyntheticQa}
+                        qaRunning={qaRunning}
+                        qaError={qaError}
+                        qaLastRun={qaLastRun}
+                        qaArtifactPreview={qaArtifactPreview}
+                        qaArtifactPreviewLoading={qaArtifactPreviewLoading}
+                        handlePreviewQaArtifact={handlePreviewQaArtifact}
+                        handleOpenQaArtifact={handleOpenQaArtifact}
+                        setQaArtifactPreview={setQaArtifactPreview}
                         selectedFindingIdx={selectedFindingIdx}
-                        activeFinding={activeFinding}
-                        activeEvidence={activeEvidence}
-                        updateFindingEvidence={updateFindingEvidence}
-                        activeBrowserEvidence={activeBrowserEvidence}
-                        updateBrowserEvidence={updateBrowserEvidence}
-                        verificationCommand={verificationCommand}
-                        setVerificationCommand={setVerificationCommand}
-                        verificationCommandSuggestions={verificationCommandSuggestions}
-                        verificationCommandSuggestionsLoading={
-                          verificationCommandSuggestionsLoading
-                        }
-                        verificationCommandTimeoutMs={verificationCommandTimeoutMs}
-                        setVerificationCommandTimeoutMs={setVerificationCommandTimeoutMs}
-                        verificationCommandRunning={verificationCommandRunning}
+                        applyQaToSelectedFinding={applyQaToSelectedFinding}
+                        addQaFailureFinding={addQaFailureFinding}
+                        qaRunHistory={qaRunHistory}
+                        qaPostFixComparison={qaPostFixComparison}
+                        postFixQaRunning={postFixQaRunning}
+                        handleRunPostFixQa={handleRunPostFixQa}
                         repoPath={repoPath}
-                        handleRunVerificationCommand={handleRunVerificationCommand}
-                        verificationCommandRunId={verificationCommandRunId}
-                        verificationCommandCanceling={verificationCommandCanceling}
-                        handleCancelVerificationCommand={handleCancelVerificationCommand}
-                        verificationCommandError={verificationCommandError}
-                        handleRecordTestCommandEvent={handleRecordTestCommandEvent}
-                        toggleRevalidationItem={toggleRevalidationItem}
                       />
-                    )}
-                  </>
-                ) : (
-                  <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
-                    <CheckCircle size={18} />
-                    No findings.
+                      {selectedFindingIdx !== null && (
+                        <VerificationEvidencePanel
+                          selectedFindingIdx={selectedFindingIdx}
+                          activeFinding={activeFinding}
+                          activeEvidence={activeEvidence}
+                          updateFindingEvidence={updateFindingEvidence}
+                          activeBrowserEvidence={activeBrowserEvidence}
+                          updateBrowserEvidence={updateBrowserEvidence}
+                          verificationCommand={verificationCommand}
+                          setVerificationCommand={setVerificationCommand}
+                          verificationCommandSuggestions={verificationCommandSuggestions}
+                          verificationCommandSuggestionsLoading={
+                            verificationCommandSuggestionsLoading
+                          }
+                          verificationCommandTimeoutMs={verificationCommandTimeoutMs}
+                          setVerificationCommandTimeoutMs={setVerificationCommandTimeoutMs}
+                          verificationCommandRunning={verificationCommandRunning}
+                          repoPath={repoPath}
+                          handleRunVerificationCommand={handleRunVerificationCommand}
+                          verificationCommandRunId={verificationCommandRunId}
+                          verificationCommandCanceling={verificationCommandCanceling}
+                          handleCancelVerificationCommand={handleCancelVerificationCommand}
+                          verificationCommandError={verificationCommandError}
+                          handleRecordTestCommandEvent={handleRecordTestCommandEvent}
+                          toggleRevalidationItem={toggleRevalidationItem}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
+                      <CheckCircle size={18} />
+                      No findings.
+                    </div>
+                  )}
+                </div>
+
+                {(blastReport ||
+                  blastLoading ||
+                  blastError ||
+                  deepGraphImpact ||
+                  deepGraphImpactLoading) && (
+                  <div className="shrink-0 border-b border-[var(--cv-line)]">
+                    <BlastRadiusPanel
+                      report={blastReport}
+                      loading={blastLoading}
+                      error={blastError}
+                      deepGraphImpact={deepGraphImpact}
+                      deepGraphImpactLoading={deepGraphImpactLoading}
+                      onJump={handleJumpToCaller}
+                    />
                   </div>
                 )}
-              </div>
 
-              {(blastReport || blastLoading || blastError) && (
-                <div className="shrink-0 border-b border-[var(--cv-line)]">
-                  <BlastRadiusPanel
-                    report={blastReport}
-                    loading={blastLoading}
-                    error={blastError}
-                    onJump={handleJumpToCaller}
+                <FindingsListPanel
+                  sortedFindings={sortedFindings}
+                  patchQueue={patchQueue}
+                  handleCopyFixPacket={handleCopyFixPacket}
+                  packetCopied={packetCopied}
+                  fixPacket={fixPacket}
+                  taskGoal={taskGoal}
+                  taskAcceptance={taskAcceptance}
+                  patchQueueSeverityCounts={patchQueueSeverityCounts}
+                  handleFindingClick={handleFindingClick}
+                  evidenceByFinding={evidenceByFinding}
+                  findingEvidenceKey={findingEvidenceKey}
+                  historyFindingSummaries={historyFindingSummaries}
+                  selectedFindingIdx={selectedFindingIdx}
+                  selectedFindings={selectedFindings}
+                  toggleFinding={toggleFinding}
+                  handleSetDisposition={handleSetDisposition}
+                />
+
+                <AgentStatusTimeline
+                  reviewTimeline={reviewTimeline}
+                  timelineSegmentFindingIndexes={timelineSegmentFindingIndexes}
+                  expandedTimelineItems={expandedTimelineItems}
+                  setExpandedTimelineItems={setExpandedTimelineItems}
+                  timelinePacketCopiedId={timelinePacketCopiedId}
+                  handleCopyTimelineSegmentPacket={handleCopyTimelineSegmentPacket}
+                  handleTimelineJump={handleTimelineJump}
+                />
+
+                {reviewMemoryGraph && reviewMemoryGraph.nodes.length > 0 && (
+                  <ReviewMemoryGraphPanel
+                    graph={reviewMemoryGraph}
+                    title="Review memory graph"
+                    accent="cyan"
+                    nodeLimit={5}
                   />
-                </div>
-              )}
+                )}
 
-              <FindingsListPanel
-                sortedFindings={sortedFindings}
-                patchQueue={patchQueue}
-                handleCopyFixPacket={handleCopyFixPacket}
-                packetCopied={packetCopied}
-                fixPacket={fixPacket}
-                taskGoal={taskGoal}
-                taskAcceptance={taskAcceptance}
-                patchQueueSeverityCounts={patchQueueSeverityCounts}
-                handleFindingClick={handleFindingClick}
-                evidenceByFinding={evidenceByFinding}
-                findingEvidenceKey={findingEvidenceKey}
-                historyFindingSummaries={historyFindingSummaries}
-                selectedFindingIdx={selectedFindingIdx}
-                selectedFindings={selectedFindings}
-                toggleFinding={toggleFinding}
-                handleSetDisposition={handleSetDisposition}
-              />
+                {focusedReviewMemoryGraph && focusedReviewMemoryGraph.nodes.length > 0 && (
+                  <ReviewMemoryGraphPanel
+                    graph={focusedReviewMemoryGraph}
+                    title="Finding graph focus"
+                    accent="emerald"
+                    nodeLimit={4}
+                  />
+                )}
 
-              <AgentStatusTimeline
-                reviewTimeline={reviewTimeline}
-                timelineSegmentFindingIndexes={timelineSegmentFindingIndexes}
-                expandedTimelineItems={expandedTimelineItems}
-                setExpandedTimelineItems={setExpandedTimelineItems}
-                timelinePacketCopiedId={timelinePacketCopiedId}
-                handleCopyTimelineSegmentPacket={handleCopyTimelineSegmentPacket}
-                handleTimelineJump={handleTimelineJump}
-              />
-
-              {reviewMemoryGraph && reviewMemoryGraph.nodes.length > 0 && (
-                <ReviewMemoryGraphPanel
-                  graph={reviewMemoryGraph}
-                  title="Review memory graph"
-                  accent="cyan"
-                  nodeLimit={5}
+                <EvidenceInsightsPanel
+                  historyExplanations={historyExplanations}
+                  selectedFindingHistoryExplanation={selectedFindingHistoryExplanation}
+                  evidenceCandidates={evidenceCandidates}
+                  evidenceCandidateStatuses={evidenceCandidateStatuses}
+                  updateEvidenceCandidateStatus={updateEvidenceCandidateStatus}
                 />
-              )}
 
-              {focusedReviewMemoryGraph && focusedReviewMemoryGraph.nodes.length > 0 && (
-                <ReviewMemoryGraphPanel
-                  graph={focusedReviewMemoryGraph}
-                  title="Finding graph focus"
-                  accent="emerald"
-                  nodeLimit={4}
+                <VerificationSummaryPanel
+                  sortedFindings={sortedFindings}
+                  evidenceProcedureSteps={evidenceProcedureSteps}
+                  procedureExecutionEvents={procedureExecutionEvents}
+                  intentReport={intentReport}
+                  uncheckedFindings={uncheckedFindings}
+                  verificationOpen={verificationOpen}
+                  setVerificationOpen={setVerificationOpen}
+                  evidenceCounts={evidenceCounts}
+                  handleCopyProof={handleCopyProof}
+                  proofCopied={proofCopied}
+                  handleCopyFindingNote={handleCopyFindingNote}
+                  findingNoteCopied={findingNoteCopied}
+                  selectedFindingIdx={selectedFindingIdx}
+                  procedureEventsByStep={procedureEventsByStep}
+                  procedureEventKey={procedureEventKey}
+                  procedureEventTimeLabel={procedureEventTimeLabel}
+                  uncheckedBySeverity={uncheckedBySeverity}
                 />
-              )}
 
-              <EvidenceInsightsPanel
-                historyExplanations={historyExplanations}
-                selectedFindingHistoryExplanation={selectedFindingHistoryExplanation}
-                evidenceCandidates={evidenceCandidates}
-                evidenceCandidateStatuses={evidenceCandidateStatuses}
-                updateEvidenceCandidateStatus={updateEvidenceCandidateStatus}
-              />
-
-              <VerificationSummaryPanel
-                sortedFindings={sortedFindings}
-                evidenceProcedureSteps={evidenceProcedureSteps}
-                procedureExecutionEvents={procedureExecutionEvents}
-                intentReport={intentReport}
-                uncheckedFindings={uncheckedFindings}
-                verificationOpen={verificationOpen}
-                setVerificationOpen={setVerificationOpen}
-                evidenceCounts={evidenceCounts}
-                handleCopyProof={handleCopyProof}
-                proofCopied={proofCopied}
-                handleCopyFindingNote={handleCopyFindingNote}
-                findingNoteCopied={findingNoteCopied}
-                selectedFindingIdx={selectedFindingIdx}
-                procedureEventsByStep={procedureEventsByStep}
-                procedureEventKey={procedureEventKey}
-                procedureEventTimeLabel={procedureEventTimeLabel}
-                uncheckedBySeverity={uncheckedBySeverity}
-              />
-
-              <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] p-3">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={toggleSelectAll}
-                    title="Select all findings for fix (dismissed excluded)"
-                    className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
-                  >
-                    {selectableFindingCount > 0 &&
-                    selectedFindings.size >= selectableFindingCount ? (
-                      <CheckSquare2 size={14} className="text-[var(--cv-accent)]" />
-                    ) : (
-                      <Square size={14} />
-                    )}
-                    All
-                  </button>
-                  <div className="relative ml-auto group">
-                    <Button
-                      size="sm"
-                      onClick={handleFixSelected}
-                      disabled={
-                        isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath
-                      }
-                      className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] p-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={toggleSelectAll}
+                      title="Select all findings for fix (dismissed excluded)"
+                      className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
                     >
-                      {isFixing === 'selected' ? (
-                        <Loader2 size={14} className="animate-spin" />
+                      {selectableFindingCount > 0 &&
+                      selectedFindings.size >= selectableFindingCount ? (
+                        <CheckSquare2 size={14} className="text-[var(--cv-accent)]" />
                       ) : (
-                        <Zap size={14} />
+                        <Square size={14} />
                       )}
-                      {isFixing === 'selected'
-                        ? 'Fixing...'
-                        : `Fix${selectedFindings.size > 0 ? ` (${selectedFindings.size})` : ''}`}
-                    </Button>
-                    {!viewHasRepoPath && (
-                      <div className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block">
-                        No repo path — can't apply fixes
-                      </div>
-                    )}
+                      All
+                    </button>
+                    <div className="relative ml-auto group">
+                      <Button
+                        size="sm"
+                        onClick={handleFixSelected}
+                        disabled={
+                          isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath
+                        }
+                        className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
+                      >
+                        {isFixing === 'selected' ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Zap size={14} />
+                        )}
+                        {isFixing === 'selected'
+                          ? 'Fixing...'
+                          : `Fix${selectedFindings.size > 0 ? ` (${selectedFindings.size})` : ''}`}
+                      </Button>
+                      {!viewHasRepoPath && (
+                        <div className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block">
+                          No repo path — can't apply fixes
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </aside>
-          </Panel>
-        </PanelGroup>
-      </div>
+              </aside>
+            </Panel>
+          </PanelGroup>
+        </div>
+      </ProjectWorkspaceShell>
     );
   }
 
   // ─── Create mode layout ─────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full gap-4 px-4 pb-4 pt-20">
-      {/* Left panel */}
-      <ReviewSetupPanel
-        handlePickFolder={handlePickFolder}
-        repoPath={repoPath}
-        detectedFleetProject={detectedFleetProject}
-        error={error}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        pullRequests={pullRequests}
-        branches={branches}
-        handleSelectBranch={handleSelectBranch}
-        selectedBranch={selectedBranch}
-        currentBranch={currentBranch}
-        baseBranch={baseBranch}
-        handleSelectPR={handleSelectPR}
-        diffRange={diffRange}
-        projectDesc={projectDesc}
-        setProjectDesc={setProjectDesc}
-        handleProjectDescBlur={handleProjectDescBlur}
-        changeDesc={changeDesc}
-        setChangeDesc={setChangeDesc}
-        taskGoal={taskGoal}
-        setTaskGoal={setTaskGoal}
-        handleTaskContextBlur={handleTaskContextBlur}
-        taskAcceptance={taskAcceptance}
-        setTaskAcceptance={setTaskAcceptance}
-        taskNonGoals={taskNonGoals}
-        setTaskNonGoals={setTaskNonGoals}
-        taskSourceLabel={taskSourceLabel}
-        setTaskSourceLabel={setTaskSourceLabel}
-        historyLoading={historyLoading}
-        historyContext={historyContext}
-        historyFileSummaries={historyFileSummaries}
-        commandSourcePreviewLoading={commandSourcePreviewLoading}
-        handlePreviewCommandSource={handlePreviewCommandSource}
-        handleOpenCommandSource={handleOpenCommandSource}
-        commandSourcePreview={commandSourcePreview}
-        setCommandSourcePreview={setCommandSourcePreview}
-        handleReview={handleReview}
-        isReviewing={isReviewing}
-        pastReviewsLoading={pastReviewsLoading}
-        pastReviews={pastReviews}
-        showHistory={showHistory}
-        setShowHistory={setShowHistory}
-        handleLoadPastReview={handleLoadPastReview}
-        result={result}
-      />
-
-      {/* Right panel */}
-      <CreatePreviewPanel isReviewing={isReviewing} />
-    </div>
+    <ProjectWorkspaceShell mainClassName="flex flex-col overflow-hidden">
+      {!repoPath ? (
+        <ProjectWorkspaceEmpty
+          title="Review"
+          description="Select a project from the sidebar, then pick a branch or PR and run a local AI review against the diff."
+        />
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex shrink-0 items-center justify-between border-b border-[var(--cv-line)] px-4 py-3">
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold tracking-tight text-slate-100">Review</h1>
+              <p className="truncate font-mono text-xs text-slate-500">
+                {selectedProject?.display_name ?? repoPath.split('/').pop()} · {repoPath}
+              </p>
+            </div>
+            <Link
+              to="/settings?section=rubrics"
+              title="Choose the standards pack CodeVetter applies when reviewing"
+              className="flex items-center gap-1 text-[10px] text-slate-500 transition-colors hover:text-[var(--cv-accent)]"
+            >
+              <ClipboardCheck size={12} />
+              Rubric
+            </Link>
+          </div>
+          <div className="flex min-h-0 flex-1 gap-4 p-4">
+            <ReviewSetupPanel
+              repoPath={repoPath}
+              detectedFleetProject={detectedFleetProject}
+              error={error}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              pullRequests={pullRequests}
+              branches={branches}
+              handleSelectBranch={handleSelectBranch}
+              selectedBranch={selectedBranch}
+              currentBranch={currentBranch}
+              baseBranch={baseBranch}
+              handleSelectPR={handleSelectPR}
+              diffRange={diffRange}
+              projectDesc={projectDesc}
+              setProjectDesc={setProjectDesc}
+              handleProjectDescBlur={handleProjectDescBlur}
+              changeDesc={changeDesc}
+              setChangeDesc={setChangeDesc}
+              taskGoal={taskGoal}
+              setTaskGoal={setTaskGoal}
+              handleTaskContextBlur={handleTaskContextBlur}
+              taskAcceptance={taskAcceptance}
+              setTaskAcceptance={setTaskAcceptance}
+              taskNonGoals={taskNonGoals}
+              setTaskNonGoals={setTaskNonGoals}
+              taskSourceLabel={taskSourceLabel}
+              setTaskSourceLabel={setTaskSourceLabel}
+              historyLoading={historyLoading}
+              historyContext={historyContext}
+              historyFileSummaries={historyFileSummaries}
+              commandSourcePreviewLoading={commandSourcePreviewLoading}
+              handlePreviewCommandSource={handlePreviewCommandSource}
+              handleOpenCommandSource={handleOpenCommandSource}
+              commandSourcePreview={commandSourcePreview}
+              setCommandSourcePreview={setCommandSourcePreview}
+              handleReview={handleReview}
+              isReviewing={isReviewing}
+              pastReviewsLoading={pastReviewsLoading}
+              pastReviews={pastReviews}
+              showHistory={showHistory}
+              setShowHistory={setShowHistory}
+              handleLoadPastReview={handleLoadPastReview}
+              handleDeletePastReview={handleDeletePastReview}
+              result={result}
+            />
+            <CreatePreviewPanel isReviewing={isReviewing} />
+          </div>
+        </div>
+      )}
+    </ProjectWorkspaceShell>
   );
 }
 

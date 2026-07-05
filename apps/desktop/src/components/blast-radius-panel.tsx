@@ -12,13 +12,16 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import type { BlastRadiusReport, BlastSymbol } from '@/lib/tauri-ipc';
+import { UnpackRunKindBadge } from '@/components/unpack-workspace/UnpackRunKindBadge';
+import type { BlastRadiusReport, BlastSymbol, UnpackDeepGraphDetectChanges } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
 
 interface Props {
   report: BlastRadiusReport | null;
   loading: boolean;
   error: string | null;
+  deepGraphImpact?: UnpackDeepGraphDetectChanges | null;
+  deepGraphImpactLoading?: boolean;
   onJump?: (file: string, line: number) => void;
 }
 
@@ -132,7 +135,14 @@ function SymbolRow({
 
 // ─── Main panel ─────────────────────────────────────────────────────────────
 
-export default function BlastRadiusPanel({ report, loading, error, onJump }: Props) {
+export default function BlastRadiusPanel({
+  report,
+  loading,
+  error,
+  deepGraphImpact,
+  deepGraphImpactLoading,
+  onJump,
+}: Props) {
   const [collapsed, setCollapsed] = useState(false);
 
   const groups = useMemo(() => {
@@ -148,7 +158,7 @@ export default function BlastRadiusPanel({ report, loading, error, onJump }: Pro
     return { high, medium, safe };
   }, [report]);
 
-  if (!report && !loading && !error) return null;
+  if (!report && !loading && !error && !deepGraphImpact && !deepGraphImpactLoading) return null;
 
   return (
     <div className="border-b border-[#1a1a1a] bg-[#0a0a0a]">
@@ -165,6 +175,7 @@ export default function BlastRadiusPanel({ report, loading, error, onJump }: Pro
         <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
           Blast Radius
         </span>
+        <UnpackRunKindBadge kind="local" className="normal-case" />
 
         {loading && (
           <span className="ml-2 flex items-center gap-1 text-[10px] text-slate-500">
@@ -225,6 +236,31 @@ export default function BlastRadiusPanel({ report, loading, error, onJump }: Pro
               {report.symbols.map((s) => (
                 <SymbolRow key={`${s.definedIn}:${s.name}`} symbol={s} onJump={onJump} />
               ))}
+            </div>
+          )}
+          {(deepGraphImpactLoading || deepGraphImpact) && (
+            <div className="border-t border-[#1a1a1a] px-3 py-2">
+              <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-violet-300">
+                <Sparkles size={10} />
+                Deep graph diff impact
+                <UnpackRunKindBadge kind="local" className="normal-case" />
+                {deepGraphImpact?.risk_level && (
+                  <span className="rounded border border-violet-500/30 bg-violet-500/10 px-1 py-0.5 font-mono normal-case text-violet-200">
+                    {deepGraphImpact.risk_level}
+                  </span>
+                )}
+              </div>
+              {deepGraphImpactLoading && (
+                <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                  <Loader2 size={10} className="animate-spin" />
+                  mapping diff to execution flows…
+                </div>
+              )}
+              {deepGraphImpact && !deepGraphImpactLoading && (
+                <pre className="max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-slate-400">
+                  {deepGraphImpact.formatted}
+                </pre>
+              )}
             </div>
           )}
         </>

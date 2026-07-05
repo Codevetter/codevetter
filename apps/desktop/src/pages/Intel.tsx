@@ -116,7 +116,7 @@ function prettyTool(tool: string): string {
   }
 }
 
-export default function Intel() {
+export default function Intel({ embedded = false }: { embedded?: boolean }) {
   const [repoPath, setRepoPath] = useState('');
   const [detectedFleetProject, setDetectedFleetProject] = useState<RepoDetectResult | null>(null);
   const [attribution, setAttribution] = useState<RepoAttributionReport | null>(null);
@@ -207,32 +207,36 @@ export default function Intel() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="mx-auto max-w-7xl px-6 pb-24 pt-20">
-        <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles size={22} className="text-[var(--cv-accent)]" />
-              <h1 className="text-2xl font-semibold tracking-tight">Engineering Intelligence</h1>
-              <Badge
-                variant="outline"
-                className="border-cyan-500/40 bg-cyan-500/10 text-[10px] uppercase tracking-wider text-[var(--cv-accent)]"
-              >
-                Personal
-              </Badge>
+      <div
+        className={embedded ? 'mx-auto max-w-7xl px-6 pb-12' : 'mx-auto max-w-7xl px-6 pb-24 pt-20'}
+      >
+        {!embedded && (
+          <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles size={22} className="text-[var(--cv-accent)]" />
+                <h1 className="text-2xl font-semibold tracking-tight">Engineering Intelligence</h1>
+                <Badge
+                  variant="outline"
+                  className="border-cyan-500/40 bg-cyan-500/10 text-[10px] uppercase tracking-wider text-[var(--cv-accent)]"
+                >
+                  Personal
+                </Badge>
+              </div>
+              <p className="mt-1 max-w-2xl text-sm text-[var(--text-secondary)]">
+                How much of your recent code was AI-led vs. human-led, who shipped what, and where
+                the work actually concentrates. Computed locally from your existing git history.
+              </p>
             </div>
-            <p className="mt-1 max-w-2xl text-sm text-[var(--text-secondary)]">
-              How much of your recent code was AI-led vs. human-led, who shipped what, and where the
-              work actually concentrates. Computed locally from your existing git history.
-            </p>
-          </div>
-          <Link
-            to="/unpack"
-            className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)] px-3 text-xs text-slate-300 transition-colors hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
-          >
-            <ScanSearch size={13} className="text-[var(--cv-accent)]" />
-            Repo brief
-          </Link>
-        </header>
+            <Link
+              to="/unpack"
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)] px-3 text-xs text-slate-300 transition-colors hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
+            >
+              <ScanSearch size={13} className="text-[var(--cv-accent)]" />
+              Repo brief
+            </Link>
+          </header>
+        )}
 
         <Card className="mb-4 border-[var(--cv-line)] bg-[var(--bg-surface)]">
           <CardHeader className="pb-3">
@@ -326,7 +330,7 @@ export default function Intel() {
 
 // ─── Attribution sections ──────────────────────────────────────────────────
 
-function AttributionResult({ report }: { report: RepoAttributionReport }) {
+export function AttributionResult({ report }: { report: RepoAttributionReport }) {
   return (
     <div className="space-y-6">
       <IntelReadout report={report} />
@@ -1545,7 +1549,7 @@ type DoraZoomMetric = {
   rows: IntelZoomRow[];
 };
 
-function DoraSection({ metrics }: { metrics: DoraMetrics }) {
+export function DoraSection({ metrics }: { metrics: DoraMetrics }) {
   const [zoom, setZoom] = useState<DoraZoomMetric | null>(null);
   const maxWeekly = Math.max(1, ...metrics.weekly_deploy_counts.map((w) => w.deploys));
   const hotfixReleases = metrics.recent_releases.filter((release) => release.triggered_hotfix);
@@ -1858,5 +1862,38 @@ function DoraZoomDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Read-only attribution results for the Repo workspace Intel tab. */
+export function IntelSnapshotView({
+  report,
+  dora,
+  loading,
+}: {
+  report: RepoAttributionReport | null;
+  dora: DoraMetrics | null;
+  loading?: boolean;
+}) {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-slate-400">
+        <Loader2 size={16} className="animate-spin" />
+        Loading snapshot…
+      </div>
+    );
+  }
+  if (!report) {
+    return (
+      <p className="text-xs text-[var(--text-secondary)]">
+        No Intel snapshot yet. Hit Refresh to analyze git history for this project.
+      </p>
+    );
+  }
+  return (
+    <>
+      {dora ? <DoraSection metrics={dora} /> : null}
+      <AttributionResult report={report} />
+    </>
   );
 }

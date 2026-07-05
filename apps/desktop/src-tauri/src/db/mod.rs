@@ -27,7 +27,7 @@ pub fn init_db(app_data_dir: PathBuf) -> Result<Connection, rusqlite::Error> {
         "PRAGMA journal_mode      = WAL;
          PRAGMA synchronous       = NORMAL;
          PRAGMA foreign_keys      = ON;
-         PRAGMA busy_timeout      = 5000;
+         PRAGMA busy_timeout      = 30000;
          PRAGMA mmap_size         = 268435456;
          PRAGMA temp_store        = MEMORY;
          PRAGMA cache_size        = -16384;
@@ -37,4 +37,34 @@ pub fn init_db(app_data_dir: PathBuf) -> Result<Connection, rusqlite::Error> {
     schema::run_migrations(&conn)?;
 
     Ok(conn)
+}
+
+/// True when SQLite could not acquire a write lock (background indexer contention).
+pub fn is_database_busy(err: &rusqlite::Error) -> bool {
+    match err {
+        rusqlite::Error::SqliteFailure(code, _) => {
+            code.code == rusqlite::ErrorCode::DatabaseBusy
+                || code.code == rusqlite::ErrorCode::DatabaseLocked
+        }
+        _ => false,
+    }
+}
+
+/// Retry a DB operation when the shared DB file is busy (e.g. periodic indexer).
+pub fn with_busy_retry<T, F>(mut op: F, max_attempts: u32) -> Result<T, rusqlite::Error>
+where
+    F: FnMut() -> Result<T, rusqlite::Error>,
+{
+    let mut attempt = 0u32;
+    loop {
+        match op() {
+            Ok(value) => return Ok(value),
+            Err(err) if is_database_busy(&err) && attempt + 1 < max_attempts => {
+                attempt += 1;
+                let delay_ms = (300u64 * attempt as u64).min(4000);
+                std::thread::sleep(std::time::Duration::from_millis(delay_ms));
+            }
+            Err(err) => return Err(err),
+        }
+    }
 }
