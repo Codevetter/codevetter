@@ -153,6 +153,20 @@ pub fn run_full_index_summary_with_conn(
     run_full_index_unlocked(conn)
 }
 
+/// Run the full index only if no other full index is active.
+///
+/// Background schedulers use this so they never queue a low-priority full scan
+/// behind another index pass while foreground commands are trying to use SQLite.
+pub fn try_run_full_index_summary_with_conn(
+    conn: &rusqlite::Connection,
+) -> Result<Option<FullIndexSummary>, String> {
+    let _index_guard = match FULL_INDEX_LOCK.try_lock() {
+        Ok(guard) => guard,
+        Err(_) => return Ok(None),
+    };
+    run_full_index_unlocked(conn).map(Some)
+}
+
 fn run_full_index_unlocked(conn: &rusqlite::Connection) -> Result<FullIndexSummary, String> {
     let (indexed_sessions, indexed_messages, skipped_sessions) = full_index_impl(conn)?;
     let archive_search_rows_indexed =
