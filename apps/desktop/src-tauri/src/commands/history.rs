@@ -207,8 +207,19 @@ pub struct TranscriptTailSummary {
 pub fn tail_live_transcript_sessions_with_conn(
     conn: &rusqlite::Connection,
 ) -> Result<TranscriptTailSummary, String> {
+    let _index_guard = match FULL_INDEX_LOCK.try_lock() {
+        Ok(guard) => guard,
+        Err(_) => {
+            return Ok(TranscriptTailSummary {
+                sessions_tailed: 0,
+                messages_indexed: 0,
+                tailed_at: chrono::Utc::now().to_rfc3339(),
+            });
+        }
+    };
     let since = (chrono::Utc::now() - chrono::Duration::minutes(120)).to_rfc3339();
-    let sources = queries::list_live_session_sources(conn, &since, 16).map_err(|e| e.to_string())?;
+    let sources =
+        queries::list_live_session_sources(conn, &since, 16).map_err(|e| e.to_string())?;
     let now = chrono::Utc::now().to_rfc3339();
     let mut sessions_tailed = 0u64;
     let mut messages_indexed = 0u64;
@@ -219,20 +230,10 @@ pub fn tail_live_transcript_sessions_with_conn(
             continue;
         }
         let result = match source.agent_type.as_str() {
-            "claude-code" => index_adapter_session(
-                &ClaudeCodeAdapter,
-                path,
-                conn,
-                &source.project_id,
-                &now,
-            ),
-            "codex" => index_adapter_session(
-                &CodexAdapter,
-                path,
-                conn,
-                &source.project_id,
-                &now,
-            ),
+            "claude-code" => {
+                index_adapter_session(&ClaudeCodeAdapter, path, conn, &source.project_id, &now)
+            }
+            "codex" => index_adapter_session(&CodexAdapter, path, conn, &source.project_id, &now),
             _ => continue,
         };
         match result {
@@ -243,10 +244,7 @@ pub fn tail_live_transcript_sessions_with_conn(
                 }
             }
             Err(error) => {
-                log::debug!(
-                    "Transcript tail skipped {}: {error}",
-                    source.jsonl_path
-                );
+                log::debug!("Transcript tail skipped {}: {error}", source.jsonl_path);
             }
         }
     }
@@ -269,6 +267,16 @@ pub fn tail_live_transcript_sessions_with_conn(
 pub fn refresh_secondary_agents_with_conn(
     conn: &rusqlite::Connection,
 ) -> Result<TranscriptTailSummary, String> {
+    let _index_guard = match FULL_INDEX_LOCK.try_lock() {
+        Ok(guard) => guard,
+        Err(_) => {
+            return Ok(TranscriptTailSummary {
+                sessions_tailed: 0,
+                messages_indexed: 0,
+                tailed_at: chrono::Utc::now().to_rfc3339(),
+            });
+        }
+    };
     let now = chrono::Utc::now().to_rfc3339();
     let mut sessions_tailed = 0u64;
     let mut messages_indexed = 0u64;
@@ -711,20 +719,41 @@ pub async fn get_agent_usage_by_day(
 /// session_model_usage breakdown exists; costs priced live from the current
 /// table so the split never inherits stale per-session costs). `days` limits
 /// to a rolling window ending today (session activity prorated per day, same
-/// attribution as the daily chart); omitted = all time.
+/// attribution as the daily chart); omitted = all time. `day_start` +
+/// `day_end` (exclusive) slice a single day or week for chart/rhythm drill-down.
 #[tauri::command]
 pub async fn get_usage_by_model(
     db: State<'_, DbState>,
     days: Option<i64>,
+    exclude_agents: Option<Vec<String>>,
+    day_start: Option<String>,
+    day_end: Option<String>,
 ) -> Result<Vec<queries::ModelUsage>, String> {
     use chrono::{Duration, Local};
-    let since = days.map(|d| {
-        (Local::now().date_naive() - Duration::days(d.max(1) - 1))
-            .format("%Y-%m-%d")
-            .to_string()
-    });
+    let day_range = match (day_start, day_end) {
+        (Some(s), Some(e)) if !s.trim().is_empty() && !e.trim().is_empty() => (Some(s), Some(e)),
+        _ => (None, None),
+    };
+    let since = if day_range.0.is_some() {
+        None
+    } else {
+        days.map(|d| {
+            (Local::now().date_naive() - Duration::days(d.max(1) - 1))
+                .format("%Y-%m-%d")
+                .to_string()
+        })
+    };
     let conn = conn_lock(&db)?;
-    queries::get_usage_by_model(&conn, estimate_cost, since.as_deref()).map_err(|e| e.to_string())
+    let exclude = exclude_agents.unwrap_or_default();
+    queries::get_usage_by_model(
+        &conn,
+        estimate_cost,
+        since.as_deref(),
+        day_range.0.as_deref(),
+        day_range.1.as_deref(),
+        &exclude,
+    )
+    .map_err(|e| e.to_string())
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -942,6 +971,8 @@ fn estimate_cost(
         m if m.contains("grok-code") || m.contains("grok-build") || m.contains("grok-composer") => {
             (0.2, 1.5, 0.02, 0.2)
         }
+        // Cursor Composer (non-Grok) — local token estimates; fast-tier pricing.
+        m if m.contains("composer") => (0.2, 1.5, 0.02, 0.2),
         m if m.contains("grok") => (3.0, 15.0, 0.75, 3.75),
         // GLM-5.2 (Z.ai): $1.40/$4.40, cached $0.26 (verified Jun 2026). Cache
         // creation storage is limited-time free → 0. Devin's internal models
@@ -949,7 +980,10 @@ fn estimate_cost(
         m if m.contains("glm")
             || m.contains("compactor")
             || m.contains("swe")
-            || m.contains("MODEL_PRIVATE") => (1.4, 4.4, 0.26, 0.0),
+            || m.contains("MODEL_PRIVATE") =>
+        {
+            (1.4, 4.4, 0.26, 0.0)
+        }
         _ => (3.0, 15.0, 0.30, 3.75), // default ≈ sonnet pricing
     };
 
@@ -1009,7 +1043,13 @@ fn estimate_session_cost(
             return (cost * 100.0).round() / 100.0;
         }
     }
-    estimate_cost(model_used, total_input, output_tokens, cache_read, cache_creation)
+    estimate_cost(
+        model_used,
+        total_input,
+        output_tokens,
+        cache_read,
+        cache_creation,
+    )
 }
 
 /// Recompute `estimated_cost_usd` for every session from its stored token counts
@@ -1628,8 +1668,15 @@ fn index_adapter_session<A: SessionSourceAdapter>(
     let (prefix, byte_len, line_count) = complete_lines_prefix(&raw);
     let summary = adapter.parse_raw(&path_str, prefix);
     let existing_id = existing.as_ref().map(|m| m.id.as_str());
-    let result =
-        upsert_adapter_summary_session(conn, project_id, summary, file_size, file_mtime, now, existing_id)?;
+    let result = upsert_adapter_summary_session(
+        conn,
+        project_id,
+        summary,
+        file_size,
+        file_mtime,
+        now,
+        existing_id,
+    )?;
     queries::set_session_index_cursor(conn, &result.session_id, byte_len, line_count)
         .map_err(|e| e.to_string())?;
     Ok(result)
@@ -1661,7 +1708,10 @@ fn index_session_incremental<A: SessionSourceAdapter>(
     // No complete new line yet (e.g. a half-flushed event, or only mtime changed).
     // Refresh size/mtime so the mtime-skip works next pass; nothing new to index.
     if prefix.is_empty() {
-        let _ = queries::apply_session_append_delta(conn, &zero_delta(meta, offset, line_count, file_size, file_mtime, now));
+        let _ = queries::apply_session_append_delta(
+            conn,
+            &zero_delta(meta, offset, line_count, file_size, file_mtime, now),
+        );
         return Ok(IndexedAdapterSession {
             session_id: meta.id.clone(),
             source_ref: path_str.to_string(),
@@ -1741,8 +1791,15 @@ fn index_session_incremental<A: SessionSourceAdapter>(
     // exactly (estimate_cost rounds to cents — a per-delta round would drift).
     let (ti, to, cr, cc, model) =
         queries::get_session_token_totals(conn, &meta.id).map_err(|e| e.to_string())?;
-    let cost =
-        estimate_session_cost(conn, &meta.id, model.as_deref().unwrap_or(""), ti, to, cr, cc);
+    let cost = estimate_session_cost(
+        conn,
+        &meta.id,
+        model.as_deref().unwrap_or(""),
+        ti,
+        to,
+        cr,
+        cc,
+    );
     queries::set_session_cost(conn, &meta.id, cost).map_err(|e| e.to_string())?;
 
     Ok(IndexedAdapterSession {
@@ -1933,7 +1990,9 @@ fn resolve_grok_sessions_dir() -> std::path::PathBuf {
     let home = std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
         .unwrap_or_else(|_| ".".to_string());
-    std::path::PathBuf::from(home).join(".grok").join("sessions")
+    std::path::PathBuf::from(home)
+        .join(".grok")
+        .join("sessions")
 }
 
 /// Decode the percent-encoded cwd Grok uses as a session project dir name
@@ -2030,8 +2089,7 @@ fn parse_grok_session_dir(
     // Also collect per-turn timestamps for day attribution.
     // Token fields are nested under JSON-RPC params, so search recursively.
     let mut per_turn: std::collections::BTreeMap<i64, i64> = std::collections::BTreeMap::new();
-    let mut turn_days: std::collections::BTreeMap<i64, String> =
-        std::collections::BTreeMap::new();
+    let mut turn_days: std::collections::BTreeMap<i64, String> = std::collections::BTreeMap::new();
     if let Ok(file) = std::fs::File::open(sess_dir.join("updates.jsonl")) {
         for line in std::io::BufReader::new(file).lines().map_while(Result::ok) {
             let line = line.trim();
@@ -2101,8 +2159,7 @@ fn parse_grok_session_dir(
     // Day attribution: count distinct turns per day from updates.jsonl. Falls
     // back to the old single-day attribution (all on created_at's day) when
     // updates.jsonl has no turn timestamps.
-    let mut day_counts: std::collections::BTreeMap<String, i64> =
-        std::collections::BTreeMap::new();
+    let mut day_counts: std::collections::BTreeMap<String, i64> = std::collections::BTreeMap::new();
     if !turn_days.is_empty() {
         for day in turn_days.values() {
             *day_counts.entry(day.clone()).or_insert(0) += 1;
@@ -2253,8 +2310,8 @@ fn index_grok_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), S
                 .and_then(|m| m.modified().ok())
                 .map(|t| chrono::DateTime::<chrono::Utc>::from(t).to_rfc3339());
 
-            let existing = queries::get_session_by_jsonl_path(conn, &source_ref)
-                .map_err(|e| e.to_string())?;
+            let existing =
+                queries::get_session_by_jsonl_path(conn, &source_ref).map_err(|e| e.to_string())?;
             if let Some(ref meta) = existing {
                 // Re-parse 0-token rows: earlier builds estimated Grok at 0
                 // (token fields were nested), so don't let the mtime skip pin them.
@@ -2335,11 +2392,9 @@ fn index_devin_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), 
     let file_meta = std::fs::metadata(&db_path).ok();
     let file_size = file_meta.as_ref().map(|m| m.len() as i64).unwrap_or(0);
 
-    let dconn = rusqlite::Connection::open_with_flags(
-        &db_path,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-    )
-    .map_err(|e| format!("failed to open devin sessions.db: {e}"))?;
+    let dconn =
+        rusqlite::Connection::open_with_flags(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+            .map_err(|e| format!("failed to open devin sessions.db: {e}"))?;
 
     // Per-session aggregate, deduping assistant messages by message_id so the
     // duplicate rows (extensions vs bare) don't double-count tokens.
@@ -2435,10 +2490,7 @@ fn index_devin_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), 
     let mut day_counts: std::collections::HashMap<String, std::collections::BTreeMap<String, i64>> =
         std::collections::HashMap::new();
     for row in day_rows.flatten() {
-        day_counts
-            .entry(row.0)
-            .or_default()
-            .insert(row.1, row.2);
+        day_counts.entry(row.0).or_default().insert(row.1, row.2);
     }
     drop(day_stmt);
     drop(dconn);
@@ -2458,16 +2510,17 @@ fn index_devin_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), 
         }
 
         let source_ref = format!("devin:{}", s.id);
-        let last_activity_rfc = chrono::DateTime::<chrono::Utc>::from_timestamp(s.last_activity_at, 0)
-            .map(|dt| dt.to_rfc3339());
+        let last_activity_rfc =
+            chrono::DateTime::<chrono::Utc>::from_timestamp(s.last_activity_at, 0)
+                .map(|dt| dt.to_rfc3339());
         let created_rfc = chrono::DateTime::<chrono::Utc>::from_timestamp(s.created_at, 0)
             .map(|dt| dt.to_rfc3339());
 
         // Per-session incremental skip: the devin session's last_activity_at is
         // stored as file_mtime, so an unchanged value + non-zero tokens means
         // nothing new has happened for this session.
-        let existing = queries::get_session_by_jsonl_path(conn, &source_ref)
-            .map_err(|e| e.to_string())?;
+        let existing =
+            queries::get_session_by_jsonl_path(conn, &source_ref).map_err(|e| e.to_string())?;
         if let Some(ref meta) = existing {
             if meta.file_mtime.as_deref() == last_activity_rfc.as_deref()
                 && meta.total_input_tokens > 0
@@ -2618,11 +2671,9 @@ fn resolve_cursor_agent_chats_dir() -> std::path::PathBuf {
 fn estimate_cursor_agent_session(
     store_db: &std::path::Path,
 ) -> Result<(i64, i64, i64, Option<String>), String> {
-    let conn = rusqlite::Connection::open_with_flags(
-        store_db,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-    )
-    .map_err(|e| e.to_string())?;
+    let conn =
+        rusqlite::Connection::open_with_flags(store_db, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+            .map_err(|e| e.to_string())?;
     let mut stmt = conn
         .prepare("SELECT data FROM blobs ORDER BY rowid")
         .map_err(|e| e.to_string())?;
@@ -2718,8 +2769,8 @@ fn index_cursor_agent_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64,
                 .and_then(|m| m.modified().ok())
                 .map(|t| chrono::DateTime::<chrono::Utc>::from(t).to_rfc3339());
 
-            let existing = queries::get_session_by_jsonl_path(conn, &source_ref)
-                .map_err(|e| e.to_string())?;
+            let existing =
+                queries::get_session_by_jsonl_path(conn, &source_ref).map_err(|e| e.to_string())?;
             if let Some(ref meta) = existing {
                 if meta.file_mtime.as_deref() == file_mtime.as_deref()
                     && meta.message_count > 0
@@ -3194,7 +3245,9 @@ mod tests {
             .collect();
 
         let mut dstmt = conn
-            .prepare("SELECT day, msg_count FROM cc_session_days WHERE session_id = ?1 ORDER BY day")
+            .prepare(
+                "SELECT day, msg_count FROM cc_session_days WHERE session_id = ?1 ORDER BY day",
+            )
             .unwrap();
         let days = dstmt
             .query_map(params![sid], |r| {
@@ -3212,7 +3265,11 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("cv_inc_{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let events = synth_claude_events(40);
-        let split = events.match_indices('\n').nth(16).map(|(i, _)| i + 1).unwrap();
+        let split = events
+            .match_indices('\n')
+            .nth(16)
+            .map(|(i, _)| i + 1)
+            .unwrap();
 
         // (A) full index of the whole 40-event file.
         let conn_a = memory_conn_with_project();
@@ -3232,7 +3289,10 @@ mod tests {
                 |r| r.get(0),
             )
             .unwrap();
-        assert_eq!(mid, 17, "first pass should index exactly the 17 complete lines");
+        assert_eq!(
+            mid, 17,
+            "first pass should index exactly the 17 complete lines"
+        );
         std::fs::write(&path_b, &events).unwrap();
         parse_claude_session(&path_b, &conn_b, "project", "2026-06-12T16:04:00Z").unwrap();
 
@@ -3277,7 +3337,10 @@ mod tests {
                 |r| r.get(0),
             )
             .unwrap();
-        assert_eq!(count, 5, "shrunk file should reflect 5 events, not appended");
+        assert_eq!(
+            count, 5,
+            "shrunk file should reflect 5 events, not appended"
+        );
         assert_eq!(arch, 5, "archive should be rebuilt to 5 rows");
 
         let _ = std::fs::remove_dir_all(&dir);
@@ -3313,7 +3376,10 @@ mod tests {
         let full_ms = t2.elapsed().as_secs_f64() * 1000.0;
 
         eprintln!("\n=== incremental re-index vs full reparse (real indexer) ===");
-        eprintln!("file:                {:.1} MB", big.len() as f64 / 1_048_576.0);
+        eprintln!(
+            "file:                {:.1} MB",
+            big.len() as f64 / 1_048_576.0
+        );
         eprintln!("cold full index:     {cold_ms:.1} ms");
         eprintln!("full reparse:        {full_ms:.1} ms   (old behavior, every append)");
         eprintln!("incremental append:  {inc_ms:.3} ms   (new behavior, 4 KB tail)");
@@ -3625,8 +3691,7 @@ mod tests {
             env!("CARGO_MANIFEST_DIR"),
             "/tests/fixtures/session_adapters/grok-session"
         ));
-        let summary =
-            parse_grok_session_dir(dir, "/repo/codevetter").expect("grok session parses");
+        let summary = parse_grok_session_dir(dir, "/repo/codevetter").expect("grok session parses");
 
         assert_eq!(summary.agent_type, "grok");
         assert_eq!(summary.adapter_id, "grok");
@@ -3698,17 +3763,36 @@ mod tests {
         }
         let conn = Connection::open(path).expect("open");
         let total = |c: &Connection| -> f64 {
-            c.query_row("SELECT COALESCE(SUM(estimated_cost_usd),0) FROM cc_sessions", [], |r| r.get(0)).unwrap_or(0.0)
+            c.query_row(
+                "SELECT COALESCE(SUM(estimated_cost_usd),0) FROM cc_sessions",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap_or(0.0)
         };
         let codex = |c: &Connection| -> f64 {
             c.query_row("SELECT COALESCE(SUM(estimated_cost_usd),0) FROM cc_sessions WHERE agent_type='codex'", [], |r| r.get(0)).unwrap_or(0.0)
         };
-        eprintln!("BEFORE: total=${:.0} codex=${:.0}", total(&conn), codex(&conn));
+        eprintln!(
+            "BEFORE: total=${:.0} codex=${:.0}",
+            total(&conn),
+            codex(&conn)
+        );
         fix_codex_token_totals(&conn);
-        eprintln!("AFTER:  total=${:.0} codex=${:.0}", total(&conn), codex(&conn));
+        eprintln!(
+            "AFTER:  total=${:.0} codex=${:.0}",
+            total(&conn),
+            codex(&conn)
+        );
         let mut stmt = conn.prepare("SELECT agent_type, ROUND(estimated_cost_usd,2), total_input_tokens FROM cc_sessions ORDER BY estimated_cost_usd DESC LIMIT 5").unwrap();
-        let rows: Vec<(String,f64,i64)> = stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).unwrap().filter_map(Result::ok).collect();
-        for (a,c,t) in rows { eprintln!("  top: {a} ${c} ({t} input tok)"); }
+        let rows: Vec<(String, f64, i64)> = stmt
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
+            .unwrap()
+            .filter_map(Result::ok)
+            .collect();
+        for (a, c, t) in rows {
+            eprintln!("  top: {a} ${c} ({t} input tok)");
+        }
     }
 
     #[test]
@@ -3815,22 +3899,40 @@ mod tests {
         let near = |a: f64, b: f64| (a - b).abs() < 1e-6;
         // Opus 4.6+ is $5/$25 per 1M — NOT the old $15/$75. This guards against
         // a stale price table inflating the headline $ (the "$49K Claude" bug).
-        assert!(near(estimate_cost("claude-opus-4-8", 1_000_000, 0, 0, 0), 5.0));
-        assert!(near(estimate_cost("claude-opus-4-8", 0, 1_000_000, 0, 0), 25.0));
+        assert!(near(
+            estimate_cost("claude-opus-4-8", 1_000_000, 0, 0, 0),
+            5.0
+        ));
+        assert!(near(
+            estimate_cost("claude-opus-4-8", 0, 1_000_000, 0, 0),
+            25.0
+        ));
         // Cache reads bill at 0.1× input ($0.50/1M for Opus).
-        assert!(near(estimate_cost("claude-opus-4-8", 1_000_000, 0, 1_000_000, 0), 0.50));
+        assert!(near(
+            estimate_cost("claude-opus-4-8", 1_000_000, 0, 1_000_000, 0),
+            0.50
+        ));
         // Haiku 4.5 is $1/$5 (not the old $0.25/$1.25).
-        assert!(near(estimate_cost("claude-haiku-4-5-20251001", 1_000_000, 0, 0, 0), 1.0));
+        assert!(near(
+            estimate_cost("claude-haiku-4-5-20251001", 1_000_000, 0, 0, 0),
+            1.0
+        ));
         // OpenAI o3 (codex) is $2/$8.
         assert!(near(estimate_cost("o3", 1_000_000, 0, 0, 0), 2.0));
         // GPT-5.5 (codex mid-2026) is $5/$30, cached input $0.50; the generic
         // gpt-5 family arm must NOT swallow it.
         assert!(near(estimate_cost("gpt-5.5", 1_000_000, 0, 0, 0), 5.0));
         assert!(near(estimate_cost("gpt-5.5", 0, 1_000_000, 0, 0), 30.0));
-        assert!(near(estimate_cost("gpt-5.5", 1_000_000, 0, 1_000_000, 0), 0.50));
+        assert!(near(
+            estimate_cost("gpt-5.5", 1_000_000, 0, 1_000_000, 0),
+            0.50
+        ));
         assert!(near(estimate_cost("gpt-5", 1_000_000, 0, 0, 0), 1.25));
         // Mini class beats both the 5.5 and family arms.
-        assert!(near(estimate_cost("gpt-5.4-mini", 1_000_000, 0, 0, 0), 0.25));
+        assert!(near(
+            estimate_cost("gpt-5.4-mini", 1_000_000, 0, 0, 0),
+            0.25
+        ));
         assert!(near(estimate_cost("gpt-5.5-mini", 0, 1_000_000, 0, 0), 2.0));
         // GLM-5.2 (Devin) is $1.40/$4.40, cached $0.26.
         assert!(near(estimate_cost("glm-5-2", 1_000_000, 0, 0, 0), 1.4));
@@ -3862,20 +3964,16 @@ mod tests {
                 )
                 .unwrap();
             stmt.query_map([], |r| {
-                Ok((
-                    r.get(0)?,
-                    r.get(1)?,
-                    r.get(2)?,
-                    r.get(3)?,
-                    r.get(4)?,
-                ))
+                Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))
             })
             .unwrap()
             .filter_map(Result::ok)
             .collect()
         };
         for (id, msgs, input, output, cost) in &rows {
-            eprintln!("  devin session {id}: msgs={msgs} input={input} output={output} cost=${cost:.2}");
+            eprintln!(
+                "  devin session {id}: msgs={msgs} input={input} output={output} cost=${cost:.2}"
+            );
         }
         assert!(indexed > 0, "expected at least one devin session indexed");
         assert!(
@@ -3887,6 +3985,9 @@ mod tests {
         // last_activity_at), confirming the incremental skip works.
         let (_, _, skipped2) = index_devin_sessions(&conn).expect("devin index pass 2");
         eprintln!("pass 2: skipped={skipped2} (should equal pass-1 indexed)");
-        assert_eq!(skipped2, indexed, "pass 2 should skip all unchanged sessions");
+        assert_eq!(
+            skipped2, indexed,
+            "pass 2 should skip all unchanged sessions"
+        );
     }
 }

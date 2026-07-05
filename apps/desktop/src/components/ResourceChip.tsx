@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getResourceSnapshot, isTauriAvailable, type ResourceSnapshot } from '@/lib/tauri-ipc';
 
-const REFRESH_MS = 2000;
+const IDLE_REFRESH_MS = 10_000;
+const OPEN_REFRESH_MS = 2_000;
 
 function bytes(n: number): string {
   if (n >= 1024 * 1024 * 1024) return `${(n / 1024 / 1024 / 1024).toFixed(1)}G`;
@@ -50,20 +51,24 @@ export default function ResourceChip() {
     let timer: ReturnType<typeof setTimeout> | null = null;
 
     async function tick() {
+      if (document.hidden && !open) {
+        if (!cancelled) timer = setTimeout(tick, IDLE_REFRESH_MS);
+        return;
+      }
       try {
         const s = await getResourceSnapshot();
         if (!cancelled) setSnap(s);
       } catch {
         // ignore — the chip simply doesn't update
       }
-      if (!cancelled) timer = setTimeout(tick, REFRESH_MS);
+      if (!cancelled) timer = setTimeout(tick, open ? OPEN_REFRESH_MS : IDLE_REFRESH_MS);
     }
     tick();
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [open]);
 
   // Click-outside-to-close.
   useEffect(() => {
@@ -199,7 +204,8 @@ export default function ResourceChip() {
 
           <div className="mt-3 flex items-center justify-between border-t border-[var(--cv-line)] pt-2">
             <span className="flex items-center gap-1 font-mono text-[9px] text-slate-600">
-              <Activity size={9} /> refreshed every {REFRESH_MS / 1000}s
+              <Activity size={9} /> refreshes every{' '}
+              {(open ? OPEN_REFRESH_MS : IDLE_REFRESH_MS) / 1000}s
             </span>
             <span className="font-mono text-[9px] text-slate-600">
               {new Date(snap.sampled_at).toLocaleTimeString()}
