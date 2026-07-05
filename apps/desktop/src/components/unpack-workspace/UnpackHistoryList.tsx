@@ -131,10 +131,7 @@ export const UnpackHistoryList = memo(function UnpackHistoryList({
   return (
     <Card className="cv-frame cv-glow-edge overflow-hidden rounded-lg">
       <div className="cv-terminal-bar px-4 py-2.5">
-        <span className="cv-dot bg-red-500/50" />
-        <span className="cv-dot bg-amber-400/50" />
-        <span className="cv-dot bg-emerald-400/50" />
-        <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
           snapshot archive
         </span>
       </div>
@@ -144,12 +141,6 @@ export const UnpackHistoryList = memo(function UnpackHistoryList({
             <CardTitle className="flex items-center gap-2 text-base">
               <Icon size={16} className="text-[var(--cv-accent)]" />
               {title}
-              <Badge
-                variant="outline"
-                className="border-[var(--cv-line)] bg-[var(--bg-raised)] font-mono text-[10px] text-[var(--text-muted)]"
-              >
-                {history.length}
-              </Badge>
             </CardTitle>
             <CardDescription className="mt-1 text-xs">{subtitle}</CardDescription>
           </div>

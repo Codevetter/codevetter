@@ -1109,7 +1109,6 @@ export function UnpackProjectPanel({
         repoPath={repoPath}
         inventory={active?.inventory}
         hasReport={hasReport}
-        snapshotCount={history.length}
         lastUpdated={formatUnpackSnapshotTime(active?.createdAt ?? latestSnapshot?.created_at)}
         commitSha={active?.inventory?.commit_sha}
         agent={active?.agentUsed ?? agent}
@@ -1250,6 +1249,7 @@ export function UnpackProjectPanel({
           model={active.modelUsed ?? null}
           runtimeMs={active.runtimeMs}
           createdAt={active.createdAt}
+          hasReport={hasReport}
           scanProfiles={scanProfiles}
           disabled={isBusy}
         />
@@ -1263,6 +1263,7 @@ export function UnpackProjectPanel({
           model={active.modelUsed ?? null}
           runtimeMs={active.runtimeMs}
           createdAt={active.createdAt}
+          hasReport={hasReport}
           scanProfiles={scanProfiles}
           disabled={isBusy}
         />
@@ -1272,6 +1273,7 @@ export function UnpackProjectPanel({
         <InventorySummary
           section="intelligence"
           inventory={active.inventory}
+          hasReport={hasReport}
           scanProfiles={scanProfiles}
           disabled={isBusy}
         />
@@ -3386,6 +3388,7 @@ const InventorySummary = memo(function InventorySummary({
   model,
   runtimeMs,
   createdAt,
+  hasReport = false,
   scanProfiles = [],
   disabled = false,
 }: {
@@ -3395,6 +3398,7 @@ const InventorySummary = memo(function InventorySummary({
   model?: string | null;
   runtimeMs?: number;
   createdAt?: string;
+  hasReport?: boolean;
   scanProfiles?: UnpackScanProfile[];
   disabled?: boolean;
 }) {
@@ -3465,9 +3469,7 @@ const InventorySummary = memo(function InventorySummary({
           </>
         ) : null}
 
-        {showOverview ? (
-          <InventoryReadout inventory={inventory} hasReport={Boolean(createdAt)} />
-        ) : null}
+        {showOverview ? <InventoryReadout inventory={inventory} hasReport={hasReport} /> : null}
 
         {(showOverview || showInventory) && inventory.max_files_hit && (
           <div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-200">

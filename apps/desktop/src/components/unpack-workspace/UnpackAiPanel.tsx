@@ -51,20 +51,14 @@ export function UnpackAiPanel({
   return (
     <div
       className={cn(
-        'flex w-full flex-col gap-3 rounded-md border px-3 py-3 sm:max-w-xl',
+        'flex w-full flex-col gap-2 rounded-md border px-3 py-2',
         canRun
-          ? 'border-violet-500/25 bg-violet-500/[0.04]'
+          ? 'border-violet-500/20 bg-violet-500/[0.035]'
           : 'border-[var(--cv-line)] bg-[var(--bg-main)]/40 opacity-80'
       )}
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <UnpackRunKindBadge kind="ai" />
-        <span className="text-[11px] text-[var(--text-secondary)]">
-          Runs on the current snapshot — unpack first
-        </span>
-      </div>
-
       <div className="flex flex-wrap items-center gap-2 text-xs">
+        <UnpackRunKindBadge kind="ai" />
         <span className="cv-label">Agent</span>
         <select
           value={agent}
@@ -85,19 +79,10 @@ export function UnpackAiPanel({
           disabled={!canRun || busy}
           onChange={onModelChange}
         />
-      </div>
-
-      <div className="rounded-md border border-violet-500/20 bg-[var(--bg-surface)]/60 p-2.5">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-200/90">
-          Optional · Analyze
-        </div>
-        <p className="mt-1 text-[11px] leading-relaxed text-[var(--text-secondary)]">
-          Attaches an evidence-backed AI analysis to the selected local snapshot.
-        </p>
         <Button
           type="button"
           size="sm"
-          className="mt-2"
+          className="h-8"
           disabled={!canRun || busy}
           onClick={onSummarize}
         >
@@ -108,27 +93,8 @@ export function UnpackAiPanel({
           )}
           Analyze
         </Button>
-      </div>
-
-      <div className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)]/40 p-2.5">
-        <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-          <MessageCircleQuestion size={11} />
-          Or ask a question
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {UNPACK_ASK_PRESETS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              disabled={!canRun || busy}
-              onClick={() => onQuestionChange(preset)}
-              className="rounded-full border border-[var(--cv-line)] bg-[var(--bg-raised)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition hover:border-violet-500/30 hover:text-[var(--text-primary)] disabled:opacity-50"
-            >
-              {preset}
-            </button>
-          ))}
-        </div>
-        <div className="mt-2 flex gap-2">
+        <div className="ml-auto flex min-w-72 flex-1 items-center gap-2">
+          <MessageCircleQuestion size={13} className="shrink-0 text-[var(--text-muted)]" />
           <Input
             value={question}
             onChange={(e) => onQuestionChange(e.target.value)}
@@ -152,6 +118,20 @@ export function UnpackAiPanel({
             {isAsking ? <Loader2 size={14} className="animate-spin" /> : 'Ask'}
           </Button>
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {UNPACK_ASK_PRESETS.map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            disabled={!canRun || busy}
+            onClick={() => onQuestionChange(preset)}
+            className="rounded border border-[var(--cv-line)] bg-[var(--bg-raised)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition hover:border-violet-500/30 hover:text-[var(--text-primary)] disabled:opacity-50"
+          >
+            {preset}
+          </button>
+        ))}
       </div>
 
       {answers.length > 0 ? (
