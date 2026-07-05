@@ -1864,29 +1864,29 @@ function InventoryReadout({
   ];
 
   return (
-    <div className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-raised)]/45 p-3">
+    <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--bg-raised)]/45 p-5">
       <div>
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="text-sm font-medium text-[var(--text-primary)]">
+            <div className="text-lg font-semibold text-[var(--text-primary)]">
               What this scan says to do next
             </div>
-            <div className="mt-0.5 text-xs text-[var(--text-secondary)]">
+            <div className="mt-1 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
               Prioritized local leads from graph, health, QA, history, and repo shape.
             </div>
           </div>
-          <div className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
+          <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
             Click evidence packets below for details
           </div>
         </div>
-        <div className="mt-3 grid gap-2 lg:grid-cols-2">
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {actions.slice(0, 4).map((action) => (
             <div
               key={`${action.label}-${action.detail}`}
-              className="rounded border border-[var(--cv-line)] bg-[var(--bg-main)]/45 p-2.5 text-xs leading-relaxed"
+              className="rounded-xl border border-[var(--cv-line)] bg-[var(--bg-main)]/45 p-4 text-sm leading-6"
             >
               <div className="flex items-start justify-between gap-2">
-                <div className={cn('font-medium', action.tone)}>{action.label}</div>
+                <div className={cn('font-semibold', action.tone)}>{action.label}</div>
                 {action.meta ? (
                   <Badge
                     variant="outline"
@@ -1896,9 +1896,9 @@ function InventoryReadout({
                   </Badge>
                 ) : null}
               </div>
-              <div className="mt-1 text-[var(--text-secondary)]">{action.detail}</div>
+              <div className="mt-2 text-[var(--text-secondary)]">{action.detail}</div>
               {action.source ? (
-                <div className="mt-1.5">
+                <div className="mt-3">
                   <SourceLink path={action.source} repoPath={inventory.repo_path} />
                 </div>
               ) : null}
@@ -1907,9 +1907,9 @@ function InventoryReadout({
         </div>
       </div>
 
-      <div className="mt-3">
-        <div className="cv-label mb-2">Evidence packets</div>
-        <div className="grid gap-2 md:grid-cols-4">
+      <div className="mt-6">
+        <div className="cv-label mb-3">Evidence packets</div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {metrics.map((metric) => (
             <ReadoutCard key={metric.id} metric={metric} onClick={() => setZoom(metric)} />
           ))}
@@ -1946,17 +1946,17 @@ function ReadoutCard({ metric, onClick }: { metric: ReadoutZoom; onClick: () => 
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded border px-2.5 py-2 text-left transition-colors hover:border-[var(--cv-accent)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--cv-accent)]/35',
+        'rounded-xl border px-4 py-4 text-left transition-colors hover:border-[var(--cv-accent)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--cv-accent)]/35',
         metric.tone
       )}
     >
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider opacity-85">
+      <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider opacity-85">
         {metric.icon}
         {metric.label}
       </div>
-      <div className="mt-1 text-base font-semibold text-[var(--text-primary)]">{metric.value}</div>
-      <div className="font-mono text-[10px] uppercase opacity-80">{metric.detail}</div>
-      <div className="mt-1 text-[10px] opacity-75">{confidenceLabel(metric.confidence.level)}</div>
+      <div className="mt-3 text-2xl font-semibold text-[var(--text-primary)]">{metric.value}</div>
+      <div className="mt-1 font-mono text-xs uppercase opacity-80">{metric.detail}</div>
+      <div className="mt-3 text-xs opacity-75">{confidenceLabel(metric.confidence.level)}</div>
     </button>
   );
 }
@@ -3410,9 +3410,11 @@ const InventorySummary = memo(function InventorySummary({
       ? `${inventory.files_scanned.toLocaleString()} / ${inventory.estimated_total_files.toLocaleString()}`
       : inventory.files_scanned.toLocaleString();
   const stat = (label: string, value: ReactNode) => (
-    <div className="cv-metric-tile flex min-w-0 flex-col rounded-md px-3 py-2.5">
+    <div className="cv-metric-tile flex min-w-0 flex-col rounded-xl px-4 py-4">
       <span className="cv-label">{label}</span>
-      <span className="mt-1 truncate text-sm font-medium text-[var(--text-primary)]">{value}</span>
+      <span className="mt-2 truncate text-lg font-semibold text-[var(--text-primary)]">
+        {value}
+      </span>
     </div>
   );
 
@@ -3433,9 +3435,9 @@ const InventorySummary = memo(function InventorySummary({
           </div>
         </CardHeader>
       )}
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {(showOverview || showInventory) && (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {stat('Files', fileCoverage)}
             {stat('Skipped', inventory.files_skipped.toLocaleString())}
             {stat('Bytes', formatBytes(inventory.bytes_scanned))}

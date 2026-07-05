@@ -1,31 +1,72 @@
-import { Eye, Home, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { BarChart3, Eye, Home, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import ResourceChip from '@/components/ResourceChip';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   label: string;
   href: string;
   icon: ReactNode;
   shortcut: string;
+  description: string;
+  tone: string;
   match?: string[];
 }
 
 const navItems: NavItem[] = [
-  { label: 'Home', href: '/', icon: <Home size={18} />, shortcut: 'H' },
-  { label: 'Review', href: '/review', icon: <Zap size={18} />, shortcut: 'R' },
+  {
+    label: 'Home',
+    href: '/',
+    icon: <Home size={17} />,
+    shortcut: 'H',
+    description: 'Usage and review history',
+    tone: 'from-cyan-300/18 to-sky-400/8 text-cyan-100',
+  },
+  {
+    label: 'Review',
+    href: '/review',
+    icon: <Zap size={17} />,
+    shortcut: 'R',
+    description: 'Diff review workspace',
+    tone: 'from-amber-300/18 to-orange-400/8 text-amber-100',
+  },
   {
     label: 'Repo',
     href: '/unpack',
-    icon: <ScanSearch size={18} />,
+    icon: <ScanSearch size={17} />,
     shortcut: 'P',
+    description: 'Unpack and Intel',
+    tone: 'from-violet-300/18 to-cyan-400/8 text-violet-100',
     match: ['/unpack', '/intel'],
   },
-  { label: 'T-Rex', href: '/trex', icon: <Eye size={18} />, shortcut: 'T' },
-  { label: 'Settings', href: '/settings', icon: <Settings size={18} />, shortcut: ',' },
+  {
+    label: 'T-Rex',
+    href: '/trex',
+    icon: <Eye size={17} />,
+    shortcut: 'T',
+    description: 'Runtime watcher',
+    tone: 'from-emerald-300/18 to-lime-400/8 text-emerald-100',
+  },
+  {
+    label: 'Roadmap',
+    href: '/roadmap',
+    icon: <BarChart3 size={17} />,
+    shortcut: 'M',
+    description: 'Telemetry and shipped work',
+    tone: 'from-blue-300/18 to-cyan-400/8 text-blue-100',
+  },
+  {
+    label: 'Settings',
+    href: '/settings',
+    icon: <Settings size={17} />,
+    shortcut: ',',
+    description: 'Providers and preferences',
+    tone: 'from-slate-300/14 to-slate-400/6 text-slate-100',
+  },
 ];
 
 export default function Sidebar() {
@@ -34,10 +75,6 @@ export default function Sidebar() {
   const pendingG = useRef(false);
   const gTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto-hide state
-  const [visible, setVisible] = useState(true);
-  const hideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
   function isActive(href: string): boolean {
     if (href === '/') return pathname === '/';
     const item = navItems.find((navItem) => navItem.href === href);
@@ -45,7 +82,7 @@ export default function Sidebar() {
   }
 
   // Find current page label
-  const currentPage = navItems.find((item) => isActive(item.href))?.label ?? '';
+  const currentPage = navItems.find((item) => isActive(item.href));
 
   // Global "g then <key>" navigation (Linear-style)
   useEffect(() => {
@@ -86,92 +123,74 @@ export default function Sidebar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [navigate]);
 
-  // Show nav when mouse is near the top of the window
-  useEffect(() => {
-    function handleMouseMove(e: MouseEvent) {
-      if (e.clientY < 50) {
-        setVisible(true);
-        clearTimeout(hideTimer.current);
-        hideTimer.current = setTimeout(() => setVisible(false), 2000);
-      }
-    }
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // Start hide timer on initial mount (hide after 2s if user doesn't hover)
-  useEffect(() => {
-    hideTimer.current = setTimeout(() => setVisible(false), 2000);
-    return () => clearTimeout(hideTimer.current);
-  }, []);
-
-  const handleMouseEnter = () => {
-    clearTimeout(hideTimer.current);
-    setVisible(true);
-  };
-
-  const handleMouseLeave = () => {
-    hideTimer.current = setTimeout(() => setVisible(false), 2000);
-  };
-
   return (
     <TooltipProvider delayDuration={200}>
-      <nav
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className={`no-drag cv-frame fixed top-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 bg-[#07080a]/90 px-4 py-2 shadow-2xl backdrop-blur-md transition-all duration-300 ease-in-out ${
-          visible
-            ? 'pointer-events-auto translate-y-0 opacity-100'
-            : 'pointer-events-none -translate-y-2 opacity-0'
-        }`}
-      >
-        {/* App icon */}
-        <span className="mr-2 flex items-center gap-2 cv-label text-white">
-          <ShieldCheck size={15} className="text-[var(--cv-accent)]" />
-          <span className="hidden sm:inline">CodeVetter</span>
+      <nav className="no-drag fixed top-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl border border-white/[0.09] bg-[#07090d]/88 px-3 py-2 shadow-[0_24px_70px_-44px_rgba(125,211,252,0.85),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl">
+        <span className="flex items-center gap-2.5 pr-1">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-300/25 bg-gradient-to-br from-cyan-300/18 via-violet-300/10 to-emerald-300/10 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+            <ShieldCheck size={17} />
+          </span>
+          <span className="hidden min-w-24 sm:block">
+            <span className="block text-sm font-semibold leading-4 text-slate-100">CodeVetter</span>
+            <span className="block text-[10px] uppercase tracking-[0.16em] text-slate-500">
+              local review
+            </span>
+          </span>
         </span>
 
-        {/* Separator */}
-        <Separator orientation="vertical" className="mx-1 h-5 bg-[var(--cv-line)]" />
+        <Separator orientation="vertical" className="hidden h-9 bg-white/[0.08] sm:block" />
 
-        {/* Nav items */}
-        {navItems.map((item) => {
-          const active = isActive(item.href);
-          return (
-            <Tooltip key={item.href}>
-              <TooltipTrigger asChild>
-                <Link
-                  to={item.href}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full text-[18px] transition-colors duration-200 ${
-                    active
-                      ? 'bg-cyan-500/10 text-[var(--cv-accent)]'
-                      : 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-200'
-                  }`}
-                >
-                  {item.icon}
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-[10px]">
-                {item.label}
-                <span className="ml-1.5 font-mono text-slate-500">
-                  g {item.shortcut.toLowerCase()}
-                </span>
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
+        <div className="flex items-center gap-1 rounded-xl border border-white/[0.06] bg-black/20 p-1">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Tooltip key={item.href}>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'group relative flex h-10 items-center justify-center gap-2 rounded-lg px-2.5 text-sm transition-all duration-200',
+                      active
+                        ? `bg-gradient-to-br ${item.tone} shadow-[inset_0_1px_0_rgba(255,255,255,0.09),0_12px_28px_-24px_rgba(125,211,252,0.9)]`
+                        : 'text-slate-500 hover:bg-white/[0.045] hover:text-slate-200'
+                    )}
+                  >
+                    <span
+                      className={
+                        active ? 'text-current' : 'text-slate-500 group-hover:text-slate-300'
+                      }
+                    >
+                      {item.icon}
+                    </span>
+                    <span className={cn('hidden font-medium md:inline', !active && 'lg:inline')}>
+                      {item.label}
+                    </span>
+                    {active ? (
+                      <span className="absolute inset-x-2 -bottom-1 h-px rounded-full bg-current/70" />
+                    ) : null}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-48 text-[10px]">
+                  <div className="font-medium text-slate-200">{item.label}</div>
+                  <div className="mt-0.5 text-slate-500">{item.description}</div>
+                  <div className="mt-1 font-mono text-slate-500">
+                    g {item.shortcut.toLowerCase()}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
 
-        {/* Separator */}
-        <Separator orientation="vertical" className="mx-1 h-5 bg-[var(--cv-line)]" />
-
-        {/* Current page name — hidden at very narrow widths */}
-        <span className="ml-1 hidden text-[11px] font-medium text-slate-500 sm:inline">
-          {currentPage}
+        <span className="hidden min-w-24 border-l border-white/[0.08] pl-3 lg:block">
+          <span className="block text-[10px] uppercase tracking-[0.16em] text-slate-600">Now</span>
+          <span className="block truncate text-xs font-medium text-slate-300">
+            {currentPage?.label ?? 'Workspace'}
+          </span>
         </span>
 
-        {/* Live resource usage chip — CPU / RAM / disk for the CodeVetter
-            process tree. Click for breakdown by child process. */}
-        <Separator orientation="vertical" className="mx-1 h-5 bg-[var(--cv-line)]" />
+        <Separator orientation="vertical" className="hidden h-9 bg-white/[0.08] xl:block" />
         <ResourceChip />
       </nav>
     </TooltipProvider>
