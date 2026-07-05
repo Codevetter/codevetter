@@ -16,10 +16,7 @@ export function ProjectWorkspaceHeader({
   return (
     <header className="cv-frame cv-glow-edge mb-6 overflow-hidden rounded-lg">
       <div className="cv-terminal-bar px-4 py-2.5">
-        <span className="cv-dot bg-red-500/50" />
-        <span className="cv-dot bg-amber-400/50" />
-        <span className="cv-dot bg-emerald-400/50" />
-        <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
           project
         </span>
       </div>
