@@ -10,6 +10,10 @@ mod timeutil;
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
+const STARTUP_FULL_INDEX_DELAY_SECS: u64 = 6 * 60 * 60;
+const PERIODIC_INDEX_INITIAL_DELAY_SECS: u64 = 6 * 60 * 60;
+const PERIODIC_INDEX_INTERVAL_SECS: u64 = 6 * 60 * 60;
+
 /// Shared database state accessible from every Tauri command via
 /// `tauri::State<DbState>`.
 #[derive(Clone)]
@@ -124,6 +128,14 @@ fn main() {
                         Err(e) => log::error!("Quick index failed: {e}"),
                     }
 
+                    // Keep app launch and first-click workflows responsive. The
+                    // quick index gives Home usable data immediately; the full
+                    // historical pass is maintenance work and should not
+                    // compete with Add Project / Unpack during an active
+                    // product session. Users can still trigger it manually.
+                    std::thread::sleep(std::time::Duration::from_secs(
+                        STARTUP_FULL_INDEX_DELAY_SECS,
+                    ));
                     log::info!("Starting full index...");
                     match run_full_index(bg_data_dir.clone()) {
                         Ok(summary) => {
@@ -161,10 +173,10 @@ fn main() {
                 })
                 .expect("failed to spawn initial-index thread");
 
-            // ── Periodic re-index (every 60 seconds) ─────────────
-            // Indexing is incremental (mtime + byte-offset skip), so a tight
-            // loop is cheap and keeps token-usage stats near-realtime instead
-            // of "frozen until restart".
+            // ── Periodic re-index ─────────────
+            // The startup thread does the first full index after the initial
+            // UI window. Periodic passes are best-effort and must not queue
+            // behind another index while foreground commands need SQLite.
             let periodic_data_dir = app
                 .path()
                 .app_data_dir()
@@ -175,15 +187,16 @@ fn main() {
                 .name("periodic-index".into())
                 .spawn(move || {
                     set_thread_background_qos();
-                    std::thread::sleep(std::time::Duration::from_secs(15));
+                    std::thread::sleep(std::time::Duration::from_secs(
+                        PERIODIC_INDEX_INITIAL_DELAY_SECS,
+                    ));
                     loop {
-                        log::info!("Periodic re-index starting...");
                         match db::init_db(periodic_data_dir.clone()) {
                             Ok(conn) => {
-                                match crate::commands::history::run_full_index_summary_with_conn(
+                                match crate::commands::history::try_run_full_index_summary_with_conn(
                                     &conn,
                                 ) {
-                                    Ok(summary) => {
+                                    Ok(Some(summary)) => {
                                         log::info!(
                                             "Periodic re-index complete: {}",
                                             summary.log_message()
@@ -193,6 +206,9 @@ fn main() {
                                             &summary,
                                         );
                                     }
+                                    Ok(None) => {
+                                        log::debug!("Periodic re-index skipped: index already running");
+                                    }
                                     Err(e) => log::error!("Periodic re-index failed: {e}"),
                                 }
                             }
@@ -200,12 +216,14 @@ fn main() {
                                 log::error!("Periodic re-index DB init failed: {e}");
                             }
                         }
-                        // v1.1.84: bumped from 30s → 5min. The indexer was
-                        // re-reading large active JSONL files (>100 MB) into
-                        // memory on every tick, hammering CPU + SSD without
-                        // a meaningful UX improvement; token-usage stats are
-                        // still fresh enough for a passive monitor.
-                        std::thread::sleep(std::time::Duration::from_secs(300));
+                        // Maintenance cadence only. Full indexing is useful
+                        // for archive completeness, but it must not compete
+                        // with foreground repo work during normal app usage.
+                        // Open sessions are kept fresh by the lightweight tail
+                        // watcher above.
+                        std::thread::sleep(std::time::Duration::from_secs(
+                            PERIODIC_INDEX_INTERVAL_SECS,
+                        ));
                     }
                 })
                 .expect("failed to spawn periodic-index thread");
@@ -233,6 +251,7 @@ fn main() {
                     loop {
                         match db::init_db(tail_data_dir.clone()) {
                             Ok(conn) => {
+                                let _ = conn.busy_timeout(std::time::Duration::from_millis(250));
                                 match crate::commands::history::tail_live_transcript_sessions_with_conn(
                                     &conn,
                                 ) {
