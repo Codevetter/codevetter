@@ -385,13 +385,8 @@ fn main() {
             commands::saas_maker::get_current_user,
             commands::saas_maker::detect_project_for_repo,
             commands::saas_maker::set_repo_project_mapping,
-            commands::saas_maker::link_all_repos_to_fleet,
-            // v1.1.78: cross-fleet rollup + AI acceleration + weekly markdown
+            // v1.1.78: AI acceleration
             commands::intel::get_ai_acceleration,
-            commands::fleet::list_linked_repos,
-            commands::fleet::get_fleet_rollup,
-            commands::fleet::generate_weekly_fleet_markdown,
-            commands::fleet::push_changelog_entry,
             // v1.1.79: DORA metrics
             commands::dora::get_dora_metrics,
             // v1.1.81: real billing + agent observability + notifications

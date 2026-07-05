@@ -1,13 +1,4 @@
-import {
-  Eye,
-  Home,
-  MonitorPlay,
-  Rocket,
-  ScanSearch,
-  Settings,
-  ShieldCheck,
-  Zap,
-} from 'lucide-react';
+import { Eye, Home, MonitorPlay, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -40,7 +31,6 @@ const navItems: NavItem[] = [
     shortcut: 'P',
     match: ['/unpack', '/intel'],
   },
-  { label: 'Fleet', href: '/fleet', icon: <Rocket size={18} />, shortcut: 'F' },
   { label: 'T-Rex', href: '/trex', icon: <Eye size={18} />, shortcut: 'T' },
   { label: 'Settings', href: '/settings', icon: <Settings size={18} />, shortcut: ',' },
 ];

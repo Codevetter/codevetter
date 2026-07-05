@@ -2779,34 +2779,7 @@ export async function setRepoProjectMapping(repoPath: string, projectSlug: strin
   });
 }
 
-export interface LinkedRepoEntry {
-  project_name: string;
-  project_slug: string;
-  repo_path: string;
-  origin_url: string | null;
-  backfilled: boolean;
-  backfill_error: string | null;
-}
-
-export interface LinkAllResult {
-  /** Whether the SaaS Maker API exposes a git_url field; backfill is skipped when false. */
-  git_url_supported: boolean;
-  scanned_repo_count: number;
-  linked: LinkedRepoEntry[];
-  unmatched_repo_count: number;
-  backfilled_count: number;
-}
-
-/**
- * Bulk-link every indexed local git repo to its matching fleet project by name,
- * persisting local mappings. When the spine supports git_url, also backfills
- * each repo's origin URL onto the project.
- */
-export async function linkAllReposToFleet(): Promise<LinkAllResult> {
-  return safeInvoke<LinkAllResult>('link_all_repos_to_fleet');
-}
-
-// ─── v1.1.78: cross-fleet rollup + AI acceleration + weekly markdown ────────
+// ─── v1.1.78: AI acceleration ───────────────────────────────────────────────
 
 export interface AiAcceleration {
   first_ai_commit_date: string;
@@ -2819,62 +2792,6 @@ export interface AiAcceleration {
 
 export async function getAiAcceleration(repoPath: string): Promise<AiAcceleration | null> {
   return safeInvoke<AiAcceleration | null>('get_ai_acceleration', { repoPath });
-}
-
-export interface LinkedRepo {
-  repo_path: string;
-  project_slug: string;
-}
-
-export interface FleetProjectStats {
-  project: SaasMakerProject;
-  repo_path: string | null;
-  linked: boolean;
-  w7d: WindowReport | null;
-  w30d: WindowReport | null;
-  w90d: WindowReport | null;
-  all_time: WindowReport | null;
-  acceleration: AiAcceleration | null;
-  error: string | null;
-}
-
-export interface FleetRollup {
-  projects: FleetProjectStats[];
-  unlinked_count: number;
-  linked_count: number;
-  error: string | null;
-}
-
-export interface WeeklyFleetMarkdown {
-  markdown: string;
-  project_count: number;
-  total_commits: number;
-  total_ai_commits: number;
-}
-
-export interface PushChangelogInput {
-  project_id: string;
-  title: string;
-  content: string;
-  version?: string | null;
-  type?: string | null;
-  published?: boolean | null;
-}
-
-export async function listLinkedRepos(): Promise<LinkedRepo[]> {
-  return safeInvoke<LinkedRepo[]>('list_linked_repos');
-}
-
-export async function getFleetRollup(): Promise<FleetRollup> {
-  return safeInvoke<FleetRollup>('get_fleet_rollup');
-}
-
-export async function generateWeeklyFleetMarkdown(): Promise<WeeklyFleetMarkdown> {
-  return safeInvoke<WeeklyFleetMarkdown>('generate_weekly_fleet_markdown');
-}
-
-export async function pushChangelogEntry(input: PushChangelogInput): Promise<unknown> {
-  return safeInvoke<unknown>('push_changelog_entry', { input });
 }
 
 // ─── v1.1.79: DORA metrics ──────────────────────────────────────────────────

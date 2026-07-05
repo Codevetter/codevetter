@@ -860,32 +860,10 @@ pub async fn set_repo_project_mapping(
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LinkedRepoEntry {
-    pub project_name: String,
-    pub project_slug: String,
-    pub repo_path: String,
-    pub origin_url: Option<String>,
-    /// True if we PATCHed this project's `git_url` onto the spine.
-    pub backfilled: bool,
-    /// Set if backfill was attempted but the PATCH failed.
-    pub backfill_error: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LinkAllResult {
-    /// Whether the SaaS Maker API exposes a `git_url` field at all. When false,
-    /// we only write local mappings and skip every backfill PATCH.
-    pub git_url_supported: bool,
-    pub scanned_repo_count: u32,
-    pub linked: Vec<LinkedRepoEntry>,
-    pub unmatched_repo_count: u32,
-    pub backfilled_count: u32,
-}
-
 /// Normalize an arbitrary name to an alphanumeric, lowercase key for fuzzy
 /// matching a local repo directory to a fleet project name.
 /// "CodeVetter" / "code-vetter" / "code_vetter" all → "codevetter".
+#[cfg(test)]
 fn name_key(s: &str) -> String {
     s.chars()
         .filter(|c| c.is_alphanumeric())
@@ -894,223 +872,13 @@ fn name_key(s: &str) -> String {
 }
 
 /// Best-effort repo name out of an origin URL: last path segment, `.git` dropped.
+#[cfg(test)]
 fn repo_name_from_origin(origin: &str) -> Option<String> {
     let norm = normalize_git_url(origin); // host/owner/repo, lowercased, no .git
-    norm.rsplit('/').next().map(|s| s.to_string()).filter(|s| !s.is_empty())
-}
-
-/// Claude Code stores session logs under a directory whose name is the working
-/// directory with every `/` replaced by `-`
-/// (e.g. `-Users-me-Desktop-fleet-CodeVetter`). `cc_projects.dir_path` points
-/// at that session-storage folder, not the real repo. Decoding is ambiguous
-/// because real directory names can themselves contain `-` (`email-manager`),
-/// so we resolve greedily against the filesystem: at each level take the
-/// longest run of tokens that forms an existing directory.
-fn decode_claude_session_path(encoded: &str) -> std::path::PathBuf {
-    let toks: Vec<&str> = encoded.trim_start_matches('-').split('-').collect();
-    let mut path = std::path::PathBuf::from("/");
-    let mut i = 0;
-    while i < toks.len() {
-        let mut matched = false;
-        let mut j = toks.len();
-        while j > i {
-            let cand = toks[i..j].join("-");
-            let trial = path.join(&cand);
-            if trial.is_dir() {
-                path = trial;
-                i = j;
-                matched = true;
-                break;
-            }
-            j -= 1;
-        }
-        if !matched {
-            path = path.join(toks[i]);
-            i += 1;
-        }
-    }
-    path
-}
-
-/// Map a `cc_projects.dir_path` to the real working directory it represents.
-/// Session-storage rows (basename begins with `-`) are decoded; anything else
-/// is treated as a literal path.
-fn resolve_real_dir(dir_path: &str) -> String {
-    let base = std::path::Path::new(dir_path)
-        .file_name()
-        .map(|s| s.to_string_lossy().to_string())
-        .unwrap_or_default();
-    if base.starts_with('-') {
-        decode_claude_session_path(&base)
-            .to_string_lossy()
-            .to_string()
-    } else {
-        dir_path.to_string()
-    }
-}
-
-/// Resolve the git toplevel for a directory (the dir may be a subdir of the
-/// repo). Returns None if the dir isn't inside a git repo.
-fn git_toplevel(dir: &str) -> Option<String> {
-    let out = std::process::Command::new("git")
-        .args(["rev-parse", "--show-toplevel"])
-        .current_dir(dir)
-        .output()
-        .ok()?;
-    if !out.status.success() {
-        return None;
-    }
-    let top = String::from_utf8_lossy(&out.stdout).trim().to_string();
-    if top.is_empty() {
-        None
-    } else {
-        Some(top)
-    }
-}
-
-/// Bulk-link every indexed local repo to its matching fleet project by name,
-/// persisting a local `repo_project_mapping` row for each match. When the spine
-/// exposes `git_url`, also backfills each matched repo's origin URL onto the
-/// project so future detection works by `git_url` fleet-wide.
-#[tauri::command]
-pub async fn link_all_repos_to_fleet(db: State<'_, DbState>) -> Result<LinkAllResult, String> {
-    let (token, _) = resolve_token(&db);
-    let token =
-        token.ok_or_else(|| format!("SaaS Maker not configured. Set {TOKEN_ENV} or use Settings."))?;
-    let base = resolve_base_url(&db);
-
-    // 1. Fetch projects (raw) so we can both parse the typed list and detect
-    //    whether the API surfaces a `git_url` field at all.
-    let url = format!("{base}/v1/projects");
-    let resp = client()?
-        .get(&url)
-        .bearer_auth(&token)
-        .send()
-        .await
-        .map_err(|e| format!("SaaS Maker GET {url} failed: {e}"))?;
-    let status = resp.status();
-    let body = resp.text().await.unwrap_or_default();
-    if !status.is_success() {
-        return Err(format!(
-            "SaaS Maker GET {url} returned {status}: {}",
-            body.chars().take(400).collect::<String>()
-        ));
-    }
-    let git_url_supported = body.contains("\"git_url\"");
-    let projects = parse_project_list(&body)?;
-
-    // 2. Collect the distinct git roots of every indexed directory.
-    let dirs: Vec<String> = {
-        let conn = db.0.lock().map_err(|e| e.to_string())?;
-        let mut stmt = conn
-            .prepare("SELECT DISTINCT dir_path FROM cc_projects")
-            .map_err(|e| e.to_string())?;
-        let rows = stmt
-            .query_map([], |r| r.get::<_, String>(0))
-            .map_err(|e| e.to_string())?;
-        rows.filter_map(|r| r.ok()).collect()
-    };
-    let mut roots: std::collections::HashSet<String> = std::collections::HashSet::new();
-    for d in &dirs {
-        let real = resolve_real_dir(d);
-        if let Some(top) = git_toplevel(&real) {
-            roots.insert(top);
-        }
-    }
-
-    // 3. Match each root to a fleet project by name, write the mapping, and
-    //    (when supported) backfill git_url.
-    let mut linked: Vec<LinkedRepoEntry> = Vec::new();
-    let mut unmatched = 0u32;
-    let scanned = roots.len() as u32;
-
-    for root in &roots {
-        let origin = read_origin_url(root).ok();
-        let base_name = std::path::Path::new(root)
-            .file_name()
-            .map(|s| s.to_string_lossy().to_string())
-            .unwrap_or_default();
-        let mut candidate_keys = vec![name_key(&base_name)];
-        if let Some(ref o) = origin {
-            if let Some(rn) = repo_name_from_origin(o) {
-                candidate_keys.push(name_key(&rn));
-            }
-        }
-        candidate_keys.retain(|k| !k.is_empty());
-
-        let matched = projects.iter().find(|p| {
-            let pk = name_key(&p.name);
-            !pk.is_empty() && candidate_keys.iter().any(|k| k == &pk)
-        });
-
-        let Some(project) = matched else {
-            unmatched += 1;
-            continue;
-        };
-        let Some(slug) = project.slug.clone() else {
-            // Can't persist a mapping without a slug.
-            unmatched += 1;
-            continue;
-        };
-
-        // 3a. Local mapping (idempotent).
-        {
-            let now = chrono::Utc::now().to_rfc3339();
-            let conn = db.0.lock().map_err(|e| e.to_string())?;
-            let _ = conn.execute(
-                "INSERT OR REPLACE INTO repo_project_mapping (repo_path, project_slug, set_at)
-                 VALUES (?1, ?2, ?3)",
-                params![root.as_str(), slug.as_str(), now],
-            );
-        }
-
-        // 3b. Backfill git_url onto the spine, if supported and we have an origin.
-        let mut backfilled = false;
-        let mut backfill_error: Option<String> = None;
-        if git_url_supported {
-            if let Some(ref o) = origin {
-                let purl = format!("{base}/v1/projects/{}", urlencode(&project.id));
-                match client()?
-                    .patch(&purl)
-                    .bearer_auth(&token)
-                    .json(&json!({ "git_url": o }))
-                    .send()
-                    .await
-                {
-                    Ok(r) if r.status().is_success() => backfilled = true,
-                    Ok(r) => {
-                        let st = r.status();
-                        let b = r.text().await.unwrap_or_default();
-                        backfill_error = Some(format!(
-                            "PATCH returned {st}: {}",
-                            b.chars().take(200).collect::<String>()
-                        ));
-                    }
-                    Err(e) => backfill_error = Some(format!("PATCH failed: {e}")),
-                }
-            }
-        }
-
-        linked.push(LinkedRepoEntry {
-            project_name: project.name.clone(),
-            project_slug: slug,
-            repo_path: root.clone(),
-            origin_url: origin,
-            backfilled,
-            backfill_error,
-        });
-    }
-
-    let backfilled_count = linked.iter().filter(|l| l.backfilled).count() as u32;
-    linked.sort_by(|a, b| a.project_name.to_lowercase().cmp(&b.project_name.to_lowercase()));
-
-    Ok(LinkAllResult {
-        git_url_supported,
-        scanned_repo_count: scanned,
-        linked,
-        unmatched_repo_count: unmatched,
-        backfilled_count,
-    })
+    norm.rsplit('/')
+        .next()
+        .map(|s| s.to_string())
+        .filter(|s| !s.is_empty())
 }
 
 // ─── Internal helpers (v1.1.76) ─────────────────────────────────────────────
@@ -1312,50 +1080,6 @@ fn read_origin_url(repo_path: &str) -> Result<String, String> {
     Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
 }
 
-/// Shared changelog helper called from both saas_maker.rs and fleet.rs.
-/// Hits `POST /v1/changelog/dashboard/{project_id}` with the user's Bearer
-/// token. Returns the created changelog entry as JSON for the UI to render.
-pub(crate) async fn push_changelog_helper(
-    db: &State<'_, DbState>,
-    input: crate::commands::fleet::PushChangelogInput,
-) -> Result<serde_json::Value, String> {
-    let (token, _) = resolve_token(db);
-    let token = token.ok_or_else(|| {
-        format!("SaaS Maker not configured. Set {TOKEN_ENV} or use Settings.")
-    })?;
-    let base = resolve_base_url(db);
-    let url = format!(
-        "{base}/v1/changelog/dashboard/{}",
-        urlencode(&input.project_id)
-    );
-    let payload = serde_json::json!({
-        "title": input.title,
-        "content": input.content,
-        "version": input.version,
-        "type": input.r#type.clone().unwrap_or_else(|| "improvement".into()),
-        "published": input.published.unwrap_or(false),
-        "source": "codevetter",
-        "agent": "codevetter-cli",
-    });
-    let resp = client()?
-        .post(&url)
-        .bearer_auth(&token)
-        .json(&payload)
-        .send()
-        .await
-        .map_err(|e| format!("POST {url} failed: {e}"))?;
-    let status = resp.status();
-    let body = resp.text().await.unwrap_or_default();
-    if !status.is_success() {
-        return Err(format!(
-            "POST {url} returned {status}: {}",
-            body.chars().take(400).collect::<String>()
-        ));
-    }
-    serde_json::from_str(&body)
-        .map_err(|e| format!("changelog response not JSON: {e}"))
-}
-
 fn lookup_local_repo_mapping(db: &State<'_, DbState>, repo_path: &str) -> Option<String> {
     let conn = db.0.lock().ok()?;
     conn.query_row(
@@ -1417,19 +1141,6 @@ mod tests {
         assert_eq!(name_key("code_vetter"), "codevetter");
         assert_eq!(name_key("reel-pipeline"), "reelpipeline");
         assert_eq!(name_key("   "), "");
-    }
-
-    #[test]
-    fn decode_claude_session_path_preserves_hyphenated_dirs() {
-        // Greedy filesystem-guided decode must keep a real hyphenated dir
-        // (`foo-bar`) intact rather than splitting it into `foo/bar`.
-        let base = std::env::temp_dir().join(format!("cvtest_{}", std::process::id()));
-        let nested = base.join("foo-bar").join("baz");
-        std::fs::create_dir_all(&nested).unwrap();
-        let encoded = nested.to_string_lossy().replace('/', "-");
-        let decoded = decode_claude_session_path(&encoded);
-        assert_eq!(decoded, nested);
-        let _ = std::fs::remove_dir_all(&base);
     }
 
     #[test]
