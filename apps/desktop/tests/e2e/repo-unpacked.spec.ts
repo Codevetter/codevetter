@@ -237,6 +237,24 @@ async function installRepoUnpackedMock(page: import('@playwright/test').Page) {
       },
     };
 
+    const currentSummary = {
+      id: 'report-1',
+      repo_path: inventory.repo_path,
+      repo_name: inventory.repo_name,
+      commit_sha: inventory.commit_sha,
+      status: 'completed',
+      error_message: null,
+      agent_used: 'claude',
+      model_used: null,
+      files_scanned: inventory.files_scanned,
+      files_skipped: inventory.files_skipped,
+      runtime_ms: 840,
+      cost_usd: null,
+      started_at: null,
+      completed_at: '2026-07-03T00:00:00Z',
+      created_at: '2026-07-03T00:00:00Z',
+    };
+
     const previousSummary = {
       id: 'report-prior',
       repo_path: inventory.repo_path,
@@ -383,13 +401,57 @@ async function installRepoUnpackedMock(page: import('@playwright/test').Page) {
         }
         if (cmd === 'set_preference') return undefined;
         if (cmd === 'detect_project_for_repo') return { project: null, source: 'none' };
+        if (cmd === 'list_repo_projects') {
+          return [
+            {
+              id: 'project-1',
+              repo_path: inventory.repo_path,
+              display_name: inventory.repo_name,
+              first_opened_at: '2026-01-01T00:00:00Z',
+              last_opened_at: '2026-07-03T00:00:00Z',
+              last_unpack_at: '2026-07-03T00:00:00Z',
+              last_intel_at: null,
+              unpack_snapshot_count: 2,
+              intel_snapshot_count: 0,
+            },
+          ];
+        }
+        if (cmd === 'register_repo_project') {
+          return {
+            id: 'project-1',
+            repo_path: inventory.repo_path,
+            display_name: inventory.repo_name,
+            first_opened_at: '2026-01-01T00:00:00Z',
+            last_opened_at: '2026-07-03T00:00:00Z',
+            last_unpack_at: '2026-07-03T00:00:00Z',
+            last_intel_at: null,
+            unpack_snapshot_count: 2,
+            intel_snapshot_count: 0,
+          };
+        }
         if (cmd === 'list_repo_unpack_reports') {
-          return { reports: args?.repoPath ? [previousSummary] : [] };
+          return { reports: args?.repoPath ? [currentSummary, previousSummary] : [] };
+        }
+        if (cmd === 'save_unpack_scan_snapshot') {
+          return {
+            report_id: 'report-scan',
+            status: 'scan_only',
+            inventory,
+            created_at: '2026-07-04T00:00:00Z',
+          };
         }
         if (cmd === 'scan_repo_inventory') return inventory;
-        if (cmd === 'generate_unpack_report') {
+        if (cmd === 'ask_unpack_report') {
           return {
-            report_id: 'report-1',
+            report_id: args?.reportId ?? 'report-scan',
+            question: args?.question ?? 'What are the risks?',
+            answer: 'Auth paths live in src-tauri and apps/desktop/src/lib.',
+            agent: 'claude',
+          };
+        }
+        if (cmd === 'generate_unpack_report' || cmd === 'synthesize_unpack_report') {
+          return {
+            report_id: args?.reportId ?? 'report-1',
             status: 'completed',
             runtime_ms: 840,
             report,
@@ -481,9 +543,10 @@ test.describe('Repo Unpacked page', () => {
     await navigateTo(page, '/unpack');
     await waitForNoSpinners(page);
 
-    await page.getByPlaceholder('/Users/me/code/my-repo').fill('/tmp/world-class-repo');
-    await page.getByRole('button', { name: 'Generate Brief' }).click();
-
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /world-class-repo/i })
+      .click();
     await expect(page.getByRole('button', { name: /QA posture/i })).toBeVisible();
     await page.getByRole('button', { name: /QA posture/i }).click();
     await expect(page.getByRole('dialog')).toContainText('Evidence quality');
@@ -498,6 +561,10 @@ test.describe('Repo Unpacked page', () => {
     await expect(page.getByRole('dialog')).toContainText('Repo health is heuristic scoring');
     await page.keyboard.press('Escape');
 
+    await page
+      .getByRole('navigation', { name: 'Unpack sections' })
+      .getByRole('button', { name: 'Delta' })
+      .click();
     await expect(page.getByText('Changed since previous unpack')).toBeVisible();
     await expect(page.getByText('Outcome trend', { exact: true })).toBeVisible();
     await expect(page.getByText(/regressing · medium/i)).toBeVisible();

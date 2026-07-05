@@ -1100,6 +1100,23 @@ pub async fn get_review(db: State<'_, DbState>, id: String) -> Result<Value, Str
     }))
 }
 
+#[tauri::command]
+pub async fn delete_review(db: State<'_, DbState>, id: String) -> Result<Value, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let deleted = crate::db::with_busy_retry(
+        || {
+            conn.execute(
+                "DELETE FROM local_reviews WHERE id = ?1",
+                rusqlite::params![id],
+            )
+        },
+        5,
+    )
+    .map_err(|e| e.to_string())?;
+
+    Ok(json!({ "deleted": deleted > 0 }))
+}
+
 /// Record (or clear) the owner's usefulness verdict on a finding.
 /// `disposition` must be `"accepted"`, `"dismissed"`, or `None` to clear
 /// back to unreviewed. Returns `{ "updated": <rows> }`.
@@ -2164,15 +2181,123 @@ pub async fn revert_diff_hunk(
     }))
 }
 
+pub(crate) fn resolve_agent_cli_path(agent: &str) -> String {
+    match agent {
+        "cursor" => {
+            let cursor_agent = resolve_cli_path("cursor-agent");
+            if std::path::Path::new(&cursor_agent).is_file() {
+                return cursor_agent;
+            }
+            resolve_cli_path("agent")
+        }
+        "command-code" => {
+            for name in ["cmd", "command-code", "commandcode", "cmdc"] {
+                let candidate = resolve_cli_path(name);
+                if std::path::Path::new(&candidate).is_file() {
+                    return candidate;
+                }
+            }
+            resolve_cli_path("cmd")
+        }
+        "codex" => resolve_cli_path("codex"),
+        "grok" => resolve_cli_path("grok"),
+        "gemini" => resolve_cli_path("gemini"),
+        _ => resolve_cli_path("claude"),
+    }
+}
+
+pub(crate) fn agent_cli_label(agent: &str) -> &'static str {
+    match agent {
+        "gemini" => "gemini",
+        "codex" => "codex",
+        "grok" => "grok",
+        "cursor" => "cursor",
+        "command-code" => "cmd",
+        _ => "claude",
+    }
+}
+
+pub(crate) fn unwrap_agent_envelope(agent: &str, raw: &str) -> String {
+    if agent != "grok" && agent != "cursor" {
+        return raw.to_string();
+    }
+    if let Ok(parsed) = serde_json::from_str::<Value>(raw) {
+        if let Some(text) = parsed.get("text").and_then(|v| v.as_str()) {
+            return text.to_string();
+        }
+        if let Some(result) = parsed.get("result").and_then(|v| v.as_str()) {
+            return result.to_string();
+        }
+    }
+    raw.to_string()
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CommandCodeModelRow {
+    pub id: String,
+    pub description: String,
+    pub group: String,
+}
+
+fn parse_command_code_models_output(raw: &str) -> Vec<CommandCodeModelRow> {
+    let known_groups = ["Open Source", "Anthropic", "OpenAI", "Google", "Sakana"];
+    let mut current_group = "Other".to_string();
+    let mut models = Vec::new();
+
+    for line in raw.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if trimmed.starts_with("Available models")
+            || trimmed.starts_with("Pass the full id")
+            || trimmed.starts_with("Docs:")
+        {
+            continue;
+        }
+        if known_groups.contains(&trimmed) {
+            current_group = trimmed.to_string();
+            continue;
+        }
+        let Some((id, description)) = trimmed.split_once("  ") else {
+            continue;
+        };
+        let id = id.trim();
+        let description = description.trim();
+        if id.is_empty() {
+            continue;
+        }
+        models.push(CommandCodeModelRow {
+            id: id.to_string(),
+            description: description.to_string(),
+            group: current_group.clone(),
+        });
+    }
+
+    models
+}
+
+/// List models exposed by the Command Code CLI (`cmd --list-models`).
+#[tauri::command]
+pub async fn list_command_code_models() -> Vec<CommandCodeModelRow> {
+    tokio::task::spawn_blocking(|| {
+        let cli_path = resolve_agent_cli_path("command-code");
+        let output = match StdCommand::new(&cli_path).args(["--list-models"]).output() {
+            Ok(output) if output.status.success() => output,
+            _ => return Vec::new(),
+        };
+        let raw = String::from_utf8_lossy(&output.stdout);
+        parse_command_code_models_output(&raw)
+    })
+    .await
+    .unwrap_or_default()
+}
+
 /// Public re-export for `unpack.rs` (and any future module) — same logic, no
 /// duplication.
 pub fn extract_json_from_output_pub(output: &str) -> Option<String> {
     extract_json_from_output(output)
-}
-
-/// Public re-export of `resolve_cli_path` for sibling command modules.
-pub fn resolve_cli_path_pub(name: &str) -> String {
-    resolve_cli_path(name)
 }
 
 fn extract_json_from_output(output: &str) -> Option<String> {
@@ -2393,6 +2518,17 @@ mod tests {
         assert!(rendered.contains("Changed-file graph neighborhood"));
         assert!(rendered.contains("ui-change-needs-browser-proof"));
         assert!(rendered.contains("verify_ui_route_change"));
+    }
+
+    #[test]
+    fn parse_command_code_models_output_groups_models() {
+        let raw = "Available models  ·  35 models\n\nOpen Source\n\ndeepseek/deepseek-v4-flash           fast hybrid-attention reasoning (default)\n\nAnthropic\n\nclaude-sonnet-5                      best combo of speed & intelligence (recommended)\n";
+        let models = parse_command_code_models_output(raw);
+        assert_eq!(models.len(), 2);
+        assert_eq!(models[0].id, "deepseek/deepseek-v4-flash");
+        assert_eq!(models[0].group, "Open Source");
+        assert_eq!(models[1].id, "claude-sonnet-5");
+        assert_eq!(models[1].group, "Anthropic");
     }
 }
 

@@ -139,8 +139,47 @@ async function installIntelMock(page: import('@playwright/test').Page) {
         }
         if (cmd === 'set_preference') return undefined;
         if (cmd === 'detect_project_for_repo') return { project: null, source: 'none' };
+        if (cmd === 'list_repo_projects') {
+          return [
+            {
+              id: 'project-1',
+              repo_path: '/tmp/world-class-repo',
+              display_name: 'world-class-repo',
+              first_opened_at: '2026-01-01T00:00:00Z',
+              last_opened_at: '2026-07-03T00:00:00Z',
+              last_unpack_at: null,
+              last_intel_at: null,
+              unpack_snapshot_count: 0,
+              intel_snapshot_count: 0,
+            },
+          ];
+        }
+        if (cmd === 'register_repo_project') {
+          return {
+            id: 'project-1',
+            repo_path: '/tmp/world-class-repo',
+            display_name: 'world-class-repo',
+            first_opened_at: '2026-01-01T00:00:00Z',
+            last_opened_at: '2026-07-03T00:00:00Z',
+            last_unpack_at: null,
+            last_intel_at: null,
+            unpack_snapshot_count: 0,
+            intel_snapshot_count: 0,
+          };
+        }
+        if (cmd === 'list_repo_intel_reports') return [];
         if (cmd === 'attribute_repo_commits') return report;
         if (cmd === 'get_dora_metrics') return dora;
+        if (cmd === 'save_intel_snapshot') {
+          return {
+            report_id: 'intel-1',
+            status: 'completed',
+            report,
+            dora,
+            created_at: '2026-07-03T00:00:00Z',
+            window_days: 90,
+          };
+        }
         throw new Error(`unhandled mocked command: ${cmd}`);
       },
       transformCallback: () => 1,
@@ -162,33 +201,56 @@ test.describe('Intel page', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('/intel renders the Repo Attribution card', async ({ page }) => {
+  test('/intel redirects to Repo Intel tab', async ({ page }) => {
+    await installIntelMock(page);
     await navigateTo(page, '/intel');
     await waitForNoSpinners(page);
 
-    await expect(page.locator('h1', { hasText: 'Engineering Intelligence' })).toBeVisible();
-    await expect(page.getByText('Repo Attribution')).toBeVisible();
+    await expect(page).toHaveURL(/\/unpack\?section=intel/);
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /world-class-repo/i })
+      .click();
+    await expect(page.getByRole('button', { name: 'Intel', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Refresh' }).first()).toBeVisible();
+    await expect(page.getByText('No Intel snapshot yet')).toBeVisible();
+  });
+
+  test('/unpack?section=intel shows the Intel tab and Refresh control', async ({ page }) => {
+    await installIntelMock(page);
+    await navigateTo(page, '/unpack?section=intel');
+    await waitForNoSpinners(page);
+
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /world-class-repo/i })
+      .click();
+    await expect(page.getByRole('heading', { name: 'world-class-repo' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Intel', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Refresh' }).first()).toBeVisible();
+    await expect(page.getByText('No Intel snapshot yet')).toBeVisible();
 
     // Per-Tool LLM card was removed in v1.1.77.
     await expect(page.getByText('Per-Tool LLM Usage')).toHaveCount(0);
-
-    // Run button is disabled until a path is entered.
-    const runButton = page.getByRole('button', { name: 'Run' });
-    await expect(runButton).toBeDisabled();
   });
 
-  test('typing a repo path enables Run', async ({ page }) => {
-    await navigateTo(page, '/intel');
+  test('Refresh stores and renders an Intel snapshot', async ({ page }) => {
+    await installIntelMock(page);
+    await navigateTo(page, '/unpack?section=intel');
     await waitForNoSpinners(page);
 
-    const input = page.getByPlaceholder('/Users/me/code/my-repo');
-    await input.fill('/tmp/some-repo');
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /world-class-repo/i })
+      .click();
+    await page.getByRole('button', { name: 'Refresh' }).first().click();
 
-    await expect(page.getByRole('button', { name: 'Run' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: /AI share/ })).toBeVisible();
   });
 
   test('tool window picker is gone', async ({ page }) => {
-    await navigateTo(page, '/intel');
+    await installIntelMock(page);
+    await navigateTo(page, '/unpack?section=intel');
     await waitForNoSpinners(page);
 
     // v1.1.77 removed the per-tool LLM card and its window-range picker.
@@ -202,11 +264,14 @@ test.describe('Intel page', () => {
       origin: 'http://localhost:1420',
     });
     await installIntelMock(page);
-    await navigateTo(page, '/intel');
+    await navigateTo(page, '/unpack?section=intel');
     await waitForNoSpinners(page);
 
-    await page.getByPlaceholder('/Users/me/code/my-repo').fill('/tmp/world-class-repo');
-    await page.getByRole('button', { name: 'Run' }).click();
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /world-class-repo/i })
+      .click();
+    await page.getByRole('button', { name: 'Refresh' }).first().click();
 
     await expect(page.getByRole('button', { name: /AI share/ })).toBeVisible();
     await page.getByRole('button', { name: /AI share/ }).click();

@@ -191,6 +191,52 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         [],
     );
 
+    // v1.1.97+: Repo workspace — sidebar project list + Intel snapshot history.
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS repo_projects (
+            id               TEXT PRIMARY KEY,
+            repo_path        TEXT UNIQUE NOT NULL,
+            display_name     TEXT NOT NULL,
+            first_opened_at  TEXT NOT NULL,
+            last_opened_at   TEXT NOT NULL,
+            last_unpack_at   TEXT,
+            last_intel_at    TEXT,
+            user_added       INTEGER NOT NULL DEFAULT 0
+        )",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE repo_projects ADD COLUMN user_added INTEGER NOT NULL DEFAULT 0",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_repo_projects_last_opened
+            ON repo_projects(last_opened_at DESC)",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS repo_intel_reports (
+            id            TEXT PRIMARY KEY,
+            repo_path     TEXT NOT NULL,
+            repo_name     TEXT NOT NULL,
+            commit_sha    TEXT,
+            status        TEXT NOT NULL DEFAULT 'completed',
+            error_message TEXT,
+            window_days   INTEGER NOT NULL DEFAULT 90,
+            report_json   TEXT NOT NULL,
+            dora_json     TEXT,
+            started_at    TEXT,
+            completed_at  TEXT,
+            created_at    TEXT NOT NULL
+        )",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_repo_intel_repo_path
+            ON repo_intel_reports(repo_path, created_at DESC)",
+        [],
+    );
+
     Ok(())
 }
 
@@ -942,12 +988,16 @@ mod tests {
 
     fn day_counts(conn: &Connection, session_id: &str) -> Vec<(String, i64)> {
         let mut stmt = conn
-            .prepare("SELECT day, msg_count FROM cc_session_days WHERE session_id = ?1 ORDER BY day")
+            .prepare(
+                "SELECT day, msg_count FROM cc_session_days WHERE session_id = ?1 ORDER BY day",
+            )
             .expect("prepare");
-        stmt.query_map(rusqlite::params![session_id], |r| Ok((r.get(0)?, r.get(1)?)))
-            .expect("query")
-            .collect::<Result<Vec<_>, _>>()
-            .expect("rows")
+        stmt.query_map(rusqlite::params![session_id], |r| {
+            Ok((r.get(0)?, r.get(1)?))
+        })
+        .expect("query")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("rows")
     }
 
     #[test]
@@ -1013,6 +1063,9 @@ mod tests {
 
         // message_count=0 clamps to 1; the single day keeps weight 1 (>0 so
         // proration still attributes the session fully to its only day).
-        assert_eq!(day_counts(&conn, "zero"), vec![("2026-05-12".to_string(), 1)]);
+        assert_eq!(
+            day_counts(&conn, "zero"),
+            vec![("2026-05-12".to_string(), 1)]
+        );
     }
 }

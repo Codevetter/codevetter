@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import SaasMakerConfigPanel from '@/components/SaasMakerConfigPanel';
 import { Button } from '@/components/ui/button';
@@ -23,8 +24,10 @@ import {
   syncGitHubToken,
 } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
+import { isSettingsSection, type SettingsSection } from '@/lib/settings-sections';
 import AgentMemories from '@/pages/AgentMemories';
 import Ops from '@/pages/Ops';
+import Rubrics from '@/pages/Rubrics';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -495,16 +498,7 @@ function LinearConnectionPanel() {
 
 // ─── Categories ──────────────────────────────────────────────────────────────
 
-type Category =
-  | 'general'
-  | 'appearance'
-  | 'integrations'
-  | 'agents'
-  | 'notifications'
-  | 'usage'
-  | 'ops'
-  | 'memories'
-  | 'about';
+type Category = SettingsSection;
 
 interface CategoryDef {
   key: Category;
@@ -519,6 +513,7 @@ const categories: CategoryDef[] = [
   { key: 'agents', label: 'Agents', icon: '\u2699' },
   { key: 'notifications', label: 'Notifications', icon: '\u2709' },
   { key: 'usage', label: 'Usage', icon: '\u2261' },
+  { key: 'rubrics', label: 'Rubrics', icon: '\u2713' },
   { key: 'ops', label: 'Ops', icon: '\u26a1' },
   { key: 'memories', label: 'Memories', icon: '\u232c' },
   { key: 'about', label: 'About', icon: '\u2139' },
@@ -527,7 +522,25 @@ const categories: CategoryDef[] = [
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function Settings() {
-  const [activeCategory, setActiveCategory] = useState<Category>('general');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sectionParam = searchParams.get('section');
+  const [activeCategory, setActiveCategory] = useState<Category>(
+    isSettingsSection(sectionParam) ? sectionParam : 'general'
+  );
+
+  useEffect(() => {
+    if (isSettingsSection(sectionParam) && sectionParam !== activeCategory) {
+      setActiveCategory(sectionParam);
+    }
+  }, [sectionParam, activeCategory]);
+
+  const selectCategory = useCallback(
+    (key: Category) => {
+      setActiveCategory(key);
+      setSearchParams({ section: key }, { replace: true });
+    },
+    [setSearchParams]
+  );
 
   // General
   const [defaultTone, setDefaultTone] = usePref('review_tone', 'thorough');
@@ -1007,8 +1020,11 @@ export default function Settings() {
           </div>
         );
 
+      case 'rubrics':
+        return <Rubrics embedded />;
+
       // Ops + Memories were de-cluttered out of the top nav; they render
-      // full-bleed here (the wrapper drops max-w-xl/p-8 for these two).
+      // full-bleed here (the wrapper drops max-w-xl/p-8 for these panels).
       case 'ops':
         return <Ops />;
 
@@ -1181,7 +1197,7 @@ export default function Settings() {
               <Button
                 key={cat.key}
                 variant="ghost"
-                onClick={() => setActiveCategory(cat.key)}
+                onClick={() => selectCategory(cat.key)}
                 className={cn(
                   'justify-start gap-2.5 h-auto px-2.5 py-2 text-[13px] font-medium',
                   active
@@ -1203,7 +1219,7 @@ export default function Settings() {
 
       {/* Content. Ops + Memories embed full pages, so they render full-bleed
           without the narrow max-w-xl / p-8 chrome the settings panels use. */}
-      {activeCategory === 'ops' || activeCategory === 'memories' ? (
+      {activeCategory === 'ops' || activeCategory === 'memories' || activeCategory === 'rubrics' ? (
         <div className="flex-1 min-w-0 overflow-y-auto">{renderContent()}</div>
       ) : (
         <div className="flex-1 min-w-0 overflow-y-auto p-8">

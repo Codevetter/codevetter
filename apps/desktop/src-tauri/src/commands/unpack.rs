@@ -3,7 +3,7 @@
 //! Two-pass pipeline:
 //!   1. Deterministic scanner builds a repo inventory (entrypoints, manifests,
 //!      stack, language counts, top dirs, README/docs).
-//!   2. Synthesis prompt is sent to the configured CLI agent (claude/gemini).
+//!   2. Synthesis prompt is sent to the configured CLI agent (claude/gemini/codex/grok/cursor).
 //!      Returns five sections — system_map, feature_catalog, behavior_traces,
 //!      risk_map, agent_handoff — every claim is required to cite at least
 //!      one source file path that exists in the inventory.
@@ -11,473 +11,67 @@
 //! Result rows live in `repo_unpacked_reports`. Inventory is stored alongside
 //! the synthesised brief so the UI can re-render without re-paying LLM cost.
 
+use crate::commands::cli_stream::{run_cli_prompt_streaming, CliStreamContext};
+use crate::commands::unpack_analysis::{
+    build_history_brief, build_history_brief_with_previews, build_repo_graph_with_previews,
+    build_repo_health, build_repo_health_with_previews, build_source_preview_cache,
+};
+use crate::commands::unpack_export::{render_agent_context_sidecar, render_html, render_markdown};
+use crate::commands::unpack_inventory::{
+    build_workspace_units, infer_entrypoints, infer_stack, language_for_path,
+    manifest_candidate_paths, parse_manifest, read_first_bytes,
+};
+use crate::commands::unpack_outcome::build_unpack_outcome_evidence;
+use crate::commands::unpack_qa::build_qa_readiness;
+use crate::commands::unpack_scan::{
+    build_dir_tree_preview, parallel_walk_repo_with_progress, MAX_FILES,
+};
+use crate::commands::unpack_snapshot::build_snapshot_commit_range;
 use crate::db::queries;
 use crate::DbState;
-use serde::{Deserialize, Serialize};
 #[allow(unused_imports)]
 use serde_json::{json, Value};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command as StdCommand;
-use tauri::State;
+use tauri::{AppHandle, Emitter, State};
 
-const ALWAYS_SKIP: &[&str] = &[
-    ".git",
-    "node_modules",
-    "target",
-    "__pycache__",
-    ".next",
-    ".turbo",
-    ".vercel",
-    ".cache",
-    "dist",
-    "build",
-    "out",
-    "coverage",
-    ".pnpm-store",
-    "vendor",
-    ".venv",
-    "venv",
-    ".gradle",
-    ".idea",
-    ".vscode",
-    ".DS_Store",
-];
-
-const BINARY_EXTS: &[&str] = &[
-    "png", "jpg", "jpeg", "gif", "webp", "ico", "icns", "bmp", "tiff", "mp4", "mov", "webm", "mp3",
-    "wav", "ogg", "flac", "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "pdf", "psd", "ai",
-    "sketch", "fig", "exe", "dll", "so", "dylib", "bin", "wasm", "o", "a", "lib", "ttf", "otf",
-    "woff", "woff2", "eot", "lock", "min.js", "min.css",
-];
-
-const MAX_FILES: usize = 4000;
-const MAX_FILE_BYTES: u64 = 1_000_000; // 1 MB — skip generated/blob-ish files
 const README_PREVIEW_BYTES: usize = 8 * 1024;
-const MAX_HEALTH_FILES_ANALYZED: usize = 500;
+/// Full file list stays in SQLite for synthesis; IPC to the webview is capped.
+const CLIENT_ALL_FILES_LIMIT: usize = 512;
 
 // ─── Public types (mirrored on the TS side) ─────────────────────────────────
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct LanguageCount {
-    pub language: String,
-    pub files: usize,
-    pub bytes: u64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ManifestSummary {
-    pub path: String,
-    pub kind: String, // package.json | cargo.toml | pyproject.toml | go.mod | gemfile | composer.json | tauri.conf.json | other
-    pub name: Option<String>,
-    pub version: Option<String>,
-    pub dependencies: Vec<String>,
-    pub scripts: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct EntrypointHint {
-    pub path: String,
-    pub kind: String, // bin | server | desktop | web | script | config | docs
-    pub reason: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct DocFile {
-    pub path: String,
-    pub bytes: u64,
-    pub preview: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct DirSummary {
-    pub path: String,
-    pub file_count: usize,
-    pub bytes: u64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct QaReadinessSignal {
-    pub id: String,
-    pub label: String,
-    pub status: String, // ready | partial | missing
-    pub detail: String,
-    pub sources: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct QaSuggestedFlow {
-    pub id: String,
-    pub route: String,
-    pub goal: String,
-    pub sources: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct QaReadiness {
-    pub score: i64,
-    pub status: String, // ready | partial | missing
-    pub summary: String,
-    pub signals: Vec<QaReadinessSignal>,
-    pub suggested_flows: Vec<QaSuggestedFlow>,
-}
-
-impl Default for QaReadiness {
-    fn default() -> Self {
-        Self {
-            score: 0,
-            status: "missing".to_string(),
-            summary: "No synthetic QA readiness signals were captured for this inventory."
-                .to_string(),
-            signals: Vec::new(),
-            suggested_flows: Vec::new(),
-        }
-    }
-}
-
-fn default_qa_readiness() -> QaReadiness {
-    QaReadiness::default()
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoGraphNode {
-    pub id: String,
-    pub kind: String,
-    pub label: String,
-    pub path: Option<String>,
-    pub detail: Option<String>,
-    pub sources: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoGraphEdge {
-    pub from: String,
-    pub to: String,
-    pub kind: String,
-    pub evidence: String,
-    pub sources: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoGraph {
-    pub schema_version: i64,
-    pub nodes: Vec<RepoGraphNode>,
-    pub edges: Vec<RepoGraphEdge>,
-    pub truncated: bool,
-}
-
-impl Default for RepoGraph {
-    fn default() -> Self {
-        Self {
-            schema_version: 1,
-            nodes: Vec::new(),
-            edges: Vec::new(),
-            truncated: false,
-        }
-    }
-}
-
-fn default_repo_graph() -> RepoGraph {
-    RepoGraph::default()
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoGraphImportResult {
-    pub graph: RepoGraph,
-    pub source_kind: String,
-    pub node_count: usize,
-    pub edge_count: usize,
-    pub warnings: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoHistoryCommit {
-    pub sha: String,
-    pub date: Option<String>,
-    pub subject: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoHistoryDecision {
-    pub marker: String,
-    pub text: String,
-    pub source: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoHistoryTestHint {
-    pub path: String,
-    pub reason: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoHistoryBrief {
-    pub schema_version: i64,
-    pub summary: String,
-    pub recent_commits: Vec<RepoHistoryCommit>,
-    pub decisions: Vec<RepoHistoryDecision>,
-    pub test_hints: Vec<RepoHistoryTestHint>,
-    pub sources: Vec<String>,
-    pub truncated: bool,
-}
-
-impl Default for RepoHistoryBrief {
-    fn default() -> Self {
-        Self {
-            schema_version: 1,
-            summary: "No local history brief was captured for this inventory.".to_string(),
-            recent_commits: Vec::new(),
-            decisions: Vec::new(),
-            test_hints: Vec::new(),
-            sources: Vec::new(),
-            truncated: false,
-        }
-    }
-}
-
-fn default_history_brief() -> RepoHistoryBrief {
-    RepoHistoryBrief::default()
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoHealthFinding {
-    pub id: String,
-    pub label: String,
-    pub dimension: String, // defect | maintainability | performance
-    pub severity: String,  // low | medium | high
-    pub detail: String,
-    pub sources: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoHealthFile {
-    pub path: String,
-    pub score: f64,
-    pub bucket: String, // healthy | watch | hotspot
-    pub lines: usize,
-    pub bytes: u64,
-    pub churn: usize,
-    pub has_test_signal: bool,
-    pub findings: Vec<RepoHealthFinding>,
-    pub refactoring_targets: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoHealth {
-    pub schema_version: i64,
-    pub summary: String,
-    pub average_score: f64,
-    pub hotspot_count: usize,
-    pub files_analyzed: usize,
-    pub files_with_test_signal: usize,
-    pub top_files: Vec<RepoHealthFile>,
-    pub truncated: bool,
-}
-
-impl Default for RepoHealth {
-    fn default() -> Self {
-        Self {
-            schema_version: 1,
-            summary: "No deterministic repo-health signals were captured for this inventory."
-                .to_string(),
-            average_score: 10.0,
-            hotspot_count: 0,
-            files_analyzed: 0,
-            files_with_test_signal: 0,
-            top_files: Vec::new(),
-            truncated: false,
-        }
-    }
-}
-
-fn default_repo_health() -> RepoHealth {
-    RepoHealth::default()
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RepoInventory {
-    pub repo_path: String,
-    pub repo_name: String,
-    pub commit_sha: Option<String>,
-    pub branch: Option<String>,
-    pub remote_url: Option<String>,
-    pub files_scanned: usize,
-    pub files_skipped: usize,
-    pub bytes_scanned: u64,
-    pub max_files_hit: bool,
-    pub languages: Vec<LanguageCount>,
-    pub manifests: Vec<ManifestSummary>,
-    pub entrypoints: Vec<EntrypointHint>,
-    pub top_level_dirs: Vec<DirSummary>,
-    pub docs: Vec<DocFile>,
-    pub config_files: Vec<String>,
-    pub stack_tags: Vec<String>,
-    #[serde(default = "default_qa_readiness")]
-    pub qa_readiness: QaReadiness,
-    #[serde(default = "default_repo_graph")]
-    pub repo_graph: RepoGraph,
-    #[serde(default = "default_history_brief")]
-    pub history_brief: RepoHistoryBrief,
-    #[serde(default = "default_repo_health")]
-    pub repo_health: RepoHealth,
-    pub all_files: Vec<String>,
-    pub ignored_dirs: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ReportClaim {
-    pub claim: String,
-    pub sources: Vec<String>, // file paths (optionally with #Lstart-end)
-    pub kind: Option<String>, // "evidence" | "inference"
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ReportSection {
-    pub title: String,
-    pub summary: String,
-    pub claims: Vec<ReportClaim>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SnapshotChangedFile {
-    pub path: String,
-    pub additions: u64,
-    pub deletions: u64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SnapshotCommitEvidence {
-    pub sha: String,
-    pub date: String,
-    pub author: String,
-    pub subject: String,
-    pub additions: u64,
-    pub deletions: u64,
-    pub files: Vec<SnapshotChangedFile>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SnapshotCommitRange {
-    pub base_commit: String,
-    pub head_commit: String,
-    pub commit_count: u64,
-    pub commits: Vec<SnapshotCommitEvidence>,
-    pub truncated: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeReviewEvidence {
-    pub id: String,
-    pub review_type: Option<String>,
-    pub status: String,
-    pub review_action: Option<String>,
-    pub findings_count: Option<i64>,
-    pub score_composite: Option<f64>,
-    pub created_at: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeQaEvidence {
-    pub id: String,
-    pub review_id: Option<String>,
-    pub loop_id: String,
-    pub runner_type: String,
-    pub route: Option<String>,
-    pub goal: Option<String>,
-    pub pass: bool,
-    pub duration_ms: i64,
-    pub console_errors: i64,
-    pub error: Option<String>,
-    pub created_at: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeProcedureEvidence {
-    pub id: String,
-    pub review_id: String,
-    pub step_id: String,
-    pub status: String,
-    pub source: String,
-    pub summary: String,
-    pub artifact: Option<String>,
-    pub created_at: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeFindingEvidence {
-    pub file_path: Option<String>,
-    pub title: Option<String>,
-    pub severity: Option<String>,
-    pub created_at: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeTrustAction {
-    pub priority: String,
-    pub label: String,
-    pub detail: String,
-    pub source_kind: String,
-    pub source_id: Option<String>,
-    pub source_path: Option<String>,
-    pub command: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeTrendWindow {
-    pub label: String,
-    pub proof_count: usize,
-    pub failure_count: usize,
-    pub finding_count: usize,
-    pub review_failure_count: usize,
-    pub oldest_at: Option<String>,
-    pub newest_at: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeTrend {
-    pub direction: String,
-    pub confidence: String,
-    pub total_signals: usize,
-    pub recent: UnpackOutcomeTrendWindow,
-    pub prior: UnpackOutcomeTrendWindow,
-    pub summary: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UnpackOutcomeEvidence {
-    pub repo_path: String,
-    pub reviews: Vec<UnpackOutcomeReviewEvidence>,
-    pub qa_runs: Vec<UnpackOutcomeQaEvidence>,
-    pub procedure_events: Vec<UnpackOutcomeProcedureEvidence>,
-    pub recurring_findings: Vec<UnpackOutcomeFindingEvidence>,
-    pub review_count: usize,
-    pub failed_review_count: usize,
-    pub qa_pass_count: usize,
-    pub qa_fail_count: usize,
-    pub procedure_pass_count: usize,
-    pub procedure_fail_count: usize,
-    pub calibration: String,
-    pub summary: String,
-    pub trend: UnpackOutcomeTrend,
-    pub trust_actions: Vec<UnpackOutcomeTrustAction>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct UnpackReport {
-    pub system_map: Option<ReportSection>,
-    pub feature_catalog: Option<ReportSection>,
-    pub data_flow: Option<ReportSection>,
-    pub behavior_traces: Option<ReportSection>,
-    pub testing_signals: Option<ReportSection>,
-    pub risk_map: Option<ReportSection>,
-    pub extension_points: Option<ReportSection>,
-    pub agent_handoff: Option<ReportSection>,
-    pub agent_prompt: Option<String>,
-    pub overview: Option<String>,
-}
+pub use crate::commands::unpack_types::*;
 
 // ─── Tauri commands ─────────────────────────────────────────────────────────
+
+fn emit_unpack_progress(
+    app: &AppHandle,
+    report_id: &str,
+    repo_path: &str,
+    phase: &str,
+    detail: Option<&str>,
+) {
+    let _ = app.emit(
+        "unpack-progress",
+        json!({
+            "report_id": report_id,
+            "repo_path": repo_path,
+            "phase": phase,
+            "detail": detail,
+        }),
+    );
+}
+
+/// Shrink inventory payloads crossing the Tauri IPC boundary (React chokes on 4k paths).
+pub fn trim_inventory_for_client(mut inv: RepoInventory) -> RepoInventory {
+    inv.all_files_capped = inv.files_scanned > CLIENT_ALL_FILES_LIMIT;
+    // Tree preview is built in Rust; never ship the raw file list to the webview.
+    inv.all_files.clear();
+    inv
+}
 
 #[tauri::command]
 pub async fn scan_repo_inventory(repo_path: String) -> Result<Value, String> {
@@ -486,17 +80,32 @@ pub async fn scan_repo_inventory(repo_path: String) -> Result<Value, String> {
     let inv = tokio::task::spawn_blocking(move || build_inventory(&repo_path))
         .await
         .map_err(|e| format!("inventory scan task join error: {e}"))??;
-    Ok(serde_json::to_value(&inv).map_err(|e| e.to_string())?)
+    Ok(serde_json::to_value(&trim_inventory_for_client(inv)).map_err(|e| e.to_string())?)
 }
 
 #[tauri::command]
 pub async fn generate_unpack_report(
+    app: AppHandle,
     db: State<'_, DbState>,
     repo_path: String,
     agent: Option<String>,
+    model: Option<String>,
 ) -> Result<Value, String> {
     let agent = agent.unwrap_or_else(|| "claude".to_string());
+    let model_trimmed = model
+        .as_deref()
+        .map(str::trim)
+        .filter(|m| !m.is_empty())
+        .map(str::to_string);
     let started = std::time::Instant::now();
+    let report_id = uuid::Uuid::new_v4().to_string();
+    emit_unpack_progress(
+        &app,
+        &report_id,
+        &repo_path,
+        "scanning",
+        Some("Walking repository files"),
+    );
 
     // Run the synchronous repo scan off the async runtime thread; the DB writes
     // below stay on this thread since the connection guard isn't Send.
@@ -505,145 +114,256 @@ pub async fn generate_unpack_report(
         .await
         .map_err(|e| format!("inventory scan task join error: {e}"))??;
     let inventory_json = serde_json::to_string(&inventory).map_err(|e| e.to_string())?;
-
-    let report_id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().to_rfc3339();
 
     {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
-        conn.execute(
-            "INSERT INTO repo_unpacked_reports
-             (id, repo_path, repo_name, commit_sha, status, agent_used,
-              inventory_json, files_scanned, files_skipped, bytes_scanned,
-              started_at, created_at)
-             VALUES (?1, ?2, ?3, ?4, 'running', ?5, ?6, ?7, ?8, ?9, ?10, ?10)",
-            rusqlite::params![
-                report_id,
-                inventory.repo_path,
-                inventory.repo_name,
-                inventory.commit_sha,
-                agent,
-                inventory_json,
-                inventory.files_scanned as i64,
-                inventory.files_skipped as i64,
-                inventory.bytes_scanned as i64,
-                now,
-            ],
+        crate::db::with_busy_retry(
+            || {
+                conn.execute(
+                    "INSERT INTO repo_unpacked_reports
+                     (id, repo_path, repo_name, commit_sha, status, agent_used,
+                      inventory_json, files_scanned, files_skipped, bytes_scanned,
+                      started_at, created_at)
+                     VALUES (?1, ?2, ?3, ?4, 'running', ?5, ?6, ?7, ?8, ?9, ?10, ?10)",
+                    rusqlite::params![
+                        report_id,
+                        inventory.repo_path,
+                        inventory.repo_name,
+                        inventory.commit_sha,
+                        agent,
+                        inventory_json,
+                        inventory.files_scanned as i64,
+                        inventory.files_skipped as i64,
+                        inventory.bytes_scanned as i64,
+                        now,
+                    ],
+                )
+            },
+            15,
         )
         .map_err(|e| e.to_string())?;
     }
+
+    run_unpack_synthesis(
+        app,
+        db,
+        report_id,
+        repo_path,
+        inventory,
+        agent,
+        model_trimmed,
+        started,
+        false,
+    )
+    .await
+}
+
+/// Run agent synthesis on an existing inventory snapshot (no re-scan).
+#[tauri::command]
+pub async fn synthesize_unpack_report(
+    app: AppHandle,
+    db: State<'_, DbState>,
+    report_id: String,
+    agent: Option<String>,
+    model: Option<String>,
+) -> Result<Value, String> {
+    let agent = agent.unwrap_or_else(|| "claude".to_string());
+    let model_trimmed = model
+        .as_deref()
+        .map(str::trim)
+        .filter(|m| !m.is_empty())
+        .map(str::to_string);
+    let started = std::time::Instant::now();
+
+    let (inventory, repo_path) = load_report_inventory(&db, &report_id, true)?;
+
+    {
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        let now = chrono::Utc::now().to_rfc3339();
+        crate::db::with_busy_retry(
+            || {
+                conn.execute(
+                    "UPDATE repo_unpacked_reports
+                     SET status = 'running', agent_used = ?1, error_message = NULL, started_at = ?2
+                     WHERE id = ?3",
+                    rusqlite::params![agent, now, report_id],
+                )
+            },
+            15,
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    run_unpack_synthesis(
+        app,
+        db,
+        report_id,
+        repo_path,
+        inventory,
+        agent,
+        model_trimmed,
+        started,
+        true,
+    )
+    .await
+}
+
+async fn run_unpack_synthesis(
+    app: AppHandle,
+    db: State<'_, DbState>,
+    report_id: String,
+    repo_path: String,
+    inventory: RepoInventory,
+    agent: String,
+    model_trimmed: Option<String>,
+    started: std::time::Instant,
+    preserve_inventory_on_failure: bool,
+) -> Result<Value, String> {
+    emit_unpack_progress(
+        &app,
+        &report_id,
+        &repo_path,
+        "synthesizing",
+        Some(&format!("Running {agent} synthesis")),
+    );
 
     let prompt = build_synthesis_prompt(&inventory);
 
     let cli_cmd = match agent.as_str() {
         "gemini" => "gemini",
+        "codex" => "codex",
+        "grok" => "grok",
+        "cursor" => "cursor",
+        "command-code" => "cmd",
         _ => "claude",
     };
-    let cli_path = crate::commands::review::resolve_cli_path_pub(cli_cmd);
 
-    let cli_output = StdCommand::new(&cli_path)
-        .args(["-p", &prompt])
-        .current_dir(&repo_path)
-        .output();
-
-    let cli_output = match cli_output {
-        Ok(o) => o,
+    let stream_ctx = CliStreamContext {
+        app: app.clone(),
+        stream_id: report_id.clone(),
+        repo_path: repo_path.clone(),
+        agent: agent.clone(),
+    };
+    let repo_path_for_cli = repo_path.clone();
+    let prompt_for_cli = prompt.clone();
+    let model_for_cli = model_trimmed.clone();
+    let raw = match tokio::task::spawn_blocking(move || {
+        run_cli_prompt_streaming(
+            &stream_ctx,
+            &repo_path_for_cli,
+            &prompt_for_cli,
+            model_for_cli.as_deref(),
+        )
+    })
+    .await
+    .map_err(|e| format!("cli task join error: {e}"))?
+    {
+        Ok(text) => text,
         Err(e) => {
-            mark_failed(
+            mark_unpack_failed(
                 &db,
                 &report_id,
-                &format!("Failed to spawn {cli_cmd} ({cli_path}): {e}"),
+                &e,
                 started.elapsed().as_millis() as i64,
+                preserve_inventory_on_failure,
             );
-            return Err(format!("Failed to spawn {cli_cmd}: {e}"));
+            return Err(e);
         }
     };
-
-    if !cli_output.status.success() {
-        let stderr = String::from_utf8_lossy(&cli_output.stderr).to_string();
-        mark_failed(
-            &db,
-            &report_id,
-            &format!("{cli_cmd} failed: {stderr}"),
-            started.elapsed().as_millis() as i64,
-        );
-        return Err(format!("{cli_cmd} failed: {stderr}"));
-    }
-
-    let raw = String::from_utf8_lossy(&cli_output.stdout).to_string();
     let json_str = match crate::commands::review::extract_json_from_output_pub(&raw) {
         Some(s) => s,
         None => {
-            mark_failed(
+            let preview = raw.chars().take(1200).collect::<String>();
+            let msg =
+                format!("Could not find JSON in {cli_cmd} output. First 1200 chars:\n{preview}");
+            mark_unpack_failed(
                 &db,
                 &report_id,
-                "Could not find JSON in agent output",
+                &msg,
                 started.elapsed().as_millis() as i64,
+                preserve_inventory_on_failure,
             );
-            return Err("Could not find JSON in agent output".to_string());
+            return Err(msg);
         }
     };
 
     let parsed: Value = match serde_json::from_str(&json_str) {
         Ok(v) => v,
         Err(e) => {
-            mark_failed(
+            let msg = format!("Failed to parse JSON: {e}");
+            mark_unpack_failed(
                 &db,
                 &report_id,
-                &format!("Failed to parse JSON: {e}"),
+                &msg,
                 started.elapsed().as_millis() as i64,
+                preserve_inventory_on_failure,
             );
-            return Err(format!("Failed to parse JSON: {e}"));
+            return Err(msg);
         }
     };
 
+    emit_unpack_progress(
+        &app,
+        &report_id,
+        &repo_path,
+        "saving",
+        Some("Persisting brief snapshot"),
+    );
     let report = normalize_report(&parsed, &inventory);
     let report_json = serde_json::to_string(&report).map_err(|e| e.to_string())?;
     let runtime_ms = started.elapsed().as_millis() as i64;
-    let model = parsed
-        .get("model")
-        .and_then(|v| v.as_str())
-        .map(String::from)
+    let model = model_trimmed
+        .clone()
+        .or_else(|| {
+            parsed
+                .get("model")
+                .and_then(|v| v.as_str())
+                .map(String::from)
+        })
         .or_else(|| Some(format!("cli:{cli_cmd}")));
 
     {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
-        conn.execute(
-            "UPDATE repo_unpacked_reports
-             SET status = 'completed', report_json = ?1, runtime_ms = ?2,
-                 model_used = ?3, completed_at = ?4
-             WHERE id = ?5",
-            rusqlite::params![
-                report_json,
-                runtime_ms,
-                model,
-                chrono::Utc::now().to_rfc3339(),
-                report_id,
-            ],
-        )
-        .map_err(|e| e.to_string())?;
-
-        queries::log_activity(
-            &conn,
-            &queries::ActivityInput {
-                agent_id: None,
-                event_type: Some("repo_unpacked_completed".to_string()),
-                summary: Some(format!(
-                    "Repo Unpacked brief generated for {}: {} files",
-                    inventory.repo_name, inventory.files_scanned
-                )),
-                metadata: Some(json!({"report_id": report_id}).to_string()),
+        let completed_at = chrono::Utc::now().to_rfc3339();
+        let activity = queries::ActivityInput {
+            agent_id: None,
+            event_type: Some("repo_unpacked_completed".to_string()),
+            summary: Some(format!(
+                "Repo Unpacked brief generated for {}: {} files",
+                inventory.repo_name, inventory.files_scanned
+            )),
+            metadata: Some(json!({"report_id": report_id}).to_string()),
+        };
+        let repo_path_for_touch = inventory.repo_path.clone();
+        crate::db::with_busy_retry(
+            || {
+                conn.execute(
+                    "UPDATE repo_unpacked_reports
+                     SET status = 'completed', report_json = ?1, runtime_ms = ?2,
+                         model_used = ?3, completed_at = ?4, error_message = NULL
+                     WHERE id = ?5",
+                    rusqlite::params![report_json, runtime_ms, model, completed_at, report_id,],
+                )?;
+                queries::log_activity(&conn, &activity)?;
+                conn.execute(
+                    "UPDATE repo_projects SET last_unpack_at = ?2 WHERE repo_path = ?1",
+                    rusqlite::params![repo_path_for_touch, completed_at],
+                )?;
+                Ok(())
             },
+            20,
         )
         .map_err(|e| e.to_string())?;
     }
 
+    emit_unpack_progress(&app, &report_id, &repo_path, "completed", None);
     Ok(json!({
         "report_id": report_id,
         "status": "completed",
         "runtime_ms": runtime_ms,
         "report": report,
-        "inventory": inventory,
+        "inventory": trim_inventory_for_client(inventory),
     }))
 }
 
@@ -661,7 +381,8 @@ pub async fn list_repo_unpack_reports(
             .prepare(
                 "SELECT id, repo_path, repo_name, commit_sha, status, error_message,
                         agent_used, model_used, files_scanned, files_skipped, runtime_ms,
-                        cost_usd, started_at, completed_at, created_at
+                        cost_usd, started_at, completed_at, created_at,
+                        report_json IS NOT NULL
                  FROM repo_unpacked_reports
                  WHERE repo_path = ?1
                  ORDER BY datetime(created_at) DESC
@@ -677,7 +398,8 @@ pub async fn list_repo_unpack_reports(
             .prepare(
                 "SELECT id, repo_path, repo_name, commit_sha, status, error_message,
                         agent_used, model_used, files_scanned, files_skipped, runtime_ms,
-                        cost_usd, started_at, completed_at, created_at
+                        cost_usd, started_at, completed_at, created_at,
+                        report_json IS NOT NULL
                  FROM repo_unpacked_reports
                  ORDER BY datetime(created_at) DESC
                  LIMIT ?1",
@@ -696,7 +418,7 @@ pub async fn list_repo_unpack_reports(
 pub async fn get_repo_unpack_report(db: State<'_, DbState>, id: String) -> Result<Value, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
 
-    let row = conn
+    let mut row = conn
         .query_row(
             "SELECT id, repo_path, repo_name, commit_sha, status, error_message,
                     agent_used, model_used, inventory_json, report_json,
@@ -730,7 +452,25 @@ pub async fn get_repo_unpack_report(db: State<'_, DbState>, id: String) -> Resul
         )
         .map_err(|e| format!("Report not found: {e}"))?;
 
+    if let Some(inv_json) = row
+        .get("inventory_json")
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty())
+    {
+        if let Ok(inv) = serde_json::from_str::<RepoInventory>(inv_json) {
+            if let Ok(trimmed) = serde_json::to_string(&trim_inventory_for_client(inv)) {
+                row["inventory_json"] = json!(trimmed);
+            }
+        }
+    }
+
     Ok(row)
+}
+
+/// Cancel an in-flight unpack CLI synthesis (by `report_id` / stream id).
+#[tauri::command]
+pub fn cancel_unpack_generation(report_id: String) -> bool {
+    crate::commands::cli_stream::cancel_cli_stream(&report_id)
 }
 
 #[tauri::command]
@@ -838,894 +578,39 @@ pub async fn export_repo_unpack_report(
     Ok(json!({ "content": content, "format": format }))
 }
 
-const SNAPSHOT_UNIT_SEP: char = '\u{1f}';
-const SNAPSHOT_REC_SEP: char = '\u{1e}';
-
-fn build_snapshot_commit_range(
-    repo_path: &str,
-    base_commit: &str,
-    head_commit: &str,
-    limit: usize,
-) -> Result<SnapshotCommitRange, String> {
-    let base = base_commit.trim();
-    let head = head_commit.trim();
-    if !is_safe_commit_id(base) || !is_safe_commit_id(head) {
-        return Err("Snapshot comparison needs concrete git commit SHAs.".to_string());
-    }
-
-    if base == head {
-        return Ok(SnapshotCommitRange {
-            base_commit: base.to_string(),
-            head_commit: head.to_string(),
-            commit_count: 0,
-            commits: Vec::new(),
-            truncated: false,
-        });
-    }
-
-    let range = format!("{base}..{head}");
-    let count_output = StdCommand::new("git")
-        .args(["rev-list", "--count", &range, "--"])
-        .current_dir(repo_path)
-        .output()
-        .map_err(|e| format!("Failed to run git rev-list: {e}"))?;
-    if !count_output.status.success() {
-        let stderr = String::from_utf8_lossy(&count_output.stderr);
-        return Err(format!("git rev-list failed for snapshot range: {stderr}"));
-    }
-    let commit_count = String::from_utf8_lossy(&count_output.stdout)
-        .trim()
-        .parse::<u64>()
-        .unwrap_or(0);
-
-    let pretty = "%x1e%H%x1f%ad%x1f%an%x1f%s";
-    let max_count = limit.max(1).to_string();
-    let log_output = StdCommand::new("git")
-        .args([
-            "log",
-            "--no-merges",
-            "--date=short",
-            &format!("--pretty=format:{pretty}"),
-            "--numstat",
-            "-n",
-            &max_count,
-            &range,
-            "--",
-        ])
-        .current_dir(repo_path)
-        .output()
-        .map_err(|e| format!("Failed to run git log for snapshot range: {e}"))?;
-    if !log_output.status.success() {
-        let stderr = String::from_utf8_lossy(&log_output.stderr);
-        return Err(format!("git log failed for snapshot range: {stderr}"));
-    }
-
-    let commits = parse_snapshot_commit_log(&String::from_utf8_lossy(&log_output.stdout));
-    Ok(SnapshotCommitRange {
-        base_commit: base.to_string(),
-        head_commit: head.to_string(),
-        commit_count,
-        truncated: commit_count as usize > commits.len(),
-        commits,
-    })
-}
-
-fn is_safe_commit_id(value: &str) -> bool {
-    (7..=64).contains(&value.len()) && value.chars().all(|ch| ch.is_ascii_hexdigit())
-}
-
-fn build_unpack_outcome_evidence(
-    conn: &rusqlite::Connection,
-    repo_path: &str,
-) -> Result<UnpackOutcomeEvidence, rusqlite::Error> {
-    let review_rows = queries::list_local_reviews_filtered(conn, 16, 0, Some(repo_path))?;
-    let qa_rows = queries::list_synthetic_qa_runs_for_repo(conn, repo_path, 16)?;
-    let finding_rows = queries::get_recent_findings_for_repo(conn, repo_path, 16)?;
-
-    let mut procedure_rows = Vec::new();
-    for review in review_rows.iter().take(10) {
-        let mut events = queries::list_review_procedure_events(conn, &review.id)?;
-        procedure_rows.append(&mut events);
-    }
-    procedure_rows.sort_by(|a, b| b.created_at.cmp(&a.created_at));
-    procedure_rows.truncate(24);
-
-    let failed_review_count = review_rows
-        .iter()
-        .filter(|review| outcome_status_is_failure(&review.status))
-        .count();
-    let qa_pass_count = qa_rows.iter().filter(|run| run.pass).count();
-    let qa_fail_count = qa_rows.len().saturating_sub(qa_pass_count);
-    let procedure_pass_count = procedure_rows
-        .iter()
-        .filter(|event| outcome_status_is_success(&event.status))
-        .count();
-    let procedure_fail_count = procedure_rows
-        .iter()
-        .filter(|event| outcome_status_is_failure(&event.status))
-        .count();
-    let (calibration, summary) = calibrate_outcome_evidence(
-        qa_pass_count + procedure_pass_count,
-        qa_fail_count + procedure_fail_count + failed_review_count,
-        review_rows.len(),
-        qa_rows.len(),
-        procedure_rows.len(),
-    );
-
-    let reviews: Vec<UnpackOutcomeReviewEvidence> = review_rows
-        .iter()
-        .map(|review| UnpackOutcomeReviewEvidence {
-            id: review.id.clone(),
-            review_type: review.review_type.clone(),
-            status: review.status.clone(),
-            review_action: review.review_action.clone(),
-            findings_count: review.findings_count,
-            score_composite: review.score_composite,
-            created_at: review.created_at.clone(),
-        })
-        .collect();
-    let qa_runs: Vec<UnpackOutcomeQaEvidence> = qa_rows
-        .iter()
-        .map(|run| UnpackOutcomeQaEvidence {
-            id: run.id.clone(),
-            review_id: run.review_id.clone(),
-            loop_id: run.loop_id.clone(),
-            runner_type: run.runner_type.clone(),
-            route: run.route.clone(),
-            goal: run.goal.clone(),
-            pass: run.pass,
-            duration_ms: run.duration_ms,
-            console_errors: run.console_errors,
-            error: run.error.clone(),
-            created_at: run.created_at.clone(),
-        })
-        .collect();
-    let procedure_events: Vec<UnpackOutcomeProcedureEvidence> = procedure_rows
-        .iter()
-        .map(|event| UnpackOutcomeProcedureEvidence {
-            id: event.id.clone(),
-            review_id: event.review_id.clone(),
-            step_id: event.step_id.clone(),
-            status: event.status.clone(),
-            source: event.source.clone(),
-            summary: event.summary.clone(),
-            artifact: event.artifact.clone(),
-            created_at: event.created_at.clone(),
-        })
-        .collect();
-    let recurring_findings: Vec<UnpackOutcomeFindingEvidence> = finding_rows
-        .iter()
-        .map(|finding| UnpackOutcomeFindingEvidence {
-            file_path: finding.file_path.clone(),
-            title: Some(finding.title.clone()),
-            severity: finding.severity.clone(),
-            created_at: finding.created_at.clone(),
-        })
-        .collect();
-    let trend = outcome_trend(&reviews, &qa_runs, &procedure_events, &recurring_findings);
-    let trust_actions = outcome_trust_actions(
-        &reviews,
-        &qa_runs,
-        &procedure_events,
-        &recurring_findings,
-        &calibration,
-        &trend,
-    );
-
-    Ok(UnpackOutcomeEvidence {
-        repo_path: repo_path.to_string(),
-        reviews,
-        qa_runs,
-        procedure_events,
-        recurring_findings,
-        review_count: review_rows.len(),
-        failed_review_count,
-        qa_pass_count,
-        qa_fail_count,
-        procedure_pass_count,
-        procedure_fail_count,
-        calibration,
-        summary,
-        trend,
-        trust_actions,
-    })
-}
-
-fn outcome_status_is_success(status: &str) -> bool {
-    matches!(
-        status.trim().to_ascii_lowercase().as_str(),
-        "satisfied" | "passed" | "pass" | "completed" | "success" | "verified"
-    )
-}
-
-fn outcome_status_is_failure(status: &str) -> bool {
-    matches!(
-        status.trim().to_ascii_lowercase().as_str(),
-        "blocked" | "failed" | "fail" | "error" | "errored" | "timeout" | "cancelled"
-    )
-}
-
-fn calibrate_outcome_evidence(
-    pass_count: usize,
-    fail_count: usize,
-    review_count: usize,
-    qa_count: usize,
-    procedure_count: usize,
-) -> (String, String) {
-    if review_count == 0 && qa_count == 0 && procedure_count == 0 {
-        return (
-            "unknown".to_string(),
-            "No stored review, QA, or procedure outcomes for this repo yet.".to_string(),
-        );
-    }
-
-    if pass_count > 0 && fail_count > 0 {
-        return (
-            "mixed".to_string(),
-            format!(
-                "{pass_count} recent proof signal{} and {fail_count} recent failure signal{}.",
-                plural_s(pass_count),
-                plural_s(fail_count)
-            ),
-        );
-    }
-
-    if fail_count > 0 {
-        return (
-            "lowers".to_string(),
-            format!(
-                "{fail_count} recent failure signal{} should lower confidence until rechecked.",
-                plural_s(fail_count)
-            ),
-        );
-    }
-
-    if pass_count > 0 {
-        return (
-            "raises".to_string(),
-            format!(
-                "{pass_count} recent proof signal{} supports higher confidence for this repo.",
-                plural_s(pass_count)
-            ),
-        );
-    }
-
-    (
-        "neutral".to_string(),
-        "Stored reviews exist, but no pass/fail QA or procedure proof is attached yet.".to_string(),
-    )
-}
+// ─── Inventory builder (deterministic) ──────────────────────────────────────
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum OutcomeTrendSignalKind {
-    Proof,
-    Failure,
-    Finding,
-    ReviewFailure,
+pub enum InventoryBuildProfile {
+    /// Parallel walk + lightweight metadata only. No file-content scans.
+    Fast,
+    /// Adds deterministic graph, git history, and health analysis (hundreds of file reads).
+    Full,
 }
 
 #[derive(Debug, Clone)]
-struct OutcomeTrendSignal {
-    created_at: String,
-    kind: OutcomeTrendSignalKind,
+pub struct InventoryBuildResult {
+    pub inventory: RepoInventory,
+    pub profile: super::unpack_scan_profile::UnpackScanProfile,
 }
-
-fn outcome_trend(
-    reviews: &[UnpackOutcomeReviewEvidence],
-    qa_runs: &[UnpackOutcomeQaEvidence],
-    procedure_events: &[UnpackOutcomeProcedureEvidence],
-    recurring_findings: &[UnpackOutcomeFindingEvidence],
-) -> UnpackOutcomeTrend {
-    let mut signals = Vec::new();
-
-    for run in qa_runs {
-        signals.push(OutcomeTrendSignal {
-            created_at: run.created_at.clone(),
-            kind: if run.pass {
-                OutcomeTrendSignalKind::Proof
-            } else {
-                OutcomeTrendSignalKind::Failure
-            },
-        });
-    }
-
-    for event in procedure_events {
-        if outcome_status_is_success(&event.status) {
-            signals.push(OutcomeTrendSignal {
-                created_at: event.created_at.clone(),
-                kind: OutcomeTrendSignalKind::Proof,
-            });
-        } else if outcome_status_is_failure(&event.status) {
-            signals.push(OutcomeTrendSignal {
-                created_at: event.created_at.clone(),
-                kind: OutcomeTrendSignalKind::Failure,
-            });
-        }
-    }
-
-    for review in reviews {
-        if outcome_status_is_failure(&review.status) {
-            signals.push(OutcomeTrendSignal {
-                created_at: review.created_at.clone(),
-                kind: OutcomeTrendSignalKind::ReviewFailure,
-            });
-        }
-    }
-
-    for finding in recurring_findings {
-        signals.push(OutcomeTrendSignal {
-            created_at: finding.created_at.clone(),
-            kind: OutcomeTrendSignalKind::Finding,
-        });
-    }
-
-    signals.sort_by(|a, b| b.created_at.cmp(&a.created_at));
-    let split_at = signals.len().div_ceil(2);
-    let recent = outcome_trend_window("recent", &signals[..split_at]);
-    let prior = outcome_trend_window("prior", &signals[split_at..]);
-    let total_signals = signals.len();
-    let confidence = if total_signals >= 10 {
-        "high"
-    } else if total_signals >= 5 {
-        "medium"
-    } else {
-        "low"
-    };
-    let direction = outcome_trend_direction(&recent, &prior, total_signals);
-    let summary = outcome_trend_summary(&direction, confidence, &recent, &prior, total_signals);
-
-    UnpackOutcomeTrend {
-        direction,
-        confidence: confidence.to_string(),
-        total_signals,
-        recent,
-        prior,
-        summary,
-    }
-}
-
-fn outcome_trend_window(label: &str, signals: &[OutcomeTrendSignal]) -> UnpackOutcomeTrendWindow {
-    let proof_count = signals
-        .iter()
-        .filter(|signal| signal.kind == OutcomeTrendSignalKind::Proof)
-        .count();
-    let failure_count = signals
-        .iter()
-        .filter(|signal| signal.kind == OutcomeTrendSignalKind::Failure)
-        .count();
-    let finding_count = signals
-        .iter()
-        .filter(|signal| signal.kind == OutcomeTrendSignalKind::Finding)
-        .count();
-    let review_failure_count = signals
-        .iter()
-        .filter(|signal| signal.kind == OutcomeTrendSignalKind::ReviewFailure)
-        .count();
-    UnpackOutcomeTrendWindow {
-        label: label.to_string(),
-        proof_count,
-        failure_count,
-        finding_count,
-        review_failure_count,
-        oldest_at: signals.last().map(|signal| signal.created_at.clone()),
-        newest_at: signals.first().map(|signal| signal.created_at.clone()),
-    }
-}
-
-fn outcome_trend_risk_count(window: &UnpackOutcomeTrendWindow) -> usize {
-    window.failure_count + window.finding_count + window.review_failure_count
-}
-
-fn outcome_trend_signal_count(window: &UnpackOutcomeTrendWindow) -> usize {
-    window.proof_count + outcome_trend_risk_count(window)
-}
-
-fn outcome_trend_risk_rate(window: &UnpackOutcomeTrendWindow) -> f64 {
-    let total = outcome_trend_signal_count(window);
-    if total == 0 {
-        0.0
-    } else {
-        outcome_trend_risk_count(window) as f64 / total as f64
-    }
-}
-
-fn outcome_trend_direction(
-    recent: &UnpackOutcomeTrendWindow,
-    prior: &UnpackOutcomeTrendWindow,
-    total_signals: usize,
-) -> String {
-    if total_signals < 3 {
-        return "sparse".to_string();
-    }
-
-    let recent_risk = outcome_trend_risk_count(recent);
-    let prior_risk = outcome_trend_risk_count(prior);
-    let recent_rate = outcome_trend_risk_rate(recent);
-    let prior_rate = outcome_trend_risk_rate(prior);
-
-    if recent_risk > 0 && prior_risk == 0 && recent_rate >= 0.5 {
-        return "regressing".to_string();
-    }
-    if recent_risk == 0 && prior_risk > 0 && recent.proof_count > 0 {
-        return "improving".to_string();
-    }
-    if recent_rate > prior_rate + 0.25 {
-        return "regressing".to_string();
-    }
-    if prior_rate > recent_rate + 0.25 {
-        return "improving".to_string();
-    }
-    if recent_risk == 0 && prior_risk == 0 && recent.proof_count + prior.proof_count > 0 {
-        return "stable_green".to_string();
-    }
-    if recent_risk > 0 && prior_risk > 0 {
-        return "persistent_risk".to_string();
-    }
-
-    "flat".to_string()
-}
-
-fn outcome_trend_summary(
-    direction: &str,
-    confidence: &str,
-    recent: &UnpackOutcomeTrendWindow,
-    prior: &UnpackOutcomeTrendWindow,
-    total_signals: usize,
-) -> String {
-    if direction == "sparse" {
-        return format!(
-            "{total_signals} stored outcome signal{} is too sparse for a trend.",
-            plural_s(total_signals)
-        );
-    }
-
-    let recent_risk = outcome_trend_risk_count(recent);
-    let prior_risk = outcome_trend_risk_count(prior);
-    format!(
-        "{confidence} confidence {direction} trend: recent window has {} proof / {} risk signal{}, prior window had {} proof / {} risk signal{}.",
-        recent.proof_count,
-        recent_risk,
-        plural_s(recent_risk),
-        prior.proof_count,
-        prior_risk,
-        plural_s(prior_risk)
-    )
-}
-
-fn outcome_trust_actions(
-    reviews: &[UnpackOutcomeReviewEvidence],
-    qa_runs: &[UnpackOutcomeQaEvidence],
-    procedure_events: &[UnpackOutcomeProcedureEvidence],
-    recurring_findings: &[UnpackOutcomeFindingEvidence],
-    calibration: &str,
-    trend: &UnpackOutcomeTrend,
-) -> Vec<UnpackOutcomeTrustAction> {
-    let mut actions = Vec::new();
-
-    if reviews.is_empty() && qa_runs.is_empty() && procedure_events.is_empty() {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "high".to_string(),
-            label: "Establish a proof baseline".to_string(),
-            detail:
-                "No local review, QA, or proof-gate outcomes are attached to this repo yet."
-                    .to_string(),
-            source_kind: "baseline".to_string(),
-            source_id: None,
-            source_path: None,
-            command: Some("Run a review and attach a synthetic QA flow for this repo".to_string()),
-        });
-    }
-
-    for run in qa_runs.iter().filter(|run| !run.pass).take(2) {
-        let target = run
-            .goal
-            .as_deref()
-            .or(run.route.as_deref())
-            .unwrap_or(&run.loop_id);
-        let mut detail = format!(
-            "{target} failed via {} on {}; rerun after the changed area is fixed.",
-            run.runner_type, run.created_at
-        );
-        if run.console_errors > 0 {
-            detail.push_str(&format!(" {} console error(s) were recorded.", run.console_errors));
-        }
-        if let Some(error) = run.error.as_deref().filter(|value| !value.trim().is_empty()) {
-            detail.push_str(&format!(" Error: {error}"));
-        }
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "high".to_string(),
-            label: "Rerun failing QA flow".to_string(),
-            detail,
-            source_kind: "qa_run".to_string(),
-            source_id: Some(run.id.clone()),
-            source_path: None,
-            command: Some(format!("Rerun Synthetic QA: {target}")),
-        });
-    }
-
-    for event in procedure_events
-        .iter()
-        .filter(|event| outcome_status_is_failure(&event.status))
-        .take(2)
-    {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "high".to_string(),
-            label: "Resolve failed proof gate".to_string(),
-            detail: format!(
-                "{} is {} from {}: {}",
-                event.step_id, event.status, event.source, event.summary
-            ),
-            source_kind: "procedure_event".to_string(),
-            source_id: Some(event.id.clone()),
-            source_path: event.artifact.clone(),
-            command: Some(format!("Re-run proof gate: {}", event.step_id)),
-        });
-    }
-
-    for review in reviews
-        .iter()
-        .filter(|review| outcome_status_is_failure(&review.status))
-        .take(1)
-    {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "high".to_string(),
-            label: "Re-check blocked review".to_string(),
-            detail: format!(
-                "{} review is {}; findings: {}.",
-                review.review_type.as_deref().unwrap_or("Local"),
-                review.status,
-                review
-                    .findings_count
-                    .map(|count| count.to_string())
-                    .unwrap_or_else(|| "unknown".to_string())
-            ),
-            source_kind: "review".to_string(),
-            source_id: Some(review.id.clone()),
-            source_path: None,
-            command: review
-                .review_action
-                .as_ref()
-                .map(|action| format!("Follow review action: {action}")),
-        });
-    }
-
-    for finding in recurring_findings.iter().take(2) {
-        let title = finding.title.as_deref().unwrap_or("review finding");
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "medium".to_string(),
-            label: "Inspect recurring finding".to_string(),
-            detail: format!(
-                "{}{} was seen on {}; compare it against the current delta.",
-                finding
-                    .severity
-                    .as_deref()
-                    .map(|severity| format!("{severity} severity "))
-                    .unwrap_or_default(),
-                title,
-                finding.created_at
-            ),
-            source_kind: "finding".to_string(),
-            source_id: None,
-            source_path: finding.file_path.clone(),
-            command: None,
-        });
-    }
-
-    if calibration == "mixed" {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "medium".to_string(),
-            label: "Require fresh proof for this delta".to_string(),
-            detail: "Recent local outcomes are mixed, so old green evidence should not override new failures."
-                .to_string(),
-            source_kind: "calibration".to_string(),
-            source_id: None,
-            source_path: None,
-            command: Some("Run the highest-confidence verification lead before release".to_string()),
-        });
-    } else if calibration == "raises" && actions.is_empty() {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "low".to_string(),
-            label: "Keep proof attached".to_string(),
-            detail:
-                "Recent proof signals are green; attach the latest QA/procedure rows to the handoff."
-                    .to_string(),
-            source_kind: "calibration".to_string(),
-            source_id: None,
-            source_path: None,
-            command: None,
-        });
-    }
-
-    if trend.direction == "regressing" {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "high".to_string(),
-            label: "Investigate worsening outcome trend".to_string(),
-            detail: trend.summary.clone(),
-            source_kind: "trend".to_string(),
-            source_id: None,
-            source_path: None,
-            command: Some("Compare recent failures against the current unpack delta".to_string()),
-        });
-    } else if trend.direction == "persistent_risk" {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "medium".to_string(),
-            label: "Break persistent failure loop".to_string(),
-            detail: trend.summary.clone(),
-            source_kind: "trend".to_string(),
-            source_id: None,
-            source_path: None,
-            command: Some("Require a fresh green QA/proof gate before release".to_string()),
-        });
-    } else if trend.direction == "improving" && actions.is_empty() {
-        actions.push(UnpackOutcomeTrustAction {
-            priority: "low".to_string(),
-            label: "Preserve improving proof trail".to_string(),
-            detail: trend.summary.clone(),
-            source_kind: "trend".to_string(),
-            source_id: None,
-            source_path: None,
-            command: None,
-        });
-    }
-
-    actions.truncate(6);
-    actions
-}
-
-fn plural_s(count: usize) -> &'static str {
-    if count == 1 {
-        ""
-    } else {
-        "s"
-    }
-}
-
-fn parse_snapshot_commit_log(raw: &str) -> Vec<SnapshotCommitEvidence> {
-    let mut out = Vec::new();
-    for raw_record in raw.split(SNAPSHOT_REC_SEP) {
-        let record = raw_record.trim_matches(|c| c == '\n' || c == '\r');
-        if record.is_empty() {
-            continue;
-        }
-        let mut parts = record.splitn(4, SNAPSHOT_UNIT_SEP);
-        let sha = parts.next().unwrap_or("").trim();
-        let date = parts.next().unwrap_or("").trim();
-        let author = parts.next().unwrap_or("").trim();
-        let subject_and_numstat = parts.next().unwrap_or("");
-        if sha.is_empty() {
-            continue;
-        }
-        let mut lines = subject_and_numstat.lines();
-        let subject = lines.next().unwrap_or("").trim().to_string();
-        let mut files = Vec::new();
-        let mut additions = 0u64;
-        let mut deletions = 0u64;
-        for line in lines {
-            if !line_is_snapshot_numstat(line) {
-                continue;
-            }
-            let mut cols = line.splitn(3, '\t');
-            let add_raw = cols.next().unwrap_or("-");
-            let del_raw = cols.next().unwrap_or("-");
-            let path = cols.next().unwrap_or("").trim();
-            if path.is_empty() {
-                continue;
-            }
-            let add = add_raw.parse::<u64>().unwrap_or(0);
-            let del = del_raw.parse::<u64>().unwrap_or(0);
-            additions += add;
-            deletions += del;
-            files.push(SnapshotChangedFile {
-                path: path.to_string(),
-                additions: add,
-                deletions: del,
-            });
-        }
-        files.truncate(12);
-        out.push(SnapshotCommitEvidence {
-            sha: sha.to_string(),
-            date: date.to_string(),
-            author: author.to_string(),
-            subject,
-            additions,
-            deletions,
-            files,
-        });
-    }
-    out
-}
-
-fn line_is_snapshot_numstat(line: &str) -> bool {
-    let mut parts = line.splitn(3, '\t');
-    let add = parts.next().unwrap_or("");
-    let del = parts.next().unwrap_or("");
-    let path = parts.next().unwrap_or("");
-    if path.is_empty() {
-        return false;
-    }
-    let valid_count = |s: &str| s == "-" || s.chars().all(|ch| ch.is_ascii_digit());
-    valid_count(add) && valid_count(del)
-}
-
-#[tauri::command]
-pub async fn import_repo_graph_json(content: String) -> Result<RepoGraphImportResult, String> {
-    let value: Value = serde_json::from_str(&content)
-        .map_err(|e| format!("Graph import must be valid JSON: {e}"))?;
-    import_repo_graph_from_value(&value)
-}
-
-fn import_repo_graph_from_value(value: &Value) -> Result<RepoGraphImportResult, String> {
-    let (candidate, source_kind) = if let Some(graph) = value.get("repo_graph") {
-        (graph, "repo_graph")
-    } else if let Some(graph) = value.get("graph") {
-        (graph, "graph")
-    } else if let Some(graph) = value.pointer("/data/graph") {
-        (graph, "data.graph")
-    } else {
-        (value, "root")
-    };
-
-    let mut warnings = Vec::new();
-    let graph = match serde_json::from_value::<RepoGraph>(candidate.clone()) {
-        Ok(graph) => graph,
-        Err(_) => import_loose_repo_graph(candidate, &mut warnings)?,
-    };
-    validate_imported_repo_graph(&graph)?;
-
-    let node_count = graph.nodes.len();
-    let edge_count = graph.edges.len();
-    Ok(RepoGraphImportResult {
-        graph,
-        source_kind: source_kind.to_string(),
-        node_count,
-        edge_count,
-        warnings,
-    })
-}
-
-fn import_loose_repo_graph(value: &Value, warnings: &mut Vec<String>) -> Result<RepoGraph, String> {
-    let nodes_value = value
-        .get("nodes")
-        .and_then(Value::as_array)
-        .ok_or_else(|| "Graph import needs a nodes array.".to_string())?;
-    let edges_value = value
-        .get("edges")
-        .and_then(Value::as_array)
-        .ok_or_else(|| "Graph import needs an edges array.".to_string())?;
-
-    const MAX_IMPORTED_NODES: usize = 1_000;
-    const MAX_IMPORTED_EDGES: usize = 1_500;
-    let mut nodes = Vec::new();
-    let mut edges = Vec::new();
-
-    for (idx, node) in nodes_value.iter().take(MAX_IMPORTED_NODES).enumerate() {
-        let id = string_field(node, &["id", "key"])
-            .or_else(|| string_field(node, &["label", "name"]).map(|s| graph_id("imported", &s)))
-            .ok_or_else(|| format!("Node {idx} is missing id, label, or name."))?;
-        let kind = string_field(node, &["kind", "type", "category"])
-            .unwrap_or_else(|| "imported".to_string());
-        let label = string_field(node, &["label", "name", "title"]).unwrap_or_else(|| id.clone());
-        let path = string_field(node, &["path", "file_path", "source_path"]);
-        let detail = string_field(node, &["detail", "description", "summary"]);
-        let mut sources = string_array_field(node, "sources");
-        if sources.is_empty() {
-            if let Some(path) = path.as_ref() {
-                sources.push(path.clone());
-            }
-        }
-        nodes.push(RepoGraphNode {
-            id,
-            kind,
-            label,
-            path,
-            detail,
-            sources,
-        });
-    }
-
-    for (idx, edge) in edges_value.iter().take(MAX_IMPORTED_EDGES).enumerate() {
-        let from = string_field(edge, &["from", "source", "source_id", "start"])
-            .ok_or_else(|| format!("Edge {idx} is missing from/source."))?;
-        let to = string_field(edge, &["to", "target", "target_id", "end"])
-            .ok_or_else(|| format!("Edge {idx} is missing to/target."))?;
-        let kind = string_field(edge, &["kind", "type", "label"])
-            .unwrap_or_else(|| "relates_to".to_string());
-        let evidence = string_field(edge, &["evidence", "detail", "description"])
-            .unwrap_or_else(|| "imported graph edge".to_string());
-        edges.push(RepoGraphEdge {
-            from,
-            to,
-            kind,
-            evidence,
-            sources: string_array_field(edge, "sources"),
-        });
-    }
-
-    let truncated =
-        nodes_value.len() > MAX_IMPORTED_NODES || edges_value.len() > MAX_IMPORTED_EDGES;
-    if nodes_value.len() > MAX_IMPORTED_NODES {
-        warnings.push(format!(
-            "Imported first {MAX_IMPORTED_NODES} of {} nodes.",
-            nodes_value.len()
-        ));
-    }
-    if edges_value.len() > MAX_IMPORTED_EDGES {
-        warnings.push(format!(
-            "Imported first {MAX_IMPORTED_EDGES} of {} edges.",
-            edges_value.len()
-        ));
-    }
-    warnings
-        .push("Loose graph JSON was normalized into CodeVetter's repo_graph schema.".to_string());
-
-    Ok(RepoGraph {
-        schema_version: 1,
-        nodes,
-        edges,
-        truncated,
-    })
-}
-
-fn string_field(value: &Value, keys: &[&str]) -> Option<String> {
-    keys.iter()
-        .find_map(|key| value.get(*key).and_then(Value::as_str))
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .map(ToOwned::to_owned)
-}
-
-fn string_array_field(value: &Value, key: &str) -> Vec<String> {
-    value
-        .get(key)
-        .and_then(Value::as_array)
-        .map(|items| {
-            items
-                .iter()
-                .filter_map(Value::as_str)
-                .map(str::trim)
-                .filter(|s| !s.is_empty())
-                .map(ToOwned::to_owned)
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
-fn validate_imported_repo_graph(graph: &RepoGraph) -> Result<(), String> {
-    if graph.nodes.is_empty() {
-        return Err("Graph import did not contain any nodes.".to_string());
-    }
-    let mut node_ids = HashSet::new();
-    for node in &graph.nodes {
-        if node.id.trim().is_empty() {
-            return Err("Graph import contains a node with an empty id.".to_string());
-        }
-        if node.kind.trim().is_empty() {
-            return Err(format!("Graph node {} has an empty kind.", node.id));
-        }
-        if !node_ids.insert(node.id.as_str()) {
-            return Err(format!(
-                "Graph import contains duplicate node id {}.",
-                node.id
-            ));
-        }
-    }
-    for edge in &graph.edges {
-        if edge.from.trim().is_empty() || edge.to.trim().is_empty() {
-            return Err("Graph import contains an edge with an empty endpoint.".to_string());
-        }
-        if !node_ids.contains(edge.from.as_str()) || !node_ids.contains(edge.to.as_str()) {
-            return Err(format!(
-                "Graph edge {} -> {} references a missing node.",
-                edge.from, edge.to
-            ));
-        }
-    }
-    Ok(())
-}
-
-// ─── Inventory builder (deterministic) ──────────────────────────────────────
 
 pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
+    build_inventory_with_progress(repo_path, None, InventoryBuildProfile::Full)
+        .map(|result| result.inventory)
+}
+
+pub fn build_inventory_with_progress(
+    repo_path: &str,
+    progress: Option<super::unpack_scan::ScanProgressCallback>,
+    profile: InventoryBuildProfile,
+) -> Result<InventoryBuildResult, String> {
+    let stage = if profile == InventoryBuildProfile::Fast {
+        "fast_scan"
+    } else {
+        "full_scan"
+    };
+    let mut profiler = super::unpack_scan_profile::UnpackScanProfiler::new(stage);
+
     let root = PathBuf::from(repo_path);
     if !root.is_dir() {
         return Err(format!("Not a directory: {repo_path}"));
@@ -1737,27 +622,25 @@ pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
         .unwrap_or_else(|| repo_path.to_string());
 
     let (commit_sha, branch, remote_url) = read_git_metadata(&root);
+    profiler.step("git_metadata", "Git metadata");
 
-    let ignore_patterns = parse_gitignore(&root);
-
-    let mut all_files: Vec<(String, u64)> = Vec::new();
-    let mut files_skipped: usize = 0;
-    let mut bytes_scanned: u64 = 0;
-    let mut max_files_hit = false;
-    let mut ignored_dirs: Vec<String> = Vec::new();
-
-    walk(
-        &root,
-        &root,
-        0,
-        12,
-        &ignore_patterns,
-        &mut all_files,
-        &mut files_skipped,
-        &mut bytes_scanned,
-        &mut max_files_hit,
-        &mut ignored_dirs,
-    );
+    let walk = parallel_walk_repo_with_progress(&root, progress.clone());
+    profiler.step("file_walk", "Parallel file walk");
+    let tracked_files = walk.tracked_files;
+    let all_files = walk.files;
+    let files_skipped = walk.files_skipped;
+    let bytes_scanned = walk.bytes_scanned;
+    let max_files_hit = walk.max_files_hit;
+    let walk_estimated_total_files = walk.estimated_total_files;
+    let ignored_dirs = walk.ignored_dirs;
+    let estimated_total_files = if max_files_hit {
+        walk_estimated_total_files.or_else(|| count_git_tracked_files(&root))
+    } else {
+        None
+    };
+    if max_files_hit {
+        profiler.step("coverage", "Coverage denominator");
+    }
 
     // Languages
     let mut lang_map: HashMap<&'static str, (usize, u64)> = HashMap::new();
@@ -1777,14 +660,16 @@ pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
         })
         .collect();
     languages.sort_by(|a, b| b.bytes.cmp(&a.bytes));
+    profiler.step("languages", "Language breakdown");
 
-    // Manifests
+    // Manifests (only plausible manifest paths — avoid scanning 4k basenames)
     let mut manifests: Vec<ManifestSummary> = Vec::new();
-    for (path, _) in &all_files {
-        if let Some(m) = parse_manifest(&root, path) {
+    for path in manifest_candidate_paths(&all_files, tracked_files.as_deref()) {
+        if let Some(m) = parse_manifest(&root, &path) {
             manifests.push(m);
         }
     }
+    profiler.step("manifests", "Manifest parsing");
 
     // Docs (README + docs/ + agents.md + AGENTS.md + CLAUDE.md + ARCHITECTURE.md)
     let mut docs: Vec<DocFile> = Vec::new();
@@ -1811,7 +696,12 @@ pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
         }
     }
     docs.sort_by(|a, b| a.path.cmp(&b.path));
-    docs.truncate(40);
+    docs.truncate(if profile == InventoryBuildProfile::Fast {
+        12
+    } else {
+        40
+    });
+    profiler.step("docs", "Doc previews");
 
     // Top-level dirs
     let mut top_dir_map: HashMap<String, (usize, u64)> = HashMap::new();
@@ -1833,6 +723,12 @@ pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
         })
         .collect();
     top_level_dirs.sort_by(|a, b| b.file_count.cmp(&a.file_count));
+    let coverage = build_inventory_coverage(
+        &all_files,
+        tracked_files.as_deref(),
+        estimated_total_files,
+        max_files_hit,
+    );
 
     // Config files (interesting top-level)
     let config_files: Vec<String> = all_files
@@ -1882,17 +778,103 @@ pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
         })
         .collect();
 
+    profiler.step("aggregates", "Dirs, configs, stack tags");
+
     // Stack tags
     let stack_tags = infer_stack(&all_files, &manifests);
 
     // Entrypoints
     let entrypoints = infer_entrypoints(&all_files, &manifests, &stack_tags);
     let qa_readiness = build_qa_readiness(&all_files, &manifests, &entrypoints);
-    let repo_graph = build_repo_graph(&root, &all_files, &manifests, &entrypoints);
-    let history_brief = build_history_brief(&root, &all_files, &manifests);
-    let repo_health = build_repo_health(&root, &all_files);
+    let workspace_units = build_workspace_units(
+        &all_files,
+        tracked_files.as_deref(),
+        &manifests,
+        &entrypoints,
+    );
+    profiler.step("entrypoints", "Entrypoints, workspace units & QA readiness");
+    let (repo_graph, history_brief, repo_health) = if profile == InventoryBuildProfile::Full {
+        if let Some(ref cb) = progress {
+            cb(super::unpack_scan::ScanProgress {
+                phase: "analyze",
+                detail: format!("Building deterministic graph · {} files…", all_files.len()),
+                files_seen: all_files.len(),
+                files_skipped,
+            });
+        }
+        let source_previews = build_source_preview_cache(&root, &all_files);
+        profiler.step("source_previews", "Source preview cache");
+
+        let repo_graph = build_repo_graph_with_previews(
+            &root,
+            &all_files,
+            &manifests,
+            &entrypoints,
+            &workspace_units,
+            Some(&source_previews),
+        );
+        profiler.step("repo_graph", "Deterministic graph scan");
+
+        if let Some(ref cb) = progress {
+            cb(super::unpack_scan::ScanProgress {
+                phase: "analyze",
+                detail: "Reading git history and decision markers…".to_string(),
+                files_seen: all_files.len(),
+                files_skipped,
+            });
+        }
+        let history_brief = build_history_brief_with_previews(
+            &root,
+            &all_files,
+            &manifests,
+            Some(&source_previews),
+        );
+        profiler.step("history", "Git history & decision scan");
+
+        if let Some(ref cb) = progress {
+            cb(super::unpack_scan::ScanProgress {
+                phase: "analyze",
+                detail: "Scoring deterministic repo health…".to_string(),
+                files_seen: all_files.len(),
+                files_skipped,
+            });
+        }
+        let repo_health =
+            build_repo_health_with_previews(&root, &all_files, Some(&source_previews));
+        profiler.step("repo_health", "Deterministic health scoring");
+
+        (repo_graph, history_brief, repo_health)
+    } else {
+        if let Some(ref cb) = progress {
+            cb(super::unpack_scan::ScanProgress {
+                phase: "analyze",
+                detail: format!("Finalizing snapshot · {} files", all_files.len()),
+                files_seen: all_files.len(),
+                files_skipped,
+            });
+        }
+        (
+            super::unpack_fast_graph::build_fast_repo_graph(
+                &repo_name,
+                &all_files,
+                &manifests,
+                &entrypoints,
+                &workspace_units,
+                &top_level_dirs,
+                &docs,
+                &config_files,
+            ),
+            default_history_brief(),
+            default_repo_health(),
+        )
+    };
+    if profile == InventoryBuildProfile::Fast {
+        profiler.step("finalize", "Finalize snapshot (deferred analysis)");
+    }
 
     let path_strings: Vec<String> = all_files.iter().map(|(p, _)| p.clone()).collect();
+    let dir_tree_preview = build_dir_tree_preview(&path_strings, all_files.len());
+    profiler.step("dir_tree", "Directory tree preview");
 
     let inventory = RepoInventory {
         repo_path: repo_path.to_string(),
@@ -1904,6 +886,7 @@ pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
         files_skipped,
         bytes_scanned,
         max_files_hit,
+        estimated_total_files,
         languages,
         manifests,
         entrypoints,
@@ -1911,1555 +894,29 @@ pub fn build_inventory(repo_path: &str) -> Result<RepoInventory, String> {
         docs,
         config_files,
         stack_tags,
+        workspace_units,
         qa_readiness,
         repo_graph,
         history_brief,
         repo_health,
         all_files: path_strings,
         ignored_dirs,
+        coverage,
+        all_files_capped: false,
+        dir_tree_preview,
     };
 
-    Ok(inventory)
-}
-
-fn build_qa_readiness(
-    files: &[(String, u64)],
-    manifests: &[ManifestSummary],
-    entrypoints: &[EntrypointHint],
-) -> QaReadiness {
-    let file_paths: Vec<&str> = files.iter().map(|(path, _)| path.as_str()).collect();
-
-    let browser_config_sources: Vec<String> = file_paths
-        .iter()
-        .filter(|path| {
-            let lower = path.to_ascii_lowercase();
-            lower.ends_with("playwright.config.ts")
-                || lower.ends_with("playwright.config.js")
-                || lower.ends_with("playwright.config.mjs")
-                || lower.ends_with("cypress.config.ts")
-                || lower.ends_with("cypress.config.js")
-                || lower.ends_with("cypress.config.mjs")
-        })
-        .take(8)
-        .map(|path| (*path).to_string())
-        .collect();
-
-    let browser_spec_sources: Vec<String> = file_paths
-        .iter()
-        .filter(|path| {
-            let lower = path.to_ascii_lowercase();
-            let browserish_dir = lower.contains("/e2e/")
-                || lower.contains("/playwright/")
-                || lower.contains("/cypress/")
-                || lower.starts_with("e2e/")
-                || lower.starts_with("tests/e2e/")
-                || lower.starts_with("cypress/");
-            let browserish_name = lower.ends_with(".spec.ts")
-                || lower.ends_with(".spec.tsx")
-                || lower.ends_with(".spec.js")
-                || lower.ends_with(".spec.jsx");
-            browserish_dir && browserish_name
-        })
-        .take(12)
-        .map(|path| (*path).to_string())
-        .collect();
-
-    let runnable_script_names = [
-        "dev",
-        "start",
-        "preview",
-        "serve",
-        "tauri:dev",
-        "desktop:dev",
-    ];
-    let qa_script_names = [
-        "e2e",
-        "test:e2e",
-        "playwright",
-        "test:playwright",
-        "cypress",
-        "test:cypress",
-        "qa",
-        "synthetic-qa",
-        "test:synthetic-qa",
-    ];
-
-    let runnable_script_sources: Vec<String> = manifests
-        .iter()
-        .filter(|manifest| {
-            manifest.kind == "package.json"
-                && manifest
-                    .scripts
-                    .iter()
-                    .any(|script| runnable_script_names.contains(&script.as_str()))
-        })
-        .map(|manifest| manifest.path.clone())
-        .take(8)
-        .collect();
-
-    let qa_script_sources: Vec<String> = manifests
-        .iter()
-        .filter(|manifest| {
-            manifest.kind == "package.json"
-                && manifest.scripts.iter().any(|script| {
-                    let lower = script.to_ascii_lowercase();
-                    qa_script_names.contains(&lower.as_str())
-                        || lower.contains("e2e")
-                        || lower.contains("playwright")
-                        || lower.contains("cypress")
-                        || lower.contains("qa")
-                })
-        })
-        .map(|manifest| manifest.path.clone())
-        .take(8)
-        .collect();
-
-    let browser_dep_sources: Vec<String> = manifests
-        .iter()
-        .filter(|manifest| {
-            manifest.dependencies.iter().any(|dep| {
-                dep == "@playwright/test"
-                    || dep == "playwright"
-                    || dep == "cypress"
-                    || dep == "puppeteer"
-            })
-        })
-        .map(|manifest| manifest.path.clone())
-        .take(8)
-        .collect();
-
-    let artifact_sources: Vec<String> = file_paths
-        .iter()
-        .filter(|path| {
-            let lower = path.to_ascii_lowercase();
-            lower.contains("playwright-report/")
-                || lower.contains("test-results/")
-                || lower.contains("cypress/screenshots/")
-                || lower.contains("cypress/videos/")
-                || lower.ends_with("trace.zip")
-                || lower.ends_with("report.html")
-        })
-        .take(8)
-        .map(|path| (*path).to_string())
-        .collect();
-
-    let route_sources: Vec<String> = entrypoints
-        .iter()
-        .filter(|entry| {
-            entry.kind == "web"
-                || entry.reason.to_ascii_lowercase().contains("react")
-                || entry.reason.to_ascii_lowercase().contains("router")
-        })
-        .map(|entry| entry.path.clone())
-        .take(10)
-        .collect();
-
-    let docs_sources: Vec<String> = file_paths
-        .iter()
-        .filter(|path| {
-            let lower = path.to_ascii_lowercase();
-            lower.contains("qa")
-                || lower.contains("playwright")
-                || lower.contains("cypress")
-                || lower.contains("e2e")
-        })
-        .filter(|path| path.ends_with(".md") || path.ends_with(".mdx"))
-        .take(8)
-        .map(|path| (*path).to_string())
-        .collect();
-
-    let mut score = 0;
-    if !browser_config_sources.is_empty() {
-        score += 20;
-    } else if !browser_dep_sources.is_empty() {
-        score += 12;
-    }
-    if !browser_spec_sources.is_empty() {
-        score += 25;
-    }
-    if !qa_script_sources.is_empty() {
-        score += 20;
-    }
-    if !runnable_script_sources.is_empty() {
-        score += 15;
-    }
-    if !artifact_sources.is_empty() {
-        score += 10;
-    } else if !browser_config_sources.is_empty() || !browser_dep_sources.is_empty() {
-        score += 5;
-    }
-    if !route_sources.is_empty() {
-        score += 5;
-    }
-    if !docs_sources.is_empty() {
-        score += 5;
-    }
-    score = score.min(100);
-
-    let status = if score >= 75 {
-        "ready"
-    } else if score >= 45 {
-        "partial"
-    } else {
-        "missing"
-    }
-    .to_string();
-
-    let signal = |id: &str,
-                  label: &str,
-                  ready: bool,
-                  partial: bool,
-                  detail: String,
-                  sources: Vec<String>|
-     -> QaReadinessSignal {
-        QaReadinessSignal {
-            id: id.to_string(),
-            label: label.to_string(),
-            status: if ready {
-                "ready"
-            } else if partial {
-                "partial"
-            } else {
-                "missing"
-            }
-            .to_string(),
-            detail,
-            sources,
-        }
-    };
-
-    let mut runner_sources = browser_config_sources.clone();
-    for source in &browser_dep_sources {
-        push_unique_limited(&mut runner_sources, source.clone(), 8);
-    }
-
-    let signals = vec![
-        signal(
-            "browser_runner",
-            "Browser runner",
-            !browser_config_sources.is_empty(),
-            !browser_dep_sources.is_empty(),
-            if !browser_config_sources.is_empty() {
-                format!(
-                    "{} browser runner config file{} found.",
-                    browser_config_sources.len(),
-                    if browser_config_sources.len() == 1 {
-                        ""
-                    } else {
-                        "s"
-                    }
-                )
-            } else if !browser_dep_sources.is_empty() {
-                "Browser automation dependency is installed, but no runner config was found."
-                    .to_string()
-            } else {
-                "No Playwright, Cypress, or browser runner config was found.".to_string()
-            },
-            runner_sources,
-        ),
-        signal(
-            "user_flow_specs",
-            "User-flow specs",
-            !browser_spec_sources.is_empty(),
-            false,
-            if !browser_spec_sources.is_empty() {
-                format!(
-                    "{} browser-oriented spec file{} found.",
-                    browser_spec_sources.len(),
-                    if browser_spec_sources.len() == 1 {
-                        ""
-                    } else {
-                        "s"
-                    }
-                )
-            } else {
-                "No e2e/playwright/cypress spec files were found.".to_string()
-            },
-            browser_spec_sources.clone(),
-        ),
-        signal(
-            "local_app_command",
-            "Local app command",
-            !runnable_script_sources.is_empty(),
-            false,
-            if !runnable_script_sources.is_empty() {
-                "Package scripts expose a local dev/start/preview command.".to_string()
-            } else {
-                "No obvious package script for starting the app locally was found.".to_string()
-            },
-            runnable_script_sources.clone(),
-        ),
-        signal(
-            "qa_script",
-            "QA script",
-            !qa_script_sources.is_empty(),
-            false,
-            if !qa_script_sources.is_empty() {
-                "Package scripts expose a QA/e2e/browser test command.".to_string()
-            } else {
-                "No explicit QA/e2e/browser test script was found.".to_string()
-            },
-            qa_script_sources.clone(),
-        ),
-        signal(
-            "artifact_trail",
-            "Artifact trail",
-            !artifact_sources.is_empty(),
-            !browser_config_sources.is_empty() || !browser_dep_sources.is_empty(),
-            if !artifact_sources.is_empty() {
-                "Existing browser test artifacts or reports were found.".to_string()
-            } else if !browser_config_sources.is_empty() || !browser_dep_sources.is_empty() {
-                "Runner is artifact-capable, but no existing screenshot/trace/report artifacts were found in the scanned files.".to_string()
-            } else {
-                "No browser QA artifacts or artifact-capable runner were found.".to_string()
-            },
-            artifact_sources.clone(),
-        ),
-        signal(
-            "targetable_routes",
-            "Targetable surfaces",
-            !route_sources.is_empty(),
-            false,
-            if !route_sources.is_empty() {
-                "Web entrypoints or pages give Synthetic QA candidate surfaces.".to_string()
-            } else {
-                "No obvious web entrypoint or route file was found.".to_string()
-            },
-            route_sources.clone(),
-        ),
-    ];
-
-    let suggested_flows = suggested_qa_flows(&file_paths);
-    let summary = match status.as_str() {
-        "ready" => "Repo has enough browser-runner, script, and flow evidence to seed Synthetic QA workflows from Repo Unpacked.",
-        "partial" => "Repo has some Synthetic QA building blocks, but CodeVetter should ask for the missing runner/script/spec pieces before claiming runtime coverage.",
-        _ => "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
-    }
-    .to_string();
-
-    QaReadiness {
-        score,
-        status,
-        summary,
-        signals,
-        suggested_flows,
-    }
-}
-
-fn suggested_qa_flows(paths: &[&str]) -> Vec<QaSuggestedFlow> {
-    let mut flows = Vec::new();
-    let mut push_flow = |id: String, route: String, goal: String, source: String| {
-        if flows.len() >= 8 {
-            return;
-        }
-        if flows
-            .iter()
-            .any(|flow: &QaSuggestedFlow| flow.route == route)
-        {
-            return;
-        }
-        flows.push(QaSuggestedFlow {
-            id,
-            route,
-            goal,
-            sources: vec![source],
-        });
-    };
-
-    for path in paths {
-        let lower = path.to_ascii_lowercase();
-        if lower.ends_with("/app/page.tsx") || lower == "app/page.tsx" {
-            push_flow(
-                "app-root".to_string(),
-                "/".to_string(),
-                "Open the app home page and confirm the primary content renders.".to_string(),
-                (*path).to_string(),
-            );
-            continue;
-        }
-        if lower.contains("/app/") && lower.ends_with("/page.tsx") {
-            let route = path
-                .split("/app/")
-                .nth(1)
-                .unwrap_or(path)
-                .trim_end_matches("/page.tsx")
-                .split('/')
-                .filter(|part| !part.starts_with('(') && !part.starts_with('['))
-                .collect::<Vec<_>>()
-                .join("/");
-            if !route.is_empty() {
-                push_flow(
-                    format!("next-{route}").replace('/', "-"),
-                    format!("/{route}"),
-                    format!("Open /{route} and verify the main user-visible flow."),
-                    (*path).to_string(),
-                );
-            }
-            continue;
-        }
-        if (lower.contains("/src/pages/") || lower.starts_with("src/pages/"))
-            && (lower.ends_with(".tsx") || lower.ends_with(".jsx"))
-        {
-            let stem = Path::new(path)
-                .file_stem()
-                .map(|stem| stem.to_string_lossy().to_string())
-                .unwrap_or_default();
-            if stem.is_empty() {
-                continue;
-            }
-            let route = if stem.eq_ignore_ascii_case("home") || stem.eq_ignore_ascii_case("index") {
-                "/".to_string()
-            } else {
-                format!("/{}", camel_to_kebab(&stem))
-            };
-            push_flow(
-                format!("page-{}", route.trim_start_matches('/')).replace('/', "-"),
-                route.clone(),
-                format!(
-                    "Open {route} and verify the primary screen renders without console errors."
-                ),
-                (*path).to_string(),
-            );
-        }
-    }
-
-    flows
-}
-
-fn camel_to_kebab(value: &str) -> String {
-    let mut out = String::new();
-    for (idx, ch) in value.chars().enumerate() {
-        if ch.is_ascii_uppercase() {
-            if idx > 0 {
-                out.push('-');
-            }
-            out.push(ch.to_ascii_lowercase());
-        } else if ch == '_' || ch == ' ' {
-            out.push('-');
-        } else {
-            out.push(ch.to_ascii_lowercase());
-        }
-    }
-    out.trim_matches('-').to_string()
-}
-
-fn push_unique_limited(values: &mut Vec<String>, value: impl Into<String>, limit: usize) {
-    if values.len() >= limit {
-        return;
-    }
-    let value = value.into();
-    if !value.trim().is_empty() && !values.contains(&value) {
-        values.push(value);
-    }
-}
-
-const MAX_REPO_GRAPH_NODES: usize = 260;
-const MAX_REPO_GRAPH_EDGES: usize = 520;
-
-fn graph_id(kind: &str, value: &str) -> String {
-    let slug = value
-        .chars()
-        .map(|ch| {
-            if ch.is_ascii_alphanumeric() {
-                ch.to_ascii_lowercase()
-            } else {
-                '-'
-            }
-        })
-        .collect::<String>()
-        .split('-')
-        .filter(|part| !part.is_empty())
-        .collect::<Vec<_>>()
-        .join("-");
-    format!("{kind}:{slug}")
-}
-
-fn push_repo_graph_node(nodes: &mut Vec<RepoGraphNode>, node: RepoGraphNode) -> bool {
-    if nodes.iter().any(|existing| existing.id == node.id) {
-        return false;
-    }
-    if nodes.len() >= MAX_REPO_GRAPH_NODES {
-        return false;
-    }
-    nodes.push(node);
-    true
-}
-
-fn push_repo_graph_edge(edges: &mut Vec<RepoGraphEdge>, edge: RepoGraphEdge) -> bool {
-    if edges.iter().any(|existing| {
-        existing.from == edge.from && existing.to == edge.to && existing.kind == edge.kind
-    }) {
-        return false;
-    }
-    if edges.len() >= MAX_REPO_GRAPH_EDGES {
-        return false;
-    }
-    edges.push(edge);
-    true
-}
-
-fn file_graph_node(path: &str, kind: &str, detail: &str) -> RepoGraphNode {
-    RepoGraphNode {
-        id: graph_id("file", path),
-        kind: kind.to_string(),
-        label: path.to_string(),
-        path: Some(path.to_string()),
-        detail: Some(detail.to_string()),
-        sources: vec![path.to_string()],
-    }
-}
-
-fn build_repo_graph(
-    root: &Path,
-    files: &[(String, u64)],
-    manifests: &[ManifestSummary],
-    entrypoints: &[EntrypointHint],
-) -> RepoGraph {
-    let mut nodes = Vec::new();
-    let mut edges = Vec::new();
-    let mut truncated = false;
-    let file_paths: Vec<&str> = files.iter().map(|(path, _)| path.as_str()).collect();
-
-    for entry in entrypoints.iter().take(80) {
-        if !push_repo_graph_node(
-            &mut nodes,
-            file_graph_node(&entry.path, "file", &entry.reason),
-        ) {
-            truncated = true;
-        }
-    }
-
-    for manifest in manifests.iter().take(40) {
-        let package_label = manifest
-            .name
-            .clone()
-            .unwrap_or_else(|| manifest.path.clone());
-        let package_id = graph_id("package", &manifest.path);
-        if !push_repo_graph_node(
-            &mut nodes,
-            RepoGraphNode {
-                id: package_id.clone(),
-                kind: "package".to_string(),
-                label: package_label,
-                path: Some(manifest.path.clone()),
-                detail: Some(format!("{} manifest", manifest.kind)),
-                sources: vec![manifest.path.clone()],
-            },
-        ) {
-            truncated = true;
-        }
-
-        for script in manifest.scripts.iter().take(18) {
-            let script_id = graph_id("script", &format!("{}:{script}", manifest.path));
-            if !push_repo_graph_node(
-                &mut nodes,
-                RepoGraphNode {
-                    id: script_id.clone(),
-                    kind: "script".to_string(),
-                    label: script.clone(),
-                    path: Some(manifest.path.clone()),
-                    detail: Some("package script".to_string()),
-                    sources: vec![manifest.path.clone()],
-                },
-            ) {
-                truncated = true;
-            }
-            if !push_repo_graph_edge(
-                &mut edges,
-                RepoGraphEdge {
-                    from: package_id.clone(),
-                    to: script_id,
-                    kind: "defines".to_string(),
-                    evidence: format!("{} defines npm script `{script}`", manifest.path),
-                    sources: vec![manifest.path.clone()],
-                },
-            ) {
-                truncated = true;
-            }
-        }
-    }
-
-    for flow in suggested_qa_flows(&file_paths) {
-        let Some(source) = flow.sources.first() else {
-            continue;
-        };
-        let route_id = graph_id("route", &flow.route);
-        let file_id = graph_id("file", source);
-        let _ = push_repo_graph_node(&mut nodes, file_graph_node(source, "file", "route file"));
-        if !push_repo_graph_node(
-            &mut nodes,
-            RepoGraphNode {
-                id: route_id.clone(),
-                kind: "route".to_string(),
-                label: flow.route.clone(),
-                path: Some(source.clone()),
-                detail: Some(flow.goal.clone()),
-                sources: flow.sources.clone(),
-            },
-        ) {
-            truncated = true;
-        }
-        if !push_repo_graph_edge(
-            &mut edges,
-            RepoGraphEdge {
-                from: file_id,
-                to: route_id,
-                kind: "routes_to".to_string(),
-                evidence: "route inferred from page file path".to_string(),
-                sources: flow.sources,
-            },
-        ) {
-            truncated = true;
-        }
-    }
-
-    for path in file_paths.iter().filter(|path| is_test_path(path)).take(80) {
-        let test_id = graph_id("test", path);
-        if !push_repo_graph_node(
-            &mut nodes,
-            RepoGraphNode {
-                id: test_id.clone(),
-                kind: "test".to_string(),
-                label: (*path).to_string(),
-                path: Some((*path).to_string()),
-                detail: Some("test/spec file".to_string()),
-                sources: vec![(*path).to_string()],
-            },
-        ) {
-            truncated = true;
-        }
-    }
-
-    for path in file_paths
-        .iter()
-        .filter(|path| should_scan_for_graph_markers(path))
-        .take(300)
-    {
-        let abs = root.join(path);
-        let content = read_first_bytes(&abs, 80 * 1024);
-        if content.is_empty() {
-            continue;
-        }
-        let file_id = graph_id("file", path);
-        scan_tauri_commands(
-            path,
-            &content,
-            &mut nodes,
-            &mut edges,
-            &mut truncated,
-            &file_id,
-        );
-        scan_db_tables(
-            path,
-            &content,
-            &mut nodes,
-            &mut edges,
-            &mut truncated,
-            &file_id,
-        );
-        scan_decision_markers(
-            path,
-            &content,
-            &mut nodes,
-            &mut edges,
-            &mut truncated,
-            &file_id,
-        );
-    }
-
-    nodes.sort_by(|a, b| a.kind.cmp(&b.kind).then_with(|| a.label.cmp(&b.label)));
-    edges.sort_by(|a, b| {
-        a.kind
-            .cmp(&b.kind)
-            .then_with(|| a.from.cmp(&b.from))
-            .then_with(|| a.to.cmp(&b.to))
-    });
-
-    RepoGraph {
-        schema_version: 1,
-        nodes,
-        edges,
-        truncated,
-    }
-}
-
-fn is_test_path(path: &str) -> bool {
-    let lower = path.to_ascii_lowercase();
-    lower.ends_with(".test.ts")
-        || lower.ends_with(".test.tsx")
-        || lower.ends_with(".spec.ts")
-        || lower.ends_with(".spec.tsx")
-        || lower.ends_with("_test.rs")
-        || lower.contains("/tests/")
-        || lower.starts_with("tests/")
-}
-
-fn should_scan_for_graph_markers(path: &str) -> bool {
-    let lower = path.to_ascii_lowercase();
-    lower.ends_with(".rs")
-        || lower.ends_with(".ts")
-        || lower.ends_with(".tsx")
-        || lower.ends_with(".js")
-        || lower.ends_with(".jsx")
-        || lower.ends_with(".sql")
-        || lower.ends_with(".md")
-        || lower.ends_with(".mdx")
-}
-
-fn build_repo_health(root: &Path, files: &[(String, u64)]) -> RepoHealth {
-    let churn = read_git_file_churn(root, 120);
-    let test_paths: Vec<String> = files
-        .iter()
-        .filter(|(path, _)| is_test_path(path))
-        .map(|(path, _)| path.clone())
-        .collect();
-
-    let mut candidates: Vec<(String, u64)> = files
-        .iter()
-        .filter(|(path, _)| should_scan_for_health(path))
-        .cloned()
-        .collect();
-    candidates.sort_by(|a, b| {
-        let churn_a = churn.get(&a.0).copied().unwrap_or(0);
-        let churn_b = churn.get(&b.0).copied().unwrap_or(0);
-        churn_b
-            .cmp(&churn_a)
-            .then_with(|| b.1.cmp(&a.1))
-            .then_with(|| a.0.cmp(&b.0))
-    });
-
-    let truncated = candidates.len() > MAX_HEALTH_FILES_ANALYZED;
-    let mut analyzed = Vec::new();
-    let mut total_score = 0.0;
-    let mut files_with_test_signal = 0usize;
-
-    for (path, bytes) in candidates.into_iter().take(MAX_HEALTH_FILES_ANALYZED) {
-        let content = read_first_bytes(&root.join(&path), 220 * 1024);
-        if content.trim().is_empty() {
-            continue;
-        }
-        let file_churn = churn.get(&path).copied().unwrap_or(0);
-        let has_test_signal = has_test_signal_for_path(&path, &test_paths);
-        let health_file = analyze_health_file(&path, bytes, &content, file_churn, has_test_signal);
-        if health_file.has_test_signal {
-            files_with_test_signal += 1;
-        }
-        total_score += health_file.score;
-        analyzed.push(health_file);
-    }
-
-    analyzed.sort_by(|a, b| {
-        a.score
-            .partial_cmp(&b.score)
-            .unwrap_or(std::cmp::Ordering::Equal)
-            .then_with(|| b.churn.cmp(&a.churn))
-            .then_with(|| b.lines.cmp(&a.lines))
-            .then_with(|| a.path.cmp(&b.path))
-    });
-
-    let files_analyzed = analyzed.len();
-    let average_score = if files_analyzed == 0 {
-        10.0
-    } else {
-        round_one(total_score / files_analyzed as f64)
-    };
-    let hotspot_count = analyzed
-        .iter()
-        .filter(|file| file.bucket == "hotspot")
-        .count();
-    let top_files: Vec<RepoHealthFile> = analyzed.into_iter().take(12).collect();
-
-    let summary = if files_analyzed == 0 {
-        "No source files were eligible for deterministic health analysis.".to_string()
-    } else {
-        format!(
-            "Deterministic scan scored {} source file{} across simple size, churn, structural, test-adjacency, and performance-risk signals. {} hotspot{} surfaced; average score is {:.1}/10. Treat these as review leads, not proof of a bug.",
-            files_analyzed,
-            if files_analyzed == 1 { "" } else { "s" },
-            hotspot_count,
-            if hotspot_count == 1 { "" } else { "s" },
-            average_score
-        )
-    };
-
-    RepoHealth {
-        schema_version: 1,
-        summary,
-        average_score,
-        hotspot_count,
-        files_analyzed,
-        files_with_test_signal,
-        top_files,
-        truncated,
-    }
-}
-
-fn should_scan_for_health(path: &str) -> bool {
-    if looks_sensitive_path(path) || is_test_path(path) {
-        return false;
-    }
-    let lower = path.to_ascii_lowercase();
-    lower.ends_with(".rs")
-        || lower.ends_with(".ts")
-        || lower.ends_with(".tsx")
-        || lower.ends_with(".js")
-        || lower.ends_with(".jsx")
-        || lower.ends_with(".py")
-        || lower.ends_with(".go")
-        || lower.ends_with(".java")
-        || lower.ends_with(".kt")
-        || lower.ends_with(".swift")
-        || lower.ends_with(".rb")
-        || lower.ends_with(".php")
-        || lower.ends_with(".cs")
-        || lower.ends_with(".vue")
-        || lower.ends_with(".svelte")
-}
-
-fn analyze_health_file(
-    path: &str,
-    bytes: u64,
-    content: &str,
-    churn: usize,
-    has_test_signal: bool,
-) -> RepoHealthFile {
-    let lines = content.lines().count();
-    let mut findings = Vec::new();
-
-    if lines >= 900 {
-        push_health_finding(
-            &mut findings,
-            path,
-            "large_file",
-            "Large file",
-            "maintainability",
-            "high",
-            format!("{lines} lines in one source file; inspect whether the module hides multiple responsibilities."),
-        );
-    } else if lines >= 450 {
-        push_health_finding(
-            &mut findings,
-            path,
-            "large_file",
-            "Large file",
-            "maintainability",
-            "medium",
-            format!("{lines} lines in one source file; changes here may be harder to review."),
-        );
-    }
-
-    let max_indent = max_indent_depth(content);
-    if max_indent >= 8 {
-        push_health_finding(
-            &mut findings,
-            path,
-            "deep_nesting",
-            "Deep nesting",
-            "defect",
-            "high",
-            format!("Maximum indentation depth is about {max_indent}; deeply nested branches are bug-prone review targets."),
-        );
-    } else if max_indent >= 6 {
-        push_health_finding(
-            &mut findings,
-            path,
-            "deep_nesting",
-            "Deep nesting",
-            "defect",
-            "medium",
-            format!("Maximum indentation depth is about {max_indent}; inspect branch-heavy paths before risky edits."),
-        );
-    }
-
-    let long_block = longest_brace_block(content);
-    if long_block >= 180 {
-        push_health_finding(
-            &mut findings,
-            path,
-            "long_block",
-            "Long function/block",
-            "maintainability",
-            "medium",
-            format!("A brace-delimited block spans roughly {long_block} lines; consider extracting a helper when touching it."),
-        );
-    }
-
-    if churn >= 180 {
-        push_health_finding(
-            &mut findings,
-            path,
-            "churn_hotspot",
-            "High churn",
-            "defect",
-            "high",
-            format!("Recent git history shows {churn} changed lines in this file; combine review with history and tests."),
-        );
-    } else if churn >= 60 {
-        push_health_finding(
-            &mut findings,
-            path,
-            "churn_hotspot",
-            "Moderate churn",
-            "defect",
-            "medium",
-            format!("Recent git history shows {churn} changed lines in this file; it is a change hotspot."),
-        );
-    }
-
-    if !has_test_signal && (churn >= 50 || lines >= 400) {
-        push_health_finding(
-            &mut findings,
-            path,
-            "untested_hotspot",
-            "No adjacent test signal",
-            "defect",
-            "medium",
-            "No obvious sibling test/spec file was found for a large or churny source file."
-                .to_string(),
-        );
-    }
-
-    if detects_io_in_loop(content) {
-        push_health_finding(
-            &mut findings,
-            path,
-            "io_in_loop",
-            "I/O inside loop",
-            "performance",
-            "medium",
-            "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.".to_string(),
-        );
-    }
-
-    if detects_boundary_shell_or_fs(content) {
-        push_health_finding(
-            &mut findings,
-            path,
-            "io_boundary",
-            "I/O or process boundary",
-            "defect",
-            "low",
-            "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.".to_string(),
-        );
-    }
-
-    let mut score: f64 = 10.0;
-    let mut category_deductions: HashMap<String, f64> = HashMap::new();
-    for finding in &findings {
-        let deduction: f64 = match finding.severity.as_str() {
-            "high" => 1.2,
-            "medium" => 0.7,
-            _ => 0.3,
-        };
-        let cap: f64 = match finding.dimension.as_str() {
-            "defect" => 3.5,
-            "maintainability" => 2.5,
-            "performance" => 1.0,
-            _ => 1.0,
-        };
-        let used = category_deductions
-            .entry(finding.dimension.clone())
-            .or_insert(0.0);
-        let allowed = (cap - *used).max(0.0);
-        let applied = deduction.min(allowed);
-        *used += applied;
-        score -= applied;
-    }
-    score = round_one(score.clamp(1.0, 10.0));
-    let bucket = if score <= 6.5 {
-        "hotspot"
-    } else if score <= 8.0 {
-        "watch"
-    } else {
-        "healthy"
-    }
-    .to_string();
-
-    let mut refactoring_targets = Vec::new();
-    if lines >= 900 || long_block >= 180 {
-        refactoring_targets
-            .push("Split file or extract helper around the largest cohesive flow.".to_string());
-    }
-    if max_indent >= 6 {
-        refactoring_targets
-            .push("Flatten guard-heavy branches before adding behavior.".to_string());
-    }
-    if detects_io_in_loop(content) {
-        refactoring_targets
-            .push("Hoist repeated I/O or batch loop work where behavior allows.".to_string());
-    }
-    refactoring_targets.truncate(3);
-
-    RepoHealthFile {
-        path: path.to_string(),
-        score,
-        bucket,
-        lines,
-        bytes,
-        churn,
-        has_test_signal,
-        findings,
-        refactoring_targets,
-    }
-}
-
-fn push_health_finding(
-    findings: &mut Vec<RepoHealthFinding>,
-    path: &str,
-    id: &str,
-    label: &str,
-    dimension: &str,
-    severity: &str,
-    detail: String,
-) {
-    if findings.iter().any(|finding| finding.id == id) {
-        return;
-    }
-    findings.push(RepoHealthFinding {
-        id: id.to_string(),
-        label: label.to_string(),
-        dimension: dimension.to_string(),
-        severity: severity.to_string(),
-        detail,
-        sources: vec![path.to_string()],
-    });
-}
-
-fn max_indent_depth(content: &str) -> usize {
-    content
-        .lines()
-        .filter(|line| {
-            let trimmed = line.trim();
-            !trimmed.is_empty() && !trimmed.starts_with("//") && !trimmed.starts_with('#')
-        })
-        .map(|line| {
-            line.chars()
-                .take_while(|ch| *ch == ' ' || *ch == '\t')
-                .count()
-                / 2
-        })
-        .max()
-        .unwrap_or(0)
-}
-
-fn longest_brace_block(content: &str) -> usize {
-    let mut stack: Vec<usize> = Vec::new();
-    let mut longest = 0usize;
-    for (idx, line) in content.lines().enumerate() {
-        for ch in line.chars() {
-            if ch == '{' {
-                stack.push(idx);
-            } else if ch == '}' {
-                if let Some(start) = stack.pop() {
-                    longest = longest.max(idx.saturating_sub(start) + 1);
-                }
-            }
-        }
-    }
-    longest
-}
-
-fn detects_io_in_loop(content: &str) -> bool {
-    let mut loop_window = 0usize;
-    for line in content.lines() {
-        let lower = line.trim().to_ascii_lowercase();
-        if lower.starts_with("for ")
-            || lower.starts_with("while ")
-            || lower.contains(".map(")
-            || lower.contains(".foreach(")
-            || lower.contains("for_each(")
-        {
-            loop_window = 18;
-        } else if loop_window > 0 {
-            loop_window -= 1;
-        }
-        if loop_window > 0 && looks_like_io_call(&lower) {
-            return true;
-        }
-    }
-    false
-}
-
-fn detects_boundary_shell_or_fs(content: &str) -> bool {
-    content
-        .lines()
-        .take(900)
-        .map(|line| line.trim().to_ascii_lowercase())
-        .any(|line| looks_like_io_call(&line))
-}
-
-fn looks_like_io_call(line: &str) -> bool {
-    line.contains("command::new")
-        || line.contains("std::process")
-        || line.contains("child_process")
-        || line.contains("subprocess.")
-        || line.contains(".spawn(")
-        || line.contains("fs::")
-        || line.contains("std::fs")
-        || line.contains("read_to_string")
-        || line.contains("file::open")
-        || line.contains("fetch(")
-        || line.contains("axios.")
-        || line.contains("request(")
-        || line.contains(".execute(")
-        || line.contains(".query(")
-        || line.contains("sqlx::")
-        || line.contains("rusqlite")
-}
-
-fn has_test_signal_for_path(path: &str, test_paths: &[String]) -> bool {
-    if is_test_path(path) {
-        return true;
-    }
-    let stem = Path::new(path)
-        .file_stem()
-        .map(|stem| stem.to_string_lossy().to_ascii_lowercase())
-        .unwrap_or_default();
-    if stem.is_empty() {
-        return false;
-    }
-    test_paths.iter().any(|test_path| {
-        let lower = test_path.to_ascii_lowercase();
-        lower.contains(&format!("{stem}.test"))
-            || lower.contains(&format!("{stem}.spec"))
-            || lower.contains(&format!("{stem}_test"))
-            || lower.contains(&format!("/{stem}/"))
+    Ok(InventoryBuildResult {
+        inventory,
+        profile: profiler.finish(),
     })
-}
-
-fn read_git_file_churn(root: &Path, limit: usize) -> HashMap<String, usize> {
-    let output = StdCommand::new("git")
-        .args([
-            "log",
-            &format!("-n{limit}"),
-            "--numstat",
-            "--format=commit %H",
-            "--",
-            ".",
-        ])
-        .current_dir(root)
-        .output();
-
-    let Ok(output) = output else {
-        return HashMap::new();
-    };
-    if !output.status.success() {
-        return HashMap::new();
-    }
-
-    let mut churn = HashMap::new();
-    for line in String::from_utf8_lossy(&output.stdout).lines() {
-        if line.starts_with("commit ") || line.trim().is_empty() {
-            continue;
-        }
-        let mut parts = line.split('\t');
-        let added = parts
-            .next()
-            .and_then(|part| part.parse::<usize>().ok())
-            .unwrap_or(0);
-        let deleted = parts
-            .next()
-            .and_then(|part| part.parse::<usize>().ok())
-            .unwrap_or(0);
-        let Some(path) = parts.next() else {
-            continue;
-        };
-        if path.is_empty() || is_binary_path(path) {
-            continue;
-        }
-        *churn.entry(path.to_string()).or_insert(0) += added + deleted;
-    }
-    churn
-}
-
-fn round_one(value: f64) -> f64 {
-    (value * 10.0).round() / 10.0
-}
-
-fn scan_tauri_commands(
-    path: &str,
-    content: &str,
-    nodes: &mut Vec<RepoGraphNode>,
-    edges: &mut Vec<RepoGraphEdge>,
-    truncated: &mut bool,
-    file_id: &str,
-) {
-    let mut pending_command_attr = false;
-    for line in content.lines() {
-        let trimmed = line.trim();
-        if trimmed.starts_with("#[tauri::command") {
-            pending_command_attr = true;
-            continue;
-        }
-        if !pending_command_attr {
-            continue;
-        }
-        if let Some(rest) = trimmed
-            .strip_prefix("pub async fn ")
-            .or_else(|| trimmed.strip_prefix("pub fn "))
-            .or_else(|| trimmed.strip_prefix("async fn "))
-            .or_else(|| trimmed.strip_prefix("fn "))
-        {
-            let name = rest
-                .split(|ch: char| ch == '(' || ch.is_whitespace())
-                .next()
-                .unwrap_or("")
-                .trim();
-            if name.is_empty() {
-                pending_command_attr = false;
-                continue;
-            }
-            let command_id = graph_id("tauri_command", name);
-            if !push_repo_graph_node(
-                nodes,
-                RepoGraphNode {
-                    id: command_id.clone(),
-                    kind: "tauri_command".to_string(),
-                    label: name.to_string(),
-                    path: Some(path.to_string()),
-                    detail: Some("Tauri command boundary".to_string()),
-                    sources: vec![path.to_string()],
-                },
-            ) {
-                *truncated = true;
-            }
-            if !push_repo_graph_edge(
-                edges,
-                RepoGraphEdge {
-                    from: file_id.to_string(),
-                    to: command_id,
-                    kind: "defines".to_string(),
-                    evidence: "function has #[tauri::command] attribute".to_string(),
-                    sources: vec![path.to_string()],
-                },
-            ) {
-                *truncated = true;
-            }
-            pending_command_attr = false;
-        }
-    }
-}
-
-fn scan_db_tables(
-    path: &str,
-    content: &str,
-    nodes: &mut Vec<RepoGraphNode>,
-    edges: &mut Vec<RepoGraphEdge>,
-    truncated: &mut bool,
-    file_id: &str,
-) {
-    for line in content.lines() {
-        let upper = line.to_ascii_uppercase();
-        let Some(idx) = upper.find("CREATE TABLE") else {
-            continue;
-        };
-        let after = line[idx + "CREATE TABLE".len()..]
-            .trim()
-            .trim_start_matches("IF NOT EXISTS")
-            .trim();
-        let table = after
-            .split(|ch: char| ch == '(' || ch.is_whitespace())
-            .next()
-            .unwrap_or("")
-            .trim_matches('"')
-            .trim_matches('`')
-            .trim();
-        if table.is_empty() {
-            continue;
-        }
-        let table_id = graph_id("db_table", table);
-        if !push_repo_graph_node(
-            nodes,
-            RepoGraphNode {
-                id: table_id.clone(),
-                kind: "db_table".to_string(),
-                label: table.to_string(),
-                path: Some(path.to_string()),
-                detail: Some("database table".to_string()),
-                sources: vec![path.to_string()],
-            },
-        ) {
-            *truncated = true;
-        }
-        if !push_repo_graph_edge(
-            edges,
-            RepoGraphEdge {
-                from: file_id.to_string(),
-                to: table_id,
-                kind: "persists_to".to_string(),
-                evidence: "CREATE TABLE statement".to_string(),
-                sources: vec![path.to_string()],
-            },
-        ) {
-            *truncated = true;
-        }
-    }
-}
-
-fn scan_decision_markers(
-    path: &str,
-    content: &str,
-    nodes: &mut Vec<RepoGraphNode>,
-    edges: &mut Vec<RepoGraphEdge>,
-    truncated: &mut bool,
-    file_id: &str,
-) {
-    for (idx, line) in content.lines().enumerate().take(600) {
-        let marker = ["WHY:", "DECISION:", "TRADEOFF:"]
-            .iter()
-            .find(|marker| line.contains(**marker));
-        let Some(marker) = marker else {
-            continue;
-        };
-        let detail = line
-            .split_once(marker)
-            .map(|(_, rest)| rest.trim())
-            .unwrap_or(line.trim())
-            .chars()
-            .take(160)
-            .collect::<String>();
-        let source = format!("{path}#L{}", idx + 1);
-        let decision_id = graph_id("decision", &source);
-        if !push_repo_graph_node(
-            nodes,
-            RepoGraphNode {
-                id: decision_id.clone(),
-                kind: "decision".to_string(),
-                label: marker.trim_end_matches(':').to_ascii_lowercase(),
-                path: Some(path.to_string()),
-                detail: Some(detail),
-                sources: vec![source.clone()],
-            },
-        ) {
-            *truncated = true;
-        }
-        if !push_repo_graph_edge(
-            edges,
-            RepoGraphEdge {
-                from: file_id.to_string(),
-                to: decision_id,
-                kind: "decided_by".to_string(),
-                evidence: format!("{marker} marker"),
-                sources: vec![source],
-            },
-        ) {
-            *truncated = true;
-        }
-    }
-}
-
-fn build_history_brief(
-    root: &Path,
-    files: &[(String, u64)],
-    manifests: &[ManifestSummary],
-) -> RepoHistoryBrief {
-    let commits = read_recent_git_commits(root, 12);
-    let mut decisions = collect_history_decisions(root, files, 16);
-    let mut test_hints = collect_history_test_hints(files, manifests, 16);
-    let mut sources = Vec::new();
-    let mut truncated = false;
-
-    if decisions.len() > 12 {
-        decisions.truncate(12);
-        truncated = true;
-    }
-    if test_hints.len() > 12 {
-        test_hints.truncate(12);
-        truncated = true;
-    }
-
-    for decision in &decisions {
-        push_unique_limited(&mut sources, decision.source.clone(), 24);
-    }
-    for hint in &test_hints {
-        push_unique_limited(&mut sources, hint.path.clone(), 24);
-    }
-    for manifest in manifests.iter().take(4) {
-        push_unique_limited(&mut sources, manifest.path.clone(), 24);
-    }
-
-    let summary = if commits.is_empty() && decisions.is_empty() && test_hints.is_empty() {
-        "No recent git commits, decision markers, or test hints were available from the bounded local scan.".to_string()
-    } else {
-        format!(
-            "Local history brief captured {} recent commit{}, {} decision marker{}, and {} test hint{} for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
-            commits.len(),
-            if commits.len() == 1 { "" } else { "s" },
-            decisions.len(),
-            if decisions.len() == 1 { "" } else { "s" },
-            test_hints.len(),
-            if test_hints.len() == 1 { "" } else { "s" },
-        )
-    };
-
-    RepoHistoryBrief {
-        schema_version: 1,
-        summary,
-        recent_commits: commits,
-        decisions,
-        test_hints,
-        sources,
-        truncated,
-    }
-}
-
-fn read_recent_git_commits(root: &Path, limit: usize) -> Vec<RepoHistoryCommit> {
-    let output = StdCommand::new("git")
-        .args([
-            "log",
-            &format!("-n{limit}"),
-            "--date=short",
-            "--format=%H%x1f%ad%x1f%s",
-        ])
-        .current_dir(root)
-        .output();
-
-    let Ok(output) = output else {
-        return Vec::new();
-    };
-    if !output.status.success() {
-        return Vec::new();
-    }
-
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .filter_map(parse_git_commit_line)
-        .collect()
-}
-
-fn parse_git_commit_line(line: &str) -> Option<RepoHistoryCommit> {
-    let mut parts = line.splitn(3, '\x1f');
-    let sha = parts.next()?.trim();
-    let date = parts
-        .next()
-        .map(str::trim)
-        .filter(|value| !value.is_empty());
-    let subject = parts.next()?.trim();
-    if sha.is_empty() || subject.is_empty() {
-        return None;
-    }
-
-    Some(RepoHistoryCommit {
-        sha: sha.chars().take(12).collect(),
-        date: date.map(String::from),
-        subject: subject.chars().take(180).collect(),
-    })
-}
-
-fn collect_history_decisions(
-    root: &Path,
-    files: &[(String, u64)],
-    limit: usize,
-) -> Vec<RepoHistoryDecision> {
-    let mut decisions = Vec::new();
-    for (path, _) in files
-        .iter()
-        .filter(|(path, _)| should_scan_for_history_markers(path))
-        .take(320)
-    {
-        if decisions.len() >= limit {
-            break;
-        }
-        let content = read_first_bytes(&root.join(path), 80 * 1024);
-        if content.is_empty() {
-            continue;
-        }
-        for (idx, line) in content.lines().enumerate().take(700) {
-            if decisions.len() >= limit {
-                break;
-            }
-            let marker = ["WHY:", "DECISION:", "TRADEOFF:"]
-                .iter()
-                .find(|marker| line.contains(**marker));
-            let Some(marker) = marker else {
-                continue;
-            };
-            let text = line
-                .split_once(marker)
-                .map(|(_, rest)| rest.trim())
-                .unwrap_or(line.trim())
-                .chars()
-                .take(180)
-                .collect::<String>();
-            if text.is_empty() {
-                continue;
-            }
-            decisions.push(RepoHistoryDecision {
-                marker: marker.trim_end_matches(':').to_ascii_lowercase(),
-                text,
-                source: format!("{path}#L{}", idx + 1),
-            });
-        }
-    }
-    decisions
-}
-
-fn should_scan_for_history_markers(path: &str) -> bool {
-    should_scan_for_graph_markers(path) && !looks_sensitive_path(path)
-}
-
-fn looks_sensitive_path(path: &str) -> bool {
-    let lower = path.to_ascii_lowercase();
-    let basename = Path::new(&lower)
-        .file_name()
-        .map(|name| name.to_string_lossy().to_string())
-        .unwrap_or_default();
-    basename == ".env"
-        || basename.ends_with(".pem")
-        || basename.ends_with(".key")
-        || basename == "id_rsa"
-        || basename == "id_ed25519"
-        || lower.contains("/.ssh/")
-        || lower.contains("/secrets/")
-        || lower.contains("/credentials/")
-}
-
-fn collect_history_test_hints(
-    files: &[(String, u64)],
-    manifests: &[ManifestSummary],
-    limit: usize,
-) -> Vec<RepoHistoryTestHint> {
-    let mut hints = Vec::new();
-    for manifest in manifests
-        .iter()
-        .filter(|manifest| !manifest.scripts.is_empty())
-    {
-        for script in &manifest.scripts {
-            let lower = script.to_ascii_lowercase();
-            if lower.contains("test")
-                || lower.contains("lint")
-                || lower.contains("check")
-                || lower.contains("e2e")
-                || lower.contains("playwright")
-            {
-                hints.push(RepoHistoryTestHint {
-                    path: manifest.path.clone(),
-                    reason: format!("package script `{script}` is a likely verification command"),
-                });
-                if hints.len() >= limit {
-                    return hints;
-                }
-            }
-        }
-    }
-
-    for (path, _) in files.iter().filter(|(path, _)| is_test_path(path)) {
-        if hints.iter().any(|hint| hint.path == *path) {
-            continue;
-        }
-        hints.push(RepoHistoryTestHint {
-            path: path.clone(),
-            reason: "test/spec file anchors expected behavior".to_string(),
-        });
-        if hints.len() >= limit {
-            break;
-        }
-    }
-
-    hints
 }
 
 fn read_git_metadata(root: &Path) -> (Option<String>, Option<String>, Option<String>) {
+    if let Some(metadata) = read_git_metadata_from_files(root) {
+        return metadata;
+    }
+
     let sha = StdCommand::new("git")
         .args(["rev-parse", "HEAD"])
         .current_dir(root)
@@ -3490,626 +947,458 @@ fn read_git_metadata(root: &Path) -> (Option<String>, Option<String>, Option<Str
     (sha, branch, remote)
 }
 
-#[allow(clippy::too_many_arguments)]
-fn walk(
-    root: &Path,
-    dir: &Path,
-    depth: u32,
-    max_depth: u32,
-    ignore_patterns: &[GlobPattern],
-    out: &mut Vec<(String, u64)>,
-    skipped: &mut usize,
-    bytes_scanned: &mut u64,
-    max_files_hit: &mut bool,
-    ignored_dirs: &mut Vec<String>,
-) {
-    if depth > max_depth || *max_files_hit {
-        return;
-    }
-    let entries = match fs::read_dir(dir) {
-        Ok(e) => e,
-        Err(_) => return,
-    };
-
-    for entry in entries.flatten() {
-        if *max_files_hit {
-            return;
-        }
-        let path = entry.path();
-        let name = entry.file_name().to_string_lossy().to_string();
-
-        if ALWAYS_SKIP.contains(&name.as_str()) {
-            if path.is_dir() {
-                let rel = path
-                    .strip_prefix(root)
-                    .unwrap_or(&path)
-                    .to_string_lossy()
-                    .to_string();
-                if !ignored_dirs.contains(&rel) {
-                    ignored_dirs.push(rel);
-                }
-            }
-            continue;
-        }
-
-        let rel = path
-            .strip_prefix(root)
-            .unwrap_or(&path)
-            .to_string_lossy()
-            .to_string();
-
-        if is_ignored(&rel, path.is_dir(), ignore_patterns) {
-            if path.is_dir() && !ignored_dirs.contains(&rel) {
-                ignored_dirs.push(rel.clone());
-            } else {
-                *skipped += 1;
-            }
-            continue;
-        }
-
-        if path.is_dir() {
-            walk(
-                root,
-                &path,
-                depth + 1,
-                max_depth,
-                ignore_patterns,
-                out,
-                skipped,
-                bytes_scanned,
-                max_files_hit,
-                ignored_dirs,
-            );
-        } else if path.is_file() {
-            // Skip binary/heavy files
-            if is_binary_path(&rel) {
-                *skipped += 1;
-                continue;
-            }
-            let size = fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
-            if size > MAX_FILE_BYTES {
-                *skipped += 1;
-                continue;
-            }
-            *bytes_scanned += size;
-            out.push((rel, size));
-            if out.len() >= MAX_FILES {
-                *max_files_hit = true;
-                return;
-            }
-        }
-    }
-}
-
-fn is_binary_path(rel: &str) -> bool {
-    let lower = rel.to_lowercase();
-    if lower.ends_with(".lock")
-        || lower.ends_with("-lock.json")
-        || lower.ends_with("pnpm-lock.yaml")
-        || lower.ends_with("yarn.lock")
-        || lower.ends_with("cargo.lock")
-        || lower.ends_with("poetry.lock")
-        || lower.ends_with(".min.js")
-        || lower.ends_with(".min.css")
-    {
-        return true;
-    }
-    let ext = Path::new(&lower)
-        .extension()
-        .map(|s| s.to_string_lossy().to_string())
-        .unwrap_or_default();
-    BINARY_EXTS.contains(&ext.as_str())
-}
-
-fn language_for_path(path: &str) -> Option<&'static str> {
-    let ext = Path::new(path)
-        .extension()
-        .map(|s| s.to_string_lossy().to_lowercase())
-        .unwrap_or_default();
-    Some(match ext.as_str() {
-        "ts" | "tsx" => "TypeScript",
-        "js" | "jsx" | "mjs" | "cjs" => "JavaScript",
-        "rs" => "Rust",
-        "py" => "Python",
-        "go" => "Go",
-        "rb" => "Ruby",
-        "java" => "Java",
-        "kt" | "kts" => "Kotlin",
-        "swift" => "Swift",
-        "c" | "h" => "C",
-        "cpp" | "cc" | "hpp" | "cxx" => "C++",
-        "cs" => "C#",
-        "php" => "PHP",
-        "ex" | "exs" => "Elixir",
-        "erl" => "Erlang",
-        "scala" => "Scala",
-        "lua" => "Lua",
-        "vue" => "Vue",
-        "svelte" => "Svelte",
-        "html" | "htm" => "HTML",
-        "css" => "CSS",
-        "scss" | "sass" => "Sass",
-        "sql" => "SQL",
-        "sh" | "bash" | "zsh" => "Shell",
-        "md" | "mdx" => "Markdown",
-        "json" => "JSON",
-        "yaml" | "yml" => "YAML",
-        "toml" => "TOML",
-        _ => return None,
-    })
-}
-
-fn read_first_bytes(path: &Path, limit: usize) -> String {
-    use std::io::Read;
-    let mut file = match fs::File::open(path) {
-        Ok(f) => f,
-        Err(_) => return String::new(),
-    };
-    let mut buf = vec![0u8; limit];
-    let n = file.read(&mut buf).unwrap_or(0);
-    buf.truncate(n);
-    String::from_utf8_lossy(&buf).to_string()
-}
-
-fn parse_manifest(root: &Path, rel: &str) -> Option<ManifestSummary> {
-    let basename = Path::new(rel)
-        .file_name()
-        .map(|s| s.to_string_lossy().to_string())
-        .unwrap_or_default()
-        .to_lowercase();
-
-    // Only top-level + apps/*/ + packages/*/ to avoid noise
-    let depth = rel.matches('/').count();
-    if depth > 3 {
+fn count_git_tracked_files(root: &Path) -> Option<usize> {
+    let output = StdCommand::new("git")
+        .args(["ls-files", "-z"])
+        .current_dir(root)
+        .output()
+        .ok()?;
+    if !output.status.success() {
         return None;
     }
-
-    let abs = root.join(rel);
-    match basename.as_str() {
-        "package.json" => parse_package_json(&abs, rel),
-        "cargo.toml" => parse_cargo_toml(&abs, rel),
-        "pyproject.toml" => parse_pyproject(&abs, rel),
-        "go.mod" => parse_go_mod(&abs, rel),
-        "gemfile" => Some(ManifestSummary {
-            path: rel.to_string(),
-            kind: "gemfile".to_string(),
-            name: None,
-            version: None,
-            dependencies: Vec::new(),
-            scripts: Vec::new(),
-        }),
-        "composer.json" => Some(ManifestSummary {
-            path: rel.to_string(),
-            kind: "composer.json".to_string(),
-            name: None,
-            version: None,
-            dependencies: Vec::new(),
-            scripts: Vec::new(),
-        }),
-        "tauri.conf.json" => Some(ManifestSummary {
-            path: rel.to_string(),
-            kind: "tauri.conf.json".to_string(),
-            name: None,
-            version: None,
-            dependencies: Vec::new(),
-            scripts: Vec::new(),
-        }),
-        _ => None,
-    }
+    Some(
+        output
+            .stdout
+            .split(|byte| *byte == 0)
+            .filter(|path| !path.is_empty())
+            .count(),
+    )
 }
 
-fn parse_package_json(abs: &Path, rel: &str) -> Option<ManifestSummary> {
-    let raw = fs::read_to_string(abs).ok()?;
-    let v: Value = serde_json::from_str(&raw).ok()?;
-    let name = v.get("name").and_then(|x| x.as_str()).map(String::from);
-    let version = v.get("version").and_then(|x| x.as_str()).map(String::from);
-
-    let mut deps: Vec<String> = Vec::new();
-    for key in &["dependencies", "devDependencies", "peerDependencies"] {
-        if let Some(map) = v.get(*key).and_then(|x| x.as_object()) {
-            for k in map.keys() {
-                deps.push(k.to_string());
-            }
-        }
-    }
-    deps.sort();
-    deps.dedup();
-    deps.truncate(80);
-
-    let scripts: Vec<String> = v
-        .get("scripts")
-        .and_then(|x| x.as_object())
-        .map(|m| m.keys().take(40).cloned().collect())
-        .unwrap_or_default();
-
-    Some(ManifestSummary {
-        path: rel.to_string(),
-        kind: "package.json".to_string(),
-        name,
-        version,
-        dependencies: deps,
-        scripts,
-    })
-}
-
-fn parse_cargo_toml(abs: &Path, rel: &str) -> Option<ManifestSummary> {
-    let raw = fs::read_to_string(abs).ok()?;
-    let mut name: Option<String> = None;
-    let mut version: Option<String> = None;
-    let mut deps: Vec<String> = Vec::new();
-    let mut in_deps = false;
-    for line in raw.lines() {
-        let trimmed = line.trim();
-        if trimmed.starts_with('[') {
-            in_deps = trimmed == "[dependencies]"
-                || trimmed == "[dev-dependencies]"
-                || trimmed == "[build-dependencies]"
-                || trimmed.starts_with("[target.");
-            if !in_deps {
-                continue;
-            }
-            continue;
-        }
-        if !in_deps {
-            if let Some(rest) = trimmed.strip_prefix("name") {
-                if let Some(v) = parse_toml_string_value(rest) {
-                    name = Some(v);
-                }
-            }
-            if let Some(rest) = trimmed.strip_prefix("version") {
-                if let Some(v) = parse_toml_string_value(rest) {
-                    version = Some(v);
-                }
-            }
-        } else {
-            if let Some(eq_idx) = trimmed.find('=') {
-                let dep = trimmed[..eq_idx].trim().trim_matches('"').to_string();
-                if !dep.is_empty() && !dep.starts_with('#') {
-                    deps.push(dep);
-                }
-            }
-        }
-    }
-    deps.sort();
-    deps.dedup();
-    deps.truncate(80);
-    Some(ManifestSummary {
-        path: rel.to_string(),
-        kind: "cargo.toml".to_string(),
-        name,
-        version,
-        dependencies: deps,
-        scripts: Vec::new(),
-    })
-}
-
-fn parse_toml_string_value(rest: &str) -> Option<String> {
-    let after_eq = rest.split_once('=')?.1.trim();
-    let unquoted = after_eq.trim_matches('"').trim_matches('\'');
-    if unquoted.is_empty() {
-        None
+fn build_inventory_coverage(
+    sampled_files: &[(String, u64)],
+    tracked_files: Option<&[String]>,
+    estimated_total_files: Option<usize>,
+    capped: bool,
+) -> InventoryCoverageSummary {
+    let total_files = estimated_total_files.or_else(|| tracked_files.map(|files| files.len()));
+    let sample_percent = total_files.filter(|total| *total > 0).map(|total| {
+        let pct = (sampled_files.len() as f64 / total as f64) * 100.0;
+        (pct * 10.0).round() / 10.0
+    });
+    let strategy = if capped && tracked_files.is_some() {
+        "stratified_git_sample"
+    } else if capped {
+        "bounded_walk_sample"
     } else {
-        Some(unquoted.to_string())
-    }
-}
-
-fn parse_pyproject(abs: &Path, rel: &str) -> Option<ManifestSummary> {
-    let raw = fs::read_to_string(abs).ok()?;
-    let mut name = None;
-    let mut version = None;
-    let mut deps: Vec<String> = Vec::new();
-    let mut in_deps = false;
-    for line in raw.lines() {
-        let trimmed = line.trim();
-        if trimmed.starts_with('[') {
-            in_deps = trimmed.contains("dependencies");
-            continue;
-        }
-        if !in_deps {
-            if let Some(rest) = trimmed.strip_prefix("name") {
-                if let Some(v) = parse_toml_string_value(rest) {
-                    name = Some(v);
-                }
-            }
-            if let Some(rest) = trimmed.strip_prefix("version") {
-                if let Some(v) = parse_toml_string_value(rest) {
-                    version = Some(v);
-                }
-            }
-        } else if let Some(dep) = trimmed.split_whitespace().next() {
-            let cleaned = dep.trim_matches('"').trim_matches(',').to_string();
-            if !cleaned.is_empty() {
-                deps.push(cleaned);
-            }
-        }
-    }
-    deps.truncate(80);
-    Some(ManifestSummary {
-        path: rel.to_string(),
-        kind: "pyproject.toml".to_string(),
-        name,
-        version,
-        dependencies: deps,
-        scripts: Vec::new(),
-    })
-}
-
-fn parse_go_mod(abs: &Path, rel: &str) -> Option<ManifestSummary> {
-    let raw = fs::read_to_string(abs).ok()?;
-    let mut name = None;
-    let mut deps: Vec<String> = Vec::new();
-    for line in raw.lines() {
-        let trimmed = line.trim();
-        if let Some(rest) = trimmed.strip_prefix("module ") {
-            name = Some(rest.trim().to_string());
-        }
-        if trimmed.starts_with("require ") || trimmed.starts_with('\t') {
-            if let Some(dep) = trimmed.split_whitespace().nth(0) {
-                if dep != "require" && !dep.starts_with("//") {
-                    deps.push(dep.to_string());
-                }
-            }
-        }
-    }
-    deps.sort();
-    deps.dedup();
-    deps.truncate(80);
-    Some(ManifestSummary {
-        path: rel.to_string(),
-        kind: "go.mod".to_string(),
-        name,
-        version: None,
-        dependencies: deps,
-        scripts: Vec::new(),
-    })
-}
-
-fn infer_stack(files: &[(String, u64)], manifests: &[ManifestSummary]) -> Vec<String> {
-    let mut tags: Vec<&'static str> = Vec::new();
-    let names: Vec<&str> = files.iter().map(|(p, _)| p.as_str()).collect();
-
-    let has = |needle: &str| names.iter().any(|p| p == &needle);
-    let has_in = |needle: &str| names.iter().any(|p| p.contains(needle));
-
-    if has("tauri.conf.json") || has_in("src-tauri/") {
-        tags.push("Tauri");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.contains(&"react".to_string()))
-    {
-        tags.push("React");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.contains(&"vue".to_string()))
-    {
-        tags.push("Vue");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.contains(&"svelte".to_string()))
-    {
-        tags.push("Svelte");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.contains(&"next".to_string()))
-    {
-        tags.push("Next.js");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.contains(&"vite".to_string()))
-        || has("vite.config.ts")
-        || has("vite.config.js")
-    {
-        tags.push("Vite");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.contains(&"tailwindcss".to_string()))
-        || has("tailwind.config.ts")
-        || has("tailwind.config.js")
-    {
-        tags.push("Tailwind");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.iter().any(|d| d == "drizzle-orm"))
-    {
-        tags.push("Drizzle");
-    }
-    if manifests.iter().any(|m| {
-        m.dependencies
-            .iter()
-            .any(|d| d == "@cloudflare/workers-types")
-    }) || has("wrangler.toml")
-        || has("wrangler.jsonc")
-    {
-        tags.push("Cloudflare Workers");
-    }
-    if manifests.iter().any(|m| m.kind == "cargo.toml") {
-        tags.push("Rust");
-    }
-    if manifests.iter().any(|m| m.kind == "go.mod") {
-        tags.push("Go");
-    }
-    if manifests.iter().any(|m| m.kind == "pyproject.toml") {
-        tags.push("Python");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.iter().any(|d| d == "@playwright/test"))
-    {
-        tags.push("Playwright");
-    }
-    if manifests
-        .iter()
-        .any(|m| m.dependencies.iter().any(|d| d == "vitest"))
-    {
-        tags.push("Vitest");
-    }
-    if has(".github/workflows") || has_in(".github/workflows/") {
-        tags.push("GitHub Actions");
-    }
-    if has("Dockerfile") || has("docker-compose.yml") || has("docker-compose.yaml") {
-        tags.push("Docker");
-    }
-    if has("vercel.json") {
-        tags.push("Vercel");
-    }
-    if has("netlify.toml") {
-        tags.push("Netlify");
-    }
-    if has("fly.toml") {
-        tags.push("Fly.io");
-    }
-
-    tags.sort();
-    tags.dedup();
-    tags.into_iter().map(String::from).collect()
-}
-
-fn infer_entrypoints(
-    files: &[(String, u64)],
-    manifests: &[ManifestSummary],
-    stack_tags: &[String],
-) -> Vec<EntrypointHint> {
-    let mut hits: Vec<EntrypointHint> = Vec::new();
-    let names: Vec<&str> = files.iter().map(|(p, _)| p.as_str()).collect();
-    let push_if = |hits: &mut Vec<EntrypointHint>, path: &str, kind: &str, reason: &str| {
-        if names.contains(&path) {
-            hits.push(EntrypointHint {
-                path: path.to_string(),
-                kind: kind.to_string(),
-                reason: reason.to_string(),
-            });
-        }
+        "full_walk"
     };
 
-    push_if(&mut hits, "README.md", "docs", "Repository readme");
-    push_if(&mut hits, "AGENTS.md", "docs", "Agent instructions");
-    push_if(&mut hits, "agents.md", "docs", "Agent instructions");
-    push_if(&mut hits, "CLAUDE.md", "docs", "Claude instructions");
-    push_if(&mut hits, ".env.example", "config", "Required env vars");
+    let language_source: Vec<(&str, u64)> = if let Some(files) = tracked_files {
+        files.iter().map(|path| (path.as_str(), 0)).collect()
+    } else {
+        sampled_files
+            .iter()
+            .map(|(path, size)| (path.as_str(), *size))
+            .collect()
+    };
 
-    // Common code entrypoints (existence checked across full file list)
-    let candidates = [
-        ("src/main.rs", "bin", "Rust binary entrypoint"),
-        ("src/lib.rs", "bin", "Rust library entrypoint"),
-        ("src/index.ts", "web", "TS entrypoint"),
-        ("src/index.tsx", "web", "TSX entrypoint"),
-        ("src/main.ts", "web", "Vite/TS entrypoint"),
-        ("src/main.tsx", "web", "Vite/React entrypoint"),
-        ("src/App.tsx", "web", "React root component"),
-        ("src/App.vue", "web", "Vue root component"),
-        ("pages/_app.tsx", "web", "Next.js Pages Router"),
-        ("app/page.tsx", "web", "Next.js App Router"),
-        ("app/layout.tsx", "web", "Next.js root layout"),
-        ("server.ts", "server", "Server entrypoint"),
-        ("server.js", "server", "Server entrypoint"),
-        ("worker.ts", "server", "Cloudflare worker"),
-        ("workerd.ts", "server", "Cloudflare worker"),
-        ("index.html", "web", "Static html shell"),
-        ("manage.py", "script", "Django manage.py"),
-        ("main.py", "script", "Python entrypoint"),
-        ("app.py", "script", "Flask app"),
-    ];
-    for (path, kind, reason) in candidates {
-        push_if(&mut hits, path, kind, reason);
-    }
-
-    // Walk every file looking for nested entrypoints (apps/*/src/main.tsx etc.)
-    for (p, _) in files {
-        if p.ends_with("src/main.rs") && p != "src/main.rs" {
-            hits.push(EntrypointHint {
-                path: p.clone(),
-                kind: "bin".to_string(),
-                reason: "Rust binary entrypoint".to_string(),
-            });
+    let mut lang_map: HashMap<&'static str, (usize, u64)> = HashMap::new();
+    let mut dir_map: HashMap<String, (usize, u64)> = HashMap::new();
+    for (path, bytes) in language_source {
+        if let Some(lang) = language_for_path(path) {
+            let entry = lang_map.entry(lang).or_insert((0, 0));
+            entry.0 += 1;
+            entry.1 += bytes;
         }
-        if p.ends_with("src-tauri/tauri.conf.json") {
-            hits.push(EntrypointHint {
-                path: p.clone(),
-                kind: "desktop".to_string(),
-                reason: "Tauri config".to_string(),
-            });
-        }
-        if p.ends_with("src/main.tsx") && p != "src/main.tsx" {
-            hits.push(EntrypointHint {
-                path: p.clone(),
-                kind: "web".to_string(),
-                reason: "Vite React entrypoint".to_string(),
-            });
-        }
-        if p.ends_with("src/App.tsx") && p != "src/App.tsx" {
-            hits.push(EntrypointHint {
-                path: p.clone(),
-                kind: "web".to_string(),
-                reason: "React root".to_string(),
-            });
-        }
-        if p.ends_with("vite.config.ts") || p.ends_with("vite.config.js") {
-            hits.push(EntrypointHint {
-                path: p.clone(),
-                kind: "config".to_string(),
-                reason: "Vite config".to_string(),
-            });
-        }
-        if p.ends_with("playwright.config.ts") {
-            hits.push(EntrypointHint {
-                path: p.clone(),
-                kind: "config".to_string(),
-                reason: "Playwright e2e config".to_string(),
-            });
-        }
-        if p.ends_with(".github/workflows/ci.yml")
-            || p.ends_with(".github/workflows/release.yml")
-            || (p.starts_with(".github/workflows/") && p.ends_with(".yml"))
-        {
-            hits.push(EntrypointHint {
-                path: p.clone(),
-                kind: "config".to_string(),
-                reason: "GitHub Actions workflow".to_string(),
-            });
-        }
-    }
-
-    // Manifest-based: package.json scripts → "scripts" entrypoint
-    for m in manifests {
-        if m.kind == "package.json" && !m.scripts.is_empty() {
-            let preview: Vec<String> = m.scripts.iter().take(8).cloned().collect();
-            hits.push(EntrypointHint {
-                path: m.path.clone(),
-                kind: "config".to_string(),
-                reason: format!("npm scripts: {}", preview.join(", ")),
-            });
-        }
-    }
-
-    // Stack hint nudges
-    if stack_tags.contains(&"Tauri".to_string()) {
-        for (p, _) in files {
-            if p.ends_with("src-tauri/src/main.rs") {
-                hits.push(EntrypointHint {
-                    path: p.clone(),
-                    kind: "desktop".to_string(),
-                    reason: "Tauri Rust backend".to_string(),
-                });
+        if let Some(top) = path.split('/').next() {
+            if path.contains('/') {
+                let entry = dir_map.entry(top.to_string()).or_insert((0, 0));
+                entry.0 += 1;
+                entry.1 += bytes;
             }
         }
     }
 
-    // De-dup by path
-    let mut seen = std::collections::HashSet::new();
-    hits.retain(|h| seen.insert(h.path.clone()));
-    hits.truncate(60);
-    hits
+    let mut languages: Vec<LanguageCount> = lang_map
+        .into_iter()
+        .map(|(language, (files, bytes))| LanguageCount {
+            language: language.to_string(),
+            files,
+            bytes,
+        })
+        .collect();
+    languages.sort_by(|a, b| {
+        b.files
+            .cmp(&a.files)
+            .then_with(|| a.language.cmp(&b.language))
+    });
+    languages.truncate(20);
+
+    let mut top_level_dirs: Vec<DirSummary> = dir_map
+        .into_iter()
+        .map(|(path, (file_count, bytes))| DirSummary {
+            path,
+            file_count,
+            bytes,
+        })
+        .collect();
+    top_level_dirs.sort_by(|a, b| {
+        b.file_count
+            .cmp(&a.file_count)
+            .then_with(|| a.path.cmp(&b.path))
+    });
+    top_level_dirs.truncate(24);
+
+    let mut notes = Vec::new();
+    if capped {
+        notes.push(
+            "Whole-repo metadata is based on Git tracked paths; graph and health are based on the representative deep-scan sample."
+                .to_string(),
+        );
+    } else {
+        notes.push("Full local walk covered the repo within the scan cap.".to_string());
+    }
+
+    InventoryCoverageSummary {
+        schema_version: 1,
+        strategy: strategy.to_string(),
+        sampled_files: sampled_files.len(),
+        total_files,
+        sample_percent,
+        languages,
+        top_level_dirs,
+        notes,
+    }
 }
 
-// ─── Synthesis prompt ───────────────────────────────────────────────────────
+fn read_git_metadata_from_files(
+    root: &Path,
+) -> Option<(Option<String>, Option<String>, Option<String>)> {
+    let git_dir = resolve_git_dir(root)?;
+    let head = fs::read_to_string(git_dir.join("HEAD")).ok()?;
+    let head = head.trim();
 
+    let (sha, branch) = if let Some(reference) = head.strip_prefix("ref: ") {
+        let reference = reference.trim();
+        let branch = reference
+            .strip_prefix("refs/heads/")
+            .map(|value| value.to_string());
+        let sha = read_git_ref(&git_dir, reference);
+        (sha, branch)
+    } else if is_git_sha(head) {
+        (Some(head.to_string()), None)
+    } else {
+        (None, None)
+    };
+
+    let remote = read_origin_remote(&git_dir);
+    Some((sha, branch, remote))
+}
+
+fn resolve_git_dir(root: &Path) -> Option<PathBuf> {
+    for dir in root.ancestors() {
+        let dot_git = dir.join(".git");
+        if dot_git.is_dir() {
+            return Some(dot_git);
+        }
+
+        if dot_git.is_file() {
+            let raw = fs::read_to_string(&dot_git).ok()?;
+            let gitdir = raw.trim().strip_prefix("gitdir:")?.trim();
+            let path = PathBuf::from(gitdir);
+            return if path.is_absolute() {
+                Some(path)
+            } else {
+                Some(dir.join(path))
+            };
+        }
+    }
+    None
+}
+
+fn read_git_ref(git_dir: &Path, reference: &str) -> Option<String> {
+    let loose = git_dir.join(reference);
+    if let Ok(value) = fs::read_to_string(loose) {
+        let sha = value.trim();
+        if is_git_sha(sha) {
+            return Some(sha.to_string());
+        }
+    }
+
+    let packed = fs::read_to_string(git_dir.join("packed-refs")).ok()?;
+    for line in packed.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') || line.starts_with('^') {
+            continue;
+        }
+        let mut parts = line.split_whitespace();
+        let sha = parts.next()?;
+        let name = parts.next()?;
+        if name == reference && is_git_sha(sha) {
+            return Some(sha.to_string());
+        }
+    }
+    None
+}
+
+fn read_origin_remote(git_dir: &Path) -> Option<String> {
+    let config = fs::read_to_string(git_dir.join("config")).ok()?;
+    let mut in_origin = false;
+    for line in config.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            in_origin = trimmed == r#"[remote "origin"]"#;
+            continue;
+        }
+        if in_origin {
+            if let Some(url) = trimmed.strip_prefix("url") {
+                let url = url.trim_start();
+                if let Some(value) = url.strip_prefix('=') {
+                    let value = value.trim();
+                    if !value.is_empty() {
+                        return Some(value.to_string());
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+fn is_git_sha(value: &str) -> bool {
+    value.len() >= 7 && value.len() <= 64 && value.bytes().all(|b| b.is_ascii_hexdigit())
+}
+
+// ─── Inventory loading + prompts ────────────────────────────────────────────
+
+pub(crate) fn inventory_needs_enrichment(inventory: &RepoInventory) -> bool {
+    let default_history_summary = default_history_brief().summary;
+    let default_health_summary = default_repo_health().summary;
+    inventory.repo_health.files_analyzed == 0
+        || inventory.repo_health.summary == default_health_summary
+        || inventory.history_brief.summary == default_history_summary
+}
+
+pub fn enrich_stored_unpack_inventory(
+    app: &tauri::AppHandle,
+    db: &std::sync::Arc<std::sync::Mutex<rusqlite::Connection>>,
+    report_id: &str,
+    progress: Option<super::unpack_scan::ScanProgressCallback>,
+) -> Result<RepoInventory, String> {
+    enrich_stored_unpack_inventory_inner(app, db, report_id, progress, false)
+}
+
+pub fn try_enrich_stored_unpack_inventory(
+    app: &tauri::AppHandle,
+    db: &std::sync::Arc<std::sync::Mutex<rusqlite::Connection>>,
+    report_id: &str,
+    progress: Option<super::unpack_scan::ScanProgressCallback>,
+) -> Result<RepoInventory, String> {
+    enrich_stored_unpack_inventory_inner(app, db, report_id, progress, true)
+}
+
+fn enrich_stored_unpack_inventory_inner(
+    app: &tauri::AppHandle,
+    db: &std::sync::Arc<std::sync::Mutex<rusqlite::Connection>>,
+    report_id: &str,
+    progress: Option<super::unpack_scan::ScanProgressCallback>,
+    opportunistic: bool,
+) -> Result<RepoInventory, String> {
+    let mut profiler = super::unpack_scan_profile::UnpackScanProfiler::new("background_enrich");
+
+    let (mut inventory, repo_path) = {
+        let conn = lock_unpack_db(db, opportunistic)?;
+        let row: (Option<String>, String) = conn
+            .query_row(
+                "SELECT inventory_json, repo_path FROM repo_unpacked_reports WHERE id = ?1",
+                rusqlite::params![report_id],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .map_err(|e| format!("Report not found: {e}"))?;
+        let inv_json = row
+            .0
+            .ok_or_else(|| "Snapshot has no inventory.".to_string())?;
+        let inventory: RepoInventory =
+            serde_json::from_str(&inv_json).map_err(|e| format!("Invalid inventory JSON: {e}"))?;
+        (inventory, row.1)
+    };
+    profiler.step("load_db", "Load snapshot from DB");
+
+    if !inventory_needs_enrichment(&inventory) {
+        return Ok(inventory);
+    }
+
+    let root = PathBuf::from(&repo_path);
+    use rayon::prelude::*;
+    let files: Vec<(String, u64)> = inventory
+        .all_files
+        .par_iter()
+        .map(|path| {
+            let size = fs::metadata(root.join(path))
+                .map(|meta| meta.len())
+                .unwrap_or(0);
+            (path.clone(), size)
+        })
+        .collect();
+    profiler.step("file_stats", "File size metadata");
+
+    if let Some(ref cb) = progress {
+        cb(super::unpack_scan::ScanProgress {
+            phase: "analyze",
+            detail: "Building code graph from source files…".to_string(),
+            files_seen: files.len(),
+            files_skipped: 0,
+        });
+    }
+    inventory.repo_graph = build_repo_graph_with_previews(
+        &root,
+        &files,
+        &inventory.manifests,
+        &inventory.entrypoints,
+        &inventory.workspace_units,
+        None,
+    );
+    profiler.step("repo_graph", "Code graph scan");
+
+    if let Some(ref cb) = progress {
+        cb(super::unpack_scan::ScanProgress {
+            phase: "analyze",
+            detail: "Reading git history and decision markers…".to_string(),
+            files_seen: files.len(),
+            files_skipped: 0,
+        });
+    }
+    inventory.history_brief = build_history_brief(&root, &files, &inventory.manifests);
+    profiler.step("history", "Git history & decisions");
+
+    if let Some(ref cb) = progress {
+        cb(super::unpack_scan::ScanProgress {
+            phase: "analyze",
+            detail: "Scoring repo health signals…".to_string(),
+            files_seen: files.len(),
+            files_skipped: 0,
+        });
+    }
+    inventory.repo_health = build_repo_health(&root, &files);
+    profiler.step("repo_health", "Health scoring");
+
+    let inventory_json = serde_json::to_string(&inventory).map_err(|e| e.to_string())?;
+    profiler.step("serialize", "JSON serialize");
+    {
+        let conn = lock_unpack_db(db, opportunistic)?;
+        let update = || {
+            conn.execute(
+                "UPDATE repo_unpacked_reports SET inventory_json = ?1 WHERE id = ?2",
+                rusqlite::params![inventory_json, report_id],
+            )
+        };
+        if opportunistic {
+            update().map_err(|e| e.to_string())?;
+        } else {
+            crate::db::with_busy_retry(update, 15).map_err(|e| e.to_string())?;
+        }
+    }
+    profiler.step("db_update", "SQLite update");
+
+    let profile = profiler.finish();
+    super::unpack_scan_profile::emit_unpack_scan_profile(app, report_id, &repo_path, &profile);
+
+    let _ = app.emit(
+        "unpack-inventory-enriched",
+        serde_json::json!({
+            "report_id": report_id,
+            "repo_path": repo_path,
+            "inventory": trim_inventory_for_client(inventory.clone()),
+            "graph_nodes": inventory.repo_graph.nodes.len(),
+            "health_files": inventory.repo_health.files_analyzed,
+            "profile": profile,
+        }),
+    );
+
+    Ok(inventory)
+}
+
+fn lock_unpack_db<'a>(
+    db: &'a std::sync::Arc<std::sync::Mutex<rusqlite::Connection>>,
+    opportunistic: bool,
+) -> Result<std::sync::MutexGuard<'a, rusqlite::Connection>, String> {
+    if opportunistic {
+        db.try_lock()
+            .map_err(|_| "background enrich skipped: database busy".to_string())
+    } else {
+        db.lock().map_err(|e| e.to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn enrich_unpack_inventory(
+    app: tauri::AppHandle,
+    db: State<'_, crate::DbState>,
+    report_id: String,
+    scan_id: Option<String>,
+) -> Result<serde_json::Value, String> {
+    let scan_id = scan_id.unwrap_or_else(|| report_id.clone());
+    let db_arc = db.0.clone();
+    let app_for_progress = app.clone();
+    let scan_for_progress = scan_id.clone();
+    let repo_for_progress = {
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        conn.query_row(
+            "SELECT repo_path FROM repo_unpacked_reports WHERE id = ?1",
+            rusqlite::params![report_id],
+            |r| r.get::<_, String>(0),
+        )
+        .map_err(|e| format!("Report not found: {e}"))?
+    };
+    let progress_cb: super::unpack_scan::ScanProgressCallback =
+        std::sync::Arc::new(move |p: super::unpack_scan::ScanProgress| {
+            let detail = match p.phase {
+                "analyze" => p.detail,
+                _ => p.detail,
+            };
+            super::unpack_scan::emit_unpack_scan_progress(
+                &app_for_progress,
+                &scan_for_progress,
+                &repo_for_progress,
+                &detail,
+                p.files_seen,
+            );
+        });
+
+    let app_bg = app.clone();
+    let report_id_for_task = report_id.clone();
+    let inventory = tokio::task::spawn_blocking(move || {
+        enrich_stored_unpack_inventory(&app_bg, &db_arc, &report_id_for_task, Some(progress_cb))
+    })
+    .await
+    .map_err(|e| format!("enrich task join error: {e}"))??;
+
+    Ok(serde_json::json!({
+        "report_id": report_id,
+        "inventory": trim_inventory_for_client(inventory),
+    }))
+}
+
+fn load_report_inventory(
+    db: &State<'_, DbState>,
+    report_id: &str,
+    block_if_running: bool,
+) -> Result<(RepoInventory, String), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let row: (Option<String>, String, String) = conn
+        .query_row(
+            "SELECT inventory_json, repo_path, status
+             FROM repo_unpacked_reports WHERE id = ?1",
+            rusqlite::params![report_id],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .map_err(|e| format!("Report not found: {e}"))?;
+    let (inv_json, repo_path, status) = row;
+    let inv_json = inv_json
+        .ok_or_else(|| "This snapshot has no inventory. Unpack the repo first.".to_string())?;
+    if inv_json.trim().is_empty() {
+        return Err("This snapshot has no inventory. Unpack the repo first.".to_string());
+    }
+    if block_if_running && status == "running" {
+        return Err("An AI task is already in progress for this snapshot.".to_string());
+    }
+    let inventory: RepoInventory =
+        serde_json::from_str(&inv_json).map_err(|e| format!("Invalid inventory JSON: {e}"))?;
+    Ok((inventory, repo_path))
+}
+
+/// Default AI operation: full evidence-backed system brief (summary).
 fn build_synthesis_prompt(inv: &RepoInventory) -> String {
     let mut buf = String::new();
     buf.push_str(
@@ -4161,6 +1450,26 @@ in what you actually read. Return ONLY valid JSON (no markdown fences, no commen
     buf.push_str("- agent_prompt: a copy-pasteable handoff prompt summarising the project for future agents. Should let a fresh agent be productive without re-reading the repo.\n");
     buf.push_str("\n");
 
+    append_inventory_context(&mut buf, inv);
+    buf
+}
+
+fn build_unpack_ask_prompt(inv: &RepoInventory, question: &str) -> String {
+    let mut buf = String::new();
+    buf.push_str(
+        "You are CodeVetter Repo Unpacked. Answer the user's question about the repo below. \
+Use your file-read and search tools to investigate before answering. \
+Cite concrete file paths from the inventory. Be direct and practical.\n\n",
+    );
+    buf.push_str(&format!("User question:\n{question}\n\n"));
+    buf.push_str(
+        "Answer in plain text (markdown OK). Do not return JSON unless the question explicitly asks for structured data.\n\n",
+    );
+    append_inventory_context(&mut buf, inv);
+    buf
+}
+
+fn append_inventory_context(buf: &mut String, inv: &RepoInventory) {
     buf.push_str(&format!("Repo: {}\n", inv.repo_name));
     if let Some(sha) = &inv.commit_sha {
         buf.push_str(&format!("Commit: {}\n", sha));
@@ -4372,6 +1681,23 @@ in what you actually read. Return ONLY valid JSON (no markdown fences, no commen
             buf.push_str(&format!("    - {} — {}\n", hint.path, hint.reason));
         }
     }
+    if !inv.history_brief.temporal_couplings.is_empty() {
+        buf.push_str("  Co-change clusters:\n");
+        for coupling in inv.history_brief.temporal_couplings.iter().take(8) {
+            buf.push_str(&format!(
+                "    - {} — {} commit{}{}; {}\n",
+                coupling.files.join(" + "),
+                coupling.commit_count,
+                if coupling.commit_count == 1 { "" } else { "s" },
+                coupling
+                    .last_commit
+                    .as_deref()
+                    .map(|commit| format!("; latest {commit}"))
+                    .unwrap_or_default(),
+                coupling.reason
+            ));
+        }
+    }
 
     if !inv.docs.is_empty() {
         buf.push_str("\nDocs (truncated previews):\n");
@@ -4394,8 +1720,60 @@ in what you actually read. Return ONLY valid JSON (no markdown fences, no commen
             inv.all_files.len() - max_files_in_prompt
         ));
     }
+}
 
-    buf
+/// Ask a custom question against an existing unpack snapshot (no re-scan, no brief overwrite).
+#[tauri::command]
+pub async fn ask_unpack_report(
+    app: AppHandle,
+    db: State<'_, DbState>,
+    report_id: String,
+    stream_id: String,
+    question: String,
+    agent: Option<String>,
+    model: Option<String>,
+) -> Result<Value, String> {
+    let question = question.trim().to_string();
+    if question.is_empty() {
+        return Err("Question is empty.".to_string());
+    }
+    let agent = agent.unwrap_or_else(|| "claude".to_string());
+    let model_trimmed = model
+        .as_deref()
+        .map(str::trim)
+        .filter(|m| !m.is_empty())
+        .map(str::to_string);
+
+    let (inventory, repo_path) = load_report_inventory(&db, &report_id, true)?;
+    let prompt = build_unpack_ask_prompt(&inventory, &question);
+
+    let stream_ctx = CliStreamContext {
+        app: app.clone(),
+        stream_id: stream_id.clone(),
+        repo_path: repo_path.clone(),
+        agent: agent.clone(),
+    };
+
+    let repo_path_for_cli = repo_path.clone();
+    let prompt_for_cli = prompt.clone();
+    let model_for_cli = model_trimmed.clone();
+    let raw = tokio::task::spawn_blocking(move || {
+        run_cli_prompt_streaming(
+            &stream_ctx,
+            &repo_path_for_cli,
+            &prompt_for_cli,
+            model_for_cli.as_deref(),
+        )
+    })
+    .await
+    .map_err(|e| format!("cli task join error: {e}"))??;
+
+    Ok(json!({
+        "report_id": report_id,
+        "question": question,
+        "answer": raw.trim(),
+        "agent": agent,
+    }))
 }
 
 // ─── Report normalization (validate citations) ──────────────────────────────
@@ -4477,399 +1855,35 @@ fn normalize_report(parsed: &Value, inv: &RepoInventory) -> UnpackReport {
     }
 }
 
-// ─── Export helpers ─────────────────────────────────────────────────────────
-
-fn render_markdown(
-    repo_name: &str,
-    created_at: &str,
-    agent: Option<&str>,
-    model: Option<&str>,
-    report: &UnpackReport,
-    inventory: Option<&RepoInventory>,
-) -> String {
-    let mut out = String::new();
-    out.push_str(&format!("# Repo Unpacked — {}\n\n", repo_name));
-    out.push_str(&format!("_Generated: {}", created_at));
-    if let Some(a) = agent {
-        out.push_str(&format!(" · agent: {}", a));
-    }
-    if let Some(m) = model {
-        out.push_str(&format!(" · model: {}", m));
-    }
-    out.push_str("_\n\n");
-
-    if let Some(o) = &report.overview {
-        out.push_str(&format!("> {}\n\n", o));
-    }
-
-    if let Some(inv) = inventory {
-        out.push_str(&format!(
-            "**Stack:** {}\n\n",
-            if inv.stack_tags.is_empty() {
-                "—".to_string()
-            } else {
-                inv.stack_tags.join(", ")
-            }
-        ));
-        out.push_str(&format!(
-            "**Files scanned:** {} ({} skipped, {} bytes)\n\n",
-            inv.files_scanned, inv.files_skipped, inv.bytes_scanned
-        ));
-        out.push_str(&format!(
-            "**Synthetic QA readiness:** {} / 100 ({}) — {}\n\n",
-            inv.qa_readiness.score, inv.qa_readiness.status, inv.qa_readiness.summary
-        ));
-        if !inv.qa_readiness.signals.is_empty() {
-            out.push_str("### Synthetic QA Signals\n\n");
-            for signal in &inv.qa_readiness.signals {
-                out.push_str(&format!(
-                    "- **{}:** {} — {}\n",
-                    signal.label, signal.status, signal.detail
-                ));
-                if !signal.sources.is_empty() {
-                    let srcs: Vec<String> =
-                        signal.sources.iter().map(|s| format!("`{s}`")).collect();
-                    out.push_str(&format!("  - sources: {}\n", srcs.join(", ")));
-                }
-            }
-            out.push('\n');
-        }
-        if !inv.qa_readiness.suggested_flows.is_empty() {
-            out.push_str("### Suggested Synthetic QA Flows\n\n");
-            for flow in &inv.qa_readiness.suggested_flows {
-                let srcs: Vec<String> = flow.sources.iter().map(|s| format!("`{s}`")).collect();
-                out.push_str(&format!(
-                    "- `{}` — {}{}{}\n",
-                    flow.route,
-                    flow.goal,
-                    if srcs.is_empty() { "" } else { " (sources: " },
-                    if srcs.is_empty() {
-                        String::new()
-                    } else {
-                        format!("{})", srcs.join(", "))
-                    }
-                ));
-            }
-            out.push('\n');
-        }
-        if !inv.repo_graph.nodes.is_empty() {
-            out.push_str(&format!(
-                "### Repo Memory Graph\n\nSchema v{} · {} nodes · {} edges{}\n\n",
-                inv.repo_graph.schema_version,
-                inv.repo_graph.nodes.len(),
-                inv.repo_graph.edges.len(),
-                if inv.repo_graph.truncated {
-                    " · truncated"
-                } else {
-                    ""
-                }
-            ));
-            for node in inv.repo_graph.nodes.iter().take(20) {
-                out.push_str(&format!("- **{}** `{}`", node.kind, node.label));
-                if let Some(path) = &node.path {
-                    out.push_str(&format!(" — `{path}`"));
-                }
-                if let Some(detail) = &node.detail {
-                    out.push_str(&format!(" — {detail}"));
-                }
-                out.push('\n');
-            }
-            for edge in inv.repo_graph.edges.iter().take(20) {
-                out.push_str(&format!(
-                    "- `{}` -> `{}` ({}) — {}\n",
-                    edge.from, edge.to, edge.kind, edge.evidence
-                ));
-            }
-            out.push('\n');
-        }
-        if !inv.history_brief.recent_commits.is_empty()
-            || !inv.history_brief.decisions.is_empty()
-            || !inv.history_brief.test_hints.is_empty()
-        {
-            out.push_str(&format!(
-                "### Codebase History Brief\n\nSchema v{}{} · {}\n\n",
-                inv.history_brief.schema_version,
-                if inv.history_brief.truncated {
-                    " · truncated"
-                } else {
-                    ""
-                },
-                inv.history_brief.summary
-            ));
-            if !inv.history_brief.recent_commits.is_empty() {
-                out.push_str("**Recent commits**\n\n");
-                for commit in inv.history_brief.recent_commits.iter().take(8) {
-                    out.push_str(&format!(
-                        "- `{}`{} — {}\n",
-                        commit.sha,
-                        commit
-                            .date
-                            .as_deref()
-                            .map(|date| format!(" {date}"))
-                            .unwrap_or_default(),
-                        commit.subject
-                    ));
-                }
-                out.push('\n');
-            }
-            if !inv.history_brief.decisions.is_empty() {
-                out.push_str("**Decision markers**\n\n");
-                for decision in inv.history_brief.decisions.iter().take(10) {
-                    out.push_str(&format!(
-                        "- **{}** `{}` — {}\n",
-                        decision.marker, decision.source, decision.text
-                    ));
-                }
-                out.push('\n');
-            }
-            if !inv.history_brief.test_hints.is_empty() {
-                out.push_str("**Verification hints**\n\n");
-                for hint in inv.history_brief.test_hints.iter().take(10) {
-                    out.push_str(&format!("- `{}` — {}\n", hint.path, hint.reason));
-                }
-                out.push('\n');
-            }
-        }
-
-        if inv.repo_health.files_analyzed > 0 {
-            out.push_str("## Deterministic Repo Health\n\n");
-            out.push_str(&format!(
-                "{}\n\nAverage score: {:.1}/10 · hotspots: {} · files analyzed: {}{}\n\n",
-                inv.repo_health.summary,
-                inv.repo_health.average_score,
-                inv.repo_health.hotspot_count,
-                inv.repo_health.files_analyzed,
-                if inv.repo_health.truncated {
-                    " · truncated"
-                } else {
-                    ""
-                }
-            ));
-            for file in inv.repo_health.top_files.iter().take(10) {
-                out.push_str(&format!(
-                    "- `{}` — {:.1}/10 `{}` · {} lines · churn {}\n",
-                    file.path, file.score, file.bucket, file.lines, file.churn
-                ));
-                for finding in file.findings.iter().take(4) {
-                    out.push_str(&format!(
-                        "  - {} [{}:{}] {}\n",
-                        finding.label, finding.dimension, finding.severity, finding.detail
-                    ));
-                }
-                for target in file.refactoring_targets.iter().take(2) {
-                    out.push_str(&format!("  - refactor lead: {target}\n"));
-                }
-            }
-            out.push('\n');
-        }
-    }
-
-    let render_section = |out: &mut String, sec: &Option<ReportSection>| {
-        let Some(sec) = sec else { return };
-        out.push_str(&format!("## {}\n\n", sec.title));
-        if !sec.summary.is_empty() {
-            out.push_str(&format!("{}\n\n", sec.summary));
-        }
-        for c in &sec.claims {
-            let kind_marker = match c.kind.as_deref() {
-                Some("inference") => " _(inference)_",
-                _ => "",
-            };
-            out.push_str(&format!("- {}{}\n", c.claim, kind_marker));
-            if !c.sources.is_empty() {
-                let srcs: Vec<String> = c.sources.iter().map(|s| format!("`{}`", s)).collect();
-                out.push_str(&format!("  - sources: {}\n", srcs.join(", ")));
-            }
-        }
-        out.push('\n');
-    };
-
-    render_section(&mut out, &report.system_map);
-    render_section(&mut out, &report.feature_catalog);
-    render_section(&mut out, &report.data_flow);
-    render_section(&mut out, &report.behavior_traces);
-    render_section(&mut out, &report.testing_signals);
-    render_section(&mut out, &report.risk_map);
-    render_section(&mut out, &report.extension_points);
-    render_section(&mut out, &report.agent_handoff);
-
-    if let Some(prompt) = &report.agent_prompt {
-        out.push_str("## Agent Handoff Prompt\n\n");
-        out.push_str("```text\n");
-        out.push_str(prompt);
-        out.push_str("\n```\n");
-    }
-
-    out
-}
-
-fn render_agent_context_sidecar(
-    repo_name: &str,
-    created_at: &str,
-    inventory: &RepoInventory,
-) -> String {
-    let mut out = String::new();
-    out.push_str(&format!("# Agent Context Sidecar — {repo_name}\n\n"));
-    out.push_str(&format!(
-        "_Generated: {created_at} · schema: repo_graph.v{} / history_brief.v{}_\n\n",
-        inventory.repo_graph.schema_version, inventory.history_brief.schema_version
-    ));
-    out.push_str("## Use This For\n\n");
-    out.push_str("- Paste into Hunk, Graphify, or an agent session as local context.\n");
-    out.push_str("- Treat graph edges as navigation leads, not proof by themselves.\n");
-    out.push_str("- Prefer cited files and decision markers when resolving conflicts.\n\n");
-
-    out.push_str("## Repo\n\n");
-    out.push_str(&format!("- path: `{}`\n", inventory.repo_path));
-    if let Some(branch) = &inventory.branch {
-        out.push_str(&format!("- branch: `{branch}`\n"));
-    }
-    if let Some(sha) = &inventory.commit_sha {
-        out.push_str(&format!("- commit: `{}`\n", sha));
-    }
-    if !inventory.stack_tags.is_empty() {
-        out.push_str(&format!("- stack: {}\n", inventory.stack_tags.join(", ")));
-    }
-    out.push('\n');
-
-    if !inventory.history_brief.summary.is_empty() {
-        out.push_str("## History Brief\n\n");
-        out.push_str(&format!("{}\n\n", inventory.history_brief.summary));
-        for decision in inventory.history_brief.decisions.iter().take(12) {
-            out.push_str(&format!(
-                "- **{}** `{}` — {}\n",
-                decision.marker, decision.source, decision.text
-            ));
-        }
-        for hint in inventory.history_brief.test_hints.iter().take(12) {
-            out.push_str(&format!("- `{}` — {}\n", hint.path, hint.reason));
-        }
-        if !inventory.history_brief.recent_commits.is_empty() {
-            out.push_str("\nRecent commits:\n");
-            for commit in inventory.history_brief.recent_commits.iter().take(8) {
-                out.push_str(&format!(
-                    "- `{}`{} — {}\n",
-                    commit.sha,
-                    commit
-                        .date
-                        .as_deref()
-                        .map(|date| format!(" {date}"))
-                        .unwrap_or_default(),
-                    commit.subject
-                ));
-            }
-        }
-        out.push('\n');
-    }
-
-    if inventory.repo_health.files_analyzed > 0 {
-        out.push_str("## Deterministic Repo Health\n\n");
-        out.push_str(&format!(
-            "{}\n\nAverage score: {:.1}/10; hotspots: {}; files analyzed: {}{}.\n\n",
-            inventory.repo_health.summary,
-            inventory.repo_health.average_score,
-            inventory.repo_health.hotspot_count,
-            inventory.repo_health.files_analyzed,
-            if inventory.repo_health.truncated {
-                "; truncated"
-            } else {
-                ""
-            }
-        ));
-        for file in inventory.repo_health.top_files.iter().take(12) {
-            out.push_str(&format!(
-                "- `{}` — {:.1}/10 `{}`; {} lines; churn {}; test signal: {}\n",
-                file.path, file.score, file.bucket, file.lines, file.churn, file.has_test_signal
-            ));
-            for finding in file.findings.iter().take(4) {
-                out.push_str(&format!(
-                    "  - {} [{}:{}] {}\n",
-                    finding.label, finding.dimension, finding.severity, finding.detail
-                ));
-            }
-            for target in file.refactoring_targets.iter().take(2) {
-                out.push_str(&format!("  - refactor lead: {target}\n"));
-            }
-        }
-        out.push('\n');
-    }
-
-    if !inventory.repo_graph.nodes.is_empty() {
-        out.push_str("## Repo Graph Nodes\n\n");
-        for node in inventory.repo_graph.nodes.iter().take(80) {
-            out.push_str(&format!("- **{}** `{}`", node.kind, node.label));
-            if let Some(path) = &node.path {
-                out.push_str(&format!(" — `{path}`"));
-            }
-            if let Some(detail) = &node.detail {
-                out.push_str(&format!(" — {detail}"));
-            }
-            out.push('\n');
-        }
-        out.push('\n');
-    }
-
-    if !inventory.repo_graph.edges.is_empty() {
-        out.push_str("## Repo Graph Edges\n\n");
-        for edge in inventory.repo_graph.edges.iter().take(120) {
-            out.push_str(&format!(
-                "- `{}` -> `{}` ({}) — {}",
-                edge.from, edge.to, edge.kind, edge.evidence
-            ));
-            if !edge.sources.is_empty() {
-                let sources: Vec<String> = edge.sources.iter().map(|s| format!("`{s}`")).collect();
-                out.push_str(&format!("; sources: {}", sources.join(", ")));
-            }
-            out.push('\n');
-        }
-        out.push('\n');
-    }
-
-    if inventory.repo_graph.truncated || inventory.history_brief.truncated {
-        out.push_str(
-            "> This sidecar was truncated by CodeVetter's bounded local inventory scan.\n",
-        );
-    }
-
-    out
-}
-
-fn render_html(repo_name: &str, markdown_body: &str) -> String {
-    // Minimal static HTML — no external assets so the export is self-contained.
-    let escaped = markdown_body
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;");
-    format!(
-        r#"<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<title>Repo Unpacked — {repo_name}</title>
-<style>
-  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 920px; margin: 2.5rem auto; padding: 0 1.5rem; color: #1f2128; background: #fafafa; }}
-  pre {{ background: #f1f3f5; padding: 1rem; overflow-x: auto; font-size: 0.85rem; border-radius: 4px; white-space: pre-wrap; }}
-  code {{ background: #eef0f3; padding: 0.05rem 0.35rem; border-radius: 3px; font-size: 0.85rem; }}
-  h1, h2, h3 {{ font-weight: 600; }}
-</style>
-</head>
-<body>
-<pre>{escaped}</pre>
-</body>
-</html>"#
-    )
-}
-
 // ─── DB helpers ─────────────────────────────────────────────────────────────
 
-fn mark_failed(db: &State<'_, DbState>, id: &str, msg: &str, runtime_ms: i64) {
+fn mark_unpack_failed(
+    db: &State<'_, DbState>,
+    id: &str,
+    msg: &str,
+    runtime_ms: i64,
+    preserve_inventory: bool,
+) {
     if let Ok(conn) = db.0.lock() {
-        let _ = conn.execute(
+        let completed_at = chrono::Utc::now().to_rfc3339();
+        let sql = if preserve_inventory {
             "UPDATE repo_unpacked_reports
-             SET status='failed', error_message=?1, runtime_ms=?2,
-                 completed_at=?3
-             WHERE id=?4",
-            rusqlite::params![msg, runtime_ms, chrono::Utc::now().to_rfc3339(), id],
+             SET status = CASE
+                    WHEN report_json IS NULL OR trim(report_json) = '' THEN 'scan_only'
+                    ELSE status
+                  END,
+                 error_message = ?1,
+                 runtime_ms = ?2,
+                 completed_at = ?3
+             WHERE id = ?4"
+        } else {
+            "UPDATE repo_unpacked_reports
+             SET status = 'failed', error_message = ?1, runtime_ms = ?2, completed_at = ?3
+             WHERE id = ?4"
+        };
+        let _ = crate::db::with_busy_retry(
+            || conn.execute(sql, rusqlite::params![msg, runtime_ms, completed_at, id]),
+            15,
         );
     }
 }
@@ -4891,690 +1905,10 @@ fn row_to_summary(r: &rusqlite::Row<'_>) -> rusqlite::Result<Value> {
         "started_at": r.get::<_, Option<String>>(12)?,
         "completed_at": r.get::<_, Option<String>>(13)?,
         "created_at": r.get::<_, String>(14)?,
+        "analysis_ready": r.get::<_, bool>(15)?,
     }))
 }
 
-// ─── Gitignore patterns (mirrors files.rs but kept local) ───────────────────
-
-struct GlobPattern {
-    pattern: String,
-    negated: bool,
-    dir_only: bool,
-}
-
-fn parse_gitignore(root: &Path) -> Vec<GlobPattern> {
-    let path = root.join(".gitignore");
-    let content = match fs::read_to_string(path) {
-        Ok(c) => c,
-        Err(_) => return Vec::new(),
-    };
-    content
-        .lines()
-        .filter_map(|line| {
-            let line = line.trim();
-            if line.is_empty() || line.starts_with('#') {
-                return None;
-            }
-            let mut pattern = line.to_string();
-            let negated = pattern.starts_with('!');
-            if negated {
-                pattern = pattern[1..].to_string();
-            }
-            let dir_only = pattern.ends_with('/');
-            if dir_only {
-                pattern = pattern.trim_end_matches('/').to_string();
-            }
-            Some(GlobPattern {
-                pattern,
-                negated,
-                dir_only,
-            })
-        })
-        .collect()
-}
-
-fn is_ignored(rel: &str, is_dir: bool, patterns: &[GlobPattern]) -> bool {
-    let mut ignored = false;
-    let name = Path::new(rel)
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy()
-        .to_string();
-    for pat in patterns {
-        if pat.dir_only && !is_dir {
-            continue;
-        }
-        if simple_glob_match(&pat.pattern, rel, &name) {
-            ignored = !pat.negated;
-        }
-    }
-    ignored
-}
-
-fn simple_glob_match(pattern: &str, rel: &str, name: &str) -> bool {
-    if pattern.contains('/') {
-        let pattern = pattern.trim_start_matches('/');
-        return path_match(pattern, rel);
-    }
-    path_match(pattern, name)
-}
-
-fn path_match(pattern: &str, text: &str) -> bool {
-    if pattern == "**" {
-        return true;
-    }
-    if let Some(ext) = pattern.strip_prefix("*.") {
-        return text.ends_with(&format!(".{ext}"));
-    }
-    if pattern.starts_with('*') && !pattern.contains('/') {
-        return text.ends_with(&pattern[1..]);
-    }
-    if pattern == text {
-        return true;
-    }
-    if text.starts_with(pattern) && text[pattern.len()..].starts_with('/') {
-        return true;
-    }
-    false
-}
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn package_manifest(path: &str, scripts: &[&str], deps: &[&str]) -> ManifestSummary {
-        ManifestSummary {
-            path: path.to_string(),
-            kind: "package.json".to_string(),
-            name: Some("demo".to_string()),
-            version: None,
-            dependencies: deps.iter().map(|dep| (*dep).to_string()).collect(),
-            scripts: scripts.iter().map(|script| (*script).to_string()).collect(),
-        }
-    }
-
-    fn minimal_inventory() -> RepoInventory {
-        RepoInventory {
-            repo_path: "/tmp/demo".to_string(),
-            repo_name: "demo".to_string(),
-            commit_sha: Some("1234567890abcdef".to_string()),
-            branch: Some("main".to_string()),
-            remote_url: None,
-            files_scanned: 2,
-            files_skipped: 0,
-            bytes_scanned: 200,
-            max_files_hit: false,
-            languages: Vec::new(),
-            manifests: Vec::new(),
-            entrypoints: Vec::new(),
-            top_level_dirs: Vec::new(),
-            docs: Vec::new(),
-            config_files: Vec::new(),
-            stack_tags: vec!["React".to_string(), "Rust".to_string()],
-            qa_readiness: QaReadiness::default(),
-            repo_graph: RepoGraph {
-                schema_version: 1,
-                nodes: vec![RepoGraphNode {
-                    id: "file:src-review-ts".to_string(),
-                    kind: "file".to_string(),
-                    label: "src/review.ts".to_string(),
-                    path: Some("src/review.ts".to_string()),
-                    detail: Some("review surface".to_string()),
-                    sources: vec!["src/review.ts".to_string()],
-                }],
-                edges: vec![RepoGraphEdge {
-                    from: "file:src-review-ts".to_string(),
-                    to: "decision:src-review-ts-l1".to_string(),
-                    kind: "decided_by".to_string(),
-                    evidence: "DECISION marker".to_string(),
-                    sources: vec!["src/review.ts#L1".to_string()],
-                }],
-                truncated: false,
-            },
-            history_brief: RepoHistoryBrief {
-                schema_version: 1,
-                summary: "History summary".to_string(),
-                recent_commits: vec![RepoHistoryCommit {
-                    sha: "1234567890ab".to_string(),
-                    date: Some("2026-06-12".to_string()),
-                    subject: "Add history brief".to_string(),
-                }],
-                decisions: vec![RepoHistoryDecision {
-                    marker: "decision".to_string(),
-                    text: "review keeps proof local".to_string(),
-                    source: "src/review.ts#L1".to_string(),
-                }],
-                test_hints: vec![RepoHistoryTestHint {
-                    path: "package.json".to_string(),
-                    reason: "package script `test` is a likely verification command".to_string(),
-                }],
-                sources: vec!["src/review.ts#L1".to_string()],
-                truncated: false,
-            },
-            repo_health: RepoHealth::default(),
-            all_files: vec!["src/review.ts".to_string(), "package.json".to_string()],
-            ignored_dirs: Vec::new(),
-        }
-    }
-
-    #[test]
-    fn qa_readiness_scores_playwright_repo_with_flows() {
-        let files = vec![
-            ("package.json".to_string(), 200),
-            ("playwright.config.ts".to_string(), 300),
-            ("src/pages/Home.tsx".to_string(), 200),
-            ("src/pages/Checkout.tsx".to_string(), 200),
-            ("tests/e2e/checkout.spec.ts".to_string(), 500),
-            ("docs/qa.md".to_string(), 100),
-        ];
-        let manifests = vec![package_manifest(
-            "package.json",
-            &["dev", "test:synthetic-qa", "test:e2e"],
-            &["@playwright/test", "react"],
-        )];
-        let entrypoints = infer_entrypoints(&files, &manifests, &["React".to_string()]);
-
-        let readiness = build_qa_readiness(&files, &manifests, &entrypoints);
-
-        assert_eq!(readiness.status, "ready");
-        assert!(readiness.score >= 90);
-        assert!(readiness
-            .signals
-            .iter()
-            .any(|signal| signal.id == "browser_runner" && signal.status == "ready"));
-        assert!(readiness
-            .suggested_flows
-            .iter()
-            .any(|flow| flow.route == "/checkout"));
-    }
-
-    #[test]
-    fn qa_readiness_marks_missing_repo_without_browser_runner() {
-        let files = vec![("src/main.rs".to_string(), 200)];
-        let manifests = vec![ManifestSummary {
-            path: "Cargo.toml".to_string(),
-            kind: "cargo.toml".to_string(),
-            name: Some("demo".to_string()),
-            version: None,
-            dependencies: Vec::new(),
-            scripts: Vec::new(),
-        }];
-        let entrypoints = infer_entrypoints(&files, &manifests, &["Rust".to_string()]);
-
-        let readiness = build_qa_readiness(&files, &manifests, &entrypoints);
-
-        assert_eq!(readiness.status, "missing");
-        assert!(readiness.score < 45);
-        assert!(readiness.suggested_flows.is_empty());
-    }
-
-    #[test]
-    fn repo_health_flags_churny_untested_io_loop() {
-        let content = r#"
-export async function loadEverything(ids: string[]) {
-  for (const id of ids) {
-    const raw = await fetch(`/api/items/${id}`);
-    console.log(await raw.text());
-  }
-}
-"#;
-        let file = analyze_health_file("src/loadEverything.ts", 900, content, 90, false);
-
-        assert_eq!(file.bucket, "watch");
-        assert!(file
-            .findings
-            .iter()
-            .any(|finding| finding.id == "churn_hotspot"));
-        assert!(file
-            .findings
-            .iter()
-            .any(|finding| finding.id == "untested_hotspot"));
-        assert!(file
-            .findings
-            .iter()
-            .any(|finding| finding.id == "io_in_loop"));
-        assert!(file
-            .refactoring_targets
-            .iter()
-            .any(|target| target.contains("Hoist repeated I/O")));
-    }
-
-    #[test]
-    fn snapshot_commit_log_parses_commit_and_numstat_evidence() {
-        let raw = "\u{1e}abc1234\u{1f}2026-07-03\u{1f}Sarthak\u{1f}Improve unpack diffs\n12\t3\tsrc/unpack.ts\n-\t-\timage.png\n";
-        let commits = parse_snapshot_commit_log(raw);
-
-        assert_eq!(commits.len(), 1);
-        assert_eq!(commits[0].sha, "abc1234");
-        assert_eq!(commits[0].date, "2026-07-03");
-        assert_eq!(commits[0].author, "Sarthak");
-        assert_eq!(commits[0].subject, "Improve unpack diffs");
-        assert_eq!(commits[0].additions, 12);
-        assert_eq!(commits[0].deletions, 3);
-        assert_eq!(commits[0].files.len(), 2);
-        assert_eq!(commits[0].files[0].path, "src/unpack.ts");
-        assert_eq!(commits[0].files[1].path, "image.png");
-        assert!(is_safe_commit_id("abc1234"));
-        assert!(!is_safe_commit_id("HEAD~1"));
-    }
-
-    #[test]
-    fn outcome_calibration_distinguishes_pass_fail_and_empty_evidence() {
-        let empty = calibrate_outcome_evidence(0, 0, 0, 0, 0);
-        assert_eq!(empty.0, "unknown");
-
-        let proof = calibrate_outcome_evidence(2, 0, 1, 1, 1);
-        assert_eq!(proof.0, "raises");
-        assert!(proof.1.contains("2 recent proof signals"));
-
-        let regression = calibrate_outcome_evidence(0, 1, 1, 1, 0);
-        assert_eq!(regression.0, "lowers");
-
-        let mixed = calibrate_outcome_evidence(1, 1, 1, 1, 1);
-        assert_eq!(mixed.0, "mixed");
-    }
-
-    #[test]
-    fn outcome_trust_actions_prioritize_failed_rows_and_missing_baselines() {
-        let baseline_trend = outcome_trend(&[], &[], &[], &[]);
-        let baseline = outcome_trust_actions(&[], &[], &[], &[], "unknown", &baseline_trend);
-        assert_eq!(baseline.len(), 1);
-        assert_eq!(baseline[0].label, "Establish a proof baseline");
-        assert_eq!(baseline[0].priority, "high");
-
-        let failing_qa = UnpackOutcomeQaEvidence {
-            id: "qa-1".to_string(),
-            review_id: Some("review-1".to_string()),
-            loop_id: "loop-1".to_string(),
-            runner_type: "playwright".to_string(),
-            route: Some("/unpack".to_string()),
-            goal: Some("Open metric zoom".to_string()),
-            pass: false,
-            duration_ms: 1200,
-            console_errors: 2,
-            error: Some("button not found".to_string()),
-            created_at: "2026-07-03T00:00:00Z".to_string(),
-        };
-        let failed_gate = UnpackOutcomeProcedureEvidence {
-            id: "gate-1".to_string(),
-            review_id: "review-1".to_string(),
-            step_id: "build".to_string(),
-            status: "failed".to_string(),
-            source: "local".to_string(),
-            summary: "Typecheck failed".to_string(),
-            artifact: Some("artifacts/typecheck.log".to_string()),
-            created_at: "2026-07-03T00:05:00Z".to_string(),
-        };
-        let finding = UnpackOutcomeFindingEvidence {
-            file_path: Some("apps/desktop/src/pages/RepoUnpacked.tsx".to_string()),
-            title: Some("Large evidence surface".to_string()),
-            severity: Some("medium".to_string()),
-            created_at: "2026-07-03T00:10:00Z".to_string(),
-        };
-
-        let trend = outcome_trend(&[], &[failing_qa.clone()], &[failed_gate.clone()], &[finding.clone()]);
-        let actions = outcome_trust_actions(
-            &[],
-            &[failing_qa],
-            &[failed_gate],
-            &[finding],
-            "mixed",
-            &trend,
-        );
-        assert!(actions
-            .iter()
-            .any(|action| action.label == "Rerun failing QA flow"
-                && action.command.as_deref() == Some("Rerun Synthetic QA: Open metric zoom")));
-        assert!(actions
-            .iter()
-            .any(|action| action.label == "Resolve failed proof gate"
-                && action.source_path.as_deref() == Some("artifacts/typecheck.log")));
-        assert!(actions
-            .iter()
-            .any(|action| action.label == "Inspect recurring finding"
-                && action.source_path.as_deref()
-                    == Some("apps/desktop/src/pages/RepoUnpacked.tsx")));
-        assert!(actions
-            .iter()
-            .any(|action| action.label == "Require fresh proof for this delta"));
-    }
-
-    #[test]
-    fn outcome_trend_detects_regression_and_improvement() {
-        let recent_fail = UnpackOutcomeQaEvidence {
-            id: "qa-fail".to_string(),
-            review_id: None,
-            loop_id: "loop-fail".to_string(),
-            runner_type: "playwright".to_string(),
-            route: Some("/unpack".to_string()),
-            goal: Some("Recent failing flow".to_string()),
-            pass: false,
-            duration_ms: 1100,
-            console_errors: 1,
-            error: Some("regression".to_string()),
-            created_at: "2026-07-03T00:00:00Z".to_string(),
-        };
-        let prior_pass_a = UnpackOutcomeQaEvidence {
-            id: "qa-pass-a".to_string(),
-            review_id: None,
-            loop_id: "loop-pass-a".to_string(),
-            runner_type: "playwright".to_string(),
-            route: Some("/unpack".to_string()),
-            goal: Some("Prior green flow".to_string()),
-            pass: true,
-            duration_ms: 900,
-            console_errors: 0,
-            error: None,
-            created_at: "2026-06-30T00:00:00Z".to_string(),
-        };
-        let prior_pass_b = UnpackOutcomeQaEvidence {
-            id: "qa-pass-b".to_string(),
-            review_id: None,
-            loop_id: "loop-pass-b".to_string(),
-            runner_type: "playwright".to_string(),
-            route: Some("/intel".to_string()),
-            goal: Some("Prior Intel green flow".to_string()),
-            pass: true,
-            duration_ms: 950,
-            console_errors: 0,
-            error: None,
-            created_at: "2026-06-29T00:00:00Z".to_string(),
-        };
-
-        let regressing = outcome_trend(
-            &[],
-            &[recent_fail.clone(), prior_pass_a.clone(), prior_pass_b.clone()],
-            &[],
-            &[],
-        );
-        assert_eq!(regressing.direction, "regressing");
-        assert_eq!(regressing.recent.failure_count, 1);
-        assert!(regressing.summary.contains("regressing trend"));
-
-        let recent_pass = UnpackOutcomeQaEvidence {
-            id: "qa-pass-now".to_string(),
-            pass: true,
-            created_at: "2026-07-04T00:00:00Z".to_string(),
-            ..recent_fail
-        };
-        let prior_fail = UnpackOutcomeQaEvidence {
-            id: "qa-fail-before".to_string(),
-            pass: false,
-            created_at: "2026-06-28T00:00:00Z".to_string(),
-            ..prior_pass_a
-        };
-        let improving = outcome_trend(&[], &[recent_pass, prior_pass_b, prior_fail], &[], &[]);
-        assert_eq!(improving.direction, "improving");
-    }
-
-    #[test]
-    fn repo_graph_contains_core_repo_relationships_deterministically() {
-        let root =
-            std::env::temp_dir().join(format!("codevetter-graph-test-{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(root.join("src-tauri/src/commands")).expect("commands dir");
-        std::fs::create_dir_all(root.join("src-tauri/src/db")).expect("db dir");
-        std::fs::create_dir_all(root.join("src/pages")).expect("pages dir");
-        std::fs::create_dir_all(root.join("tests/e2e")).expect("tests dir");
-        std::fs::write(
-            root.join("src-tauri/src/commands/review.rs"),
-            r#"
-#[tauri::command]
-pub async fn run_review() -> Result<(), String> {
-    Ok(())
-}
-"#,
-        )
-        .expect("command file");
-        std::fs::write(
-            root.join("src-tauri/src/db/schema.rs"),
-            r##"
-const MIGRATION_SQL: &str = r#"
-CREATE TABLE IF NOT EXISTS local_reviews (
-    id TEXT PRIMARY KEY
-);
-"#;
-"##,
-        )
-        .expect("schema file");
-        std::fs::write(
-            root.join("src/pages/Review.tsx"),
-            "// DECISION: review page owns the primary user flow\nexport default function Review() { return null; }\n",
-        )
-        .expect("page file");
-        std::fs::write(
-            root.join("tests/e2e/review.spec.ts"),
-            "test('review', () => {});\n",
-        )
-        .expect("test file");
-
-        let files = vec![
-            ("package.json".to_string(), 200),
-            ("src-tauri/src/commands/review.rs".to_string(), 200),
-            ("src-tauri/src/db/schema.rs".to_string(), 200),
-            ("src/pages/Review.tsx".to_string(), 200),
-            ("tests/e2e/review.spec.ts".to_string(), 200),
-        ];
-        let manifests = vec![package_manifest(
-            "package.json",
-            &["dev", "test:e2e"],
-            &["@playwright/test", "react"],
-        )];
-        let entrypoints = infer_entrypoints(&files, &manifests, &["React".to_string()]);
-
-        let graph = build_repo_graph(&root, &files, &manifests, &entrypoints);
-        let graph_again = build_repo_graph(&root, &files, &manifests, &entrypoints);
-
-        assert_eq!(
-            serde_json::to_string(&graph).expect("graph json"),
-            serde_json::to_string(&graph_again).expect("graph json")
-        );
-        assert!(graph
-            .nodes
-            .iter()
-            .any(|node| node.kind == "script" && node.label == "test:e2e"));
-        assert!(graph
-            .nodes
-            .iter()
-            .any(|node| node.kind == "route" && node.label == "/review"));
-        assert!(graph
-            .nodes
-            .iter()
-            .any(|node| node.kind == "tauri_command" && node.label == "run_review"));
-        assert!(graph
-            .nodes
-            .iter()
-            .any(|node| node.kind == "db_table" && node.label == "local_reviews"));
-        assert!(graph.nodes.iter().any(|node| node.kind == "test"));
-        assert!(graph.nodes.iter().any(|node| node.kind == "decision"));
-        assert!(graph.edges.iter().any(|edge| edge.kind == "defines"));
-        assert!(graph.edges.iter().any(|edge| edge.kind == "routes_to"));
-        assert!(graph.edges.iter().any(|edge| edge.kind == "persists_to"));
-        assert!(graph.edges.iter().any(|edge| edge.kind == "decided_by"));
-
-        let _ = std::fs::remove_dir_all(root);
-    }
-
-    #[test]
-    fn history_brief_collects_decisions_and_verification_hints_deterministically() {
-        let root =
-            std::env::temp_dir().join(format!("codevetter-history-test-{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(root.join("src")).expect("src dir");
-        std::fs::create_dir_all(root.join("tests")).expect("tests dir");
-        std::fs::write(
-            root.join("src/review.ts"),
-            "// DECISION: review keeps proof local\nexport const proof = true;\n",
-        )
-        .expect("source file");
-        std::fs::write(
-            root.join("tests/review.test.ts"),
-            "test('proof', () => {});\n",
-        )
-        .expect("test file");
-
-        let files = vec![
-            ("package.json".to_string(), 200),
-            ("src/review.ts".to_string(), 200),
-            ("tests/review.test.ts".to_string(), 200),
-        ];
-        let manifests = vec![package_manifest(
-            "package.json",
-            &["lint", "test:review-proof"],
-            &["react"],
-        )];
-
-        let brief = build_history_brief(&root, &files, &manifests);
-        let brief_again = build_history_brief(&root, &files, &manifests);
-
-        assert_eq!(
-            serde_json::to_string(&brief).expect("history brief json"),
-            serde_json::to_string(&brief_again).expect("history brief json")
-        );
-        assert_eq!(brief.schema_version, 1);
-        assert!(brief.summary.contains("decision marker"));
-        assert!(brief
-            .decisions
-            .iter()
-            .any(|decision| decision.source == "src/review.ts#L1"));
-        assert!(brief
-            .test_hints
-            .iter()
-            .any(|hint| hint.path == "package.json" && hint.reason.contains("lint")));
-        assert!(brief
-            .test_hints
-            .iter()
-            .any(|hint| hint.path == "tests/review.test.ts"));
-
-        let _ = std::fs::remove_dir_all(root);
-    }
-
-    #[test]
-    fn parses_recent_git_commit_line() {
-        let commit = parse_git_commit_line(
-            "1234567890abcdef\x1f2026-06-12\x1fAdd Repo Unpacked history brief",
-        )
-        .expect("commit line");
-
-        assert_eq!(commit.sha, "1234567890ab");
-        assert_eq!(commit.date.as_deref(), Some("2026-06-12"));
-        assert_eq!(commit.subject, "Add Repo Unpacked history brief");
-        assert!(parse_git_commit_line("bad").is_none());
-    }
-
-    #[test]
-    fn agent_context_sidecar_exports_graph_and_history() {
-        let inventory = minimal_inventory();
-        let sidecar = render_agent_context_sidecar("demo", "2026-06-12T00:00:00Z", &inventory);
-
-        assert!(sidecar.contains("# Agent Context Sidecar"));
-        assert!(sidecar.contains("repo_graph.v1 / history_brief.v1"));
-        assert!(sidecar.contains("review keeps proof local"));
-        assert!(sidecar.contains("src/review.ts#L1"));
-        assert!(sidecar.contains("file:src-review-ts"));
-        assert!(sidecar.contains("decided_by"));
-    }
-
-    #[test]
-    fn imports_codevetter_repo_graph_from_wrapper_json() {
-        let raw = serde_json::json!({
-            "repo_graph": {
-                "schema_version": 1,
-                "nodes": [
-                    {
-                        "id": "file:src-review-ts",
-                        "kind": "file",
-                        "label": "src/review.ts",
-                        "path": "src/review.ts",
-                        "detail": "changed file",
-                        "sources": ["src/review.ts"]
-                    }
-                ],
-                "edges": [],
-                "truncated": false
-            }
-        });
-
-        let result = import_repo_graph_from_value(&raw).expect("imported graph");
-
-        assert_eq!(result.source_kind, "repo_graph");
-        assert_eq!(result.node_count, 1);
-        assert_eq!(result.edge_count, 0);
-        assert!(result.warnings.is_empty());
-        assert_eq!(result.graph.nodes[0].label, "src/review.ts");
-    }
-
-    #[test]
-    fn imports_loose_graph_json_with_source_target_edges() {
-        let raw = serde_json::json!({
-            "graph": {
-                "nodes": [
-                    {
-                        "id": "a",
-                        "type": "file",
-                        "name": "src/a.ts",
-                        "file_path": "src/a.ts"
-                    },
-                    {
-                        "id": "b",
-                        "type": "test",
-                        "name": "tests/a.test.ts"
-                    }
-                ],
-                "edges": [
-                    {
-                        "source": "a",
-                        "target": "b",
-                        "type": "tests",
-                        "description": "test covers file"
-                    }
-                ]
-            }
-        });
-
-        let result = import_repo_graph_from_value(&raw).expect("loose graph");
-
-        assert_eq!(result.source_kind, "graph");
-        assert_eq!(result.node_count, 2);
-        assert_eq!(result.edge_count, 1);
-        assert!(result
-            .warnings
-            .iter()
-            .any(|warning| warning.contains("normalized")));
-        assert_eq!(result.graph.nodes[0].kind, "file");
-        assert_eq!(result.graph.nodes[0].path.as_deref(), Some("src/a.ts"));
-        assert_eq!(result.graph.edges[0].kind, "tests");
-        assert_eq!(result.graph.edges[0].evidence, "test covers file");
-    }
-
-    #[test]
-    fn repo_inventory_deserializes_old_reports_without_qa_readiness_or_repo_graph() {
-        let raw = serde_json::json!({
-            "repo_path": "/tmp/demo",
-            "repo_name": "demo",
-            "commit_sha": null,
-            "branch": null,
-            "remote_url": null,
-            "files_scanned": 0,
-            "files_skipped": 0,
-            "bytes_scanned": 0,
-            "max_files_hit": false,
-            "languages": [],
-            "manifests": [],
-            "entrypoints": [],
-            "top_level_dirs": [],
-            "docs": [],
-            "config_files": [],
-            "stack_tags": [],
-            "all_files": [],
-            "ignored_dirs": []
-        });
-
-        let inventory: RepoInventory = serde_json::from_value(raw).expect("legacy inventory");
-
-        assert_eq!(inventory.qa_readiness.status, "missing");
-        assert_eq!(inventory.qa_readiness.score, 0);
-        assert_eq!(inventory.repo_graph.schema_version, 1);
-        assert!(inventory.repo_graph.nodes.is_empty());
-        assert_eq!(inventory.history_brief.schema_version, 1);
-        assert!(inventory.history_brief.recent_commits.is_empty());
-    }
-}
+#[path = "unpack_tests.rs"]
+mod tests;

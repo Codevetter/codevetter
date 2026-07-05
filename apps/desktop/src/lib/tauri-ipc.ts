@@ -432,6 +432,10 @@ export async function getReview(
   return safeInvoke('get_review', { id });
 }
 
+export async function deleteReview(id: string): Promise<{ deleted: boolean }> {
+  return safeInvoke('delete_review', { id });
+}
+
 /**
  * Record (or clear) the owner's usefulness verdict on a persisted finding.
  * Pass `null` to clear back to unreviewed.
@@ -988,6 +992,104 @@ export async function analyzeBlastRadius(
   });
 }
 
+// ─── Unpack deep graph (call-graph indexing) ─────────────────────────────────
+
+export interface UnpackDeepGraphStats {
+  files?: number | null;
+  nodes?: number | null;
+  edges?: number | null;
+  communities?: number | null;
+  processes?: number | null;
+}
+
+export interface UnpackDeepGraphStatus {
+  indexed: boolean;
+  indexed_at?: string | null;
+  indexed_commit?: string | null;
+  current_commit?: string | null;
+  stale: boolean;
+  stats?: UnpackDeepGraphStats | null;
+  engine_available: boolean;
+  engine_version?: string | null;
+  index_path?: string | null;
+}
+
+export interface UnpackDeepGraphDetectChanges {
+  formatted: string;
+  raw?: unknown;
+  risk_level?: string | null;
+  changed_symbols: number;
+  affected_processes: number;
+}
+
+export async function unpackDeepGraphStatus(repoPath: string): Promise<UnpackDeepGraphStatus> {
+  return safeInvoke('unpack_deep_graph_status', { repoPath });
+}
+
+export async function unpackDeepGraphAnalyze(
+  repoPath: string,
+  streamId: string,
+  indexOnly = true
+): Promise<UnpackDeepGraphStatus> {
+  return safeInvoke('unpack_deep_graph_analyze', { repoPath, streamId, indexOnly });
+}
+
+export async function unpackDeepGraphCancelAnalyze(streamId: string): Promise<boolean> {
+  return safeInvoke('unpack_deep_graph_cancel_analyze', { streamId });
+}
+
+export async function unpackDeepGraphSymbolContext(
+  repoPath: string,
+  symbol: string,
+  filePath?: string | null,
+  limit?: number
+): Promise<Record<string, unknown>> {
+  return safeInvoke('unpack_deep_graph_symbol_context', {
+    repoPath,
+    symbol,
+    filePath: filePath ?? null,
+    limit: limit ?? null,
+  });
+}
+
+export async function unpackDeepGraphSymbolImpact(
+  repoPath: string,
+  symbol: string,
+  filePath?: string | null,
+  direction?: string,
+  depth?: number,
+  limit?: number
+): Promise<Record<string, unknown>> {
+  return safeInvoke('unpack_deep_graph_symbol_impact', {
+    repoPath,
+    symbol,
+    filePath: filePath ?? null,
+    direction: direction ?? null,
+    depth: depth ?? null,
+    limit: limit ?? null,
+  });
+}
+
+export async function unpackDeepGraphQuery(
+  repoPath: string,
+  query: string,
+  limit?: number
+): Promise<Record<string, unknown>> {
+  return safeInvoke('unpack_deep_graph_query', { repoPath, query, limit: limit ?? null });
+}
+
+export async function unpackDeepGraphDetectChanges(
+  repoPath: string,
+  scope?: string,
+  baseRef?: string | null
+): Promise<UnpackDeepGraphDetectChanges> {
+  return safeInvoke('unpack_deep_graph_detect_changes', {
+    repoPath,
+    scope: scope ?? null,
+    baseRef: baseRef ?? null,
+  });
+}
+
 export async function getRepoHistoryContext(
   repoPath: string,
   diffRange: string
@@ -1184,8 +1286,18 @@ export async function getAgentUsageByDay(days?: number): Promise<AgentDayUsage[]
   });
 }
 
-export async function getUsageByModel(days?: number): Promise<ModelUsage[]> {
-  return safeInvoke<ModelUsage[]>('get_usage_by_model', { days });
+export async function getUsageByModel(
+  days?: number,
+  excludeAgents?: string[],
+  dayStart?: string,
+  dayEnd?: string
+): Promise<ModelUsage[]> {
+  return safeInvoke<ModelUsage[]>('get_usage_by_model', {
+    days: days ?? null,
+    excludeAgents: excludeAgents?.length ? excludeAgents : null,
+    dayStart: dayStart ?? null,
+    dayEnd: dayEnd ?? null,
+  });
 }
 
 // ─── Engineering Intelligence (/intel) ──────────────────────────────────────
@@ -1491,6 +1603,8 @@ export interface RateLimitWindow {
   utilization_pct: number | null; // 0–100
   reset_at: number | null; // unix epoch seconds
   resets_in_secs: number | null;
+  /** Full quota window length — used for pace/headroom projection. */
+  window_total_secs?: number | null;
   status: string | null; // "allowed" | "rate_limited"
 }
 
@@ -1579,6 +1693,24 @@ export interface LiveUsageResult {
       cache_read_tokens: number;
       total_cents: number | null;
     }>;
+  };
+  // Plan label from live quota (Devin/Grok when account.plan is unset)
+  quota_plan?: string;
+  devin_plan?: {
+    plan_name: string | null;
+    plan_end: string | null;
+    weekly_remaining_pct: number | null;
+    daily_remaining_pct: number | null;
+    weekly_reset_at_unix: number | null;
+    daily_reset_at_unix: number | null;
+  };
+  grok_billing?: {
+    credit_usage_percent: number;
+    credit_remaining_percent: number;
+    subscription_tier: string | null;
+    billing_period_start: string | null;
+    billing_period_end: string | null;
+    window_total_secs?: number | null;
   };
 }
 
@@ -1717,9 +1849,20 @@ export async function syncGitHubToken(): Promise<{
  * Opens a native OS directory picker dialog.
  * Returns the selected path, or null if cancelled.
  */
+let dialogModulePromise: Promise<typeof import('@tauri-apps/plugin-dialog')> | null = null;
+
+export function preloadDirectoryPicker(): void {
+  if (!dialogModulePromise) {
+    dialogModulePromise = import('@tauri-apps/plugin-dialog');
+  }
+  void dialogModulePromise.catch(() => {
+    dialogModulePromise = null;
+  });
+}
+
 export async function pickDirectory(title?: string): Promise<string | null> {
   try {
-    const { open } = await import('@tauri-apps/plugin-dialog');
+    const { open } = await (dialogModulePromise ?? import('@tauri-apps/plugin-dialog'));
     const selected = await open({
       directory: true,
       multiple: false,
@@ -2057,12 +2200,29 @@ export interface UnpackRepoGraph {
   truncated: boolean;
 }
 
-export interface ImportRepoGraphResult {
-  graph: UnpackRepoGraph;
-  source_kind: string;
-  node_count: number;
-  edge_count: number;
-  warnings: string[];
+export interface UnpackScanProfileStep {
+  id: string;
+  label: string;
+  ms: number;
+  pct: number;
+}
+
+export interface UnpackScanProfile {
+  stage: string;
+  total_ms: number;
+  peak_rss_bytes?: number | null;
+  steps: UnpackScanProfileStep[];
+}
+
+export interface UnpackCoverageSummary {
+  schema_version: number;
+  strategy: string;
+  sampled_files: number;
+  total_files?: number | null;
+  sample_percent?: number | null;
+  languages: UnpackLanguageCount[];
+  top_level_dirs: UnpackDirSummary[];
+  notes: string[];
 }
 
 export interface UnpackRepoHistoryCommit {
@@ -2082,12 +2242,20 @@ export interface UnpackRepoHistoryTestHint {
   reason: string;
 }
 
+export interface UnpackRepoTemporalCoupling {
+  files: string[];
+  commit_count: number;
+  last_commit?: string | null;
+  reason: string;
+}
+
 export interface UnpackRepoHistoryBrief {
   schema_version: number;
   summary: string;
   recent_commits: UnpackRepoHistoryCommit[];
   decisions: UnpackRepoHistoryDecision[];
   test_hints: UnpackRepoHistoryTestHint[];
+  temporal_couplings?: UnpackRepoTemporalCoupling[];
   sources: string[];
   truncated: boolean;
 }
@@ -2124,6 +2292,20 @@ export interface UnpackRepoHealth {
   truncated: boolean;
 }
 
+export interface UnpackWorkspaceUnitSummary {
+  path: string;
+  name: string;
+  kind: string;
+  manifest_path?: string | null;
+  build_system?: string | null;
+  file_count: number;
+  languages: UnpackLanguageCount[];
+  scripts: string[];
+  entrypoints: string[];
+  test_files: string[];
+  tags: string[];
+}
+
 export interface UnpackRepoInventory {
   repo_path: string;
   repo_name: string;
@@ -2134,6 +2316,7 @@ export interface UnpackRepoInventory {
   files_skipped: number;
   bytes_scanned: number;
   max_files_hit: boolean;
+  estimated_total_files?: number | null;
   languages: UnpackLanguageCount[];
   manifests: UnpackManifestSummary[];
   entrypoints: UnpackEntrypointHint[];
@@ -2141,12 +2324,25 @@ export interface UnpackRepoInventory {
   docs: UnpackDocFile[];
   config_files: string[];
   stack_tags: string[];
+  workspace_units?: UnpackWorkspaceUnitSummary[];
   qa_readiness?: UnpackQaReadiness | null;
   repo_graph?: UnpackRepoGraph | null;
   history_brief?: UnpackRepoHistoryBrief | null;
   repo_health?: UnpackRepoHealth | null;
   all_files: string[];
   ignored_dirs: string[];
+  coverage?: UnpackCoverageSummary | null;
+  /** Set when `all_files` was truncated for the webview (full list remains in SQLite). */
+  all_files_capped?: boolean;
+  dir_tree_preview?: UnpackDirTreeNode;
+}
+
+export interface UnpackDirTreeNode {
+  name: string;
+  path: string;
+  is_dir: boolean;
+  file_count: number;
+  children: UnpackDirTreeNode[];
 }
 
 export interface UnpackReportClaim {
@@ -2190,6 +2386,7 @@ export interface UnpackReportSummary {
   started_at: string | null;
   completed_at: string | null;
   created_at: string;
+  analysis_ready?: boolean;
 }
 
 export interface UnpackReportRecord extends UnpackReportSummary {
@@ -2319,17 +2516,185 @@ export interface GenerateUnpackResult {
   inventory: UnpackRepoInventory;
 }
 
+// ─── Repo workspace (project sidebar + snapshot history) ───────────────────
+
+export interface RepoProject {
+  id: string;
+  repo_path: string;
+  display_name: string;
+  first_opened_at: string;
+  last_opened_at: string;
+  last_unpack_at: string | null;
+  last_intel_at: string | null;
+  unpack_snapshot_count: number;
+  intel_snapshot_count: number;
+}
+
+export interface RepoIntelReportSummary {
+  id: string;
+  repo_path: string;
+  repo_name: string;
+  commit_sha: string | null;
+  status: string;
+  error_message: string | null;
+  window_days: number;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface RepoIntelReportRecord {
+  id: string;
+  repo_path: string;
+  repo_name: string;
+  commit_sha: string | null;
+  status: string;
+  error_message: string | null;
+  window_days: number;
+  report_json: string;
+  dora_json: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface SaveUnpackScanSnapshotResult {
+  report_id: string;
+  status: string;
+  inventory: UnpackRepoInventory;
+  created_at: string;
+  profiles?: UnpackScanProfile[];
+}
+
+export interface SaveIntelSnapshotResult {
+  report_id: string;
+  status: string;
+  report: RepoAttributionReport;
+  dora: DoraMetrics | null;
+  created_at: string;
+  window_days: number;
+}
+
+export async function listRepoProjects(): Promise<RepoProject[]> {
+  return safeInvoke<RepoProject[]>('list_repo_projects');
+}
+
+export async function registerRepoProject(
+  repoPath: string,
+  displayName?: string
+): Promise<RepoProject> {
+  return safeInvoke<RepoProject>('register_repo_project', {
+    repoPath,
+    displayName: displayName ?? null,
+  });
+}
+
+export async function removeRepoProject(repoPath: string): Promise<{ deleted: boolean }> {
+  return safeInvoke('remove_repo_project', { repoPath });
+}
+
+export async function saveUnpackScanSnapshot(
+  repoPath: string,
+  scanId?: string
+): Promise<SaveUnpackScanSnapshotResult> {
+  return safeInvoke<SaveUnpackScanSnapshotResult>('save_unpack_scan_snapshot', {
+    repoPath,
+    scanId: scanId ?? null,
+  });
+}
+
+export async function saveIntelSnapshot(
+  repoPath: string,
+  windowDays?: number
+): Promise<SaveIntelSnapshotResult> {
+  return safeInvoke<SaveIntelSnapshotResult>('save_intel_snapshot', {
+    repoPath,
+    windowDays: windowDays ?? null,
+  });
+}
+
+export async function listRepoIntelReports(
+  repoPath?: string,
+  limit?: number
+): Promise<RepoIntelReportSummary[]> {
+  return safeInvoke<RepoIntelReportSummary[]>('list_repo_intel_reports', {
+    repoPath: repoPath ?? null,
+    limit: limit ?? null,
+  });
+}
+
+export async function getRepoIntelReport(id: string): Promise<RepoIntelReportRecord> {
+  return safeInvoke<RepoIntelReportRecord>('get_repo_intel_report', { id });
+}
+
+export async function deleteRepoIntelReport(id: string): Promise<{ deleted: boolean }> {
+  return safeInvoke('delete_repo_intel_report', { id });
+}
+
 export async function scanRepoInventory(repoPath: string): Promise<UnpackRepoInventory> {
   return safeInvoke('scan_repo_inventory', { repoPath });
 }
 
+export type CommandCodeModelRow = {
+  id: string;
+  description: string;
+  group: string;
+};
+
+export async function listCommandCodeModels(): Promise<CommandCodeModelRow[]> {
+  return safeInvoke<CommandCodeModelRow[]>('list_command_code_models');
+}
+
+export async function cancelUnpackGeneration(reportId: string): Promise<boolean> {
+  return safeInvoke<boolean>('cancel_unpack_generation', { reportId });
+}
+
 export async function generateUnpackReport(
   repoPath: string,
-  agent?: string
+  agent?: string,
+  model?: string
 ): Promise<GenerateUnpackResult> {
   return safeInvoke('generate_unpack_report', {
     repoPath,
     agent: agent ?? null,
+    model: model?.trim() ? model.trim() : null,
+  });
+}
+
+/** Default AI op: full system brief (summary) on an existing unpack snapshot. */
+export async function synthesizeUnpackReport(
+  reportId: string,
+  agent?: string,
+  model?: string
+): Promise<GenerateUnpackResult> {
+  return safeInvoke('synthesize_unpack_report', {
+    reportId,
+    agent: agent ?? null,
+    model: model?.trim() ? model.trim() : null,
+  });
+}
+
+export interface UnpackAskResult {
+  report_id: string;
+  question: string;
+  answer: string;
+  agent: string;
+}
+
+/** Custom question against an existing unpack snapshot (does not overwrite the summary). */
+export async function askUnpackReport(
+  reportId: string,
+  streamId: string,
+  question: string,
+  agent?: string,
+  model?: string
+): Promise<UnpackAskResult> {
+  return safeInvoke('ask_unpack_report', {
+    reportId,
+    streamId,
+    question: question.trim(),
+    agent: agent ?? null,
+    model: model?.trim() ? model.trim() : null,
   });
 }
 
@@ -2373,10 +2738,6 @@ export async function exportRepoUnpackReport(
   format: 'markdown' | 'html' | 'repo_graph_json' | 'agent_context_markdown'
 ): Promise<{ content: string; format: string }> {
   return safeInvoke('export_repo_unpack_report', { id, format });
-}
-
-export async function importRepoGraphJson(content: string): Promise<ImportRepoGraphResult> {
-  return safeInvoke('import_repo_graph_json', { content });
 }
 
 // ─── Synthetic user QA ─────────────────────────────────────────────────────
