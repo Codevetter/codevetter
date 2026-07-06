@@ -547,6 +547,20 @@ test.describe('Repo Unpacked page', () => {
       .locator('aside')
       .getByRole('button', { name: /^world-class-repo/i })
       .click();
+
+    await page
+      .getByRole('navigation', { name: 'Unpack sections' })
+      .getByRole('button', { name: 'Memory' })
+      .click();
+    await expect(page.getByRole('heading', { name: 'Repo memory' })).toBeVisible();
+    await expect(page.getByText('Start here', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Export memory' })).toBeVisible();
+
+    await page
+      .getByRole('navigation', { name: 'Unpack sections' })
+      .getByRole('button', { name: 'Overview' })
+      .click();
+
     await expect(page.getByRole('button', { name: /QA posture/i })).toBeVisible();
     await page.getByRole('button', { name: /QA posture/i }).click();
     await expect(page.getByRole('dialog')).toContainText('Evidence quality');
