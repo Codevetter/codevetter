@@ -16,7 +16,9 @@ use crate::commands::unpack_analysis::{
     build_history_brief, build_history_brief_with_previews, build_repo_graph_with_previews,
     build_repo_health, build_repo_health_with_previews, build_source_preview_cache,
 };
-use crate::commands::unpack_export::{render_agent_context_sidecar, render_html, render_markdown};
+use crate::commands::unpack_export::{
+    render_agent_context_sidecar, render_html, render_markdown, render_repo_memory_markdown,
+};
 use crate::commands::unpack_inventory::{
     build_workspace_units, infer_entrypoints, infer_stack, language_for_path,
     manifest_candidate_paths, parse_manifest, read_first_bytes,
@@ -571,6 +573,12 @@ pub async fn export_repo_unpack_report(
                 return Err("Report missing inventory context.".to_string());
             };
             render_agent_context_sidecar(&repo_name, &created_at, inventory)
+        }
+        "repo_memory_markdown" => {
+            let Some(inventory) = inventory.as_ref() else {
+                return Err("Report missing inventory memory.".to_string());
+            };
+            render_repo_memory_markdown(&repo_name, &created_at, inventory, Some(&report))
         }
         _ => body,
     };

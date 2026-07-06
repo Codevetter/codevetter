@@ -1,10 +1,19 @@
 export type UnpackPhase = 'idle' | 'scanning' | 'generating' | 'asking' | 'ready' | 'error';
 
 import type { LucideIcon } from 'lucide-react';
-import { Activity, FileText, FolderTree, GitBranch, LayoutDashboard, Network } from 'lucide-react';
+import {
+  Activity,
+  BookOpenText,
+  FileText,
+  FolderTree,
+  GitBranch,
+  LayoutDashboard,
+  Network,
+} from 'lucide-react';
 
 export type UnpackWorkspaceSection =
   | 'overview'
+  | 'memory'
   | 'brief'
   | 'inventory'
   | 'intelligence'
@@ -29,6 +38,14 @@ export const UNPACK_SECTIONS: UnpackSectionMeta[] = [
     short: 'Overview',
     icon: LayoutDashboard,
     description: 'Mission status, metric readout, and next actions.',
+  },
+  {
+    id: 'memory',
+    label: 'Memory',
+    short: 'Memory',
+    icon: BookOpenText,
+    description: 'Agent-facing repo memory generated from the local inventory.',
+    requiresInventory: true,
   },
   {
     id: 'brief',

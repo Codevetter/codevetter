@@ -51,6 +51,7 @@ import {
 import { UnpackHistoryList } from '@/components/unpack-workspace/UnpackHistoryList';
 import { UnpackMissionControl } from '@/components/unpack-workspace/UnpackMissionControl';
 import { RepoMemoryGraphPanel } from '@/components/unpack-workspace/RepoMemoryGraphPanel';
+import { RepoMemoryPanel } from '@/components/unpack-workspace/RepoMemoryPanel';
 import { UnpackSectionNav } from '@/components/unpack-workspace/UnpackSectionNav';
 import { SourceLink } from '@/components/unpack-workspace/SourceLink';
 import {
@@ -105,7 +106,12 @@ import {
 import { cn } from '@/lib/utils';
 
 export type Phase = UnpackPhase;
-type RepoUnpackExportFormat = 'markdown' | 'html' | 'repo_graph_json' | 'agent_context_markdown';
+type RepoUnpackExportFormat =
+  | 'markdown'
+  | 'html'
+  | 'repo_graph_json'
+  | 'agent_context_markdown'
+  | 'repo_memory_markdown';
 
 interface ActiveReportState {
   inventory: UnpackRepoInventory;
@@ -1057,7 +1063,9 @@ export function UnpackProjectPanel({
             ? 'repo-graph'
             : format === 'agent_context_markdown'
               ? 'agent-context'
-              : 'repo-unpacked';
+              : format === 'repo_memory_markdown'
+                ? 'repo-memory'
+                : 'repo-unpacked';
         const blob = new Blob([content], { type: mime });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1252,6 +1260,15 @@ export function UnpackProjectPanel({
           hasReport={hasReport}
           scanProfiles={scanProfiles}
           disabled={isBusy}
+        />
+      ) : null}
+
+      {activeSection === 'memory' && active?.inventory ? (
+        <RepoMemoryPanel
+          inventory={active.inventory}
+          hasReport={hasReport}
+          disabled={isBusy || !active.reportId}
+          onExportMemory={() => handleExport('repo_memory_markdown')}
         />
       ) : null}
 
@@ -3618,6 +3635,16 @@ const ReportView = memo(function ReportView({
           >
             <Download size={14} className="mr-1.5" />
             Agent context
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={() => onExport('repo_memory_markdown')}
+          >
+            <Download size={14} className="mr-1.5" />
+            Repo memory
           </Button>
           {report.agent_prompt && (
             <Button

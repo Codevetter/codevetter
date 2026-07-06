@@ -749,6 +749,36 @@ fn agent_context_sidecar_exports_graph_and_history() {
 }
 
 #[test]
+fn repo_memory_markdown_exports_start_map_and_operating_notes() {
+    let mut inventory = minimal_inventory();
+    inventory.docs = vec![DocFile {
+        path: "README.md".to_string(),
+        bytes: 120,
+        preview: "Demo project".to_string(),
+    }];
+    inventory.manifests = vec![package_manifest("package.json", &["test"], &["react"])];
+    inventory.entrypoints = vec![EntrypointHint {
+        path: "src/main.tsx".to_string(),
+        kind: "frontend".to_string(),
+        reason: "common Vite entrypoint".to_string(),
+    }];
+
+    let memory = render_repo_memory_markdown("demo", "2026-06-12T00:00:00Z", &inventory, None);
+
+    assert!(memory.contains("# Repo Memory"));
+    assert!(memory.contains("deterministic local inventory"));
+    assert!(memory.contains("## Source Map"));
+    assert!(memory.contains("README.md"));
+    assert!(memory.contains("src/main.tsx"));
+    assert!(memory.contains("## Architecture Leads"));
+    assert!(memory.contains("file:src-review-ts"));
+    assert!(memory.contains("## Verification"));
+    assert!(memory.contains("## Change Memory"));
+    assert!(memory.contains("review keeps proof local"));
+    assert!(memory.contains("Graph edges are navigation leads"));
+}
+
+#[test]
 fn repo_inventory_deserializes_old_reports_without_qa_readiness_or_repo_graph() {
     let raw = serde_json::json!({
         "repo_path": "/tmp/demo",

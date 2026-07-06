@@ -2735,7 +2735,12 @@ export async function deleteRepoUnpackReport(id: string): Promise<{ deleted: boo
 
 export async function exportRepoUnpackReport(
   id: string,
-  format: 'markdown' | 'html' | 'repo_graph_json' | 'agent_context_markdown'
+  format:
+    | 'markdown'
+    | 'html'
+    | 'repo_graph_json'
+    | 'agent_context_markdown'
+    | 'repo_memory_markdown'
 ): Promise<{ content: string; format: string }> {
   return safeInvoke('export_repo_unpack_report', { id, format });
 }
