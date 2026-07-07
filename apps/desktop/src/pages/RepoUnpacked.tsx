@@ -97,6 +97,8 @@ import {
   type UnpackReportRecord,
   type UnpackReportSection,
   type UnpackReportSummary,
+  type UnpackRepoGraph,
+  type UnpackRepoGraphNode,
   type UnpackScanProfile,
   type UnpackOutcomeEvidence,
   type UnpackSnapshotCommitRange,
