@@ -36,6 +36,7 @@ import {
 } from '@/lib/tauri-ipc';
 import { computeUsagePaceLabel, resolveUsageWindowTotalSecs } from '@/lib/usage-pace';
 import { isWindowHidden, useVisibilityInterval } from '@/lib/use-visibility';
+import { cn } from '@/lib/utils';
 
 // ─── Usage helpers ──────────────────────────────────────────────────────────
 
