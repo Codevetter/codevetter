@@ -17,7 +17,7 @@ function RedirectToSettings({ section }: { section: string }) {
 }
 
 function RedirectIntelToRepo() {
-  return <Navigate to="/unpack?section=intel" replace />;
+  return <Navigate to="/unpack?section=activity" replace />;
 }
 
 /** Hook: open/close command palette via Cmd+K */
@@ -150,7 +150,7 @@ export default function App() {
       <Route path="/rubrics" element={<RedirectToSettings section="rubrics" />} />
       <Route path="/ops" element={<RedirectToSettings section="ops" />} />
       <Route path="/agent-memories" element={<RedirectToSettings section="memories" />} />
-      <Route path="/workbench" element={<Navigate to="/roadmap" replace />} />
+      <Route path="/workbench" element={<Navigate to="/" replace />} />
       <Route path="/fleet" element={<Navigate to="/" replace />} />
       <Route element={<Shell />}>
         <Route path="*" element={<PersistentRoutes />} />

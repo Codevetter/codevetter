@@ -1142,14 +1142,6 @@ pub async fn set_finding_disposition(
     Ok(json!({ "updated": updated }))
 }
 
-/// All-time + last-30-days finding-disposition rollup for the Roadmap page.
-#[tauri::command]
-pub async fn get_finding_disposition_stats(db: State<'_, DbState>) -> Result<Value, String> {
-    let conn = db.0.lock().map_err(|e| e.to_string())?;
-    let stats = queries::get_finding_disposition_stats(&conn).map_err(|e| e.to_string())?;
-    serde_json::to_value(stats).map_err(|e| e.to_string())
-}
-
 /// Run a code review via a CLI agent (claude or gemini).
 ///
 /// 1. Gets the git diff for the given range

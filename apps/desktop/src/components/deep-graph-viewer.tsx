@@ -23,6 +23,17 @@ type LayoutNode = {
 };
 
 const KIND_COLORS: Record<string, string> = {
+  workspace_unit: '#67e8f9',
+  subsystem: '#38bdf8',
+  package: '#a78bfa',
+  script: '#fbbf24',
+  route: '#34d399',
+  entrypoint: '#22d3ee',
+  tauri_command: '#fb7185',
+  db_table: '#f59e0b',
+  test: '#86efac',
+  decision: '#cbd5e1',
+  file: '#94a3b8',
   Function: '#a78bfa',
   function: '#a78bfa',
   Class: '#38bdf8',
@@ -35,6 +46,12 @@ const KIND_COLORS: Record<string, string> = {
 
 function kindColor(kind: string): string {
   return KIND_COLORS[kind] ?? '#c4b5fd';
+}
+
+function modeTitle(mode: DeepGraphLookupMode): string {
+  if (mode === 'impact') return 'Impact map';
+  if (mode === 'query') return 'Search map';
+  return 'Repository map';
 }
 
 function findCenterId(graph: UnpackRepoGraph): string | null {
@@ -246,11 +263,11 @@ export function DeepGraphViewer({
   const ModeIcon = mode === 'context' ? Target : mode === 'impact' ? Crosshair : Search;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-violet-500/25 bg-gradient-to-br from-[#0a0b10] via-[#0d0e14] to-[#11121a]">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-violet-500/15 px-3 py-2">
-        <div className="flex items-center gap-2 text-xs text-violet-100/90">
-          <ModeIcon size={13} className="text-violet-300" />
-          <span className="font-medium capitalize">{mode} graph</span>
+    <div className="overflow-hidden rounded-xl border border-cyan-500/18 bg-[#090d10]">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/15 px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-cyan-100/90">
+          <ModeIcon size={13} className="text-cyan-300" />
+          <span className="font-medium">{modeTitle(mode)}</span>
           {summary && <span className="text-[10px] text-slate-500">· {summary}</span>}
         </div>
         <div className="flex items-center gap-1">
@@ -326,8 +343,9 @@ export function DeepGraphViewer({
             className="select-none"
           >
             <defs>
-              <radialGradient id="dg-bg-glow" cx="50%" cy="45%" r="60%">
-                <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.12" />
+              <radialGradient id="dg-bg-glow" cx="50%" cy="45%" r="65%">
+                <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.1" />
+                <stop offset="55%" stopColor="#7c3aed" stopOpacity="0.06" />
                 <stop offset="100%" stopColor="#0a0b10" stopOpacity="0" />
               </radialGradient>
               <filter id="dg-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -369,7 +387,7 @@ export function DeepGraphViewer({
                     <path
                       d={`M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`}
                       fill="none"
-                      stroke={active ? '#a78bfa' : '#334155'}
+                      stroke={active ? '#67e8f9' : '#334155'}
                       strokeWidth={active ? 2 : 1.2}
                       strokeOpacity={active ? 0.9 : 0.55}
                       markerEnd="url(#dg-arrow)"
@@ -403,7 +421,7 @@ export function DeepGraphViewer({
                     )}
                     <circle
                       r={r}
-                      fill={isCenter ? '#1e1b4b' : '#0f1117'}
+                      fill={isCenter ? '#0f2c35' : '#0f1117'}
                       stroke={color}
                       strokeWidth={isSelected ? 2.5 : isCenter ? 2 : 1.5}
                     />
@@ -433,7 +451,7 @@ export function DeepGraphViewer({
         </div>
 
         {selected && (
-          <div className="absolute bottom-3 left-3 right-3 rounded-md border border-violet-500/25 bg-[#0a0b10]/95 p-3 backdrop-blur-sm">
+          <div className="absolute bottom-3 left-3 right-3 rounded-md border border-cyan-500/25 bg-[#0a0b10]/95 p-3 backdrop-blur-sm">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -463,7 +481,7 @@ export function DeepGraphViewer({
               {onDrillContext && (
                 <button
                   type="button"
-                  className="shrink-0 rounded border border-violet-500/30 bg-violet-500/10 px-2 py-1 text-[10px] text-violet-200 hover:bg-violet-500/20"
+                  className="shrink-0 rounded border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-[10px] text-cyan-200 hover:bg-cyan-500/20"
                   onClick={() => onDrillContext(selected.label, selected.path)}
                 >
                   Open context
@@ -491,7 +509,7 @@ export function DeepGraphViewer({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-violet-500/10 px-3 py-2 text-[9px] text-slate-500">
+      <div className="flex flex-wrap items-center gap-3 border-t border-cyan-500/10 px-3 py-2 text-[9px] text-slate-500">
         <span>Drag to pan · scroll to zoom · double-click to drill context</span>
         <span className="ml-auto font-mono text-slate-600">{repoPath}</span>
       </div>

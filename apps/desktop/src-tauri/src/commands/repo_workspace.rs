@@ -7,6 +7,7 @@ use crate::commands::unpack_scan::{emit_unpack_scan_progress, ScanProgress, Scan
 use crate::commands::unpack_scan_profile::{emit_unpack_scan_profile, UnpackScanProfiler};
 use crate::DbState;
 use serde::{Deserialize, Serialize};
+use std::process::Command as StdCommand;
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 
@@ -53,6 +54,14 @@ pub struct RepoIntelReportRecord {
     pub started_at: Option<String>,
     pub completed_at: Option<String>,
     pub created_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RepoProjectGitStatus {
+    pub branch: Option<String>,
+    pub clean: bool,
+    pub changed_files: i64,
+    pub last_commit_at: Option<String>,
 }
 
 fn conn_lock(db: &DbState) -> Result<std::sync::MutexGuard<'_, rusqlite::Connection>, String> {
@@ -159,6 +168,59 @@ pub async fn remove_repo_project(
     .map_err(|e| e.to_string())?;
 
     Ok(serde_json::json!({ "deleted": deleted > 0 }))
+}
+
+#[tauri::command]
+pub async fn get_repo_project_git_status(
+    repo_path: String,
+) -> Result<RepoProjectGitStatus, String> {
+    let trimmed = repo_path.trim().to_string();
+    if trimmed.is_empty() {
+        return Err("repo_path is empty".to_string());
+    }
+
+    let status_output = StdCommand::new("git")
+        .args(["status", "--porcelain=v1", "-b", "--untracked-files=normal"])
+        .current_dir(&trimmed)
+        .output()
+        .map_err(|e| format!("git status failed: {e}"))?;
+
+    if !status_output.status.success() {
+        let stderr = String::from_utf8_lossy(&status_output.stderr);
+        return Err(format!("git status failed: {stderr}"));
+    }
+
+    let status_stdout = String::from_utf8_lossy(&status_output.stdout);
+    let mut branch = None;
+    let mut changed_files = 0_i64;
+
+    for line in status_stdout.lines() {
+        if let Some(rest) = line.strip_prefix("## ") {
+            let head = rest.split("...").next().unwrap_or(rest).trim();
+            branch = match head {
+                "" | "HEAD (no branch)" | "No commits yet on" => None,
+                value => Some(value.to_string()),
+            };
+        } else if !line.trim().is_empty() {
+            changed_files += 1;
+        }
+    }
+
+    let last_commit_at = StdCommand::new("git")
+        .args(["log", "-1", "--format=%cI"])
+        .current_dir(&trimmed)
+        .output()
+        .ok()
+        .filter(|out| out.status.success())
+        .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_string())
+        .filter(|value| !value.is_empty());
+
+    Ok(RepoProjectGitStatus {
+        branch,
+        clean: changed_files == 0,
+        changed_files,
+        last_commit_at,
+    })
 }
 
 fn map_project_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<RepoProjectRow> {

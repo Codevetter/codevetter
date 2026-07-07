@@ -155,18 +155,16 @@ export default function UnpackDeepGraphPanel({ repoPath, disabled }: Props) {
   const stale = status?.stale ?? false;
 
   return (
-    <div className="rounded-md border border-violet-500/20 bg-gradient-to-br from-violet-500/[0.06] via-transparent to-[var(--bg-raised)]/45 p-3">
+    <div className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
             <Zap size={14} className="text-violet-400" />
-            Deep graph
+            Code question graph
             <UnpackRunKindBadge kind="local" />
           </div>
-          <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-secondary)]">
-            Call-graph indexing for this repo — explore symbol context, blast-radius impact, and
-            hybrid search in an interactive graph. 100% local; stored beside the repo in the deep
-            index cache.
+          <p className="mt-1 text-xs text-[var(--text-secondary)]">
+            Local symbol context, impact, and file search.
           </p>
         </div>
         <Badge
@@ -190,7 +188,7 @@ export default function UnpackDeepGraphPanel({ repoPath, disabled }: Props) {
         </Badge>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-muted)]">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--text-muted)]">
         <span className="inline-flex items-center gap-1">
           <GitBranch size={11} />
           commit {shortSha(status?.current_commit)}
@@ -260,14 +258,14 @@ export default function UnpackDeepGraphPanel({ repoPath, disabled }: Props) {
       <div className="mt-4 border-t border-[var(--cv-line)] pt-3">
         <div className="cv-label mb-2 flex items-center gap-1.5">
           <Network size={12} className="text-violet-300" />
-          Graph explorer
+          Ask the graph
         </div>
         <div className="flex flex-wrap gap-1.5">
           {(
             [
-              ['context', 'Context', Target],
-              ['impact', 'Impact', Crosshair],
-              ['query', 'Query', Search],
+              ['context', 'Where is this?', Target],
+              ['impact', 'What can this affect?', Crosshair],
+              ['query', 'Search files', Search],
             ] as const
           ).map(([mode, label, Icon]) => (
             <Button
@@ -287,7 +285,11 @@ export default function UnpackDeepGraphPanel({ repoPath, disabled }: Props) {
           <Input
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
-            placeholder={lookupMode === 'query' ? 'Search query' : 'Symbol name'}
+            placeholder={
+              lookupMode === 'query'
+                ? 'e.g. auth, billing, persistence'
+                : 'Symbol, route, command, or component'
+            }
             className="h-8 text-xs"
             disabled={disabled || lookupLoading}
             onKeyDown={(e) => {
@@ -307,7 +309,7 @@ export default function UnpackDeepGraphPanel({ repoPath, disabled }: Props) {
             disabled={disabled || lookupLoading || !symbol.trim()}
             onClick={() => void handleLookup()}
           >
-            {lookupLoading ? <Loader2 size={14} className="animate-spin" /> : 'Explore'}
+            {lookupLoading ? <Loader2 size={14} className="animate-spin" /> : 'Run'}
           </Button>
         </div>
         {!indexed && (

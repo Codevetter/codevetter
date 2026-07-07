@@ -1289,66 +1289,6 @@ pub fn set_finding_disposition(
     )
 }
 
-/// Aggregate finding-disposition counts over a time window.
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct FindingDispositionWindow {
-    pub accepted: i64,
-    pub dismissed: i64,
-    pub unreviewed: i64,
-    /// accepted / (accepted + dismissed), 0.0 when nothing has been reviewed.
-    pub acceptance_rate: f64,
-}
-
-/// All-time + last-30-days disposition rollup — the "is the reviewer earning
-/// its keep" signal surfaced on the Roadmap page.
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct FindingDispositionStats {
-    pub all_time: FindingDispositionWindow,
-    pub last_30_days: FindingDispositionWindow,
-}
-
-fn disposition_window(
-    conn: &Connection,
-    since: Option<&str>,
-) -> Result<FindingDispositionWindow, rusqlite::Error> {
-    // Join to the parent review for the timestamp so the window filter uses
-    // when the review ran, not a per-finding column (findings have none).
-    let (accepted, dismissed, unreviewed): (i64, i64, i64) = conn.query_row(
-        "SELECT
-             COALESCE(SUM(CASE WHEN f.disposition = 'accepted' THEN 1 ELSE 0 END), 0),
-             COALESCE(SUM(CASE WHEN f.disposition = 'dismissed' THEN 1 ELSE 0 END), 0),
-             COALESCE(SUM(CASE WHEN f.disposition IS NULL THEN 1 ELSE 0 END), 0)
-         FROM local_review_findings f
-         JOIN local_reviews r ON r.id = f.review_id
-         WHERE (?1 IS NULL OR r.created_at >= ?1)",
-        params![since],
-        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
-    )?;
-    let reviewed = accepted + dismissed;
-    let acceptance_rate = if reviewed > 0 {
-        accepted as f64 / reviewed as f64
-    } else {
-        0.0
-    };
-    Ok(FindingDispositionWindow {
-        accepted,
-        dismissed,
-        unreviewed,
-        acceptance_rate,
-    })
-}
-
-/// Compute all-time and last-30-days finding-disposition stats.
-pub fn get_finding_disposition_stats(
-    conn: &Connection,
-) -> Result<FindingDispositionStats, rusqlite::Error> {
-    let since_30d = (chrono::Utc::now() - chrono::Duration::days(30)).to_rfc3339();
-    Ok(FindingDispositionStats {
-        all_time: disposition_window(conn, None)?,
-        last_30_days: disposition_window(conn, Some(&since_30d))?,
-    })
-}
-
 /// Persist T-Rex sandbox verdict on a review so the UI can read it back
 /// without re-running the sandbox.
 pub fn update_sandbox_verdict(
@@ -3032,27 +2972,17 @@ mod tests {
         assert_eq!(by_title("dismiss me").as_deref(), Some("dismissed"));
         assert_eq!(by_title("leave me"), None);
 
-        // Rollup: 1 accepted, 1 dismissed, 1 unreviewed → 50% acceptance.
-        let stats = get_finding_disposition_stats(&conn).expect("stats");
-        assert_eq!(stats.all_time.accepted, 1);
-        assert_eq!(stats.all_time.dismissed, 1);
-        assert_eq!(stats.all_time.unreviewed, 1);
-        assert!((stats.all_time.acceptance_rate - 0.5).abs() < 1e-9);
-        // The review was created just now, so the 30-day window matches all-time.
-        assert_eq!(stats.last_30_days.accepted, 1);
-        assert_eq!(stats.last_30_days.dismissed, 1);
-
         // Clearing a disposition returns it to unreviewed and lowers the count.
         assert_eq!(
             set_finding_disposition(&conn, &f_accept, None).expect("clear"),
             1
         );
-        let stats = get_finding_disposition_stats(&conn).expect("stats2");
-        assert_eq!(stats.all_time.accepted, 0);
-        assert_eq!(stats.all_time.dismissed, 1);
-        assert_eq!(stats.all_time.unreviewed, 2);
-        // Only dismissed among reviewed → 0% acceptance.
-        assert!((stats.all_time.acceptance_rate - 0.0).abs() < 1e-9);
+        let (_review, rows) = get_local_review_with_findings(&conn, &review_id).expect("reload2");
+        let cleared = rows
+            .iter()
+            .find(|r| r.title.as_deref() == Some("accept me"))
+            .and_then(|r| r.disposition.clone());
+        assert_eq!(cleared, None);
 
         // Unknown finding id updates nothing.
         assert_eq!(

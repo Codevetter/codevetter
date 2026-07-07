@@ -19,6 +19,7 @@ test.describe('Smoke tests', () => {
     await navigateTo(page, '/');
     await waitForNoSpinners(page);
 
+    await expect(page.getByText('Usage telemetry')).toBeVisible();
     await expect(page.getByRole('button', { name: /Re-index local data|Indexing/ })).toBeVisible();
     await expect(page.getByText('Provider telemetry')).toBeVisible();
   });
@@ -46,12 +47,14 @@ test.describe('Smoke tests', () => {
     const nav = page.locator('nav');
     await expect(nav).toBeVisible();
 
-    // Nav links: Home, Review, Repo, T-Rex, Settings (5).
+    // Nav links: Home, Review, Repo, T-Rex, Settings.
     const links = nav.locator('a');
     await expect(links).toHaveCount(5);
+    await expect(nav.getByText('Roadmap')).toHaveCount(0);
+    await expect(nav.getByText('Now')).toHaveCount(0);
   });
 
-  test('Nav bar shows current page name', async ({ page }) => {
+  test('Nav bar highlights the active route', async ({ page }) => {
     await navigateTo(page, '/settings');
     await showNavBar(page);
 

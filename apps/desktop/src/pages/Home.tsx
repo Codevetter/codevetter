@@ -1,14 +1,6 @@
-import {
-  Activity,
-  ArrowRight,
-  BarChart3,
-  CheckCircle2,
-  Map as MapIcon,
-  RefreshCw,
-  Terminal,
-} from 'lucide-react';
+import { Activity, BarChart3, RefreshCw, Terminal } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -186,43 +178,32 @@ function LocalModelBreakdown({
   provider: string;
 }) {
   if (!usage) return null;
-  const cacheTokens = usage.week_cache_read_tokens + usage.week_cache_creation_tokens;
   const rows = usage.model_breakdown ?? [];
-  const showModels = rows.length > 0 && ['devin', 'grok'].includes(provider);
-  if (cacheTokens === 0 && !showModels) return null;
+  const showModels = rows.length > 1 && ['devin', 'grok'].includes(provider);
+  if (!showModels) return null;
 
   return (
     <div className="flex flex-col gap-1.5 border-l border-[#1a1a1a] pl-2">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] tabular-nums text-slate-600">
-        <span>{formatTokens(usage.week_input_tokens)} in</span>
-        <span>{formatTokens(usage.week_output_tokens)} out</span>
-        {cacheTokens > 0 && <span>{formatTokens(cacheTokens)} cached</span>}
-        <span>{formatMoney(usage.week_cost)}</span>
-      </div>
-      {showModels && (
-        <div className="flex flex-col gap-1">
-          {rows.slice(0, 5).map((model) => {
-            const total =
-              model.week_input_tokens +
-              model.week_output_tokens +
-              model.week_cache_read_tokens +
-              model.week_cache_creation_tokens;
-            return (
-              <div
-                key={model.model}
-                className="flex items-center justify-between gap-2 text-[10px] tabular-nums"
-              >
-                <span className="truncate text-slate-500" title={model.model}>
-                  {model.model}
-                </span>
-                <span className="shrink-0 text-slate-600">
-                  {formatTokens(total)} · {formatMoney(model.week_cost)} · {model.week_sessions}s
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {rows.slice(0, 5).map((model) => {
+        const total =
+          model.week_input_tokens +
+          model.week_output_tokens +
+          model.week_cache_read_tokens +
+          model.week_cache_creation_tokens;
+        return (
+          <div
+            key={model.model}
+            className="flex items-center justify-between gap-2 text-[10px] tabular-nums"
+          >
+            <span className="truncate text-slate-500" title={model.model}>
+              {model.model}
+            </span>
+            <span className="shrink-0 text-slate-600">
+              {formatTokens(total)} · {formatMoney(model.week_cost)} · {model.week_sessions}s
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -235,7 +216,6 @@ function AccountUsageRow({
   onCheckLive,
   checkingLive,
   onDelete: _onDelete,
-  onHide,
   isSharedUsage,
 }: {
   account: ProviderAccount;
@@ -245,7 +225,6 @@ function AccountUsageRow({
   onCheckLive: () => void;
   checkingLive: boolean;
   onDelete: () => void;
-  onHide: () => void;
   isSharedUsage: boolean;
 }) {
   // Turn a raw live-usage error into an actionable hint.
@@ -280,7 +259,7 @@ function AccountUsageRow({
   // aiserver.v1.DashboardService.GetCurrentPeriodUsage + GetAggregatedUsageEvents
   const cursorPlan = liveUsage?.cursor_plan;
   const cursorTokens = liveUsage?.cursor_tokens;
-  const sourceNote = telemetrySourceNote(account.provider);
+  const windowNote = liveWindowNote(account.provider, fiveH?.utilization_pct);
 
   // Determine bar color based on utilization
   function barColor(pct: number): 'amber' | 'red' {
@@ -333,15 +312,6 @@ function AccountUsageRow({
           </Badge>
         )}
         <span className="flex-1" />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onHide}
-          className="h-auto px-1.5 py-0.5 text-[10px] text-slate-600 hover:text-slate-300"
-          title={`Hide ${account.name} from telemetry`}
-        >
-          Hide
-        </Button>
         {isLiveSupported && (
           <Button
             variant="ghost"
@@ -440,6 +410,17 @@ function AccountUsageRow({
             {liveUsage.grok_billing.billing_period_end
               ? ` · resets ${new Date(liveUsage.grok_billing.billing_period_end).toLocaleDateString()}`
               : ''}
+          </div>
+        )}
+        {hasLive && windowNote && (
+          <div
+            className={`rounded border px-2.5 py-1.5 text-[10px] leading-relaxed ${
+              isRateLimited || (fiveH?.utilization_pct ?? 0) >= 100
+                ? 'border-red-500/20 bg-red-500/10 text-red-200/80'
+                : 'border-cyan-500/15 bg-cyan-500/10 text-cyan-100/70'
+            }`}
+          >
+            {windowNote}
           </div>
         )}
 
@@ -646,21 +627,26 @@ function AccountUsageRow({
           </div>
         )}
 
-        {/* ── Estimated stats (from local JSONL data) ───────────── */}
+        {/* ── Local indexed stats ───────────────────────────────── */}
         {/* Cursor: skip the local "tokens this week" line — Cursor doesn't
             expose per-message tokens locally, so the live plan-usage block
             above is the source of truth. */}
         {!isSharedUsage && account.provider !== 'cursor' ? (
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] text-slate-600 tabular-nums">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
                 {formatTokens(weekTokens)} tokens this week
               </span>
-              <span className="text-[10px] text-slate-600 tabular-nums">
+              <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
                 {weekSessions} sessions
               </span>
+              {usage && usage.week_cost > 0 && (
+                <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
+                  {formatMoney(usage.week_cost)}
+                </span>
+              )}
               {!hasLive && !liveErrorHint && (
-                <span className="text-[10px] text-slate-700 italic">
+                <span className="rounded-full border border-white/[0.04] bg-transparent px-2 py-1 text-[10px] text-slate-700">
                   {localTelemetryQualifier(account.provider)}
                 </span>
               )}
@@ -671,9 +657,6 @@ function AccountUsageRow({
                 <span className="shrink-0">⚠</span>
                 <span>{liveErrorHint}</span>
               </div>
-            )}
-            {sourceNote && (
-              <div className="text-[10px] leading-relaxed text-slate-600">{sourceNote}</div>
             )}
             {profileBreakdown.length > 1 && (
               <div className="flex flex-col gap-1 border-l border-[#1a1a1a] pl-2">
@@ -743,28 +726,13 @@ const AGENT_PALETTE: Record<
 
 const agentPaletteFor = (agent: string) => AGENT_PALETTE[agent] ?? { bar: '#64748b', label: agent };
 
-function telemetryKeyForProvider(provider: string): string {
-  switch (provider) {
-    case 'anthropic':
-      return 'claude-code';
-    default:
-      return provider;
+function liveWindowNote(provider: string, primaryPct?: number | null): string | null {
+  if (provider === 'anthropic' && primaryPct != null) {
+    return primaryPct >= 100
+      ? 'Anthropic is reporting the current 5-hour window over limit. This is live quota state, not CodeVetter spend.'
+      : null;
   }
-}
-
-function telemetrySourceNote(provider: string): string | null {
-  switch (provider) {
-    case 'devin':
-      return 'Quota: Codeium GetPlanStatus (same as Devin /usage). Tokens: local sessions.db.';
-    case 'grok':
-      return 'Credits: Grok CLI billing log (creditUsagePercent). Tokens: local session estimates.';
-    case 'cursor':
-      return 'Source: Cursor plan API when refreshed; local session tokens are partial estimates.';
-    case 'google':
-      return 'Source: Gemini local chats plus quota API when available.';
-    default:
-      return null;
-  }
+  return null;
 }
 
 // ─── Agent visibility filter (localStorage-backed, temporary hide) ───────────
@@ -878,8 +846,7 @@ function AgentFilterChips({
   );
 }
 
-/** Toggle chips for individual telemetry rows. Multiple accounts can share a provider. */
-function TelemetryItemFilterChips({
+function TelemetryVisibilityEditor({
   accounts,
   hidden,
   onToggle,
@@ -891,48 +858,51 @@ function TelemetryItemFilterChips({
   onShowAll: () => void;
 }) {
   if (accounts.length === 0) return null;
-  const anyHidden = hidden.size > 0;
   return (
-    <div className="flex flex-wrap items-center gap-1.5 px-4 py-2 border-b border-[#1a1a1a]">
-      <span className="text-[10px] text-slate-600 mr-0.5">items:</span>
-      {accounts.map((account) => {
-        const palette = agentPaletteFor(telemetryKeyForProvider(account.provider));
-        const isHidden = hidden.has(account.id);
-        return (
+    <div className="border-b border-[#1a1a1a] bg-[#08090a] px-4 py-2">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {accounts.map((account) => {
+          const hiddenRow = hidden.has(account.id);
+          return (
+            <button
+              key={account.id}
+              type="button"
+              onClick={() => onToggle(account.id)}
+              className={cn(
+                'inline-flex max-w-56 items-center gap-1.5 rounded-full border px-2 py-1 text-[10px] transition',
+                hiddenRow
+                  ? 'border-white/[0.06] bg-transparent text-slate-600 line-through'
+                  : 'border-cyan-300/14 bg-cyan-300/[0.045] text-slate-300'
+              )}
+            >
+              <span
+                className={cn(
+                  'h-1.5 w-1.5 shrink-0 rounded-full',
+                  hiddenRow ? 'bg-slate-700' : 'bg-cyan-300'
+                )}
+              />
+              <span className="truncate">{account.name}</span>
+            </button>
+          );
+        })}
+        {hidden.size > 0 && (
           <button
-            key={account.id}
-            onClick={() => onToggle(account.id)}
-            className={`inline-flex max-w-48 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-all ${
-              isHidden
-                ? 'bg-[#0b0d12] text-slate-600 ring-1 ring-[#1a1a1a] line-through'
-                : 'bg-[#13151b] text-slate-300 ring-1 ring-[#2a2a2a] hover:ring-[#3a3a3a]'
-            }`}
-            title={isHidden ? `Show ${account.name}` : `Hide ${account.name}`}
+            type="button"
+            onClick={onShowAll}
+            className="ml-1 rounded-full px-2 py-1 text-[10px] text-cyan-200 hover:bg-cyan-300/10"
           >
-            <span
-              className="h-1.5 w-1.5 shrink-0 rounded-full transition-opacity"
-              style={{ backgroundColor: palette.bar, opacity: isHidden ? 0.3 : 1 }}
-            />
-            <span className="truncate">{account.name}</span>
+            show all
           </button>
-        );
-      })}
-      {anyHidden && (
-        <button
-          onClick={onShowAll}
-          className="ml-1 text-[10px] text-[var(--cv-accent)] hover:text-slate-100"
-        >
-          show all
-        </button>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
 // ─── TokenUsageChart (inline, pure SVG, no deps) ────────────────────────────
 //
-// Bars show API-equivalent USD cost per bucket. Hovering previews that bucket in
-// the agent/model breakdown panels below; clicking pins it.
+// Bars show API-equivalent USD cost per bucket. Hover previews stay inside the
+// chart; clicking pins a bucket and drives the agent/model panels below.
 
 function TokenUsageChart({
   daily,
@@ -1032,12 +1002,10 @@ function TokenUsageChart({
 
   const previewBucket = (i: number) => {
     setHover(i);
-    onHoverDateChange?.(bucketDate(data[i]));
   };
 
   const clearPreview = () => {
     setHover(null);
-    if (pinned == null) onHoverDateChange?.(null);
   };
 
   const periodLabel = rangeLabel ?? (mode === 'daily' ? 'Last 30 days' : 'Last 12 weeks');
@@ -1093,7 +1061,7 @@ function TokenUsageChart({
 
   return (
     <Card className="rounded-none border-0 bg-transparent p-4 shadow-none">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex min-h-10 items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div>
             <div className="text-[11px] text-slate-500">
@@ -1751,7 +1719,7 @@ function buildWeeklySeries(
   return series;
 }
 
-/** Compact 26-week rhythm strip — highlights the active range window. */
+/** Compact 26-week rhythm strip with subtle active-range intensity. */
 function UsageRhythmStrip({
   data,
   hiddenAgents,
@@ -1817,9 +1785,7 @@ function UsageRhythmStrip({
       <div className="mb-2 flex items-end justify-between gap-3">
         <div className="text-[11px] text-slate-500">
           26-week rhythm
-          {rangeSince ? (
-            <span className="text-slate-600"> · {usageRangeLabel(range)} highlighted</span>
-          ) : null}
+          {rangeSince ? <span className="text-slate-600"> · {usageRangeLabel(range)}</span> : null}
         </div>
         <div className="flex shrink-0 items-center gap-1 text-[10px] text-slate-600">
           <span>less</span>
@@ -1853,7 +1819,7 @@ function UsageRhythmStrip({
                     cell.future
                       ? 'cursor-default'
                       : 'cursor-pointer hover:ring-1 hover:ring-[var(--cv-accent)]/50'
-                  } ${isPinned ? 'ring-1 ring-[var(--cv-accent)]' : inRange ? 'ring-1 ring-[var(--cv-accent)]/25' : ''}`}
+                  } ${isPinned ? 'ring-1 ring-cyan-300/70' : ''}`}
                   style={{ backgroundColor: cellColor(cell.value, cell.future, inRange) }}
                 />
               );
@@ -2179,76 +2145,6 @@ function scoreTone(score: number): string {
   return 'text-red-300';
 }
 
-const ROADMAP_RELEASE_VERSION = '1.1.51';
-
-const ROADMAP_RELEASE_ITEMS = [
-  {
-    label: 'Archive search',
-    detail: 'Search normalized local agent messages and tool calls from Roadmap.',
-    href: '/roadmap',
-  },
-  {
-    label: 'Live archive refresh',
-    detail: 'Startup, periodic, and manual indexes emit archive events for active search refresh.',
-    href: '/roadmap',
-  },
-  {
-    label: 'Transcript replay packets',
-    detail:
-      'Evidence rows now group adjacent transcript command events into bounded multi-turn replay packets.',
-    href: '/review',
-  },
-];
-
-export function RoadmapReleaseBanner() {
-  return (
-    <section className="cv-panel overflow-hidden border-[var(--cv-accent)]/35 bg-[#090806]">
-      <div className="grid gap-px bg-[#2b2414] lg:grid-cols-[1.2fr_2fr]">
-        <div className="bg-[#0b0a08] px-4 py-4">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="rounded-full border-[var(--cv-accent)]/35 bg-[var(--cv-accent)]/10 px-2 py-0 text-[10px] uppercase text-[var(--cv-accent)]"
-            >
-              v{ROADMAP_RELEASE_VERSION}
-            </Badge>
-            <span className="cv-label text-slate-400">latest installed build</span>
-          </div>
-          <h2 className="mt-3 text-lg font-semibold tracking-normal text-slate-100">
-            Verification work is now visible from launch.
-          </h2>
-          <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">
-            The recent roadmap slices are no longer only buried inside Review state. Roadmap exposes
-            the shipped verification spine, archive search, and live source-health surfaces while
-            Home opens directly into usage telemetry.
-          </p>
-        </div>
-        <div className="grid gap-px bg-[#18130b] md:grid-cols-3">
-          {ROADMAP_RELEASE_ITEMS.map((item) => (
-            <Link
-              key={item.label}
-              to={item.href}
-              className="group flex min-h-36 flex-col justify-between bg-[#08090a] px-3 py-3 transition-colors hover:bg-[#0d1012]"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <CheckCircle2 size={14} className="text-emerald-300" />
-                  <ArrowRight
-                    size={13}
-                    className="text-slate-700 transition-colors group-hover:text-[var(--cv-accent)]"
-                  />
-                </div>
-                <div className="mt-3 text-sm font-medium text-slate-200">{item.label}</div>
-              </div>
-              <p className="mt-3 text-[11px] leading-4 text-slate-500">{item.detail}</p>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScorecard | null }) {
   if (!scorecard || scorecard.sessions_analyzed === 0) return null;
   const adapters = scorecard.adapters ?? [];
@@ -2563,6 +2459,7 @@ export default function Home() {
     toggle: toggleTelemetryItem,
     showAll: showAllTelemetryItems,
   } = useHiddenTelemetryItems();
+  const [editingTelemetry, setEditingTelemetry] = useState(false);
 
   // Data state — initialize from cache if available
   const [tokenUsage, setTokenUsage] = useState<TokenUsageStats | null>(
@@ -2850,7 +2747,7 @@ export default function Home() {
             <div className="min-w-0">
               <div className="cv-label text-slate-500">usage</div>
               <h1 className="mt-1 truncate text-lg font-semibold tracking-normal text-slate-100">
-                Usage dashboard
+                Usage telemetry
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -2864,13 +2761,6 @@ export default function Home() {
                 <RefreshCw size={15} className={indexing ? 'animate-spin' : ''} />
                 {indexing ? 'Indexing...' : 'Re-index local data'}
               </Button>
-              <Link
-                to="/roadmap"
-                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 border border-[#262626] bg-[#08090a] px-4 text-xs font-medium text-slate-500 transition-colors hover:border-[var(--cv-accent)]/40 hover:text-slate-100"
-              >
-                <MapIcon size={14} />
-                Roadmap
-              </Link>
             </div>
           </div>
 
@@ -2953,7 +2843,20 @@ export default function Home() {
           <div className="cv-terminal-bar h-10 px-4">
             <Activity size={14} className="text-[var(--cv-accent)]" />
             <span className="cv-label">provider telemetry</span>
+            <span className="hidden text-[10px] text-slate-600 md:inline">
+              live quota windows + local token history
+            </span>
             <div className="ml-auto flex items-center gap-3">
+              {accounts.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-1.5 py-0.5 text-[11px] text-slate-500 hover:text-slate-300"
+                  onClick={() => setEditingTelemetry((value) => !value)}
+                >
+                  {editingTelemetry ? 'Done' : 'Edit'}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -3006,12 +2909,14 @@ export default function Home() {
             </Card>
           ) : (
             <Card className="overflow-hidden rounded-none border-0 bg-transparent">
-              <TelemetryItemFilterChips
-                accounts={accounts}
-                hidden={hiddenTelemetryItems}
-                onToggle={toggleTelemetryItem}
-                onShowAll={showAllTelemetryItems}
-              />
+              {editingTelemetry && (
+                <TelemetryVisibilityEditor
+                  accounts={accounts}
+                  hidden={hiddenTelemetryItems}
+                  onToggle={toggleTelemetryItem}
+                  onShowAll={showAllTelemetryItems}
+                />
+              )}
               {accounts.length === 0 ? (
                 <CardContent className="flex flex-col items-center justify-center py-5 p-5">
                   <Terminal className="mb-2 h-6 w-6 text-slate-600" />
@@ -3023,7 +2928,7 @@ export default function Home() {
               ) : visibleAccounts.length === 0 ? (
                 <CardContent className="flex flex-col items-center justify-center py-5 p-5">
                   <Terminal className="mb-2 h-6 w-6 text-slate-600" />
-                  <p className="text-[11px] text-slate-500">All telemetry rows are hidden</p>
+                  <p className="text-[11px] text-slate-500">All providers are hidden</p>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -3049,7 +2954,6 @@ export default function Home() {
                       liveError={liveErrors[account.id] ?? null}
                       checkingLive={checkingLiveFor === account.id}
                       isSharedUsage={hasSiblings && !isFirstOfProvider}
-                      onHide={() => toggleTelemetryItem(account.id)}
                       onCheckLive={async () => {
                         setCheckingLiveFor(account.id);
                         try {
