@@ -275,7 +275,7 @@ pub async fn unpack_deep_graph_symbol_context(
     let root_str = root.to_string_lossy().to_string();
     if !has_deep_index(&root_str) {
         return Err(
-            "Repo has no deep graph index. Run Build deep index in the Intelligence tab first."
+            "Repo has no deep graph index. Open Repo -> Graph -> Deep symbol lookup and build the local index first."
                 .to_string(),
         );
     }
@@ -308,7 +308,7 @@ pub async fn unpack_deep_graph_symbol_impact(
     let root_str = root.to_string_lossy().to_string();
     if !has_deep_index(&root_str) {
         return Err(
-            "Repo has no deep graph index. Run Build deep index in the Intelligence tab first."
+            "Repo has no deep graph index. Open Repo -> Graph -> Deep symbol lookup and build the local index first."
                 .to_string(),
         );
     }
@@ -348,7 +348,7 @@ pub async fn unpack_deep_graph_query(
     let root_str = root.to_string_lossy().to_string();
     if !has_deep_index(&root_str) {
         return Err(
-            "Repo has no deep graph index. Run Build deep index in the Intelligence tab first."
+            "Repo has no deep graph index. Open Repo -> Graph -> Deep symbol lookup and build the local index first."
                 .to_string(),
         );
     }
@@ -372,7 +372,7 @@ pub async fn unpack_deep_graph_detect_changes(
     let root_str = root.to_string_lossy().to_string();
     if !has_deep_index(&root_str) {
         return Err(
-            "Repo has no deep graph index. Run Build deep index in the Intelligence tab first."
+            "Repo has no deep graph index. Open Repo -> Graph -> Deep symbol lookup and build the local index first."
                 .to_string(),
         );
     }

@@ -101,8 +101,7 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
     );
     // Per-finding usefulness signal: did the owner act on this finding?
     // 'accepted' | 'dismissed' | NULL (unreviewed). Nullable so legacy rows
-    // and fresh findings default to unreviewed. Powers the "is the reviewer
-    // earning its keep" acceptance-rate rollup (get_finding_disposition_stats).
+    // and fresh findings default to unreviewed.
     let _ = conn.execute(
         "ALTER TABLE local_review_findings ADD COLUMN disposition TEXT",
         [],

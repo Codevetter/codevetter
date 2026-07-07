@@ -53,11 +53,11 @@ export function UnpackAiPanel({
       className={cn(
         'flex w-full flex-col gap-4 rounded-xl border px-4 py-4',
         canRun
-          ? 'border-violet-500/20 bg-violet-500/[0.04]'
+          ? 'border-[var(--cv-line)] bg-white/[0.018]'
           : 'border-[var(--cv-line)] bg-[var(--bg-main)]/40 opacity-80'
       )}
     >
-      <div className="grid gap-4 xl:grid-cols-[minmax(260px,360px),1fr]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(240px,320px),1fr]">
         <div>
           <div className="flex items-center gap-2">
             <UnpackRunKindBadge kind="ai" />
@@ -66,8 +66,8 @@ export function UnpackAiPanel({
             </span>
           </div>
           <p className="mt-2 max-w-md text-xs leading-5 text-[var(--text-secondary)]">
-            The snapshot above is local and deterministic. Use AI only for a narrative brief or a
-            focused repository question.
+            Generate a narrative brief or ask one focused repository question against this exact
+            local snapshot.
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export function UnpackAiPanel({
           </div>
 
           <div className="flex items-center gap-2">
-            <MessageCircleQuestion size={14} className="shrink-0 text-violet-200/80" />
+            <MessageCircleQuestion size={14} className="shrink-0 text-cyan-200/75" />
             <Input
               value={question}
               onChange={(e) => onQuestionChange(e.target.value)}
@@ -145,7 +145,7 @@ export function UnpackAiPanel({
             type="button"
             disabled={!canRun || busy}
             onClick={() => onQuestionChange(preset)}
-            className="rounded-full border border-[var(--cv-line)] bg-[var(--bg-raised)] px-3 py-1.5 text-xs text-[var(--text-secondary)] transition hover:border-violet-500/30 hover:text-[var(--text-primary)] disabled:opacity-50"
+            className="rounded-full border border-[var(--cv-line)] bg-white/[0.018] px-3 py-1.5 text-xs text-[var(--text-secondary)] transition hover:border-cyan-500/25 hover:text-[var(--text-primary)] disabled:opacity-50"
           >
             {preset}
           </button>
@@ -159,7 +159,7 @@ export function UnpackAiPanel({
               key={entry.id}
               className="rounded border border-[var(--cv-line)] bg-[var(--bg-main)]/60 p-2"
             >
-              <div className="text-[10px] font-medium text-violet-200/90">{entry.question}</div>
+              <div className="text-[10px] font-medium text-cyan-100/90">{entry.question}</div>
               <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-[var(--text-secondary)]">
                 {entry.answer}
               </pre>

@@ -35,13 +35,14 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import UnpackDeepGraphPanel from '@/components/unpack-deep-graph-panel';
 import { UnpackScanProfileHeatmap } from '@/components/unpack-scan-profile-heatmap';
-import type { UnpackAskEntry } from '@/components/unpack-workspace/UnpackAiPanel';
+import { IntelProjectPanel } from '@/components/project-workspace/IntelProjectPanel';
+import { UnpackAiPanel, type UnpackAskEntry } from '@/components/unpack-workspace/UnpackAiPanel';
 import { UnpackRunKindBadge } from '@/components/unpack-workspace/UnpackRunKindBadge';
 import { UnpackAgentStream } from '@/components/unpack-agent-stream';
-import { UnpackEmptyState } from '@/components/unpack-workspace/UnpackEmptyState';
 import {
   CodebaseHistoryBriefPanel,
   QaReadinessPanel,
@@ -52,6 +53,7 @@ import { UnpackHistoryList } from '@/components/unpack-workspace/UnpackHistoryLi
 import { UnpackMissionControl } from '@/components/unpack-workspace/UnpackMissionControl';
 import { RepoMemoryGraphPanel } from '@/components/unpack-workspace/RepoMemoryGraphPanel';
 import { RepoMemoryPanel } from '@/components/unpack-workspace/RepoMemoryPanel';
+import { DisclosurePanel } from '@/components/unpack-workspace/DisclosurePanel';
 import { UnpackSectionNav } from '@/components/unpack-workspace/UnpackSectionNav';
 import { SourceLink } from '@/components/unpack-workspace/SourceLink';
 import {
@@ -83,6 +85,7 @@ import {
   getRepoUnpackReport,
   isTauriAvailable,
   listRepoUnpackReports,
+  saveIntelSnapshot,
   saveUnpackScanSnapshot,
   type RepoDetectResult,
   setPreference,
@@ -101,6 +104,7 @@ import {
 import {
   type UnpackPhase,
   type UnpackWorkspaceSection,
+  isUnpackSection,
   visibleUnpackSections,
 } from '@/lib/unpack-sections';
 import { cn } from '@/lib/utils';
@@ -548,9 +552,11 @@ export function UnpackProjectPanel({
   const [activeSection, setActiveSection] = useState<UnpackWorkspaceSection>('overview');
   const [askQuestion, setAskQuestion] = useState('');
   const [askAnswers, setAskAnswers] = useState<UnpackAskEntry[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   const askStreamId = useId().replace(/:/g, '');
   const scanStreamId = useId().replace(/:/g, '');
   const [historyTick, setHistoryTick] = useState(0);
+  const [activityRefreshTick, setActivityRefreshTick] = useState(0);
   const modelPrefTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const persistModelPreference = useCallback((next: string) => {
@@ -784,6 +790,14 @@ export function UnpackProjectPanel({
       setProgressDetail(null);
       void refreshHistory();
       onSnapshotsChange?.();
+      void saveIntelSnapshot(repoPath, 90)
+        .then(() => {
+          setActivityRefreshTick((tick) => tick + 1);
+          onSnapshotsChange?.();
+        })
+        .catch((err: unknown) => {
+          console.warn('[CodeVetter] Repo activity snapshot failed:', err);
+        });
     } catch (err: unknown) {
       console.error('[CodeVetter] Repo unpack failed:', err);
       const msg = err instanceof Error ? err.message : String(err);
@@ -1110,6 +1124,31 @@ export function UnpackProjectPanel({
     }
   }, [activeSection, sections]);
 
+  useEffect(() => {
+    const requested = searchParams.get('section');
+    const normalized =
+      requested === 'intel' || requested === 'attribution' ? 'activity' : requested;
+    if (!isUnpackSection(normalized) || normalized === activeSection) return;
+    if (!sections.some((section) => section.id === normalized)) return;
+    setActiveSection(normalized);
+  }, [activeSection, searchParams, sections]);
+
+  const handleSectionChange = useCallback(
+    (section: UnpackWorkspaceSection) => {
+      setActiveSection(section);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (section === 'overview') next.delete('section');
+          else next.set('section', section);
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
+
   return (
     <div className="space-y-4">
       <UnpackMissionControl
@@ -1119,22 +1158,11 @@ export function UnpackProjectPanel({
         hasReport={hasReport}
         lastUpdated={formatUnpackSnapshotTime(active?.createdAt ?? latestSnapshot?.created_at)}
         commitSha={active?.inventory?.commit_sha}
-        agent={active?.agentUsed ?? agent}
-        model={active?.modelUsed ?? model}
-        onAgentChange={(next) => startTransition(() => setAgent(next))}
-        onModelChange={(next) => {
-          startTransition(() => setModel(next));
-          persistModelPreference(next);
-        }}
-        askQuestion={askQuestion}
-        askAnswers={askAnswers}
-        onAskQuestionChange={setAskQuestion}
         onUnpack={handleUnpack}
-        onSummarize={handleSummarize}
-        onAsk={handleAsk}
         qaScore={active?.inventory?.qa_readiness?.score ?? null}
         healthScore={active?.inventory?.repo_health?.average_score ?? null}
         graphNodes={active?.inventory?.repo_graph?.nodes.length ?? null}
+        progressDetail={progressDetail}
       />
 
       {detectedFleetProject?.project && (
@@ -1241,12 +1269,12 @@ export function UnpackProjectPanel({
         </div>
       )}
 
-      {!hasInventory && phase === 'idle' ? (
-        <UnpackEmptyState onUnpack={handleUnpack} busy={isBusy} />
-      ) : null}
-
       {hasInventory || history.length > 0 ? (
-        <UnpackSectionNav sections={sections} active={activeSection} onChange={setActiveSection} />
+        <UnpackSectionNav
+          sections={sections}
+          active={activeSection}
+          onChange={handleSectionChange}
+        />
       ) : null}
 
       {activeSection === 'overview' && active?.inventory ? (
@@ -1304,42 +1332,46 @@ export function UnpackProjectPanel({
         />
       ) : null}
 
-      {activeSection === 'brief' && active?.report && active.inventory ? (
-        <ReportView
-          report={active.report}
-          inventory={active.inventory}
-          onExport={handleExport}
-          onCopyPrompt={handleCopyPrompt}
-          disabled={isBusy}
-        />
-      ) : null}
-
-      {activeSection === 'brief' && active?.inventory && !active.report && phase === 'ready' ? (
-        <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--bg-surface)] p-6 text-sm text-[var(--text-secondary)]">
-          <div className="flex flex-wrap items-center gap-2">
-            <UnpackRunKindBadge kind="ai" />
-            <span className="font-medium text-[var(--text-primary)]">
-              Analysis not generated yet
-            </span>
-          </div>
-          <p className="mt-3">
-            The local snapshot is ready. Run AI analysis on this exact snapshot, or ask a focused
-            question in mission control.
-          </p>
-          <Button
-            type="button"
-            size="sm"
-            className="mt-4"
-            disabled={isBusy}
-            onClick={handleSummarize}
-          >
-            <Sparkles size={14} className="mr-1.5" />
-            Analyze now
-          </Button>
+      {activeSection === 'brief' && active?.inventory ? (
+        <div className="space-y-4">
+          <UnpackAiPanel
+            canRun={phase === 'ready'}
+            isSummarizing={phase === 'generating'}
+            isAsking={phase === 'asking'}
+            agent={active?.agentUsed ?? agent}
+            model={active?.modelUsed ?? model}
+            question={askQuestion}
+            answers={askAnswers}
+            onAgentChange={(next) => startTransition(() => setAgent(next))}
+            onModelChange={(next) => {
+              startTransition(() => setModel(next));
+              persistModelPreference(next);
+            }}
+            onSummarize={handleSummarize}
+            onQuestionChange={setAskQuestion}
+            onAsk={handleAsk}
+          />
+          {active.report ? (
+            <ReportView
+              report={active.report}
+              inventory={active.inventory}
+              onExport={handleExport}
+              onCopyPrompt={handleCopyPrompt}
+              disabled={isBusy}
+            />
+          ) : null}
         </div>
       ) : null}
 
-      {activeSection === 'snapshots' ? (
+      {activeSection === 'activity' && active?.inventory ? (
+        <IntelProjectPanel
+          repoPath={active.inventory.repo_path}
+          onSnapshotsChange={onSnapshotsChange}
+          refreshToken={activityRefreshTick}
+        />
+      ) : null}
+
+      {history.length > 0 ? (
         <UnpackHistoryList
           history={history}
           activeId={active?.reportId}
@@ -1579,6 +1611,222 @@ function boundedSourceCount(sources: Array<string | null | undefined>): number {
   return new Set(sources.filter((source): source is string => Boolean(source))).size;
 }
 
+type RecommendedNextAction = {
+  id: string;
+  label: string;
+  detail: string;
+  badge: string;
+  tone: string;
+  source?: string;
+  command?: string;
+  question?: string;
+  icon: ReactNode;
+};
+
+function uniqueTruthy(items: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of items) {
+    if (!item || seen.has(item)) continue;
+    seen.add(item);
+    out.push(item);
+  }
+  return out;
+}
+
+function scriptRecommendationRank(script: string): number {
+  const lower = script.toLowerCase();
+  if (lower.includes('e2e') || lower.includes('playwright')) return 100;
+  if (lower === 'test') return 90;
+  if (lower.includes('test')) return 80;
+  if (lower.includes('qa') || lower.includes('check')) return 75;
+  if (lower.includes('type')) return 65;
+  if (lower.includes('lint')) return 55;
+  return 0;
+}
+
+function findBestVerificationCommand(inventory: UnpackRepoInventory): {
+  command: string;
+  source: string;
+  reason: string;
+} | null {
+  const packageManager = packageManagerForInventory(inventory);
+  const candidates = inventory.manifests
+    .flatMap((manifest) =>
+      manifest.scripts.map((script) => ({
+        script,
+        manifest: manifest.path,
+        rank: scriptRecommendationRank(script),
+      }))
+    )
+    .filter((candidate) => candidate.rank > 0)
+    .sort((a, b) => b.rank - a.rank || a.script.localeCompare(b.script));
+
+  const best = candidates[0];
+  if (best) {
+    return {
+      command: commandForPackageScript(best.script, packageManager),
+      source: best.manifest,
+      reason:
+        best.rank >= 80
+          ? 'Best detected local test path from repo scripts.'
+          : 'Closest deterministic local check exposed by repo scripts.',
+    };
+  }
+
+  const hint = inventory.history_brief?.test_hints[0];
+  if (hint) {
+    const match = hint.reason.match(/`([^`]+)`/);
+    return {
+      command: match?.[1] ?? 'Use the historical verification hint',
+      source: hint.path,
+      reason: hint.reason,
+    };
+  }
+
+  return null;
+}
+
+function findGraphLead(graph: UnpackRepoGraph | null | undefined): UnpackRepoGraphNode | null {
+  if (!graph || graph.nodes.length === 0) return null;
+  return (
+    graph.nodes.find((node) =>
+      [
+        'route',
+        'tauri_command',
+        'entrypoint',
+        'script',
+        'package',
+        'workspace_unit',
+        'subsystem',
+      ].includes(node.kind)
+    ) ?? graph.nodes[0]
+  );
+}
+
+function buildRecommendedNextActions(
+  inventory: UnpackRepoInventory,
+  hasReport: boolean
+): RecommendedNextAction[] {
+  const health = inventory.repo_health;
+  const graph = inventory.repo_graph;
+  const qa = inventory.qa_readiness;
+  const historyBrief = inventory.history_brief;
+  const actions: RecommendedNextAction[] = [];
+  const startFiles = uniqueTruthy([
+    ...inventory.docs.map((doc) => doc.path),
+    ...inventory.entrypoints.map((entrypoint) => entrypoint.path),
+    ...inventory.manifests.map((manifest) => manifest.path),
+    ...inventory.config_files,
+  ]);
+  const firstFile = startFiles[0];
+  if (firstFile) {
+    actions.push({
+      id: 'read-first',
+      label: 'Open first',
+      detail:
+        startFiles.length > 1
+          ? `Start here, then skim ${startFiles.slice(1, 3).join(' and ')} before changing code.`
+          : 'Start here before changing code.',
+      badge: 'Read',
+      tone: 'border-cyan-500/25 bg-cyan-500/[0.06] text-cyan-100',
+      source: firstFile,
+      icon: <FileText size={14} />,
+    });
+  }
+
+  const verification = findBestVerificationCommand(inventory);
+  if (verification) {
+    actions.push({
+      id: 'verify',
+      label: 'Run verification',
+      detail: verification.reason,
+      badge: 'Check',
+      tone: 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-100',
+      source: verification.source,
+      command: verification.command,
+      icon: <FlaskConical size={14} />,
+    });
+  } else if (qa && qa.status !== 'ready') {
+    actions.push({
+      id: 'add-verification',
+      label: 'Add verification path',
+      detail: 'The scan did not find a strong local test, QA, typecheck, or lint command.',
+      badge: 'Gap',
+      tone: 'border-amber-500/25 bg-amber-500/[0.06] text-amber-100',
+      source: qa.signals.find((signal) => signal.sources.length > 0)?.sources[0],
+      icon: <FlaskConical size={14} />,
+    });
+  }
+
+  const topHealthFile = health?.top_files?.[0];
+  const topFinding = topHealthFile?.findings?.[0];
+  if (topHealthFile && health && health.hotspot_count > 0) {
+    actions.push({
+      id: 'risk',
+      label: 'Inspect risky file',
+      detail: topFinding
+        ? `${topFinding.label}: ${topFinding.detail}`
+        : `${topHealthFile.score.toFixed(1)}/10 health score; inspect before touching nearby code.`,
+      badge: 'Risk',
+      tone: 'border-yellow-500/25 bg-yellow-500/[0.06] text-yellow-100',
+      source: topHealthFile.path,
+      icon: <ShieldAlert size={14} />,
+    });
+  }
+
+  const graphLead = findGraphLead(graph);
+  if (graphLead) {
+    actions.push({
+      id: 'map',
+      label: 'Trace graph lead',
+      detail: `${graphLead.kind.replaceAll('_', ' ')} "${graphLead.label}" is a useful starting node for edges to files, tests, scripts, and boundaries.`,
+      badge: `${graph?.nodes.length.toLocaleString() ?? 0} nodes`,
+      tone: 'border-sky-500/25 bg-sky-500/[0.06] text-sky-100',
+      source: graphLead.path ?? undefined,
+      icon: <Network size={14} />,
+    });
+  }
+
+  const coupling = historyBrief?.temporal_couplings?.find((item) => item.files.length >= 2);
+  if (coupling) {
+    actions.push({
+      id: 'cochange',
+      label: 'Check co-change pair',
+      detail: `${coupling.files[0]} and ${coupling.files[1]} moved together in ${coupling.commit_count} recent commits.`,
+      badge: 'History',
+      tone: 'border-violet-500/25 bg-violet-500/[0.06] text-violet-100',
+      source: coupling.files[0],
+      icon: <History size={14} />,
+    });
+  }
+
+  if (!hasReport) {
+    actions.push({
+      id: 'ask-ai',
+      label: 'Ask focused AI question',
+      detail: 'Use the local snapshot as evidence; ask for a small answer tied to files.',
+      badge: 'Optional AI',
+      tone: 'border-cyan-500/25 bg-cyan-500/[0.04] text-cyan-100',
+      question: 'What are the highest-risk areas to change, and what files prove that?',
+      icon: <Sparkles size={14} />,
+    });
+  }
+
+  if (actions.length === 0) {
+    actions.push({
+      id: 'ready',
+      label: 'Ready for handoff',
+      detail: 'Snapshot has enough local evidence for a review or agent handoff.',
+      badge: 'Ready',
+      tone: 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-100',
+      icon: <CheckCircle2 size={14} />,
+    });
+  }
+
+  return actions.slice(0, 5);
+}
+
 function InventoryReadout({
   inventory,
   hasReport,
@@ -1591,8 +1839,7 @@ function InventoryReadout({
   const health = inventory.repo_health;
   const graph = inventory.repo_graph;
   const historyBrief = inventory.history_brief;
-  const topHealthFile = health?.top_files?.[0];
-  const topFinding = topHealthFile?.findings?.[0];
+  const recommendedActions = buildRecommendedNextActions(inventory, hasReport);
 
   const qaTone = qaStatusTone(qa?.status);
   const healthTone =
@@ -1683,98 +1930,6 @@ function InventoryReadout({
         ]
       : ['Local snapshot is ready, but AI analysis has not been run yet.'],
   };
-
-  const actions: Array<{
-    label: string;
-    detail: string;
-    tone: string;
-    source?: string;
-    meta?: string;
-  }> = [];
-  if (inventory.max_files_hit) {
-    actions.push({
-      label: 'Scope the scan',
-      detail: 'The file cap was hit; rerun on a package or app directory before trusting gaps.',
-      tone: 'text-yellow-200',
-      meta: 'Large repo',
-    });
-  }
-  if (topHealthFile && health && health.hotspot_count > 0) {
-    actions.push({
-      label: `Open ${topHealthFile.path}`,
-      detail: topFinding
-        ? `${topFinding.label}: ${topFinding.detail}`
-        : `${topHealthFile.score.toFixed(1)}/10 health score; inspect before changing nearby code.`,
-      tone: 'text-yellow-200',
-      source: topHealthFile.path,
-      meta: 'Hotspot',
-    });
-  }
-  const topCoupling = historyBrief?.temporal_couplings?.[0];
-  if (topCoupling && topCoupling.files.length >= 2) {
-    actions.push({
-      label: 'Check files that move together',
-      detail: `${topCoupling.files[0]} and ${topCoupling.files[1]} changed together in ${topCoupling.commit_count} recent commits.`,
-      tone: 'text-cyan-200',
-      source: topCoupling.files[0],
-      meta: 'Co-change',
-    });
-  }
-  if (graph && graph.nodes.length > 0) {
-    const graphLead =
-      graph.nodes.find((node) =>
-        ['workspace_unit', 'subsystem', 'route', 'command', 'package'].includes(node.kind)
-      ) ?? graph.nodes[0];
-    actions.push({
-      label: 'Open Code intelligence -> Repo memory graph',
-      detail: graphLead
-        ? `Start from ${graphLead.kind} "${graphLead.label}" and follow edges to entrypoints, tests, scripts, and tables.`
-        : 'Use the graph to jump from packages/routes/commands to their source files and tests.',
-      tone: 'text-cyan-200',
-      source: graphLead?.path ?? undefined,
-      meta: `${graph.nodes.length.toLocaleString()} nodes`,
-    });
-  }
-  if (qa && qa.status !== 'ready') {
-    actions.push({
-      label: qa.status === 'partial' ? 'Complete QA wiring' : 'Add a runnable QA path',
-      detail:
-        qa.status === 'partial'
-          ? 'Runner signals exist, but the repo is missing enough specs/scripts/artifacts for reliable replay.'
-          : 'No strong browser QA path was detected; add a local command before trusting UI changes.',
-      tone: qa.status === 'partial' ? 'text-yellow-200' : 'text-red-200',
-      source: qa.signals.find((signal) => signal.sources.length > 0)?.sources[0],
-      meta: 'Verification',
-    });
-  }
-  if (historyBrief && historyBrief.decisions.length > 0) {
-    const decision = historyBrief.decisions[0];
-    actions.push({
-      label: 'Respect existing decisions',
-      detail: `${decision.marker}: ${decision.text}`,
-      tone: 'text-violet-200',
-      source: decision.source,
-      meta: 'Decision',
-    });
-  }
-  if (!hasReport) {
-    actions.push({
-      label: 'Analyze or ask',
-      detail:
-        'Local snapshot is ready. Run analysis for the full report, or ask a focused question in mission control.',
-      tone: 'text-cyan-200',
-      meta: 'Optional AI',
-    });
-  }
-  if (actions.length === 0) {
-    actions.push({
-      label: 'Ready for handoff',
-      detail:
-        'Inventory, QA, graph, history, and health signals look usable for a fresh review session.',
-      tone: 'text-emerald-200',
-      meta: 'Ready',
-    });
-  }
 
   const graphKinds = graph
     ? Object.entries(
@@ -1881,39 +2036,48 @@ function InventoryReadout({
   ];
 
   return (
-    <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--bg-raised)]/45 p-5">
+    <div className="rounded-xl border border-[var(--cv-line)] bg-white/[0.018] p-4 sm:p-5">
       <div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-lg font-semibold text-[var(--text-primary)]">
-              What this scan says to do next
+              Recommended next actions
             </div>
             <div className="mt-1 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
-              Prioritized local leads from graph, health, QA, history, and repo shape.
+              Concrete read, verify, risk, graph, and AI leads from this local snapshot.
             </div>
           </div>
           <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
-            Click evidence packets below for details
+            Deterministic · local evidence
           </div>
         </div>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {actions.slice(0, 4).map((action) => (
+        <div className="mt-4 grid gap-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+          {recommendedActions.map((action, index) => (
             <div
-              key={`${action.label}-${action.detail}`}
-              className="rounded-xl border border-[var(--cv-line)] bg-[var(--bg-main)]/45 p-4 text-sm leading-6"
+              key={action.id}
+              className={cn('rounded-xl border p-3 text-sm leading-6', action.tone)}
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className={cn('font-semibold', action.tone)}>{action.label}</div>
-                {action.meta ? (
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 border-[var(--cv-line)] text-[9px] uppercase tracking-wider text-[var(--text-muted)]"
-                  >
-                    {action.meta}
-                  </Badge>
-                ) : null}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current/25 font-mono">
+                    {index + 1}
+                  </span>
+                  {action.badge}
+                </div>
+                <span className="opacity-80">{action.icon}</span>
               </div>
-              <div className="mt-2 text-[var(--text-secondary)]">{action.detail}</div>
+              <div className="mt-3 font-semibold text-[var(--text-primary)]">{action.label}</div>
+              <div className="mt-1 text-xs leading-5 opacity-80">{action.detail}</div>
+              {action.command ? (
+                <div className="mt-3 rounded-md border border-current/15 bg-black/20 px-2 py-1.5 font-mono text-xs text-[var(--text-primary)]">
+                  {action.command}
+                </div>
+              ) : null}
+              {action.question ? (
+                <div className="mt-3 rounded-md border border-current/15 bg-black/20 px-2 py-1.5 text-xs text-[var(--text-primary)]">
+                  {action.question}
+                </div>
+              ) : null}
               {action.source ? (
                 <div className="mt-3">
                   <SourceLink path={action.source} repoPath={inventory.repo_path} />
@@ -1924,9 +2088,16 @@ function InventoryReadout({
         </div>
       </div>
 
-      <div className="mt-6">
-        <div className="cv-label mb-3">Evidence packets</div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-5">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="cv-label mb-1">Evidence packets</div>
+            <div className="text-xs text-[var(--text-muted)]">
+              Open these when you need confidence, caveats, or agent-ready context.
+            </div>
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {metrics.map((metric) => (
             <ReadoutCard key={metric.id} metric={metric} onClick={() => setZoom(metric)} />
           ))}
@@ -1963,7 +2134,7 @@ function ReadoutCard({ metric, onClick }: { metric: ReadoutZoom; onClick: () => 
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-xl border px-4 py-4 text-left transition-colors hover:border-[var(--cv-accent)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--cv-accent)]/35',
+        'rounded-lg border px-3 py-3 text-left transition-colors hover:border-[var(--cv-accent)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--cv-accent)]/35',
         metric.tone
       )}
     >
@@ -1971,9 +2142,9 @@ function ReadoutCard({ metric, onClick }: { metric: ReadoutZoom; onClick: () => 
         {metric.icon}
         {metric.label}
       </div>
-      <div className="mt-3 text-2xl font-semibold text-[var(--text-primary)]">{metric.value}</div>
+      <div className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{metric.value}</div>
       <div className="mt-1 font-mono text-xs uppercase opacity-80">{metric.detail}</div>
-      <div className="mt-3 text-xs opacity-75">{confidenceLabel(metric.confidence.level)}</div>
+      <div className="mt-2 text-xs opacity-75">{confidenceLabel(metric.confidence.level)}</div>
     </button>
   );
 }
@@ -3422,28 +3593,46 @@ const InventorySummary = memo(function InventorySummary({
   const showOverview = section === 'overview';
   const showInventory = section === 'inventory';
   const showIntelligence = section === 'intelligence';
+  const hasQaReadiness = Boolean(inventory.qa_readiness);
+  const hasRepoHealth = Boolean(
+    inventory.repo_health &&
+      inventory.repo_health.files_analyzed > 0 &&
+      inventory.repo_health.top_files.length > 0
+  );
+  const historyBrief = inventory.history_brief;
+  const hasHistoryBrief = Boolean(
+    historyBrief &&
+      (historyBrief.recent_commits.length > 0 ||
+        historyBrief.decisions.length > 0 ||
+        historyBrief.test_hints.length > 0 ||
+        (historyBrief.temporal_couplings?.length ?? 0) > 0)
+  );
   const fileCoverage =
     inventory.estimated_total_files && inventory.estimated_total_files > inventory.files_scanned
       ? `${inventory.files_scanned.toLocaleString()} / ${inventory.estimated_total_files.toLocaleString()}`
       : inventory.files_scanned.toLocaleString();
   const stat = (label: string, value: ReactNode) => (
-    <div className="cv-metric-tile flex min-w-0 flex-col rounded-xl px-4 py-4">
+    <div className="flex min-w-0 flex-col rounded-lg border border-[var(--cv-line)] bg-[var(--bg-main)]/35 px-3 py-3">
       <span className="cv-label">{label}</span>
-      <span className="mt-2 truncate text-lg font-semibold text-[var(--text-primary)]">
+      <span className="mt-2 truncate text-base font-semibold text-[var(--text-primary)]">
         {value}
       </span>
     </div>
   );
 
+  if (showOverview) {
+    return <InventoryReadout inventory={inventory} hasReport={hasReport} />;
+  }
+
   return (
-    <Card className="cv-frame cv-glow-edge overflow-hidden rounded-lg">
+    <Card className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-white/[0.018] shadow-none">
       {(showInventory || showIntelligence) && (
-        <CardHeader className="border-b border-[var(--cv-line)] bg-white/[0.015] pb-3">
+        <CardHeader className="border-b border-[var(--cv-line)] px-4 py-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Layers size={16} className="text-[var(--cv-accent)]" />
-                {showInventory ? 'Repository inventory' : 'Code intelligence'}
+                {showInventory ? 'Repository inventory' : 'Graph and risk'}
               </CardTitle>
               <CardDescription className="mt-1 break-all text-xs">
                 {inventory.repo_path}
@@ -3452,17 +3641,15 @@ const InventorySummary = memo(function InventorySummary({
           </div>
         </CardHeader>
       )}
-      <CardContent className="space-y-6">
-        {(showOverview || showInventory) && (
+      <CardContent className="space-y-5 p-4">
+        {showInventory && (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {stat('Files', fileCoverage)}
             {stat('Skipped', inventory.files_skipped.toLocaleString())}
             {stat('Bytes', formatBytes(inventory.bytes_scanned))}
             {stat('Branch', inventory.branch ?? '—')}
-            {showInventory ? stat('Agent', agent ?? '—') : null}
-            {showInventory
-              ? stat('Runtime', <span className="font-mono">{formatRuntime(runtimeMs)}</span>)
-              : null}
+            {stat('Agent', agent ?? '—')}
+            {stat('Runtime', <span className="font-mono">{formatRuntime(runtimeMs)}</span>)}
           </div>
         )}
 
@@ -3473,7 +3660,7 @@ const InventorySummary = memo(function InventorySummary({
           </div>
         )}
 
-        {(showOverview || showInventory) && scanProfiles.length > 0 ? (
+        {showInventory && scanProfiles.length > 0 ? (
           <>
             <div className="grid gap-2 lg:grid-cols-3">
               {scanProfiles.map((profile) => (
@@ -3488,9 +3675,7 @@ const InventorySummary = memo(function InventorySummary({
           </>
         ) : null}
 
-        {showOverview ? <InventoryReadout inventory={inventory} hasReport={hasReport} /> : null}
-
-        {(showOverview || showInventory) && inventory.max_files_hit && (
+        {showInventory && inventory.max_files_hit && (
           <div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-200">
             <AlertTriangle size={14} className="mt-0.5 shrink-0" />
             File walk hit the safety cap. The scan covers {fileCoverage} files; graph, health, and
@@ -3498,7 +3683,7 @@ const InventorySummary = memo(function InventorySummary({
           </div>
         )}
 
-        {(showOverview || showInventory) && inventory.stack_tags.length > 0 && (
+        {showInventory && inventory.stack_tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {inventory.stack_tags.map((tag) => (
               <Badge
@@ -3514,14 +3699,38 @@ const InventorySummary = memo(function InventorySummary({
 
         {showIntelligence ? (
           <>
-            <QaReadinessPanel readiness={inventory.qa_readiness} repoPath={inventory.repo_path} />
-            <RepoHealthPanel health={inventory.repo_health} repoPath={inventory.repo_path} />
             <RepoMemoryGraphPanel graph={inventory.repo_graph} repoPath={inventory.repo_path} />
-            <UnpackDeepGraphPanel repoPath={inventory.repo_path} disabled={disabled} />
-            <CodebaseHistoryBriefPanel
-              historyBrief={inventory.history_brief}
-              repoPath={inventory.repo_path}
-            />
+            <DisclosurePanel
+              title="Deep symbol lookup"
+              summary="Build a local symbol index only when the repo map is not enough."
+            >
+              <UnpackDeepGraphPanel repoPath={inventory.repo_path} disabled={disabled} />
+            </DisclosurePanel>
+            {hasQaReadiness || hasRepoHealth ? (
+              <DisclosurePanel
+                title="Supporting risk signals"
+                summary="QA posture and deterministic health checks for the mapped repo."
+              >
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <QaReadinessPanel
+                    readiness={inventory.qa_readiness}
+                    repoPath={inventory.repo_path}
+                  />
+                  <RepoHealthPanel health={inventory.repo_health} repoPath={inventory.repo_path} />
+                </div>
+              </DisclosurePanel>
+            ) : null}
+            {hasHistoryBrief ? (
+              <DisclosurePanel
+                title="History leads"
+                summary="Recent commits, decisions, verification hints, and co-change clusters."
+              >
+                <CodebaseHistoryBriefPanel
+                  historyBrief={inventory.history_brief}
+                  repoPath={inventory.repo_path}
+                />
+              </DisclosurePanel>
+            ) : null}
           </>
         ) : null}
 
@@ -3662,7 +3871,7 @@ const ReportView = memo(function ReportView({
       </div>
 
       {report.overview && (
-        <Card className="cv-frame overflow-hidden rounded-lg">
+        <Card className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-white/[0.018] shadow-none">
           <CardContent className="pt-6 text-sm leading-relaxed text-[var(--text-primary)]">
             {report.overview}
           </CardContent>
@@ -3712,7 +3921,7 @@ const ReportView = memo(function ReportView({
       })}
 
       {report.agent_prompt && (
-        <Card className="cv-frame overflow-hidden rounded-lg">
+        <Card className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-white/[0.018] shadow-none">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <FilePlus2 size={16} className="text-[var(--cv-accent)]" />
@@ -3749,7 +3958,12 @@ function SectionShell({
   empty?: boolean;
 }) {
   return (
-    <Card className={cn('cv-frame overflow-hidden rounded-lg', empty && 'opacity-60')}>
+    <Card
+      className={cn(
+        'overflow-hidden rounded-xl border border-[var(--cv-line)] bg-white/[0.018] shadow-none',
+        empty && 'opacity-60'
+      )}
+    >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Icon size={16} className="text-[var(--cv-accent)]" />
@@ -3773,7 +3987,7 @@ function SectionShell({
 function SourcesPanel({ sources, repoPath }: { sources: string[]; repoPath: string }) {
   if (sources.length === 0) return null;
   return (
-    <Card className="cv-frame overflow-hidden rounded-lg">
+    <Card className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-white/[0.018] shadow-none">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Package size={16} className="text-[var(--cv-accent)]" />

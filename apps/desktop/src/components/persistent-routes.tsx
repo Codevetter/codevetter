@@ -8,7 +8,6 @@ const QuickReview = lazy(() => import('@/pages/QuickReview'));
 const RepoPage = lazy(() => import('@/pages/RepoPage'));
 const TRex = lazy(() => import('@/pages/TRex'));
 const Settings = lazy(() => import('@/pages/Settings'));
-const Roadmap = lazy(() => import('@/pages/Roadmap'));
 
 type PersistentPage = {
   id: string;
@@ -37,11 +36,6 @@ const PERSISTENT_PAGES: PersistentPage[] = [
     id: 'settings',
     match: (pathname) => pathname === '/settings' || pathname.startsWith('/settings/'),
     Component: Settings,
-  },
-  {
-    id: 'roadmap',
-    match: (pathname) => pathname === '/roadmap' || pathname.startsWith('/roadmap/'),
-    Component: Roadmap,
   },
 ];
 

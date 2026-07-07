@@ -2,7 +2,6 @@ import { memo, useMemo } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
-  ChevronDown,
   ChevronLeft,
   ExternalLink,
   History,
@@ -123,26 +122,23 @@ export const UnpackHistoryList = memo(function UnpackHistoryList({
 }) {
   const isTimeline = mode === 'timeline';
   const Icon = isTimeline ? History : Layers;
-  const title = isTimeline ? `Snapshots · ${timelineRepoName ?? ''}`.trim() : 'Snapshots';
+  const title = isTimeline ? 'Past snapshots' : 'All snapshots';
   const subtitle = isTimeline
-    ? 'Local snapshots for this project. Expand a row to inspect it; run AI analysis only when needed.'
-    : 'Saved local snapshots across projects. Analysis is attached to a snapshot after it has run.';
+    ? timelineRepoName
+      ? `${timelineRepoName} snapshots`
+      : 'Stored local snapshots'
+    : 'Saved local snapshots across projects';
 
   return (
-    <Card className="cv-frame cv-glow-edge overflow-hidden rounded-lg">
-      <div className="cv-terminal-bar px-4 py-2.5">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-          snapshot archive
-        </span>
-      </div>
-      <CardHeader className="border-b border-[var(--cv-line)] bg-white/[0.015] pb-3">
-        <div className="flex items-start justify-between gap-3">
+    <Card className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-white/[0.018] shadow-none">
+      <CardHeader className="border-b border-[var(--cv-line)] px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-sm">
               <Icon size={16} className="text-[var(--cv-accent)]" />
               {title}
             </CardTitle>
-            <CardDescription className="mt-1 text-xs">{subtitle}</CardDescription>
+            <CardDescription className="mt-0.5 text-[11px]">{subtitle}</CardDescription>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
             {isTimeline && onBack ? (
@@ -156,11 +152,11 @@ export const UnpackHistoryList = memo(function UnpackHistoryList({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="cv-action-primary"
+                className="border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-100 hover:border-cyan-200/35 hover:bg-cyan-300/[0.1] hover:text-white"
                 onClick={onGenerate}
               >
                 <Plus size={14} className="mr-1.5" />
-                Generate new
+                Generate snapshot
               </Button>
             ) : null}
             <Button
@@ -177,7 +173,7 @@ export const UnpackHistoryList = memo(function UnpackHistoryList({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="p-4">
         {history.length === 0 ? (
           <div className="cv-metric-tile flex flex-col items-center justify-center rounded-md border-dashed px-4 py-8 text-center">
             <div className="text-sm font-medium text-[var(--text-primary)]">No snapshots yet</div>
@@ -187,12 +183,13 @@ export const UnpackHistoryList = memo(function UnpackHistoryList({
             {onGenerate ? (
               <Button
                 type="button"
+                variant="outline"
                 size="sm"
-                className="cv-action-primary mt-4"
+                className="mt-4 border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-100 hover:border-cyan-200/35 hover:bg-cyan-300/[0.1] hover:text-white"
                 onClick={onGenerate}
               >
                 <Plus size={14} className="mr-1.5" />
-                Generate new
+                Generate snapshot
               </Button>
             ) : null}
           </div>
@@ -310,10 +307,10 @@ function SnapshotRows({
 }) {
   const groups = useMemo(() => groupTimelineByDate(rows), [rows]);
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {groups.map((group) => (
         <section key={group.label}>
-          <header className="mb-2 flex items-center gap-2">
+          <header className="mb-1.5 flex items-center gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)]">
               {group.label}
             </span>
@@ -321,7 +318,7 @@ function SnapshotRows({
               · {group.rows.length}
             </span>
           </header>
-          <div className="space-y-1.5">
+          <div className="overflow-hidden rounded-lg border border-[var(--cv-line)]">
             {group.rows.map((row) => (
               <SnapshotRow
                 key={row.id}
@@ -363,13 +360,13 @@ function SnapshotRow({
   return (
     <article
       className={cn(
-        'cv-metric-tile rounded-md px-3 py-2 transition-colors',
+        'border-b border-[var(--cv-line)] bg-white/[0.012] px-3 py-2 transition-colors last:border-b-0 hover:bg-white/[0.028]',
         active && 'border-cyan-500/40 bg-cyan-500/5'
       )}
     >
       <button
         type="button"
-        className="flex w-full flex-col gap-2 text-left sm:flex-row sm:items-start sm:justify-between"
+        className="grid w-full gap-2 text-left md:grid-cols-[minmax(0,1fr),auto]"
         onClick={() => onLoad(row.id)}
       >
         <div className="min-w-0">
@@ -384,14 +381,6 @@ function SnapshotRow({
             <span className="font-mono text-[10px] text-[var(--text-muted)]">
               {row.commit_sha?.slice(0, 10) ?? 'no commit'}
             </span>
-            {active ? (
-              <Badge
-                variant="outline"
-                className="border-cyan-500/30 bg-cyan-500/10 text-[10px] uppercase tracking-wider text-cyan-200"
-              >
-                Open
-              </Badge>
-            ) : null}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-muted)]">
             <span>{row.files_scanned.toLocaleString()} files</span>
@@ -405,28 +394,41 @@ function SnapshotRow({
             </div>
           ) : null}
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+        <div className="flex shrink-0 flex-wrap items-center gap-1.5 md:justify-end">
           <Badge
             variant="outline"
             className={cn('border text-[10px] uppercase tracking-wider', analysis.tone)}
           >
             {analysis.label}
           </Badge>
-          <span className="inline-flex items-center rounded border border-[var(--cv-line)] px-1.5 py-1 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
-            <ChevronDown size={11} className="mr-1" />
-            Expand
-          </span>
+          {active ? (
+            <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-cyan-200">
+              Open
+            </span>
+          ) : null}
         </div>
       </button>
 
-      <div className="mt-2 flex flex-wrap items-center justify-end gap-1.5 border-t border-[var(--cv-line)]/60 pt-2">
+      <div className="mt-1.5 flex flex-wrap items-center justify-end gap-1">
         {canAnalyze ? (
-          <Button type="button" size="sm" variant="outline" onClick={() => onAnalyze(row.id)}>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-xs"
+            onClick={() => onAnalyze(row.id)}
+          >
             <Sparkles size={12} className="mr-1" />
             Analyze
           </Button>
         ) : null}
-        <Button type="button" size="sm" variant="ghost" onClick={() => onLoad(row.id)}>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2 text-xs"
+          onClick={() => onLoad(row.id)}
+        >
           <ExternalLink size={12} className="mr-1" />
           Open
         </Button>
@@ -434,6 +436,7 @@ function SnapshotRow({
           type="button"
           size="sm"
           variant="ghost"
+          className="h-7 px-2"
           onClick={() => onDelete(row.id)}
           aria-label="Delete snapshot"
         >

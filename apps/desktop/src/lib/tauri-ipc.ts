@@ -237,32 +237,6 @@ export interface IndexStats {
   last_indexed_at: string | null;
 }
 
-/** v1.1.84 — live resource sampling for the top-nav chip. */
-export interface ResourceProcessSample {
-  pid: number;
-  name: string;
-  cpu_percent: number;
-  ram_bytes: number;
-}
-
-export interface ResourceSnapshot {
-  sampled_at: string;
-  self_pid: number;
-  cpu_percent: number;
-  cpu_count: number;
-  ram_bytes: number;
-  disk_read_per_sec: number;
-  disk_write_per_sec: number;
-  gpu_percent: number | null;
-  net_in_per_sec: number | null;
-  net_out_per_sec: number | null;
-  children: ResourceProcessSample[];
-}
-
-export async function getResourceSnapshot(): Promise<ResourceSnapshot> {
-  return safeInvoke<ResourceSnapshot>('get_resource_snapshot');
-}
-
 export interface TriggerIndexResult {
   indexed_sessions: number;
   indexed_messages: number;
@@ -448,25 +422,6 @@ export async function setFindingDisposition(
     finding_id: findingId,
     disposition,
   });
-}
-
-/** One time window of the finding-disposition rollup. */
-export interface FindingDispositionWindow {
-  accepted: number;
-  dismissed: number;
-  unreviewed: number;
-  /** accepted / (accepted + dismissed); 0 when nothing is reviewed. */
-  acceptance_rate: number;
-}
-
-/** All-time + last-30-days finding-disposition rollup (Roadmap page). */
-export interface FindingDispositionStats {
-  all_time: FindingDispositionWindow;
-  last_30_days: FindingDispositionWindow;
-}
-
-export async function getFindingDispositionStats(): Promise<FindingDispositionStats> {
-  return safeInvoke('get_finding_disposition_stats');
 }
 
 export async function listReviews(
@@ -1300,7 +1255,7 @@ export async function getUsageByModel(
   });
 }
 
-// ─── Engineering Intelligence (/intel) ──────────────────────────────────────
+// ─── Repo Activity Intelligence ─────────────────────────────────────────────
 
 export interface ToolCount {
   tool: string;
@@ -2530,6 +2485,13 @@ export interface RepoProject {
   intel_snapshot_count: number;
 }
 
+export interface RepoProjectGitStatus {
+  branch: string | null;
+  clean: boolean;
+  changed_files: number;
+  last_commit_at: string | null;
+}
+
 export interface RepoIntelReportSummary {
   id: string;
   repo_path: string;
@@ -2591,6 +2553,10 @@ export async function registerRepoProject(
 
 export async function removeRepoProject(repoPath: string): Promise<{ deleted: boolean }> {
   return safeInvoke('remove_repo_project', { repoPath });
+}
+
+export async function getRepoProjectGitStatus(repoPath: string): Promise<RepoProjectGitStatus> {
+  return safeInvoke('get_repo_project_git_status', { repoPath });
 }
 
 export async function saveUnpackScanSnapshot(

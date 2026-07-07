@@ -1,7 +1,5 @@
-import { AlertTriangle, GitBranch, Layers, Loader2, Network, ScanSearch } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { Layers, Loader2, ScanSearch } from 'lucide-react';
 
-import { UnpackAiPanel, type UnpackAskEntry } from '@/components/unpack-workspace/UnpackAiPanel';
 import { UnpackRunKindBadge } from '@/components/unpack-workspace/UnpackRunKindBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,19 +14,11 @@ type Props = {
   hasReport: boolean;
   lastUpdated?: string | null;
   commitSha?: string | null;
-  agent: string;
-  model: string;
-  askQuestion: string;
-  askAnswers: UnpackAskEntry[];
-  onAgentChange: (agent: string) => void;
-  onModelChange: (model: string) => void;
-  onAskQuestionChange: (question: string) => void;
   onUnpack: () => void;
-  onSummarize: () => void;
-  onAsk: () => void;
   qaScore?: number | null;
   healthScore?: number | null;
   graphNodes?: number | null;
+  progressDetail?: string | null;
 };
 
 function phaseLabel(phase: UnpackPhase): { text: string; tone: string } {
@@ -57,54 +47,25 @@ function phaseLabel(phase: UnpackPhase): { text: string; tone: string } {
   }
 }
 
-function MetricTile({
+function SnapshotFact({
   label,
   value,
   detail,
-  icon,
   tone,
-  progress,
 }: {
   label: string;
-  value: ReactNode;
+  value: string;
   detail?: string;
-  icon: ReactNode;
-  tone: {
-    text: string;
-    border: string;
-    bg: string;
-    bar: string;
-  };
-  progress?: number | null;
+  tone: string;
 }) {
-  const pct = progress == null ? null : Math.max(0, Math.min(100, progress));
   return (
-    <div
-      className={cn(
-        'rounded-xl border px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]',
-        tone.border,
-        tone.bg
-      )}
-    >
-      <div
-        className={cn(
-          'flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider',
-          tone.text
-        )}
-      >
-        {icon}
+    <div className="min-w-0 rounded-lg border border-[var(--cv-line)] bg-white/[0.02] px-3 py-2.5">
+      <div className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
         {label}
       </div>
-      <div className="mt-2 text-2xl font-semibold tabular-nums text-[var(--text-primary)]">
-        {value}
-      </div>
-      {pct != null ? (
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/30">
-          <div className={cn('h-full rounded-full', tone.bar)} style={{ width: `${pct}%` }} />
-        </div>
-      ) : null}
+      <div className={cn('mt-1 truncate text-lg font-semibold tabular-nums', tone)}>{value}</div>
       {detail ? (
-        <div className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{detail}</div>
+        <div className="mt-0.5 truncate text-xs text-[var(--text-secondary)]">{detail}</div>
       ) : null}
     </div>
   );
@@ -154,79 +115,84 @@ function scoreTone(
   return metricTones.rose;
 }
 
-function LanguageComposition({ inventory }: { inventory: UnpackRepoInventory }) {
-  const languages = inventory.languages.slice(0, 5);
-  if (languages.length === 0) return null;
-  const total = Math.max(
-    1,
-    languages.reduce((sum, language) => sum + language.files, 0)
-  );
-  const colors = ['bg-cyan-300', 'bg-violet-300', 'bg-emerald-300', 'bg-amber-300', 'bg-rose-300'];
-
-  return (
-    <div className="border-t border-[var(--cv-line)] px-5 pb-5 pt-1">
-      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
-        <span className="font-semibold text-[var(--text-secondary)]">Language mix</span>
-        {languages.map((language, index) => (
-          <span key={language.language} className="inline-flex items-center gap-1.5">
-            <span className={cn('h-2 w-2 rounded-full', colors[index] ?? 'bg-slate-400')} />
-            {language.language}
-          </span>
-        ))}
-      </div>
-      <div className="flex h-3 overflow-hidden rounded-full bg-black/30">
-        {languages.map((language, index) => (
-          <div
-            key={language.language}
-            className={colors[index] ?? 'bg-slate-400'}
-            style={{ width: `${Math.max(3, (language.files / total) * 100)}%` }}
-            title={`${language.language}: ${language.files.toLocaleString()} files`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function UnpackMissionControl({
   phase,
   inventory,
   hasReport,
   lastUpdated,
   commitSha,
-  agent,
-  model,
-  askQuestion,
-  askAnswers,
-  onAgentChange,
-  onModelChange,
-  onAskQuestionChange,
   onUnpack,
-  onSummarize,
-  onAsk,
   qaScore,
   healthScore,
   graphNodes,
+  progressDetail,
 }: Props) {
   const isBusy = phase === 'scanning' || phase === 'generating' || phase === 'asking';
   const phaseMeta = phaseLabel(phase);
   const files = inventory?.files_scanned ?? 0;
-  const canRunAi = Boolean(inventory) && !isBusy;
+
+  if (!inventory) {
+    return (
+      <section className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-[var(--bg-surface)]/70">
+        <div className="border-b border-[var(--cv-line)] px-5 py-3">
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+            Snapshot
+          </span>
+        </div>
+        <div className="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">
+                Generate a local snapshot
+              </h2>
+              {isBusy ? (
+                <Badge
+                  variant="outline"
+                  className={cn('text-[10px] uppercase tracking-wider', phaseMeta.tone)}
+                >
+                  <Loader2 size={10} className="mr-1 animate-spin" />
+                  {phaseMeta.text}
+                </Badge>
+              ) : (
+                <UnpackRunKindBadge kind="local" />
+              )}
+            </div>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+              Fast offline scan for files, stack, graph hints, health signals, and repo structure.
+              No AI or API keys.
+            </p>
+            {phase === 'scanning' && progressDetail ? (
+              <p className="mt-2 truncate font-mono text-xs text-cyan-200/80">{progressDetail}</p>
+            ) : null}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 shrink-0 rounded-xl border-cyan-300/20 bg-cyan-300/[0.07] px-4 text-cyan-100 hover:border-cyan-200/35 hover:bg-cyan-300/[0.1] hover:text-white"
+            disabled={isBusy}
+            onClick={onUnpack}
+          >
+            {phase === 'scanning' ? (
+              <Loader2 size={14} className="mr-1.5 animate-spin" />
+            ) : (
+              <ScanSearch size={14} className="mr-1.5" />
+            )}
+            Generate snapshot
+          </Button>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="cv-frame cv-glow-edge cv-scan overflow-hidden rounded-xl">
-      <div className="cv-terminal-bar px-5 py-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-          unpack console
-        </span>
-        <span className="ml-auto font-mono text-[10px] text-cyan-300/70">local-first</span>
-      </div>
-      <div className="border-b border-[var(--cv-line)] bg-gradient-to-br from-[var(--bg-raised)]/80 via-transparent to-cyan-500/[0.04] px-5 py-5">
+    <section className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-white/[0.018]">
+      <div className="px-5 py-5">
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex min-w-0 items-center gap-2 text-xl font-semibold text-[var(--text-primary)]">
+                <div className="flex min-w-0 items-center gap-2 text-lg font-semibold text-[var(--text-primary)]">
                   <Layers size={18} className="text-[var(--cv-accent)]" />
                   <span className="truncate">{inventory?.repo_name ?? 'Repo unpack'}</span>
                 </div>
@@ -264,7 +230,7 @@ export function UnpackMissionControl({
                     ) : null}
                   </>
                 ) : (
-                  'Step 1: Generate local snapshot. Step 2: Analyze or ask questions when useful.'
+                  'Local snapshot is ready. Analyze it only when you need interpretation.'
                 )}
               </p>
             </div>
@@ -275,7 +241,7 @@ export function UnpackMissionControl({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="cv-action-primary"
+                  className="border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-100 hover:border-cyan-200/35 hover:bg-cyan-300/[0.1] hover:text-white"
                   disabled={isBusy}
                   onClick={onUnpack}
                 >
@@ -284,89 +250,50 @@ export function UnpackMissionControl({
                   ) : (
                     <ScanSearch size={14} className="mr-1.5" />
                   )}
-                  Generate new
+                  Rescan
                 </Button>
-                <UnpackRunKindBadge kind="local" />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {inventory ? (
-        <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-5">
-          <MetricTile
-            label="Files"
-            value={files.toLocaleString()}
-            detail={`${inventory.files_skipped.toLocaleString()} skipped · local scan`}
-            icon={<GitBranch size={11} />}
-            tone={metricTones.cyan}
-          />
-          <MetricTile
-            label="QA posture"
-            value={qaScore != null ? `${qaScore}/100` : '—'}
-            detail={inventory.qa_readiness?.status ?? 'not scored'}
-            icon={<ScanSearch size={11} />}
-            tone={scoreTone(qaScore, 100)}
-            progress={qaScore}
-          />
-          <MetricTile
-            label="Health"
-            value={healthScore != null ? `${healthScore.toFixed(1)}/10` : '—'}
-            detail={
-              inventory.repo_health
-                ? `${inventory.repo_health.hotspot_count} hotspots`
-                : 'not scored'
-            }
-            icon={<AlertTriangle size={11} />}
-            tone={scoreTone(healthScore, 10)}
-            progress={healthScore != null ? healthScore * 10 : null}
-          />
-          <MetricTile
-            label="Graph"
-            value={graphNodes != null ? graphNodes.toLocaleString() : '—'}
-            detail={
-              inventory.repo_graph ? `${inventory.repo_graph.edges.length} edges` : 'not built'
-            }
-            icon={<Network size={11} />}
-            tone={metricTones.violet}
-            progress={
-              inventory.repo_graph
-                ? Math.min(
-                    100,
-                    (inventory.repo_graph.edges.length / Math.max(1, graphNodes ?? 1)) * 100
-                  )
-                : null
-            }
-          />
-          <MetricTile
-            label="Stack"
-            value={inventory.stack_tags.length || '—'}
-            detail={
-              inventory.stack_tags.length > 0
-                ? inventory.stack_tags.slice(0, 3).join(' · ')
-                : (inventory.branch ?? 'no tags')
-            }
-            icon={<Layers size={11} />}
-            tone={metricTones.emerald}
-          />
-        </div>
-      ) : null}
-      {inventory ? <LanguageComposition inventory={inventory} /> : null}
-      <div className="border-t border-[var(--cv-line)] p-5">
-        <UnpackAiPanel
-          canRun={canRunAi}
-          isSummarizing={phase === 'generating'}
-          isAsking={phase === 'asking'}
-          agent={agent}
-          model={model}
-          question={askQuestion}
-          answers={askAnswers}
-          onAgentChange={onAgentChange}
-          onModelChange={onModelChange}
-          onSummarize={onSummarize}
-          onQuestionChange={onAskQuestionChange}
-          onAsk={onAsk}
+      <div className="grid gap-2 border-t border-[var(--cv-line)] p-3 sm:grid-cols-2 lg:grid-cols-5">
+        <SnapshotFact
+          label="Files"
+          value={files.toLocaleString()}
+          detail={`${inventory.files_skipped.toLocaleString()} skipped · local scan`}
+          tone="text-cyan-100"
+        />
+        <SnapshotFact
+          label="QA posture"
+          value={qaScore != null ? `${qaScore}/100` : '—'}
+          detail={inventory.qa_readiness?.status ?? 'not scored'}
+          tone={scoreTone(qaScore, 100).text}
+        />
+        <SnapshotFact
+          label="Health"
+          value={healthScore != null ? `${healthScore.toFixed(1)}/10` : '—'}
+          detail={
+            inventory.repo_health ? `${inventory.repo_health.hotspot_count} hotspots` : 'not scored'
+          }
+          tone={scoreTone(healthScore, 10).text}
+        />
+        <SnapshotFact
+          label="Graph"
+          value={graphNodes != null ? graphNodes.toLocaleString() : '—'}
+          detail={inventory.repo_graph ? `${inventory.repo_graph.edges.length} edges` : 'not built'}
+          tone="text-violet-100"
+        />
+        <SnapshotFact
+          label="Stack"
+          value={inventory.stack_tags.length ? inventory.stack_tags.length.toLocaleString() : '—'}
+          detail={
+            inventory.stack_tags.length > 0
+              ? inventory.stack_tags.slice(0, 3).join(' · ')
+              : (inventory.branch ?? 'no tags')
+          }
+          tone="text-emerald-100"
         />
       </div>
     </section>

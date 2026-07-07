@@ -105,7 +105,6 @@ fn main() {
             let conn = db::init_db(app_data_dir.clone()).expect("failed to initialize database");
             app.manage(DbState(Arc::new(Mutex::new(conn))));
             app.manage(commands::trex_watcher::WatcherHandles::new());
-            app.manage(commands::resources::ResourceState::new());
 
             // v1.1.83: resume any T-Rex watchers that were enabled before the
             // last shutdown. Each enabled row spawns its own Tokio polling task.
@@ -334,7 +333,6 @@ fn main() {
             commands::review::get_review,
             commands::review::delete_review,
             commands::review::set_finding_disposition,
-            commands::review::get_finding_disposition_stats,
             commands::review::list_reviews,
             commands::review::run_cli_review,
             commands::review::fix_findings,
@@ -365,7 +363,7 @@ fn main() {
             commands::history::get_agent_usage_breakdown,
             commands::history::get_agent_usage_by_day,
             commands::history::get_usage_by_model,
-            // Engineering Intelligence (/intel)
+            // Repo activity intelligence (shown inside Repo -> Activity)
             commands::intel::attribute_repo_commits,
             commands::intel::get_tool_breakdown,
             commands::intel::get_pricing_table,
@@ -398,8 +396,6 @@ fn main() {
             commands::observability::get_webhook_config,
             commands::observability::set_webhook_config,
             commands::observability::send_notification,
-            // v1.1.84: live resource monitor for the chip in the top nav
-            commands::resources::get_resource_snapshot,
             // v1.1.83: T-Rex v2 watcher — background PR scanner + GitHub status check
             commands::trex_watcher::start_trex_watcher,
             commands::trex_watcher::stop_trex_watcher,
@@ -454,6 +450,7 @@ fn main() {
             commands::repo_workspace::list_repo_projects,
             commands::repo_workspace::register_repo_project,
             commands::repo_workspace::remove_repo_project,
+            commands::repo_workspace::get_repo_project_git_status,
             commands::repo_workspace::save_unpack_scan_snapshot,
             commands::unpack::enrich_unpack_inventory,
             commands::repo_workspace::save_intel_snapshot,

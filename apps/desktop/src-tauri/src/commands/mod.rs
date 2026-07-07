@@ -17,7 +17,6 @@ mod perf_bench;
 pub mod preferences;
 pub mod procedure_events;
 pub mod repo_workspace;
-pub mod resources;
 pub mod review;
 pub mod saas_maker;
 pub mod sandbox;

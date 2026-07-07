@@ -1,8 +1,9 @@
-import { Loader2, RefreshCw, Trash2 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Activity, GitCommit, Loader2, RefreshCw, Trash2, Users } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { SourceLink } from '@/components/unpack-workspace/SourceLink';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { IntelSnapshotView } from '@/pages/Intel';
 import {
   type DoraMetrics,
   deleteRepoIntelReport,
@@ -12,6 +13,7 @@ import {
   type RepoAttributionReport,
   type RepoIntelReportSummary,
   saveIntelSnapshot,
+  type WindowReport,
 } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
 
@@ -27,12 +29,72 @@ function formatSnapshotTime(iso: string | null | undefined): string {
   });
 }
 
+function fmtNum(value: number): string {
+  return value.toLocaleString('en-US');
+}
+
+function fmtCompact(value: number): string {
+  if (Math.abs(value) < 10_000) return fmtNum(value);
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function pct(part: number, total: number): number {
+  return total > 0 ? (part / total) * 100 : 0;
+}
+
+function findWindow(report: RepoAttributionReport | null, label: string): WindowReport | null {
+  return report?.windows.find((window) => window.label === label) ?? null;
+}
+
+function formatHours(value: number | null): string {
+  if (value == null) return 'unknown';
+  if (value < 24) return `${value.toFixed(1)}h`;
+  return `${(value / 24).toFixed(1)}d`;
+}
+
+function shortSha(value: string | null | undefined): string {
+  return value ? value.slice(0, 12) : 'unknown';
+}
+
+function shortPath(value: string): string {
+  if (value === '(root)') return value;
+  if (value.length <= 28) return value;
+  return `.../${value.split('/').slice(-2).join('/')}`;
+}
+
+function SignalCard({
+  label,
+  value,
+  detail,
+  tone = 'text-slate-100',
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  tone?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-4">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        {label}
+      </div>
+      <div className={cn('mt-2 text-2xl font-semibold tabular-nums', tone)}>{value}</div>
+      <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{detail}</div>
+    </div>
+  );
+}
+
 export function IntelProjectPanel({
   repoPath,
   onSnapshotsChange,
+  refreshToken = 0,
 }: {
   repoPath: string;
   onSnapshotsChange?: () => void;
+  refreshToken?: number;
 }) {
   const [snapshots, setSnapshots] = useState<RepoIntelReportSummary[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -41,6 +103,7 @@ export function IntelProjectPanel({
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const autoGenerateRepoRef = useRef<string | null>(null);
 
   const loadSnapshot = useCallback(async (id: string) => {
     if (!isTauriAvailable()) return;
@@ -60,7 +123,7 @@ export function IntelProjectPanel({
   }, []);
 
   const refreshList = useCallback(async () => {
-    if (!isTauriAvailable()) return;
+    if (!isTauriAvailable()) return [];
     try {
       const rows = await listRepoIntelReports(repoPath, 50);
       setSnapshots(rows);
@@ -70,6 +133,17 @@ export function IntelProjectPanel({
     }
   }, [repoPath]);
 
+  const generateActivitySnapshot = useCallback(async () => {
+    const result = await saveIntelSnapshot(repoPath, 90);
+    setReport(result.report);
+    setDora(result.dora);
+    setActiveId(result.report_id);
+    const rows = await refreshList();
+    if (rows.length) setActiveId(rows[0].id);
+    onSnapshotsChange?.();
+    return rows;
+  }, [onSnapshotsChange, refreshList, repoPath]);
+
   useEffect(() => {
     let cancelled = false;
     setReport(null);
@@ -78,46 +152,59 @@ export function IntelProjectPanel({
     setSnapshots([]);
     void (async () => {
       const rows = await refreshList();
-      if (cancelled || !rows?.length) return;
-      await loadSnapshot(rows[0].id);
+      if (cancelled) return;
+      if (rows.length) {
+        await loadSnapshot(rows[0].id);
+        return;
+      }
+      if (autoGenerateRepoRef.current === repoPath) return;
+      autoGenerateRepoRef.current = repoPath;
+      setRefreshing(true);
+      setError(null);
+      try {
+        await generateActivitySnapshot();
+      } catch (err: unknown) {
+        if (!cancelled) {
+          const msg = err instanceof Error ? err.message : String(err);
+          setError(msg);
+        }
+      } finally {
+        if (!cancelled) setRefreshing(false);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [repoPath, refreshList, loadSnapshot]);
+  }, [generateActivitySnapshot, loadSnapshot, refreshList, refreshToken, repoPath]);
 
   const handleRefresh = useCallback(async () => {
     if (!isTauriAvailable()) {
-      setError('Intel requires the desktop app.');
+      setError('Activity analysis requires the desktop app.');
       return;
     }
     setRefreshing(true);
     setError(null);
     try {
-      const result = await saveIntelSnapshot(repoPath, 90);
-      setReport(result.report);
-      setDora(result.dora);
-      setActiveId(result.report_id);
-      const rows = await refreshList();
-      if (rows?.length) setActiveId(rows[0].id);
-      onSnapshotsChange?.();
+      await generateActivitySnapshot();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
     } finally {
       setRefreshing(false);
     }
-  }, [onSnapshotsChange, refreshList, repoPath]);
+  }, [generateActivitySnapshot]);
 
   const handleDeleteSnapshot = useCallback(
     async (id: string) => {
       if (!isTauriAvailable()) return;
-      const ok = window.confirm('Delete this Intel snapshot? This only removes the stored report.');
+      const ok = window.confirm(
+        'Delete this activity snapshot? This only removes the stored report.'
+      );
       if (!ok) return;
       try {
         await deleteRepoIntelReport(id);
         const rows = await refreshList();
-        const next = rows?.[0] ?? null;
+        const next = rows[0] ?? null;
         if (next) {
           await loadSnapshot(next.id);
         } else {
@@ -135,50 +222,118 @@ export function IntelProjectPanel({
   );
 
   const activeSnapshot = snapshots.find((s) => s.id === activeId) ?? snapshots[0];
+  const thirty = findWindow(report, '30d') ?? findWindow(report, 'all');
+  const seven = findWindow(report, '7d') ?? thirty;
+  const aiShare = thirty ? pct(thirty.ai_commits, thirty.ai_commits + thirty.human_commits) : 0;
+  const correctiveRate = thirty ? pct(thirty.revert_or_fixup_commits, thirty.total_commits) : 0;
+  const topDirectory = report?.top_directories[0] ?? null;
+  const topAuthor = report?.by_author[0] ?? null;
+
+  const nextActions = useMemo(() => {
+    if (!report || !thirty) return [];
+    const actions: Array<{ label: string; detail: string; tone: string; source?: string }> = [];
+    if (topDirectory) {
+      actions.push({
+        label: `Inspect ${topDirectory.path}`,
+        detail: `Top churn area: ${fmtNum(topDirectory.commits)} commits, +${fmtNum(
+          topDirectory.additions
+        )} / -${fmtNum(topDirectory.deletions)}.`,
+        tone: 'text-cyan-200',
+        source: topDirectory.path,
+      });
+    }
+    if (thirty.commit_size_p95 > 1200) {
+      actions.push({
+        label: 'Review large change batches',
+        detail: `30d p95 commit size is ${fmtNum(thirty.commit_size_p95)} lines changed.`,
+        tone: 'text-amber-200',
+      });
+    }
+    if (correctiveRate >= 8) {
+      actions.push({
+        label: 'Audit corrective loops',
+        detail: `${thirty.revert_or_fixup_commits} recent commits look like revert/fixup work.`,
+        tone: 'text-rose-200',
+      });
+    }
+    const blindSpot = report.blind_spots?.find((spot) => spot.severity !== 'low');
+    if (blindSpot) {
+      actions.push({
+        label: blindSpot.label,
+        detail: `${blindSpot.metric_impact} ${blindSpot.detail}`,
+        tone: blindSpot.severity === 'high' ? 'text-rose-200' : 'text-amber-200',
+        source: blindSpot.sample_files[0],
+      });
+    }
+    if (actions.length === 0) {
+      actions.push({
+        label: 'Stable activity pattern',
+        detail: 'No large corrective loop, churn spike, or attribution blind spot stands out.',
+        tone: 'text-emerald-200',
+      });
+    }
+    return actions.slice(0, 4);
+  }, [correctiveRate, report, thirty, topDirectory]);
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[var(--cv-line)] bg-[var(--bg-surface)] px-4 py-3">
-        <div className="text-xs text-slate-400">
-          {activeSnapshot ? (
-            <>
-              Last updated{' '}
-              <span className="tabular-nums text-slate-300">
-                {formatSnapshotTime(activeSnapshot.created_at)}
-              </span>
-              {activeSnapshot.commit_sha ? (
-                <span className="ml-2 font-mono text-slate-500">
-                  · {activeSnapshot.commit_sha.slice(0, 12)}
-                </span>
-              ) : null}
-              <span className="ml-2 text-slate-600">· {snapshots.length} snapshot(s)</span>
-            </>
-          ) : (
-            'No snapshots stored for this project yet.'
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {activeSnapshot ? (
+      <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--bg-surface)]/70 p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Activity size={16} className="text-cyan-200" />
+              <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">
+                Repo activity
+              </h2>
+              <Badge
+                variant="outline"
+                className="border-cyan-300/18 bg-cyan-300/[0.06] text-[10px] uppercase tracking-wider text-cyan-100"
+              >
+                local git
+              </Badge>
+            </div>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+              Git attribution, churn, authors, and release-health signals for the selected repo. Use
+              this to decide where review depth should increase.
+            </p>
+            {activeSnapshot ? (
+              <p className="mt-2 text-xs text-[var(--text-muted)]">
+                Last activity snapshot {formatSnapshotTime(activeSnapshot.created_at)} · commit{' '}
+                <span className="font-mono">{shortSha(activeSnapshot.commit_sha)}</span>
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {activeSnapshot ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => void handleDeleteSnapshot(activeSnapshot.id)}
+                disabled={refreshing}
+                aria-label="Delete activity snapshot"
+              >
+                <Trash2 size={14} className="mr-1.5" />
+                Delete
+              </Button>
+            ) : null}
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
-              onClick={() => void handleDeleteSnapshot(activeSnapshot.id)}
+              className="border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-100 hover:border-cyan-200/35 hover:bg-cyan-300/[0.1] hover:text-white"
+              onClick={handleRefresh}
               disabled={refreshing}
-              aria-label="Delete Intel snapshot"
             >
-              <Trash2 size={14} className="mr-1.5" />
-              Delete
+              {refreshing ? (
+                <Loader2 size={14} className="mr-1.5 animate-spin" />
+              ) : (
+                <RefreshCw size={14} className="mr-1.5" />
+              )}
+              Refresh activity
             </Button>
-          ) : null}
-          <Button type="button" size="sm" onClick={handleRefresh} disabled={refreshing}>
-            {refreshing ? (
-              <Loader2 size={14} className="mr-1.5 animate-spin" />
-            ) : (
-              <RefreshCw size={14} className="mr-1.5" />
-            )}
-            Refresh
-          </Button>
+          </div>
         </div>
       </div>
 
@@ -188,37 +343,169 @@ export function IntelProjectPanel({
         </div>
       ) : null}
 
-      {snapshots.length > 1 ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] text-slate-500">History</span>
-          {snapshots.map((s) => (
-            <div
-              key={s.id}
-              className={cn(
-                'inline-flex items-center rounded-md border font-mono text-[10px] transition-colors',
-                s.id === activeId
-                  ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'
-                  : 'border-[var(--cv-line)] text-slate-500 hover:text-slate-300'
-              )}
-            >
-              <button type="button" className="px-2 py-1" onClick={() => void loadSnapshot(s.id)}>
-                {formatSnapshotTime(s.created_at)}
-              </button>
-              <button
-                type="button"
-                className="border-l border-[var(--cv-line)] px-1.5 py-1 text-slate-600 hover:bg-red-500/10 hover:text-red-300"
-                title="Delete Intel snapshot"
-                aria-label="Delete Intel snapshot"
-                onClick={() => void handleDeleteSnapshot(s.id)}
-              >
-                <Trash2 size={11} />
-              </button>
-            </div>
-          ))}
+      {loading && !report ? (
+        <div className="flex items-center gap-2 rounded-xl border border-[var(--cv-line)] bg-white/[0.025] px-4 py-4 text-sm text-[var(--text-secondary)]">
+          <Loader2 size={16} className="animate-spin text-cyan-200" />
+          Loading activity snapshot...
         </div>
       ) : null}
 
-      <IntelSnapshotView report={report} dora={dora} loading={loading && !report} />
+      {!loading && !report ? (
+        <div className="rounded-xl border border-dashed border-[var(--cv-line)] bg-white/[0.018] p-5">
+          <div className="text-sm font-medium text-[var(--text-primary)]">
+            No activity snapshot yet
+          </div>
+          <p className="mt-1 max-w-xl text-sm leading-6 text-[var(--text-secondary)]">
+            Generate one to see recent commit mix, churn hotspots, authors, and local release
+            health.
+          </p>
+        </div>
+      ) : null}
+
+      {report && thirty ? (
+        <>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <SignalCard
+              label="AI share"
+              value={`${aiShare.toFixed(1)}%`}
+              detail={`${fmtNum(thirty.ai_commits)} AI-shaped / ${fmtNum(
+                thirty.human_commits
+              )} human-shaped commits in 30d`}
+              tone={aiShare > 70 ? 'text-amber-200' : 'text-cyan-100'}
+            />
+            <SignalCard
+              label="Recent commits"
+              value={fmtNum(thirty.total_commits)}
+              detail={`${fmtNum(seven?.total_commits ?? 0)} in the last 7d · ${fmtNum(
+                thirty.active_days
+              )} active days`}
+            />
+            <SignalCard
+              label="Correction rate"
+              value={`${correctiveRate.toFixed(1)}%`}
+              detail={`${fmtNum(thirty.revert_or_fixup_commits)} revert/fixup-shaped commits`}
+              tone={correctiveRate >= 8 ? 'text-rose-200' : 'text-emerald-200'}
+            />
+            <SignalCard
+              label="Release health"
+              value={dora ? `${dora.deploys_per_week.toFixed(2)}/wk` : 'unknown'}
+              detail={
+                dora
+                  ? `${fmtNum(dora.release_count)} releases · lead ${formatHours(
+                      dora.median_lead_time_hours
+                    )} · failure ${dora.change_failure_rate_pct.toFixed(1)}%`
+                  : 'No semver release signal found'
+              }
+            />
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[1.15fr,0.85fr]">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+                <GitCommit size={15} className="text-cyan-200" />
+                What changed most
+              </div>
+              <div className="mt-4 space-y-2">
+                {(() => {
+                  const rows = report.top_directories.slice(0, 5);
+                  const maxChurn = Math.max(1, ...rows.map((dir) => dir.additions + dir.deletions));
+                  return rows.map((dir) => {
+                    const churn = dir.additions + dir.deletions;
+                    const width = Math.max(6, (churn / maxChurn) * 100);
+                    return (
+                      <div
+                        key={dir.path}
+                        className="rounded-lg border border-[var(--cv-line)] bg-[var(--bg-main)]/28 px-3 py-2.5"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="truncate font-mono text-sm text-[var(--text-primary)]">
+                              {shortPath(dir.path)}
+                            </div>
+                            <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">
+                              {fmtNum(dir.commits)} commits
+                            </div>
+                          </div>
+                          <div className="shrink-0 text-right font-mono text-xs tabular-nums">
+                            <span className="text-emerald-300">+{fmtCompact(dir.additions)}</span>
+                            <span className="px-1 text-[var(--text-muted)]">/</span>
+                            <span className="text-rose-300">-{fmtCompact(dir.deletions)}</span>
+                          </div>
+                        </div>
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                          <div
+                            className="h-full rounded-full bg-cyan-300/70"
+                            style={{ width: `${width}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+                <Users size={15} className="text-cyan-200" />
+                Authors and next checks
+              </div>
+              <div className="mt-4 space-y-3">
+                {topAuthor ? (
+                  <div className="rounded-lg border border-[var(--cv-line)] bg-[var(--bg-main)]/35 p-3">
+                    <div className="text-sm font-medium text-[var(--text-primary)]">
+                      {topAuthor.name || topAuthor.email}
+                    </div>
+                    <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+                      {fmtNum(topAuthor.commits)} commits · {fmtNum(topAuthor.active_days)} active
+                      days · last {topAuthor.last_commit}
+                    </div>
+                  </div>
+                ) : null}
+                {nextActions.map((action) => (
+                  <div
+                    key={`${action.label}-${action.detail}`}
+                    className="rounded-lg border border-[var(--cv-line)] bg-[var(--bg-main)]/35 p-3"
+                  >
+                    <div className={cn('text-sm font-medium', action.tone)}>{action.label}</div>
+                    <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+                      {action.detail}
+                    </div>
+                    {action.source ? (
+                      <div className="mt-2">
+                        <SourceLink path={action.source} repoPath={repoPath} />
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {snapshots.length > 1 ? (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--cv-line)] bg-white/[0.012] px-3 py-2">
+              <span className="text-[11px] font-medium text-[var(--text-muted)]">
+                Activity history
+              </span>
+              {snapshots.map((snapshot) => (
+                <button
+                  key={snapshot.id}
+                  type="button"
+                  className={cn(
+                    'rounded-md border px-2 py-0.5 font-mono text-[10px] transition-colors',
+                    snapshot.id === activeId
+                      ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-200'
+                      : 'border-[var(--cv-line)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                  )}
+                  onClick={() => void loadSnapshot(snapshot.id)}
+                >
+                  {formatSnapshotTime(snapshot.created_at)}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 }
