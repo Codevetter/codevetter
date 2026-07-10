@@ -136,6 +136,9 @@ pub async fn open_in_app(app_name: String, path: String) -> Result<Value, String
         "vscode" => std::process::Command::new("open")
             .args(["-a", "Visual Studio Code", &path])
             .output(),
+        "reveal" => std::process::Command::new("open")
+            .args(["-R", &path])
+            .output(),
         "finder" => std::process::Command::new("open").arg(&path).output(),
         "terminal" => std::process::Command::new("open")
             .args(["-a", "Terminal", &path])

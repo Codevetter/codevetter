@@ -9,6 +9,7 @@ pub async fn list_sessions(
     db: State<'_, DbState>,
     query: Option<String>,
     project: Option<String>,
+    agent_type: Option<String>,
     limit: Option<i64>,
     offset: Option<i64>,
 ) -> Result<Value, String> {
@@ -17,6 +18,7 @@ pub async fn list_sessions(
         &conn,
         query.as_deref(),
         project.as_deref(),
+        agent_type.as_deref(),
         limit.unwrap_or(50),
         offset.unwrap_or(0),
     )

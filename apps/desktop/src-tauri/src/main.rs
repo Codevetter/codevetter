@@ -105,6 +105,7 @@ fn main() {
             let conn = db::init_db(app_data_dir.clone()).expect("failed to initialize database");
             app.manage(DbState(Arc::new(Mutex::new(conn))));
             app.manage(commands::trex_watcher::WatcherHandles::new());
+            app.manage(commands::resources::ResourceState::new());
 
             // v1.1.83: resume any T-Rex watchers that were enabled before the
             // last shutdown. Each enabled row spawns its own Tokio polling task.
@@ -356,6 +357,15 @@ fn main() {
             commands::session_intelligence::list_ai_session_adapter_runs,
             commands::agent_memories::list_agent_memory_sources,
             commands::agent_memories::read_agent_memory_source,
+            commands::agent_terminal::start_codex_agent_terminal,
+            commands::agent_terminal::send_codex_agent_terminal_input,
+            commands::agent_terminal::stop_codex_agent_terminal,
+            commands::agent_terminal::resize_codex_agent_terminal,
+            commands::agent_terminal::run_agent_terminal_command,
+            commands::agent_terminal::get_codex_warp_plugin_status,
+            commands::agent_terminal::install_codex_warp_plugin,
+            commands::agent_terminal::list_codex_agent_terminals,
+            commands::resources::get_resource_snapshot,
             // History / indexer
             commands::history::trigger_index,
             commands::history::get_index_stats,

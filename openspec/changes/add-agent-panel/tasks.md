@@ -1,0 +1,113 @@
+# Tasks
+
+- [x] Add local Agent Panel page and route.
+- [x] Add top-nav entry and keyboard shortcut.
+- [x] Add sidebar list for active/background agents.
+- [x] Add create, resize, recolor, status, and background/restore controls.
+- [x] Add per-terminal command execution with captured stdout/stderr.
+- [x] Replace command cards with interactive Codex PTY sessions.
+- [x] Add automatic white/green/yellow/red agent status mapping.
+- [x] Add working-directory picker before Codex launch.
+- [x] Add copy/reveal actions for each pane working directory.
+- [x] Smooth xterm pane sizing and scrolling.
+- [x] Add Codex-Warp structured event status support.
+- [x] Add terminal clear/copy/link affordances on top of xterm.
+- [x] Add real xterm scrollback search with highlighted matches and next/previous navigation.
+- [x] Add workspace-level keyboard navigation and batch controls.
+- [x] Add scoped prompt broadcast to running foreground, attention, or all agents.
+- [x] Make background agents visibly request attention when they turn yellow/red.
+- [x] Persist multi-pane layout choice and launch config without persisting stale runtime truth.
+- [x] Persist row/column pane sizes through the splitter library.
+- [x] Notify when a background agent needs input or fails.
+- [x] Auto-reveal multiple foreground agents in a split workspace.
+- [x] Polish initialized agent status labels and signal copy.
+- [x] Default new agents to the latest registered repo directory when available.
+- [x] Add recent-repo working-directory selection for agent launch config.
+- [x] Add batch creation from recent repo directories with a shared initial prompt and optional immediate PTY start.
+- [x] Show per-agent repo name, git branch, and dirty count when available.
+- [x] Add manual repo status refresh for branch/dirty context.
+- [x] Add explicit split-right and split-down agent pane actions.
+- [x] Add keyboard shortcuts for split-right and split-down pane creation.
+- [x] Add a full-width focus mode for the selected Codex terminal with a keyboard toggle.
+- [x] Add manual and live refresh for selected/running agent repo status.
+- [x] Preserve transcript and activity history when restarting stopped agents.
+- [x] Add reusable initial-prompt presets for common Codex agent jobs.
+- [x] Add per-pane prompt composer that sends instructions through the real PTY.
+- [x] Allow the per-pane composer to stage and launch the initial Codex prompt before the PTY starts.
+- [x] Make task presets send to running Codex agents through the real PTY.
+- [x] Add per-pane prompt history recall for the Codex composer.
+- [x] Add transparent Codex launch command preview and copy action.
+- [x] Add per-pane session dossier with signal, event, repo, pid, and launch command.
+- [x] Add yellow-state attention controls for Enter, Esc, and continue.
+- [x] Render recorded launch, prompt, event, attention, and exit blocks above the PTY.
+- [x] Replace the tiny horizontal block strip with an expandable Warp-style agent timeline.
+- [x] Inspect Warp's open-source terminal and CLI-agent session architecture for transferable behavior.
+- [x] Align Codex structured-event status mapping with Warp's CLI-agent events, including question/permission flows and idle-prompt handling.
+- [x] Extract and unit-test Codex structured-event status mapping so yellow/red/green classification is harder to regress.
+- [x] Add Warp-style Codex OSC 9 notification fallback before rich OSC 777 events become active.
+- [x] Distinguish rich Codex-Warp status from OSC 9 fallback and terminal heuristics in agent signal state.
+- [x] Preserve latest parsed Codex event in live backend snapshots and hydrate reattached pane status from it.
+- [x] Add copy and prompt-replay actions to recorded agent blocks.
+- [x] Tighten Codex-Warp payload typing and classify structured failure events as red.
+- [x] Rehydrate reattached running agents from a bounded backend PTY output tail.
+- [x] Add Warp-style structured session transcript copy from blocks, activity, config, and output.
+- [x] Add Markdown transcript download for Codex agent sessions.
+- [x] Add smooth recorded-block navigation with newer/older controls and jump-to-attention.
+- [x] Keep per-agent composer draft and prompt history in session state across pane remounts.
+- [x] Serialize xterm writes and bound the render backlog for noisy Codex output.
+- [x] Route PTY output to per-terminal xterm subscribers and cap backend reattach tails for 10-12 pane load.
+- [x] Throttle backend PTY output events under noisy Codex output while flushing pending text on exit/error.
+- [x] Avoid localStorage workspace writes and repo-status refresh effects for output-only terminal churn.
+- [x] Skip redundant React state updates for raw output once structured Codex events are active.
+- [x] Replace per-terminal heartbeat threads with one shared Codex PTY heartbeat loop.
+- [x] Preserve Codex session id and rollout transcript path from structured agent events.
+- [x] Add Warp-style Codex session resume using the captured Codex session id.
+- [x] Persist splitter pane sizes with react-resizable-panels v4 defaultLayout/onLayoutChanged instead of unsupported DOM props.
+- [x] Add Warp-style Codex session fork into a new agent pane.
+- [x] Add recent indexed Codex sessions in the agent sidebar with resume and fork actions.
+- [x] Stop Codex agents gracefully with /exit before force-killing stalled processes.
+- [x] Add copy/reveal actions for captured Codex rollout transcript paths.
+- [x] Add backend argv regression coverage for Codex start, resume, and fork launches.
+- [x] Add search/filter for recent indexed Codex sessions.
+- [x] Filter recent indexed Codex sessions in SQLite and index recent-session ordering for faster local history loads.
+- [x] Add Warp-style `!` shell-command mode to the Codex composer.
+- [x] Make `!` composer mode execute real local shell commands in the pane cwd and stream results into the terminal timeline.
+- [x] Promote `!` shell commands to replayable timeline blocks instead of generic prompt blocks.
+- [x] Update shell timeline blocks in place with cwd, exit code, duration, and captured output.
+- [x] Add a shell-block action that sends bounded command output back to the running Codex agent as context.
+- [x] Add a terminal context-menu action that sends selected text or recent output to the running Codex agent.
+- [x] Track xterm selection state and expose a direct send-selection-to-Codex action.
+- [x] Add a keyboard shortcut for sending terminal selection or recent output to Codex.
+- [x] Add a visible replayable composer history drawer for prompt and shell entries.
+- [x] Add a bounded multi-line Codex prompt composer with Enter submit and Shift/Alt+Enter newline.
+- [x] Add a running-agent slash command picker for common Codex in-session commands.
+- [x] Persist bounded composer drafts, shell mode, and prompt history across webview reloads.
+- [x] Replay recent structured Codex events from backend snapshots on pane reattach.
+- [x] Add structured Codex event cursoring so snapshot replay is idempotent.
+- [x] Deduplicate live structured Codex events by backend sequence to avoid duplicate blocks during reattach/listener races.
+- [x] Persist bounded event-derived pane state across webview reloads without saving raw scrollback.
+- [x] Add a visible structured Codex event stream to explain agent status transitions.
+- [x] Add recovery controls that prefer Codex resume when a captured session id exists.
+- [x] Add filterable agent sidebar with scoped recover/stop bulk actions.
+- [x] Keep sidebar recovery scoped to stopped, failed, or resumable panes instead of never-started panes.
+- [x] Make the attention jump cycle through failed, detached, and waiting agents instead of pinning to the first one.
+- [x] Add explicit lifecycle labels for ready, live, waiting, failed, resumable, stopped, and detached panes.
+- [x] Add low-frequency lifecycle ticking and allow recovery actions to restart detached panes whose heartbeat stopped.
+- [x] Keep workspace keyboard shortcuts active from xterm and focus the selected terminal pane after pane switching, including shifted bracket shortcuts.
+- [x] Keep structured Codex-Warp sessions green during quiet heartbeats unless Codex emits an explicit waiting or failure event.
+- [x] Show per-agent CPU/RAM from the existing resource snapshot without attributing system GPU to individual agents.
+- [x] Force the recent Codex session hot path onto the agent/time SQLite index.
+- [x] Use xterm's WebGL renderer when available, with safe fallback on init failure or context loss.
+- [x] Add xterm live-output follow state with a jump-to-bottom control when inspecting scrollback.
+- [x] Make terminal copy actions prefer selected xterm text before falling back to full output.
+- [x] Add terminal clipboard paste via toolbar and Cmd/Ctrl+V into the live PTY.
+- [x] Route terminal clipboard paste through xterm's paste API for bracketed-paste compatibility.
+- [x] Add terminal-native Cmd+C selected-text copy and Cmd+A scrollback selection while preserving Ctrl+C PTY interrupts.
+- [x] Add a non-destructive terminal interrupt action that sends Ctrl+C into the live PTY.
+- [x] Add a right-click terminal context menu for copy, paste, select all, find, follow, and interrupt.
+- [x] Set terminal capability env vars for truecolor, terminal identity, CodeVetter detection, and Codex-Warp compatibility.
+- [x] Keep shell-mode `cd` in sync with the pane working directory and repo context.
+- [x] Add dense 8+ pane xterm rendering mode that reduces scrollback, queue, cursor animation, smooth scrolling, and WebGL contexts for inactive panes.
+- [x] Keep full terminal output buffers out of React props so 10-12 pane re-renders do not copy large scrollback strings.
+- [x] Back off broad live repo/resource polling in dense 8+ agent workspaces while keeping the selected agent fresh.
+- [x] Run focused frontend/backend validation.
