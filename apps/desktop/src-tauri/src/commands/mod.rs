@@ -2,6 +2,7 @@ pub mod accounts;
 #[cfg(feature = "browser-agent")]
 pub mod agent;
 pub mod agent_memories;
+pub mod agent_terminal;
 pub mod blast_radius;
 pub mod cli_stream;
 pub mod dora;
@@ -17,6 +18,7 @@ mod perf_bench;
 pub mod preferences;
 pub mod procedure_events;
 pub mod repo_workspace;
+pub mod resources;
 pub mod review;
 pub mod saas_maker;
 pub mod sandbox;

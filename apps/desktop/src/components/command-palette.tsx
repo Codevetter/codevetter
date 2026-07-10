@@ -109,6 +109,15 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
         action: go('/unpack?section=activity'),
       },
       {
+        id: 'nav-agents',
+        label: 'Go to Agent Panel',
+        description: 'Arrange local agent terminals',
+        icon: 'A',
+        shortcut: 'g a',
+        group: 'Navigation',
+        action: go('/agents'),
+      },
+      {
         id: 'nav-trex',
         label: 'Go to T-Rex',
         description: 'PR watcher and automated review triggers',

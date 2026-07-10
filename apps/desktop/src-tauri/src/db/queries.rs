@@ -480,13 +480,11 @@ pub fn list_sessions(
     conn: &Connection,
     query: Option<&str>,
     project: Option<&str>,
+    agent_type: Option<&str>,
     limit: i64,
     offset: i64,
 ) -> Result<Vec<SessionRow>, rusqlite::Error> {
-    // Build a dynamic query.  We use simple string matching for the
-    // optional filters because rusqlite doesn't support truly dynamic
-    // parameter counts in a simple way — the LIKE '%' trick works fine.
-    let sql = "
+    const SELECT_COLUMNS: &str = "
         SELECT s.id, s.project_id, s.agent_type, s.jsonl_path, s.git_branch,
                s.cwd, s.cli_version, s.first_message, s.last_message,
                s.message_count, s.total_input_tokens, s.total_output_tokens,
@@ -494,40 +492,78 @@ pub fn list_sessions(
                s.cache_read_tokens, s.cache_creation_tokens,
                s.compaction_count, s.estimated_cost_usd
         FROM cc_sessions s
+    ";
+    const FILTERABLE_WHERE: &str = "
         WHERE (?1 IS NULL OR s.project_id = ?1)
           AND (?2 IS NULL OR s.slug LIKE '%' || ?2 || '%'
                           OR s.cwd  LIKE '%' || ?2 || '%'
                           OR s.first_message LIKE '%' || ?2 || '%')
-        ORDER BY s.last_message DESC NULLS LAST
-        LIMIT ?3 OFFSET ?4
     ";
-    let mut stmt = conn.prepare(sql)?;
-    let rows = stmt.query_map(params![project, query, limit, offset], |row| {
-        Ok(SessionRow {
-            id: row.get(0)?,
-            project_id: row.get(1)?,
-            agent_type: row.get(2)?,
-            jsonl_path: row.get(3)?,
-            git_branch: row.get(4)?,
-            cwd: row.get(5)?,
-            cli_version: row.get(6)?,
-            first_message: row.get(7)?,
-            last_message: row.get(8)?,
-            message_count: row.get(9)?,
-            total_input_tokens: row.get(10)?,
-            total_output_tokens: row.get(11)?,
-            model_used: row.get(12)?,
-            slug: row.get(13)?,
-            file_size_bytes: row.get(14)?,
-            indexed_at: row.get(15)?,
-            file_mtime: row.get(16)?,
-            cache_read_tokens: row.get(17)?,
-            cache_creation_tokens: row.get(18)?,
-            compaction_count: row.get(19)?,
-            estimated_cost_usd: row.get(20)?,
-        })
-    })?;
-    rows.collect()
+    let rows = if let Some(agent_type) = agent_type {
+        if project.is_none() && query.is_none() {
+            let sql = format!(
+                "{SELECT_COLUMNS}
+                 INDEXED BY idx_cc_sessions_agent_last_message
+                 WHERE s.agent_type = ?1
+                 ORDER BY s.last_message DESC NULLS LAST
+                 LIMIT ?2 OFFSET ?3"
+            );
+            let mut stmt = conn.prepare(&sql)?;
+            let rows = stmt.query_map(params![agent_type, limit, offset], session_row)?;
+            rows.collect::<Result<Vec<_>, _>>()
+        } else {
+            let sql = format!(
+                "{SELECT_COLUMNS}
+                 {FILTERABLE_WHERE}
+                 AND s.agent_type = ?3
+                 ORDER BY s.last_message DESC NULLS LAST
+                 LIMIT ?4 OFFSET ?5"
+            );
+            let mut stmt = conn.prepare(&sql)?;
+            let rows = stmt.query_map(
+                params![project, query, agent_type, limit, offset],
+                session_row,
+            )?;
+            rows.collect::<Result<Vec<_>, _>>()
+        }
+    } else {
+        let sql = format!(
+            "{SELECT_COLUMNS}
+             {FILTERABLE_WHERE}
+             ORDER BY s.last_message DESC NULLS LAST
+             LIMIT ?3 OFFSET ?4"
+        );
+        let mut stmt = conn.prepare(&sql)?;
+        let rows = stmt.query_map(params![project, query, limit, offset], session_row)?;
+        rows.collect::<Result<Vec<_>, _>>()
+    }?;
+    Ok(rows)
+}
+
+fn session_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<SessionRow> {
+    Ok(SessionRow {
+        id: row.get(0)?,
+        project_id: row.get(1)?,
+        agent_type: row.get(2)?,
+        jsonl_path: row.get(3)?,
+        git_branch: row.get(4)?,
+        cwd: row.get(5)?,
+        cli_version: row.get(6)?,
+        first_message: row.get(7)?,
+        last_message: row.get(8)?,
+        message_count: row.get(9)?,
+        total_input_tokens: row.get(10)?,
+        total_output_tokens: row.get(11)?,
+        model_used: row.get(12)?,
+        slug: row.get(13)?,
+        file_size_bytes: row.get(14)?,
+        indexed_at: row.get(15)?,
+        file_mtime: row.get(16)?,
+        cache_read_tokens: row.get(17)?,
+        cache_creation_tokens: row.get(18)?,
+        compaction_count: row.get(19)?,
+        estimated_cost_usd: row.get(20)?,
+    })
 }
 
 pub fn upsert_session(conn: &Connection, s: &SessionInput) -> Result<(), rusqlite::Error> {
@@ -2487,6 +2523,9 @@ pub fn get_usage_by_model(
         b.cost
             .partial_cmp(&a.cost)
             .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| b.generated.cmp(&a.generated))
+            .then_with(|| b.sessions.cmp(&a.sessions))
+            .then_with(|| a.model.cmp(&b.model))
     });
     Ok(out)
 }
@@ -2862,6 +2901,70 @@ mod tests {
         assert_eq!(day_rows.len(), 1);
         assert_eq!(day_rows[0].model, "gpt-5");
         assert_eq!(day_rows[0].cost, 2.0);
+    }
+
+    #[test]
+    fn model_usage_order_is_deterministic() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        upsert_project(
+            &conn,
+            &ProjectInput {
+                id: "p".to_string(),
+                display_name: "P".to_string(),
+                dir_path: "/p".to_string(),
+                session_count: None,
+                last_activity: None,
+                created_at: "2026-01-01T00:00:00Z".to_string(),
+            },
+        )
+        .expect("project");
+
+        let insert_session = |id: &str, model: &str, input: i64| {
+            upsert_session(
+                &conn,
+                &SessionInput {
+                    id: id.to_string(),
+                    project_id: "p".to_string(),
+                    agent_type: Some("claude-code".to_string()),
+                    jsonl_path: Some(format!("/p/{id}.jsonl")),
+                    git_branch: None,
+                    cwd: None,
+                    cli_version: None,
+                    first_message: None,
+                    last_message: None,
+                    message_count: Some(1),
+                    total_input_tokens: Some(input),
+                    total_output_tokens: Some(0),
+                    model_used: Some(model.to_string()),
+                    slug: None,
+                    file_size_bytes: None,
+                    indexed_at: None,
+                    file_mtime: None,
+                    cache_read_tokens: Some(0),
+                    cache_creation_tokens: Some(0),
+                    compaction_count: None,
+                    estimated_cost_usd: None,
+                },
+            )
+            .expect("session");
+        };
+        insert_session("expensive", "z-expensive", 10);
+        insert_session("more-generated", "beta", 20);
+        insert_session("less-generated", "alpha", 10);
+        insert_session("name-tie-2", "zeta", 5);
+        insert_session("name-tie-1", "eta", 5);
+
+        let estimate = |model: &str, _: i64, _: i64, _: i64, _: i64| match model {
+            "z-expensive" => 9.0,
+            "beta" | "alpha" => 2.0,
+            "zeta" | "eta" => 1.0,
+            _ => 0.0,
+        };
+        let rows = get_usage_by_model(&conn, estimate, None, None, None, &[]).expect("model usage");
+        let models = rows.into_iter().map(|r| r.model).collect::<Vec<_>>();
+
+        assert_eq!(models, vec!["z-expensive", "beta", "alpha", "eta", "zeta"]);
     }
 
     #[test]

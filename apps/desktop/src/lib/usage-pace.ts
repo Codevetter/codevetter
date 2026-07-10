@@ -21,7 +21,7 @@ export function resolveUsageWindowTotalSecs(
     case 'devin':
       return slot === 'primary' ? USAGE_WINDOW_SECS.WEEK : USAGE_WINDOW_SECS.DAY;
     case 'grok':
-      return slot === 'primary' ? USAGE_WINDOW_SECS.MONTH : undefined;
+      return undefined;
     case 'anthropic':
       return slot === 'primary' ? USAGE_WINDOW_SECS.FIVE_HOURS : USAGE_WINDOW_SECS.WEEK;
     default:

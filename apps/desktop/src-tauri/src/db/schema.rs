@@ -28,6 +28,16 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         "ALTER TABLE cc_sessions ADD COLUMN last_indexed_line_count INTEGER NOT NULL DEFAULT 0",
         [],
     );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_cc_sessions_last_message
+         ON cc_sessions(last_message DESC)",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_cc_sessions_agent_last_message
+         ON cc_sessions(agent_type, last_message DESC)",
+        [],
+    );
 
     // v1.1.100: per-model token usage within a session. cc_sessions.model_used
     // is last-model-wins, which misattributes multi-model Claude sessions (a
@@ -486,6 +496,12 @@ CREATE TABLE IF NOT EXISTS cc_sessions (
     compaction_count   INTEGER NOT NULL DEFAULT 0,
     estimated_cost_usd REAL NOT NULL DEFAULT 0
 );
+
+CREATE INDEX IF NOT EXISTS idx_cc_sessions_last_message
+    ON cc_sessions(last_message DESC);
+
+CREATE INDEX IF NOT EXISTS idx_cc_sessions_agent_last_message
+    ON cc_sessions(agent_type, last_message DESC);
 
 CREATE TABLE IF NOT EXISTS session_adapter_runs (
     id                       TEXT PRIMARY KEY,

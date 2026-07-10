@@ -1,7 +1,8 @@
-import { Eye, Home, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
+import { Bot, Eye, Home, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
+import ResourceChip from '@/components/ResourceChip';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -41,6 +42,14 @@ const navItems: NavItem[] = [
     description: 'Unpack and Intel',
     tone: 'border-violet-300/18 bg-violet-300/[0.075] text-violet-100',
     match: ['/unpack', '/intel'],
+  },
+  {
+    label: 'Agents',
+    href: '/agents',
+    icon: <Bot size={17} />,
+    shortcut: 'A',
+    description: 'Agent terminal panel',
+    tone: 'border-lime-300/18 bg-lime-300/[0.075] text-lime-100',
   },
   {
     label: 'T-Rex',
@@ -169,6 +178,11 @@ export default function Sidebar() {
               </Tooltip>
             );
           })}
+        </div>
+
+        <Separator orientation="vertical" className="hidden h-9 bg-white/[0.08] xl:block" />
+        <div className="hidden xl:block">
+          <ResourceChip />
         </div>
       </nav>
     </TooltipProvider>

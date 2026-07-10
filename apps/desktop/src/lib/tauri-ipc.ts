@@ -71,6 +71,168 @@ export interface SessionRow {
   file_mtime: string | null;
 }
 
+export interface ResourceProcessSample {
+  pid: number;
+  name: string;
+  cpu_percent: number;
+  ram_bytes: number;
+}
+
+export interface ResourceSnapshot {
+  sampled_at: string;
+  self_pid: number;
+  cpu_percent: number;
+  cpu_count: number;
+  ram_bytes: number;
+  disk_read_per_sec: number;
+  disk_write_per_sec: number;
+  gpu_percent: number | null;
+  net_in_per_sec: number | null;
+  net_out_per_sec: number | null;
+  children: ResourceProcessSample[];
+}
+
+export async function getResourceSnapshot(): Promise<ResourceSnapshot> {
+  return safeInvoke('get_resource_snapshot');
+}
+
+export interface AgentTerminalCommandResult {
+  command: string;
+  cwd: string;
+  exit_code: number;
+  duration_ms: number;
+  timeout_ms: number;
+  timed_out: boolean;
+  success: boolean;
+  stdout: string;
+  stderr: string;
+  stdout_truncated: boolean;
+  stderr_truncated: boolean;
+}
+
+export interface CodexAgentTerminalStartResult {
+  session_id: string;
+  cwd: string;
+  pid?: number | null;
+}
+
+export interface CodexAgentTerminalSnapshot {
+  session_id: string;
+  cwd: string;
+  pid?: number | null;
+  started_at_ms: number;
+  running: boolean;
+  output_tail?: string;
+  last_agent_event?: string | null;
+  agent_events?: AgentStructuredEvent[];
+  codex_session_id?: string | null;
+  transcript_path?: string | null;
+}
+
+export interface AgentStructuredEvent {
+  seq: number;
+  at_ms: number;
+  data: string;
+}
+
+export interface AgentTerminalEvent {
+  session_id: string;
+  kind: 'started' | 'output' | 'heartbeat' | 'agent_event' | 'error' | 'exit';
+  data?: string | null;
+  pid?: number | null;
+  idle_ms?: number | null;
+  seq?: number | null;
+  exit_code?: number | null;
+  success?: boolean | null;
+}
+
+export interface CodexWarpPluginStatus {
+  codex_available: boolean;
+  marketplace_installed: boolean;
+  warp_plugin_installed: boolean;
+  warp_plugin_enabled: boolean;
+  orchestration_plugin_installed: boolean;
+  orchestration_plugin_enabled: boolean;
+  structured_env_enabled: boolean;
+  needs_install: boolean;
+  codex_path: string;
+  marketplace_output: string;
+  plugin_output: string;
+  error?: string | null;
+}
+
+export async function startCodexAgentTerminal(input: {
+  sessionId: string;
+  cwd?: string | null;
+  prompt?: string | null;
+  model?: string | null;
+  sandbox?: string | null;
+  approvalPolicy?: string | null;
+  resumeSessionId?: string | null;
+  forkSessionId?: string | null;
+  cols?: number | null;
+  rows?: number | null;
+}): Promise<CodexAgentTerminalStartResult> {
+  return safeInvoke('start_codex_agent_terminal', {
+    sessionId: input.sessionId,
+    cwd: input.cwd ?? null,
+    prompt: input.prompt ?? null,
+    model: input.model ?? null,
+    sandbox: input.sandbox ?? null,
+    approvalPolicy: input.approvalPolicy ?? null,
+    resumeSessionId: input.resumeSessionId ?? null,
+    forkSessionId: input.forkSessionId ?? null,
+    cols: input.cols ?? null,
+    rows: input.rows ?? null,
+  });
+}
+
+export async function sendCodexAgentTerminalInput(sessionId: string, data: string): Promise<void> {
+  await safeInvoke('send_codex_agent_terminal_input', { sessionId, data });
+}
+
+export async function stopCodexAgentTerminal(sessionId: string): Promise<void> {
+  await safeInvoke('stop_codex_agent_terminal', { sessionId });
+}
+
+export async function resizeCodexAgentTerminal(
+  sessionId: string,
+  cols: number,
+  rows: number
+): Promise<void> {
+  await safeInvoke('resize_codex_agent_terminal', { sessionId, cols, rows });
+}
+
+export async function listCodexAgentTerminals(): Promise<CodexAgentTerminalSnapshot[]> {
+  return safeInvoke('list_codex_agent_terminals');
+}
+
+export async function listenToAgentTerminalEvents(
+  onEvent: (event: AgentTerminalEvent) => void
+): Promise<UnlistenFn> {
+  return listen<AgentTerminalEvent>('agent-terminal-event', (event) => onEvent(event.payload));
+}
+
+export async function runAgentTerminalCommand(input: {
+  command: string;
+  cwd?: string | null;
+  timeoutMs?: number | null;
+}): Promise<AgentTerminalCommandResult> {
+  return safeInvoke('run_agent_terminal_command', {
+    command: input.command,
+    cwd: input.cwd ?? null,
+    timeoutMs: input.timeoutMs ?? null,
+  });
+}
+
+export async function getCodexWarpPluginStatus(): Promise<CodexWarpPluginStatus> {
+  return safeInvoke('get_codex_warp_plugin_status');
+}
+
+export async function installCodexWarpPlugin(): Promise<CodexWarpPluginStatus> {
+  return safeInvoke('install_codex_warp_plugin');
+}
+
 /** Matches the Rust `MessageRow` struct exactly. */
 export interface MessageRow {
   id: string;
@@ -181,6 +343,8 @@ export interface SessionScorecard {
   project?: string | null;
   sessions_analyzed: number;
   overall_score: number;
+  score_confidence?: string | null;
+  score_caveat?: string | null;
   adapters: SessionSourceAdapterSummary[];
   dimensions: SessionScoreDimension[];
   recommendations: SessionRecommendation[];
@@ -1091,11 +1255,13 @@ export async function listSessions(
   query?: string,
   project?: string,
   limit?: number,
-  offset?: number
+  offset?: number,
+  agentType?: string
 ): Promise<SessionRow[]> {
   const resp = await safeInvoke<SessionsResponse>('list_sessions', {
     query: query ?? null,
     project: project ?? null,
+    agentType: agentType ?? null,
     limit: limit ?? 50,
     offset: offset ?? 0,
   });
@@ -1660,11 +1826,14 @@ export interface LiveUsageResult {
     daily_reset_at_unix: number | null;
   };
   grok_billing?: {
-    credit_usage_percent: number;
-    credit_remaining_percent: number;
+    credit_usage_percent: number | null;
+    credit_remaining_percent: number | null;
     subscription_tier: string | null;
     billing_period_start: string | null;
     billing_period_end: string | null;
+    on_demand_used?: number | null;
+    on_demand_cap?: number | null;
+    prepaid_balance?: number | null;
     window_total_secs?: number | null;
   };
 }

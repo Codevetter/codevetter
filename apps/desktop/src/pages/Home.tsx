@@ -171,6 +171,27 @@ function localTelemetryQualifier(provider: string): string {
   return 'local estimates only';
 }
 
+function formatGrokBillingSummary(billing: NonNullable<LiveUsageResult['grok_billing']>): string {
+  if (billing.credit_usage_percent != null && billing.credit_remaining_percent != null) {
+    return `${billing.credit_usage_percent.toFixed(0)}% used · ${billing.credit_remaining_percent.toFixed(0)}% remaining`;
+  }
+  if (
+    billing.on_demand_used != null &&
+    billing.on_demand_cap != null &&
+    billing.on_demand_cap > 0
+  ) {
+    return `${formatCompactNumber(billing.on_demand_used)} / ${formatCompactNumber(billing.on_demand_cap)} on-demand credits`;
+  }
+  if (billing.prepaid_balance != null && billing.prepaid_balance > 0) {
+    return `${formatCompactNumber(billing.prepaid_balance)} prepaid credits`;
+  }
+  return 'billing detected · usage percent unavailable';
+}
+
+function formatCompactNumber(value: number): string {
+  return Number.isInteger(value) ? value.toString() : value.toFixed(2);
+}
+
 function LocalModelBreakdown({
   usage,
   provider,
@@ -261,6 +282,7 @@ function AccountUsageRow({
   const cursorPlan = liveUsage?.cursor_plan;
   const cursorTokens = liveUsage?.cursor_tokens;
   const windowNote = liveWindowNote(account.provider, fiveH?.utilization_pct);
+  const showPaceProjection = account.provider !== 'grok' || fiveH?.window_total_secs != null;
 
   // Determine bar color based on utilization
   function barColor(pct: number): 'amber' | 'red' {
@@ -376,9 +398,9 @@ function AccountUsageRow({
             windowTotalSecs={resolveUsageWindowTotalSecs(
               account.provider,
               'primary',
-              fiveH.window_total_secs
+              showPaceProjection ? fiveH.window_total_secs : undefined
             )}
-            resetsInSecs={fiveH.resets_in_secs ?? undefined}
+            resetsInSecs={showPaceProjection ? (fiveH.resets_in_secs ?? undefined) : undefined}
           />
         )}
         {hasLive && sevenD?.utilization_pct != null && account.provider !== 'grok' && (
@@ -407,7 +429,7 @@ function AccountUsageRow({
         )}
         {account.provider === 'grok' && liveUsage?.grok_billing && (
           <div className="text-[10px] text-slate-600 tabular-nums">
-            {liveUsage.grok_billing.credit_remaining_percent.toFixed(0)}% credits remaining
+            {formatGrokBillingSummary(liveUsage.grok_billing)}
             {liveUsage.grok_billing.billing_period_end
               ? ` · resets ${new Date(liveUsage.grok_billing.billing_period_end).toLocaleDateString()}`
               : ''}
@@ -2149,6 +2171,7 @@ function scoreTone(score: number): string {
 export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScorecard | null }) {
   if (!scorecard || scorecard.sessions_analyzed === 0) return null;
   const adapters = scorecard.adapters ?? [];
+  const limitedConfidence = scorecard.score_confidence === 'limited';
   const topDimensions = [...scorecard.dimensions].sort((a, b) => a.score - b.score).slice(0, 3);
   const topRecommendation = scorecard.recommendations[0];
   const adapterWarningCount = adapters.reduce(
@@ -2171,10 +2194,20 @@ export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScoreca
             </div>
           </div>
         </div>
-        <div className={`font-mono text-2xl font-semibold ${scoreTone(scorecard.overall_score)}`}>
+        <div
+          className={`font-mono text-2xl font-semibold ${
+            limitedConfidence ? 'text-amber-300' : scoreTone(scorecard.overall_score)
+          }`}
+        >
           {scorecard.overall_score}
         </div>
       </div>
+
+      {limitedConfidence && scorecard.score_caveat && (
+        <div className="mb-3 rounded border border-amber-300/15 bg-amber-300/[0.06] px-2.5 py-2 text-[10px] leading-4 text-amber-100/80">
+          {scorecard.score_caveat}
+        </div>
+      )}
 
       {adapters.length > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-1.5">

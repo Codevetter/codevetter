@@ -10,15 +10,16 @@ import {
 test('resolveUsageWindowTotalSecs uses provider-specific windows', () => {
   assert.equal(resolveUsageWindowTotalSecs('devin', 'primary'), USAGE_WINDOW_SECS.WEEK);
   assert.equal(resolveUsageWindowTotalSecs('devin', 'secondary'), USAGE_WINDOW_SECS.DAY);
-  assert.equal(resolveUsageWindowTotalSecs('grok', 'primary'), USAGE_WINDOW_SECS.MONTH);
+  assert.equal(resolveUsageWindowTotalSecs('grok', 'primary'), undefined);
   assert.equal(resolveUsageWindowTotalSecs('anthropic', 'primary'), USAGE_WINDOW_SECS.FIVE_HOURS);
 });
 
 test('resolveUsageWindowTotalSecs prefers API window_total_secs', () => {
+  assert.equal(resolveUsageWindowTotalSecs('anthropic', 'primary', 2_592_000), 2_592_000);
   assert.equal(resolveUsageWindowTotalSecs('grok', 'primary', 2_592_000), 2_592_000);
 });
 
-test('computeUsagePaceLabel projects monthly grok headroom correctly', () => {
+test('computeUsagePaceLabel projects monthly quota headroom correctly', () => {
   const month = USAGE_WINDOW_SECS.MONTH;
   const resetsIn = month / 2; // halfway through billing period
   const elapsed = month - resetsIn;
