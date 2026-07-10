@@ -2642,7 +2642,9 @@ async fn check_live_usage_devin() -> Result<Value, String> {
     }))
 }
 
-/// Grok live credit usage from CLI billing logs (`creditUsagePercent`).
+/// Grok live credit usage from CLI billing logs. Older logs carried
+/// `creditUsagePercent`; current Grok Build logs expose on-demand used/cap
+/// credit fields instead.
 async fn check_live_usage_grok() -> Result<Value, String> {
     let grok_home = grok_home_dir()?;
     if !grok_home.join("sessions").exists() {
@@ -2657,12 +2659,18 @@ async fn check_live_usage_grok() -> Result<Value, String> {
         .pointer("/ctx/config")
         .ok_or_else(|| "Grok billing log entry missing ctx.config".to_string())?;
 
-    let used_pct = json_f64(config.get("creditUsagePercent"))
-        .ok_or_else(|| "Grok billing log missing creditUsagePercent".to_string())?;
-    let remaining_pct = (100.0 - used_pct).clamp(0.0, 100.0);
+    let used_pct = grok_credit_usage_percent(config);
+    let remaining_pct = used_pct.map(|pct| (100.0 - pct).clamp(0.0, 100.0));
+    let on_demand_used = json_f64(config.pointer("/onDemandUsed/val"))
+        .or_else(|| json_f64(config.get("onDemandUsed")));
+    let on_demand_cap = json_f64(config.pointer("/onDemandCap/val"))
+        .or_else(|| json_f64(config.get("onDemandCap")));
+    let prepaid_balance = json_f64(config.pointer("/prepaidBalance/val"))
+        .or_else(|| json_f64(config.get("prepaidBalance")));
 
     let subscription_tier = billing_log
         .pointer("/ctx/subscriptionTier")
+        .or_else(|| config.get("subscriptionTier"))
         .and_then(|v| v.as_str())
         .map(String::from);
 
@@ -2691,7 +2699,7 @@ async fn check_live_usage_grok() -> Result<Value, String> {
             let now = chrono::Utc::now().timestamp();
             let remaining = (end - now).max(0);
             // If usage is mid-cycle, infer window length from remaining time when start is absent.
-            if used_pct > 0.0 && used_pct < 100.0 {
+            if let Some(used_pct) = used_pct.filter(|pct| *pct > 0.0 && *pct < 100.0) {
                 let elapsed = ((remaining as f64) * used_pct / (100.0 - used_pct)) as i64;
                 Some((elapsed + remaining).max(SECS_PER_DAY))
             } else {
@@ -2701,10 +2709,10 @@ async fn check_live_usage_grok() -> Result<Value, String> {
         _ => Some(SECS_PER_MONTH),
     };
 
-    let status = if used_pct >= 100.0 {
-        "rate_limited"
-    } else {
-        "allowed"
+    let status = match used_pct {
+        Some(pct) if pct >= 100.0 => "rate_limited",
+        Some(_) => "allowed",
+        None => "unknown",
     };
 
     Ok(json!({
@@ -2712,7 +2720,7 @@ async fn check_live_usage_grok() -> Result<Value, String> {
         "status": status,
         "source": "grok_cli_billing_log",
         "quota_plan": subscription_tier,
-        "five_h": build_rate_window(Some(used_pct), reset_at_epoch, window_total_secs),
+        "five_h": build_rate_window(used_pct, reset_at_epoch, window_total_secs),
         "checked_at": if fetched_at.is_empty() {
             chrono::Utc::now().to_rfc3339()
         } else {
@@ -2724,9 +2732,25 @@ async fn check_live_usage_grok() -> Result<Value, String> {
             "subscription_tier": subscription_tier,
             "billing_period_end": period_end,
             "billing_period_start": period_start,
+            "on_demand_used": on_demand_used,
+            "on_demand_cap": on_demand_cap,
+            "prepaid_balance": prepaid_balance,
             "window_total_secs": window_total_secs,
         },
     }))
+}
+
+fn grok_credit_usage_percent(config: &Value) -> Option<f64> {
+    json_f64(config.get("creditUsagePercent")).or_else(|| {
+        let used = json_f64(config.pointer("/onDemandUsed/val"))
+            .or_else(|| json_f64(config.get("onDemandUsed")))?;
+        let cap = json_f64(config.pointer("/onDemandCap/val"))
+            .or_else(|| json_f64(config.get("onDemandCap")))?;
+        if cap <= 0.0 {
+            return None;
+        }
+        Some(((used / cap) * 100.0).clamp(0.0, 100.0))
+    })
 }
 
 fn json_f64(value: Option<&Value>) -> Option<f64> {
@@ -2771,6 +2795,26 @@ mod tests {
         assert_eq!(json_f64(Some(&json!(12.25))), Some(12.25));
         assert_eq!(json_i64(&json!("1700000000")), Some(1_700_000_000));
         assert_eq!(json_i64(&json!(42.9)), Some(42));
+    }
+
+    #[test]
+    fn grok_credit_usage_percent_accepts_new_on_demand_fields() {
+        let config = json!({
+            "onDemandUsed": { "val": 25.0 },
+            "onDemandCap": { "val": 100.0 }
+        });
+
+        assert_eq!(grok_credit_usage_percent(&config), Some(25.0));
+    }
+
+    #[test]
+    fn grok_credit_usage_percent_ignores_zero_on_demand_cap() {
+        let config = json!({
+            "onDemandUsed": { "val": 0.0 },
+            "onDemandCap": { "val": 0.0 }
+        });
+
+        assert_eq!(grok_credit_usage_percent(&config), None);
     }
 
     #[test]
