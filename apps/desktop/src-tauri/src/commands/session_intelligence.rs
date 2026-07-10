@@ -558,7 +558,7 @@ pub async fn get_ai_session_scorecard(
         .map(ToOwned::to_owned);
     let limit = limit.unwrap_or(50).clamp(1, 200);
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    let sessions = queries::list_sessions(&conn, None, project.as_deref(), limit, 0)
+    let sessions = queries::list_sessions(&conn, None, project.as_deref(), None, limit, 0)
         .map_err(|e| e.to_string())?;
     let scorecard = build_session_scorecard(project, &sessions);
     persist_session_adapter_runs(&conn, scorecard.project.as_deref(), &scorecard.adapters)
