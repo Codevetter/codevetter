@@ -83,6 +83,30 @@ fn set_thread_background_qos() {
 #[cfg(not(target_os = "macos"))]
 fn set_thread_background_qos() {}
 
+fn run_usage_maintenance(app_data_dir: std::path::PathBuf) {
+    match db::init_db(app_data_dir) {
+        Ok(conn) => {
+            log::info!("Usage maintenance starting...");
+            db::schema::purge_message_cruft_once(&conn);
+            db::schema::purge_content_text_once(&conn);
+            db::schema::purge_messages_to_buckets_once(&conn);
+            // Repair Codex token totals corrupted by the old cumulative-add bug
+            // (one-time), then refresh stored per-session $ cost if the price
+            // table changed.
+            crate::commands::history::fix_codex_token_totals(&conn);
+            // One-time per-model usage backfill (v1.1.100) — must precede the
+            // cost recompute so multi-model sessions reprice from their split.
+            crate::commands::history::backfill_session_model_usage(&conn);
+            // Relabel o3-defaulted Codex sessions from their turn_context rows
+            // before cost recompute so rev-6+ pricing books corrected models.
+            crate::commands::history::backfill_codex_session_models(&conn);
+            crate::commands::history::recompute_all_session_costs(&conn);
+            log::info!("Usage maintenance done.");
+        }
+        Err(e) => log::error!("Usage maintenance DB init failed: {e}"),
+    }
+}
+
 fn main() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
@@ -127,6 +151,7 @@ fn main() {
                         Ok(msg) => log::info!("Quick index complete: {msg}"),
                         Err(e) => log::error!("Quick index failed: {e}"),
                     }
+                    run_usage_maintenance(bg_data_dir.clone());
 
                     // Keep app launch and first-click workflows responsive. The
                     // quick index gives Home usable data immediately; the full
@@ -147,29 +172,7 @@ fn main() {
                         Err(e) => log::error!("Full index failed: {e}"),
                     }
 
-                    match db::init_db(bg_data_dir) {
-                        Ok(conn) => {
-                            log::info!("Storage cleanup starting...");
-                            db::schema::purge_message_cruft_once(&conn);
-                            db::schema::purge_content_text_once(&conn);
-                            db::schema::purge_messages_to_buckets_once(&conn);
-                            // Repair Codex token totals corrupted by the old
-                            // cumulative-add bug (one-time), then refresh stored
-                            // per-session $ cost if the price table changed.
-                            crate::commands::history::fix_codex_token_totals(&conn);
-                            // One-time per-model usage backfill (v1.1.100) —
-                            // must precede the cost recompute so multi-model
-                            // sessions reprice from their per-model split.
-                            crate::commands::history::backfill_session_model_usage(&conn);
-                            // Relabel o3-defaulted Codex sessions from their
-                            // turn_context rows BEFORE the cost recompute so
-                            // rev-6 pricing books the corrected models.
-                            crate::commands::history::backfill_codex_session_models(&conn);
-                            crate::commands::history::recompute_all_session_costs(&conn);
-                            log::info!("Storage cleanup done.");
-                        }
-                        Err(e) => log::error!("Storage cleanup DB init failed: {e}"),
-                    }
+                    run_usage_maintenance(bg_data_dir);
                 })
                 .expect("failed to spawn initial-index thread");
 
