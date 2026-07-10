@@ -5,6 +5,7 @@ use crate::db::queries;
 use crate::DbState;
 use serde::Serialize;
 use serde_json::{json, Value};
+use std::collections::HashSet;
 use std::io::BufRead;
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -223,9 +224,11 @@ pub fn tail_live_transcript_sessions_with_conn(
     let now = chrono::Utc::now().to_rfc3339();
     let mut sessions_tailed = 0u64;
     let mut messages_indexed = 0u64;
+    let mut seen_paths = HashSet::new();
 
     for source in sources {
         let path = std::path::Path::new(&source.jsonl_path);
+        seen_paths.insert(source.jsonl_path.clone());
         if !path.exists() {
             continue;
         }
@@ -246,6 +249,40 @@ pub fn tail_live_transcript_sessions_with_conn(
             Err(error) => {
                 log::debug!("Transcript tail skipped {}: {error}", source.jsonl_path);
             }
+        }
+    }
+
+    // New Codex sessions are not present in `cc_sessions` yet, so the DB-backed
+    // live-source query above cannot see them until a full index discovers them.
+    // Scan recently touched Codex roots directly and index any fresh file now.
+    for path in recent_codex_session_files(chrono::Duration::hours(48), 80) {
+        let path_str = path.to_string_lossy().to_string();
+        if seen_paths.contains(&path_str) {
+            continue;
+        }
+        let file_size = std::fs::metadata(&path)
+            .map(|m| m.len() as i64)
+            .unwrap_or_default();
+        if let Ok(Some(existing)) = queries::get_session_by_jsonl_path(conn, &path_str) {
+            if session_fully_indexed(&existing, file_size) {
+                continue;
+            }
+        }
+        let project_id = match ensure_codex_project_for_jsonl(conn, &path, &now) {
+            Ok(project_id) => project_id,
+            Err(error) => {
+                log::debug!("Codex live discovery skipped {path_str}: {error}");
+                continue;
+            }
+        };
+        match index_adapter_session(&CodexAdapter, &path, conn, &project_id, &now) {
+            Ok(indexed) => {
+                if indexed.messages_indexed > 0 {
+                    sessions_tailed += 1;
+                    messages_indexed += indexed.messages_indexed;
+                }
+            }
+            Err(error) => log::debug!("Codex live discovery failed {path_str}: {error}"),
         }
     }
 
@@ -493,18 +530,21 @@ fn full_index_impl(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), Strin
     persist_production_adapter_run(conn, &claude_run, &index_started_at)?;
 
     // ── Phase 2: Scan Codex sessions ─────────────────────────
-    let codex_base = resolve_codex_sessions_dir();
+    let codex_roots = resolve_codex_session_roots();
     let mut codex_run = ProductionAdapterRunStats::new(
         "codex",
         "codex",
-        vec![codex_base.to_string_lossy().to_string()],
+        codex_roots
+            .iter()
+            .map(|root| root.to_string_lossy().to_string())
+            .collect(),
         true,
     );
     let mut codex_indexed = 0u64;
     let mut codex_messages = 0u64;
 
-    if codex_base.exists() {
-        let codex_files: Vec<_> = walkdir(&codex_base, "jsonl");
+    for codex_base in codex_roots.iter().filter(|root| root.exists()) {
+        let codex_files: Vec<_> = walkdir(codex_base, "jsonl");
 
         for jsonl_path in &codex_files {
             let jsonl_path_str = jsonl_path.to_string_lossy().to_string();
@@ -952,28 +992,35 @@ fn estimate_cost(
         m if m.contains("sonnet") => (3.0, 15.0, 0.30, 3.75),
         // Haiku 4.5 is $1/$5 (older Haiku 3.5 was $0.25/$1.25).
         m if m.contains("haiku") => (1.0, 5.0, 0.10, 1.25),
-        // GPT-5 mini class (gpt-5-mini, gpt-5.4-mini, …): $0.25/$2 — must
-        // match before the base-model arms so "gpt-5.5-mini" never bills at
-        // the full gpt-5.5 rate.
-        m if m.contains("gpt-5") && m.contains("mini") => (0.25, 2.0, 0.025, 0.25),
+        // OpenAI GPT-5.4 mini (standard API): $0.75/$4.50, cached $0.075.
+        // Match before base GPT-5.4 so the mini suffix never bills as full.
+        m if m.contains("gpt-5.4") && m.contains("mini") => (0.75, 4.5, 0.075, 0.0),
+        // GPT-5 mini class before 5.4: $0.25/$2, cached $0.025.
+        m if m.contains("gpt-5") && m.contains("mini") => (0.25, 2.0, 0.025, 0.0),
         // GPT-5.5 (Codex CLI default, mid-2026): $5/$30, cached input $0.50.
-        // OpenAI bills cache writes at the normal input rate.
-        m if m.contains("gpt-5.5") => (5.0, 30.0, 0.50, 5.0),
-        // GPT-5 family fallback (gpt-5, gpt-5.1, gpt-5.4, …): $1.25/$10.
+        m if m.contains("gpt-5.5") => (5.0, 30.0, 0.50, 0.0),
+        // OpenAI GPT-5.4 standard API: $2.50/$15, cached $0.25.
+        m if m.contains("gpt-5.4") => (2.5, 15.0, 0.25, 0.0),
+        // Codex specialized model, if logs expose the exact model id.
+        m if m.contains("gpt-5.3-codex") => (1.75, 14.0, 0.175, 0.0),
+        // GPT-5 family fallback (gpt-5, gpt-5.1, …): $1.25/$10.
         m if m.contains("gpt-5") => (1.25, 10.0, 0.125, 1.25),
         m if m.contains("gpt-4o") => (2.5, 10.0, 1.25, 2.5),
         m if m.contains("gpt-4.1") => (2.0, 8.0, 0.5, 2.0),
         // OpenAI o3 repriced to $2/$8 (cached input $0.50).
         m if m.contains("o3") || m.contains("o4-mini") => (2.0, 8.0, 0.50, 2.0),
-        // Grok CLI internal fast models (grok-code-fast class ≈ $0.20/$1.50,
-        // cached $0.02) — far cheaper than grok-4; token counts are local
-        // estimates anyway.
-        m if m.contains("grok-code") || m.contains("grok-build") || m.contains("grok-composer") => {
-            (0.2, 1.5, 0.02, 0.2)
-        }
+        // Grok Build code API (current Grok CLI default): $1/$2, cached $0.20.
+        // Token counts are local estimates from session logs, not exact xAI
+        // billing rows.
+        m if m.contains("grok-build") => (1.0, 2.0, 0.20, 1.0),
+        // Legacy Grok code/composer fast model IDs.
+        m if m.contains("grok-code") || m.contains("grok-composer") => (0.2, 1.5, 0.02, 0.2),
         // Cursor Composer (non-Grok) — local token estimates; fast-tier pricing.
         m if m.contains("composer") => (0.2, 1.5, 0.02, 0.2),
-        m if m.contains("grok") => (3.0, 15.0, 0.75, 3.75),
+        // Current xAI chat/API models.
+        m if m.contains("grok-4.5") => (2.0, 6.0, 0.50, 2.0),
+        m if m.contains("grok-4.3") || m.contains("grok-4.20") => (1.25, 2.5, 0.20, 1.25),
+        m if m.contains("grok") => (2.0, 6.0, 0.50, 2.0),
         // GLM-5.2 (Z.ai): $1.40/$4.40, cached $0.26 (verified Jun 2026). Cache
         // creation storage is limited-time free → 0. Devin's internal models
         // (compactor, swe-*, MODEL_PRIVATE_*) are assumed GLM-based.
@@ -1013,7 +1060,10 @@ fn estimate_cost(
 /// with the codex model backfill that relabels o3-defaulted sessions to the
 /// real model recorded on their turn_context rows.
 /// Rev 7 = GPT-5 mini class ($0.25/$2) split out of the family fallback.
-const PRICING_REV: &str = "7";
+/// Rev 8 = current xAI Grok pricing: grok-build $1/$2 cached $0.20,
+/// grok-4.5 $2/$6 cached $0.50, grok-4.3/4.20 $1.25/$2.50 cached $0.20.
+/// Rev 9 = official OpenAI GPT-5.4 / GPT-5.4-mini prices and gpt-5.3-codex.
+const PRICING_REV: &str = "9";
 
 /// Estimated cost for one session: per-model when a breakdown exists (correct
 /// for multi-model Claude sessions), else session-level `model_used` pricing.
@@ -1848,13 +1898,86 @@ fn zero_delta(
 // Codex session parsing
 // ─────────────────────────────────────────────────────────────────
 
-fn resolve_codex_sessions_dir() -> std::path::PathBuf {
+fn resolve_codex_base_dir() -> std::path::PathBuf {
     let home = std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
         .unwrap_or_else(|_| ".".to_string());
-    std::path::PathBuf::from(home)
-        .join(".codex")
-        .join("sessions")
+    std::path::PathBuf::from(home).join(".codex")
+}
+
+fn resolve_codex_session_roots() -> Vec<std::path::PathBuf> {
+    let base = resolve_codex_base_dir();
+    vec![base.join("sessions"), base.join("archived_sessions")]
+}
+
+fn recent_codex_session_files(max_age: chrono::Duration, limit: usize) -> Vec<std::path::PathBuf> {
+    let cutoff = chrono::Utc::now() - max_age;
+    let mut files: Vec<(std::time::SystemTime, std::path::PathBuf)> = resolve_codex_session_roots()
+        .into_iter()
+        .filter(|root| root.exists())
+        .flat_map(|root| walkdir(&root, "jsonl"))
+        .filter_map(|path| {
+            let modified = std::fs::metadata(&path).ok()?.modified().ok()?;
+            let modified_utc = chrono::DateTime::<chrono::Utc>::from(modified);
+            (modified_utc >= cutoff).then_some((modified, path))
+        })
+        .collect();
+    files.sort_by(|a, b| b.0.cmp(&a.0));
+    files
+        .into_iter()
+        .take(limit)
+        .map(|(_, path)| path)
+        .collect()
+}
+
+fn ensure_codex_project_for_jsonl(
+    conn: &rusqlite::Connection,
+    jsonl_path: &std::path::Path,
+    now: &str,
+) -> Result<String, String> {
+    let first_line = {
+        let file = std::fs::File::open(jsonl_path).map_err(|e| e.to_string())?;
+        let mut rdr = std::io::BufReader::new(file);
+        let mut buf = String::new();
+        let _ = rdr.read_line(&mut buf);
+        buf
+    };
+    let meta_parsed: Value = serde_json::from_str(first_line.trim()).map_err(|e| e.to_string())?;
+    if meta_parsed.get("type").and_then(|v| v.as_str()) != Some("session_meta") {
+        return Err("first JSONL row is not session_meta".to_string());
+    }
+    let payload = meta_parsed
+        .get("payload")
+        .ok_or_else(|| "session_meta row is missing payload".to_string())?;
+    let codex_cwd = payload
+        .get("cwd")
+        .and_then(|v| v.as_str())
+        .filter(|cwd| !cwd.is_empty())
+        .ok_or_else(|| "session_meta row is missing cwd".to_string())?;
+
+    let existing = queries::get_project_id_by_dir(conn, codex_cwd).map_err(|e| e.to_string())?;
+    if let Some(project_id) = existing {
+        return Ok(project_id);
+    }
+
+    let project_id = uuid::Uuid::new_v4().to_string();
+    let display_name = std::path::Path::new(codex_cwd)
+        .file_name()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| codex_cwd.to_string());
+    queries::upsert_project(
+        conn,
+        &queries::ProjectInput {
+            id: project_id.clone(),
+            display_name,
+            dir_path: codex_cwd.to_string(),
+            session_count: None,
+            last_activity: Some(now.to_string()),
+            created_at: now.to_string(),
+        },
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(project_id)
 }
 
 /// Parse a Codex JSONL session file and upsert the session + messages.
@@ -3928,10 +4051,30 @@ mod tests {
             0.50
         ));
         assert!(near(estimate_cost("gpt-5", 1_000_000, 0, 0, 0), 1.25));
-        // Mini class beats both the 5.5 and family arms.
+        // GPT-5.4 must beat the generic GPT-5 family arm.
+        assert!(near(estimate_cost("gpt-5.4", 1_000_000, 0, 0, 0), 2.50));
+        assert!(near(estimate_cost("gpt-5.4", 0, 1_000_000, 0, 0), 15.0));
+        assert!(near(
+            estimate_cost("gpt-5.4", 1_000_000, 0, 1_000_000, 0),
+            0.25
+        ));
+        // GPT-5.4 mini beats both the full 5.4 and generic mini arms.
         assert!(near(
             estimate_cost("gpt-5.4-mini", 1_000_000, 0, 0, 0),
-            0.25
+            0.75
+        ));
+        assert!(near(estimate_cost("gpt-5.4-mini", 0, 1_000_000, 0, 0), 4.5));
+        assert!(near(
+            estimate_cost("gpt-5.4-mini", 1_000_000, 0, 1_000_000, 0),
+            0.08
+        ));
+        assert!(near(
+            estimate_cost("gpt-5.3-codex", 1_000_000, 0, 0, 0),
+            1.75
+        ));
+        assert!(near(
+            estimate_cost("gpt-5.3-codex", 0, 1_000_000, 0, 0),
+            14.0
         ));
         assert!(near(estimate_cost("gpt-5.5-mini", 0, 1_000_000, 0, 0), 2.0));
         // GLM-5.2 (Devin) is $1.40/$4.40, cached $0.26.

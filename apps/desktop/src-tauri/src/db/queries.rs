@@ -1903,8 +1903,8 @@ pub struct TokenUsageStats {
     pub weekly_series: Vec<WeekBucket>,
 }
 
-/// Per-agent usage that separates *real compute* (input minus cache reads)
-/// from cache-read tokens. Claude/Codex are ~96-98% cache reads, so the
+/// Per-agent usage that separates *real compute* (input minus cache tokens)
+/// from cache-read tokens. Claude/Codex are often mostly cached context, so the
 /// cache-inclusive input total wildly overstates one agent's real share; the
 /// dashboard leads with `real_input_tokens + output_tokens` for a fair split.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1926,15 +1926,15 @@ pub fn get_agent_usage_breakdown(conn: &Connection) -> Result<Vec<AgentUsageRow>
     let monday = today - Duration::days(today.weekday().num_days_from_monday() as i64);
     let week_start = crate::timeutil::local_day_start_utc(monday);
 
-    // MAX(x, 0) guards the rare case where cache_read exceeds recorded input.
+    // MAX(x, 0) guards the rare case where cache tokens exceed recorded input.
     let mut stmt = conn.prepare(
         "SELECT agent_type,
                 COUNT(*),
-                COALESCE(SUM(MAX(total_input_tokens - cache_read_tokens, 0)), 0),
+                COALESCE(SUM(MAX(total_input_tokens - cache_read_tokens - cache_creation_tokens, 0)), 0),
                 COALESCE(SUM(cache_read_tokens), 0),
                 COALESCE(SUM(total_output_tokens), 0),
                 COALESCE(SUM(CASE WHEN last_message >= ?1
-                    THEN MAX(total_input_tokens - cache_read_tokens, 0) ELSE 0 END), 0),
+                    THEN MAX(total_input_tokens - cache_read_tokens - cache_creation_tokens, 0) ELSE 0 END), 0),
                 COALESCE(SUM(CASE WHEN last_message >= ?1
                     THEN total_output_tokens ELSE 0 END), 0),
                 COALESCE(SUM(estimated_cost_usd), 0.0)
@@ -1997,7 +1997,9 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
                     * d.msg_count * 1.0 / t.total_n
                 ) AS tokens,
                 SUM(
-                    (MAX(COALESCE(s.total_input_tokens, 0) - COALESCE(s.cache_read_tokens, 0), 0)
+                    (MAX(COALESCE(s.total_input_tokens, 0)
+                         - COALESCE(s.cache_read_tokens, 0)
+                         - COALESCE(s.cache_creation_tokens, 0), 0)
                      + COALESCE(s.total_output_tokens, 0))
                     * d.msg_count * 1.0 / t.total_n
                 ) AS generated,
@@ -2104,7 +2106,9 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
                     * d.msg_count * 1.0 / t.total_n
                 ) AS tok,
                 SUM(
-                    (MAX(COALESCE(s.total_input_tokens, 0) - COALESCE(s.cache_read_tokens, 0), 0)
+                    (MAX(COALESCE(s.total_input_tokens, 0)
+                         - COALESCE(s.cache_read_tokens, 0)
+                         - COALESCE(s.cache_creation_tokens, 0), 0)
                      + COALESCE(s.total_output_tokens, 0))
                     * d.msg_count * 1.0 / t.total_n
                 ) AS gen,
@@ -2223,7 +2227,9 @@ pub fn get_agent_usage_by_day(
          )
          SELECT d.day, s.agent_type,
                 SUM(
-                    (MAX(COALESCE(s.total_input_tokens, 0) - COALESCE(s.cache_read_tokens, 0), 0)
+                    (MAX(COALESCE(s.total_input_tokens, 0)
+                         - COALESCE(s.cache_read_tokens, 0)
+                         - COALESCE(s.cache_creation_tokens, 0), 0)
                      + COALESCE(s.total_output_tokens, 0))
                     * d.msg_count * 1.0 / t.total_n
                 ) AS generated,
@@ -2823,6 +2829,95 @@ mod tests {
         assert_eq!(cache, 900_000, "cache tokens preserved");
         // Metadata from the quick pass still updates.
         assert_eq!(cwd.as_deref(), Some("/repo/cwd"));
+    }
+
+    #[test]
+    fn local_usage_generated_tokens_exclude_cache_creation() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        upsert_project(
+            &conn,
+            &ProjectInput {
+                id: "p".to_string(),
+                display_name: "P".to_string(),
+                dir_path: "/p".to_string(),
+                session_count: None,
+                last_activity: None,
+                created_at: "2026-01-01T00:00:00Z".to_string(),
+            },
+        )
+        .expect("project");
+
+        let insert_session = |id: &str,
+                              last_message: &str,
+                              input: i64,
+                              output: i64,
+                              cache_read: i64,
+                              cache_creation: i64,
+                              cost: f64| {
+            upsert_session(
+                &conn,
+                &SessionInput {
+                    id: id.to_string(),
+                    project_id: "p".to_string(),
+                    agent_type: Some("codex".to_string()),
+                    jsonl_path: Some(format!("/p/{id}.jsonl")),
+                    git_branch: None,
+                    cwd: None,
+                    cli_version: None,
+                    first_message: None,
+                    last_message: Some(last_message.to_string()),
+                    message_count: Some(10),
+                    total_input_tokens: Some(input),
+                    total_output_tokens: Some(output),
+                    model_used: Some("gpt-5.5".to_string()),
+                    slug: None,
+                    file_size_bytes: None,
+                    indexed_at: None,
+                    file_mtime: None,
+                    cache_read_tokens: Some(cache_read),
+                    cache_creation_tokens: Some(cache_creation),
+                    compaction_count: None,
+                    estimated_cost_usd: Some(cost),
+                },
+            )
+            .expect("session");
+        };
+
+        let today = chrono::Local::now().date_naive();
+        let today_str = today.format("%Y-%m-%d").to_string();
+        let now = chrono::Utc::now().to_rfc3339();
+        insert_session("current", &now, 10_000, 900, 7_000, 1_000, 2.50);
+        insert_session("old", "2020-01-01T00:00:00Z", 1_000, 700, 300, 200, 1.25);
+        conn.execute(
+            "INSERT INTO cc_session_days (session_id, day, msg_count)
+             VALUES ('current', ?1, 10)",
+            params![today_str],
+        )
+        .expect("day");
+
+        let rows = get_agent_usage_breakdown(&conn).expect("agent usage");
+        let codex = rows
+            .iter()
+            .find(|r| r.agent_type == "codex")
+            .expect("codex row");
+        assert_eq!(codex.sessions, 2);
+        assert_eq!(codex.real_input_tokens, 2_500);
+        assert_eq!(codex.cache_read_tokens, 7_300);
+        assert_eq!(codex.output_tokens, 1_600);
+        assert_eq!(codex.week_real_input_tokens, 2_000);
+        assert_eq!(codex.week_output_tokens, 900);
+        assert_eq!(codex.cost, 3.75);
+
+        let by_day = get_agent_usage_by_day(&conn, 1).expect("agent day usage");
+        assert_eq!(by_day.len(), 1);
+        assert_eq!(by_day[0].generated, 2_900);
+        assert_eq!(by_day[0].cache, 7_000);
+        assert_eq!(by_day[0].cost, 2.50);
+
+        let stats = get_token_usage_stats(&conn).expect("token usage stats");
+        assert_eq!(stats.today_generated, 2_900);
+        assert_eq!(stats.today_cost, 2.50);
     }
 
     #[test]
