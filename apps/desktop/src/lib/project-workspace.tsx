@@ -203,6 +203,10 @@ export function ProjectWorkspaceProvider({ children }: { children: ReactNode }) 
 
     return () => {
       cancelled = true;
+      // Allow the next mount to re-hydrate. Without this, StrictMode's dev
+      // double-effect leaves `ready` false forever: run 1 is cancelled, run 2
+      // bails on the guard.
+      hydrating.current = false;
     };
   }, [mergeProjectRow, refreshProjects]);
 
