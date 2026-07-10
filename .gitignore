@@ -60,3 +60,6 @@ apps/desktop/coverage/
 # fallow cache
 .fallow/
 cache.bin
+
+# codex CLI project dir
+.codex/
