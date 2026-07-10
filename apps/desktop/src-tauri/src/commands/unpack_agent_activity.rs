@@ -30,7 +30,7 @@ pub fn emit_unpack_agent_activity(
 }
 
 pub fn agent_uses_stream_json(agent: &str) -> bool {
-    matches!(agent, "claude" | "command-code" | "codex")
+    matches!(agent, "claude" | "command-code" | "codex" | "grok")
 }
 
 pub fn ingest_agent_stream_line(
@@ -46,6 +46,7 @@ pub fn ingest_agent_stream_line(
     match agent {
         "claude" | "command-code" => ingest_claude_stream_line(trimmed, assembled),
         "codex" => ingest_codex_stream_line(trimmed, assembled),
+        "grok" => ingest_grok_stream_line(trimmed, assembled),
         _ => ingest_plain_stream_line(trimmed, assembled),
     }
 }
@@ -59,6 +60,7 @@ pub fn finalize_assembled_output(agent: &str, raw: &str, assembled: &str) -> Str
         match agent {
             "claude" | "command-code" => append_claude_text_line(line.trim(), &mut rebuilt),
             "codex" => append_codex_text_line(line.trim(), &mut rebuilt),
+            "grok" => append_grok_text_line(line.trim(), &mut rebuilt),
             _ => {}
         }
     }
@@ -164,6 +166,52 @@ fn ingest_codex_stream_line(line: &str, assembled: &mut String) -> Vec<UnpackAge
     activities
 }
 
+fn ingest_grok_stream_line(line: &str, assembled: &mut String) -> Vec<UnpackAgentActivity> {
+    let Ok(value) = serde_json::from_str::<Value>(line) else {
+        return heuristic_plaintext_activities(line);
+    };
+
+    match value.get("type").and_then(Value::as_str) {
+        Some("text") => {
+            if let Some(text) = value.get("data").and_then(Value::as_str) {
+                assembled.push_str(text);
+                return vec![UnpackAgentActivity {
+                    kind: "write".into(),
+                    label: "Drafting response".into(),
+                    detail: None,
+                }];
+            }
+        }
+        Some("thought") => {
+            return vec![UnpackAgentActivity {
+                kind: "plan".into(),
+                label: "Reasoning through task".into(),
+                detail: None,
+            }];
+        }
+        Some("error") => {
+            return vec![UnpackAgentActivity {
+                kind: "status".into(),
+                label: "Grok reported an error".into(),
+                detail: value
+                    .get("message")
+                    .and_then(Value::as_str)
+                    .map(|message| truncate_label(message, 120)),
+            }];
+        }
+        Some("end") => {
+            return vec![UnpackAgentActivity {
+                kind: "status".into(),
+                label: "Finishing up".into(),
+                detail: None,
+            }];
+        }
+        _ => {}
+    }
+
+    Vec::new()
+}
+
 fn ingest_plain_stream_line(line: &str, assembled: &mut String) -> Vec<UnpackAgentActivity> {
     assembled.push_str(line);
     assembled.push('\n');
@@ -203,6 +251,17 @@ fn append_codex_text_line(line: &str, assembled: &mut String) {
         && value.pointer("/item/type").and_then(Value::as_str) == Some("agent_message")
     {
         if let Some(text) = value.pointer("/item/text").and_then(Value::as_str) {
+            assembled.push_str(text);
+        }
+    }
+}
+
+fn append_grok_text_line(line: &str, assembled: &mut String) {
+    let Ok(value) = serde_json::from_str::<Value>(line) else {
+        return;
+    };
+    if value.get("type").and_then(Value::as_str) == Some("text") {
+        if let Some(text) = value.get("data").and_then(Value::as_str) {
             assembled.push_str(text);
         }
     }
@@ -395,5 +454,16 @@ mod tests {
         let mut assembled = String::new();
         ingest_claude_stream_line(line, &mut assembled);
         assert!(assembled.contains("ok"));
+    }
+
+    #[test]
+    fn assembles_grok_streaming_json_text_chunks() {
+        let mut assembled = String::new();
+
+        let acts = ingest_grok_stream_line(r#"{"type":"text","data":"Hello"}"#, &mut assembled);
+        ingest_grok_stream_line(r#"{"type":"text","data":" world"}"#, &mut assembled);
+
+        assert_eq!(assembled, "Hello world");
+        assert_eq!(acts[0].kind, "write");
     }
 }

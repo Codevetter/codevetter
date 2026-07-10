@@ -117,7 +117,13 @@ fn spawn_agent_child(
         }
         "grok" => {
             let mut cmd = StdCommand::new(cli_path);
-            cmd.args(["-p", prompt, "--output-format", "json", "--always-approve"]);
+            cmd.args([
+                "-p",
+                prompt,
+                "--output-format",
+                "streaming-json",
+                "--always-approve",
+            ]);
             if let Some(m) = model_arg {
                 cmd.args(["--model", m]);
             }
