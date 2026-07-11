@@ -1934,6 +1934,15 @@ export interface LiveUsageResult {
   overage_disabled_reason?: string;
   fallback_pct?: number;
   checked_at?: string;
+  // Codex-specific fields
+  /** Manually-applicable rate-limit reset credits on the plan (Codex Pro). */
+  reset_credits?: number | null;
+  /** Separate quota pools for specific models (e.g. GPT-5.3-Codex-Spark). */
+  additional_windows?: Array<{
+    name: string;
+    primary_pct: number | null;
+    secondary_pct: number | null;
+  }>;
   // Gemini-specific fields
   source?: string;
   today?: {

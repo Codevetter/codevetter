@@ -1970,6 +1970,43 @@ async fn check_live_usage_openai() -> Result<Value, String> {
         .pointer("/rate_limit/secondary_window/reset_at")
         .and_then(|v| v.as_i64());
 
+    let primary_window_secs = body
+        .pointer("/rate_limit/primary_window/limit_window_seconds")
+        .and_then(|v| v.as_i64());
+    let secondary_window_secs = body
+        .pointer("/rate_limit/secondary_window/limit_window_seconds")
+        .and_then(|v| v.as_i64());
+
+    // Pro plans carry manually-applicable rate-limit reset credits; surface the
+    // count so a capped window shows there's a way out.
+    let reset_credits = body
+        .pointer("/rate_limit_reset_credits/available_count")
+        .and_then(|v| v.as_i64());
+
+    // Some models (e.g. GPT-5.3-Codex-Spark) meter against their own separate
+    // quota pool. Pass those through compactly so the card can list them.
+    let additional_windows: Vec<Value> = body
+        .get("additional_rate_limits")
+        .and_then(|v| v.as_array())
+        .map(|limits| {
+            limits
+                .iter()
+                .filter_map(|entry| {
+                    let name = entry.get("limit_name").and_then(|v| v.as_str())?;
+                    Some(json!({
+                        "name": name,
+                        "primary_pct": entry
+                            .pointer("/rate_limit/primary_window/used_percent")
+                            .and_then(|v| v.as_f64()),
+                        "secondary_pct": entry
+                            .pointer("/rate_limit/secondary_window/used_percent")
+                            .and_then(|v| v.as_f64()),
+                    }))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+
     let now_epoch = chrono::Utc::now().timestamp();
 
     // Map to the same shape the frontend expects
@@ -1981,6 +2018,7 @@ async fn check_live_usage_openai() -> Result<Value, String> {
             "utilization_pct": primary_pct,
             "reset_at": primary_reset,
             "resets_in_secs": primary_reset.map(|r| (r - now_epoch).max(0)),
+            "window_total_secs": primary_window_secs,
             "status": if primary_pct.map_or(false, |p| p >= 100.0) { "rate_limited" } else { "allowed" },
         },
         "seven_d": {
@@ -1988,8 +2026,11 @@ async fn check_live_usage_openai() -> Result<Value, String> {
             "utilization_pct": secondary_pct,
             "reset_at": secondary_reset,
             "resets_in_secs": secondary_reset.map(|r| (r - now_epoch).max(0)),
+            "window_total_secs": secondary_window_secs,
             "status": Option::<String>::None,
         },
+        "reset_credits": reset_credits,
+        "additional_windows": additional_windows,
         "checked_at": chrono::Utc::now().to_rfc3339(),
         "_raw": body, // include raw response for debugging
     }))
