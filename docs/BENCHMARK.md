@@ -71,3 +71,30 @@ Metrics:
 The included sample is not a publishable benchmark. It only proves the harness shape. Before making external claims, curate 20-30 real public agent PRs with known bugs, preserve raw diffs and review outputs, and record why each finding matches or misses ground truth.
 
 `npm run test:benchmark` exercises the CLI gates against the sample fixture and generated temporary fixtures: rationale enforcement, TODO-placeholder rejection, directory/per-case fixture loading, curation readiness reporting, false-positive limits, duplicate match accounting, JSON metrics, and Markdown artifact output.
+
+## Results — public 27-case set (2026-07-11)
+
+| Reviewer | Catch rate | Precision | F1 |
+|---|---|---|---|
+| codevetter (full pipeline, v1.2.18 code) | **1.000** (29/29) | 0.299 | 0.460 |
+| raw-claude (single prompt baseline) | 0.931 (27/29) | 0.397 | 0.557 |
+
+Protocol: every case ran through the REAL production pipeline (risk tiers,
+specialists, coordinator, dedup) via the ignored Rust harness
+`diag_benchmark_generate_codevetter_reviews`; raw outputs live in
+`benchmark/reviews-raw/`. Ground-truth mapping was proposed mechanically
+(`scripts/map-benchmark-reviews.mjs`) and then hand-judged per finding under
+one rule: a finding matches only if its CORE CLAIM identifies the defect;
+process findings (no-tests, shipped-with-comment) never match.
+
+Reading: CodeVetter catches everything raw Claude catches plus the two it
+missed — but emits 95 findings for 29 defects. The precision loss decomposes
+as 41 redundant restatements of already-caught defects (the coordinator dedup
+does not collapse same-defect findings on small diffs — actionable) and 25
+unmatched findings, ~20 of which are process/verification findings that are
+intentional for agent-PR review but score as false positives against
+defect-only ground truth. With redundants collapsed, precision would be
+0.537 (F1 ≈ 0.70); excluding process findings too, 0.85.
+
+These are synthetic single-file cases — the planned real agent-PR case
+curation still stands before external head-to-head claims.

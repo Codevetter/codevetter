@@ -1,0 +1,151 @@
+{
+  "agent": "claude",
+  "changed_lines": 11,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 41470,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.99,
+      "filePath": "source.py",
+      "line": 10,
+      "severity": "critical",
+      "suggestion": "Do not use a shell. Pass an argument list and remove shell=True: `subprocess.run([\"ping\", \"-c\", \"1\", host], capture_output=True, text=True)`. Optionally validate `host` against a hostname/IP allowlist before use. Also drop the unused `import sys`.",
+      "summary": "ping_host builds a shell string by interpolating the untrusted `host` argument (line 9: `cmd = f\"ping -c 1 {host}\"`) and executes it with `shell=True` (line 10: `subprocess.run(cmd, shell=True, ...)`). `host` is unvalidated (line 6), so shell metacharacters are interpreted by /bin/sh. Concrete repro: `ping_host(\"8.8.8.8; rm -rf ~\")` runs `ping` and then `rm -rf ~` — arbitrary command execution and catastrophic data loss.",
+      "title": "Command injection via subprocess with shell=True"
+    },
+    {
+      "confidence": 0.98,
+      "filePath": "source.py",
+      "line": 10,
+      "severity": "critical",
+      "suggestion": "Pass an argument list and drop the shell: `subprocess.run([\"ping\", \"-c\", \"1\", host], capture_output=True, text=True)`. This removes shell parsing so `host` can never be interpreted as shell syntax. Optionally validate `host` against an allowlist/hostname regex before use.",
+      "summary": "Lines 9–10 build `cmd = f\"ping -c 1 {host}\"` and pass it to `subprocess.run(cmd, shell=True, ...)`. Because the untrusted `host` is interpolated directly into a shell-parsed string, a value like \"8.8.8.8; rm -rf /\" runs an arbitrary appended command — arbitrary code execution. The inline comment (lines 7–8) correctly identifies this, but the code implements the vulnerability rather than guarding against it: the implicit invariant that `host` is a safe hostname is never enforced (no validation, no shlex.quote, no argument-list form).",
+      "title": "Command injection via subprocess with shell=True and raw host interpolation"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 3,
+      "severity": "low",
+      "suggestion": "Remove the unused `import sys` line. Optional cleanup, not a blocker.",
+      "summary": "source.py:3 imports `sys` but it is never referenced in the module.",
+      "title": "Unused import `sys`"
+    }
+  ],
+  "findings_count": 3,
+  "qa_evidence": [],
+  "review_id": "06903af7-f64f-44b1-9190-dedae0ca2ab3",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 58.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nNewly added source.py contains a critical, self-acknowledged command injection: untrusted `host` is interpolated into a string command executed with shell=True (lines 9–10). The code's own comment describes the exact exploit, and the code implements it rather than mitigating it. The implicit 'host is trusted' invariant is unenforced. 0 current callers, but as a new public function any caller passing external input inherits remote code execution. Fix by switching to an argument-list invocation without shell=True.\n\nA single newly-added function, ping_host, contains a textbook command injection: untrusted `host` is interpolated into a shell string (line 9) and run with shell=True (line 10), enabling arbitrary command execution and data loss (e.g. `host=\"8.8.8.8; rm -rf ~\"`). Although the specialist pass is Product Safety, this is an obvious critical cross-scope defect that maps directly to the in-scope 'data loss' concern. Blast radius is 0 callers today (newly added), so nothing existing regresses, but the function is unsafe for any future caller handling external input. Fix by passing an argument list without shell=True.\n\nSingle new file adds `ping_host`, which contains a critical command-injection vulnerability (shell=True with an f-string-interpolated untrusted argument). The bug is self-documented in a comment but was not fixed — a textbook agent-handoff failure (annotated but shipped). No tests or verification evidence exist for the new symbol. Fix is bounded (argv list, drop shell=True) and must be paired with a fresh verification run before this is marked resolved.",
+  "talk_id": "ff011620-5c8b-4ce1-aecb-9f96d44fbb6c"
+}

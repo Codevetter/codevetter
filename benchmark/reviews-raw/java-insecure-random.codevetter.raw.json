@@ -1,0 +1,156 @@
+{
+  "agent": "claude",
+  "changed_lines": 13,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 60438,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.java"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.97,
+      "filePath": "source.java",
+      "line": 11,
+      "severity": "critical",
+      "suggestion": "Use java.security.SecureRandom: `private static final SecureRandom RNG = new SecureRandom();` then `byte[] b = new byte[32]; RNG.nextBytes(b);` and hex/Base64URL-encode the full array so length is fixed and no leading zeros are dropped. Add a uniqueness/length test and run it to attach fresh proof.",
+      "summary": "source.java:5 uses `private static final Random RNG = new Random()` and source.java:11 returns `Long.toHexString(RNG.nextLong())` as a security-sensitive reset token. java.util.Random is a 48-bit LCG with a time-derived seed; observing one or two outputs lets an attacker recover the seed and predict all tokens, enabling account takeover. The file's own comment (lines 7-9) diagnoses this exact flaw yet the vulnerable code ships unchanged.",
+      "title": "Reset tokens generated from predictable java.util.Random (CWE-338)"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.java",
+      "line": 10,
+      "severity": "critical",
+      "suggestion": "Replace with java.security.SecureRandom; generate at least 16 bytes via nextBytes(...) and encode as fixed-width hex or Base64URL. Do not derive security-sensitive tokens from java.util.Random.",
+      "summary": "source.java:5 uses `new Random()` (a 48-bit linear-congruential PRNG) and source.java:10-12 returns `Long.toHexString(RNG.nextLong())` as a reset token. java.util.Random's state is recoverable from observed output, so an attacker who reads one token (e.g. from their own reset request) can predict tokens subsequently issued to other users, enabling account takeover. The token space is also bounded by the 48-bit seed, far below the ~128 bits needed for an unguessable secret. The in-file comment already flags this.",
+      "title": "Password/reset tokens generated with predictable java.util.Random (CWE-338)"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.java",
+      "line": 5,
+      "severity": "high",
+      "suggestion": "Replace the shared java.util.Random with java.security.SecureRandom; produce the token from at least 16-32 random bytes (e.g. secureRandom.nextBytes(buf)) and encode the full fixed-width value with hex or Base64-URL, rather than Long.toHexString(nextLong()) which also drops leading-zero nibbles.",
+      "summary": "Line 5 uses `new Random()` (a 48-bit-seed LCG) and line 11 returns `Long.toHexString(RNG.nextLong())` for reset tokens. The stated intent on line 1 (\"security-sensitive tokens\") and the method name `resetToken` require unpredictability, but that invariant is not enforced: an attacker who observes a single nextLong() output can recover the generator state and predict all other users' tokens, enabling account takeover. The author's own // BUG comment (lines 7-9) documents this and prescribes SecureRandom, yet the fix was never applied — a documented-but-unenforced contradiction between intent and code.",
+      "title": "Reset tokens generated with predictable java.util.Random (CWE-338)"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.java",
+      "line": 7,
+      "severity": "medium",
+      "suggestion": "Apply the SecureRandom fix and remove/replace the BUG comment so it no longer implies an outstanding-but-untracked defect. Introduce a build target and a test (collision + fixed-length assertion), execute it, and attach the log before marking resolved.",
+      "summary": "source.java:7-9 contains a `// BUG:` comment that fully describes the vulnerability and its remedy ('Use SecureRandom instead'), but the code below (line 11) still uses the insecure PRNG. This is a fake-green handoff — the explanatory comment can be mistaken for a resolved issue. No pom.xml/build.gradle or test exists in the tree, so the `rerun_relevant_verification` gate is unresolved and there is zero build/test evidence for this file.",
+      "title": "Self-acknowledged BUG comment shipped without fix or verification (incomplete handoff)"
+    },
+    {
+      "confidence": 0.8,
+      "filePath": "source.java",
+      "line": 11,
+      "severity": "low",
+      "suggestion": "When switching to SecureRandom, encode a fixed byte count with zero-padding (e.g. HexFormat over a 16-byte array) so token length is constant.",
+      "summary": "source.java:11 uses `Long.toHexString(RNG.nextLong())`, which omits leading zeros, so emitted tokens vary from 1 to 16 hex characters. Any consumer that assumes fixed-width tokens (parsing/lookup/validation) could mis-handle short values. Secondary to the predictability defect but relevant once a secure RNG is adopted.",
+      "title": "Token string has variable length due to Long.toHexString dropping leading zeros"
+    }
+  ],
+  "findings_count": 5,
+  "qa_evidence": [],
+  "review_id": "2129c3f3-ba8b-4cfc-a9ce-7825938c4ecf",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-java",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-java",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.java",
+        "id": "file-source-java",
+        "kind": "file",
+        "label": "source.java"
+      },
+      {
+        "detail": "308 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.java",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 43.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file whose stated purpose (unpredictable reset tokens) is contradicted by its implementation (java.util.Random, a predictable LCG). The security invariant is relied on but not enforced, and the author's own inline BUG comment documents the flaw without fixing it. Real, high-severity insecure-randomness defect (CWE-330/338) leading to guessable reset tokens; recommend SecureRandom.\n\nNew TokenGenerator mints password/session reset tokens from java.util.Random, a predictable 48-bit LCG whose state is recoverable from observed output. This is a critical, exploitable account-takeover path (attacker predicts victims' reset tokens), surfaced as an obvious critical cross-scope defect despite the Product Safety scope. Fix by using SecureRandom with >=128 bits of entropy and fixed-width encoding. Verification is static-only: the class has no callers in-repo so there is no runtime artifact to attach; the defect follows directly from the documented java.util.Random contract.\n\nA 13-line new file that ships a critical cryptographic weakness: password/session reset tokens are generated from java.util.Random (predictable 48-bit LCG) instead of SecureRandom, allowing token prediction and account takeover. The file's own BUG comment names the flaw and the fix but the vulnerable code was committed unchanged — a fake-green handoff. No build config or tests exist, so no verification evidence is available. Fix is bounded and well-understood: switch to SecureRandom with ≥16 bytes of entropy and fixed-length encoding, then add and run a test.",
+  "talk_id": "249a8aef-c2fe-4ec5-b27f-6f3996d11856"
+}

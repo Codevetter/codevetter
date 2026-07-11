@@ -1,0 +1,160 @@
+{
+  "agent": "claude",
+  "changed_lines": 11,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 52766,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.99,
+      "filePath": "source.py",
+      "line": 11,
+      "severity": "critical",
+      "suggestion": "Replace pickle with json.loads and validate against an expected schema (the return type is already a plain dict). If a binary format is required, use a non-executing serializer; if pickle is unavoidable, only accept blobs authenticated with a server-side HMAC signature. Never call pickle.loads on data crossing a trust boundary.",
+      "summary": "load_state (source.py:6) base64-decodes a user-supplied blob (line 10) and passes it directly to pickle.loads (line 11). pickle executes arbitrary code during unpickling via __reduce__, so any attacker who controls `blob` achieves remote code execution on the server. The function's own comment confirms the input is user-supplied and unpickling is unsafe.",
+      "title": "Insecure deserialization: pickle.loads on untrusted input enables RCE"
+    },
+    {
+      "confidence": 0.99,
+      "filePath": "source.py",
+      "line": 11,
+      "severity": "critical",
+      "suggestion": "Do not unpickle untrusted data. Replace with `import json; return json.loads(raw.decode('utf-8'))` (validating the result is a dict). If binary/typed state is truly required, use a restricted pickle.Unpickler subclass whose find_class allowlists only safe types, AND verify an HMAC over the blob before deserializing. Then add a test that feeds a __reduce__-based malicious payload and asserts no code executes.",
+      "summary": "source.py:11 calls pickle.loads(raw) where raw is base64-decoded from the caller-supplied `blob` argument (lines 10-11). pickle.loads executes arbitrary code during deserialization (object __reduce__), so any attacker controlling `blob` gains remote code execution. The comment on lines 7-9 acknowledges this and says to 'Use JSON or a restricted schema instead', but the fix was never applied — the vulnerable call remains live. This is a fake-green handoff: bug documented, not fixed.",
+      "title": "RCE via pickle.loads on untrusted input in load_state"
+    },
+    {
+      "confidence": 0.99,
+      "filePath": "source.py",
+      "line": 11,
+      "severity": "critical",
+      "suggestion": "Do not unpickle untrusted data. Replace with `json.loads` (parsing the base64-decoded bytes as text) or a strict schema-validated format (e.g. pydantic/dataclass validation). If a binary format is required, use one without code-execution semantics and validate the resulting structure before returning.",
+      "summary": "Line 11 `return pickle.loads(raw)` unpickles `raw = base64.b64decode(blob)` where `blob` is an externally supplied string (comment lines 7-9 call it 'a user-supplied blob'). A crafted pickle payload (via `__reduce__`) executes arbitrary code during deserialization, giving an attacker full code execution on the server. The in-code comment documents the exact vulnerability and prescribes the fix ('Use JSON or a restricted schema instead') but the code never applies it — the dangerous path is fully live.",
+      "title": "Insecure deserialization: pickle.loads on untrusted, base64-decoded input enables RCE"
+    },
+    {
+      "confidence": 0.8,
+      "filePath": "source.py",
+      "line": 6,
+      "severity": "low",
+      "suggestion": "After switching to a safe parser, validate the parsed object is a dict (or return the correctly-typed structure) before returning; otherwise widen the annotation to reflect reality.",
+      "summary": "Line 6 declares `def load_state(blob: str) -> dict`, but `pickle.loads` (line 11) returns whatever type was serialized — not necessarily a dict. The annotation is an unverified claim that future callers could rely on; nothing coerces or validates the result to `dict`. Currently 0 callers, so impact is limited, but the contract is false as written.",
+      "title": "Return annotation `-> dict` is an unenforced/false contract"
+    }
+  ],
+  "findings_count": 4,
+  "qa_evidence": [],
+  "review_id": "8f379d59-279a-4f2e-8e6e-316f9a5c08eb",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 38.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.py introduces a textbook critical insecure-deserialization sink: `pickle.loads` over base64-decoded, user-supplied input (line 11) = remote code execution. From the assumption-integrity lens, the key defect is a contradiction between stated intent and code — the comment (lines 7-9) documents the vulnerability and prescribes 'use JSON or a restricted schema instead', but that remediation was never applied, which would mislead a follow-up agent into treating the risk as acknowledged/handled when the exploit path is live. Secondary: the `-> dict` annotation (line 6) is a false, unenforced contract since pickle returns arbitrary types. 0 current callers limits live exposure, but the function is a ready sink.\n\nSingle new file introduces a critical insecure-deserialization vulnerability: load_state calls pickle.loads on base64-decoded, user-supplied input (source.py:10-11), yielding remote code execution. Statically provable from the diff; no runtime evidence required. 0 current callers, but any consumer inherits the RCE.\n\nSingle new file introduces a critical insecure-deserialization vulnerability: load_state() runs pickle.loads on attacker-controllable base64 input, enabling RCE. The agent added a comment describing the bug and its recommended fix but did not implement the fix — the exploitable line 11 is unchanged. Function currently has 0 callers, but it is clearly intended for a state-loading path. No tests or verification evidence accompany the change.",
+  "talk_id": "903bc62e-c600-478a-b5dc-b0123d5695af"
+}

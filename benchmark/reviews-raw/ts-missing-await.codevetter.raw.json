@@ -1,0 +1,142 @@
+{
+  "agent": "claude",
+  "changed_lines": 10,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 45579,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.ts"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.95,
+      "filePath": "source.ts",
+      "line": 8,
+      "severity": "high",
+      "suggestion": "Await the promise so failures propagate to the caller: `await deleteSession(userId);` before the `console.log`. If fire-and-forget is truly intended, at minimum attach `.catch(err => /* log/handle */)` — but the `Promise<void>` return type indicates callers expect completion, so awaiting is correct.",
+      "summary": "source.ts:8 calls `deleteSession(userId)` without `await` or `.catch()`. Because `logout` is declared `async (): Promise<void>`, its resolution is a contract meaning 'logout complete', but it resolves at line 9 before `deleteSession` settles. If `deleteSession` rejects, (a) `logout` still resolves successfully and logs 'user logged out' on line 9 while the session survives (stale/authenticated session left behind), and (b) the rejection is unhandled, causing an unhandled promise rejection (fatal under Node's default unhandled-rejection policy).",
+      "title": "Missing await on deleteSession — logout reports success even when session deletion fails"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.ts",
+      "line": 8,
+      "severity": "high",
+      "suggestion": "Await the call: `await deleteSession(userId);` before logging/returning. If logout must be resilient to deletion failures, wrap in try/catch and surface/log the error explicitly — but do not resolve as success when the session was not deleted.",
+      "summary": "source.ts:8 calls deleteSession(userId) without await and discards the returned promise. logout is async and resolves at line 9-10 before the deletion completes or is confirmed, so `await logout()` reports success even if the session was never deleted. If deleteSession rejects, the rejection is unhandled (unhandled promise rejection) while logout still resolves normally — leaving a valid session behind in a security-sensitive auth path. The // BUG comment at lines 5-7 correctly states the intent (delete the session) which the code fails to enforce.",
+      "title": "Missing await on deleteSession makes logout claim success on failure"
+    }
+  ],
+  "findings_count": 2,
+  "qa_evidence": [],
+  "review_id": "6132787a-cff1-4558-ad0b-6963e59dd98f",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-ts",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-ts",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-ts",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.ts",
+        "id": "file-source-ts",
+        "kind": "file",
+        "label": "source.ts"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.ts",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "assumption-first",
+  "risk_tier": "trivial",
+  "score": 80.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "general"],
+  "summary": "Risk-tiered review (trivial) completed.\n\nSingle-function file with one real, security-relevant correctness bug: logout fires deleteSession without awaiting it, so the function resolves as success regardless of whether the session was deleted and any rejection is swallowed as an unhandled promise rejection. The code contradicts its own stated intent (the // BUG comment and the async contract). 0 current callers but high severity given the auth/logout context; any future caller inherits a silently-broken logout.\n\nSingle newly-added file with a real, self-documented correctness/security bug: the async `logout` fires `deleteSession(userId)` without awaiting it, so it resolves as if logout succeeded regardless of whether session deletion actually completes, and any rejection becomes an unhandled promise rejection. 0 callers today (newly added), but the defect is unambiguous and lives on an auth teardown path, so severity is high despite low blast radius. Could not run/compile in isolation because the imported `./session` module is not part of this range — finding is static-confirmed, not runtime-verified; the verification gate remains blocked.",
+  "talk_id": "61f403eb-2c11-4e7f-9240-cc460aec1ff2"
+}

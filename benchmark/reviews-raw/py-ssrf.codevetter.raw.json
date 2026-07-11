@@ -1,0 +1,160 @@
+{
+  "agent": "claude",
+  "changed_lines": 12,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 50017,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.97,
+      "filePath": "source.py",
+      "line": 10,
+      "severity": "critical",
+      "suggestion": "Before fetching: parse the URL and enforce an https-only scheme allowlist, resolve the host and reject if it maps to a private/loopback/link-local/reserved range (block 169.254.0.0/16, 127.0.0.0/8, 10/8, 172.16/12, 192.168/16, ::1, fd00::/8), disable redirects (or re-validate each hop) since a public URL can 302 to an internal one, and ideally restrict to an explicit host allowlist. Enforce the resolved IP at connection time to close the DNS-rebinding gap.",
+      "summary": "Line 10 `requests.get(image_url, timeout=5)` sends a request to any URL the caller supplies with no scheme/host allowlist and no private/link-local range filtering. The implicit invariant carried by the name `fetch_preview(image_url)` (line 5) — that input is a safe external image URL — is relied on but never enforced. An attacker can pass `http://169.254.169.254/latest/meta-data/` (cloud metadata creds), `http://localhost/...`, or internal RFC1918 hosts to pivot, exactly as the BUG comment on lines 6-9 documents. Intent and code agree (comment is honest, not misleading), so the vulnerability is confirmed static, not assumed.",
+      "title": "SSRF: unrestricted fetch of user-supplied URL in fetch_preview"
+    },
+    {
+      "confidence": 0.98,
+      "filePath": "source.py",
+      "line": 10,
+      "severity": "critical",
+      "suggestion": "Before fetching: (1) parse the URL and reject any scheme other than http/https; (2) resolve the hostname and reject if it maps to any loopback, link-local (169.254.0.0/16, incl. metadata IP), or private (10/8, 172.16/12, 192.168/16) address using ipaddress.ip_address(...).is_private/is_loopback/is_link_local; (3) set allow_redirects=False (or re-validate the resolved host on every redirect hop) to prevent redirect-based pivots; (4) optionally pin to the validated IP to avoid DNS-rebinding. Add tests asserting 169.254.169.254, localhost/127.0.0.1, and an RFC1918 host are all rejected, including via redirect.",
+      "summary": "fetch_preview passes fully user-controlled image_url straight into requests.get at source.py:10 with no scheme allow-list, no host/private-range filtering, and default allow_redirects=True, then returns raw resp.content at source.py:12. An attacker can supply http://169.254.169.254/latest/meta-data/ to read cloud metadata/IAM credentials, or target loopback/RFC1918 internal services to pivot; a host allow-list alone would still be bypassable via a 302 redirect to an internal address. The in-code comment (lines 6-9) confirms this is the intended vulnerability.",
+      "title": "SSRF: user-supplied URL fetched with no scheme/host/redirect validation"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.py",
+      "line": 10,
+      "severity": "critical",
+      "suggestion": "Restrict scheme to http/https, resolve the hostname and reject IPs in private/loopback/link-local/reserved ranges (including 169.254.0.0/16, 127.0.0.0/8, 10/8, 172.16/12, 192.168/16, ::1, fc00::/7) BEFORE the request, re-validate after any redirect (disable or manually vet redirects via allow_redirects=False), and optionally enforce an allowlist of trusted image hosts. Also cap response size and validate Content-Type is an image.",
+      "summary": "source.py:5-12 — fetch_preview(image_url) passes image_url straight into requests.get() (line 10) with no scheme allowlist, host resolution check, or private/link-local range blocking. A caller-controlled image_url of http://169.254.169.254/latest/meta-data/ lets an attacker read cloud metadata/credentials, and http://127.0.0.1/ or internal hostnames let them pivot to internal services. The in-code BUG comment (lines 6-9) confirms this is the intrinsic behavior, not an edge case. The function currently has 0 callers, so it is not yet exploitable in-tree, but any wiring to a request handler makes this immediately exploitable.",
+      "title": "SSRF: fetch_preview fetches arbitrary user-supplied URL with no validation"
+    },
+    {
+      "confidence": 0.6,
+      "filePath": "source.py",
+      "line": 11,
+      "severity": "low",
+      "suggestion": "Wrap the fetch in try/except, translate failures into a defined error/empty result for the preview flow, and validate Content-Type/size before returning bytes.",
+      "summary": "source.py:10-12 — requests.get + raise_for_status propagate raw requests exceptions (Timeout, ConnectionError, HTTPError) to callers with no friendly handling, and there is no Content-Type/size check, so a dead or non-image URL yields an unhandled exception rather than a clean empty/error state for the user flow.",
+      "title": "No user-facing error handling for unreachable/non-image URLs"
+    }
+  ],
+  "findings_count": 4,
+  "qa_evidence": [],
+  "review_id": "5d724840-9c1f-425d-bfcc-ed807393ef8c",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 38.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file adding fetch_preview, a deliberate SSRF case. Line 10 fetches an arbitrary user-supplied URL with no validation. Assumption-integrity view: the BUG comment (lines 6-9) accurately matches the code, so there is no intent/code contradiction and the comment will not misdirect the next agent — but the 'safe external image URL' invariant implied by the signature is relied on and never enforced. Confirmed as a critical SSRF by static reading of line 10; 0 callers today so the risk is latent until wired into a handler.\n\nA newly added fetch_preview() is a self-documented SSRF: it issues requests.get() against an unvalidated, user-supplied URL (source.py:10), allowing cloud-metadata credential theft and internal-network pivoting. It has 0 callers today (not yet exploitable in-tree) but is critical the moment it is wired to any handler. Secondary product-safety concern: no error/empty-state handling for unreachable or non-image URLs. Fix requires scheme allowlisting, private-range IP blocking after DNS resolution, redirect re-validation, and response type/size limits.\n\nSingle new file introduces a textbook, self-documented SSRF: fetch_preview fetches an arbitrary user-supplied URL (source.py:10) with no scheme, host, or private-range restrictions and default redirect-following, returning the raw body (source.py:12). This is a critical security hole the instant any caller wires user input to it; currently 0 callers, which only limits immediate exploitability, not the defect. No tests or verification evidence accompany the change (rerun_relevant_verification gate is blocked) — the fix must ship with an SSRF guard and tests proving metadata/loopback/RFC1918 hosts and redirects to them are rejected.",
+  "talk_id": "09b23f35-46a4-4773-8ea9-4c9e591a46de"
+}

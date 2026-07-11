@@ -1,0 +1,169 @@
+{
+  "agent": "claude",
+  "changed_lines": 21,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 170552,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.ts"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.98,
+      "filePath": "source.ts",
+      "line": 11,
+      "severity": "critical",
+      "suggestion": "Skip dangerous keys before touching target: at the top of the loop add `if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;`. Additionally, guard the recursion/assignment with `Object.hasOwn(source, key)` and prefer null-prototype accumulators (Object.create(null)). Add a regression test: `merge({}, JSON.parse('{\"__proto__\":{\"polluted\":true}}')); expect(({}).polluted).toBeUndefined()` plus a constructor.prototype variant.",
+      "summary": "merge() at source.ts:9-21 iterates Object.keys(source) (line 11) with no key blocklist. For target[key]/source[key] where key='__proto__', tv resolves to Object.prototype (an object) and sv is an object, so lines 14-15 recurse into merge(Object.prototype, sv), and line 17 (target[key]=sv) then writes attacker-controlled keys onto the shared prototype. Traced: merge({}, JSON.parse('{\"__proto__\":{\"admin\":true}}')) sets Object.prototype.admin=true, polluting every object app-wide. The function is exported (public API) so any untrusted source (JSON body, query params) is exploitable.",
+      "title": "Prototype pollution: merge() copies __proto__/constructor/prototype keys onto Object.prototype"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.ts",
+      "line": 11,
+      "severity": "critical",
+      "suggestion": "In the loop (line 11) skip dangerous keys: `if (key==='__proto__'||key==='constructor'||key==='prototype') continue;`. Also only recurse/read own properties (Object.prototype.hasOwnProperty.call(source,key)) and consider building results on Object.create(null) or using a Map so inherited-key access can't reach Object.prototype.",
+      "summary": "merge() (source.ts:9-21) iterates Object.keys(source) without excluding __proto__/constructor/prototype. For JSON.parse('{\"__proto__\":{\"admin\":true}}'), Object.keys returns ['__proto__'] (own enumerable prop). Line 12 tv=target['__proto__'] returns Object.prototype (object), line 13 sv=source['__proto__'] returns the own {admin:true} (object), so line 15 recurses merge(Object.prototype,{admin:true}) and line 17 sets Object.prototype.admin=true — every object in the process then reports .admin===true, silently flipping auth/flag flows into wrong states. Currently 0 callers, so no live path yet, but must be fixed before any caller is added.",
+      "title": "Prototype pollution in exported merge() escalates privileges app-wide"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.ts",
+      "line": 11,
+      "severity": "critical",
+      "suggestion": "Skip dangerous keys before assignment/recursion: `if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;`. Additionally guard with Object.prototype.hasOwnProperty.call(source,key) and/or build results with Object.create(null) / use a Map, and only recurse into own plain objects. Add a regression test asserting ({}).admin is undefined after merging a __proto__ payload.",
+      "summary": "merge() (exported, lines 9–20) iterates Object.keys(source) (line 11) and, for a JSON-parsed key \"__proto__\", tv=target[\"__proto__\"] (line 12) resolves to Object.prototype and sv is the attacker payload; both pass isObject, so line 15 recurses merge(Object.prototype, {...}) and line 17 writes attacker-controlled keys onto Object.prototype. Traced end-to-end: JSON.parse('{\"__proto__\":{\"admin\":true}}') makes __proto__ an own enumerable key, so ({}).admin becomes true app-wide. This is a real, exploitable vulnerability, not just documentation.",
+      "title": "Prototype pollution in exported recursive merge via __proto__"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.ts",
+      "line": 6,
+      "severity": "medium",
+      "suggestion": "Decide intent: if this is production code, apply the key-blocklist fix above and delete the BUG comment; if it is a benchmark fixture, mark it as such so no agent 'fixes' it silently. Either way attach fresh verification — add and run a prototype-pollution test (the smallest relevant command for this diff) before marking resolved, since the pre-review gate 'rerun_relevant_verification' is blocked with no fresh command/test evidence.",
+      "summary": "Lines 6-8 contain a `// BUG:` comment that fully diagnoses the prototype pollution, yet the code below (lines 9-21) implements exactly that vulnerable behavior with no mitigation. The repo has no test file and no caller for the exported merge (blast-radius: 0 callers, newly added), so nothing verifies the security contract. This is either an incomplete handoff (the fix was the deliverable and was never applied) or an intentional fixture — the next agent must not treat the annotated-but-unfixed state as done.",
+      "title": "Documented-broken code shipped with no fix and no verification test"
+    },
+    {
+      "confidence": 0.85,
+      "filePath": "source.ts",
+      "line": 6,
+      "severity": "low",
+      "suggestion": "Correct the comment to state that __proto__ is the live vector here (constructor/prototype are blocked incidentally by isObject rejecting functions), while still recommending all three be explicitly denied for defense-in-depth against future refactors of isObject.",
+      "summary": "The comment (lines 6–7) claims merge fails to block `constructor` and `prototype`, implying those are live pollution vectors. But isObject (line 3) returns false for functions (typeof Object === 'function'), so for key 'constructor' tv=target['constructor'] fails the isObject(tv) check on line 14 and falls to line 17, setting an own property only — it does NOT reach Object.prototype. The only live vector in this implementation is __proto__. A fixer trusting the comment could mis-scope the guard or waste effort on a non-path.",
+      "title": "Comment overstates the constructor/prototype pollution path (assumption integrity)"
+    }
+  ],
+  "findings_count": 5,
+  "qa_evidence": [],
+  "review_id": "6d18f9ad-8911-4524-9930-641091da63db",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-ts",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-ts",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-ts",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.ts",
+        "id": "file-source-ts",
+        "kind": "file",
+        "label": "source.ts"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.ts",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 33.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.ts introduces an exported recursive merge() with a critical, confirmed prototype-pollution vulnerability via the __proto__ key (JSON-parsed payload → Object.prototype mutation, verified by static trace of lines 11–17). The accompanying comment accurately flags the __proto__ vector but overstates the constructor/prototype paths, which isObject's function check actually blocks in this implementation — a minor assumption-integrity issue that could mis-steer a fixer. Fix must deny __proto__/constructor/prototype keys and add a regression test.\n\nSingle new file adding an exported recursive merge(). It contains a real, reachable prototype-pollution vulnerability (source.ts:11-17): __proto__/constructor/prototype are not filtered, so a JSON payload like {\"__proto__\":{\"admin\":true}} mutates Object.prototype and grants attacker-controlled properties to every object process-wide — an app-wide privilege-escalation / confusing-state defect. Confirmed by static trace of standard JS semantics (JSON.parse creates an own enumerable __proto__ key that Object.keys enumerates; target['__proto__'] resolves to Object.prototype). CAVEAT: blast-radius reports 0 callers, so there is no active exploit path today — severity reflects impact-if-used and the need to fix before wiring it in. The rerun_relevant_verification gate remains BLOCKED: I attempted a node repro but the sandbox denied node execution in this non-interactive session, so no fresh runtime artifact is attached; the finding is static-analysis-based (high confidence given the textbook mechanism).\n\nThe diff adds a single exported merge() with a critical, self-documented prototype pollution vulnerability: user-controlled __proto__/constructor keys are walked without a blocklist (source.ts:11), and the recursion at lines 14-15 plus assignment at line 17 write onto Object.prototype. Exploit path verified by trace. No tests, no callers, and the vulnerability's own BUG comment is left unaddressed — a documented-broken handoff. The bounded fix is a three-key guard at the top of the loop plus a null-prototype accumulator and a regression test.",
+  "talk_id": "f14099f2-dc3a-49d9-8827-4d214d93a728"
+}

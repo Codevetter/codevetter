@@ -1,0 +1,151 @@
+{
+  "agent": "claude",
+  "changed_lines": 13,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 43601,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.go"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.98,
+      "filePath": "source.go",
+      "line": 12,
+      "severity": "high",
+      "suggestion": "Change the signature to return the error and propagate it: `func SaveConfig(path string, contents []byte) error { return os.WriteFile(path, contents, 0o600) }`. Remove the stale BUG comment once fixed. Because SaveConfig currently has 0 callers, the signature change is backward-safe; add callers to check the returned error.",
+      "summary": "source.go:12 calls os.WriteFile(path, contents, 0o600) and discards its error return. The function signature at source.go:8 (`func SaveConfig(path string, contents []byte)`) has no error return, so a full disk, bad permissions, or invalid path is swallowed and callers proceed as if the config was persisted — silent data loss. The // BUG comment at lines 9–11 documents the exact defect but the agent left it unfixed (incomplete handoff / fake-documentation-instead-of-fix).",
+      "title": "os.WriteFile error silently discarded; SaveConfig cannot signal write failure"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.go",
+      "line": 12,
+      "severity": "high",
+      "suggestion": "Change the signature to `func SaveConfig(path string, contents []byte) error` and `return os.WriteFile(path, contents, 0o600)`, then make callers handle/propagate the error.",
+      "summary": "Line 12 `os.WriteFile(path, contents, 0o600)` discards its error return, and the signature `func SaveConfig(path string, contents []byte)` (line 8) has no error return, so a failed config write (disk full, bad permissions, invalid path) is silently lost and any caller proceeds as if the config was saved — a data-loss / confusing-state product regression. Currently 0 callers, so no live workflow is broken yet, but the broken contract is structural.",
+      "title": "SaveConfig silently swallows write failures — signature cannot report errors"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.go",
+      "line": 12,
+      "severity": "high",
+      "suggestion": "Change the signature to `func SaveConfig(path string, contents []byte) error` and `return os.WriteFile(path, contents, 0o600)`. Then verify with `errcheck ./...` or `go vet` and confirm no unchecked-error warning remains.",
+      "summary": "Line 12 discards the error returned by os.WriteFile(path, contents, 0o600). Worse than a missing check: the signature on line 8 (func SaveConfig(path string, contents []byte)) returns nothing, so a disk-full/permission/invalid-path failure cannot be surfaced to any caller even if they wanted to check. The header comment (lines 9-11) asserts 'callers proceed as if the config was saved' — with 0 callers today this is latent, but it establishes a false invariant (successful return == config persisted) that the next agent wiring this in will build on.",
+      "title": "SaveConfig silently swallows os.WriteFile error and offers no error channel to callers"
+    }
+  ],
+  "findings_count": 3,
+  "qa_evidence": [],
+  "review_id": "a45967a0-4120-4e21-8f9e-4fc9d88bf52b",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-go",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-go",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-go",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.go",
+        "id": "file-source-go",
+        "kind": "file",
+        "label": "source.go"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.go",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 70.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle-function new file whose sole content is a genuine correctness bug: os.WriteFile's error is discarded (line 12) AND the void signature (line 8) gives callers no way to detect write failure. Confirmed against source. Blast radius is 0 callers, so harm is latent — but the implicit 'config was saved' invariant (comment lines 9-11) is a false premise any future caller would inherit. Verification gate left open: no errcheck/go vet output was captured this pass.\n\nSingle new 13-line file. Real correctness/product-safety bug: SaveConfig discards os.WriteFile's error AND returns nothing, making write failures undetectable by callers (silent data loss). Confirmed by reading source.go lines 8 and 12; grep confirms 0 callers currently, which limits present-day blast radius but does not fix the broken contract.\n\nSingle new file with a self-documented correctness bug: os.WriteFile's error is discarded and SaveConfig has no error return, so write failures cause silent config-save data loss. The prior agent added a BUG comment describing the flaw but did not fix it — an incomplete handoff. Bounded fix: return the error from SaveConfig. No verification exists; the next agent must run build/vet/errcheck and add a failure-path test.",
+  "talk_id": "b78a951c-d3aa-476e-bece-a4488c4a64c5"
+}

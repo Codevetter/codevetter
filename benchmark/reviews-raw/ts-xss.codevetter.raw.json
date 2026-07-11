@@ -1,0 +1,208 @@
+{
+  "agent": "claude",
+  "changed_lines": 13,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 54315,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.tsx"],
+      "caveats": ["Static path matching cannot prove the UI is user-visible."],
+      "confidence": 0.72,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "changed_file",
+          "label": "UI-facing file changed"
+        }
+      ],
+      "id": "ui-change-needs-browser-proof",
+      "kind": "ui_without_browser_proof",
+      "open_questions": ["What route or user task proves the changed UI still works?"],
+      "scale": "UI surface changed",
+      "severity_hint": "medium",
+      "suggested_checks": ["Run or attach a browser/Playwright artifact for the affected route."],
+      "why_it_matters": "Agent-written UI changes often pass static review while breaking layout, loading, empty, or interaction states."
+    },
+    {
+      "affected_files": ["source.tsx"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    },
+    {
+      "action": "Open the affected route or run the nearest Playwright flow, then capture interaction, console, and network evidence.",
+      "artifact": "screenshot, trace, console/network log, or Playwright report",
+      "blocked_on": ["browser or Playwright artifact"],
+      "candidate_ids": ["ui-change-needs-browser-proof"],
+      "gate": "Changed UI has at least one fresh visual or interaction artifact, or remains needs_proof.",
+      "id": "verify_ui_route_change",
+      "input": "UI-facing changed files and the route or task they affect.",
+      "output": "Browser proof linked to the candidate and affected route.",
+      "procedure": "verify_ui_route_change",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.97,
+      "filePath": "source.tsx",
+      "line": 12,
+      "severity": "critical",
+      "suggestion": "Sanitize before rendering: `import DOMPurify from 'dompurify'` then `<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(body) }} />` with an explicit tag/attribute allowlist. If HTML is not actually required, render `<div>{body}</div>` so React escapes it. Add a rendering test that mounts Comment with `body='<img src=x onerror=alert(1)>'` and asserts the handler is stripped; sanitize on the server side as well since the input is untrusted.",
+      "summary": "source.tsx:12 `return <div dangerouslySetInnerHTML={{ __html: body }} />;` injects the `body` prop — documented at line 5 as 'user-supplied comment markdown/html' — directly into the DOM as raw HTML. No sanitization or allowlisting occurs anywhere in the component (lines 8-13). An attacker-authored comment containing event-handler or javascript: payloads (e.g. `<img src=x onerror=...>`, `<svg onload=...>`) executes in every viewer's session, enabling session/cookie theft and account takeover. The agent's own `// BUG:` comment (lines 9-11) confirms intent was known but the fix was never applied — an incomplete handoff, not an accepted risk.",
+      "title": "Reflected/stored XSS: user-supplied `body` rendered via dangerouslySetInnerHTML without sanitization"
+    },
+    {
+      "confidence": 0.98,
+      "filePath": "source.tsx",
+      "line": 12,
+      "severity": "critical",
+      "suggestion": "Sanitize before rendering, e.g. `DOMPurify.sanitize(body)`, or render `{body}` as escaped text / use a sanitizing markdown renderer if HTML is not required. Never pass untrusted input to dangerouslySetInnerHTML unsanitized.",
+      "summary": "source.tsx:12 renders `body` — typed and documented as \"user-supplied comment markdown/html\" (source.tsx:5) — directly via `dangerouslySetInnerHTML={{ __html: body }}` with no sanitization. This is a confirmed XSS sink: a comment body like `<img src=x onerror=\"fetch('/steal?c='+document.cookie)\">` executes in every viewer's session on load. React's dangerouslySetInnerHTML bypasses JSX escaping, so nothing mitigates this in the path from prop to sink.",
+      "title": "Unsanitized user content in dangerouslySetInnerHTML — stored/reflected XSS"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.tsx",
+      "line": 12,
+      "severity": "high",
+      "suggestion": "Sanitize before rendering — e.g. `DOMPurify.sanitize(body)` with a strict config, or render `body` as plain text (`<div>{body}</div>`) if HTML is not required. Do NOT fix by only stripping `<script>` tags: the comment on source.tsx:10 is misleading — `<script>` inserted via innerHTML does not execute, but event-handler vectors (`<img onerror>`, `<svg onload>`) do. The defense must neutralize active attributes and tags, and ideally the prop type should be a branded `SafeHtml` to enforce the trust boundary at compile time.",
+      "summary": "source.tsx:12 renders `dangerouslySetInnerHTML={{ __html: body }}` where `body` is documented as user-supplied content (source.tsx:5). This bypasses React's JSX escaping and injects attacker markup into the DOM. The component relies on an unstated, unenforced invariant that `body` is safe HTML — no sanitizer, branded type, or allowlist exists. Any viewer rendering a hostile comment is exposed to script execution (session/cookie theft, account takeover). Currently 0 callers, so no live exposure yet, but the vulnerability is real the moment it is wired up.",
+      "title": "XSS: user-supplied `body` rendered via dangerouslySetInnerHTML without sanitization"
+    }
+  ],
+  "findings_count": 3,
+  "qa_evidence": [],
+  "review_id": "d76e8ec9-82d2-4aab-bd80-e07721fc3df3",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-tsx",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-tsx",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.72,
+        "from": "file-source-tsx",
+        "kind": "raises_candidate",
+        "to": "candidate-ui-change-needs-browser-proof"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-tsx",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-ui-change-needs-browser-proof",
+        "kind": "requires_gate",
+        "to": "gate-verify-ui-route-change"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.tsx",
+        "id": "file-source-tsx",
+        "kind": "file",
+        "label": "source.tsx"
+      },
+      {
+        "detail": "307 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "ui_without_browser_proof · confidence 0.72",
+        "file_path": "source.tsx",
+        "id": "candidate-ui-change-needs-browser-proof",
+        "kind": "evidence_candidate",
+        "label": "ui-change-needs-browser-proof"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.tsx",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      },
+      {
+        "detail": "blocked · Changed UI has at least one fresh visual or interaction artifact, or remains needs_proof.",
+        "file_path": null,
+        "id": "gate-verify-ui-route-change",
+        "kind": "procedure_gate",
+        "label": "verify_ui_route_change"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 50.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nA newly added React `Comment` component renders user-supplied `body` directly through `dangerouslySetInnerHTML` with no sanitization — a confirmed XSS. The code documents its own invariant contradiction (prop is 'user-supplied' at line 5, yet treated as trusted HTML at line 12) and the guiding comment at line 10 is technically inaccurate about `<script>` execution, which could misdirect a naive fix. No callers yet (blast radius 0), so no live exposure, but the pattern is high severity once wired to real data. No fresh browser/verification artifact was attached; static analysis alone confirms the flaw here.\n\nNew Comment component introduces a critical XSS vulnerability: user-supplied `body` flows unsanitized into `dangerouslySetInnerHTML` (source.tsx:12). Confirmed by static analysis — the prop is explicitly documented as untrusted (line 5) and reaches the raw-HTML sink with no escaping or sanitization. Exploitable via event-handler payloads (onerror/onload), impacting every user who views an attacker's comment. Symbol has 0 callers (newly added), so it is not yet live, but must be fixed before wiring in. UI verification gates remain blocked (no browser/Playwright artifact), but the vulnerability is provable without runtime evidence.\n\nSingle new 13-line React component with a critical, self-described XSS sink: user-supplied `body` flows into dangerouslySetInnerHTML with no sanitization (source.tsx:12). The agent left an accurate `// BUG:` comment but shipped the vulnerable code — a fake-green handoff. No sanitizer dependency, no test, and no verification artifact accompany the change; both evidence gates (fresh verification, UI/render proof) remain legitimately blocked. This must be treated as an unremediated critical vulnerability, not a known-accepted note.",
+  "talk_id": "bbd3dca6-e7e8-4d4a-945f-dc8c93616a30"
+}

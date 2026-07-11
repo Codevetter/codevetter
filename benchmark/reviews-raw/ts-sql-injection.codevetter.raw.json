@@ -1,0 +1,151 @@
+{
+  "agent": "claude",
+  "changed_lines": 16,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 45975,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.ts"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.99,
+      "filePath": "source.ts",
+      "line": 13,
+      "severity": "critical",
+      "suggestion": "Use a parameterized/prepared query instead of interpolation, e.g. `db.query<User>('SELECT id, email FROM users WHERE email = ? LIMIT 1', [emailInput])` (or the named-parameter form your `db` driver supports). Never concatenate user input into SQL strings.",
+      "summary": "Line 13 builds `const sql = \\`SELECT id, email FROM users WHERE email = '${emailInput}' LIMIT 1\\`` by concatenating the user-controlled `emailInput` parameter directly into the query, then line 14 executes it via `db.query<User>(sql)`. An attacker passing `' OR '1'='1` (or a stacked/UNION payload) breaks out of the quoted literal and controls the WHERE clause, enabling authentication bypass, data exfiltration, or arbitrary SQL depending on the driver. The in-file comment (lines 10-12) confirms this is the actual behavior, not a stale note.",
+      "title": "SQL injection via string interpolation in findUserByEmail"
+    },
+    {
+      "confidence": 0.99,
+      "filePath": "source.ts",
+      "line": 13,
+      "severity": "critical",
+      "suggestion": "Use a parameterized/bound query instead of interpolation, e.g. `await db.query<User>('SELECT id, email FROM users WHERE email = ? LIMIT 1', [emailInput])` (placeholder syntax per the db driver). Never concatenate untrusted input into SQL text.",
+      "summary": "Line 13 interpolates user-controlled `emailInput` directly into the SQL string: `SELECT id, email FROM users WHERE email = '${emailInput}' LIMIT 1`. An attacker passing `' OR '1'='1` yields `WHERE email = '' OR '1'='1' LIMIT 1`, returning the first user regardless of email (auth bypass / impersonation); a UNION or stacked-statement payload enables data exfiltration or destruction (DROP). The value reaches `db.query` (line 14) unparameterized.",
+      "title": "SQL injection via string concatenation in findUserByEmail"
+    },
+    {
+      "confidence": 0.75,
+      "filePath": "source.ts",
+      "line": 2,
+      "severity": "low",
+      "suggestion": "Before marking any fix confirmed, provide/point to the real `db` module, then run a build + a test that feeds an injection payload to `findUserByEmail` and asserts safe behavior. Attach the fresh command/test output.",
+      "summary": "Line 2 imports `{ db } from './db'`, but no `db.ts`/`db` module exists in the repo (only `source.ts` is present). The change ships with no tests and no verification evidence, so any fix cannot be proven to compile or behave correctly until the real `db` module and a regression test are available.",
+      "title": "Unresolved `./db` import — file cannot compile or be verified as-is"
+    }
+  ],
+  "findings_count": 3,
+  "qa_evidence": [],
+  "review_id": "5ba35513-4c65-47d5-a44b-610bbfa9de7b",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-ts",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-ts",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-ts",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.ts",
+        "id": "file-source-ts",
+        "kind": "file",
+        "label": "source.ts"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.ts",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 58.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file introduces an exported `findUserByEmail` with a textbook SQL injection: user input is interpolated into the query string (line 13) and executed (line 14). The change description, code comments, and implementation all agree the injection exists — stated intent and code are consistent, so there's no assumption contradiction; the defect is that this exploitable code is exported and callable. Blast radius currently shows 0 callers (newly added), but as an exported symbol it is intended to be called, so severity is critical on merit. Fresh runtime verification is not possible because the imported `./db` module is absent from this isolated repo, but the vulnerability is provable by static inspection and does not depend on runtime evidence.\n\nSingle new file introducing a textbook SQL injection: findUserByEmail concatenates user input into a raw SQL string (line 13) before passing it to db.query (line 14). Exploitable for auth bypass, data exfiltration, and data destruction — critical. The function currently has 0 callers (newly added), so there is no live regression yet, but it must be fixed before being wired into any flow. No runtime verification is possible in this isolated repo (no db module or test harness), but the defect is provable statically.\n\nSingle new file introducing an exported user-lookup function with a critical, self-documented SQL injection: user-controlled `emailInput` is string-interpolated into the SQL on line 13 and executed on line 14. Fix is to use a parameterized query. Secondary handoff gap: the `./db` import does not resolve in this repo and there are no tests, so no fresh verification is possible until the real module and a regression test exist.",
+  "talk_id": "fa7e580a-c042-4293-8fab-09dbf54fc392"
+}

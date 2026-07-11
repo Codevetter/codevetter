@@ -1161,6 +1161,33 @@ pub async fn run_cli_review(
     qa_runs: Option<Vec<Value>>,
     standards_pack: Option<String>,
 ) -> Result<Value, String> {
+    run_cli_review_core(
+        db.inner().clone(),
+        repo_path,
+        diff_range,
+        project_description,
+        change_description,
+        agent,
+        qa_runs,
+        standards_pack,
+    )
+    .await
+}
+
+/// State-free core of `run_cli_review` so headless harnesses (the public
+/// benchmark generator) can run the EXACT production pipeline — risk tiers,
+/// specialists, coordinator, dedup — without a Tauri runtime.
+#[allow(clippy::too_many_arguments)]
+pub async fn run_cli_review_core(
+    db: DbState,
+    repo_path: String,
+    diff_range: String,
+    project_description: String,
+    change_description: String,
+    agent: Option<String>,
+    qa_runs: Option<Vec<Value>>,
+    standards_pack: Option<String>,
+) -> Result<Value, String> {
     let agent = agent.unwrap_or_else(|| "claude".to_string());
     let qa_runs = qa_runs.unwrap_or_default();
     let start_time = std::time::Instant::now();
@@ -2365,6 +2392,111 @@ fn extract_json_from_output(output: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Generate CodeVetter's public-benchmark comparator outputs by running
+    /// every `benchmark/cases/<id>/` through the REAL production review
+    /// pipeline (risk tiers, specialists, coordinator, dedup) headlessly.
+    /// Raw pipeline output lands in `benchmark/reviews-raw/<id>.codevetter.raw.json`;
+    /// ground-truth mapping is a separate, human-checked step. Requires the
+    /// `claude` CLI on PATH and burns real quota — hence ignored.
+    #[test]
+    #[ignore]
+    fn diag_benchmark_generate_codevetter_reviews() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../benchmark");
+        let cases_dir = root.join("cases");
+        let out_dir = root.join("reviews-raw");
+        std::fs::create_dir_all(&out_dir).expect("create reviews-raw");
+        let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
+
+        let mut case_ids: Vec<String> = std::fs::read_dir(&cases_dir)
+            .expect("read cases dir")
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().is_dir())
+            .map(|e| e.file_name().to_string_lossy().to_string())
+            .collect();
+        case_ids.sort();
+        eprintln!("benchmark cases: {}", case_ids.len());
+
+        for case_id in case_ids {
+            let out_path = out_dir.join(format!("{case_id}.codevetter.raw.json"));
+            if out_path.exists() {
+                eprintln!("SKIP {case_id} (output exists)");
+                continue;
+            }
+            let label: serde_json::Value = serde_json::from_str(
+                &std::fs::read_to_string(cases_dir.join(&case_id).join("label.json"))
+                    .expect("label"),
+            )
+            .expect("label json");
+            let source_file = label
+                .get("source_file")
+                .and_then(|v| v.as_str())
+                .expect("source_file");
+            let source = std::fs::read_to_string(cases_dir.join(&case_id).join(source_file))
+                .expect("source");
+
+            // Scratch repo: baseline commit, then the case file as the change
+            // under review — exactly how a real diff reaches the pipeline.
+            let tmp = std::env::temp_dir().join(format!("cv-bench-{case_id}"));
+            let _ = std::fs::remove_dir_all(&tmp);
+            std::fs::create_dir_all(&tmp).expect("tmp dir");
+            let git = |args: &[&str]| {
+                let out = StdCommand::new("git")
+                    .args(args)
+                    .current_dir(&tmp)
+                    .env("GIT_AUTHOR_NAME", "bench")
+                    .env("GIT_AUTHOR_EMAIL", "bench@local")
+                    .env("GIT_COMMITTER_NAME", "bench")
+                    .env("GIT_COMMITTER_EMAIL", "bench@local")
+                    .output()
+                    .expect("git");
+                assert!(
+                    out.status.success(),
+                    "git {args:?} failed: {}",
+                    String::from_utf8_lossy(&out.stderr)
+                );
+            };
+            git(&["init", "-q"]);
+            git(&["commit", "-q", "--allow-empty", "-m", "baseline"]);
+            std::fs::write(tmp.join(source_file), &source).expect("write source");
+            git(&["add", "."]);
+            git(&["commit", "-q", "-m", "agent change under review"]);
+
+            let conn = rusqlite::Connection::open_in_memory().expect("db");
+            crate::db::schema::run_migrations(&conn).expect("migrations");
+            let db = crate::DbState(std::sync::Arc::new(std::sync::Mutex::new(conn)));
+
+            eprintln!("RUN  {case_id} ...");
+            let t0 = std::time::Instant::now();
+            let result = rt.block_on(run_cli_review_core(
+                db,
+                tmp.to_string_lossy().to_string(),
+                "HEAD~1..HEAD".to_string(),
+                String::new(),
+                String::new(),
+                Some("claude".to_string()),
+                None,
+                None,
+            ));
+            match result {
+                Ok(value) => {
+                    std::fs::write(&out_path, serde_json::to_string_pretty(&value).unwrap())
+                        .expect("write output");
+                    eprintln!(
+                        "DONE {case_id} in {:.0}s — findings: {}",
+                        t0.elapsed().as_secs_f64(),
+                        value
+                            .get("findings")
+                            .and_then(|f| f.as_array())
+                            .map(|a| a.len())
+                            .unwrap_or(0)
+                    );
+                }
+                Err(error) => eprintln!("FAIL {case_id}: {error}"),
+            }
+            let _ = std::fs::remove_dir_all(&tmp);
+        }
+    }
 
     #[test]
     fn changed_line_count_ignores_diff_headers() {
