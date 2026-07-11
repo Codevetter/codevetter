@@ -28,6 +28,12 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         "ALTER TABLE cc_sessions ADD COLUMN last_indexed_line_count INTEGER NOT NULL DEFAULT 0",
         [],
     );
+    // Claude JSONL writes one line per content block of an assistant message,
+    // each repeating the SAME final usage object. The adapter dedups usage by
+    // (message.id, requestId); this column persists the last-seen key so a
+    // duplicate group split across two incremental tail reads (blocks can land
+    // ~40s apart) is still counted once.
+    let _ = conn.execute("ALTER TABLE cc_sessions ADD COLUMN last_usage_key TEXT", []);
     let _ = conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_cc_sessions_last_message
          ON cc_sessions(last_message DESC)",

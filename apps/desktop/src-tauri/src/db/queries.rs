@@ -360,6 +360,10 @@ pub struct SessionMeta {
     /// current size the file is fully indexed and can be skipped — an exact,
     /// precision-free signal (unlike mtime strings, whose nanoseconds drift).
     pub last_indexed_byte_offset: i64,
+    /// Last usage-dedup key ("message.id:requestId") consumed for this session,
+    /// so incremental reads skip duplicate usage lines of an already-counted
+    /// message even when the duplicate group spans two reads.
+    pub last_usage_key: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -385,7 +389,8 @@ pub fn get_session_by_jsonl_path(
     conn.query_row(
         "SELECT id, file_mtime, message_count,
                 (SELECT COUNT(*) FROM session_message_archive a WHERE a.session_id = cc_sessions.id),
-                total_input_tokens, total_output_tokens, last_indexed_byte_offset
+                total_input_tokens, total_output_tokens, last_indexed_byte_offset,
+                last_usage_key
          FROM cc_sessions
          WHERE jsonl_path = ?1",
         params![jsonl_path],
@@ -398,6 +403,7 @@ pub fn get_session_by_jsonl_path(
                 total_input_tokens: row.get(4)?,
                 total_output_tokens: row.get(5)?,
                 last_indexed_byte_offset: row.get(6)?,
+                last_usage_key: row.get(7)?,
             })
         },
     )
@@ -916,6 +922,9 @@ pub struct SessionAppendDelta {
     pub indexed_at: String,
     pub new_byte_offset: i64,
     pub new_line_count: i64,
+    /// Usage-dedup key of the last counted message (Claude only); None leaves
+    /// the stored key untouched.
+    pub last_usage_key: Option<String>,
 }
 
 /// Apply an incremental append's deltas to the session row. Does NOT touch
@@ -948,7 +957,8 @@ pub fn apply_session_append_delta(
             file_mtime = ?16,
             indexed_at = ?17,
             last_indexed_byte_offset = ?18,
-            last_indexed_line_count = ?19
+            last_indexed_line_count = ?19,
+            last_usage_key = COALESCE(?21, last_usage_key)
          WHERE id = ?1",
         params![
             d.session_id,
@@ -971,7 +981,22 @@ pub fn apply_session_append_delta(
             d.new_byte_offset,
             d.new_line_count,
             d.tokens_absolute,
+            d.last_usage_key,
         ],
+    )?;
+    Ok(())
+}
+
+/// Store the usage-dedup key of the last counted message for a session
+/// (full-reparse path; the incremental path sets it via the append delta).
+pub fn set_session_last_usage_key(
+    conn: &Connection,
+    session_id: &str,
+    key: Option<&str>,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "UPDATE cc_sessions SET last_usage_key = ?2 WHERE id = ?1",
+        params![session_id, key],
     )?;
     Ok(())
 }
@@ -3547,6 +3572,7 @@ mod tests {
             indexed_at: "2026-06-21T00:00:00Z".to_string(),
             new_byte_offset: 1000,
             new_line_count: 5,
+            last_usage_key: None,
         };
         let input = |c: &Connection| -> i64 {
             c.query_row(

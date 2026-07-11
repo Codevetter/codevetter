@@ -100,6 +100,11 @@ fn run_usage_maintenance(app_data_dir: std::path::PathBuf) {
             // Relabel o3-defaulted Codex sessions from their turn_context rows
             // before cost recompute so rev-6+ pricing books corrected models.
             crate::commands::history::backfill_codex_session_models(&conn);
+            // One-time Claude usage dedup: re-scan on-disk transcripts counting
+            // each API response's usage once (duplicate content-block lines
+            // inflated Claude numbers ~2.2×). Rewrites totals + cost directly,
+            // so ordering vs the pricing recompute below doesn't matter.
+            crate::commands::history::fix_claude_usage_dedup(&conn);
             crate::commands::history::recompute_all_session_costs(&conn);
             log::info!("Usage maintenance done.");
         }

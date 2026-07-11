@@ -999,6 +999,11 @@ fn estimate_cost(
         m if m.contains("gpt-5") && m.contains("mini") => (0.25, 2.0, 0.025, 0.0),
         // GPT-5.5 (Codex CLI default, mid-2026): $5/$30, cached input $0.50.
         m if m.contains("gpt-5.5") => (5.0, 30.0, 0.50, 0.0),
+        // GPT-5.6 family (Jul 2026): Sol flagship $5/$30, Terra $2.50/$15,
+        // Luna $1/$6; cached input 90% off, cache writes 1.25× input.
+        m if m.contains("gpt-5.6") && m.contains("terra") => (2.5, 15.0, 0.25, 3.125),
+        m if m.contains("gpt-5.6") && m.contains("luna") => (1.0, 6.0, 0.10, 1.25),
+        m if m.contains("gpt-5.6") => (5.0, 30.0, 0.50, 6.25),
         // OpenAI GPT-5.4 standard API: $2.50/$15, cached $0.25.
         m if m.contains("gpt-5.4") => (2.5, 15.0, 0.25, 0.0),
         // Codex specialized model, if logs expose the exact model id.
@@ -1063,7 +1068,10 @@ fn estimate_cost(
 /// Rev 8 = current xAI Grok pricing: grok-build $1/$2 cached $0.20,
 /// grok-4.5 $2/$6 cached $0.50, grok-4.3/4.20 $1.25/$2.50 cached $0.20.
 /// Rev 9 = official OpenAI GPT-5.4 / GPT-5.4-mini prices and gpt-5.3-codex.
-const PRICING_REV: &str = "9";
+/// Rev 10 = GPT-5.6 tiers (Sol $5/$30, Terra $2.50/$15, Luna $1/$6, cached 90%
+/// off) — 5.6-sol previously fell through to the GPT-5 family fallback and
+/// booked at ~1/4 of its real price.
+const PRICING_REV: &str = "10";
 
 /// Estimated cost for one session: per-model when a breakdown exists (correct
 /// for multi-model Claude sessions), else session-level `model_used` pricing.
@@ -1484,6 +1492,218 @@ pub fn fix_codex_token_totals(conn: &rusqlite::Connection) {
     }
 }
 
+/// Streaming full-file scan of one Claude JSONL with usage dedup. Returns the
+/// deduped totals + per-model map, the last usage key, and the exact cursor
+/// (bytes/lines of complete lines consumed) so incremental tailing continues
+/// cleanly from where this scan stopped. Mirrors ClaudeCodeAdapter's
+/// attribution rules without materialising the (200+ MB) file in memory.
+struct ClaudeDedupScan {
+    total_input: i64,
+    total_output: i64,
+    cache_read: i64,
+    cache_creation: i64,
+    model_usage:
+        std::collections::BTreeMap<String, crate::commands::session_adapters::ModelTokenUsage>,
+    last_usage_key: Option<String>,
+    consumed_bytes: i64,
+    consumed_lines: i64,
+}
+
+fn scan_claude_usage_dedup(path: &std::path::Path) -> Result<ClaudeDedupScan, String> {
+    use std::io::BufRead;
+    let file = std::fs::File::open(path).map_err(|e| e.to_string())?;
+    let mut reader = std::io::BufReader::new(file);
+    let mut scan = ClaudeDedupScan {
+        total_input: 0,
+        total_output: 0,
+        cache_read: 0,
+        cache_creation: 0,
+        model_usage: std::collections::BTreeMap::new(),
+        last_usage_key: None,
+        consumed_bytes: 0,
+        consumed_lines: 0,
+    };
+    let mut buf = Vec::new();
+    loop {
+        buf.clear();
+        let n = match reader.read_until(b'\n', &mut buf) {
+            Ok(0) => break,
+            Ok(n) => n,
+            Err(_) => break, // torn tail → stop at last clean line
+        };
+        // Only complete lines advance the cursor, matching complete_lines_prefix.
+        if buf.last() != Some(&b'\n') {
+            break;
+        }
+        scan.consumed_bytes += n as i64;
+        scan.consumed_lines += 1;
+        let line = match std::str::from_utf8(&buf) {
+            Ok(s) => s.trim(),
+            Err(_) => continue,
+        };
+        if line.is_empty() {
+            continue;
+        }
+        let parsed: serde_json::Value = match serde_json::from_str(line) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let message = parsed.get("message");
+        let usage = message.and_then(|m| m.get("usage"));
+        let Some(usage) = usage else { continue };
+        let usage_key = message
+            .and_then(|m| m.get("id"))
+            .and_then(|v| v.as_str())
+            .map(|id| {
+                let request_id = parsed
+                    .get("requestId")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                format!("{id}:{request_id}")
+            });
+        if usage_key.is_some() && usage_key.as_deref() == scan.last_usage_key.as_deref() {
+            continue; // repeated content-block line of an already-counted message
+        }
+        if let Some(key) = usage_key {
+            scan.last_usage_key = Some(key);
+        }
+        let get = |key: &str| usage.get(key).and_then(|v| v.as_i64()).unwrap_or(0);
+        let input = get("input_tokens");
+        let cache_creation = get("cache_creation_input_tokens");
+        let cache_read = get("cache_read_input_tokens");
+        let output = get("output_tokens");
+        scan.total_input += input + cache_creation + cache_read;
+        scan.total_output += output;
+        scan.cache_read += cache_read;
+        scan.cache_creation += cache_creation;
+        if input + cache_creation + cache_read + output > 0 {
+            let model_key = message
+                .and_then(|m| m.get("model"))
+                .and_then(|v| v.as_str())
+                .map(str::trim)
+                .filter(|s| !s.is_empty() && *s != "<synthetic>")
+                .unwrap_or("unknown");
+            let entry = scan.model_usage.entry(model_key.to_string()).or_default();
+            entry.message_count += 1;
+            entry.input_tokens += input + cache_creation + cache_read;
+            entry.output_tokens += output;
+            entry.cache_read_tokens += cache_read;
+            entry.cache_creation_tokens += cache_creation;
+        }
+    }
+    Ok(scan)
+}
+
+/// One-time repair of Claude token totals. The indexer used to sum the usage
+/// object of EVERY JSONL line, but Claude Code writes one line per content
+/// block of an assistant message, each repeating the same final usage — ~50%+
+/// of usage lines in real transcripts are such repeats, inflating all Claude
+/// token/cost numbers ~2.2× (measured 103–134% per month on this machine).
+/// Re-scan each on-disk Claude file with dedup and overwrite the token columns,
+/// per-model rows, cost, dedup key, and index cursor. Sessions whose JSONL has
+/// rotated away cannot be recomputed and are left untouched. Gated by a
+/// preference so it runs exactly once.
+pub fn fix_claude_usage_dedup(conn: &rusqlite::Connection) {
+    if let Ok(Some(rev)) = queries::get_preference(conn, "claude_dedup_fix_rev") {
+        if rev == "1" {
+            return;
+        }
+    }
+    let rows: Vec<(String, String, Option<String>)> = {
+        let mut stmt = match conn.prepare(
+            "SELECT id, jsonl_path, model_used FROM cc_sessions
+             WHERE agent_type = 'claude-code' AND jsonl_path IS NOT NULL",
+        ) {
+            Ok(s) => s,
+            Err(e) => {
+                log::warn!("claude dedup fix prepare failed: {e}");
+                return;
+            }
+        };
+        match stmt
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
+            .and_then(|rows| rows.collect())
+        {
+            Ok(rows) => rows,
+            Err(e) => {
+                log::warn!("claude dedup fix query failed: {e}");
+                return;
+            }
+        }
+    };
+    let mut fixed = 0u64;
+    let mut skipped_missing = 0u64;
+    for (id, path, stored_model) in rows {
+        let path_ref = std::path::Path::new(&path);
+        if !path_ref.exists() {
+            skipped_missing += 1;
+            continue;
+        }
+        let scan = match scan_claude_usage_dedup(path_ref) {
+            Ok(scan) => scan,
+            Err(e) => {
+                log::debug!("claude dedup scan failed for {path}: {e}");
+                continue;
+            }
+        };
+        let deltas = model_usage_deltas(&scan.model_usage);
+        let cost = if deltas.is_empty() {
+            estimate_cost(
+                stored_model.as_deref().unwrap_or(""),
+                scan.total_input,
+                scan.total_output,
+                scan.cache_read,
+                scan.cache_creation,
+            )
+        } else {
+            let cost: f64 = deltas
+                .iter()
+                .map(|u| {
+                    estimate_cost(
+                        &u.model,
+                        u.input_tokens,
+                        u.output_tokens,
+                        u.cache_read_tokens,
+                        u.cache_creation_tokens,
+                    )
+                })
+                .sum();
+            (cost * 100.0).round() / 100.0
+        };
+        let updated = conn.execute(
+            "UPDATE cc_sessions SET
+                total_input_tokens = ?2,
+                total_output_tokens = ?3,
+                cache_read_tokens = ?4,
+                cache_creation_tokens = ?5,
+                estimated_cost_usd = ?6,
+                last_usage_key = ?7,
+                last_indexed_byte_offset = ?8,
+                last_indexed_line_count = ?9
+             WHERE id = ?1",
+            rusqlite::params![
+                id,
+                scan.total_input,
+                scan.total_output,
+                scan.cache_read,
+                scan.cache_creation,
+                cost,
+                scan.last_usage_key,
+                scan.consumed_bytes,
+                scan.consumed_lines,
+            ],
+        );
+        if updated.is_ok() {
+            let _ = queries::replace_session_model_usage(conn, &id, &deltas);
+            fixed += 1;
+        }
+    }
+    let _ = queries::set_preference(conn, "claude_dedup_fix_rev", "1");
+    log::info!(
+        "Claude usage dedup backfill: rewrote {fixed} sessions, {skipped_missing} skipped (file rotated away)"
+    );
+}
+
 fn upsert_adapter_summary_session(
     conn: &rusqlite::Connection,
     project_id: &str,
@@ -1717,6 +1937,7 @@ fn index_adapter_session<A: SessionSourceAdapter>(
     let raw = std::fs::read_to_string(jsonl_path).map_err(|e| e.to_string())?;
     let (prefix, byte_len, line_count) = complete_lines_prefix(&raw);
     let summary = adapter.parse_raw(&path_str, prefix);
+    let last_usage_key = summary.last_usage_key.clone();
     let existing_id = existing.as_ref().map(|m| m.id.as_str());
     let result = upsert_adapter_summary_session(
         conn,
@@ -1728,6 +1949,8 @@ fn index_adapter_session<A: SessionSourceAdapter>(
         existing_id,
     )?;
     queries::set_session_index_cursor(conn, &result.session_id, byte_len, line_count)
+        .map_err(|e| e.to_string())?;
+    queries::set_session_last_usage_key(conn, &result.session_id, last_usage_key.as_deref())
         .map_err(|e| e.to_string())?;
     Ok(result)
 }
@@ -1770,7 +1993,7 @@ fn index_session_incremental<A: SessionSourceAdapter>(
         });
     }
 
-    let summary = adapter.parse_raw(path_str, prefix);
+    let summary = adapter.parse_raw_with_state(path_str, prefix, meta.last_usage_key.as_deref());
 
     // Append archive rows, continuing message_index / source_line past what is stored.
     let start_index = meta.archived_message_count;
@@ -1828,6 +2051,7 @@ fn index_session_incremental<A: SessionSourceAdapter>(
             indexed_at: now.to_string(),
             new_byte_offset: offset + new_bytes,
             new_line_count: line_count + new_lines,
+            last_usage_key: summary.last_usage_key.clone(),
         },
     )
     .map_err(|e| e.to_string())?;
@@ -1891,6 +2115,7 @@ fn zero_delta(
         indexed_at: now.to_string(),
         new_byte_offset: offset,
         new_line_count: line_count,
+        last_usage_key: None,
     }
 }
 
@@ -2321,6 +2546,7 @@ fn parse_grok_session_dir(
         // Grok token counts are summed per-turn estimates, not a running total.
         tokens_are_cumulative: false,
         model_usage: std::collections::BTreeMap::new(),
+        last_usage_key: None,
     })
 }
 
@@ -2738,6 +2964,7 @@ fn index_devin_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), 
             parse_warnings: Vec::new(),
             tokens_are_cumulative: false,
             model_usage: std::collections::BTreeMap::new(),
+            last_usage_key: None,
         };
 
         match upsert_adapter_summary_session(
@@ -2955,6 +3182,7 @@ fn index_cursor_agent_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64,
                 parse_warnings: Vec::new(),
                 tokens_are_cumulative: false,
                 model_usage: std::collections::BTreeMap::new(),
+                last_usage_key: None,
             };
 
             match upsert_adapter_summary_session(
@@ -3964,6 +4192,37 @@ mod tests {
 
     #[test]
     #[ignore]
+    fn diag_claude_dedup_dry_run() {
+        // Dry-run the Claude usage-dedup backfill against a copy of the live DB
+        // (cp codevetter.db /tmp/cv_dedup_dryrun.db) and print before/after.
+        let path = "/tmp/cv_dedup_dryrun.db";
+        if !std::path::Path::new(path).exists() {
+            eprintln!("SKIP: {path} not present");
+            return;
+        }
+        let conn = Connection::open(path).expect("open dry-run copy");
+        schema::run_migrations(&conn).expect("migrate");
+        let claude = |c: &Connection| -> (f64, i64) {
+            c.query_row(
+                "SELECT COALESCE(SUM(estimated_cost_usd),0), COALESCE(SUM(total_output_tokens),0)
+                 FROM cc_sessions WHERE agent_type='claude-code'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap()
+        };
+        let (cost0, out0) = claude(&conn);
+        let t0 = std::time::Instant::now();
+        fix_claude_usage_dedup(&conn);
+        let (cost1, out1) = claude(&conn);
+        eprintln!(
+            "claude BEFORE: ${cost0:.0} / {out0} out-tokens\nclaude AFTER:  ${cost1:.0} / {out1} out-tokens\nelapsed {:.1}s",
+            t0.elapsed().as_secs_f64()
+        );
+    }
+
+    #[test]
+    #[ignore]
     fn diag_live_index_steady_state() {
         let path = "/tmp/cv_live_copy.db";
         if !std::path::Path::new(path).exists() {
@@ -4003,6 +4262,7 @@ mod tests {
             total_input_tokens: 0,
             total_output_tokens: 0,
             last_indexed_byte_offset: offset,
+            last_usage_key: None,
         };
 
         // Cursor at EOF → SKIP, regardless of the mismatched mtime or zero archive.
@@ -4051,6 +4311,20 @@ mod tests {
             0.50
         ));
         assert!(near(estimate_cost("gpt-5", 1_000_000, 0, 0, 0), 1.25));
+        // GPT-5.6 tiers (Jul 2026): Sol $5/$30 cached $0.50, Terra $2.50/$15,
+        // Luna $1/$6 — none may fall through to the generic GPT-5 family arm
+        // (5.6-sol previously booked at ~1/4 its real price that way).
+        assert!(near(estimate_cost("gpt-5.6-sol", 1_000_000, 0, 0, 0), 5.0));
+        assert!(near(estimate_cost("gpt-5.6-sol", 0, 1_000_000, 0, 0), 30.0));
+        assert!(near(
+            estimate_cost("gpt-5.6-sol", 1_000_000, 0, 1_000_000, 0),
+            0.50
+        ));
+        assert!(near(
+            estimate_cost("gpt-5.6-terra", 1_000_000, 0, 0, 0),
+            2.5
+        ));
+        assert!(near(estimate_cost("gpt-5.6-luna", 0, 1_000_000, 0, 0), 6.0));
         // GPT-5.4 must beat the generic GPT-5 family arm.
         assert!(near(estimate_cost("gpt-5.4", 1_000_000, 0, 0, 0), 2.50));
         assert!(near(estimate_cost("gpt-5.4", 0, 1_000_000, 0, 0), 15.0));
