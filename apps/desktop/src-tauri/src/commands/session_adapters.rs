@@ -40,6 +40,12 @@ pub struct RawSessionAdapterSummary {
     /// per-message model; consumers fall back to `model_used` when empty.
     #[serde(default)]
     pub model_usage: BTreeMap<String, ModelTokenUsage>,
+    /// Usage-dedup key ("message.id:requestId") of the last counted message.
+    /// Claude writes one JSONL line per content block, each repeating the same
+    /// final usage object; the parser counts usage once per key and this field
+    /// lets the next incremental read continue the dedup across the boundary.
+    #[serde(default)]
+    pub last_usage_key: Option<String>,
 }
 
 /// Token usage attributed to one model within a session. Same semantics as the
@@ -69,6 +75,18 @@ pub trait SessionSourceAdapter {
     fn adapter_id(&self) -> &'static str;
     fn agent_type(&self) -> &'static str;
     fn parse_raw(&self, source_ref: &str, raw: &str) -> RawSessionAdapterSummary;
+    /// Parse with cross-read state. `prior_usage_key` is the usage-dedup key of
+    /// the last message counted by the previous incremental read, so a duplicate
+    /// group split across reads is still counted once. Adapters without
+    /// duplicate usage lines ignore it.
+    fn parse_raw_with_state(
+        &self,
+        source_ref: &str,
+        raw: &str,
+        _prior_usage_key: Option<&str>,
+    ) -> RawSessionAdapterSummary {
+        self.parse_raw(source_ref, raw)
+    }
 }
 
 pub struct ClaudeCodeAdapter;
@@ -99,6 +117,7 @@ fn empty_summary(adapter_id: &str, agent_type: &str, source_ref: &str) -> RawSes
         parse_warnings: Vec::new(),
         tokens_are_cumulative: false,
         model_usage: BTreeMap::new(),
+        last_usage_key: None,
     }
 }
 
@@ -307,6 +326,15 @@ impl SessionSourceAdapter for ClaudeCodeAdapter {
     }
 
     fn parse_raw(&self, source_ref: &str, raw: &str) -> RawSessionAdapterSummary {
+        self.parse_raw_with_state(source_ref, raw, None)
+    }
+
+    fn parse_raw_with_state(
+        &self,
+        source_ref: &str,
+        raw: &str,
+        prior_usage_key: Option<&str>,
+    ) -> RawSessionAdapterSummary {
         let mut summary = empty_summary(self.adapter_id(), self.agent_type(), source_ref);
         // Subagent/sidechain transcripts (one file per Task sub-run, under
         // `<session>/subagents/`) carry the PARENT session's `sessionId`. Keyed
@@ -316,6 +344,14 @@ impl SessionSourceAdapter for ClaudeCodeAdapter {
         // pass (profiled to ~95% of a core). Track it and key sidechains by their
         // own path below so each indexes once and is then skipped.
         let mut is_sidechain = false;
+        // One API response = one usage object, but Claude Code writes a JSONL
+        // line PER CONTENT BLOCK, each repeating that same final usage — 50%+
+        // of usage lines in real transcripts are such repeats, and summing them
+        // inflated all Claude token/cost numbers ~2.2×. Duplicate lines are
+        // strictly adjacent among usage-bearing lines, so remembering the last
+        // counted key is exact. Seeded from the previous incremental read: the
+        // blocks of one message can be flushed up to ~40s apart, spanning reads.
+        let mut last_usage_key: Option<String> = prior_usage_key.map(str::to_string);
 
         for (idx, line) in raw.lines().enumerate() {
             let line = line.trim();
@@ -410,6 +446,30 @@ impl SessionSourceAdapter for ClaudeCodeAdapter {
             let usage = parsed
                 .get("message")
                 .and_then(|message| message.get("usage"));
+            // Count each API response's usage once: repeated lines for the same
+            // (message.id, requestId) carry byte-identical usage snapshots.
+            // Lines without a message id are never treated as duplicates and
+            // don't disturb the dedup key.
+            let usage_key = parsed
+                .get("message")
+                .and_then(|message| message.get("id"))
+                .and_then(|v| v.as_str())
+                .map(|id| {
+                    let request_id = parsed
+                        .get("requestId")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
+                    format!("{id}:{request_id}")
+                });
+            let is_duplicate_usage = usage.is_some()
+                && usage_key.is_some()
+                && usage_key.as_deref() == last_usage_key.as_deref();
+            if usage.is_some() {
+                if let Some(key) = usage_key {
+                    last_usage_key = Some(key);
+                }
+            }
+            let usage = if is_duplicate_usage { None } else { usage };
             let input = usage
                 .and_then(|u| u.get("input_tokens"))
                 .and_then(|v| v.as_i64())
@@ -478,6 +538,7 @@ impl SessionSourceAdapter for ClaudeCodeAdapter {
                 .parse_warnings
                 .push("missing stable session id".to_string());
         }
+        summary.last_usage_key = last_usage_key;
         summary
     }
 }
@@ -790,6 +851,67 @@ mod tests {
         assert_eq!(sonnet.output_tokens, 40);
         assert_eq!(sonnet.cache_read_tokens, 25);
         assert_eq!(sonnet.cache_creation_tokens, 10);
+    }
+
+    fn usage_line(msg_id: &str, request_id: &str, output: i64) -> String {
+        format!(
+            r#"{{"type":"assistant","sessionId":"s1","timestamp":"2026-07-10T10:00:00.000Z","requestId":"{request_id}","message":{{"id":"{msg_id}","role":"assistant","model":"claude-fable-5","usage":{{"input_tokens":10,"output_tokens":{output},"cache_read_input_tokens":5,"cache_creation_input_tokens":2}},"content":[{{"type":"text","text":"hi"}}]}}}}"#
+        )
+    }
+
+    #[test]
+    fn claude_usage_counted_once_per_message_despite_repeated_lines() {
+        // Claude Code writes one JSONL line per content block, each repeating
+        // the SAME final usage object — real transcripts are 50%+ repeats.
+        // Usage must be counted once per (message.id, requestId).
+        let raw = [
+            usage_line("msg_a", "req_1", 100),
+            usage_line("msg_a", "req_1", 100), // repeated content-block line
+            usage_line("msg_a", "req_1", 100), // and again
+            usage_line("msg_b", "req_2", 7),
+        ]
+        .join("\n");
+        let summary = ClaudeCodeAdapter.parse_raw("/t.jsonl", &raw);
+        assert_eq!(summary.total_output_tokens, 107);
+        assert_eq!(summary.total_input_tokens, 2 * (10 + 5 + 2));
+        assert_eq!(summary.cache_read_tokens, 10);
+        let fable = summary.model_usage.get("claude-fable-5").expect("fable");
+        assert_eq!(fable.message_count, 2);
+        assert_eq!(summary.last_usage_key.as_deref(), Some("msg_b:req_2"));
+        // All four lines still archive/count as lines.
+        assert_eq!(summary.message_count, 4);
+    }
+
+    #[test]
+    fn claude_usage_dedup_survives_split_incremental_reads() {
+        // A message's content-block lines can be flushed ~40s apart, so an
+        // incremental tail read can start mid-duplicate-group. The prior read's
+        // last usage key must suppress the leading repeats.
+        let first = usage_line("msg_a", "req_1", 100);
+        let second = [
+            usage_line("msg_a", "req_1", 100), // continuation of msg_a
+            usage_line("msg_b", "req_2", 7),
+        ]
+        .join("\n");
+        let s1 = ClaudeCodeAdapter.parse_raw_with_state("/t.jsonl", &first, None);
+        assert_eq!(s1.total_output_tokens, 100);
+        let s2 = ClaudeCodeAdapter.parse_raw_with_state(
+            "/t.jsonl",
+            &second,
+            s1.last_usage_key.as_deref(),
+        );
+        assert_eq!(s2.total_output_tokens, 7);
+        assert_eq!(s2.last_usage_key.as_deref(), Some("msg_b:req_2"));
+    }
+
+    #[test]
+    fn claude_usage_lines_without_message_id_always_count() {
+        let no_id = r#"{"type":"assistant","sessionId":"s1","timestamp":"2026-07-10T10:00:00.000Z","message":{"role":"assistant","model":"claude-fable-5","usage":{"input_tokens":1,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0},"content":[{"type":"text","text":"hi"}]}}"#;
+        let raw = format!("{no_id}\n{no_id}");
+        let summary = ClaudeCodeAdapter.parse_raw("/t.jsonl", &raw);
+        // No id → no dedup key → both lines count (conservative).
+        assert_eq!(summary.total_output_tokens, 6);
+        assert_eq!(summary.last_usage_key, None);
     }
 
     #[test]

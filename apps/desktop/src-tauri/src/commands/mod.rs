@@ -1,9 +1,9 @@
 pub mod accounts;
-pub mod audience_validation;
 #[cfg(feature = "browser-agent")]
 pub mod agent;
 pub mod agent_memories;
 pub mod agent_terminal;
+pub mod audience_validation;
 pub mod blast_radius;
 pub mod cli_stream;
 pub mod dora;
