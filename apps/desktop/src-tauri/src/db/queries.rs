@@ -3187,6 +3187,7 @@ mod tests {
                 pr_number: None,
                 agent_used: Some("claude".to_string()),
                 status: Some("completed".to_string()),
+                standards_pack: None,
             },
         )
         .expect("review");
