@@ -379,6 +379,7 @@ fn main() {
             commands::agent_terminal::install_codex_warp_plugin,
             commands::agent_terminal::list_codex_agent_terminals,
             commands::resources::get_resource_snapshot,
+            commands::agent_memories::get_memory_file_git_diff,
             // History / indexer
             commands::history::trigger_index,
             commands::history::get_index_stats,
