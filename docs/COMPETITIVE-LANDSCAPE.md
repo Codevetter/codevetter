@@ -611,7 +611,7 @@ Paid users get the review without the marketing footer. The `*Free automated rev
 ### Files to modify
 - `packages/review-core/src/formatting.ts` — `buildOverallBody()` accepts a new `tier: 'free' | 'paid'` param
 - `workers/review/src/handlers.ts` — `handleReviewJob()` passes tier based on `repository.isPrivate`
-- New: `apps/landing-page/` — badge SVG generation endpoint (or static SVGs in `/public`)
+- New: `apps/landing-page-astro/` — badge SVGs in `/public` (static Astro site)
 
 ---
 
@@ -795,7 +795,7 @@ This page shows:
 - Review pages link back to GitHub (backlink authority) and GitHub PRs link back to codevetter.com (badge links)
 
 ### Implementation
-- New route in `apps/landing-page/` (Next.js): `/reviews/[owner]/[repo]/pr/[prNumber]`
+- New route in `apps/landing-page-astro/` (Astro): `/reviews/[owner]/[repo]/pr/[prNumber]`
 - Server-side rendered for SEO (Next.js SSR/ISR)
 - Data source: query the API worker (`workers/api/`) for review run + findings by repo fullName and PR number
 - Need a new public API endpoint: `GET /v1/public/reviews/{owner}/{repo}/{prNumber}` — returns review data without auth (only for repos on free tier with `is_private = false`)
@@ -859,14 +859,14 @@ This page shows:
 - [ ] Modify `buildOverallBody()` in `packages/review-core/src/formatting.ts` to accept tier and inject badge
 - [ ] Add tier-based rate limiting in webhook handler before review run creation
 - [ ] Add rate limit exceeded comment via `postPrComment()` in `workers/review/src/github.ts`
-- [ ] Create badge SVGs and serve from `apps/landing-page/public/`
+- [ ] Create badge SVGs and serve from `apps/landing-page-astro/public/`
 - [ ] Test: install GitHub App on a public repo, open PR, verify review + badge
 
 ### Phase B: Public review pages + SEO (2 weeks)
 **Goal**: Every review creates an indexable page
 
 - [ ] Add `GET /v1/public/reviews/:owner/:repo/:prNumber` endpoint to API worker (no auth, public repos only)
-- [ ] Build Next.js pages in `apps/landing-page/`: `/reviews/[owner]/[repo]/pr/[prNumber]`
+- [ ] Build Astro pages in `apps/landing-page-astro/`: `/reviews/[owner]/[repo]/pr/[prNumber]`
 - [ ] Add JSON-LD structured data to review pages
 - [ ] Build repo overview page: `/reviews/[owner]/[repo]`
 - [ ] Add sitemap generation for review pages
@@ -957,5 +957,5 @@ The unit economics work as long as AI gateway costs stay under $0.10/review. Use
 | `packages/db/migrations/0002_agent_metadata.sql` | Agent detection columns on PRs and review runs |
 | `packages/shared-types/src/v1.ts` | Core types: `WorkspaceKind`, `ReviewTone`, rule configs |
 | `packages/shared-types/src/gateway.ts` | AI gateway request/response types including `AgentContext` |
-| `apps/landing-page/` | Next.js marketing site (where review pages and badge routes go) |
+| `apps/landing-page-astro/` | Astro marketing site (where review pages and badge routes go) |
 | `plans/competitive-landscape-2026-03-22.md` | Competitor pricing and feature analysis |

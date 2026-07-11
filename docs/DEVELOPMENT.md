@@ -51,9 +51,6 @@ Tauri opens a native window backed by the Vite dev server on port `1420`. Hot-re
 ### Start web apps in dev mode
 
 ```bash
-# Landing page (Next.js, default port)
-cd apps/landing-page && npm run dev
-
 # Dashboard (Next.js, port 4174)
 cd apps/dashboard && npm run dev
 ```
@@ -104,14 +101,6 @@ cd workers/review && npm run dev  # wrangler dev
 | `npm run dev` | Start Next.js dev server on port 4174 |
 | `npm run build` | Build shared types, then run `next build` |
 | `npm run start` | Start the Next.js production server on port 4174 |
-
-### `apps/landing-page`
-
-| Command | Description |
-|---|---|
-| `npm run dev` | Start Next.js dev server (default port 3000) |
-| `npm run build` | Run `next build` |
-| `npm run start` | Start the Next.js production server |
 
 ### `packages/*` (shared libraries)
 

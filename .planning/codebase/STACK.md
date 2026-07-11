@@ -26,7 +26,7 @@
 ## Frameworks
 
 **Frontend:**
-- Next.js 15.5.6 - Dashboard (`apps/dashboard`) and landing page (`apps/landing-page`)
+- Next.js 15.5.6 - Dashboard (`apps/dashboard`)
 - React 19.1.0 - UI library across all frontend applications
 - React DOM 19.1.0 - React rendering target
 - Vite 6.0.0 - Build tool and dev server for desktop app (`apps/desktop`)
@@ -39,7 +39,7 @@
 - Radix UI 3.3.0 (dashboard) - Unstyled component library
 - Radix UI Dialog, Dropdown Menu, Separator, Slot, Tabs, Tooltip - Individual component packages (desktop)
 - Tailwind CSS 3.4.0 - Utility-first CSS framework (desktop)
-- Tailwind CSS 4.2.2 - Newer version (landing-page)
+- Tailwind CSS 4.2.2 - Landing page Astro site (`apps/landing-page-astro`)
 - Tailwind CSS postcss plugin 4.2.2 - PostCSS integration
 - class-variance-authority 0.7.1 - Utility for managing component variants
 - tailwind-merge 3.5.0 - Merges Tailwind class lists without conflicts
