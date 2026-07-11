@@ -61,7 +61,6 @@ CodeVetter AI software quality workbench for agent-generated code — desktop-fi
 - `apps/desktop/vite.config.ts`
 - `apps/landing-page-astro/astro.config.mjs`
 - `apps/landing-page-astro/wrangler.toml`
-- `apps/landing-page/next.config.ts`
 
 ## OSS Already In Use
 
@@ -206,7 +205,6 @@ Primary docs and handoff files:
 Package manifests:
 - `apps/desktop/package.json`
 - `apps/landing-page-astro/package.json`
-- `apps/landing-page/package.json`
 - `package.json`
 
 Inventory notes:
