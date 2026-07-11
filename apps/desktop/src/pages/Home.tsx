@@ -435,6 +435,31 @@ function AccountUsageRow({
               : ''}
           </div>
         )}
+        {account.provider === 'openai' && hasLive && (
+          <div className="text-[10px] text-slate-600 tabular-nums">
+            {(liveUsage?.reset_credits ?? 0) > 0 && (
+              <span className="text-emerald-400/80">
+                {liveUsage?.reset_credits} manual reset credit
+                {liveUsage?.reset_credits === 1 ? '' : 's'} available
+              </span>
+            )}
+            {(liveUsage?.additional_windows ?? []).map((w) => (
+              <span key={w.name}>
+                {(liveUsage?.reset_credits ?? 0) > 0 ? ' · ' : ''}
+                {w.name}: {w.primary_pct ?? 0}% / {w.secondary_pct ?? 0}% (own pool)
+              </span>
+            ))}
+            {liveUsage?.checked_at && (
+              <span>
+                {' · as of '}
+                {new Date(liveUsage.checked_at).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            )}
+          </div>
+        )}
         {hasLive && windowNote && (
           <div
             className={`rounded border px-2.5 py-1.5 text-[10px] leading-relaxed ${
