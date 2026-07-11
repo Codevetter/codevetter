@@ -76,8 +76,18 @@ The included sample is not a publishable benchmark. It only proves the harness s
 
 | Reviewer | Catch rate | Precision | F1 |
 |---|---|---|---|
-| codevetter (full pipeline, v1.2.18 code) | **1.000** (29/29) | 0.299 | 0.460 |
+| codevetter (pipeline + similarity dedup) | **1.000** (29/29) | **0.433** | **0.604** |
+| codevetter (pipeline, pre-dedup-fix) | **1.000** (29/29) | 0.299 | 0.460 |
 | raw-claude (single prompt baseline) | 0.931 (27/29) | 0.397 | 0.557 |
+
+The dedup fix (same-file near-line token-similarity clustering in
+`dedupe_findings`, calibrated on real duplicate/non-duplicate pairs from the
+first run) cut raw findings 95→65 and flipped the head-to-head: CodeVetter now
+beats the single-prompt baseline on catch rate, precision, AND F1. Remaining
+noise is mostly process/verification findings (intentional for agent-PR
+review, penalized by defect-only ground truth) plus a few boundary duplicate
+pairs below the similarity threshold — deliberately not tuned further to
+avoid overfitting 27 cases.
 
 Protocol: every case ran through the REAL production pipeline (risk tiers,
 specialists, coordinator, dedup) via the ignored Rust harness

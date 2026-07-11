@@ -3,7 +3,7 @@
   "changed_lines": 12,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 57993,
+  "duration_ms": 62317,
   "evidence_candidates": [
     {
       "affected_files": ["source.py"],
@@ -43,63 +43,36 @@
   ],
   "findings": [
     {
-      "confidence": 0.97,
+      "confidence": 0.98,
       "filePath": "source.py",
       "line": 8,
       "severity": "critical",
-      "suggestion": "Replace with a memory-hard, salted password KDF: bcrypt, scrypt, or argon2 (e.g. `bcrypt.hashpw` / `argon2.PasswordHasher`). Store the algorithm's self-contained salted hash and verify via the library's constant-time `checkpw`/`verify`. If this file is intentional demo/negative-sample code, mark it non-executable (raise, or move under a clearly-labeled examples/ path) so it can't be imported into a real auth path.",
-      "summary": "hash_password at source.py:8 returns hashlib.md5(password.encode()).hexdigest() — MD5 is cryptographically broken, fast, and unsalted, so identical passwords yield identical digests crackable via rainbow tables/GPU brute force. verify_password at source.py:12 builds on it, so any auth flow adopting these functions stores unrecoverably-weak credentials; a stored-hash breach compromises every user account. The code's own comment flags this as a BUG. No caller-side guard or test-only marker prevents this from being used in production.",
-      "title": "Passwords hashed with unsalted MD5 (account-compromise / credential-loss risk)"
-    },
-    {
-      "confidence": 0.97,
-      "filePath": "source.py",
-      "line": 8,
-      "severity": "high",
-      "suggestion": "Replace with a salted, slow KDF: `hashlib.pbkdf2_hmac('sha256', password.encode(), salt, iterations)` with a per-password random salt, or use `bcrypt`/`argon2`. This forces `verify_password` to store/parse the salt from `stored` — update both functions together.",
-      "summary": "Lines 6-8: the agent's own `# BUG:` comment states MD5 is cryptographically broken and unsalted, then `hash_password` returns `hashlib.md5(password.encode()).hexdigest()` unchanged. This is an acknowledged-but-unremediated defect — documenting the flaw was substituted for fixing it. Currently 0 callers so no live exposure, but it becomes a critical credential-storage hole the moment it is wired to auth.",
-      "title": "Agent documented the MD5 password-hashing bug but shipped it unfixed"
-    },
-    {
-      "confidence": 0.97,
-      "filePath": "source.py",
-      "line": 8,
-      "severity": "high",
-      "suggestion": "Use a purpose-built password KDF with a per-password salt and work factor: hashlib.scrypt, PBKDF2 (hashlib.pbkdf2_hmac with a high iteration count), or bcrypt/argon2 via a library. Store the salt+parameters alongside the hash and update verify_password to re-derive with the stored salt.",
-      "summary": "hash_password at source.py:8 uses hashlib.md5(password.encode()).hexdigest() — a fast, broken, unsalted digest. The inline BUG comment (lines 6-7) confirms this: identical passwords yield identical hashes crackable via rainbow tables, and MD5's speed enables billions of guesses/sec offline. verify_password (line 12) is built on the false invariant that hash_password produces a cracking-resistant digest; that invariant is never enforced.",
-      "title": "Passwords hashed with unsalted MD5 (cryptographically broken)"
-    },
-    {
-      "confidence": 0.8,
-      "filePath": "source.py",
-      "line": 11,
-      "severity": "medium",
-      "suggestion": "Add a minimal test after switching to a KDF: positive `assert verify_password('pw', hash_password('pw'))` and negative `assert not verify_password('bad', hash_password('pw'))`, run it, and attach the output before marking fixed.",
-      "summary": "Repo scan confirms no test files exist and grep shows 0 callers for hash_password/verify_password; the `rerun_relevant_verification` gate is blocked with no fresh command/test output. Nothing proves verify_password even round-trips, and any fix to #1 must not be marked green without a run.",
-      "title": "No tests or verification evidence for this diff (blocked evidence gate)"
+      "suggestion": "Replace with a slow, salted password KDF: `hashlib.scrypt`/`hashlib.pbkdf2_hmac` with a random per-user salt, or a dedicated library (bcrypt/argon2). Store salt+params alongside the hash. Update `verify_password` to read the stored salt/params and recompute accordingly.",
+      "summary": "source.py:8 `hashlib.md5(password.encode()).hexdigest()` hashes passwords with unsalted MD5. MD5 is fast and cryptographically broken; without a per-user salt, identical passwords yield identical digests, making rainbow-table and brute-force attacks trivial. The agent's own comment at source.py:6-7 acknowledges this exact defect but the code ships it anyway — a documented-but-unfixed bug (fake-green handoff risk).",
+      "title": "Unsalted MD5 used for password hashing"
     },
     {
       "confidence": 0.7,
       "filePath": "source.py",
-      "line": 12,
+      "line": 11,
       "severity": "medium",
-      "suggestion": "Compare with hmac.compare_digest(hash_password(password), stored) (import hmac) for a constant-time comparison. This becomes moot once a real KDF with its own verify function is adopted.",
-      "summary": "verify_password at source.py:12 compares digests with `==` (hash_password(password) == stored). Python's string `==` short-circuits on the first differing byte, leaking timing information about how many leading characters match. Combined with an attacker-controllable `stored`/target, this is a classic timing oracle for digest verification.",
-      "title": "Non-constant-time hash comparison enables timing side channel"
+      "suggestion": "Add a test asserting round-trip (`verify_password(pw, hash_password(pw)) is True`), rejection of wrong passwords, that two hashes of the same password differ (salt present), and run it: `python -m pytest` (or `python -c` round-trip). Attach the output before marking fixed.",
+      "summary": "Both `hash_password` and `verify_password` are new with 0 callers and no accompanying tests; the pre-review search flagged `no-fresh-verification-evidence` and the `rerun_relevant_verification` gate is still blocked. Because the correct fix changes the stored-hash format (salt+params vs bare MD5 hex), any test must be authored against the replacement KDF, not the current MD5 output.",
+      "title": "No tests or verification for new auth primitives (handoff gap)"
     },
     {
-      "confidence": 0.85,
+      "confidence": 0.6,
       "filePath": "source.py",
       "line": 12,
       "severity": "low",
-      "suggestion": "Use the KDF library's built-in verify (bcrypt.checkpw / argon2 verify), or hmac.compare_digest for constant-time comparison if comparing raw digests.",
-      "summary": "verify_password at source.py:12 uses `hash_password(password) == stored`, a plain string equality that short-circuits and is not constant-time, leaking timing information about how many leading characters match. Secondary to the MD5 issue, but it should be fixed as part of any correct rewrite.",
+      "suggestion": "Use hmac.compare_digest(hash_password(password), stored) for constant-time comparison.",
+      "summary": "verify_password (source.py:12) compares with `hash_password(password) == stored`, which short-circuits and is not timing-safe. Secondary to the MD5 weakness, but if the hashing is fixed this comparison remains a (minor) timing side-channel.",
       "title": "Non-constant-time hash comparison in verify_password"
     }
   ],
-  "findings_count": 6,
+  "findings_count": 3,
   "qa_evidence": [],
-  "review_id": "aa8aff89-85b7-4877-b507-21b71e16c6da",
+  "review_id": "5514da31-3564-487b-b746-07aad668d774",
   "review_memory_graph": {
     "edges": [
       {
@@ -170,9 +143,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 48.0,
+  "score": 73.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.py implements password hashing with unsalted MD5. The primary defect is real and explicitly acknowledged by the code's own BUG comment: MD5 is cryptographically broken and unsalted, making stored hashes trivially crackable. A secondary timing-side-channel exists in verify_password's use of `==`. From an assumption-integrity standpoint the comments are honest (they do not misdirect a future agent), but the code relies on an unenforced invariant — that hash_password yields a cracking-resistant digest — which the MD5 implementation violates. Both functions currently have 0 callers, so no regression to existing consumers, but shipping either as-is establishes an insecure contract.\n\nThis 12-line new file implements a password-hashing utility using unsalted MD5 — a critical security defect that is self-documented in the code comment. Although the specialist pass is Product Safety and the function currently has 0 callers, a broken credential-storage primitive is an obvious critical cross-scope defect: adopting it exposes every user to account compromise on a stored-hash breach (data/credential loss). Secondary: verify_password uses non-constant-time `==` comparison. The defect is provable statically from lines 8 and 12 and does not require a runtime artifact, so the missing-fresh-verification gate does not block this finding. Open question preserved: if this is intentional negative-sample/demo code, it must be marked non-importable so it can't reach a real auth path.\n\nNew 12-line password module. The agent correctly identified that MD5 is broken and unsalted in a `# BUG:` comment (lines 6-7) but shipped the vulnerable `hash_password` unchanged (line 8) — a documented-but-unfixed defect, which is the central agent-handoff failure here. Zero callers and no tests mean no live exposure today and no proof the code even works. Secondary: line 12 uses non-constant-time `==` for digest comparison. Fix requires swapping MD5 for a salted KDF (which changes the verify_password contract) plus a round-trip test.",
-  "talk_id": "3bbb887d-60c9-4536-880f-2bc3d671e1c2"
+  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.py implements password hashing with unsalted MD5. The self-labeled `# BUG:` comment is honest and matches the code, so there is no assumption/intent contradiction to flag — the issue is the insecure primitive itself, a real (high→critical-if-wired) security hole. Currently 0 callers (blast-radius confirmed), so no persisted-data or caller-contract breakage exists yet. Secondary: non-constant-time comparison in verify_password.\n\nA 12-line new file implementing password hashing on unsalted MD5. This is a critical credential-storage defect: MD5 is broken and unsalted, making stored passwords trivially recoverable on any DB leak (source.py:8), with verify_password (source.py:12) also using non-constant-time == comparison. Currently 0 callers, so no live user flow is affected yet, but the functions are clearly intended for an auth path — fix before adoption. No user-facing screens/states exist in this diff to evaluate for the product-safety scope; the single finding is an obvious critical cross-scope defect.\n\nSmall 12-line new module implementing password hashing with unsalted MD5 — a critical security defect that the agent explicitly documented in a `# BUG:` comment (source.py:6-8) but did not fix. This is a textbook agent-handoff failure mode: the code reads as intentional yet leaves a known vulnerability live, and a summary could easily report it as 'added password hashing / done'. Secondary issue: non-constant-time comparison in verify_password (source.py:12). No tests and no fresh verification evidence exist; the verification gate is blocked. Blast radius is currently 0 callers, so no regression to existing code, but this must be fixed before anything calls it.",
+  "talk_id": "91eec98f-e4fc-4c63-915a-edf15c125aa2"
 }

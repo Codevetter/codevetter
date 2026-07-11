@@ -3,7 +3,7 @@
   "changed_lines": 15,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 35876,
+  "duration_ms": 46158,
   "evidence_candidates": [
     {
       "affected_files": ["source.go"],
@@ -43,18 +43,27 @@
   ],
   "findings": [
     {
-      "confidence": 0.99,
+      "confidence": 0.97,
       "filePath": "source.go",
       "line": 12,
       "severity": "critical",
-      "suggestion": "Use a parameterized query with a placeholder: q := \"SELECT id, email FROM users WHERE email = $1\" (or ? depending on driver) and call db.QueryRow(q, email). Never interpolate user input into SQL text.",
-      "summary": "source.go:12 builds the query with fmt.Sprintf(\"...WHERE email = '%s'\", email) and source.go:13 passes it to db.QueryRow(q). Caller-controlled email is not escaped, so input like \"' OR '1'='1\" or \"'; DROP TABLE users; --\" breaks out of the string literal and injects arbitrary SQL. The // BUG comment (lines 10-11) correctly describes the flaw but does not mitigate it.",
+      "suggestion": "Use a parameterized placeholder instead of string interpolation: db.QueryRow(\"SELECT id, email FROM users WHERE email = $1\", email) ($1 for pgx/lib-pq, ? for MySQL/SQLite). Never build SQL with fmt.Sprintf from caller-supplied values.",
+      "summary": "Line 12 builds the query with fmt.Sprintf(\"SELECT id, email FROM users WHERE email = '%s'\", email) and passes it to db.QueryRow(q) on line 13. The exported FindByEmail(db, email) takes email as an external lookup key, so an attacker-controlled value like ' OR '1'='1 bypasses the filter and UNION/stacked-query payloads enable data exfiltration or modification. The code's own comment (lines 10-11) confirms the interpolation is unparameterized. The implicit invariant that email is injection-safe is never enforced.",
       "title": "SQL injection via fmt.Sprintf in FindByEmail"
+    },
+    {
+      "confidence": 0.75,
+      "filePath": "source.go",
+      "line": 9,
+      "severity": "medium",
+      "suggestion": "After parameterizing the query, add a unit test (e.g. against a sqlmock or in-memory DB) asserting the query uses a placeholder and that an adversarial email string is treated as a literal, then run `go build ./... && go test ./...` and attach the output.",
+      "summary": "FindByEmail has 0 callers (blast-radius) and no accompanying test; the pre-review procedure gate rerun_relevant_verification is still blocked with no fresh command/test evidence. The function was committed with a known injection defect and no proof it behaves correctly, so the next agent has no guard against re-introducing or missing the vulnerability.",
+      "title": "Incomplete handoff: no test or verification for FindByEmail"
     }
   ],
-  "findings_count": 1,
+  "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "66c0a907-ec97-4a3f-a1cb-10c81ae65719",
+  "review_id": "35be2476-fab5-4d45-9ca8-9cdb515f0bca",
   "review_memory_graph": {
     "edges": [
       {
@@ -125,9 +134,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 80.0,
+  "score": 75.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nSingle new function FindByEmail contains a classic, critical SQL injection: user-supplied email is interpolated into the query string via fmt.Sprintf (source.go:12) and executed (source.go:13). The accompanying // BUG comment truthfully documents the flaw, so there is no assumption/intent contradiction to flag — but the vulnerability itself is real and critical. Currently 0 callers, which limits live exposure, yet the function's contract is unsafe by construction. Fix by switching to parameterized placeholders.\n\nSingle new function FindByEmail contains a textbook SQL injection: user-supplied email is interpolated into the query string via fmt.Sprintf (source.go:12) rather than using a parameterized placeholder. This is a critical, statically-provable security defect with concrete data-exposure and data-loss repro paths, so I report it despite the Product-Safety lens (obvious critical cross-scope defect). Blast radius is currently 0 callers, but the function's contract guarantees the hole activates on first use.\n\nSingle new file with a confirmed critical SQL injection (source.go:12-13): the email argument is interpolated into the query via fmt.Sprintf rather than passed as a placeholder parameter. The change also fails the handoff bar — it ships with a self-admitting // BUG comment left in place and no test or verification artifact, leaving the no-fresh-verification-evidence gate unresolved.",
-  "talk_id": "3ae6e690-7914-4359-b0f5-fcdc0cad9dc3"
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file store.FindByEmail contains a critical SQL injection: line 12 interpolates the caller-supplied email into the query string with fmt.Sprintf rather than using a parameterized placeholder, and line 13 executes it via db.QueryRow. Assumption-integrity check: the file's stated intent (line 1) and inline comment (lines 10-11) both accurately describe this as an injection bug, so the comment will NOT mislead the next agent — intent and code agree. The genuine defect is the unenforced invariant that `email` is trusted input. Function is currently unused (0 callers) but exported and clearly meant to accept an email lookup value, so severity stays critical. No runtime/DB verification was possible (no callers, no DB), so this is a definitive static finding rather than an executed repro; the rerun_relevant_verification gate remains open but the static proof is conclusive.\n\nSingle new file introduces an exported FindByEmail that constructs its SQL query with fmt.Sprintf string interpolation of the caller-supplied email (source.go:12-13). This is a critical SQL injection and also breaks legitimate lookups for emails containing apostrophes — a user-facing correctness/data-integrity failure. The code's own comment acknowledges the bug. Fix is a standard parameterized placeholder.\n\nSingle new file introducing FindByEmail with a critical, self-documented SQL injection: user input is interpolated into the query via fmt.Sprintf (line 12) rather than using a parameterized placeholder. This is a blocker regardless of the specialist axis. On the Agent Handoff axis, the change was landed with the vulnerability intact, no test, and no verification evidence — an incomplete handoff.",
+  "talk_id": "1bb500e9-d35a-4d21-a072-d5171ceb50cb"
 }

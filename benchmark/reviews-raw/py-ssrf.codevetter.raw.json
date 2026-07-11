@@ -3,7 +3,7 @@
   "changed_lines": 12,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 50017,
+  "duration_ms": 48393,
   "evidence_candidates": [
     {
       "affected_files": ["source.py"],
@@ -43,45 +43,27 @@
   ],
   "findings": [
     {
-      "confidence": 0.97,
+      "confidence": 0.95,
       "filePath": "source.py",
       "line": 10,
       "severity": "critical",
-      "suggestion": "Before fetching: parse the URL and enforce an https-only scheme allowlist, resolve the host and reject if it maps to a private/loopback/link-local/reserved range (block 169.254.0.0/16, 127.0.0.0/8, 10/8, 172.16/12, 192.168/16, ::1, fd00::/8), disable redirects (or re-validate each hop) since a public URL can 302 to an internal one, and ideally restrict to an explicit host allowlist. Enforce the resolved IP at connection time to close the DNS-rebinding gap.",
-      "summary": "Line 10 `requests.get(image_url, timeout=5)` sends a request to any URL the caller supplies with no scheme/host allowlist and no private/link-local range filtering. The implicit invariant carried by the name `fetch_preview(image_url)` (line 5) — that input is a safe external image URL — is relied on but never enforced. An attacker can pass `http://169.254.169.254/latest/meta-data/` (cloud metadata creds), `http://localhost/...`, or internal RFC1918 hosts to pivot, exactly as the BUG comment on lines 6-9 documents. Intent and code agree (comment is honest, not misleading), so the vulnerability is confirmed static, not assumed.",
-      "title": "SSRF: unrestricted fetch of user-supplied URL in fetch_preview"
+      "suggestion": "Before fetching: (1) parse the URL and allow only http/https schemes; (2) resolve the hostname and reject if any resolved IP is in a private/loopback/link-local/reserved range (ipaddress.ip_address(...).is_private/is_loopback/is_link_local/is_reserved), guarding against DNS-rebinding by pinning the validated IP for the actual connection; (3) disable redirects (allow_redirects=False) or re-validate each hop; (4) optionally enforce a host allowlist and cap response size. Consider a vetted helper/library rather than hand-rolling.",
+      "summary": "source.py:10 passes the untrusted `image_url` parameter directly into `requests.get(image_url, timeout=5)` with no validation between the function entry (line 5) and the request. There is no scheme allowlist, no host/DNS-resolution check, and no rejection of private/link-local ranges; `requests` also follows redirects by default, so a remote 302 can reach internal targets even if the initial host were checked. An attacker who controls `image_url` can read cloud metadata credentials via http://169.254.169.254/latest/meta-data/ or pivot to internal services. Currently 0 callers, so no live flow is broken yet, but this becomes exploitable the moment it is wired to user input.",
+      "title": "SSRF: user-supplied URL fetched with no scheme/host/private-range validation"
     },
     {
-      "confidence": 0.98,
+      "confidence": 0.9,
       "filePath": "source.py",
-      "line": 10,
-      "severity": "critical",
-      "suggestion": "Before fetching: (1) parse the URL and reject any scheme other than http/https; (2) resolve the hostname and reject if it maps to any loopback, link-local (169.254.0.0/16, incl. metadata IP), or private (10/8, 172.16/12, 192.168/16) address using ipaddress.ip_address(...).is_private/is_loopback/is_link_local; (3) set allow_redirects=False (or re-validate the resolved host on every redirect hop) to prevent redirect-based pivots; (4) optionally pin to the validated IP to avoid DNS-rebinding. Add tests asserting 169.254.169.254, localhost/127.0.0.1, and an RFC1918 host are all rejected, including via redirect.",
-      "summary": "fetch_preview passes fully user-controlled image_url straight into requests.get at source.py:10 with no scheme allow-list, no host/private-range filtering, and default allow_redirects=True, then returns raw resp.content at source.py:12. An attacker can supply http://169.254.169.254/latest/meta-data/ to read cloud metadata/IAM credentials, or target loopback/RFC1918 internal services to pivot; a host allow-list alone would still be bypassable via a 302 redirect to an internal address. The in-code comment (lines 6-9) confirms this is the intended vulnerability.",
-      "title": "SSRF: user-supplied URL fetched with no scheme/host/redirect validation"
-    },
-    {
-      "confidence": 0.97,
-      "filePath": "source.py",
-      "line": 10,
-      "severity": "critical",
-      "suggestion": "Restrict scheme to http/https, resolve the hostname and reject IPs in private/loopback/link-local/reserved ranges (including 169.254.0.0/16, 127.0.0.0/8, 10/8, 172.16/12, 192.168/16, ::1, fc00::/7) BEFORE the request, re-validate after any redirect (disable or manually vet redirects via allow_redirects=False), and optionally enforce an allowlist of trusted image hosts. Also cap response size and validate Content-Type is an image.",
-      "summary": "source.py:5-12 — fetch_preview(image_url) passes image_url straight into requests.get() (line 10) with no scheme allowlist, host resolution check, or private/link-local range blocking. A caller-controlled image_url of http://169.254.169.254/latest/meta-data/ lets an attacker read cloud metadata/credentials, and http://127.0.0.1/ or internal hostnames let them pivot to internal services. The in-code BUG comment (lines 6-9) confirms this is the intrinsic behavior, not an edge case. The function currently has 0 callers, so it is not yet exploitable in-tree, but any wiring to a request handler makes this immediately exploitable.",
-      "title": "SSRF: fetch_preview fetches arbitrary user-supplied URL with no validation"
-    },
-    {
-      "confidence": 0.6,
-      "filePath": "source.py",
-      "line": 11,
-      "severity": "low",
-      "suggestion": "Wrap the fetch in try/except, translate failures into a defined error/empty result for the preview flow, and validate Content-Type/size before returning bytes.",
-      "summary": "source.py:10-12 — requests.get + raise_for_status propagate raw requests exceptions (Timeout, ConnectionError, HTTPError) to callers with no friendly handling, and there is no Content-Type/size check, so a dead or non-image URL yields an unhandled exception rather than a clean empty/error state for the user flow.",
-      "title": "No user-facing error handling for unreachable/non-image URLs"
+      "line": 6,
+      "severity": "medium",
+      "suggestion": "Treat the SSRF finding as a hard blocker, not optional cleanup. After adding validation, add and run a unit test that asserts internal/metadata URLs raise before any network call (e.g. mock requests.get and assert it is never invoked for 169.254.169.254). Attach the test output as the verification artifact, then remove the stale BUG comment.",
+      "summary": "Lines 6-9 contain a self-described '# BUG:' comment identifying the SSRF, yet the committed implementation (line 10) applies no fix — a fake-green handoff where the defect is documented but not resolved. No test or command evidence accompanies the change (procedure gate rerun_relevant_verification is blocked), so nothing proves the fetch rejects internal/link-local targets. The next agent must not treat this as done.",
+      "title": "Known-defect handoff with no verification: BUG comment left in, no tests added"
     }
   ],
-  "findings_count": 4,
+  "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "5d724840-9c1f-425d-bfcc-ed807393ef8c",
+  "review_id": "e0e03c63-4afb-4c96-a9bf-096676790714",
   "review_memory_graph": {
     "edges": [
       {
@@ -152,9 +134,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 38.0,
+  "score": 75.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file adding fetch_preview, a deliberate SSRF case. Line 10 fetches an arbitrary user-supplied URL with no validation. Assumption-integrity view: the BUG comment (lines 6-9) accurately matches the code, so there is no intent/code contradiction and the comment will not misdirect the next agent — but the 'safe external image URL' invariant implied by the signature is relied on and never enforced. Confirmed as a critical SSRF by static reading of line 10; 0 callers today so the risk is latent until wired into a handler.\n\nA newly added fetch_preview() is a self-documented SSRF: it issues requests.get() against an unvalidated, user-supplied URL (source.py:10), allowing cloud-metadata credential theft and internal-network pivoting. It has 0 callers today (not yet exploitable in-tree) but is critical the moment it is wired to any handler. Secondary product-safety concern: no error/empty-state handling for unreachable or non-image URLs. Fix requires scheme allowlisting, private-range IP blocking after DNS resolution, redirect re-validation, and response type/size limits.\n\nSingle new file introduces a textbook, self-documented SSRF: fetch_preview fetches an arbitrary user-supplied URL (source.py:10) with no scheme, host, or private-range restrictions and default redirect-following, returning the raw body (source.py:12). This is a critical security hole the instant any caller wires user input to it; currently 0 callers, which only limits immediate exploitability, not the defect. No tests or verification evidence accompany the change (rerun_relevant_verification gate is blocked) — the fix must ship with an SSRF guard and tests proving metadata/loopback/RFC1918 hosts and redirects to them are rejected.",
-  "talk_id": "09b23f35-46a4-4773-8ea9-4c9e591a46de"
+  "summary": "Risk-tiered review (lite) completed.\n\nNewly added fetch_preview is a textbook SSRF: it fetches an arbitrary user-controlled URL (source.py:10) with no scheme, host, or private-range restrictions and default redirect following. The function's own comment honestly describes the vulnerability, so there is no stated-intent/code contradiction — but the 'URL is safe' invariant is relied upon and never enforced, and labeling a live exploit path as a documented 'BUG' risks a next agent wiring it up believing the risk was handled. 0 callers today (not yet exploitable), which caps immediate severity at high, but the impact is credential theft / internal pivot the moment it is called.\n\nSingle new file introducing fetch_preview, a textbook SSRF: untrusted image_url flows straight into requests.get with no scheme/host/private-range checks and default redirect-following (source.py:5-10). No callers today (blast radius 0), so nothing is broken in a live user flow yet — hence it's a latent critical rather than an active product-safety regression — but it is a critical cross-scope defect and must be fixed before wiring to any user input.\n\nA 12-line new module (fetch_preview) introduces a classic, unmitigated SSRF: a user-supplied URL is passed directly to requests.get with no scheme/host/private-range checks and default redirect-following, reaching cloud metadata (169.254.169.254) and internal services. The code even carries a self-labeled '# BUG:' comment yet ships unfixed, with no tests or verification — an incomplete, fake-green handoff. 0 callers today keeps live risk latent, but the function exists to consume untrusted input, so it is critical the moment it is wired up. Primary blocker: add scheme/IP-range validation + disable redirects; secondary: add a rejection test as verification before marking fixed.",
+  "talk_id": "ca9ced7e-5e08-4df1-8cef-e8622226df61"
 }

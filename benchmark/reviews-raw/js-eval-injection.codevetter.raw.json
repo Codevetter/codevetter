@@ -3,7 +3,7 @@
   "changed_lines": 12,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 46598,
+  "duration_ms": 45877,
   "evidence_candidates": [
     {
       "affected_files": ["source.js"],
@@ -47,32 +47,23 @@
       "filePath": "source.js",
       "line": 8,
       "severity": "critical",
-      "suggestion": "Do not use eval. Parse the filter with a safe, restricted evaluator (e.g. a whitelisted expression parser / jsep-style AST walker, or a sandbox like vm2 with no host access), or replace the free-form string with a structured filter object ({field, op, value}) validated against an allowlist. Wrap parsing in try/catch and surface an 'invalid filter' error state instead of letting exceptions bubble and crash the flow.",
-      "summary": "source.js:8 evaluates the untrusted `expression` argument with `eval('(' + expression + ')')`. Any value passed to `buildFilter` executes as JavaScript in the host process (data exfiltration via fetch, process crash/DoS, data loss). Even benign-but-malformed user filters throw an uncaught SyntaxError from eval (line 8) or at predicate-call time (line 9), so there is no graceful 'invalid filter' state — the user flow simply crashes. Export at line 12 makes this a public contract; blast-radius shows 0 callers today, so impact is latent but real once wired up.",
-      "title": "Arbitrary code execution via eval() on caller-supplied expression"
-    },
-    {
-      "confidence": 0.99,
-      "filePath": "source.js",
-      "line": 8,
-      "severity": "critical",
-      "suggestion": "Never eval caller input. Parse `expression` into a structured/whitelisted filter (AST or predicate DSL) and evaluate that, or use a sandboxed expression library (e.g. jsep + a safe evaluator). Reject any input that cannot be validated against an allow-list.",
-      "summary": "buildFilter passes its parameter directly into eval at source.js:8 — `const predicate = eval('(' + expression + ')')`. Any caller-controlled value becomes executing JavaScript (data exfiltration via fetch, process crash, full RCE). The implicit invariant that `expression` is trusted (assumed by lines 1 and 5-7) is never enforced: no allow-list, no AST parse, no type/format guard. The benign name `buildFilter` with 0 current callers means the next agent will likely pass user input into it, silently introducing RCE.",
+      "suggestion": "Do not eval user input. Replace with a safe filtering mechanism: parse a constrained DSL, accept a structured predicate object (field/op/value) and build the comparator in code, or require callers to pass an already-vetted function. If dynamic evaluation is truly unavoidable, sandbox it (e.g. a locked-down VM with no globals/require/network) and document the trust boundary — but a structured filter spec is strongly preferred.",
+      "summary": "source.js:8 runs `eval('(' + expression + ')')` on the exported `buildFilter(expression)` argument. `buildFilter` is a public export (source.js:12) whose safety depends on an implicit, unenforced invariant that `expression` is trusted code — there is no allowlist, parse, or sanitization. Any caller forwarding external input (request param, config, message) gets arbitrary JS execution: data exfiltration via fetch, `child_process`, or process crash. The inline comment (lines 5-7) confirms this is the actual behavior, not a hypothetical.",
       "title": "Arbitrary code execution: eval() on caller-supplied expression"
     },
     {
-      "confidence": 0.95,
+      "confidence": 0.9,
       "filePath": "source.js",
-      "line": 5,
-      "severity": "high",
-      "suggestion": "Do not mark this change verified. Replace the eval implementation per the critical finding, add a test that proves untrusted input cannot execute, and attach fresh `node --test` output before closing the gate.",
-      "summary": "source.js:5-7 carries a `// BUG:` comment describing the arbitrary-code-execution hole, yet the vulnerable eval was committed as-is — a comment is not a remediation. There is no test file and no command/log evidence for this diff, so the `no-fresh-verification-evidence` / `rerun_relevant_verification` gate is unresolved. The next agent cannot treat this as done.",
-      "title": "Incomplete handoff: known bug shipped with a comment instead of a fix, no tests/verification"
+      "line": 4,
+      "severity": "medium",
+      "suggestion": "Add a test asserting (1) a legitimate filter expression produces the expected predicate and (2) a malicious payload (e.g. 'process.exit(1)' or a cookie/fetch exfil string) is rejected — the second must fail against the current eval implementation, then pass after the fix. Run `node -e \"require('./source').buildFilter('1')\"` and the new test as the smallest verification.",
+      "summary": "buildFilter has 0 callers (blast-radius) and no accompanying test file; the change ships with no fresh command/test evidence, and the rerun_relevant_verification gate is blocked. The `BUG:` comment reads as fake-green — flaw acknowledged but shipped without a gate.",
+      "title": "No tests or verification for newly added module (unverified handoff)"
     }
   ],
-  "findings_count": 3,
+  "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "ad2c7598-3cc1-47c2-84c2-b2ff87b8e7de",
+  "review_id": "5cb6e8f1-ffb8-41dc-a6aa-a36181a92317",
   "review_memory_graph": {
     "edges": [
       {
@@ -143,9 +134,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 50.0,
+  "score": 75.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.js introduces buildFilter, which passes its `expression` argument straight into eval() at line 8 — a critical arbitrary-code-execution / code-injection vulnerability. The file's own header and comment acknowledge it as a bug. From the assumption-integrity angle, the code relies on an unenforced 'expression is trusted' invariant while exposing a benignly-named function (buildFilter, 0 callers) that a future caller would naturally feed user input into, snowballing the vulnerability. Finding is statically provable from line 8; no fresh runtime evidence is required.\n\nSingle new file exporting buildFilter(), which runs caller-supplied input through eval() — arbitrary code execution plus an ungraceful crash path for malformed user filters. Critical. Currently 0 callers (newly added, unused), so live impact is latent, but the function is exported as a reusable contract and must be fixed before anything consumes it. The eval defect is provable statically; the only open verification item is a trivial one-line repro, not a blocker to confirming the finding.\n\nSingle new 12-line file introducing buildFilter, which eval()s a caller-supplied string — a critical arbitrary-code-execution vulnerability that the diff self-documents as a BUG. It was committed with a descriptive comment instead of a fix, no tests, and no verification evidence. Currently 0 callers (dead code), but exported, so the public contract is unsafe. Blocker, not shippable.",
-  "talk_id": "5b7337c6-dc96-4710-930c-d9835024fbd4"
+  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.js introduces buildFilter(), which passes caller-supplied input directly to eval() (line 8). This is a critical arbitrary-code-execution vulnerability. Assumption-integrity view: the code's comments accurately describe the defect (no stated-intent contradiction to flag), but the exported contract relies on an unenforced invariant that the input is trusted — nothing sanitizes or constrains `expression`. Because it is an exported symbol, the '0 callers' blast-radius signal understates risk for the next agent who wires it to an input source.\n\nNewly added source.js introduces buildFilter, which passes caller-supplied input directly to eval() (line 8) — a textbook arbitrary code execution vulnerability, confirmed by static inspection and even self-documented in the file's comments. Critical severity despite 0 current callers because the contract is inherently unsafe: any user-facing flow built on it becomes an RCE/data-loss vector. This is a critical cross-scope defect surfaced under the product-safety pass because it makes any dependent flow unsafe by construction.\n\nNewly added 12-line module intentionally evaluates caller-supplied input with eval(), a live critical RCE vector explicitly labeled BUG in-code but shipped unmitigated. The function has no callers and no tests, so there is zero fresh verification evidence. Must not be merged or called until eval is removed and a rejection test is added.",
+  "talk_id": "606111cc-9554-47ed-a42a-e24378102c8d"
 }

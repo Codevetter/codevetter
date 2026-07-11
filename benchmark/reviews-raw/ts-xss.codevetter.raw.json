@@ -3,7 +3,7 @@
   "changed_lines": 13,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 54315,
+  "duration_ms": 46836,
   "evidence_candidates": [
     {
       "affected_files": ["source.tsx"],
@@ -74,36 +74,18 @@
   ],
   "findings": [
     {
-      "confidence": 0.97,
+      "confidence": 0.99,
       "filePath": "source.tsx",
       "line": 12,
       "severity": "critical",
-      "suggestion": "Sanitize before rendering: `import DOMPurify from 'dompurify'` then `<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(body) }} />` with an explicit tag/attribute allowlist. If HTML is not actually required, render `<div>{body}</div>` so React escapes it. Add a rendering test that mounts Comment with `body='<img src=x onerror=alert(1)>'` and asserts the handler is stripped; sanitize on the server side as well since the input is untrusted.",
-      "summary": "source.tsx:12 `return <div dangerouslySetInnerHTML={{ __html: body }} />;` injects the `body` prop — documented at line 5 as 'user-supplied comment markdown/html' — directly into the DOM as raw HTML. No sanitization or allowlisting occurs anywhere in the component (lines 8-13). An attacker-authored comment containing event-handler or javascript: payloads (e.g. `<img src=x onerror=...>`, `<svg onload=...>`) executes in every viewer's session, enabling session/cookie theft and account takeover. The agent's own `// BUG:` comment (lines 9-11) confirms intent was known but the fix was never applied — an incomplete handoff, not an accepted risk.",
-      "title": "Reflected/stored XSS: user-supplied `body` rendered via dangerouslySetInnerHTML without sanitization"
-    },
-    {
-      "confidence": 0.98,
-      "filePath": "source.tsx",
-      "line": 12,
-      "severity": "critical",
-      "suggestion": "Sanitize before rendering, e.g. `DOMPurify.sanitize(body)`, or render `{body}` as escaped text / use a sanitizing markdown renderer if HTML is not required. Never pass untrusted input to dangerouslySetInnerHTML unsanitized.",
-      "summary": "source.tsx:12 renders `body` — typed and documented as \"user-supplied comment markdown/html\" (source.tsx:5) — directly via `dangerouslySetInnerHTML={{ __html: body }}` with no sanitization. This is a confirmed XSS sink: a comment body like `<img src=x onerror=\"fetch('/steal?c='+document.cookie)\">` executes in every viewer's session on load. React's dangerouslySetInnerHTML bypasses JSX escaping, so nothing mitigates this in the path from prop to sink.",
-      "title": "Unsanitized user content in dangerouslySetInnerHTML — stored/reflected XSS"
-    },
-    {
-      "confidence": 0.97,
-      "filePath": "source.tsx",
-      "line": 12,
-      "severity": "high",
-      "suggestion": "Sanitize before rendering — e.g. `DOMPurify.sanitize(body)` with a strict config, or render `body` as plain text (`<div>{body}</div>`) if HTML is not required. Do NOT fix by only stripping `<script>` tags: the comment on source.tsx:10 is misleading — `<script>` inserted via innerHTML does not execute, but event-handler vectors (`<img onerror>`, `<svg onload>`) do. The defense must neutralize active attributes and tags, and ideally the prop type should be a branded `SafeHtml` to enforce the trust boundary at compile time.",
-      "summary": "source.tsx:12 renders `dangerouslySetInnerHTML={{ __html: body }}` where `body` is documented as user-supplied content (source.tsx:5). This bypasses React's JSX escaping and injects attacker markup into the DOM. The component relies on an unstated, unenforced invariant that `body` is safe HTML — no sanitizer, branded type, or allowlist exists. Any viewer rendering a hostile comment is exposed to script execution (session/cookie theft, account takeover). Currently 0 callers, so no live exposure yet, but the vulnerability is real the moment it is wired up.",
-      "title": "XSS: user-supplied `body` rendered via dangerouslySetInnerHTML without sanitization"
+      "suggestion": "Do not inject raw user content. Prefer rendering as text: `return <div>{body}</div>;`. If HTML rendering is genuinely required, sanitize first with DOMPurify: `const clean = DOMPurify.sanitize(body); return <div dangerouslySetInnerHTML={{ __html: clean }} />;` and add a test that a `<img src=x onerror=alert(1)>` payload is stripped.",
+      "summary": "source.tsx:12 renders `dangerouslySetInnerHTML={{ __html: body }}` where `body` is user-supplied comment HTML (line 5). Any `<script>`, `<img onerror=...>`, or event-handler payload in a comment executes in every viewer's session. The agent documented this exact hole in the `BUG:` comment (lines 9-11) but shipped it unfixed — a known-defect handoff with no sanitization guard and no test.",
+      "title": "Reflected XSS: user-supplied `body` rendered via dangerouslySetInnerHTML without sanitization"
     }
   ],
-  "findings_count": 3,
+  "findings_count": 1,
   "qa_evidence": [],
-  "review_id": "d76e8ec9-82d2-4aab-bd80-e07721fc3df3",
+  "review_id": "b0c76073-93ea-41dd-b4eb-daf3827d3e25",
   "review_memory_graph": {
     "edges": [
       {
@@ -200,9 +182,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 50.0,
+  "score": 80.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nA newly added React `Comment` component renders user-supplied `body` directly through `dangerouslySetInnerHTML` with no sanitization — a confirmed XSS. The code documents its own invariant contradiction (prop is 'user-supplied' at line 5, yet treated as trusted HTML at line 12) and the guiding comment at line 10 is technically inaccurate about `<script>` execution, which could misdirect a naive fix. No callers yet (blast radius 0), so no live exposure, but the pattern is high severity once wired to real data. No fresh browser/verification artifact was attached; static analysis alone confirms the flaw here.\n\nNew Comment component introduces a critical XSS vulnerability: user-supplied `body` flows unsanitized into `dangerouslySetInnerHTML` (source.tsx:12). Confirmed by static analysis — the prop is explicitly documented as untrusted (line 5) and reaches the raw-HTML sink with no escaping or sanitization. Exploitable via event-handler payloads (onerror/onload), impacting every user who views an attacker's comment. Symbol has 0 callers (newly added), so it is not yet live, but must be fixed before wiring in. UI verification gates remain blocked (no browser/Playwright artifact), but the vulnerability is provable without runtime evidence.\n\nSingle new 13-line React component with a critical, self-described XSS sink: user-supplied `body` flows into dangerouslySetInnerHTML with no sanitization (source.tsx:12). The agent left an accurate `// BUG:` comment but shipped the vulnerable code — a fake-green handoff. No sanitizer dependency, no test, and no verification artifact accompany the change; both evidence gates (fresh verification, UI/render proof) remain legitimately blocked. This must be treated as an unremediated critical vulnerability, not a known-accepted note.",
-  "talk_id": "bbd3dca6-e7e8-4d4a-945f-dc8c93616a30"
+  "summary": "Risk-tiered review (lite) completed.\n\nNew 13-line React component is a confirmed reflected/stored XSS sink: user-supplied `body` is passed straight into dangerouslySetInnerHTML with no sanitization (lines 5 + 12), and the required 'body is trusted HTML' invariant is assumed but never enforced. The code's own comments correctly label it a bug. Critical; must not ship without sanitization or a text render.\n\nSingle new file introduces a critical XSS sink: the exported `Comment` component pipes user-supplied `body` (source.tsx:5) directly into `dangerouslySetInnerHTML` (source.tsx:12) with no sanitization. This is a genuine stored/reflected XSS affecting every comment viewer. The self-documenting `BUG:` comment on lines 9–11 confirms intent to demonstrate the flaw and is slightly imprecise (React won't run injected `<script>` tags, but event-handler payloads execute). Verified against the full file contents; no callers exist yet (newly added), but the component's contract is to render untrusted HTML so any consumer inherits the hole. Runtime/browser verification gates remain blocked — this is a static, code-verified finding.\n\nA 13-line new file with one critical, self-documented XSS vulnerability. `Comment` injects unsanitized user-supplied `body` through `dangerouslySetInnerHTML` (source.tsx:12). This is a genuine, exploitable reflected/stored XSS — a blocker. The agent-handoff smell is strong: the code annotates its own security hole (lines 9-11) yet ships it, with no sanitization contract and no verification. Both evidence gates (rerun_relevant_verification, verify_ui_route_change) are unsatisfied.",
+  "talk_id": "ffd42b2c-80dd-4975-9249-371a0159d0ce"
 }

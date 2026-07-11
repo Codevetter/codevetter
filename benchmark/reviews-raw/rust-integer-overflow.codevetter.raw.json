@@ -3,7 +3,7 @@
   "changed_lines": 20,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 55555,
+  "duration_ms": 78500,
   "evidence_candidates": [
     {
       "affected_files": ["source.rs"],
@@ -43,72 +43,36 @@
   ],
   "findings": [
     {
-      "confidence": 0.95,
-      "filePath": "source.rs",
-      "line": 17,
-      "severity": "critical",
-      "suggestion": "Return a Result/Option and use checked_sub: `self.balance = self.balance.checked_sub(amount).ok_or(Error::InsufficientFunds)?;` (or saturating_sub only if clamp-to-zero is the intended policy). Never use bare `-=` on a balance.",
-      "summary": "source.rs:17 `self.balance -= amount;` performs unchecked u64 subtraction. When amount > balance, debug builds panic and release builds wrap to a near-u64::MAX value, so an over-debit produces a huge balance instead of failing — a balance-integrity/money-creation defect and a debug-build panic DoS. No callers exist yet, but the broken contract is inherited by any future caller.",
-      "title": "debit() underflow creates phantom balance on over-debit"
-    },
-    {
-      "confidence": 0.93,
-      "filePath": "source.rs",
-      "line": 11,
-      "severity": "high",
-      "suggestion": "Choose explicit semantics: `self.balance = self.balance.checked_add(amount).ok_or(Overflow)?;` to reject, or `saturating_add` to cap. Add a test at u64::MAX.",
-      "summary": "Line 11 `self.balance += amount;` performs unchecked u64 addition. In debug it panics on overflow; in release it wraps, so a large credit can silently roll the balance down to a small value (BUG comment lines 8-10).",
-      "title": "credit: unchecked addition — overflow panics (debug) or wraps (release)"
-    },
-    {
-      "confidence": 0.95,
+      "confidence": 0.97,
       "filePath": "source.rs",
       "line": 17,
       "severity": "high",
-      "suggestion": "Guard funds and use checked_sub: `let new = self.balance.checked_sub(amount).ok_or(InsufficientFunds)?;` returning a Result/Option instead of mutating on underflow. Add a test for amount > balance.",
-      "summary": "Line 17 `self.balance -= amount;` has no `amount <= self.balance` guard. In debug an over-debit panics (DoS); in release it underflows and wraps to a near-u64::MAX balance, so debiting more than the balance effectively creates money. Confirmed by the BUG comment at lines 15-16 and the missing bounds check.",
-      "title": "debit: unchecked subtraction — over-debit panics (debug) or wraps to huge balance (release)"
+      "suggestion": "Return a Result/Option and reject insufficient funds: `self.balance = self.balance.checked_sub(amount).ok_or(InsufficientFunds)?;` (or saturating_sub if clamping to zero is the intended contract). Never use bare `-=` on a balance.",
+      "summary": "source.rs:17 `self.balance -= amount` with amount > balance underflows u64. Debug builds panic (process crash mid-transaction); release builds wrap to ~u64::MAX, so an over-withdrawal silently succeeds and inflates the account balance — money creation / data-integrity corruption on a public money type.",
+      "title": "debit() underflow: over-debit panics (debug) or wraps to a huge balance (release)"
     },
     {
       "confidence": 0.95,
-      "filePath": "source.rs",
-      "line": 17,
-      "severity": "high",
-      "suggestion": "Return a `Result`/`Option` and use `self.balance.checked_sub(amount)`, rejecting the over-debit (e.g. `self.balance = self.balance.checked_sub(amount).ok_or(Error::InsufficientFunds)?;`). Do not rely on debug overflow-checks, which are off in release.",
-      "summary": "source.rs:17 `self.balance -= amount;` has no check that `amount <= self.balance`. When a caller debits more than the balance, release builds wrap the u64 to a near-u64::MAX value (silent money creation) and debug builds panic (DoS). The implicit invariant that a debit cannot exceed the balance is stated in intent (comment lines 15-16) but never enforced. `debit` is a `pub` method intended for reuse despite 0 current callers.",
-      "title": "debit() underflow: no balance>=amount guard, wraps to huge balance in release"
-    },
-    {
-      "confidence": 0.95,
-      "filePath": "source.rs",
-      "line": 11,
-      "severity": "high",
-      "suggestion": "Use checked_add and surface the overflow: `self.balance = self.balance.checked_add(amount).ok_or(Error::Overflow)?;` (or saturating_add if capping is intended). Add a unit test asserting overflow is rejected rather than wrapped.",
-      "summary": "source.rs:11 `self.balance += amount;` performs unchecked u64 addition. When balance + amount exceeds u64::MAX, debug builds panic and release builds wrap, dropping the balance to a small number — silent fund loss. The in-code comment (lines 8-10) confirms the intent to fix this.",
-      "title": "credit() overflow silently rolls balance back to a small value"
-    },
-    {
-      "confidence": 0.92,
       "filePath": "source.rs",
       "line": 11,
       "severity": "medium",
-      "suggestion": "Use `self.balance = self.balance.checked_add(amount).ok_or(Error::Overflow)?;` (or `saturating_add` if capping is acceptable) so behavior is identical and safe in debug and release.",
-      "summary": "source.rs:11 `self.balance += amount;` performs unchecked addition. In release, overflowing u64 wraps a large balance back to a small value; in debug it panics. The comment (lines 8-10) explicitly says to use checked_add/saturating_add but the code still uses raw `+=`, so the stated remediation was not applied.",
-      "title": "credit() unchecked addition can panic (debug) or wrap (release)"
+      "suggestion": "Use checked_add and surface the error: `self.balance = self.balance.checked_add(amount).ok_or(Overflow)?;` (or saturating_add if a ceiling is acceptable).",
+      "summary": "source.rs:11 `self.balance += amount` overflows u64 when balance+amount exceeds u64::MAX. Debug builds panic; release builds wrap, silently rolling a large balance back down to a tiny value — the user's funds effectively disappear. Public API on a monetary type.",
+      "title": "credit() overflow: large credit panics (debug) or wraps balance to a small value (release)"
     },
     {
-      "confidence": 0.9,
+      "confidence": 0.85,
       "filePath": "source.rs",
       "line": 8,
       "severity": "medium",
-      "suggestion": "Do not treat the BUG comments as sign-off. Fix the arithmetic, remove the BUG comments, add tests for overflow/underflow paths, and run `cargo test` to attach fresh verification before marking resolved.",
-      "summary": "Both methods carry `// BUG:` comments (lines 8-10, 15-16) that precisely describe the defect, yet the buggy `+=`/`-=` code was committed unchanged. No unit tests exist and no verification artifact was attached (unresolved `rerun_relevant_verification` gate / `no-fresh-verification-evidence`). The next agent could mistake these self-documented bugs for accepted behavior.",
-      "title": "Incomplete handoff: bugs documented in comments but left unfixed, with no tests or verification"
+      "suggestion": "Apply the prescribed checked arithmetic, then add unit tests for the overflow/underflow edges (e.g. credit(u64::MAX)+1, debit(amount > balance)) and provide a minimal crate (Cargo.toml + lib.rs) so `cargo test` can be run. Next agent must attach that fresh test output before marking fixed.",
+      "summary": "Both methods carry `// BUG:` comments (lines 8-10, 15-16) that prescribe checked_add/saturating_add, yet the raw `+=`/`-=` remain (lines 11, 17) — an incomplete handoff / fake-green risk. There is no Cargo.toml, no #[test], and no caller (confirmed by find/grep), so the rerun_relevant_verification gate is unsatisfiable as shipped: nothing proves these paths work.",
+      "title": "Fix identified in comments but never applied; no tests or verification"
     }
   ],
-  "findings_count": 7,
+  "findings_count": 3,
   "qa_evidence": [],
-  "review_id": "8b476604-b24d-4277-9f08-ef30a978d71d",
+  "review_id": "28f621cd-b308-4ac5-ba51-a2e428495cfc",
   "review_memory_graph": {
     "edges": [
       {
@@ -179,9 +143,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 30.0,
+  "score": 80.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nNew financial primitive `Account` with `credit`/`debit` using unchecked u64 arithmetic. Both bugs are real and match their own comments — but the comments' recommended fix (checked_add/saturating_add) was never applied, so intent contradicts implementation. debit() is the more serious: it lacks any `amount <= balance` guard, so a normal over-debit wraps to a huge balance in release (money creation) or panics in debug. Impact is currently latent (0 callers) but these are pub methods clearly meant for reuse. Not verified by running cargo; Rust overflow semantics are well-established, but a unit test asserting over-debit is rejected remains open work.\n\nNew 20-line financial primitive with two real integer-overflow defects that the code's own comments flag. debit() (line 17) uses unchecked `-=`: an over-debit underflows to a near-u64::MAX balance in release (money creation) and panics in debug. credit() (line 11) uses unchecked `+=`: overflow wraps the balance down to a small value (silent fund loss) in release and panics in debug. Both are provable from Rust arithmetic semantics. Blast radius is currently 0 callers (newly added file), so no live user flow is broken today, but the primitive's contract is fundamentally unsafe and any future caller inherits it. Verification is static-only: the repo has no Cargo.toml, build target, or tests, so the `rerun_relevant_verification` gate cannot be satisfied in-tree.\n\nNewly added 20-line file with two genuine integer-overflow bugs on financial balances: unchecked `+=` in credit (line 11) and unchecked `-=` in debit (line 17, no insufficient-funds guard). Both panic in debug and wrap in release — debit underflow can inflate a balance to near-u64::MAX. The agent documented both bugs in comments but shipped them unfixed, with no tests and no verification evidence. Blast radius is currently 0 callers (unused), which limits immediate impact, but the API is broken by construction.",
-  "talk_id": "ea912018-7c03-4765-bd0f-4bfbc8b35695"
+  "summary": "Risk-tiered review (lite) completed.\n\nNew file implements an Account ledger with unchecked u64 arithmetic in both credit() and debit(). Both operations carry unenforced invariants (no-overflow on credit, sufficient-funds on debit) that Rust does not guard in release builds, so over-debit inflates balances and over-credit corrupts them. The code comments accurately describe the bugs and the correct fix, so they will not misdirect the next agent — but the guarded implementation they prescribe is missing. debit() is the higher-severity of the two (silent balance/money creation).\n\nNew public monetary type Account uses unchecked `+=`/`-=` on u64 balances. Both credit (line 11) and debit (line 17) are real correctness/safety bugs: debug builds panic on over/underflow (crash), release builds wrap silently — the debit underflow is the most dangerous, letting an over-debit produce a near-u64::MAX balance (money creation) on a financial type. Currently 0 callers so present blast radius is low, but these are pub methods that are wrong the moment they're used. Fix with checked_/saturating_ arithmetic.\n\nNew Account primitive with two genuine correctness/security bugs in credit (line 11) and debit (line 17): unchecked u64 arithmetic that panics in debug and wraps in release. debit underflow is the worst — over-debit wraps to a huge balance (money creation) and the u64 return type gives callers no way to detect failure. Both bugs are documented in BUG comments but the prescribed fix was never applied, and there are no tests, no crate, and no callers, so nothing has been verified. Blast radius is currently 0 callers (newly added), but the primitive is unsafe by contract for any future caller.",
+  "talk_id": "e0581fad-0ddc-4aa8-8619-b2048ec41882"
 }
