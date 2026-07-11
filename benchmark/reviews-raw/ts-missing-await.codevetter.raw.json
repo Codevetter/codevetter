@@ -3,7 +3,7 @@
   "changed_lines": 10,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 45579,
+  "duration_ms": 50188,
   "evidence_candidates": [
     {
       "affected_files": ["source.ts"],
@@ -43,27 +43,27 @@
   ],
   "findings": [
     {
-      "confidence": 0.95,
-      "filePath": "source.ts",
-      "line": 8,
-      "severity": "high",
-      "suggestion": "Await the promise so failures propagate to the caller: `await deleteSession(userId);` before the `console.log`. If fire-and-forget is truly intended, at minimum attach `.catch(err => /* log/handle */)` — but the `Promise<void>` return type indicates callers expect completion, so awaiting is correct.",
-      "summary": "source.ts:8 calls `deleteSession(userId)` without `await` or `.catch()`. Because `logout` is declared `async (): Promise<void>`, its resolution is a contract meaning 'logout complete', but it resolves at line 9 before `deleteSession` settles. If `deleteSession` rejects, (a) `logout` still resolves successfully and logs 'user logged out' on line 9 while the session survives (stale/authenticated session left behind), and (b) the rejection is unhandled, causing an unhandled promise rejection (fatal under Node's default unhandled-rejection policy).",
-      "title": "Missing await on deleteSession — logout reports success even when session deletion fails"
-    },
-    {
       "confidence": 0.97,
       "filePath": "source.ts",
       "line": 8,
       "severity": "high",
-      "suggestion": "Await the call: `await deleteSession(userId);` before logging/returning. If logout must be resilient to deletion failures, wrap in try/catch and surface/log the error explicitly — but do not resolve as success when the session was not deleted.",
-      "summary": "source.ts:8 calls deleteSession(userId) without await and discards the returned promise. logout is async and resolves at line 9-10 before the deletion completes or is confirmed, so `await logout()` reports success even if the session was never deleted. If deleteSession rejects, the rejection is unhandled (unhandled promise rejection) while logout still resolves normally — leaving a valid session behind in a security-sensitive auth path. The // BUG comment at lines 5-7 correctly states the intent (delete the session) which the code fails to enforce.",
-      "title": "Missing await on deleteSession makes logout claim success on failure"
+      "suggestion": "Await the promise: `await deleteSession(userId);` before logging success. Optionally wrap in try/catch (or let the rejection propagate) so callers can detect and retry a failed session deletion instead of getting a false success.",
+      "summary": "source.ts:8 calls `deleteSession(userId)` without `await` inside an `async` function whose contract (name `logout`, `Promise<void>`, and the `console.log('user logged out')` on line 9) promises the session is deleted. Because the promise floats: (1) `logout` resolves before deletion completes, so an awaiting caller proceeds while the server session may still be live — a lingering-auth/session-fixation risk on a security-sensitive path; (2) a rejection from `deleteSession` becomes an unhandled promise rejection while `logout` still resolves successfully and logs success, hiding the failure from every caller. The in-file comment (lines 5-7) accurately describes this bug.",
+      "title": "Floating promise: deleteSession not awaited on logout path"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.ts",
+      "line": 8,
+      "severity": "high",
+      "suggestion": "Await the call: `await deleteSession(userId);` before logging/returning. If fire-and-forget is genuinely intended, at minimum attach a `.catch()` so the rejection is handled, but for a logout flow the deletion should be awaited so the caller can trust that logout() resolving means the session is gone.",
+      "summary": "source.ts:8 calls `deleteSession(userId)` without `await` inside an `async function logout(): Promise<void>`. Because the promise is not awaited, (1) a rejection becomes an unhandled promise rejection instead of propagating to logout's caller, and (2) logout resolves before deletion completes, so any caller that awaits logout() and then assumes the session is destroyed races an in-flight delete — leaving stale sessions. The deleteSession contract (async store op over `./session`) is not enforced by logout even though logout's success is meant to imply the session was removed.",
+      "title": "Missing await on deleteSession swallows failures and races session cleanup"
     }
   ],
   "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "6132787a-cff1-4558-ad0b-6963e59dd98f",
+  "review_id": "2d0bd324-c25f-473b-b58d-0c0baffa4268",
   "review_memory_graph": {
     "edges": [
       {
@@ -137,6 +137,6 @@
   "score": 80.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "general"],
-  "summary": "Risk-tiered review (trivial) completed.\n\nSingle-function file with one real, security-relevant correctness bug: logout fires deleteSession without awaiting it, so the function resolves as success regardless of whether the session was deleted and any rejection is swallowed as an unhandled promise rejection. The code contradicts its own stated intent (the // BUG comment and the async contract). 0 current callers but high severity given the auth/logout context; any future caller inherits a silently-broken logout.\n\nSingle newly-added file with a real, self-documented correctness/security bug: the async `logout` fires `deleteSession(userId)` without awaiting it, so it resolves as if logout succeeded regardless of whether session deletion actually completes, and any rejection becomes an unhandled promise rejection. 0 callers today (newly added), but the defect is unambiguous and lives on an auth teardown path, so severity is high despite low blast radius. Could not run/compile in isolation because the imported `./session` module is not part of this range — finding is static-confirmed, not runtime-verified; the verification gate remains blocked.",
-  "talk_id": "61f403eb-2c11-4e7f-9240-cc460aec1ff2"
+  "summary": "Risk-tiered review (trivial) completed.\n\nNewly added exported `logout` has a genuine correctness/security bug: `deleteSession(userId)` on line 8 is a floating (un-awaited) promise, so logout reports success before the session is actually deleted and silently swallows any deletion failure as an unhandled rejection. The function's name, return type, and success log all assert the session was deleted, which the code does not guarantee — a stated-intent-vs-code contradiction. 0 callers today (weights live impact down) but it will bite the first caller; rated high due to the security-sensitive logout context. The code comment is accurate and won't mislead a follow-up agent; the misleading artifact is the unconditional success log. Could not run anything — the imported `./session` module does not exist in this benchmark repo, so the runtime-verification gate remains open, but the defect is statically provable.\n\nSingle new file `source.ts` defining `logout`. It contains one real high-severity correctness bug: `deleteSession(userId)` is called without `await`, so a rejected deletion is swallowed (unhandled rejection) and logout reports success before the session is actually deleted. The bug is self-documented in the comment and confirmed against the changed line. Blast radius is currently 0 callers (newly added), but as a logout primitive it will attract security-sensitive callers, so severity stays high.",
+  "talk_id": "546c7883-e87f-4806-a993-6013b1d3f483"
 }

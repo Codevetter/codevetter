@@ -3,7 +3,7 @@
   "changed_lines": 16,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 45975,
+  "duration_ms": 49688,
   "evidence_candidates": [
     {
       "affected_files": ["source.ts"],
@@ -47,32 +47,14 @@
       "filePath": "source.ts",
       "line": 13,
       "severity": "critical",
-      "suggestion": "Use a parameterized/prepared query instead of interpolation, e.g. `db.query<User>('SELECT id, email FROM users WHERE email = ? LIMIT 1', [emailInput])` (or the named-parameter form your `db` driver supports). Never concatenate user input into SQL strings.",
-      "summary": "Line 13 builds `const sql = \\`SELECT id, email FROM users WHERE email = '${emailInput}' LIMIT 1\\`` by concatenating the user-controlled `emailInput` parameter directly into the query, then line 14 executes it via `db.query<User>(sql)`. An attacker passing `' OR '1'='1` (or a stacked/UNION payload) breaks out of the quoted literal and controls the WHERE clause, enabling authentication bypass, data exfiltration, or arbitrary SQL depending on the driver. The in-file comment (lines 10-12) confirms this is the actual behavior, not a stale note.",
-      "title": "SQL injection via string interpolation in findUserByEmail"
-    },
-    {
-      "confidence": 0.99,
-      "filePath": "source.ts",
-      "line": 13,
-      "severity": "critical",
-      "suggestion": "Use a parameterized/bound query instead of interpolation, e.g. `await db.query<User>('SELECT id, email FROM users WHERE email = ? LIMIT 1', [emailInput])` (placeholder syntax per the db driver). Never concatenate untrusted input into SQL text.",
-      "summary": "Line 13 interpolates user-controlled `emailInput` directly into the SQL string: `SELECT id, email FROM users WHERE email = '${emailInput}' LIMIT 1`. An attacker passing `' OR '1'='1` yields `WHERE email = '' OR '1'='1' LIMIT 1`, returning the first user regardless of email (auth bypass / impersonation); a UNION or stacked-statement payload enables data exfiltration or destruction (DROP). The value reaches `db.query` (line 14) unparameterized.",
+      "suggestion": "Use a parameterized/prepared query instead of interpolation, e.g. `db.query<User>(\"SELECT id, email FROM users WHERE email = ? LIMIT 1\", [emailInput])`. Confirm the exact bind placeholder syntax against the real `db.query` signature (the `./db` module is not present in this repo). Add a test asserting `findUserByEmail(\"' OR '1'='1\")` returns null, and run `tsc --noEmit`.",
+      "summary": "Line 13 interpolates user-controlled `emailInput` directly into the SQL string (`WHERE email = '${emailInput}'`) and line 14 executes it via `db.query`. Input such as `' OR '1'='1' -- ` breaks out of the quoted literal; combined with `LIMIT 1` this returns an arbitrary user row (auth/enumeration bypass), and UNION/stacked payloads enable data exfiltration depending on the driver.",
       "title": "SQL injection via string concatenation in findUserByEmail"
-    },
-    {
-      "confidence": 0.75,
-      "filePath": "source.ts",
-      "line": 2,
-      "severity": "low",
-      "suggestion": "Before marking any fix confirmed, provide/point to the real `db` module, then run a build + a test that feeds an injection payload to `findUserByEmail` and asserts safe behavior. Attach the fresh command/test output.",
-      "summary": "Line 2 imports `{ db } from './db'`, but no `db.ts`/`db` module exists in the repo (only `source.ts` is present). The change ships with no tests and no verification evidence, so any fix cannot be proven to compile or behave correctly until the real `db` module and a regression test are available.",
-      "title": "Unresolved `./db` import — file cannot compile or be verified as-is"
     }
   ],
-  "findings_count": 3,
+  "findings_count": 1,
   "qa_evidence": [],
-  "review_id": "5ba35513-4c65-47d5-a44b-610bbfa9de7b",
+  "review_id": "e6a906c7-912a-4a72-8a2a-150b0594b92e",
   "review_memory_graph": {
     "edges": [
       {
@@ -143,9 +125,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 58.0,
+  "score": 80.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file introduces an exported `findUserByEmail` with a textbook SQL injection: user input is interpolated into the query string (line 13) and executed (line 14). The change description, code comments, and implementation all agree the injection exists — stated intent and code are consistent, so there's no assumption contradiction; the defect is that this exploitable code is exported and callable. Blast radius currently shows 0 callers (newly added), but as an exported symbol it is intended to be called, so severity is critical on merit. Fresh runtime verification is not possible because the imported `./db` module is absent from this isolated repo, but the vulnerability is provable by static inspection and does not depend on runtime evidence.\n\nSingle new file introducing a textbook SQL injection: findUserByEmail concatenates user input into a raw SQL string (line 13) before passing it to db.query (line 14). Exploitable for auth bypass, data exfiltration, and data destruction — critical. The function currently has 0 callers (newly added), so there is no live regression yet, but it must be fixed before being wired into any flow. No runtime verification is possible in this isolated repo (no db module or test harness), but the defect is provable statically.\n\nSingle new file introducing an exported user-lookup function with a critical, self-documented SQL injection: user-controlled `emailInput` is string-interpolated into the SQL on line 13 and executed on line 14. Fix is to use a parameterized query. Secondary handoff gap: the `./db` import does not resolve in this repo and there are no tests, so no fresh verification is possible until the real module and a regression test exist.",
-  "talk_id": "fa7e580a-c042-4293-8fab-09dbf54fc392"
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file introduces a classic SQL injection: user-controlled `emailInput` is interpolated into a raw SQL string (source.ts:13) and executed (line 14). The vulnerability is provable from the diff alone and is critical. Assumption-integrity check: the file/inline comments correctly describe the bug (no comment-vs-code contradiction), but the code relies on an unenforced 'emailInput is safe' invariant. The parameterized-query fix is standard, but the `db.query` signature could NOT be confirmed — the imported `./db` module does not exist in this repo — so the exact placeholder API is an open question left for the fixer.\n\nNew file introduces an exported `findUserByEmail` with a textbook SQL injection: `emailInput` is interpolated directly into the SQL string (line 13) and executed via `db.query` (line 14) with no parameterization or escaping. This is a critical security bug with concrete product-safety impact (auth/lookup bypass, data exposure, potential data loss). The inline `// BUG:` comment acknowledges the flaw but does not mitigate it. Everything else is trivial. Recommend blocking until the query is parameterized.\n\nSingle new file with a textbook, self-labeled SQL injection: user input is concatenated into a SQL string on line 13 and executed on line 14. Critical, high-confidence. Fix is a bounded change to a parameterized query, but the exact bind syntax and any verification are blocked because the imported `./db` module does not exist in the repo — so no compile/test evidence can be produced against this file as-is.",
+  "talk_id": "cbd01303-b0af-4ba3-b890-c2b414b5b703"
 }

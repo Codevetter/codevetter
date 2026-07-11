@@ -3,7 +3,7 @@
   "changed_lines": 12,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 39871,
+  "duration_ms": 51029,
   "evidence_candidates": [
     {
       "affected_files": ["source.py"],
@@ -47,32 +47,23 @@
       "filePath": "source.py",
       "line": 10,
       "severity": "critical",
-      "suggestion": "Sanitize/contain the path before opening: reject report_name containing os.sep/'..' or use os.path.basename, OR resolve and verify containment: resolved = os.path.realpath(os.path.join(base_dir, report_name)); if os.path.commonpath([os.path.realpath(base_dir), resolved]) != os.path.realpath(base_dir): raise ValueError. Then open(resolved).",
-      "summary": "read_report builds full_path = os.path.join(base_dir, report_name) (line 10) from fully untrusted report_name with no normalization or containment check, then opens and returns its contents (lines 11-12). read_report(\"../../etc/passwd\") resolves to /etc/passwd, and read_report(\"/etc/passwd\") bypasses base_dir entirely because os.path.join discards the base when the second arg is absolute. Both return arbitrary server file contents to the caller.",
+      "suggestion": "Contain the resolved path inside base_dir before opening. Example: base=os.path.realpath(base_dir); full=os.path.realpath(os.path.join(base, report_name)); if os.path.commonpath([full, base]) != base: raise ValueError('invalid report name'). Optionally also reject report_name containing os.sep/'..' or being absolute up front. Do not rely on the annotated comment as a fix.",
+      "summary": "Line 10 builds the path via os.path.join(base_dir, report_name) with untrusted report_name and line 11 opens+returns it. This is exploitable two ways: (1) relative traversal report_name='../../etc/passwd' escapes /var/app/reports (as the comment on lines 7-9 admits), and (2) absolute path report_name='/etc/passwd' — os.path.join discards base_dir when the second arg is absolute, returning /etc/passwd — which the comment does NOT mention. Result: arbitrary file read. The BUG comment documents the flaw but the code still ships it unfixed.",
       "title": "Path traversal / arbitrary file read in read_report"
     },
     {
-      "confidence": 0.97,
-      "filePath": "source.py",
-      "line": 10,
-      "severity": "critical",
-      "suggestion": "Resolve and enforce containment before opening: full_path = os.path.realpath(os.path.join(base_dir, report_name)); if not full_path.startswith(os.path.realpath(base_dir) + os.sep): raise ValueError('invalid report name'). Alternatively reject any report_name containing os.sep / os.path.isabs / '..', and prefer os.path.basename() when only a flat filename is expected.",
-      "summary": "read_report at source.py:10 builds full_path = os.path.join(base_dir, report_name) then opens it at line 11 with no normalization or base_dir containment check. Confirmed: report_name='../../etc/passwd' resolves to /etc/passwd. The comment (lines 7-9) understates this — os.path.join also discards base_dir entirely when report_name is absolute (e.g. '/etc/passwd'), so stripping '..' alone is not a sufficient fix.",
-      "title": "Path traversal: report_name joined into path with no containment check"
-    },
-    {
-      "confidence": 0.75,
+      "confidence": 0.9,
       "filePath": "source.py",
       "line": 5,
       "severity": "medium",
-      "suggestion": "After applying the containment fix, add and run a unit test covering `../../etc/passwd`, absolute `/etc/passwd`, and a valid name; attach the test output as the fresh verification artifact to close the gate.",
-      "summary": "The rerun_relevant_verification gate is blocked and the no-fresh-verification-evidence candidate (confidence 0.66) is unresolved: no test asserts that malicious `report_name` values are rejected, and no command output proves behavior. As handoff, the change is a documented-but-unfixed bug with no proof either way — a fake-green risk for the next agent.",
-      "title": "No verification evidence and no test for the traversal guard (blocked gate)"
+      "suggestion": "Before marking this resolved, add tests that assert read_report rejects '../../etc/passwd', an absolute path like '/etc/passwd', and symlink escapes, while still reading a legitimate report. Run: python -m pytest -q (or a small repro script) and attach the output as fresh verification.",
+      "summary": "read_report has 0 callers (newly added) and no accompanying test or verification artifact; the deterministic procedure gate rerun_relevant_verification is blocked on 'no-fresh-verification-evidence'. Because the vulnerability is self-documented but not fixed, the next agent could mistake the BUG comment for resolution.",
+      "title": "No tests or verification for the traversal fix (handoff gate blocked)"
     }
   ],
-  "findings_count": 3,
+  "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "3ac4cbab-2caa-433f-8cce-18df6e8933c0",
+  "review_id": "17e36f7e-fa50-48b6-bfbc-26c03b95ba03",
   "review_memory_graph": {
     "edges": [
       {
@@ -143,9 +134,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 55.0,
+  "score": 75.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nSingle new self-contained file demonstrating a real, unmitigated path traversal in read_report. os.path.join(base_dir, report_name) + open() with no realpath containment check allows reading arbitrary files. The in-code comment correctly identifies the '../' escape but understates the issue: absolute report_name also bypasses base_dir because os.path.join drops earlier components on an absolute arg. No callers yet (blast radius currently low), but the vulnerable pattern is critical if wired to any request input.\n\nNew file source.py introduces read_report, a file-download helper with a classic, unmitigated path-traversal vulnerability. Untrusted report_name is joined into a filesystem path and read with no containment check, enabling arbitrary file read via both '../' traversal and absolute-path override of os.path.join. Critical and must be fixed before use. The function currently has 0 callers, but it is the file's entire purpose and clearly intended to be wired to a download handler.\n\nNew file source.py implements read_report with a confirmed critical path traversal (lines 10–11): untrusted report_name is joined into a filesystem path and opened with no normalization or containment check, allowing both `../` escape and absolute-path override to read arbitrary files. The agent documented the bug in a comment but shipped it unfixed, and there is no test or verification evidence. Function has 0 callers today but is clearly intended as a download handler for untrusted input. Fix is bounded (realpath + commonpath containment, reject absolute) and must be paired with a rejection test.",
-  "talk_id": "df4ae7f0-9ffc-45e4-b4e6-3b4710c760e1"
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle newly-added function read_report contains a real, statically-provable path traversal / arbitrary-file-read vulnerability: caller-controlled report_name is joined into a filesystem path (source.py:10) with no containment enforcement. Two escape vectors exist — '../' traversal and absolute-path override (the latter not covered by the code comment). Currently 0 callers so not yet reachable in-repo, but the handler is clearly intended to take untrusted input; the containment invariant is unenforced. No fresh runtime evidence exists, but the defect is provable from the diff.\n\nNew file source.py adds read_report with an unmitigated path traversal vulnerability that the author's own comment flags as a BUG. Caller-supplied report_name is joined into a filesystem path and opened without normalization or containment, allowing both relative ('../../etc/passwd') and absolute ('/etc/passwd') escapes from base_dir. Critical severity despite 0 current callers, because any future caller wiring this to a request handler exposes arbitrary file reads. Out of strict Product-Safety scope but reported as an obvious critical cross-scope defect.\n\nA new 12-line module whose sole function read_report has a critical, still-unfixed path traversal / arbitrary-file-read vulnerability (line 10). The code annotates the flaw with a 'BUG:' comment but ships it, and the comment even misses the absolute-path override vector. No tests or verification exist. This must be fixed and covered by tests before handoff; the annotated comment is not a fix.",
+  "talk_id": "2d0c65c3-c60e-468c-add6-1273b59add6e"
 }

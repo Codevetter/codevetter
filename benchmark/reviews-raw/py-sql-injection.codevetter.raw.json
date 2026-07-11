@@ -3,7 +3,7 @@
   "changed_lines": 9,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 35552,
+  "duration_ms": 42344,
   "evidence_candidates": [
     {
       "affected_files": ["source.py"],
@@ -47,14 +47,14 @@
       "filePath": "source.py",
       "line": 8,
       "severity": "critical",
-      "suggestion": "Use a parameterized query: cursor = db.execute(\"SELECT id, name FROM products WHERE name LIKE ?\", (f\"%{name}%\",)); return cursor.fetchall(). Never interpolate caller-supplied values into SQL text.",
-      "summary": "Line 8 builds the query with f\"SELECT id, name FROM products WHERE name LIKE '%{name}%'\" and passes it straight to db.execute(). The untrusted `name` parameter is interpolated into the SQL text with no binding or escaping, so a value such as \"%' UNION SELECT id, password FROM users --\" injects arbitrary SQL. The comment on lines 6-7 documents this exact exploit but the shipped code does not remediate it — stated intent and implementation both confirm the vulnerable pattern is what was committed.",
+      "suggestion": "Use a parameterized query and let the driver bind the value: `db.execute(\"SELECT id, name FROM products WHERE name LIKE ?\", (f\"%{name}%\",))`. Never build SQL with f-strings/concatenation from caller input.",
+      "summary": "Line 8: `db.execute(f\"SELECT id, name FROM products WHERE name LIKE '%{name}%'\")` interpolates the untrusted `name` argument directly into the SQL text. A value such as `x' UNION SELECT password FROM users--` closes the string literal and appends attacker-controlled SQL, allowing data exfiltration or destructive statements. The function's own comment (lines 6-7) confirms the intent to expose this flaw.",
       "title": "SQL injection via f-string interpolation in search_products"
     }
   ],
   "findings_count": 1,
   "qa_evidence": [],
-  "review_id": "8e8a8d3b-2f21-47a8-a10b-69eb218457ed",
+  "review_id": "55b0b544-b32e-4ce9-873e-5404a515e8c5",
   "review_memory_graph": {
     "edges": [
       {
@@ -128,6 +128,6 @@
   "score": 80.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "general"],
-  "summary": "Risk-tiered review (trivial) completed.\n\nSingle new file adding search_products, which contains a textbook SQL injection: the `name` argument is interpolated into the SQL string via f-string on line 8 and executed without parameterization. The vulnerability is provable by static reading and is even self-documented in the comment (lines 6-7). Currently 0 callers, so it is a latent sink rather than an actively exploitable path, but it is critical the moment it is wired into any request handler. Fix by switching to bound parameters.\n\nSingle new function with a textbook SQL injection: user-controlled `name` is f-string-interpolated into the SQL statement on line 8. Statically provable (no runtime state dependency), so reported at high confidence despite the blocked verification gate. Currently has 0 callers, so it is a latent hole rather than an actively exploited path, but it must be fixed before anything wires request input into it.",
-  "talk_id": "a5ecc801-4187-4ede-b6bc-4d1094891b59"
+  "summary": "Risk-tiered review (trivial) completed.\n\nNew file source.py adds search_products, which builds a SQL query by f-string-interpolating the untrusted `name` argument (line 8) — a classic, directly-exploitable SQL injection. The inline comment accurately describes the defect, but the code does not enforce the safe contract a DB helper implies; the stated-intent-vs-implementation gap is resolved by the code actually being vulnerable. No callers exist yet (newly added), so no harm is realized, but any future caller inherits the hole. Fix is a standard sqlite3 parameterized query.\n\nA single new 9-line file adds `search_products`, which contains a clear, unmitigated SQL injection: the `name` parameter is interpolated into the query via an f-string on line 8. This is a critical, confirmed vulnerability (the code comment itself documents it). No callers exist yet (blast radius 0), but the contract of the function is inherently unsafe and must be fixed before any use. Verification gate note: this is a static-analysis certainty — the injection is provable from the source line alone and needs no runtime artifact — so the missing-fresh-verification lead is resolved for this finding by code inspection.",
+  "talk_id": "9e61254a-d3c3-43d3-95c3-f379f5912a2a"
 }

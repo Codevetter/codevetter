@@ -3,7 +3,7 @@
   "changed_lines": 9,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 53248,
+  "duration_ms": 46673,
   "evidence_candidates": [
     {
       "affected_files": ["source.py"],
@@ -47,23 +47,14 @@
       "filePath": "source.py",
       "line": 9,
       "severity": "high",
-      "suggestion": "Before extracting, iterate `zf.infolist()` and reject the archive if cumulative `file_size` exceeds a total cap, if any single entry exceeds a per-file cap, or if `file_size/compress_size` exceeds a max ratio for any entry. Alternatively extract members one at a time via a length-limited streamed copy (`zf.open(...)` + bounded `read`), aborting once a byte budget is hit. Also bound the entry count. (Note: path traversal is already mitigated by CPython's extractall name sanitization, so no extra guard is needed there.)",
-      "summary": "source.py:9 `zf.extractall(dest)` extracts every archive member unconditionally. `zipfile` never enforces a size cap, so a small malicious archive (high-redundancy or overlapping/nested entries) decompresses to arbitrarily large output, exhausting disk/inodes (and memory for downstream readers) — a resource-exhaustion DoS. The per-entry `ZipInfo.file_size`/`compress_size` available on line 8's `zf` are never inspected before extraction.",
-      "title": "Zip bomb: extractall() with no uncompressed-size or compression-ratio limit"
-    },
-    {
-      "confidence": 0.97,
-      "filePath": "source.py",
-      "line": 9,
-      "severity": "high",
-      "suggestion": "Before extracting, iterate zf.infolist(): reject if any member's file_size exceeds a per-file cap, if the sum of file_size exceeds a total cap, or if file_size/compress_size exceeds a ratio threshold. Prefer streaming each member through a bounded read (zf.open(member) with a byte counter) and abort on overrun, rather than extractall(). Also bound member count to guard against many-tiny-files bombs.",
-      "summary": "extract_archive calls zf.extractall(dest) at source.py:9 with no inspection of zf.infolist() member sizes, no cumulative uncompressed-byte cap, and no compression-ratio check. The BUG comment at lines 6-7 accurately describes present behavior: a small malicious archive can decompress to arbitrary size, exhausting disk and memory (CWE-409). The implicit caller assumption 'this safely handles an untrusted archive' is contradicted by the code.",
-      "title": "Unbounded zip extraction — decompression-bomb DoS (no size/ratio guard)"
+      "suggestion": "Before extracting, iterate zf.infolist() and enforce limits: reject if any info.file_size exceeds a per-file cap, if sum(file_size) exceeds a total cap, if len(infolist) exceeds a member cap, or if file_size/compress_size exceeds a ratio threshold. Extract members individually with a bounded read loop (read fixed-size chunks and abort past a running byte budget) rather than extractall. Also document that archive_path may be untrusted.",
+      "summary": "source.py:8-9 calls zf.extractall(dest) directly with no cap on per-member uncompressed size, total extracted bytes, member count, or compression ratio. As the comment at lines 6-7 acknowledges, a small crafted archive (zip bomb) can decompress to arbitrarily large output, exhausting disk and memory (DoS). The function name/signature (extract_archive, line 5) advertises no trust precondition, so with 0 current callers the next integration is likely to feed it untrusted input and inherit the vulnerability.",
+      "title": "Zip bomb: extract_archive decompresses without size/ratio/count limits"
     }
   ],
-  "findings_count": 2,
+  "findings_count": 1,
   "qa_evidence": [],
-  "review_id": "6ee0ce6a-779e-4372-b0c9-e80dbe499623",
+  "review_id": "e39eea18-55ce-4be4-9219-ca6fb173f57e",
   "review_memory_graph": {
     "edges": [
       {
@@ -134,9 +125,9 @@
   },
   "review_mode": "assumption-first",
   "risk_tier": "trivial",
-  "score": 80.0,
+  "score": 90.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "general"],
-  "summary": "Risk-tiered review (trivial) completed.\n\nThe single 9-line change adds extract_archive, which is itself the documented vulnerability: zf.extractall (line 9) runs with no size, count, or compression-ratio limit, enabling a zip-bomb resource-exhaustion DoS. The BUG comment (lines 6-7) is confirmed accurate, not stale. Path-traversal (Zip Slip) and symlink-escape were considered and rejected — CPython's extractall sanitizes member paths and does not recreate symlinks. Function has 0 callers, so exposure is currently dormant; severity is high (not critical) on that basis. Finding is proven statically; a runtime PoC is unnecessary to confirm the missing guard.\n\nSingle newly-added function `extract_archive`. The self-documented zip-bomb vulnerability is real and confirmed against zipfile's actual behavior: extractall() applies no size or compression-ratio limit, allowing a small crafted archive to exhaust disk/memory (DoS). No path-traversal finding — CPython's extractall sanitizes member names, so that would be a false positive. 0 callers currently, but this is a reusable utility intended for untrusted input, so severity is high on the code's nature rather than current blast radius.",
-  "talk_id": "8788cf59-2bac-47fc-a601-4afc18a5cca1"
+  "summary": "Risk-tiered review (trivial) completed.\n\nSingle new file introducing extract_archive, which extracts a zip with zipfile.extractall and no decompression limits — a genuine zip-bomb / resource-exhaustion vulnerability that the code's own comment acknowledges. Stated intent and code agree (no intent/code contradiction), but the function relies on an unenforced and unadvertised 'archive is trusted' invariant, which is the material assumption risk for follow-up work. Path traversal (Zip Slip) is NOT present because CPython's extractall sanitizes member paths — deliberately not reported to avoid a false finding.\n\nSingle newly-added function extract_archive extracts a zip with zipfile.extractall and no size/ratio guards — a real decompression-bomb DoS (CWE-409), matching the case annotation. Path traversal (Zip Slip) is largely mitigated by modern extractall's own sanitization, so it is not reported as a separate finding. No callers exist yet (0 blast radius), but any use on untrusted input is unsafe.",
+  "talk_id": "04fc11e0-db90-4923-bdf0-33b550f8844a"
 }

@@ -3,7 +3,7 @@
   "changed_lines": 15,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 70192,
+  "duration_ms": 39261,
   "evidence_candidates": [
     {
       "affected_files": ["source.go"],
@@ -43,36 +43,27 @@
   ],
   "findings": [
     {
-      "confidence": 0.98,
-      "filePath": "source.go",
-      "line": 13,
-      "severity": "high",
-      "suggestion": "Use the comma-ok idiom and guard nil: `u, ok := users[id]; if !ok || u == nil { return \"\", false }` (change signature to `(string, bool)`), or return \"\" if the signature must remain `string`. Then add a test covering the missing-id path (e.g. `FindUser(map[int]*User{}, 1)` must not panic) and run `go test ./...` / `go vet ./...` to close the verification gate.",
-      "summary": "source.go:13-14: `u := users[id]; return u.Email` indexes the map without the comma-ok check. A missing id yields a nil *User (map zero value), and a present-but-nil pointer does too; dereferencing u.Email then panics and crashes the process. The agent's own BUG comment (lines 10-12) documents this but the code was committed unfixed — a known crash left in place.",
-      "title": "Nil-pointer dereference in FindUser on missing/nil map entry"
-    },
-    {
       "confidence": 0.99,
       "filePath": "source.go",
       "line": 14,
       "severity": "high",
-      "suggestion": "Use the comma-ok form and handle the miss without dereferencing: `u, ok := users[id]; if !ok || u == nil { return \"\" }` (or better, change the signature to `(string, bool)` or `(string, error)` so callers can distinguish 'no such user' from 'user with empty email').",
-      "summary": "source.go:13-14: `u := users[id]` returns the zero value `nil` for any `id` not present in the `map[int]*User`, then `return u.Email` dereferences that nil pointer, causing a runtime panic ('invalid memory address or nil pointer dereference') that crashes the process. No comma-ok guard (`u, ok := users[id]`) exists. Same crash occurs if a key maps to an explicit nil `*User`. FindUser is exported, so any caller performing a not-found lookup crashes instead of getting a safe 'not found' result.",
-      "title": "FindUser panics on missing/nil map entry (nil-pointer dereference)"
+      "suggestion": "Use the comma-ok map access and handle absence explicitly: `if u, ok := users[id]; ok { return u.Email }; return \"\"`. Better, change the signature to `(string, bool)` or `(string, error)` so callers can distinguish 'not found' from an empty email. Add a test calling FindUser with an absent id and run `go test`/`go vet` to attach fresh verification.",
+      "summary": "source.go:13-14 — `u := users[id]` returns nil for any absent key (Go zero value for a pointer map value), and `return u.Email` then dereferences nil, panicking with 'invalid memory address or nil pointer dereference'. The normal 'user not found' path becomes a process crash instead of a graceful empty/not-found result. FindUser has 0 callers today only because the file is newly added; its purpose is arbitrary-id lookup, so the miss path will be hit.",
+      "title": "Nil-pointer dereference in FindUser on missing id crashes the process"
     },
     {
-      "confidence": 0.98,
+      "confidence": 0.9,
       "filePath": "source.go",
-      "line": 14,
-      "severity": "high",
-      "suggestion": "Use the comma-ok form and guard for nil before dereferencing: `u, ok := users[id]; if !ok || u == nil { return \"\" }; return u.Email` (or return an error to signal not-found).",
-      "summary": "FindUser (source.go:9) relies on the unenforced invariant that `id` exists in `users`. Line 13 `u := users[id]` uses a non-comma-ok map read, so an absent id binds `u = nil` (zero value of `*User`), and line 14 `return u.Email` dereferences that nil pointer, panicking and crashing the process. The comment at lines 10–12 documents this exact defect; nothing in the function guards against it.",
-      "title": "Nil-pointer dereference on map miss in FindUser"
+      "line": 9,
+      "severity": "medium",
+      "suggestion": "Add `source_test.go` asserting `FindUser` returns a zero value (not a panic) for an absent id, and run `go test ./...` / `go vet ./...`, attaching the output as the verification artifact before marking this fixed.",
+      "summary": "The change adds exported `FindUser`/`User` (source.go:4-15) with zero tests and no verification artifact; the deterministic `rerun_relevant_verification` gate is blocked on fresh evidence. The one path that crashes (missing id) is precisely the one left unproven.",
+      "title": "No test or verification for the not-found path"
     }
   ],
-  "findings_count": 3,
+  "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "01bb1c3d-f06a-4bb8-ade5-ec838fc72c45",
+  "review_id": "ddcda192-e37b-4227-8b15-3cf910b1e42f",
   "review_memory_graph": {
     "edges": [
       {
@@ -143,9 +134,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 70.0,
+  "score": 85.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nSingle newly-added file with a confirmed nil-pointer dereference. The function assumes every looked-up id is present and maps to a non-nil pointer; Go map semantics return nil for a missing key, so `u.Email` panics on any miss. Assumption is relied upon but not enforced. Currently 0 callers, so no live crash yet, but the contract is broken for any future caller.\n\nThe single new function FindUser has a guaranteed nil-pointer dereference: a map lookup miss (or a nil pointer value) at source.go:13 yields nil, and source.go:14 dereferences it without a guard, panicking and crashing the process. This is a real, language-guaranteed correctness/product-safety defect (a not-found lookup should degrade gracefully, not crash). Exported symbol with 0 current callers, so no live regression yet, but it is unsafe for any future caller. Fix with the comma-ok pattern and a nil check, ideally returning a found/error flag.\n\nSingle new file with a self-documented, unfixed nil-pointer dereference. FindUser dereferences the result of a map lookup without a comma-ok / nil check, so any absent id (or a present nil pointer) panics and crashes the process. Currently 0 callers, which bounds live impact (hence high, not critical), but the contract is broken for the first real caller. No tests exist and no fresh verification was run — the rerun_relevant_verification gate remains blocked until a missing-id test is added and `go test`/`go vet` is executed.",
-  "talk_id": "e9a19124-37bd-4fcd-91d8-04a85f618cbd"
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file adds FindUser, which dereferences the result of a map lookup without a comma-ok / nil check (source.go:13-14). For a map[int]*User a missing id returns nil, so u.Email panics — a guaranteed crash on any unknown id. The implicit 'lookup always hits with a non-nil pointer' assumption is unenforced and contradicted by the function's own signature and BUG comment. 0 current callers (newly added), which bounds real-world blast radius, but the defect is certain by Go semantics.\n\nSingle new file source.go defines FindUser, which dereferences the result of a map lookup without a nil check. For any id not present in the map, `users[id]` yields nil and `u.Email` panics — a confirmed crash on the ordinary 'not found' path. This is exactly the bug the file's own comment describes, and it is real per Go map semantics. Confirmed by direct code read; empirical verification (go test/vet) was not run but the panic is provable from language semantics. No other issues in the 15 changed lines.\n\nA new Go file whose exported FindUser guarantees a nil-pointer panic on any missing map key (source.go:14). The agent documented the bug in a comment (lines 10-12) but did not fix it, and shipped no test for the crashing not-found path. Blast radius is 0 callers today, but the crash is certain once the function is used. Fix is a two-line comma-ok guard plus a test; verification gate remains blocked pending a fresh `go test` run.",
+  "talk_id": "d6fd936d-b890-4025-8dbf-cab0cc7e528f"
 }

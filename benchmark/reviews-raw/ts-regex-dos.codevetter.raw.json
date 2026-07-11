@@ -3,7 +3,7 @@
   "changed_lines": 10,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 87744,
+  "duration_ms": 89824,
   "evidence_candidates": [
     {
       "affected_files": ["source.ts"],
@@ -47,14 +47,23 @@
       "filePath": "source.ts",
       "line": 3,
       "severity": "high",
-      "suggestion": "Remove the redundant outer group and quantifier: `/^[a-zA-Z0-9._%+-]+$/`. This matches the exact same set of strings in linear time (no nested repetition to backtrack over). If real email validation is intended, use a proper single-pass pattern with an `@` and domain, or a vetted library. Add a timing test over N=20..30 non-matching inputs to confirm the fix.",
-      "summary": "emailLikePattern = /^([a-zA-Z0-9._%+-]+)+$/ (source.ts:3) wraps an inner `[a-zA-Z0-9._%+-]+` in an outer `(...)+` over the identical character class — the classic exponential-backtracking pattern. On any input of N matching chars followed by a non-matching char that fails the `$` anchor (e.g. `\"a\".repeat(30) + \"!\"`), the engine tries ~2^N partitions, blocking the event loop. isEmailLike (source.ts:8-10) exposes this over 'user-supplied email-like strings' (per L2 comment), so attacker-controlled input reaches the vulnerable regex. The comment on L5-7 accurately documents this as a real bug; the code and stated intent agree. Currently 0 callers, which caps present impact, but both symbols are exported as a reusable validator.",
-      "title": "ReDoS: nested quantifier in emailLikePattern causes catastrophic backtracking"
+      "suggestion": "Remove the redundant outer quantifier: /^[a-zA-Z0-9._%+-]+$/ matches the same language in linear time. Alternatively cap input length before .test(), or use a non-backtracking/RE2-style matcher. Add a test asserting isEmailLike returns quickly on a long non-matching input.",
+      "summary": "source.ts:3 defines /^([a-zA-Z0-9._%+-]+)+$/ — the nested (charclass+)+ with no delimiter causes exponential backtracking on inputs that match the class but fail the anchor (e.g. 'a'.repeat(n)+'!'). isEmailLike (source.ts:8-10) exposes this over user-supplied strings per the line-2 comment, so a single crafted string blocks the single-threaded event loop and denies service to all concurrent requests. The line-5-7 comment documents this exact bug yet the vulnerable regex is shipped as the exported implementation.",
+      "title": "ReDoS: nested quantifier in emailLikePattern blocks event loop on user input"
+    },
+    {
+      "confidence": 0.75,
+      "filePath": "source.ts",
+      "line": 2,
+      "severity": "low",
+      "suggestion": "Either fix the regex before this exported API is adopted, or adjust the comment to reflect that it is not yet in use; do not let the vulnerable version be wired up as-is.",
+      "summary": "source.ts:2 states 'This regex is used to validate user-supplied email-like strings', but the blast-radius scan shows isEmailLike (source.ts:8) has 0 callers — it is exported but unwired. The stated-intent-vs-reality gap can mislead the next agent into believing validation is live, or into wiring the exported function into a request path and inheriting the ReDoS from the same diff.",
+      "title": "Comment claims the regex 'is used' but isEmailLike has 0 callers"
     }
   ],
-  "findings_count": 1,
+  "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "2c62a996-603d-4b02-ac0b-3c703aa51472",
+  "review_id": "eb5a3d8a-fae1-4a69-a88a-ae2a8fc1cd08",
   "review_memory_graph": {
     "edges": [
       {
@@ -125,9 +134,9 @@
   },
   "review_mode": "assumption-first",
   "risk_tier": "trivial",
-  "score": 90.0,
+  "score": 88.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "general"],
-  "summary": "Risk-tiered review (trivial) completed.\n\nSingle-file change introduces a genuine ReDoS vulnerability. The regex /^([a-zA-Z0-9._%+-]+)+$/ on line 3 has a nested quantifier over an overlapping character class, producing exponential backtracking on non-matching inputs — a real event-loop DoS. Assumption-integrity check: the code and its comments are consistent (the comment correctly labels the defect), so there is no misleading premise for the next agent; the issue is that the documented bug is live in exported API surface (isEmailLike). Blast radius is currently 0 callers, so present-day exploitability is nil, but the symbols are exported for user-input validation. Fix is a one-line regex change to a linear-time equivalent.\n\nSingle 10-line new file introducing an exported email-like validator whose regex /^([a-zA-Z0-9._%+-]+)+$/ is a textbook catastrophic-backtracking (ReDoS) pattern. The defect is real and self-documented in the code comment. It currently has 0 callers so it is not yet exploitable in-process, but it is clearly intended for user-supplied input (line 2), making it a high-severity latent security hole. Fix is a one-character-class change to remove the nested quantifier.",
-  "talk_id": "eddff0d1-d259-4018-b90c-a274c3bb9061"
+  "summary": "Risk-tiered review (trivial) completed.\n\nNew file introduces an exported email validator whose regex /^([a-zA-Z0-9._%+-]+)+$/ is a classic catastrophic-backtracking ReDoS (nested + over the same character class). isEmailLike wraps it for user-supplied input, so a crafted long non-matching string blocks the event loop — a real DoS. The change even documents the bug in a comment yet ships the vulnerable pattern. Assumption-integrity concern: the comment claims the regex 'is used' while blast-radius shows 0 callers, a stated-intent-vs-code contradiction that could snowball if the next agent wires it up unfixed. Fix: drop the redundant outer quantifier (/^[a-zA-Z0-9._%+-]+$/) and/or length-cap input.\n\nSingle new file introducing an exported ReDoS-vulnerable regex. The nested-quantifier pattern /^([a-zA-Z0-9._%+-]+)+$/ used by isEmailLike() on user-supplied input causes exponential backtracking on crafted non-matching strings, stalling the event loop (DoS). Confirmed by static analysis; the runtime timing benchmark was blocked by the sandbox approval gate so the rerun_relevant_verification gate remains open, but the vulnerability is definitive regardless. Minimal fix is to drop the outer '+' quantifier.",
+  "talk_id": "c4ba7e3c-e2e7-49da-a8c3-b1e7f41f49e4"
 }

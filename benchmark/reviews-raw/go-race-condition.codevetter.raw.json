@@ -3,7 +3,7 @@
   "changed_lines": 29,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 79508,
+  "duration_ms": 71634,
   "evidence_candidates": [
     {
       "affected_files": ["source.go"],
@@ -43,36 +43,27 @@
   ],
   "findings": [
     {
-      "confidence": 0.99,
-      "filePath": "source.go",
-      "line": 20,
-      "severity": "critical",
-      "suggestion": "Guard every map access with the mutex. Switch to sync.RWMutex and wrap the read: `c.mu.RLock(); v, ok := c.data[key]; c.mu.RUnlock(); return v, ok`. Keep Set using Lock/Unlock. Add a `go test -race` test exercising Get and Set from multiple goroutines to prove the race is gone.",
-      "summary": "Get (source.go:19-22) reads c.data[key] with no lock held, while Set (source.go:25-28) writes c.data[key] under c.mu.Lock(). A lock on the write side alone provides no protection for a lockless reader. Under concurrent Get/Set the Go runtime raises `fatal error: concurrent map read and map write`, a hard crash that recover() cannot catch — the whole process dies. This is a user-facing availability regression: a cache under normal concurrent load takes the service down entirely instead of degrading gracefully.",
-      "title": "Data race: Get reads map without holding mu while Set writes under lock — causes non-recoverable process crash"
-    },
-    {
       "confidence": 0.97,
       "filePath": "source.go",
       "line": 20,
       "severity": "high",
-      "suggestion": "Guard the read in Get with the same lock. Preferred: change line 10 to `mu sync.RWMutex`, wrap Get's read in `c.mu.RLock(); defer c.mu.RUnlock()`, and use `c.mu.Lock(); defer c.mu.Unlock()` in Set. Then prove it: add a test that runs Get/Set concurrently and run `go test -race ./...` (fails now, passes after) plus `go vet ./...`.",
-      "summary": "source.go:20 reads c.data[key] in Get() with no lock, while Set() (lines 26-28) writes c.data under c.mu.Lock(). A concurrent map read racing a map write is undefined behavior in Go; the runtime's map-race check aborts the process with 'fatal error: concurrent map read and map write'. The type comment (line 18) states Get is called from many goroutines, so this is the expected path, not an edge case.",
-      "title": "Data race: Cache.Get reads shared map without holding the mutex"
-    },
-    {
-      "confidence": 0.97,
-      "filePath": "source.go",
-      "line": 20,
-      "severity": "high",
-      "suggestion": "Acquire the lock in Get (c.mu.Lock(); defer c.mu.Unlock() around the read), or change mu to sync.RWMutex and use RLock/RUnlock in Get to retain read concurrency. Both accessors must respect the same lock for it to be effective.",
-      "summary": "source.go:20 reads c.data[key] with no lock held, while Set writes c.data at source.go:27 under c.mu (lines 26-28). The mu field (source.go:10) establishes the invariant that data is only accessed under the lock; Set enforces it but Get violates it, leaving the invariant half-enforced. A concurrent map read (line 20) racing a map write (line 27) is undefined behavior in Go and triggers the runtime's fatal error 'concurrent map read and map write', crashing the process; a locked writer does not protect against an unlocked reader. The doc comment at line 18 confirms Get is 'called from many goroutines'.",
+      "suggestion": "Acquire c.mu in Get (Lock/Unlock around the read), or change mu to sync.RWMutex and wrap the read in RLock/RUnlock to keep reads concurrent while eliminating the race.",
+      "summary": "Cache embeds sync.Mutex (source.go:10) establishing the invariant that all access to c.data is lock-guarded; Set honors it (source.go:26-28) but Get reads c.data[key] with no lock (source.go:19-22). A read concurrent with Set's write is a data race under the Go memory model and can trigger the unrecoverable runtime `fatal error: concurrent map read and map write`, crashing the process. The comments on lines 18/20/24 acknowledge the bug but the mutex still gives false safety: the type advertises concurrency-safety it does not provide.",
       "title": "Get reads shared map without holding mu — data race with Set"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.go",
+      "line": 1,
+      "severity": "medium",
+      "suggestion": "As part of the fix handoff, run `go mod init cache`, add a test that spawns concurrent Get/Set goroutines, and attach the output of `go test -race ./...` as the verification artifact before marking this resolved.",
+      "summary": "find over the repo shows only source.go — there is no go.mod and no *_test.go. The evidence gate rerun_relevant_verification is blocked: the change cannot be proven correct (or the race caught by `go test -race`/`go vet`) in the current tree. This is a fake-green risk — the fix described in the comments was never applied and nothing exercises the concurrent path.",
+      "title": "No verification possible: repo has no go.mod and no tests, so the race is undetectable by tooling"
     }
   ],
-  "findings_count": 3,
+  "findings_count": 2,
   "qa_evidence": [],
-  "review_id": "063e2058-4346-428f-8f04-d486cc5186ae",
+  "review_id": "74f97cd9-6391-45f1-a9a2-d5ba27455cef",
   "review_memory_graph": {
     "edges": [
       {
@@ -143,9 +134,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 60.0,
+  "score": 85.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nNew concurrent cache with a genuine data race: Get (line 20) reads the map without the lock that Set (lines 26-28) uses to write it. This is an unrecoverable fatal error under concurrent use in Go, not a soft bug. The struct's mu field declares the 'access data only under lock' invariant, which Set enforces and Get breaks — a classic half-enforced-invariant defect. Currently 0 callers (new file), so no live impact yet, hence high rather than critical. Verification via `go test -race` could not be run in this session; finding rests on Go's documented map semantics.\n\nSingle new file implementing a cache with a deliberate, self-documented data race: Get reads the shared map without holding the mutex that Set uses for writes. Concurrent Get/Set triggers Go's `fatal error: concurrent map read and map write`, a non-recoverable process crash — a critical availability/product-safety defect the moment this is used on any concurrent path. Fix is to hold the lock (RWMutex) around all map accesses. Blast radius is currently 0 callers (latent), and no -race test was run (verification gate still open), but the language semantics make the defect certain.\n\nSingle-file cache package with a genuine, crash-capable data race. Get() (source.go:20) reads the shared map with no synchronization while Set() writes under c.mu — Go treats concurrent map read/write as a fatal runtime error, so this can hard-crash any concurrent user. The comments correctly self-identify the bug; the code still ships it. One high-severity blocker; no other issues in the 29 changed lines.",
-  "talk_id": "0b8792f2-61c6-433b-8da2-d3afd82dddf8"
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file implementing a Cache. The implicit invariant 'all access to c.data is guarded by c.mu' is enforced in Set but violated in Get (source.go:20), which reads the map lock-free. This is a genuine data race that can cause an unrecoverable fatal runtime crash under the concurrent usage the code itself documents. The mutex creates a false impression of thread-safety. Fix by locking in Get (or using RWMutex).\n\nSingle new file implementing a Cache with a genuine, guaranteed data race: Get reads the map unsynchronized (line 20) while Set writes under the lock (lines 26-28). Under concurrent access this triggers Go's unrecoverable `concurrent map read and map write` fatal error, crashing the process and losing in-flight work — a real product-safety crash, not a style issue. Severity held at high rather than critical only because the type has 0 callers today (no live reproduction path); the defect itself is critical-grade and will fire the moment it's used concurrently as intended. Verification gate remains open: no race-detector run was performed.\n\nNewly added cache/source.go contains a confirmed, self-documented data race: Get (source.go:19-22) reads the shared map without holding mu while Set (source.go:25-28) writes under the lock. In Go this is a process-fatal, unrecoverable runtime error, not a benign race. The struct comments acknowledge the bug but the fix (lock the reader) was never applied. Compounding the handoff risk, the repo has no go.mod and no tests, so the defect cannot currently be caught by `go test -race` — the verification gate remains blocked. Real blocker: synchronize Get. Optional-but-required-for-signoff: add module + race test and attach fresh output.",
+  "talk_id": "e442170f-6d55-4332-9093-c83191a70c6f"
 }

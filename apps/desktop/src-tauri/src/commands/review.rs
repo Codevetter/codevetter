@@ -826,6 +826,68 @@ fn finding_dedupe_key(finding: &Value) -> String {
     format!("{file}:{line}:{title}")
 }
 
+/// Normalized title tokens for near-duplicate detection: lowercase, split on
+/// non-alphanumerics, drop short/stop words, strip a plural 's'. Kept small
+/// and deterministic — this feeds a similarity check, not NLP.
+fn finding_title_tokens(finding: &Value) -> std::collections::BTreeSet<String> {
+    const STOPWORDS: &[&str] = &[
+        "the", "a", "an", "in", "on", "of", "to", "and", "or", "for", "with", "via", "is", "are",
+        "into", "from", "by", "at", "that", "this", "when", "can",
+    ];
+    finding
+        .get("title")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_ascii_lowercase()
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|t| t.len() >= 2 && !STOPWORDS.contains(t))
+        .map(|t| {
+            if t.len() > 3 && t.ends_with('s') {
+                t[..t.len() - 1].to_string()
+            } else {
+                t.to_string()
+            }
+        })
+        .collect()
+}
+
+fn token_jaccard(
+    a: &std::collections::BTreeSet<String>,
+    b: &std::collections::BTreeSet<String>,
+) -> f64 {
+    if a.is_empty() || b.is_empty() {
+        return 0.0;
+    }
+    let intersection = a.intersection(b).count() as f64;
+    let union = a.union(b).count() as f64;
+    intersection / union
+}
+
+/// Same defect stated twice? Specialists phrase one issue many ways and drift
+/// a line or two, so exact `file:line:title` keys leak near-duplicates (the
+/// public benchmark measured 41 redundant restatements across 95 findings).
+/// Two findings collapse when they are in the same file and EITHER
+/// close-by with moderate title overlap, or further apart with strong overlap.
+fn is_duplicate_finding(a: &Value, b: &Value) -> bool {
+    let file = |f: &Value| {
+        f.get("filePath")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_ascii_lowercase()
+    };
+    if file(a) != file(b) {
+        return false;
+    }
+    let line = |f: &Value| f.get("line").and_then(|v| v.as_i64());
+    let line_delta = match (line(a), line(b)) {
+        (Some(la), Some(lb)) => (la - lb).abs(),
+        // No line info on either side → require the strong-similarity arm.
+        _ => i64::MAX,
+    };
+    let similarity = token_jaccard(&finding_title_tokens(a), &finding_title_tokens(b));
+    (line_delta <= 2 && similarity >= 0.30) || (line_delta <= 10 && similarity >= 0.65)
+}
+
 fn severity_rank(severity: &str) -> i32 {
     match severity {
         "critical" => 4,
@@ -837,6 +899,7 @@ fn severity_rank(severity: &str) -> i32 {
 }
 
 fn dedupe_findings(findings: Vec<Value>) -> Vec<Value> {
+    // Pass 1: exact-key dedupe (identical file:line:title from a re-run).
     let mut by_key: std::collections::HashMap<String, Value> = std::collections::HashMap::new();
     for finding in findings {
         let key = finding_dedupe_key(&finding);
@@ -865,7 +928,32 @@ fn dedupe_findings(findings: Vec<Value>) -> Vec<Value> {
         }
     }
 
-    let mut deduped: Vec<Value> = by_key.into_values().collect();
+    // Pass 2: near-duplicate clustering — greedy against kept representatives,
+    // keeping the higher-severity (then higher-confidence) statement of each
+    // defect. Finding counts are small (≤ a few dozen), so O(n²) is fine.
+    let confidence = |f: &Value| f.get("confidence").and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let rank = |f: &Value| {
+        f.get("severity")
+            .and_then(|v| v.as_str())
+            .map(severity_rank)
+            .unwrap_or(0)
+    };
+    let mut kept: Vec<Value> = Vec::new();
+    for finding in by_key.into_values() {
+        match kept.iter_mut().find(|k| is_duplicate_finding(k, &finding)) {
+            Some(existing) => {
+                let better = rank(&finding) > rank(existing)
+                    || (rank(&finding) == rank(existing)
+                        && confidence(&finding) > confidence(existing));
+                if better {
+                    *existing = finding;
+                }
+            }
+            None => kept.push(finding),
+        }
+    }
+
+    let mut deduped: Vec<Value> = kept;
     deduped.sort_by(|a, b| {
         let ar = a
             .get("severity")
@@ -2502,6 +2590,102 @@ mod tests {
     fn changed_line_count_ignores_diff_headers() {
         let diff = "diff --git a/a.ts b/a.ts\n--- a/a.ts\n+++ b/a.ts\n@@ -1,1 +1,2 @@\n-old\n+new\n+another\n";
         assert_eq!(changed_line_count(diff), 3);
+    }
+
+    fn bench_finding(title: &str, line: i64, severity: &str, confidence: f64) -> Value {
+        json!({
+            "title": title,
+            "filePath": "source.ts",
+            "line": line,
+            "severity": severity,
+            "confidence": confidence,
+            "summary": "s",
+        })
+    }
+
+    // Pairs below are REAL specialist outputs from the public benchmark run —
+    // the calibration set for the near-duplicate rule. Keep them verbatim.
+    #[test]
+    fn dedupe_collapses_same_defect_different_phrasing() {
+        let out = dedupe_findings(vec![
+            bench_finding(
+                "SQL injection via string interpolation in findUserByEmail",
+                13,
+                "critical",
+                0.9,
+            ),
+            bench_finding(
+                "SQL injection via string concatenation in findUserByEmail",
+                13,
+                "critical",
+                0.8,
+            ),
+            bench_finding(
+                "os.WriteFile error silently discarded; SaveConfig cannot signal write failure",
+                12,
+                "high",
+                0.9,
+            ),
+            bench_finding(
+                "SaveConfig silently swallows write failures — signature cannot report errors",
+                12,
+                "high",
+                0.8,
+            ),
+        ]);
+        assert_eq!(out.len(), 2, "two defects, two findings: {out:?}");
+    }
+
+    #[test]
+    fn dedupe_keeps_different_defects_on_adjacent_lines() {
+        let out = dedupe_findings(vec![
+            bench_finding(
+                "connect() uses fetch() on a postgres:// URL — cannot establish a DB connection",
+                13,
+                "high",
+                0.9,
+            ),
+            bench_finding(
+                "Password special characters are not URL-encoded in the connection string",
+                12,
+                "medium",
+                0.8,
+            ),
+            bench_finding(
+                "Passwords hashed with unsalted MD5 (account-compromise / credential-loss risk)",
+                8,
+                "critical",
+                0.9,
+            ),
+            bench_finding(
+                "Non-constant-time hash comparison enables timing side channel",
+                12,
+                "medium",
+                0.7,
+            ),
+        ]);
+        assert_eq!(out.len(), 4, "distinct defects must all survive: {out:?}");
+    }
+
+    #[test]
+    fn dedupe_collapses_strong_match_across_distant_lines() {
+        // Same defect anchored at the use site vs the import line.
+        let out = dedupe_findings(vec![
+            bench_finding(
+                "Reset tokens generated from predictable java.util.Random (CWE-338)",
+                11,
+                "critical",
+                0.9,
+            ),
+            bench_finding(
+                "Reset tokens generated with predictable java.util.Random (CWE-338)",
+                5,
+                "high",
+                0.8,
+            ),
+        ]);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].get("severity").and_then(|v| v.as_str()), Some("critical"));
     }
 
     #[test]

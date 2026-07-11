@@ -3,7 +3,7 @@
   "changed_lines": 16,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 49179,
+  "duration_ms": 72528,
   "evidence_candidates": [
     {
       "affected_files": ["source.py"],
@@ -43,45 +43,36 @@
   ],
   "findings": [
     {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 8,
+      "severity": "high",
+      "suggestion": "Narrow the handler to `except json.JSONDecodeError` (and/or `ValueError`) so control-flow exceptions propagate. Either re-raise/wrap parse failures (e.g. raise a ConfigError) or make the failure explicit to callers instead of returning a silent `{}`; if a default is truly desired, log the error and document that `{}` means 'parse failed'.",
+      "summary": "source.py:8 uses a bare `except:` which catches BaseException — including KeyboardInterrupt and SystemExit — so Ctrl-C and interpreter shutdown are suppressed inside parse_config. It also returns `{}` (line 11) on *any* failure, and load_settings (line 16) passes that straight back, so a malformed or unreadable config silently degrades to empty settings with no signal to callers. The `-> dict` return type is structurally honored but its semantic contract (a valid parsed config) is broken, and the inline comment (lines 8–10) confirms this is a known BUG that was committed rather than fixed.",
+      "title": "Bare except in parse_config swallows BaseException and silently returns {}"
+    },
+    {
       "confidence": 0.9,
       "filePath": "source.py",
       "line": 8,
       "severity": "medium",
-      "suggestion": "Narrow the catch to `except json.JSONDecodeError` (or `ValueError`) so interrupts propagate, and surface the failure instead of silently returning `{}` — log the error and/or re-raise, or return an explicit failure sentinel the caller checks. If a default is truly desired, log a warning naming the path so the reset is discoverable.",
-      "summary": "parse_config (source.py:6-11) uses a bare `except:` on line 8 that catches BaseException (including KeyboardInterrupt/SystemExit) and returns `{}`. Via load_settings (line 14-16), any malformed or corrupt config file causes the app to proceed silently with empty settings — the user's saved preferences vanish with no log, exception, or sentinel, and callers cannot distinguish a genuinely empty config from a parse failure. This is a confusing/perceived-data-loss state for the user.",
-      "title": "Bare except silently swallows config parse failures, resetting user settings with no error"
+      "suggestion": "Catch only json.JSONDecodeError (or ValueError) and re-raise / propagate rather than swallowing. Either let load_settings raise on unparseable config so the caller can show an explicit error state, or return a sentinel (e.g. None) plus the raw error so callers can distinguish parse failure from an intentionally empty config. Never map 'parse failed' to the same value as 'valid empty object'.",
+      "summary": "source.py:6-11: the bare `except:` in parse_config catches everything (including BaseException) and returns `{}`. Via load_settings (source.py:14-16), a malformed/truncated config file therefore resolves to an empty settings dict with no error, log, or empty-state signal — the data-loss/confusing-state pattern where a user's persisted settings silently appear reset and callers cannot distinguish 'missing' from 'corrupt' from 'legitimately empty'. Blast radius is 0 callers today (both symbols unused), so this is latent, not a live regression — hence medium, not high.",
+      "title": "parse_config silently returns {} on any parse failure → load_settings yields empty settings with no error"
     },
     {
-      "confidence": 0.95,
-      "filePath": "source.py",
-      "line": 8,
-      "severity": "medium",
-      "suggestion": "Narrow the catch to the parse error: `except json.JSONDecodeError:` (or `except ValueError:`). If the empty-dict fallback is intentional, keep it under the narrowed exception; otherwise re-raise so callers learn the config failed to parse. Add a unit test asserting parse_config('{bad') returns {} while KeyboardInterrupt propagates.",
-      "summary": "source.py:8 uses a bare `except:` in parse_config, which catches BaseException — including KeyboardInterrupt and SystemExit — and returns {} (line 11). A Ctrl-C during json.loads is silently swallowed, and any malformed config collapses into an empty dict indistinguishable from a valid-but-empty config, so load_settings callers silently fall back to defaults on bad input. The inline # BUG comment (lines 8-10) documents the defect but it was left unfixed.",
-      "title": "Bare except in parse_config swallows BaseException (KeyboardInterrupt/SystemExit) and hides parse failures"
-    },
-    {
-      "confidence": 0.95,
-      "filePath": "source.py",
-      "line": 8,
-      "severity": "medium",
-      "suggestion": "Narrow to `except json.JSONDecodeError:` (or `except ValueError:`). If a silent fallback is truly intended, log the error before returning `{}` so failures are observable; otherwise let it propagate.",
-      "summary": "Line 8 `except:` catches BaseException (including KeyboardInterrupt and SystemExit), and every failure returns `{}` (line 11), so a caller cannot distinguish a genuinely empty config from a parse error. Currently 0 callers, which caps blast radius, but any future caller inherits silent data loss and un-interruptible behavior.",
-      "title": "Bare except swallows BaseException and hides all parse failures"
-    },
-    {
-      "confidence": 0.8,
+      "confidence": 0.7,
       "filePath": "source.py",
       "line": 5,
       "severity": "low",
-      "suggestion": "Guard the result: `data = json.loads(raw); return data if isinstance(data, dict) else {}` (or raise), so the returned type matches the declared contract.",
-      "summary": "`parse_config` (line 5) and `load_settings` (line 14) are annotated `-> dict`, but `json.loads` returns the parsed type: valid input like `\"[1,2,3]\"` or `\"42\"` yields a list/int, violating the annotation. A caller trusting the `dict` contract (e.g. `.get(...)`) would raise AttributeError on well-formed JSON — an unenforced implicit invariant, not just bad input handling.",
-      "title": "`-> dict` contract not enforced for valid non-object JSON"
+      "suggestion": "Add test_source.py asserting parse_config on valid JSON round-trips and on invalid JSON raises (not returns {}), then run `python -m pytest -q` and attach the output. This is optional cleanup relative to the bare-except fix but resolves the blocked rerun_relevant_verification gate.",
+      "summary": "source.py adds parse_config and load_settings (0 callers, newly added) with no accompanying tests and no fresh command/test output in history — matching the pre-review `no-fresh-verification-evidence` candidate. Nothing proves the intended behavior (surface parse errors vs. return {}), so the change is only statically plausible.",
+      "title": "New parse/load functions ship with no tests or verification evidence"
     }
   ],
-  "findings_count": 4,
+  "findings_count": 3,
   "qa_evidence": [],
-  "review_id": "361fbb9d-975b-493f-81ae-1c8426779515",
+  "review_id": "f04398c5-f795-494f-ab0e-05d9f56a55b3",
   "review_memory_graph": {
     "edges": [
       {
@@ -155,6 +146,6 @@
   "score": 83.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nNew 16-line file, both functions uncalled (0 callers), so no live regression risk yet. The self-flagged bare `except:` is a real defect (swallows KeyboardInterrupt/SystemExit and collapses all errors to `{}`). Separately, the `-> dict` annotation is an unenforced invariant that valid non-object JSON violates. Comment intent and code agree, so no misleading-doc risk for the next agent. No fresh verification artifact was produced this pass — behavior was validated by reading only.\n\nSingle new file with two uncalled functions (0 callers per blast-radius scan). The real product-safety issue is the bare `except:` on source.py:8: it swallows all errors including KeyboardInterrupt/SystemExit and silently returns `{}`, so a corrupt config would reset a user's settings to empty with no error or log — a confusing state and perceived data loss. Blast radius is low today (no callers) so severity is capped at medium, but the defect is unambiguous. Secondary, out-of-scope: `-> dict` contract is violated for non-object JSON (e.g. `\"[1,2]\"` returns a list) and isn't guarded. No runtime verification needed — the defect is provable by static reading; the blocked verification gate is resolved by inspection since the functions are uncalled and pure-logic.\n\nSingle new file with one real defect: a bare `except:` in parse_config catches BaseException (masking KeyboardInterrupt/SystemExit) and silently returns {} on any failure, breaking the parse-vs-empty contract for load_settings. The defect is self-documented by the agent's own # BUG comment but left in place — a fake-fix/incomplete-handoff signal. load_settings' file-open error handling is correct. Both symbols currently have 0 callers, bounding blast radius, but no test or verification evidence accompanies the change.",
-  "talk_id": "93944a2e-66d2-4beb-aa29-476c1ec3761a"
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new 16-line file demonstrating a bare-except antipattern. The code contains a genuine, self-documented bug: `except:` at line 8 catches BaseException (KeyboardInterrupt/SystemExit) and returns `{}` on any failure, which load_settings propagates — masking parse failures from callers. The author's own comment agrees it's a BUG, and the change shipped with it unfixed. No live regression yet (0 callers, newly added), but the defect is real and would mislead future callers.\n\nSingle 16-line new file with one genuine defect in product-safety scope: parse_config swallows all exceptions and returns {}, so load_settings turns a corrupt/truncated config into a silent empty-settings state (potential user-visible data loss, no error surfaced). Capped at medium because both functions currently have 0 callers (confirmed via grep, matches blast-radius data) — the defect is real and certain but latent until wired into a flow. The bare `except:` also catches KeyboardInterrupt/SystemExit, but json.loads is fast so that sub-issue is minor. load_settings does not guard open() errors, so OSError propagates raw — an inconsistent contract worth noting, not a data-loss bug.\n\nSmall 16-line new file with one certain defect: the bare `except:` at line 8 catches BaseException (swallowing KeyboardInterrupt/SystemExit) and returns `{}` on any failure, so parse errors are invisible to callers including load_settings (line 16). Both functions are currently uncalled (0 callers), which caps real-world impact and keeps this at medium rather than high. No tests or fresh verification exist, so the change is unproven.",
+  "talk_id": "8adc508b-89e9-419f-bbd7-2953bcb6db14"
 }

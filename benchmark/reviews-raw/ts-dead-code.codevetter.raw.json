@@ -3,7 +3,7 @@
   "changed_lines": 21,
   "coordinator_used": false,
   "diff_range": "HEAD~1..HEAD",
-  "duration_ms": 75137,
+  "duration_ms": 82096,
   "evidence_candidates": [
     {
       "affected_files": ["source.ts"],
@@ -43,54 +43,63 @@
   ],
   "findings": [
     {
-      "confidence": 0.97,
+      "confidence": 0.95,
       "filePath": "source.ts",
-      "line": 9,
+      "line": 8,
       "severity": "medium",
-      "suggestion": "Guard the 'C' return so the lower branches stay reachable, and confirm the intended grade cutoffs before applying. Verify with `tsc --noEmit source.ts` (flags TS7027 on line 13) and add a boundary test covering 95->A, 85->B, 65->D, 40->F. Do not mark fixed without that fresh output.",
-      "summary": "Line 9 `return 'C';` is unconditional, so lines 13-16 (`if (score >= 70) return 'D'` and `return 'F'`) can never execute. classify(65) returns 'C' instead of 'D' and classify(40) returns 'C' instead of 'F'. The function is exported (public contract). The agent documented this in the comment at lines 11-12 but committed it unfixed. Note: the reachable code (C unconditional) and dead code (D at >=70) disagree on cutoffs, so the intended 'C' band is ambiguous.",
-      "title": "Unconditional `return 'C'` makes 'D'/'F' grades unreachable — classify() misgrades all scores below 80"
-    },
-    {
-      "confidence": 0.98,
-      "filePath": "source.ts",
-      "line": 9,
-      "severity": "medium",
-      "suggestion": "Remove the early `return 'C';` at line 9 and let control fall through the `score >= 80` / `score >= 70` chain so 'C' (70-79 → 'D', <70 → 'F') branches are reachable. Concretely: `if (score >= 70) return 'C';` etc., or reorder so the final `return 'F'` is the sole fallthrough. Add a unit test asserting classify(75)==='D' and classify(50)==='F'.",
-      "summary": "source.ts:9 `return 'C';` is unconditional, making the `score >= 70 → 'D'` block (lines 13-15) and the `return 'F'` fallback (line 16) unreachable. Every score under 80 — including failing scores like 50 — resolves to 'C'. If this helper is ever wired into a grading/tiering UI, users below a 'C' threshold would see an incorrect passing-adjacent grade (data-integrity/confusing-state). Currently 0 callers (verified via grep + blast-radius), so no active workflow is regressed yet, hence medium not high.",
-      "title": "classify() never returns 'D' or 'F' — unconditional return silently misclassifies all scores below 80"
+      "suggestion": "Guard the 'C' case (`if (score >= 70) { return 'C'; }`) so the 'D' (`>= 60`?) and 'F' branches become reachable, then delete the now-truly-dead fallthrough. Confirm the intended grade thresholds. Also remove the unused `neverCalled` helper (source.ts:19) if it is not a deliberate fixture.",
+      "summary": "In `classify` (source.ts:2), `return 'C';` on line 8 executes for every score below 80, so the code on lines 13–16 (`if (score >= 70) return 'D';` and `return 'F';`) is unreachable. The function can only return 'A', 'B', or 'C'; e.g. `classify(50)` returns 'C' instead of 'F'. The comment on lines 11–12 correctly identifies this, so it does not mislead follow-up work, but the underlying correctness bug is real: the `return 'C'` was almost certainly meant to be guarded (e.g. `if (score >= 70) return 'C';`). `classify` is exported (0 current callers per blast radius), so this is a latent contract defect.",
+      "title": "Unconditional `return 'C'` makes 'D'/'F' branches dead — classifier can never return those grades"
     },
     {
       "confidence": 0.95,
       "filePath": "source.ts",
       "line": 9,
       "severity": "medium",
-      "suggestion": "Guard the `'C'` return so the lower tiers stay reachable, e.g. replace line 9 with `if (score >= 70) { return 'D'; }` ... `return 'F';` and drop the redundant final `'C'`, or restructure to `if (score >= 70) return 'C'` / `return 'F'` per the intended ladder. Remove the now-dead trailing block once the control flow is fixed.",
-      "summary": "The unconditional `return 'C';` at source.ts:9 makes lines 13–16 unreachable (as the comment at lines 11–12 admits), but the behavioral consequence is more than dead code: the exported `classify` will return `'C'` for every score below 80, so a score in [70,80) that should be `'D'` and any score <70 that should be `'F'` are both returned as `'C'`. The grading contract implied by the A/B/C/D/F ladder is broken for the entire sub-80 range.",
-      "title": "classify() can never return 'D' or 'F' — unconditional return silently misclassifies sub-80 scores"
+      "suggestion": "Confirm the intended thresholds, then restructure so the branches are reachable — e.g. guard the 'C' case (`if (score >= 70) return 'C';`) before `if (score >= 60) return 'D';` / `return 'F';`, or delete lines 13-16 if 'C' truly is the floor. Do not leave the unreachable block in place.",
+      "summary": "Line 9 `return 'C';` is unconditional, so lines 13-16 (`if (score >= 70) return 'D';` and `return 'F';`) are unreachable. Any score below 80 returns 'C', so the exported classify() can never produce 'D' or 'F' — a 65 and a 45 both grade as 'C'. The line 11-12 comment excuses this as 'never used,' but classify is `export`ed (line 2) and thus a public contract; 0 callers today does not make the logic correct. Intended grade boundaries are ambiguous, so the fix needs author intent, not a guess.",
+      "title": "Unreachable code makes classify() never return 'D' or 'F'"
     },
     {
       "confidence": 0.95,
       "filePath": "source.ts",
-      "line": 19,
-      "severity": "low",
-      "suggestion": "Delete neverCalled() unless it is a placeholder for imminent use.",
-      "summary": "source.ts:19 `neverCalled` has zero references (confirmed via grep across repo and blast-radius scan). It ships no behavior and is out of product-safety scope, but it's unused surface area worth deleting.",
-      "title": "neverCalled() is dead code with no callers"
+      "line": 9,
+      "severity": "medium",
+      "suggestion": "Delete the unconditional `return 'C';` on line 9 and let the score fall through the `>= 70` check, so the tiers read: >=90 A, >=80 B, >=70 C (or D per intent), else F. Confirm the intended cutoffs, then run `tsc --noEmit` with `allowUnreachableCode: false` to prove no unreachable branches remain.",
+      "summary": "Line 9 `return 'C';` is unconditional, so lines 13–16 (`if (score >= 70) return 'D';` and the final `return 'F';`) are unreachable. classify(75) returns 'C' instead of 'D', and classify(40) returns 'C' instead of 'F'. The function is `export`ed (line 2), so any future consumer of this public symbol gets a silently wrong grade for the entire 0–79 range. Currently 0 callers, so no live workflow is broken yet — hence medium, not high.",
+      "title": "Unreachable D/F grade tiers: classify() returns 'C' for every score below 80"
     },
     {
       "confidence": 0.9,
       "filePath": "source.ts",
       "line": 19,
       "severity": "low",
-      "suggestion": "Delete `neverCalled` unless it is a stub intended for imminent use; if kept, note why in a comment so the next agent does not re-flag it.",
-      "summary": "Lines 19-21: `neverCalled` has 0 callers per blast-radius and is not exported, so nothing can reach it. Optional cleanup, not a blocker.",
-      "title": "`neverCalled` is dead code (no callers, not exported)"
+      "suggestion": "Remove neverCalled() unless a caller is coming in a follow-up; if intentional scaffolding, note that in a commit message so the next agent doesn't re-flag it.",
+      "summary": "Lines 19-21 define `neverCalled()` which is non-exported and has 0 callers (confirmed by blast-radius). It is pure dead weight.",
+      "title": "neverCalled() is dead code"
+    },
+    {
+      "confidence": 0.85,
+      "filePath": "source.ts",
+      "line": 2,
+      "severity": "low",
+      "suggestion": "Next agent: run `npx tsc --noEmit --allowUnreachableCode false source.ts` (errors on the unreachable block) and add a table test asserting classify(95)==='A', classify(85)==='B', classify(75), classify(55) across all bands. Attach the output before marking this fixed.",
+      "summary": "Repo has no tsconfig.json, package.json, tests, or lint config; nothing was run against the diff, leaving the rerun_relevant_verification gate unresolved. The unreachable-code bug at line 9 is trivially detectable by a compiler/linter.",
+      "title": "No verification run — dead-code bug would be caught by tsc/lint"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.ts",
+      "line": 19,
+      "severity": "low",
+      "suggestion": "Remove neverCalled() unless it is a deliberate placeholder for imminent use; if kept, add a comment explaining why.",
+      "summary": "neverCalled (lines 19–21) is not exported and has 0 callers per the blast-radius scan; it only logs to console. No correctness or user-facing impact — pure dead code.",
+      "title": "Dead helper neverCalled() has no callers"
     }
   ],
-  "findings_count": 5,
+  "findings_count": 6,
   "qa_evidence": [],
-  "review_id": "dfe361b6-5fb8-4eef-8ec9-62ee6e1c1782",
+  "review_id": "f1aad0f3-47ce-4dca-8a35-b973ef1cf6c2",
   "review_memory_graph": {
     "edges": [
       {
@@ -161,9 +170,9 @@
   },
   "review_mode": "specialist-lite",
   "risk_tier": "lite",
-  "score": 81.0,
+  "score": 79.0,
   "sensitive_paths": [],
   "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
-  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.ts contains a self-documented dead-code case, but the substantive issue is a correctness bug: the unconditional `return 'C'` at line 9 makes the exported classify() unable to ever return 'D' or 'F', misclassifying all scores below 80 as 'C'. Currently 0 callers so blast radius is low (medium severity), but the export makes it a wrong-contract waiting for its first consumer. The inline comment accurately describes the unreachable region and neverCalled()'s lack of callers, so no false premise would mislead a follow-up agent. neverCalled() is genuinely unused (confirmed by blast-radius) but harmless.\n\nNew file source.ts introduces classify(), which has a real correctness bug: the unconditional `return 'C';` at line 9 renders the 'D' and 'F' branches unreachable, so any score below 80 is misclassified as 'C'. This is a latent product-safety defect (silent misclassification / confusing state) but bounded to medium severity because the symbol has 0 callers — no live user flow is currently broken. neverCalled() is dead code (low). No security, permission, or data-loss concerns in scope.\n\nNew single-file diff with one real correctness bug and one dead-code cleanup. classify() (exported) returns 'C' for every score below 80 because of the unconditional `return 'C';` at line 9, making the 'D'/'F' logic (lines 13-16) unreachable — the agent documented this as a BUG in-comment but shipped it unfixed. `neverCalled` is dead code (low). No verification exists (no tsconfig/tests); the rerun_relevant_verification gate is genuinely blocked — `tsc --noEmit source.ts` would catch the unreachable code and is the required proof before any fix is called done.",
-  "talk_id": "73172622-0b72-42c9-99b2-794a3be70d5f"
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new 21-line file, self-contained in the diff. The only material issue is a provable dead-code/correctness defect: the unconditional `return 'C'` on line 8 makes the 'D'/'F' branches (lines 13–16) unreachable, so `classify` can never return those grades. From the assumption-integrity angle, the inline comment's claims (code below is unreachable; helper is unused) are both accurate and verified against blast-radius data, so they will NOT steer the next agent to a false premise — the comment honestly labels the bug. Severity capped at medium because `classify` has 0 callers today despite being exported.\n\nNew standalone file with a self-admitted dead-code defect. The material bug: an unconditional `return 'C';` (line 9) makes the D/F grade tiers (lines 13–16) unreachable, so classify() returns 'C' for all scores below 80 instead of 'D' (70–79) or 'F' (<70). Because classify is exported, this is a latent public-API regression, but with 0 callers there is no broken user workflow today — rated medium. neverCalled() is harmless dead code (low). No security, data-loss, or permission-state concerns in scope.\n\nNewly added source.ts introduces an exported classify() with a live correctness bug: an unconditional `return 'C';` at line 9 renders the 'D'/'F' branches (lines 13-16) unreachable, so all scores below 80 grade as 'C'. The in-code comment acknowledges the dead code but wrongly dismisses it as harmless because the symbol is unused — it is exported and the logic is simply wrong. A second unused function (neverCalled) is minor dead code. No verification harness exists, so the bug shipped unchecked.",
+  "talk_id": "bf5c4b17-85b3-437c-a1f7-dd1b2b1295cc"
 }
