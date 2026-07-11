@@ -1,0 +1,151 @@
+{
+  "agent": "claude",
+  "changed_lines": 12,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 46598,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.js"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.99,
+      "filePath": "source.js",
+      "line": 8,
+      "severity": "critical",
+      "suggestion": "Do not use eval. Parse the filter with a safe, restricted evaluator (e.g. a whitelisted expression parser / jsep-style AST walker, or a sandbox like vm2 with no host access), or replace the free-form string with a structured filter object ({field, op, value}) validated against an allowlist. Wrap parsing in try/catch and surface an 'invalid filter' error state instead of letting exceptions bubble and crash the flow.",
+      "summary": "source.js:8 evaluates the untrusted `expression` argument with `eval('(' + expression + ')')`. Any value passed to `buildFilter` executes as JavaScript in the host process (data exfiltration via fetch, process crash/DoS, data loss). Even benign-but-malformed user filters throw an uncaught SyntaxError from eval (line 8) or at predicate-call time (line 9), so there is no graceful 'invalid filter' state — the user flow simply crashes. Export at line 12 makes this a public contract; blast-radius shows 0 callers today, so impact is latent but real once wired up.",
+      "title": "Arbitrary code execution via eval() on caller-supplied expression"
+    },
+    {
+      "confidence": 0.99,
+      "filePath": "source.js",
+      "line": 8,
+      "severity": "critical",
+      "suggestion": "Never eval caller input. Parse `expression` into a structured/whitelisted filter (AST or predicate DSL) and evaluate that, or use a sandboxed expression library (e.g. jsep + a safe evaluator). Reject any input that cannot be validated against an allow-list.",
+      "summary": "buildFilter passes its parameter directly into eval at source.js:8 — `const predicate = eval('(' + expression + ')')`. Any caller-controlled value becomes executing JavaScript (data exfiltration via fetch, process crash, full RCE). The implicit invariant that `expression` is trusted (assumed by lines 1 and 5-7) is never enforced: no allow-list, no AST parse, no type/format guard. The benign name `buildFilter` with 0 current callers means the next agent will likely pass user input into it, silently introducing RCE.",
+      "title": "Arbitrary code execution: eval() on caller-supplied expression"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.js",
+      "line": 5,
+      "severity": "high",
+      "suggestion": "Do not mark this change verified. Replace the eval implementation per the critical finding, add a test that proves untrusted input cannot execute, and attach fresh `node --test` output before closing the gate.",
+      "summary": "source.js:5-7 carries a `// BUG:` comment describing the arbitrary-code-execution hole, yet the vulnerable eval was committed as-is — a comment is not a remediation. There is no test file and no command/log evidence for this diff, so the `no-fresh-verification-evidence` / `rerun_relevant_verification` gate is unresolved. The next agent cannot treat this as done.",
+      "title": "Incomplete handoff: known bug shipped with a comment instead of a fix, no tests/verification"
+    }
+  ],
+  "findings_count": 3,
+  "qa_evidence": [],
+  "review_id": "ad2c7598-3cc1-47c2-84c2-b2ff87b8e7de",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-js",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-js",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-js",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.js",
+        "id": "file-source-js",
+        "kind": "file",
+        "label": "source.js"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.js",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 50.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nNew file source.js introduces buildFilter, which passes its `expression` argument straight into eval() at line 8 — a critical arbitrary-code-execution / code-injection vulnerability. The file's own header and comment acknowledge it as a bug. From the assumption-integrity angle, the code relies on an unenforced 'expression is trusted' invariant while exposing a benignly-named function (buildFilter, 0 callers) that a future caller would naturally feed user input into, snowballing the vulnerability. Finding is statically provable from line 8; no fresh runtime evidence is required.\n\nSingle new file exporting buildFilter(), which runs caller-supplied input through eval() — arbitrary code execution plus an ungraceful crash path for malformed user filters. Critical. Currently 0 callers (newly added, unused), so live impact is latent, but the function is exported as a reusable contract and must be fixed before anything consumes it. The eval defect is provable statically; the only open verification item is a trivial one-line repro, not a blocker to confirming the finding.\n\nSingle new 12-line file introducing buildFilter, which eval()s a caller-supplied string — a critical arbitrary-code-execution vulnerability that the diff self-documents as a BUG. It was committed with a descriptive comment instead of a fix, no tests, and no verification evidence. Currently 0 callers (dead code), but exported, so the public contract is unsafe. Blocker, not shippable.",
+  "talk_id": "5b7337c6-dc96-4710-930c-d9835024fbd4"
+}

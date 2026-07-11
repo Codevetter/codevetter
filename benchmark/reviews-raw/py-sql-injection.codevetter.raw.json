@@ -1,0 +1,133 @@
+{
+  "agent": "claude",
+  "changed_lines": 9,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 35552,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.99,
+      "filePath": "source.py",
+      "line": 8,
+      "severity": "critical",
+      "suggestion": "Use a parameterized query: cursor = db.execute(\"SELECT id, name FROM products WHERE name LIKE ?\", (f\"%{name}%\",)); return cursor.fetchall(). Never interpolate caller-supplied values into SQL text.",
+      "summary": "Line 8 builds the query with f\"SELECT id, name FROM products WHERE name LIKE '%{name}%'\" and passes it straight to db.execute(). The untrusted `name` parameter is interpolated into the SQL text with no binding or escaping, so a value such as \"%' UNION SELECT id, password FROM users --\" injects arbitrary SQL. The comment on lines 6-7 documents this exact exploit but the shipped code does not remediate it — stated intent and implementation both confirm the vulnerable pattern is what was committed.",
+      "title": "SQL injection via f-string interpolation in search_products"
+    }
+  ],
+  "findings_count": 1,
+  "qa_evidence": [],
+  "review_id": "8e8a8d3b-2f21-47a8-a10b-69eb218457ed",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "assumption-first",
+  "risk_tier": "trivial",
+  "score": 80.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "general"],
+  "summary": "Risk-tiered review (trivial) completed.\n\nSingle new file adding search_products, which contains a textbook SQL injection: the `name` argument is interpolated into the SQL string via f-string on line 8 and executed without parameterization. The vulnerability is provable by static reading and is even self-documented in the comment (lines 6-7). Currently 0 callers, so it is a latent sink rather than an actively exploitable path, but it is critical the moment it is wired into any request handler. Fix by switching to bound parameters.\n\nSingle new function with a textbook SQL injection: user-controlled `name` is f-string-interpolated into the SQL statement on line 8. Statically provable (no runtime state dependency), so reported at high confidence despite the blocked verification gate. Currently has 0 callers, so it is a latent hole rather than an actively exploited path, but it must be fixed before anything wires request input into it.",
+  "talk_id": "a5ecc801-4187-4ede-b6bc-4d1094891b59"
+}

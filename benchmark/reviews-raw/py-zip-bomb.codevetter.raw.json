@@ -1,0 +1,142 @@
+{
+  "agent": "claude",
+  "changed_lines": 9,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 53248,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 9,
+      "severity": "high",
+      "suggestion": "Before extracting, iterate `zf.infolist()` and reject the archive if cumulative `file_size` exceeds a total cap, if any single entry exceeds a per-file cap, or if `file_size/compress_size` exceeds a max ratio for any entry. Alternatively extract members one at a time via a length-limited streamed copy (`zf.open(...)` + bounded `read`), aborting once a byte budget is hit. Also bound the entry count. (Note: path traversal is already mitigated by CPython's extractall name sanitization, so no extra guard is needed there.)",
+      "summary": "source.py:9 `zf.extractall(dest)` extracts every archive member unconditionally. `zipfile` never enforces a size cap, so a small malicious archive (high-redundancy or overlapping/nested entries) decompresses to arbitrarily large output, exhausting disk/inodes (and memory for downstream readers) — a resource-exhaustion DoS. The per-entry `ZipInfo.file_size`/`compress_size` available on line 8's `zf` are never inspected before extraction.",
+      "title": "Zip bomb: extractall() with no uncompressed-size or compression-ratio limit"
+    },
+    {
+      "confidence": 0.97,
+      "filePath": "source.py",
+      "line": 9,
+      "severity": "high",
+      "suggestion": "Before extracting, iterate zf.infolist(): reject if any member's file_size exceeds a per-file cap, if the sum of file_size exceeds a total cap, or if file_size/compress_size exceeds a ratio threshold. Prefer streaming each member through a bounded read (zf.open(member) with a byte counter) and abort on overrun, rather than extractall(). Also bound member count to guard against many-tiny-files bombs.",
+      "summary": "extract_archive calls zf.extractall(dest) at source.py:9 with no inspection of zf.infolist() member sizes, no cumulative uncompressed-byte cap, and no compression-ratio check. The BUG comment at lines 6-7 accurately describes present behavior: a small malicious archive can decompress to arbitrary size, exhausting disk and memory (CWE-409). The implicit caller assumption 'this safely handles an untrusted archive' is contradicted by the code.",
+      "title": "Unbounded zip extraction — decompression-bomb DoS (no size/ratio guard)"
+    }
+  ],
+  "findings_count": 2,
+  "qa_evidence": [],
+  "review_id": "6ee0ce6a-779e-4372-b0c9-e80dbe499623",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "assumption-first",
+  "risk_tier": "trivial",
+  "score": 80.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "general"],
+  "summary": "Risk-tiered review (trivial) completed.\n\nThe single 9-line change adds extract_archive, which is itself the documented vulnerability: zf.extractall (line 9) runs with no size, count, or compression-ratio limit, enabling a zip-bomb resource-exhaustion DoS. The BUG comment (lines 6-7) is confirmed accurate, not stale. Path-traversal (Zip Slip) and symlink-escape were considered and rejected — CPython's extractall sanitizes member paths and does not recreate symlinks. Function has 0 callers, so exposure is currently dormant; severity is high (not critical) on that basis. Finding is proven statically; a runtime PoC is unnecessary to confirm the missing guard.\n\nSingle newly-added function `extract_archive`. The self-documented zip-bomb vulnerability is real and confirmed against zipfile's actual behavior: extractall() applies no size or compression-ratio limit, allowing a small crafted archive to exhaust disk/memory (DoS). No path-traversal finding — CPython's extractall sanitizes member names, so that would be a false positive. 0 callers currently, but this is a reusable utility intended for untrusted input, so severity is high on the code's nature rather than current blast radius.",
+  "talk_id": "8788cf59-2bac-47fc-a601-4afc18a5cca1"
+}

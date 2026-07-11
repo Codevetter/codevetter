@@ -1,0 +1,160 @@
+{
+  "agent": "claude",
+  "changed_lines": 16,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 49179,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.9,
+      "filePath": "source.py",
+      "line": 8,
+      "severity": "medium",
+      "suggestion": "Narrow the catch to `except json.JSONDecodeError` (or `ValueError`) so interrupts propagate, and surface the failure instead of silently returning `{}` — log the error and/or re-raise, or return an explicit failure sentinel the caller checks. If a default is truly desired, log a warning naming the path so the reset is discoverable.",
+      "summary": "parse_config (source.py:6-11) uses a bare `except:` on line 8 that catches BaseException (including KeyboardInterrupt/SystemExit) and returns `{}`. Via load_settings (line 14-16), any malformed or corrupt config file causes the app to proceed silently with empty settings — the user's saved preferences vanish with no log, exception, or sentinel, and callers cannot distinguish a genuinely empty config from a parse failure. This is a confusing/perceived-data-loss state for the user.",
+      "title": "Bare except silently swallows config parse failures, resetting user settings with no error"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 8,
+      "severity": "medium",
+      "suggestion": "Narrow the catch to the parse error: `except json.JSONDecodeError:` (or `except ValueError:`). If the empty-dict fallback is intentional, keep it under the narrowed exception; otherwise re-raise so callers learn the config failed to parse. Add a unit test asserting parse_config('{bad') returns {} while KeyboardInterrupt propagates.",
+      "summary": "source.py:8 uses a bare `except:` in parse_config, which catches BaseException — including KeyboardInterrupt and SystemExit — and returns {} (line 11). A Ctrl-C during json.loads is silently swallowed, and any malformed config collapses into an empty dict indistinguishable from a valid-but-empty config, so load_settings callers silently fall back to defaults on bad input. The inline # BUG comment (lines 8-10) documents the defect but it was left unfixed.",
+      "title": "Bare except in parse_config swallows BaseException (KeyboardInterrupt/SystemExit) and hides parse failures"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 8,
+      "severity": "medium",
+      "suggestion": "Narrow to `except json.JSONDecodeError:` (or `except ValueError:`). If a silent fallback is truly intended, log the error before returning `{}` so failures are observable; otherwise let it propagate.",
+      "summary": "Line 8 `except:` catches BaseException (including KeyboardInterrupt and SystemExit), and every failure returns `{}` (line 11), so a caller cannot distinguish a genuinely empty config from a parse error. Currently 0 callers, which caps blast radius, but any future caller inherits silent data loss and un-interruptible behavior.",
+      "title": "Bare except swallows BaseException and hides all parse failures"
+    },
+    {
+      "confidence": 0.8,
+      "filePath": "source.py",
+      "line": 5,
+      "severity": "low",
+      "suggestion": "Guard the result: `data = json.loads(raw); return data if isinstance(data, dict) else {}` (or raise), so the returned type matches the declared contract.",
+      "summary": "`parse_config` (line 5) and `load_settings` (line 14) are annotated `-> dict`, but `json.loads` returns the parsed type: valid input like `\"[1,2,3]\"` or `\"42\"` yields a list/int, violating the annotation. A caller trusting the `dict` contract (e.g. `.get(...)`) would raise AttributeError on well-formed JSON — an unenforced implicit invariant, not just bad input handling.",
+      "title": "`-> dict` contract not enforced for valid non-object JSON"
+    }
+  ],
+  "findings_count": 4,
+  "qa_evidence": [],
+  "review_id": "361fbb9d-975b-493f-81ae-1c8426779515",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 83.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nNew 16-line file, both functions uncalled (0 callers), so no live regression risk yet. The self-flagged bare `except:` is a real defect (swallows KeyboardInterrupt/SystemExit and collapses all errors to `{}`). Separately, the `-> dict` annotation is an unenforced invariant that valid non-object JSON violates. Comment intent and code agree, so no misleading-doc risk for the next agent. No fresh verification artifact was produced this pass — behavior was validated by reading only.\n\nSingle new file with two uncalled functions (0 callers per blast-radius scan). The real product-safety issue is the bare `except:` on source.py:8: it swallows all errors including KeyboardInterrupt/SystemExit and silently returns `{}`, so a corrupt config would reset a user's settings to empty with no error or log — a confusing state and perceived data loss. Blast radius is low today (no callers) so severity is capped at medium, but the defect is unambiguous. Secondary, out-of-scope: `-> dict` contract is violated for non-object JSON (e.g. `\"[1,2]\"` returns a list) and isn't guarded. No runtime verification needed — the defect is provable by static reading; the blocked verification gate is resolved by inspection since the functions are uncalled and pure-logic.\n\nSingle new file with one real defect: a bare `except:` in parse_config catches BaseException (masking KeyboardInterrupt/SystemExit) and silently returns {} on any failure, breaking the parse-vs-empty contract for load_settings. The defect is self-documented by the agent's own # BUG comment but left in place — a fake-fix/incomplete-handoff signal. load_settings' file-open error handling is correct. Both symbols currently have 0 callers, bounding blast radius, but no test or verification evidence accompanies the change.",
+  "talk_id": "93944a2e-66d2-4beb-aa29-476c1ec3761a"
+}
