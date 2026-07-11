@@ -1131,6 +1131,7 @@ mod tests {
             started_at: None,
             completed_at: None,
             created_at: "2026-06-16T00:00:00Z".into(),
+            standards_pack: None,
         }
     }
 

@@ -343,6 +343,7 @@ fn main() {
             commands::review::delete_review,
             commands::review::set_finding_disposition,
             commands::review::list_reviews,
+            commands::review::get_standards_pack_usage,
             commands::review::run_cli_review,
             commands::review::fix_findings,
             commands::review::merge_fix,

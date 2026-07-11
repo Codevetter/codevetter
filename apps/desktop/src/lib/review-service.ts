@@ -88,20 +88,40 @@ export function getActiveStandardsPack(config: ReviewConfig | null): StandardsPa
   return packs.find((pack) => pack.id === config?.activeStandardsPack) ?? packs[0];
 }
 
-export function buildActiveStandardsContext(): string {
-  const config = loadReviewConfig();
-  const pack = getActiveStandardsPack(config);
-  const customRules = (config?.customRules ?? []).map((rule) => rule.trim()).filter(Boolean);
-
+/**
+ * Render the exact standards-context string injected into review prompts.
+ * Pass a `pack` to preview a specific pack (used by the Rubrics editor);
+ * omit it to render the currently-active pack from stored config.
+ */
+export function buildStandardsContext(pack: StandardsPack, customRules: string[] = []): string {
+  const rules = customRules.map((rule) => rule.trim()).filter(Boolean);
   const lines = [
     'CodeVetter review standards pack:',
     `- Pack: ${pack.name}`,
     `- Focus: ${pack.focus}`,
     ...pack.checks.map((check) => `- Check: ${check}`),
-    ...customRules.map((rule) => `- Custom rule: ${rule}`),
+    ...rules.map((rule) => `- Custom rule: ${rule}`),
   ];
-
   return lines.join('\n');
+}
+
+export function buildActiveStandardsContext(): string {
+  const config = loadReviewConfig();
+  const pack = getActiveStandardsPack(config);
+  return buildStandardsContext(pack, config?.customRules ?? []);
+}
+
+/**
+ * Attribution key (pack ID) that a review run will be tagged with. IDs are
+ * unique across built-in + custom packs (names are not — duplicate-named packs
+ * would irreversibly merge usage stats). Returns null when the user has never
+ * explicitly selected a pack: the prompt still uses the default pack's rules,
+ * but usage stats must not book fabricated selections to "Product Safety".
+ */
+export function getActiveStandardsPackId(): string | null {
+  const config = loadReviewConfig();
+  if (!config?.activeStandardsPack) return null;
+  return getActiveStandardsPack(config).id;
 }
 
 export const PROVIDER_PRESETS: Record<string, { baseUrl: string; model: string }> = {

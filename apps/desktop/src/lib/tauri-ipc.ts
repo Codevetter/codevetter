@@ -6,7 +6,7 @@ import {
   sendNotification,
 } from '@tauri-apps/plugin-notification';
 
-import { buildActiveStandardsContext } from '@/lib/review-service';
+import { buildActiveStandardsContext, getActiveStandardsPackId } from '@/lib/review-service';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -368,6 +368,8 @@ export interface LocalReviewRow {
   started_at: string | null;
   completed_at: string | null;
   created_at: string;
+  /** Standards pack (Rubrics) active when the review ran; null for legacy rows. */
+  standards_pack: string | null;
 }
 
 /** Matches the Rust `LocalReviewFindingRow` struct exactly. */
@@ -556,12 +558,19 @@ export interface SaveReviewInput {
   }>;
   reviewAction?: string;
   summaryMarkdown?: string;
+  /** Standards pack ID (Rubrics) captured when the review RAN. Callers should
+   * capture it at run start; the fallback below reads current config at save
+   * time, which can misattribute if the user switches packs mid-review. */
+  standardsPack?: string | null;
 }
 
 export async function saveReview(
   input: SaveReviewInput
 ): Promise<{ review_id: string; status: string; score: number; findings_count: number }> {
-  return safeInvoke('save_review', input as unknown as Record<string, unknown>);
+  return safeInvoke('save_review', {
+    ...input,
+    standardsPack: input.standardsPack ?? getActiveStandardsPackId(),
+  } as unknown as Record<string, unknown>);
 }
 
 export async function getReview(
@@ -599,6 +608,19 @@ export async function listReviews(
     repo_path: repoPath ?? null,
   });
   return resp.reviews;
+}
+
+/** Matches the Rust `StandardsPackUsageRow` struct exactly. */
+export interface StandardsPackUsageRow {
+  standards_pack: string;
+  review_count: number;
+  total_findings: number;
+}
+
+/** Per-standards-pack review usage for the Rubrics page. Keyed by pack name. */
+export async function getStandardsPackUsage(): Promise<StandardsPackUsageRow[]> {
+  const resp = await safeInvoke<{ usage: StandardsPackUsageRow[] }>('get_standards_pack_usage');
+  return resp.usage;
 }
 
 // ─── CLI Review ──────────────────────────────────────────────────────────────
@@ -1233,6 +1255,7 @@ export async function runCliReview(
     changeDescription,
     agent: agent ?? null,
     qaRuns: options?.qaRuns ?? null,
+    standardsPack: getActiveStandardsPackId(),
   });
 }
 
