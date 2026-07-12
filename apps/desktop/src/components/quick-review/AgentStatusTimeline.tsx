@@ -109,6 +109,12 @@ export default function AgentStatusTimeline({
                           anchor.sourceLine != null ? `line ${anchor.sourceLine}` : null,
                           anchor.eventId,
                           ...(anchor.contextExcerpt ?? []).slice(0, 2),
+                          ...(anchor.conversationContext?.items ?? [])
+                            .slice(0, 3)
+                            .map(
+                              (context) =>
+                                `intent context ${context.relative_position} ${context.role}: ${context.text}`
+                            ),
                         ]
                           .filter(Boolean)
                           .join(' · ')}
@@ -120,6 +126,9 @@ export default function AgentStatusTimeline({
                           `${anchor.status ?? 'unknown'} · ${anchor.label}`,
                           anchor.contextExcerpt?.[0]
                             ? `context: ${anchor.contextExcerpt[0]}`
+                            : null,
+                          anchor.conversationContext?.items[0]
+                            ? `intent: ${anchor.conversationContext.items[0].text}`
                             : null,
                         ]
                           .filter(Boolean)

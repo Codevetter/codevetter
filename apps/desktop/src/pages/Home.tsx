@@ -11,6 +11,7 @@ import type {
   AgentUsageRow,
   DayBucket,
   LiveUsageResult,
+  LiveSessionEvidencePolicy,
   ModelUsage,
   ProviderAccount,
   ProviderUsageLedgerRow,
@@ -27,6 +28,7 @@ import {
   detectProviderAccounts,
   getAgentUsageBreakdown,
   getAgentUsageByDay,
+  getLiveSessionEvidencePolicy,
   getTokenUsageStats,
   getUsageByModel,
   isTauriAvailable,
@@ -2542,6 +2544,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [indexing, setIndexing] = useState(false);
   const [indexResult, setIndexResult] = useState<TriggerIndexResult | null>(null);
+  const [liveSessionPolicy, setLiveSessionPolicy] = useState<LiveSessionEvidencePolicy | null>(
+    null
+  );
 
   // ─── Load all dashboard data ────────────────────────────────────────────
 
@@ -2584,6 +2589,9 @@ export default function Home() {
       // load independently and never block or fail the core dashboard.
       void getAgentUsageByDay(180)
         .then((v) => setAgentByDay(v))
+        .catch(() => undefined);
+      void getLiveSessionEvidencePolicy()
+        .then(setLiveSessionPolicy)
         .catch(() => undefined);
 
       // Seed usage map with cached-ID results that came back alongside the rest.
@@ -2810,6 +2818,16 @@ export default function Home() {
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {liveSessionPolicy && (
+                <Badge
+                  variant="outline"
+                  className="h-6 border-emerald-500/25 bg-emerald-500/[0.06] px-2 font-mono text-[9px] uppercase text-emerald-300/80"
+                  title={`Local-only ${liveSessionPolicy.mode}; full/manual recovery every ${Math.round(liveSessionPolicy.full_index_recovery_interval_secs / 3600)}h; event ${liveSessionPolicy.update_event}`}
+                >
+                  live archive · {liveSessionPolicy.incremental_interval_secs}s ·{' '}
+                  {liveSessionPolicy.supported_incremental_adapters.join(' + ')}
+                </Badge>
+              )}
               <Button
                 variant="outline"
                 size="sm"

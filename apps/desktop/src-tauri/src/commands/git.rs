@@ -1888,6 +1888,103 @@ fn extract_raw_session_command_signals(session: &RawSessionRef, max_items: usize
     out.into_iter().map(|signal| signal.to_value()).collect()
 }
 
+fn redact_conversation_excerpt(text: &str) -> String {
+    let bounded = text
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .chars()
+        .take(240)
+        .collect::<String>();
+    let lower = bounded.to_ascii_lowercase();
+    let compact = lower
+        .chars()
+        .filter(|char| !char.is_whitespace())
+        .collect::<String>();
+    let secret_shapes = [
+        "api_key=",
+        "api-key=",
+        "apikey=",
+        "access_token=",
+        "auth_token=",
+        "password=",
+        "passwd=",
+        "client_secret=",
+        "authorization: bearer",
+        "authorization=bearer",
+        "authorization:bearer",
+    ];
+    if secret_shapes.iter().any(|shape| compact.contains(shape)) {
+        "[redacted secret-like excerpt]".to_string()
+    } else {
+        bounded
+    }
+}
+
+fn enrich_command_signal_conversation_windows(
+    conn: &Connection,
+    signals: &mut [Value],
+) -> Result<(), String> {
+    for signal in signals {
+        let Some(session_id) = signal.get("session_id").and_then(Value::as_str) else {
+            continue;
+        };
+        let Some(source_line) = signal.get("source_line").and_then(Value::as_i64) else {
+            continue;
+        };
+        let window = queries::session_conversation_window_by_source_line(
+            conn,
+            session_id,
+            source_line,
+            4,
+            6,
+        )
+        .map_err(|error| error.to_string())?;
+        let Some(target) = window.target_message_index else {
+            continue;
+        };
+        let items = window
+            .rows
+            .iter()
+            .filter(|row| row.message_index != target)
+            .filter(|row| !matches!(row.kind.as_str(), "command" | "tool_call" | "tool_use"))
+            .filter_map(|row| {
+                let text = row.content_text.as_deref()?.trim();
+                if text.is_empty() {
+                    return None;
+                }
+                Some(json!({
+                    "message_index": row.message_index,
+                    "source_line": row.source_line,
+                    "source_path": row.source_ref,
+                    "role": row.role.as_deref().unwrap_or("context"),
+                    "kind": row.kind,
+                    "text": redact_conversation_excerpt(text),
+                    "relative_position": if row.message_index < target { "before" } else { "after" },
+                }))
+            })
+            .take(8)
+            .collect::<Vec<_>>();
+        if items.is_empty() {
+            continue;
+        }
+        if let Some(object) = signal.as_object_mut() {
+            object.insert(
+                "conversation_window".to_string(),
+                json!({
+                    "target_message_index": target,
+                    "anchor_source_line": source_line,
+                    "items": items,
+                    "truncated_before": window.truncated_before,
+                    "truncated_after": window.truncated_after,
+                    "qualification": "intent_context_not_executable_evidence",
+                }),
+            );
+        }
+    }
+    Ok(())
+}
+
 /// Tauri command: returns rich (UI) + compact (prompt_snippet) history signals for a repo + optional diff range.
 /// Frontend calls with diffRange to surface in review-input panel. Backend also calls the compact builder directly.
 #[tauri::command]
@@ -1969,6 +2066,10 @@ pub async fn get_repo_history_context(
             }
         }
     }
+    {
+        let conn = db.0.lock().map_err(|error| error.to_string())?;
+        enrich_command_signal_conversation_windows(&conn, &mut command_signals)?;
+    }
 
     // Recurring for UI (file + count + sample)
     use std::collections::HashMap;
@@ -2032,6 +2133,20 @@ pub async fn get_repo_history_context(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn conversation_excerpt_is_bounded_and_redacts_secret_shapes() {
+        assert_eq!(
+            redact_conversation_excerpt("please use api_key = super-secret for this run"),
+            "[redacted secret-like excerpt]"
+        );
+        assert!(
+            redact_conversation_excerpt(&"safe ".repeat(100))
+                .chars()
+                .count()
+                <= 240
+        );
+    }
 
     #[test]
     fn filters_secrets_from_history() {

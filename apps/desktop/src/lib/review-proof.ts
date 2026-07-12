@@ -79,6 +79,9 @@ interface VerificationTimelineAnchor {
   source: string;
   status?: 'passed' | 'failed' | 'stale' | 'unknown';
   contextExcerpt?: string[];
+  conversationContext?: NonNullable<
+    NonNullable<RepoHistoryContext['command_signals']>[number]['conversation_window']
+  >;
   sourcePath?: string | null;
   sourceLine?: number | null;
   eventId?: string | null;
@@ -324,6 +327,7 @@ function buildCommandTimelineAnchors(
       source: signal.source,
       status: signal.status ?? 'unknown',
       contextExcerpt: signal.context_excerpt?.slice(0, 2) ?? [],
+      conversationContext: signal.conversation_window,
       sourcePath,
       sourceLine: signal.source_line ?? null,
       eventId: signal.event_id ?? null,
@@ -368,6 +372,8 @@ function buildTranscriptReplayTimelineAnchors(
         source: `transcript:${first.source}`,
         status,
         contextExcerpt,
+        conversationContext: ordered.find((anchor) => anchor.conversationContext)
+          ?.conversationContext,
         sourcePath: first.sourcePath ?? null,
         sourceLine: first.sourceLine ?? null,
         eventId: `${first.eventId ?? first.id}->${last.eventId ?? last.id}`,
@@ -1372,6 +1378,16 @@ export function buildReviewerProofMarkdown(input: ReviewerProofInput): string {
         anchor.contextExcerpt?.slice(0, 2).forEach((excerpt) => {
           lines.push(`    - transcript: ${excerpt}`);
         });
+        anchor.conversationContext?.items.slice(0, 4).forEach((item) => {
+          lines.push(
+            `    - intent context (${item.relative_position}, ${item.role}, source=${item.source_path}${item.source_line != null ? `:${item.source_line}` : ''}): ${item.text}`
+          );
+        });
+        if (anchor.conversationContext) {
+          lines.push(
+            '    - qualification: intent context only; not executable verification evidence'
+          );
+        }
       });
     });
   }

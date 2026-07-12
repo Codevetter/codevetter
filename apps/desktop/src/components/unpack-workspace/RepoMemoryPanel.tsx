@@ -6,15 +6,20 @@ import {
   History,
   type LucideIcon,
   Network,
+  Search,
 } from 'lucide-react';
-import { memo, type ReactNode, useMemo } from 'react';
+import { memo, type ReactNode, useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DisclosurePanel } from '@/components/unpack-workspace/DisclosurePanel';
 import { qaStatusTone } from '@/components/unpack-workspace/UnpackIntelligencePanels';
 import { SourceLink } from '@/components/unpack-workspace/SourceLink';
-import type { UnpackRepoInventory } from '@/lib/tauri-ipc';
+import {
+  queryRepoHistoryGraph,
+  type RepoHistoryGraphQueryResult,
+  type UnpackRepoInventory,
+} from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
 
 export const RepoMemoryPanel = memo(function RepoMemoryPanel({
@@ -48,6 +53,10 @@ export const RepoMemoryPanel = memo(function RepoMemoryPanel({
   const workspaceUnits = inventory.workspace_units ?? [];
   const graph = inventory.repo_graph;
   const historyBrief = inventory.history_brief;
+  const historyGraph = historyBrief?.graph;
+  const [historyQuery, setHistoryQuery] = useState('');
+  const [historyResult, setHistoryResult] = useState<RepoHistoryGraphQueryResult | null>(null);
+  const [historyQuerying, setHistoryQuerying] = useState(false);
   const health = inventory.repo_health;
   const readiness = inventory.qa_readiness;
   const topUnits = workspaceUnits.slice(0, 6);
@@ -241,6 +250,94 @@ export const RepoMemoryPanel = memo(function RepoMemoryPanel({
             summary="Recent decisions, commits, and files that tend to change together."
           >
             <div className="space-y-2">
+              {historyGraph && historyGraph.nodes.length > 0 ? (
+                <form
+                  className="rounded-md border border-cyan-500/15 bg-cyan-500/[0.035] p-2.5"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (!historyQuery.trim()) return;
+                    setHistoryQuerying(true);
+                    void queryRepoHistoryGraph({ graph: historyGraph, query: historyQuery })
+                      .then(setHistoryResult)
+                      .finally(() => setHistoryQuerying(false));
+                  }}
+                >
+                  <label
+                    htmlFor="history-graph-query"
+                    className="text-[10px] uppercase tracking-wider text-cyan-100/70"
+                  >
+                    Ask local history
+                  </label>
+                  <div className="mt-1.5 flex gap-2">
+                    <input
+                      id="history-graph-query"
+                      value={historyQuery}
+                      onChange={(event) => setHistoryQuery(event.target.value)}
+                      placeholder="Exact file, commit, decision, or test"
+                      className="min-w-0 flex-1 rounded-md border border-[var(--cv-line)] bg-[var(--bg-main)] px-2.5 py-1.5 text-xs text-[var(--text-primary)] outline-none focus:border-cyan-400/40"
+                    />
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      size="sm"
+                      disabled={historyQuerying || !historyQuery.trim()}
+                    >
+                      <Search size={13} className="mr-1" /> {historyQuerying ? 'Finding' : 'Find'}
+                    </Button>
+                  </div>
+                  {historyResult ? (
+                    <div
+                      aria-live="polite"
+                      className="mt-2 space-y-1.5 text-xs text-[var(--text-secondary)]"
+                    >
+                      <div>
+                        {historyResult.message}
+                        {historyResult.truncated ? ' Results are bounded.' : ''}
+                      </div>
+                      {historyResult.matched.map((node) => (
+                        <div
+                          key={node.id}
+                          className="rounded border border-[var(--cv-line)] bg-[var(--bg-main)]/45 px-2.5 py-2"
+                        >
+                          <div className="font-medium text-[var(--text-primary)]">{node.label}</div>
+                          <div className="mt-0.5 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
+                            {node.kind} · {node.trust}
+                          </div>
+                          {node.path ? (
+                            <div className="mt-1">
+                              <SourceLink path={node.path} repoPath={inventory.repo_path} />
+                            </div>
+                          ) : null}
+                          {node.citations.slice(0, 2).map((citation) => (
+                            <div
+                              key={citation}
+                              className="mt-1 font-mono text-[10px] text-[var(--text-muted)]"
+                            >
+                              {citation}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                      {historyResult.related.slice(0, 6).map((node) => (
+                        <div
+                          key={`related-${node.id}`}
+                          className="pl-2 text-[10px] text-[var(--text-muted)]"
+                        >
+                          related {node.kind}: {node.label}
+                        </div>
+                      ))}
+                      {historyResult.relationships.slice(0, 6).map((edge) => (
+                        <div
+                          key={`${edge.from}-${edge.kind}-${edge.to}`}
+                          className="font-mono text-[10px] text-cyan-100/60"
+                        >
+                          {edge.from} —{edge.kind.replaceAll('_', ' ')}→ {edge.to} · {edge.trust}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </form>
+              ) : null}
               {decisions.map((decision) => (
                 <div
                   key={`${decision.marker}-${decision.source}`}

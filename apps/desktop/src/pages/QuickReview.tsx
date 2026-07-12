@@ -2357,6 +2357,7 @@ export default function QuickReview() {
             source: anchor.source,
             status: anchor.status,
             contextExcerpt: anchor.contextExcerpt?.slice(0, 2) ?? [],
+            conversationContext: anchor.conversationContext,
             sourcePath: anchor.sourcePath ?? null,
             sourceLine: anchor.sourceLine ?? null,
             eventId: anchor.eventId ?? null,

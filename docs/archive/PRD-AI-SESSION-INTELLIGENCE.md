@@ -1,8 +1,8 @@
 # PRD: AI Session Intelligence
 
-Status: shipped (first slice) — scorecard, adapter archive, FTS search, and 10s transcript tail watcher for active JSONL sessions; team packaging and broader agent coverage remain deferred
+Status: shipped (local scope) — scorecard, adapter archive, FTS search, versioned 10s transcript-tail contract, exact-once recovery tests, and visible live-source policy; team packaging and broader agent coverage remain deferred
 Owner: unassigned
-Last updated: 2026-06-12
+Last updated: 2026-07-13
 
 ## Summary
 
@@ -201,7 +201,7 @@ Acceptance for exploring team mode:
 
 ### Phase 0: Define The Evidence Schema
 
-Status: partially implemented. A local deterministic scorecard schema is implemented over indexed `cc_sessions` with schema version, six dimensions, evidence refs, anti-gaming notes, and cited recommendations. The Roadmap page now shows the scorecard summary from the same Tauri IPC contract used by other local stats, while Home stays usage-first. Fixture-backed backend tests cover strong sessions and weak sessions lacking verification/repo context.
+Status: implemented for the local product scope. A local deterministic scorecard schema is implemented over indexed `cc_sessions` with schema version, six dimensions, evidence refs, anti-gaming notes, and cited recommendations. The existing 10-second incremental Claude/Codex tail loop now exposes one versioned local-only policy/status contract, shared cadence constants, last full-index recovery time, and a Home source-health badge. Regression tests cover complete and partial appends, lock-skip recovery, and exact-once archive rows. Direct filesystem watching was not added because the measured periodic tail already meets the active-session requirement without another watcher or dependency.
 
 Write the first evidence and scorecard schemas before building UI.
 

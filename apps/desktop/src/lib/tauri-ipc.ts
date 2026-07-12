@@ -290,6 +290,19 @@ export interface SessionAdapterRun {
   created_at: string;
 }
 
+export interface LiveSessionEvidencePolicy {
+  schema_version: number;
+  mode: string;
+  supported_incremental_adapters: string[];
+  incremental_interval_secs: number;
+  secondary_adapter_interval_secs: number;
+  recovery: string;
+  full_index_recovery_interval_secs: number;
+  update_event: string;
+  local_only: boolean;
+  last_full_indexed_at?: string | null;
+}
+
 export interface SessionScorecard {
   schema_version: number;
   project?: string | null;
@@ -1055,6 +1068,22 @@ export interface RepoHistoryContext {
     status_reason?: string;
     artifacts?: string[];
     context_excerpt?: string[];
+    conversation_window?: {
+      target_message_index: number;
+      anchor_source_line: number;
+      qualification: 'intent_context_not_executable_evidence';
+      truncated_before: boolean;
+      truncated_after: boolean;
+      items: Array<{
+        message_index: number;
+        source_line?: number | null;
+        source_path: string;
+        role: string;
+        kind: string;
+        text: string;
+        relative_position: 'before' | 'after';
+      }>;
+    };
   }>;
   agent_claims?: Array<{
     agent: string;
@@ -1393,6 +1422,10 @@ export async function listenToSessionArchiveUpdates(
 
 export async function triggerIndex(): Promise<TriggerIndexResult> {
   return safeInvoke<TriggerIndexResult>('trigger_index');
+}
+
+export async function getLiveSessionEvidencePolicy(): Promise<LiveSessionEvidencePolicy> {
+  return safeInvoke<LiveSessionEvidencePolicy>('get_live_session_evidence_policy');
 }
 
 export async function getTokenUsageStats(): Promise<TokenUsageStats> {
@@ -2204,6 +2237,43 @@ interface UnpackRepoHistoryCommit {
   sha: string;
   date?: string | null;
   subject: string;
+  files?: string[];
+}
+
+export interface UnpackRepoHistoryGraphNode {
+  id: string;
+  kind: string;
+  label: string;
+  path?: string | null;
+  detail: string;
+  citations: string[];
+  trust: string;
+}
+
+export interface UnpackRepoHistoryGraphEdge {
+  from: string;
+  to: string;
+  kind: string;
+  evidence: string;
+  citations: string[];
+  trust: string;
+}
+
+export interface UnpackRepoHistoryGraph {
+  schema_version: number;
+  nodes: UnpackRepoHistoryGraphNode[];
+  edges: UnpackRepoHistoryGraphEdge[];
+  truncated: boolean;
+}
+
+export interface RepoHistoryGraphQueryResult {
+  query: string;
+  matched: UnpackRepoHistoryGraphNode[];
+  related: UnpackRepoHistoryGraphNode[];
+  relationships: UnpackRepoHistoryGraphEdge[];
+  confidence: 'strong' | 'lead' | 'none';
+  message: string;
+  truncated: boolean;
 }
 
 interface UnpackRepoHistoryDecision {
@@ -2231,6 +2301,7 @@ export interface UnpackRepoHistoryBrief {
   decisions: UnpackRepoHistoryDecision[];
   test_hints: UnpackRepoHistoryTestHint[];
   temporal_couplings?: UnpackRepoTemporalCoupling[];
+  graph?: UnpackRepoHistoryGraph;
   sources: string[];
   truncated: boolean;
 }
@@ -2727,6 +2798,18 @@ export async function traceRepoGraphPath(input: {
     targetId: input.targetId ?? null,
     maxHops: input.maxHops ?? 8,
     maxVisitedNodes: input.maxVisitedNodes ?? 5_000,
+  });
+}
+
+export async function queryRepoHistoryGraph(input: {
+  graph: UnpackRepoHistoryGraph;
+  query: string;
+  limit?: number;
+}): Promise<RepoHistoryGraphQueryResult> {
+  return safeInvoke('query_repo_history_graph', {
+    graph: input.graph,
+    query: input.query,
+    limit: input.limit ?? 6,
   });
 }
 

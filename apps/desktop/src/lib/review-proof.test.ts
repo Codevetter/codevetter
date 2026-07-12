@@ -315,6 +315,33 @@ describe('buildReviewerProofMarkdown', () => {
               'assistant: ran npm run test:review-proof after editing timeline anchors',
               'tool: failed with one assertion',
             ],
+            conversation_window: {
+              target_message_index: 12,
+              anchor_source_line: 42,
+              qualification: 'intent_context_not_executable_evidence',
+              truncated_before: false,
+              truncated_after: true,
+              items: [
+                {
+                  message_index: 10,
+                  source_line: 39,
+                  source_path: '/tmp/session.jsonl',
+                  role: 'user',
+                  kind: 'message',
+                  text: 'verify the review proof behavior before changing it',
+                  relative_position: 'before',
+                },
+                {
+                  message_index: 14,
+                  source_line: 47,
+                  source_path: '/tmp/session.jsonl',
+                  role: 'assistant',
+                  kind: 'message',
+                  text: 'the failed assertion narrows the regression',
+                  relative_position: 'after',
+                },
+              ],
+            },
           },
           {
             agent: 'codex',
@@ -360,6 +387,13 @@ describe('buildReviewerProofMarkdown', () => {
     );
     assert.equal(evidenceStep?.anchors?.[0]?.jump?.kind, 'command_source');
     assert.equal(evidenceStep?.anchors?.[0]?.jump?.path, '/tmp/session.jsonl');
+    assert.deepEqual(
+      evidenceStep?.anchors?.[0]?.conversationContext?.items.map((item) => item.text),
+      [
+        'verify the review proof behavior before changing it',
+        'the failed assertion narrows the regression',
+      ]
+    );
     const replayAnchor = evidenceStep?.anchors?.find((anchor) =>
       anchor.id.startsWith('transcript-replay:')
     );
@@ -839,6 +873,24 @@ describe('buildReviewerProofMarkdown', () => {
               sessionId: 'session-1',
               artifact: 'artifacts/review-proof.log',
               contextExcerpt: ['assistant: replayed the failing review proof command'],
+              conversationContext: {
+                target_message_index: 12,
+                anchor_source_line: 42,
+                qualification: 'intent_context_not_executable_evidence',
+                truncated_before: false,
+                truncated_after: false,
+                items: [
+                  {
+                    message_index: 10,
+                    source_line: 39,
+                    source_path: '/tmp/session.jsonl',
+                    role: 'user',
+                    kind: 'message',
+                    text: 'verify the proof before editing',
+                    relative_position: 'before',
+                  },
+                ],
+              },
               jump: {
                 kind: 'command_source',
                 label: 'Preview command source',
@@ -928,6 +980,11 @@ describe('buildReviewerProofMarkdown', () => {
     assert.match(markdown, /### Verification timeline/);
     assert.match(markdown, /Synthetic QA.*blocked/);
     assert.match(markdown, /transcript: assistant: replayed the failing review proof command/);
+    assert.match(
+      markdown,
+      /intent context \(before, user, source=\/tmp\/session\.jsonl:39\): verify the proof before editing/
+    );
+    assert.match(markdown, /intent context only; not executable verification evidence/);
     assert.match(markdown, /### Synthetic QA post-fix comparison/);
     assert.match(markdown, /fixed.*Post-fix QA passed/);
     assert.match(markdown, /Before: FAIL repo_playwright \/review/);

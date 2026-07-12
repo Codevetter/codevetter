@@ -204,6 +204,48 @@ pub struct RepoHistoryCommit {
     pub sha: String,
     pub date: Option<String>,
     pub subject: String,
+    #[serde(default)]
+    pub files: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq, Eq)]
+pub struct RepoHistoryGraphNode {
+    pub id: String,
+    pub kind: String,
+    pub label: String,
+    pub path: Option<String>,
+    pub detail: String,
+    pub citations: Vec<String>,
+    pub trust: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq, Eq)]
+pub struct RepoHistoryGraphEdge {
+    pub from: String,
+    pub to: String,
+    pub kind: String,
+    pub evidence: String,
+    pub citations: Vec<String>,
+    pub trust: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct RepoHistoryGraph {
+    pub schema_version: i64,
+    pub nodes: Vec<RepoHistoryGraphNode>,
+    pub edges: Vec<RepoHistoryGraphEdge>,
+    pub truncated: bool,
+}
+
+impl Default for RepoHistoryGraph {
+    fn default() -> Self {
+        Self {
+            schema_version: 1,
+            nodes: Vec::new(),
+            edges: Vec::new(),
+            truncated: false,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -236,6 +278,8 @@ pub struct RepoHistoryBrief {
     pub test_hints: Vec<RepoHistoryTestHint>,
     #[serde(default)]
     pub temporal_couplings: Vec<RepoTemporalCoupling>,
+    #[serde(default)]
+    pub graph: RepoHistoryGraph,
     pub sources: Vec<String>,
     pub truncated: bool,
 }
@@ -249,6 +293,7 @@ impl Default for RepoHistoryBrief {
             decisions: Vec::new(),
             test_hints: Vec::new(),
             temporal_couplings: Vec::new(),
+            graph: RepoHistoryGraph::default(),
             sources: Vec::new(),
             truncated: false,
         }
