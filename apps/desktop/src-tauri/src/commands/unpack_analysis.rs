@@ -120,6 +120,8 @@ fn file_graph_node(path: &str, kind: &str, detail: &str) -> RepoGraphNode {
         path: Some(path.to_string()),
         detail: Some(detail.to_string()),
         sources: vec![path.to_string()],
+        source_location: None,
+        community: None,
     }
 }
 
@@ -162,6 +164,8 @@ pub(crate) fn build_repo_graph_with_previews(
                 path: Some(manifest.path.clone()),
                 detail: Some(format!("{} manifest", manifest.kind)),
                 sources: vec![manifest.path.clone()],
+                source_location: None,
+                community: None,
             },
         ) {
             truncated = true;
@@ -178,6 +182,8 @@ pub(crate) fn build_repo_graph_with_previews(
                     path: Some(manifest.path.clone()),
                     detail: Some("package script".to_string()),
                     sources: vec![manifest.path.clone()],
+                    source_location: None,
+                    community: None,
                 },
             ) {
                 truncated = true;
@@ -190,6 +196,9 @@ pub(crate) fn build_repo_graph_with_previews(
                     kind: "defines".to_string(),
                     evidence: format!("{} defines npm script `{script}`", manifest.path),
                     sources: vec![manifest.path.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             ) {
                 truncated = true;
@@ -213,6 +222,8 @@ pub(crate) fn build_repo_graph_with_previews(
                 path: Some(source.clone()),
                 detail: Some(flow.goal.clone()),
                 sources: flow.sources.clone(),
+                source_location: None,
+                community: None,
             },
         ) {
             truncated = true;
@@ -225,6 +236,9 @@ pub(crate) fn build_repo_graph_with_previews(
                 kind: "routes_to".to_string(),
                 evidence: "route inferred from page file path".to_string(),
                 sources: flow.sources,
+                trust: "inferred".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         ) {
             truncated = true;
@@ -242,6 +256,8 @@ pub(crate) fn build_repo_graph_with_previews(
                 path: Some((*path).to_string()),
                 detail: Some("test/spec file".to_string()),
                 sources: vec![(*path).to_string()],
+                source_location: None,
+                community: None,
             },
         ) {
             truncated = true;
@@ -305,7 +321,7 @@ pub(crate) fn build_repo_graph_with_previews(
     });
 
     RepoGraph {
-        schema_version: 1,
+        schema_version: 2,
         nodes,
         edges,
         truncated,
@@ -365,6 +381,8 @@ fn add_workspace_units_to_repo_graph(
                     }
                 )),
                 sources,
+                source_location: None,
+                community: None,
             },
         ) {
             *truncated = true;
@@ -379,6 +397,9 @@ fn add_workspace_units_to_repo_graph(
                     kind: "defines".to_string(),
                     evidence: "workspace unit owns this manifest".to_string(),
                     sources: vec![manifest_path.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             ) {
                 *truncated = true;
@@ -399,6 +420,9 @@ fn add_workspace_units_to_repo_graph(
                     kind: "entrypoint".to_string(),
                     evidence: "entrypoint belongs to this workspace unit".to_string(),
                     sources: vec![entrypoint.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             ) {
                 *truncated = true;
@@ -416,6 +440,8 @@ fn add_workspace_units_to_repo_graph(
                     path: Some(test_file.clone()),
                     detail: Some("workspace test/spec file".to_string()),
                     sources: vec![test_file.clone()],
+                    source_location: None,
+                    community: None,
                 },
             );
             if !push_repo_graph_edge(
@@ -426,6 +452,9 @@ fn add_workspace_units_to_repo_graph(
                     kind: "tests".to_string(),
                     evidence: "test file belongs to this workspace unit".to_string(),
                     sources: vec![test_file.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             ) {
                 *truncated = true;
@@ -1018,6 +1047,8 @@ fn scan_tauri_commands(
                     path: Some(path.to_string()),
                     detail: Some("Tauri command boundary".to_string()),
                     sources: vec![path.to_string()],
+                    source_location: None,
+                    community: None,
                 },
             ) {
                 *truncated = true;
@@ -1030,6 +1061,9 @@ fn scan_tauri_commands(
                     kind: "defines".to_string(),
                     evidence: "function has #[tauri::command] attribute".to_string(),
                     sources: vec![path.to_string()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             ) {
                 *truncated = true;
@@ -1076,6 +1110,8 @@ fn scan_db_tables(
                 path: Some(path.to_string()),
                 detail: Some("database table".to_string()),
                 sources: vec![path.to_string()],
+                source_location: None,
+                community: None,
             },
         ) {
             *truncated = true;
@@ -1088,6 +1124,9 @@ fn scan_db_tables(
                 kind: "persists_to".to_string(),
                 evidence: "CREATE TABLE statement".to_string(),
                 sources: vec![path.to_string()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         ) {
             *truncated = true;
@@ -1147,6 +1186,8 @@ fn scan_kconfig_symbols(
                 path: Some(path.to_string()),
                 detail: Some("Kconfig feature/configuration symbol".to_string()),
                 sources: vec![path.to_string()],
+                source_location: None,
+                community: None,
             },
         ) {
             *truncated = true;
@@ -1159,6 +1200,9 @@ fn scan_kconfig_symbols(
                 kind: "defines".to_string(),
                 evidence: "Kconfig config/menuconfig declaration".to_string(),
                 sources: vec![path.to_string()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         ) {
             *truncated = true;
@@ -1209,6 +1253,8 @@ fn scan_makefile_targets(
                     path: Some(path.to_string()),
                     detail: Some(format!("Makefile target from `{lhs}`")),
                     sources: vec![path.to_string()],
+                    source_location: None,
+                    community: None,
                 },
             ) {
                 *truncated = true;
@@ -1221,6 +1267,9 @@ fn scan_makefile_targets(
                     kind: "builds".to_string(),
                     evidence: format!("Makefile appends target via `{lhs} +=`"),
                     sources: vec![path.to_string()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             ) {
                 *truncated = true;
@@ -1261,6 +1310,8 @@ fn scan_c_symbols(
                 path: Some(path.to_string()),
                 detail: Some("C function/export symbol".to_string()),
                 sources: vec![path.to_string()],
+                source_location: None,
+                community: None,
             },
         ) {
             *truncated = true;
@@ -1273,6 +1324,9 @@ fn scan_c_symbols(
                 kind: "defines".to_string(),
                 evidence: "C symbol declaration/definition".to_string(),
                 sources: vec![path.to_string()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         ) {
             *truncated = true;
@@ -1364,6 +1418,8 @@ fn scan_decision_markers(
                 path: Some(path.to_string()),
                 detail: Some(detail),
                 sources: vec![source.clone()],
+                source_location: None,
+                community: None,
             },
         ) {
             *truncated = true;
@@ -1376,6 +1432,9 @@ fn scan_decision_markers(
                 kind: "decided_by".to_string(),
                 evidence: format!("{marker} marker"),
                 sources: vec![source],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         ) {
             *truncated = true;

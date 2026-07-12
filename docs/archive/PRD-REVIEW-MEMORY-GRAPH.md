@@ -1,8 +1,8 @@
 # PRD: Review Memory Graph
 
-Status: shipped (first slice) — repo/review graph artifacts, prompt/UI/proof integration, Hunk-style notes, and `[`/`]` hunk keyboard navigation in fix diff; full Hunk-like file sidebar remains deferred
+Status: shipped — repo/review graph artifacts, schema-v2 relationship trust/provenance, explicit Graphify preview import, bounded evidence-bearing path traces, prompt/UI/proof integration, Hunk-style notes, and `[`/`]` hunk keyboard navigation in fix diff; full Hunk-like file sidebar remains deferred
 Owner: unassigned
-Last updated: 2026-06-12
+Last updated: 2026-07-13
 
 ## Summary
 
@@ -180,7 +180,8 @@ Acceptance:
 
 - CodeVetter can export findings as Hunk-style agent-context notes or another documented sidecar format. Implemented through Repo Unpacked `agent_context_markdown` sidecar export with repo graph and history context plus Review's selected-finding "Copy note" action, which includes file/line, evidence status, local history context, focused graph nodes/edges, and next verification actions.
 - CodeVetter can export its local graph as JSON for Graphify comparison. Implemented through Repo Unpacked `repo_graph_json` export.
-- CodeVetter can import a graph JSON/report only through an explicit user action. Implemented in Repo Unpacked through an explicit `Import graph` file action that validates CodeVetter `repo_graph` JSON or loose graph-shaped JSON, normalizes it into the local graph schema, and renders it as an imported preview without mutating the saved report.
+- CodeVetter can import a graph JSON/report only through an explicit user action. Implemented in Repo Unpacked through an explicit Graphify JSON file action that accepts bounded `nodes` plus `links`/`edges`, validates endpoints, preserves supported confidence/source/community metadata, and renders a transient preview without mutating the saved report or target repo.
+- CodeVetter can trace a bounded path between decisive native or imported endpoints. Implemented with exact ID/path/label precedence, explicit ambiguity candidates, trust-weighted traversal, stored-direction hop display, source anchors, and traversal-bound reporting. Native schema-v2 paths from changed files to routes, commands, tables, scripts, or tests are capped and included in Review/proof as qualified context; uncertain/imported/legacy hops remain navigation leads and cannot independently create findings or verified claims.
 - Missing optional CLIs produce clear non-fatal UI errors.
 - No production dependency is added unless a prior spike proves the value and tradeoff. Implemented for the export slice; no Graphify/Hunk runtime dependency was added.
 
@@ -230,4 +231,4 @@ Acceptance:
 ## References
 
 - Hunk: https://github.com/modem-dev/hunk
-- Graphify: https://github.com/safishamsi/graphify
+- Graphify: https://github.com/safishamsi/graphify — repository URL and active HEAD verified 2026-07-13 (`eec7a0183847cbdc8a87d92b233759a5204b89fe`); CodeVetter consumes its local node-link JSON only through explicit import and does not install or invoke it.

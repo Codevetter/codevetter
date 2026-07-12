@@ -1,5 +1,6 @@
 import type { ReviewIntentReport } from '@/lib/intent-debugger/types';
 import type { FindingEvidence } from '@/lib/synthetic-qa/apply-evidence';
+import { renderQualifiedGraphPath } from '@/lib/graph-trust';
 import type {
   CliReviewFinding,
   EvidenceCandidate,
@@ -1457,6 +1458,12 @@ export function buildReviewerProofMarkdown(input: ReviewerProofInput): string {
         `  - edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.confidence.toFixed(2)})`
       );
     });
+    if ((input.reviewMemoryGraph.trusted_paths?.length ?? 0) > 0) {
+      lines.push('', '#### Qualified native graph paths');
+      input.reviewMemoryGraph.trusted_paths?.slice(0, 4).forEach((path) => {
+        lines.push('```text', renderQualifiedGraphPath(path), '```');
+      });
+    }
   }
 
   if (input.focusedReviewMemoryGraph && input.focusedReviewMemoryGraph.nodes.length > 0) {

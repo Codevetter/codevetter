@@ -80,6 +80,40 @@ export default function ReviewMemoryGraphPanel({
           ))}
         </div>
       )}
+      {(graph.trusted_paths?.length ?? 0) > 0 && (
+        <div className="mt-2 space-y-1.5" aria-label="Trusted native graph paths">
+          {graph.trusted_paths?.slice(0, 4).map((path, pathIndex) => (
+            <div
+              key={`${path.source.selected?.id ?? pathIndex}-${path.target.selected?.id ?? pathIndex}`}
+              className={`rounded border px-2 py-1.5 text-[10px] ${
+                path.requires_verification
+                  ? 'border-amber-500/20 bg-amber-500/[0.05] text-amber-100'
+                  : 'border-emerald-500/20 bg-emerald-500/[0.05] text-emerald-100'
+              }`}
+            >
+              <div className="font-semibold">
+                {path.requires_verification ? 'Navigation lead' : 'Source-backed path'} ·{' '}
+                {path.hops.length} hop{path.hops.length === 1 ? '' : 's'}
+              </div>
+              <div className="mt-1 font-mono text-[9px] leading-4 opacity-80">
+                {path.hops.map((hop, index) => (
+                  <span key={`${hop.from.id}-${hop.to.id}-${index}`}>
+                    {index === 0 ? hop.from.label : ''} {hop.follows_stored_direction ? '→' : '←'}[
+                    {hop.kind}; {hop.trust}]→ {hop.to.label}
+                    {index < path.hops.length - 1 ? ' · ' : ''}
+                  </span>
+                ))}
+              </div>
+              {path.requires_verification && (
+                <div className="mt-1 text-[9px] text-amber-200/70">
+                  Verify uncertain/imported/legacy hops against source; this path cannot create a
+                  finding or verified claim.
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

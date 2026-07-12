@@ -598,6 +598,7 @@ export interface ReviewMemoryGraph {
   scope: string;
   nodes: ReviewMemoryGraphNode[];
   edges: ReviewMemoryGraphEdge[];
+  trusted_paths?: GraphPathResult[];
   truncated: boolean;
 }
 
@@ -679,6 +680,7 @@ export interface ReviewMemoryGraph {
   scope: string;
   nodes: ReviewMemoryGraphNode[];
   edges: ReviewMemoryGraphEdge[];
+  trusted_paths?: GraphPathResult[];
   truncated: boolean;
 }
 
@@ -1909,6 +1911,23 @@ export async function pickDirectory(title?: string): Promise<string | null> {
   }
 }
 
+/** Opens an explicit local JSON-file picker for transient graph preview imports. */
+export async function pickGraphJsonFile(): Promise<string | null> {
+  try {
+    const { open } = await (dialogModulePromise ?? import('@tauri-apps/plugin-dialog'));
+    const selected = await open({
+      directory: false,
+      multiple: false,
+      title: 'Select Graphify graph.json',
+      filters: [{ name: 'Graph JSON', extensions: ['json'] }],
+    });
+    if (Array.isArray(selected)) return selected[0] ?? null;
+    return selected;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Event Listeners ────────────────────────────────────────────────────────
 
 // ─── File Tree Commands ──────────────────────────────────────────────────
@@ -2087,14 +2106,23 @@ export interface UnpackRepoGraphNode {
   path?: string | null;
   detail?: string | null;
   sources: string[];
+  source_location?: {
+    path: string;
+    line?: number | null;
+    column?: number | null;
+  } | null;
+  community?: string | null;
 }
 
-interface UnpackRepoGraphEdge {
+export interface UnpackRepoGraphEdge {
   from: string;
   to: string;
   kind: string;
   evidence: string;
   sources: string[];
+  trust: 'extracted' | 'inferred' | 'ambiguous' | 'legacy' | string;
+  origin: 'codevetter' | 'graphify' | 'imported' | string;
+  confidence_label?: string | null;
 }
 
 export interface UnpackRepoGraph {
@@ -2102,6 +2130,49 @@ export interface UnpackRepoGraph {
   nodes: UnpackRepoGraphNode[];
   edges: UnpackRepoGraphEdge[];
   truncated: boolean;
+}
+
+export interface GraphEndpointCandidate {
+  id: string;
+  label: string;
+  kind: string;
+  path?: string | null;
+  score: number;
+}
+
+export interface GraphEndpointResolution {
+  query: string;
+  status: 'resolved' | 'ambiguous' | 'not_found';
+  selected?: GraphEndpointCandidate | null;
+  candidates: GraphEndpointCandidate[];
+}
+
+export interface GraphPathHop {
+  from: UnpackRepoGraphNode;
+  to: UnpackRepoGraphNode;
+  kind: string;
+  trust: string;
+  origin: string;
+  confidence_label?: string | null;
+  evidence: string;
+  sources: string[];
+  follows_stored_direction: boolean;
+}
+
+export interface GraphPathResult {
+  source: GraphEndpointResolution;
+  target: GraphEndpointResolution;
+  hops: GraphPathHop[];
+  found: boolean;
+  trust_summary: 'source_backed' | 'navigation_lead' | 'same_node' | 'none' | string;
+  requires_verification: boolean;
+  message: string;
+  bounds: {
+    max_hops: number;
+    max_visited_nodes: number;
+    visited_nodes: number;
+    truncated: boolean;
+  };
 }
 
 interface UnpackScanProfileStep {
@@ -2632,6 +2703,31 @@ export async function exportRepoUnpackReport(
     | 'repo_memory_markdown'
 ): Promise<{ content: string; format: string }> {
   return safeInvoke('export_repo_unpack_report', { id, format });
+}
+
+/** Parse a selected Graphify artifact into a transient preview. This never persists the graph. */
+export async function importGraphifyPreview(filePath: string): Promise<UnpackRepoGraph> {
+  return safeInvoke('import_graphify_preview', { filePath });
+}
+
+export async function traceRepoGraphPath(input: {
+  graph: UnpackRepoGraph;
+  sourceQuery: string;
+  targetQuery: string;
+  sourceId?: string | null;
+  targetId?: string | null;
+  maxHops?: number;
+  maxVisitedNodes?: number;
+}): Promise<GraphPathResult> {
+  return safeInvoke('trace_repo_graph_path', {
+    graph: input.graph,
+    sourceQuery: input.sourceQuery,
+    targetQuery: input.targetQuery,
+    sourceId: input.sourceId ?? null,
+    targetId: input.targetId ?? null,
+    maxHops: input.maxHops ?? 8,
+    maxVisitedNodes: input.maxVisitedNodes ?? 5_000,
+  });
 }
 
 // ─── Synthetic user QA ─────────────────────────────────────────────────────

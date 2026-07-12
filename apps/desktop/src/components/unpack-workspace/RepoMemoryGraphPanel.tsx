@@ -1,11 +1,22 @@
-import { Database, FlaskConical, GitBranch, Network, Route, Waypoints } from 'lucide-react';
+import { Database, FlaskConical, GitBranch, Network, Route, Upload, Waypoints } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DeepGraphViewer } from '@/components/deep-graph-viewer';
 import { DisclosurePanel } from '@/components/unpack-workspace/DisclosurePanel';
 import { SourceLink } from '@/components/unpack-workspace/SourceLink';
-import type { UnpackRepoGraph, UnpackRepoGraphNode } from '@/lib/tauri-ipc';
+import { graphImportError, selectActiveGraph } from '@/lib/graph-trust';
+import {
+  type GraphPathResult,
+  importGraphifyPreview,
+  pickGraphJsonFile,
+  traceRepoGraphPath,
+  type UnpackRepoGraph,
+  type UnpackRepoGraphNode,
+} from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
 
 type GraphNodeInsight = UnpackRepoGraphNode & {
@@ -230,6 +241,17 @@ export function RepoMemoryGraphPanel({
   meta?: string;
   warnings?: string[];
 }) {
+  const [importedPreview, setImportedPreview] = useState<UnpackRepoGraph | null>(null);
+  const [importedFile, setImportedFile] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [sourceQuery, setSourceQuery] = useState('');
+  const [targetQuery, setTargetQuery] = useState('');
+  const [sourceId, setSourceId] = useState<string | null>(null);
+  const [targetId, setTargetId] = useState<string | null>(null);
+  const [pathResult, setPathResult] = useState<GraphPathResult | null>(null);
+  const [isTracing, setIsTracing] = useState(false);
+
   if (!graph || graph.nodes.length === 0) {
     return (
       <div className="rounded-md border border-dashed border-[var(--cv-line)] bg-[var(--bg-raised)]/35 p-5">
@@ -245,6 +267,57 @@ export function RepoMemoryGraphPanel({
     );
   }
 
+  const active = selectActiveGraph(graph, importedPreview);
+  const activeGraph = active.graph;
+
+  const handleImport = async () => {
+    const file = await pickGraphJsonFile();
+    if (!file) return;
+    setIsImporting(true);
+    setImportError(null);
+    try {
+      const preview = await importGraphifyPreview(file);
+      setImportedPreview(preview);
+      setImportedFile(file);
+      setPathResult(null);
+      setSourceId(null);
+      setTargetId(null);
+    } catch (error) {
+      setImportError(graphImportError(error));
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handleTrace = async () => {
+    if (!sourceQuery.trim() || !targetQuery.trim()) return;
+    setIsTracing(true);
+    try {
+      setPathResult(
+        await traceRepoGraphPath({
+          graph: activeGraph,
+          sourceQuery,
+          targetQuery,
+          sourceId,
+          targetId,
+        })
+      );
+    } catch (error) {
+      setPathResult({
+        source: { query: sourceQuery, status: 'not_found', candidates: [] },
+        target: { query: targetQuery, status: 'not_found', candidates: [] },
+        hops: [],
+        found: false,
+        trust_summary: 'none',
+        requires_verification: false,
+        message: `Could not trace graph path: ${String(error)}`,
+        bounds: { max_hops: 8, max_visited_nodes: 5_000, visited_nodes: 0, truncated: false },
+      });
+    } finally {
+      setIsTracing(false);
+    }
+  };
+
   const {
     nodeById,
     topKinds,
@@ -254,15 +327,15 @@ export function RepoMemoryGraphPanel({
     visualGraph,
     relationshipEdges,
     insights,
-  } = buildGraphPanelModel(graph);
+  } = buildGraphPanelModel(activeGraph);
 
   const edgeLabel = (id: string) => nodeById.get(id)?.label ?? id;
   const agentFacts = [
-    `start_node: ${hubs[0]?.label ?? graph.nodes[0]?.label ?? 'none'}`,
-    `nodes: ${graph.nodes.length}`,
-    `edges: ${graph.edges.length}`,
+    `start_node: ${hubs[0]?.label ?? activeGraph.nodes[0]?.label ?? 'none'}`,
+    `nodes: ${activeGraph.nodes.length}`,
+    `edges: ${activeGraph.edges.length}`,
     `boundaries: ${boundaries.length}`,
-    `testable_nodes: ${graph.nodes.filter((node) => TESTABLE_KINDS.has(node.kind)).length}`,
+    `testable_nodes: ${activeGraph.nodes.filter((node) => TESTABLE_KINDS.has(node.kind)).length}`,
     `missing_direct_test_edges: ${untestedNodes.length}`,
     `top_hubs: ${hubs
       .slice(0, 5)
@@ -283,13 +356,193 @@ export function RepoMemoryGraphPanel({
           </p>
           {meta && <p className="mt-1 font-mono text-[10px] text-[var(--text-muted)]">{meta}</p>}
         </div>
-        <Badge
-          variant="outline"
-          className="shrink-0 border border-cyan-500/30 bg-cyan-500/10 text-[10px] uppercase tracking-wider text-cyan-200"
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleImport}
+            disabled={isImporting}
+          >
+            <Upload size={13} /> {isImporting ? 'Importing…' : 'Import Graphify JSON'}
+          </Button>
+          {active.imported ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setImportedPreview(null);
+                setImportedFile(null);
+                setPathResult(null);
+              }}
+            >
+              Restore saved graph
+            </Button>
+          ) : null}
+          <Badge
+            variant="outline"
+            className="shrink-0 border border-cyan-500/30 bg-cyan-500/10 text-[10px] uppercase tracking-wider text-cyan-200"
+          >
+            {active.imported ? 'imported preview · ' : ''}v{activeGraph.schema_version} ·{' '}
+            {activeGraph.nodes.length} nodes · {activeGraph.edges.length} edges
+            {activeGraph.truncated ? ' · truncated' : ''}
+          </Badge>
+        </div>
+      </div>
+
+      {active.imported ? (
+        <div className="mt-3 rounded border border-violet-400/25 bg-violet-400/[0.07] px-3 py-2 text-xs text-violet-100">
+          Transient local preview{importedFile ? ` · ${importedFile}` : ''}. The saved Repo Unpacked
+          graph and target repo are unchanged.
+        </div>
+      ) : null}
+      {importError ? (
+        <div
+          role="alert"
+          className="mt-3 rounded border border-red-400/25 bg-red-400/[0.07] px-3 py-2 text-xs text-red-100"
         >
-          v{graph.schema_version} · {graph.nodes.length} nodes · {graph.edges.length} edges
-          {graph.truncated ? ' · truncated' : ''}
-        </Badge>
+          {importError}
+        </div>
+      ) : null}
+
+      <div className="mt-4 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.035] p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <Waypoints size={15} className="text-cyan-200" /> Trace a bounded connectivity path
+        </div>
+        <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+          Exact IDs, paths, and labels rank first. Edge arrows preserve stored direction; a path is
+          navigation context, not proof of runtime execution.
+        </p>
+        <div className="mt-3 grid gap-2 md:grid-cols-[1fr,1fr,auto]">
+          <Input
+            aria-label="Graph path source"
+            placeholder="Source file, node, or label"
+            value={sourceQuery}
+            onChange={(event) => {
+              setSourceQuery(event.target.value);
+              setSourceId(null);
+            }}
+          />
+          <Input
+            aria-label="Graph path target"
+            placeholder="Target route, command, table, or test"
+            value={targetQuery}
+            onChange={(event) => {
+              setTargetQuery(event.target.value);
+              setTargetId(null);
+            }}
+          />
+          <Button
+            type="button"
+            onClick={handleTrace}
+            disabled={isTracing || !sourceQuery.trim() || !targetQuery.trim()}
+          >
+            {isTracing ? 'Tracing…' : 'Trace path'}
+          </Button>
+        </div>
+
+        {pathResult?.source.status === 'ambiguous' || pathResult?.target.status === 'ambiguous' ? (
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {(['source', 'target'] as const).map((endpoint) => {
+              const resolution = pathResult[endpoint];
+              if (resolution.status !== 'ambiguous') return <div key={endpoint} />;
+              return (
+                <fieldset key={endpoint} className="rounded border border-amber-400/20 p-3">
+                  <legend className="px-1 text-xs font-semibold text-amber-100">
+                    Choose {endpoint}
+                  </legend>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {resolution.candidates.map((candidate) => (
+                      <Button
+                        key={candidate.id}
+                        type="button"
+                        variant={
+                          (endpoint === 'source' ? sourceId : targetId) === candidate.id
+                            ? 'default'
+                            : 'outline'
+                        }
+                        size="sm"
+                        onClick={() =>
+                          endpoint === 'source'
+                            ? setSourceId(candidate.id)
+                            : setTargetId(candidate.id)
+                        }
+                      >
+                        {candidate.label} · {humanKind(candidate.kind)}
+                      </Button>
+                    ))}
+                  </div>
+                </fieldset>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {pathResult ? (
+          <div className="mt-3" aria-live="polite">
+            <div
+              className={cn(
+                'rounded border px-3 py-2 text-xs',
+                pathResult.requires_verification
+                  ? 'border-amber-400/25 bg-amber-400/[0.06] text-amber-100'
+                  : 'border-emerald-400/25 bg-emerald-400/[0.06] text-emerald-100'
+              )}
+            >
+              {pathResult.message} · visited {pathResult.bounds.visited_nodes}/
+              {pathResult.bounds.max_visited_nodes} nodes · max {pathResult.bounds.max_hops} hops
+            </div>
+            {pathResult.hops.length > 0 ? (
+              <ol className="mt-3 space-y-2" aria-label="Graph path hops">
+                {pathResult.hops.map((hop, index) => (
+                  <li
+                    key={`${hop.from.id}-${hop.to.id}-${index}`}
+                    className="rounded-lg border border-[var(--cv-line)] bg-[var(--bg-main)]/40 p-3 text-xs"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium text-[var(--text-primary)]">
+                        {hop.from.label}
+                      </span>
+                      <span
+                        aria-label={
+                          hop.follows_stored_direction
+                            ? 'stored direction forward'
+                            : 'stored direction reverse'
+                        }
+                        className="text-[var(--text-muted)]"
+                      >
+                        {hop.follows_stored_direction ? '→' : '←'} {humanKind(hop.kind)}{' '}
+                        {hop.follows_stored_direction ? '→' : '←'}
+                      </span>
+                      <span className="font-medium text-[var(--text-primary)]">{hop.to.label}</span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-[10px] uppercase',
+                          hop.trust === 'extracted' && hop.origin === 'codevetter'
+                            ? 'border-emerald-400/30 text-emerald-200'
+                            : 'border-amber-400/30 text-amber-200'
+                        )}
+                      >
+                        {hop.trust} · {hop.origin}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-5 text-[var(--text-muted)]">
+                      {hop.evidence}
+                    </p>
+                    {hop.sources.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {hop.sources.slice(0, 4).map((source) => (
+                          <SourceLink key={source} path={source} repoPath={repoPath} />
+                        ))}
+                      </div>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -334,7 +587,7 @@ export function RepoMemoryGraphPanel({
               {humanKind(kind)}: {count}
             </Badge>
           ))}
-          {graph.nodes.length !== visualGraph.nodes.length ? (
+          {activeGraph.nodes.length !== visualGraph.nodes.length ? (
             <Badge
               variant="outline"
               className="border-cyan-500/20 bg-cyan-500/5 text-[10px] uppercase tracking-wider text-cyan-200"
@@ -350,7 +603,7 @@ export function RepoMemoryGraphPanel({
           graph={visualGraph}
           mode="context"
           repoPath={repoPath}
-          summary={`${visualGraph.nodes.length.toLocaleString()} visible of ${graph.nodes.length.toLocaleString()} nodes`}
+          summary={`${visualGraph.nodes.length.toLocaleString()} visible of ${activeGraph.nodes.length.toLocaleString()} nodes`}
         />
 
         <div className="space-y-4">

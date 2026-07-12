@@ -48,6 +48,8 @@ fn minimal_inventory() -> RepoInventory {
                 path: Some("src/review.ts".to_string()),
                 detail: Some("review surface".to_string()),
                 sources: vec!["src/review.ts".to_string()],
+                source_location: None,
+                community: None,
             }],
             edges: vec![RepoGraphEdge {
                 from: "file:src-review-ts".to_string(),
@@ -55,6 +57,9 @@ fn minimal_inventory() -> RepoInventory {
                 kind: "decided_by".to_string(),
                 evidence: "DECISION marker".to_string(),
                 sources: vec!["src/review.ts#L1".to_string()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             }],
             truncated: false,
         },
@@ -436,6 +441,12 @@ id TEXT PRIMARY KEY
         serde_json::to_string(&graph).expect("graph json"),
         serde_json::to_string(&graph_again).expect("graph json")
     );
+    assert_eq!(graph.schema_version, 2);
+    assert!(graph.edges.iter().all(|edge| {
+        matches!(edge.trust.as_str(), "extracted" | "inferred")
+            && edge.origin == "codevetter"
+            && !edge.sources.is_empty()
+    }));
     assert!(graph
         .nodes
         .iter()

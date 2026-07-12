@@ -1068,6 +1068,45 @@ describe('buildReviewerProofMarkdown', () => {
             confidence: 0.72,
           },
         ],
+        trusted_paths: [
+          {
+            source: {
+              query: 'src/pages/Billing.tsx',
+              status: 'resolved',
+              selected: null,
+              candidates: [],
+            },
+            target: { query: '/billing', status: 'resolved', selected: null, candidates: [] },
+            found: true,
+            trust_summary: 'navigation_lead',
+            requires_verification: true,
+            message: 'Path found with an inferred hop.',
+            bounds: { max_hops: 6, max_visited_nodes: 2000, visited_nodes: 2, truncated: false },
+            hops: [
+              {
+                from: {
+                  id: 'native-file',
+                  kind: 'file',
+                  label: 'src/pages/Billing.tsx',
+                  path: 'src/pages/Billing.tsx',
+                  sources: ['src/pages/Billing.tsx'],
+                },
+                to: {
+                  id: 'native-route',
+                  kind: 'route',
+                  label: '/billing',
+                  sources: ['src/pages/Billing.tsx'],
+                },
+                kind: 'routes_to',
+                trust: 'inferred',
+                origin: 'codevetter',
+                evidence: 'route inferred from page path',
+                sources: ['src/pages/Billing.tsx'],
+                follows_stored_direction: true,
+              },
+            ],
+          },
+        ],
       },
       intentReport: null,
       historyFindingSummaries: new Map(),
@@ -1077,6 +1116,9 @@ describe('buildReviewerProofMarkdown', () => {
     assert.match(markdown, /2 nodes · 1 edges/);
     assert.match(markdown, /\[file\] src\/pages\/Billing\.tsx/);
     assert.match(markdown, /raises_candidate, 0\.72/);
+    assert.match(markdown, /Qualified native graph paths/);
+    assert.match(markdown, /Navigation lead only/);
+    assert.match(markdown, /cannot establish a finding or verified claim/);
   });
 
   it('builds and copies focused graph context for the active finding', () => {
