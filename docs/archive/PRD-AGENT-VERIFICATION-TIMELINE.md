@@ -1,8 +1,8 @@
 # PRD: Agent Verification Timeline
 
-Status: shipped (first slice) — normalized timeline spine, claim checks, jump targets, segment fix packets, post-fix QA deltas, and collapsible long-run anchors in Review; fuller non-command conversation reconstruction remains deferred
+Status: shipped (local scope) — normalized timeline spine, claim checks, jump targets, segment fix packets, post-fix QA deltas, collapsible long-run anchors, and archive-backed non-command conversation reconstruction in Review
 Owner: unassigned
-Last updated: 2026-06-12
+Last updated: 2026-07-13
 
 ## Summary
 
@@ -101,7 +101,7 @@ Acceptance:
 - Unverified edits or skipped checks are called out.
 - Good verification loops can be recognized and reused.
 
-Status: partially implemented. Timeline evidence rows now carry bounded command anchors from history command signals, including source, status, source path/line, event ID, session ID, artifact, transcript excerpt, jump target where available, and compact multi-turn replay packets that group adjacent command events from the same transcript. A dedicated Claim check row now flags failed/stale command claims, unknown verification-command outcomes, explicit extracted agent claims, positive test/check claims contradicted by failed/stale command evidence, findings without verification evidence, latest QA failures without a post-fix comparison, unresolved post-fix QA comparisons, successful fixes that lack same-flow QA reruns, evidence-count-only loops that have no passed verification command or passing QA proof, possible scope drift when a fix edits files outside reviewed findings, and broad repeated edits without evidence progress. Clean loops now call out passed verification-command and QA proof counts. Worktree rows carry bounded edit-origin anchors for files changed by fix attempts, including stable event IDs, session IDs, source paths, and file jumps. These anchors render in the Review sidebar, are clickable in-app, and are copied into reviewer proof.
+Status: implemented for the local product scope. Timeline evidence rows carry bounded command anchors plus redacted, ordered non-command archive windows resolved by session/source-line. Conversation items retain message index, role, kind, source path/line, and before/after position, and are explicitly qualified as intent context rather than executable verification evidence. The structured window flows through visible timeline expansion, multi-turn replay packets, segment fix packets, and reviewer-proof Markdown while command outcomes remain authoritative. Claim checks, edit-origin anchors, scope-drift signals, post-fix comparisons, and in-app source jumps remain connected to the same run spine.
 
 ### Phase 3: Fix Loop Linkage
 
@@ -111,7 +111,7 @@ Acceptance:
 
 - A fix packet can be generated from a timeline segment. Implemented for Review, Evidence, QA, Fix packet, and Worktree timeline segments by deriving the relevant findings, selecting them in the patch queue, and copying a segment-scoped agent fix packet with clicked-row replay metadata, jump target, bounded source/event/artifact anchors, and transcript snippets.
 - The timeline shows whether the recheck actually improved evidence. Implemented for same-flow post-fix Synthetic QA comparisons through QA-row status/detail deltas plus before/after artifact anchors.
-- Review findings can reference earlier agent actions. Partially implemented through history command/claim summaries, first-class timeline jump metadata, transcript excerpts, edit-origin anchors for fix changed files, command-event replay packets, timeline-segment replay packets, and proof export; fuller non-command conversation reconstruction remains pending.
+- Review findings can reference earlier agent actions. Implemented through history command/claim summaries, first-class timeline jump metadata, archive-backed non-command conversation windows, edit-origin anchors, command-event and segment replay packets, and proof export.
 
 ## UX Requirements
 

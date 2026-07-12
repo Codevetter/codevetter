@@ -12,7 +12,7 @@ use tauri::Manager;
 
 const STARTUP_FULL_INDEX_DELAY_SECS: u64 = 6 * 60 * 60;
 const PERIODIC_INDEX_INITIAL_DELAY_SECS: u64 = 6 * 60 * 60;
-const PERIODIC_INDEX_INTERVAL_SECS: u64 = 6 * 60 * 60;
+const PERIODIC_INDEX_INTERVAL_SECS: u64 = commands::history::FULL_INDEX_RECOVERY_INTERVAL_SECS;
 
 /// Shared database state accessible from every Tauri command via
 /// `tauri::State<DbState>`.
@@ -228,7 +228,7 @@ fn main() {
                         // for archive completeness, but it must not compete
                         // with foreground repo work during normal app usage.
                         // Open sessions are kept fresh by the lightweight tail
-                        // watcher above.
+                        // watcher below.
                         std::thread::sleep(std::time::Duration::from_secs(
                             PERIODIC_INDEX_INTERVAL_SECS,
                         ));
@@ -249,7 +249,9 @@ fn main() {
                 .name("transcript-tail".into())
                 .spawn(move || {
                     set_thread_background_qos();
-                    std::thread::sleep(std::time::Duration::from_secs(20));
+                    std::thread::sleep(std::time::Duration::from_secs(
+                        crate::commands::history::LIVE_TRANSCRIPT_INITIAL_DELAY_SECS,
+                    ));
                     // Grok/Cursor aren't transcript-tailable, so they only
                     // refreshed on the 5-min full index and lagged Claude/Codex.
                     // Refresh them every ~60s (every 6th 10s tick) — responsive
@@ -291,7 +293,11 @@ fn main() {
                                     }
                                 }
 
-                                if tick % 6 == 0 {
+                                if tick
+                                    % (crate::commands::history::LIVE_SECONDARY_ADAPTER_INTERVAL_SECS
+                                        / crate::commands::history::LIVE_TRANSCRIPT_INTERVAL_SECS)
+                                    == 0
+                                {
                                     match crate::commands::history::refresh_secondary_agents_with_conn(
                                         &conn,
                                     ) {
@@ -325,7 +331,9 @@ fn main() {
                             }
                         }
                         tick = tick.wrapping_add(1);
-                        std::thread::sleep(std::time::Duration::from_secs(10));
+                        std::thread::sleep(std::time::Duration::from_secs(
+                            crate::commands::history::LIVE_TRANSCRIPT_INTERVAL_SECS,
+                        ));
                     }
                 })
                 .expect("failed to spawn transcript-tail thread");
@@ -377,6 +385,7 @@ fn main() {
             commands::agent_memories::get_memory_file_git_diff,
             // History / indexer
             commands::history::trigger_index,
+            commands::history::get_live_session_evidence_policy,
             commands::history::get_token_usage_stats,
             commands::history::get_agent_usage_breakdown,
             commands::history::get_agent_usage_by_day,
@@ -456,6 +465,7 @@ fn main() {
             commands::unpack::export_repo_unpack_report,
             commands::graph_trust::import_graphify_preview,
             commands::graph_trust::trace_repo_graph_path,
+            commands::history_graph::query_repo_history_graph,
             // Unpack deep graph (call-graph indexing)
             commands::unpack_deep_graph::unpack_deep_graph_status,
             commands::unpack_deep_graph::unpack_deep_graph_analyze,

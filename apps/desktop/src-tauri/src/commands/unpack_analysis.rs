@@ -1,5 +1,6 @@
 //! Full/deferred Repo Unpacked analysis: graph, health, and history.
 
+use crate::commands::history_graph::build_history_graph;
 use crate::commands::unpack_qa::{push_unique_limited, suggested_qa_flows};
 use crate::commands::unpack_scan::is_binary_path;
 use crate::commands::unpack_types::{
@@ -1515,16 +1516,20 @@ pub(crate) fn build_history_brief_with_previews(
         )
     };
 
-    RepoHistoryBrief {
-        schema_version: 1,
+    let mut brief = RepoHistoryBrief {
+        schema_version: 2,
         summary,
         recent_commits: commits,
         decisions,
         test_hints,
         temporal_couplings,
+        graph: Default::default(),
         sources,
         truncated,
-    }
+    };
+    brief.graph = build_history_graph(&brief);
+    brief.truncated |= brief.graph.truncated;
+    brief
 }
 
 fn read_temporal_couplings(
@@ -1646,7 +1651,9 @@ fn read_recent_git_commits(root: &Path, limit: usize) -> Vec<RepoHistoryCommit> 
             "log",
             &format!("-n{limit}"),
             "--date=short",
-            "--format=%H%x1f%ad%x1f%s",
+            "--pretty=format:%x1e%H%x1f%ad%x1f%s",
+            "--name-only",
+            "--",
         ])
         .current_dir(root)
         .output();
@@ -1658,9 +1665,27 @@ fn read_recent_git_commits(root: &Path, limit: usize) -> Vec<RepoHistoryCommit> 
         return Vec::new();
     }
 
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .filter_map(parse_git_commit_line)
+    parse_git_commit_records(&String::from_utf8_lossy(&output.stdout), limit)
+}
+
+pub(crate) fn parse_git_commit_records(raw: &str, limit: usize) -> Vec<RepoHistoryCommit> {
+    raw.split('\x1e')
+        .filter_map(|record| {
+            let mut lines = record
+                .lines()
+                .map(str::trim)
+                .filter(|line| !line.is_empty());
+            let mut commit = parse_git_commit_line(lines.next()?)?;
+            commit.files = lines
+                .filter(|path| is_temporal_coupling_path(path))
+                .take(24)
+                .map(String::from)
+                .collect();
+            commit.files.sort();
+            commit.files.dedup();
+            Some(commit)
+        })
+        .take(limit)
         .collect()
 }
 
@@ -1680,6 +1705,7 @@ pub(crate) fn parse_git_commit_line(line: &str) -> Option<RepoHistoryCommit> {
         sha: sha.chars().take(12).collect(),
         date: date.map(String::from),
         subject: subject.chars().take(180).collect(),
+        files: Vec::new(),
     })
 }
 
@@ -1743,6 +1769,8 @@ fn looks_sensitive_path(path: &str) -> bool {
         .map(|name| name.to_string_lossy().to_string())
         .unwrap_or_default();
     basename == ".env"
+        || basename.contains("credential")
+        || basename.contains("secret")
         || basename.ends_with(".pem")
         || basename.ends_with(".key")
         || basename == "id_rsa"
@@ -1750,6 +1778,8 @@ fn looks_sensitive_path(path: &str) -> bool {
         || lower.contains("/.ssh/")
         || lower.contains("/secrets/")
         || lower.contains("/credentials/")
+        || lower.contains(".production.")
+        || lower.contains("/production/")
 }
 
 fn collect_history_test_hints(

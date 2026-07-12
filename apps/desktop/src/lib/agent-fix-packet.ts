@@ -41,6 +41,11 @@ interface AgentFixPacketTimelineAnchor {
   source: string;
   status?: 'passed' | 'failed' | 'stale' | 'unknown';
   contextExcerpt?: string[];
+  conversationContext?: NonNullable<
+    NonNullable<
+      import('@/lib/tauri-ipc').RepoHistoryContext['command_signals']
+    >[number]['conversation_window']
+  >;
   sourcePath?: string | null;
   sourceLine?: number | null;
   eventId?: string | null;
@@ -236,6 +241,14 @@ export function renderAgentFixPacketMarkdown(packet: AgentFixPacket): string {
       anchor.contextExcerpt?.slice(0, 2).forEach((excerpt) => {
         out.push(`    - transcript: ${excerpt}`);
       });
+      anchor.conversationContext?.items.slice(0, 4).forEach((item) => {
+        out.push(
+          `    - intent context (${item.relative_position}, ${item.role}, source=${item.source_path}${item.source_line != null ? `:${item.source_line}` : ''}): ${item.text}`
+        );
+      });
+      if (anchor.conversationContext) {
+        out.push('    - qualification: intent context only; not executable verification evidence');
+      }
     });
   }
   out.push('', 'Findings:');

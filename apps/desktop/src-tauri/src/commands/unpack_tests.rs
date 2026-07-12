@@ -1,6 +1,7 @@
 use super::*;
 use crate::commands::unpack_analysis::{
-    analyze_health_file, parse_git_commit_line, parse_temporal_coupling_log,
+    analyze_health_file, parse_git_commit_line, parse_git_commit_records,
+    parse_temporal_coupling_log,
 };
 use crate::commands::unpack_outcome::{
     calibrate_outcome_evidence, outcome_trend, outcome_trust_actions,
@@ -70,6 +71,7 @@ fn minimal_inventory() -> RepoInventory {
                 sha: "1234567890ab".to_string(),
                 date: Some("2026-06-12".to_string()),
                 subject: "Add history brief".to_string(),
+                files: vec!["src/review.ts".to_string()],
             }],
             decisions: vec![RepoHistoryDecision {
                 marker: "decision".to_string(),
@@ -81,6 +83,7 @@ fn minimal_inventory() -> RepoInventory {
                 reason: "package script `test` is a likely verification command".to_string(),
             }],
             temporal_couplings: Vec::new(),
+            graph: Default::default(),
             sources: vec!["src/review.ts#L1".to_string()],
             truncated: false,
         },
@@ -513,7 +516,7 @@ fn history_brief_collects_decisions_and_verification_hints_deterministically() {
         serde_json::to_string(&brief).expect("history brief json"),
         serde_json::to_string(&brief_again).expect("history brief json")
     );
-    assert_eq!(brief.schema_version, 1);
+    assert_eq!(brief.schema_version, 2);
     assert!(brief.summary.contains("decision marker"));
     assert!(brief
         .decisions
@@ -527,6 +530,12 @@ fn history_brief_collects_decisions_and_verification_hints_deterministically() {
         .test_hints
         .iter()
         .any(|hint| hint.path == "tests/review.test.ts"));
+    assert!(brief.graph.nodes.iter().any(|node| node.kind == "decision"));
+    assert!(brief
+        .graph
+        .edges
+        .iter()
+        .any(|edge| edge.kind == "records_decision"));
 
     let _ = std::fs::remove_dir_all(root);
 }
@@ -541,6 +550,16 @@ fn parses_recent_git_commit_line() {
     assert_eq!(commit.date.as_deref(), Some("2026-06-12"));
     assert_eq!(commit.subject, "Add Repo Unpacked history brief");
     assert!(parse_git_commit_line("bad").is_none());
+}
+
+#[test]
+fn parses_bounded_commit_files_without_sensitive_paths() {
+    let raw = "\u{1e}1234567890abcdef\x1f2026-06-12\x1fChange review\nsrc/review.ts\n.env\nconfig/credentials.json\ntests/review.test.ts\n";
+    let commits = parse_git_commit_records(raw, 1);
+    assert_eq!(
+        commits[0].files,
+        vec!["src/review.ts", "tests/review.test.ts"]
+    );
 }
 
 #[test]
@@ -821,6 +840,7 @@ fn repo_inventory_deserializes_old_reports_without_qa_readiness_or_repo_graph() 
     assert_eq!(inventory.history_brief.schema_version, 1);
     assert!(inventory.history_brief.recent_commits.is_empty());
     assert!(inventory.history_brief.temporal_couplings.is_empty());
+    assert!(inventory.history_brief.graph.nodes.is_empty());
 }
 
 #[test]

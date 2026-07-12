@@ -1,8 +1,8 @@
 # PRD: Codebase History Explainer
 
-Status: shipped (first slice) — file-level cited explanations in Review/Repo Unpacked plus `queryCodebaseHistoryExplanationForFile`; queryable local history graph API remains deferred
+Status: shipped (local scope) — file-level cited explanations plus a persisted schema-v2 local history graph and bounded query surface in Repo Unpacked
 Owner: unassigned
-Last updated: 2026-06-12
+Last updated: 2026-07-13
 
 ## Summary
 
@@ -83,9 +83,9 @@ Link files, decisions, commits, tests, and findings in a small graph.
 
 Acceptance:
 
-- The graph can answer file-centric questions. Partially implemented through the Repo Unpacked `history_brief` and Review file-level history explanations; a queryable graph API is still pending.
+- The graph can answer file-centric questions. Implemented with exact path/ID/label precedence, ranked token fallback, one-hop relationships, trust/citation metadata, and explicit no-match/truncation language.
 - Prior findings can be surfaced near new diffs. Implemented in Review through recurring finding summaries; Repo Unpacked does not yet include prior finding nodes.
-- Large repositories remain bounded by top-N history slices. Implemented through capped commit, marker, test, and source lists.
+- Large repositories remain bounded by top-N history slices. Implemented through capped commit-file harvesting plus deterministic 240-node/480-edge graph and bounded query results.
 
 ### Phase 2: Review Integration
 
@@ -105,7 +105,7 @@ Acceptance:
 
 - Exports remain local and optional. Implemented in Repo Unpacked markdown/HTML export for the `history_brief` section.
 - Explanations can be copied into tasks or PRs. Implemented through Repo Unpacked export, the `agent_context_markdown` sidecar, and Review proof handoffs.
-- Artifact schemas remain versioned. Implemented with `history_brief.schema_version`.
+- Artifact schemas remain versioned. Implemented with backward-compatible `history_brief` schema v2; schema-v1 snapshots deserialize to an empty graph without rewrite.
 
 ## UX Requirements
 

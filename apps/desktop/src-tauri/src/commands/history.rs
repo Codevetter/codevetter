@@ -12,6 +12,51 @@ use tauri::{AppHandle, Emitter, Manager, State};
 
 static FULL_INDEX_LOCK: Mutex<()> = Mutex::new(());
 
+pub const LIVE_TRANSCRIPT_INITIAL_DELAY_SECS: u64 = 20;
+pub const LIVE_TRANSCRIPT_INTERVAL_SECS: u64 = 10;
+pub const LIVE_SECONDARY_ADAPTER_INTERVAL_SECS: u64 = 60;
+pub const FULL_INDEX_RECOVERY_INTERVAL_SECS: u64 = 6 * 60 * 60;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LiveSessionEvidencePolicy {
+    pub schema_version: i64,
+    pub mode: String,
+    pub supported_incremental_adapters: Vec<String>,
+    pub incremental_interval_secs: u64,
+    pub secondary_adapter_interval_secs: u64,
+    pub recovery: String,
+    pub full_index_recovery_interval_secs: u64,
+    pub update_event: String,
+    pub local_only: bool,
+    pub last_full_indexed_at: Option<String>,
+}
+
+pub fn live_session_evidence_policy(
+    conn: &rusqlite::Connection,
+) -> Result<LiveSessionEvidencePolicy, String> {
+    Ok(LiveSessionEvidencePolicy {
+        schema_version: 1,
+        mode: "incremental_jsonl_poll".to_string(),
+        supported_incremental_adapters: vec!["claude-code".to_string(), "codex".to_string()],
+        incremental_interval_secs: LIVE_TRANSCRIPT_INTERVAL_SECS,
+        secondary_adapter_interval_secs: LIVE_SECONDARY_ADAPTER_INTERVAL_SECS,
+        recovery: "persisted_byte_cursor_plus_scheduled_or_manual_full_index".to_string(),
+        full_index_recovery_interval_secs: FULL_INDEX_RECOVERY_INTERVAL_SECS,
+        update_event: "session_archive_updated".to_string(),
+        local_only: true,
+        last_full_indexed_at: queries::get_preference(conn, "last_indexed_at")
+            .map_err(|error| error.to_string())?,
+    })
+}
+
+#[tauri::command]
+pub async fn get_live_session_evidence_policy(
+    db: State<'_, DbState>,
+) -> Result<LiveSessionEvidencePolicy, String> {
+    let conn = db.0.lock().map_err(|error| error.to_string())?;
+    live_session_evidence_policy(&conn)
+}
+
 #[derive(Debug, Clone)]
 struct IndexedAdapterSession {
     session_id: String,
@@ -208,6 +253,13 @@ pub struct TranscriptTailSummary {
 pub fn tail_live_transcript_sessions_with_conn(
     conn: &rusqlite::Connection,
 ) -> Result<TranscriptTailSummary, String> {
+    tail_live_transcript_sessions_inner(conn, true)
+}
+
+fn tail_live_transcript_sessions_inner(
+    conn: &rusqlite::Connection,
+    discover_new_codex_sessions: bool,
+) -> Result<TranscriptTailSummary, String> {
     let _index_guard = match FULL_INDEX_LOCK.try_lock() {
         Ok(guard) => guard,
         Err(_) => {
@@ -255,7 +307,12 @@ pub fn tail_live_transcript_sessions_with_conn(
     // New Codex sessions are not present in `cc_sessions` yet, so the DB-backed
     // live-source query above cannot see them until a full index discovers them.
     // Scan recently touched Codex roots directly and index any fresh file now.
-    for path in recent_codex_session_files(chrono::Duration::hours(48), 80) {
+    let recent_codex_files = if discover_new_codex_sessions {
+        recent_codex_session_files(chrono::Duration::hours(48), 80)
+    } else {
+        Vec::new()
+    };
+    for path in recent_codex_files {
         let path_str = path.to_string_lossy().to_string();
         if seen_paths.contains(&path_str) {
             continue;
@@ -3642,6 +3699,86 @@ mod tests {
         assert_eq!(a.2, b.2, "day buckets diverged");
 
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn live_policy_is_versioned_local_and_recoverable() {
+        let conn = memory_conn_with_project();
+        queries::set_preference(&conn, "last_indexed_at", "2026-07-12T12:00:00Z").unwrap();
+        let policy = live_session_evidence_policy(&conn).expect("policy");
+        assert_eq!(policy.schema_version, 1);
+        assert_eq!(policy.incremental_interval_secs, 10);
+        assert_eq!(policy.full_index_recovery_interval_secs, 6 * 60 * 60);
+        assert_eq!(
+            policy.supported_incremental_adapters,
+            ["claude-code", "codex"]
+        );
+        assert!(policy.local_only);
+        assert!(policy.recovery.contains("byte_cursor"));
+        assert_eq!(
+            policy.last_full_indexed_at.as_deref(),
+            Some("2026-07-12T12:00:00Z")
+        );
+    }
+
+    #[test]
+    fn partial_tail_is_preserved_until_the_line_completes() {
+        let dir = std::env::temp_dir().join(format!("cv_partial_{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let events = synth_claude_events(6);
+        let path = dir.join("partial.jsonl");
+        std::fs::write(&path, &events[..events.len() - 1]).unwrap();
+        let conn = memory_conn_with_project();
+        parse_claude_session(&path, &conn, "project", "2026-07-12T12:00:00Z").unwrap();
+        let first = index_snapshot(&conn, path.to_string_lossy().as_ref());
+        assert_eq!(
+            first.0[0], 5,
+            "unterminated sixth line must remain unconsumed"
+        );
+
+        std::fs::write(&path, &events).unwrap();
+        parse_claude_session(&path, &conn, "project", "2026-07-12T12:00:10Z").unwrap();
+        let completed = index_snapshot(&conn, path.to_string_lossy().as_ref());
+        assert_eq!(completed.0[0], 6);
+        assert_eq!(completed.1.len(), 6);
+    }
+
+    #[test]
+    fn lock_skipped_tail_recovers_exactly_once_on_next_pass() {
+        let dir = std::env::temp_dir().join(format!("cv_tail_lock_{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let events = synth_claude_events(3);
+        let split = events
+            .match_indices('\n')
+            .nth(1)
+            .map(|(i, _)| i + 1)
+            .unwrap();
+        let path = dir.join("live.jsonl");
+        std::fs::write(&path, &events[..split]).unwrap();
+        let conn = memory_conn_with_project();
+        parse_claude_session(&path, &conn, "project", &chrono::Utc::now().to_rfc3339()).unwrap();
+        conn.execute(
+            "UPDATE cc_sessions SET last_message = ?2 WHERE jsonl_path = ?1",
+            params![
+                path.to_string_lossy().as_ref(),
+                chrono::Utc::now().to_rfc3339()
+            ],
+        )
+        .unwrap();
+        std::fs::write(&path, &events).unwrap();
+
+        let guard = FULL_INDEX_LOCK.lock().unwrap();
+        let skipped = tail_live_transcript_sessions_inner(&conn, false).expect("non-blocking skip");
+        assert_eq!(skipped.messages_indexed, 0);
+        drop(guard);
+
+        let recovered = tail_live_transcript_sessions_inner(&conn, false).expect("recovered tail");
+        assert_eq!(recovered.sessions_tailed, 1);
+        assert_eq!(recovered.messages_indexed, 1);
+        let settled = tail_live_transcript_sessions_inner(&conn, false).expect("settled tail");
+        assert_eq!(settled.messages_indexed, 0);
+        let snapshot = index_snapshot(&conn, path.to_string_lossy().as_ref());
+        assert_eq!(snapshot.1.len(), 3, "archive rows must remain exact-once");
     }
 
     #[test]

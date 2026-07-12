@@ -349,6 +349,16 @@ pub struct SessionMessageArchiveSearchRow {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SessionConversationWindow {
+    pub session_id: String,
+    pub anchor_source_line: i64,
+    pub target_message_index: Option<i64>,
+    pub rows: Vec<SessionMessageArchiveRow>,
+    pub truncated_before: bool,
+    pub truncated_after: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityInput {
     pub agent_id: Option<String>,
     pub event_type: Option<String>,
@@ -1150,6 +1160,78 @@ pub fn list_session_message_archive(
     )?;
     let rows = stmt.query_map(params![session_id, limit], session_message_archive_from_row)?;
     rows.collect()
+}
+
+pub fn session_conversation_window_by_source_line(
+    conn: &Connection,
+    session_id: &str,
+    source_line: i64,
+    before: i64,
+    after: i64,
+) -> Result<SessionConversationWindow, rusqlite::Error> {
+    let before = before.clamp(0, 12);
+    let after = after.clamp(0, 12);
+    let target_message_index = conn
+        .query_row(
+            "SELECT message_index
+             FROM session_message_archive
+             WHERE session_id = ?1 AND source_line IS NOT NULL
+             ORDER BY ABS(source_line - ?2), message_index ASC
+             LIMIT 1",
+            params![session_id, source_line],
+            |row| row.get::<_, i64>(0),
+        )
+        .optional()?;
+    let Some(target) = target_message_index else {
+        return Ok(SessionConversationWindow {
+            session_id: session_id.to_string(),
+            anchor_source_line: source_line,
+            target_message_index: None,
+            rows: Vec::new(),
+            truncated_before: false,
+            truncated_after: false,
+        });
+    };
+    let start = target.saturating_sub(before);
+    let end = target.saturating_add(after);
+    let mut stmt = conn.prepare(
+        "SELECT id, session_id, adapter_id, agent_type, source_ref, source_line,
+                message_index, role, kind, timestamp, content_text, tool_name,
+                tool_call_id, raw_type, created_at
+         FROM session_message_archive
+         WHERE session_id = ?1 AND message_index BETWEEN ?2 AND ?3
+         ORDER BY message_index ASC",
+    )?;
+    let rows = stmt
+        .query_map(
+            params![session_id, start, end],
+            session_message_archive_from_row,
+        )?
+        .collect::<Result<Vec<_>, _>>()?;
+    let truncated_before = conn.query_row(
+        "SELECT EXISTS(
+            SELECT 1 FROM session_message_archive
+            WHERE session_id = ?1 AND message_index < ?2
+         )",
+        params![session_id, start],
+        |row| row.get::<_, i64>(0),
+    )? != 0;
+    let truncated_after = conn.query_row(
+        "SELECT EXISTS(
+            SELECT 1 FROM session_message_archive
+            WHERE session_id = ?1 AND message_index > ?2
+         )",
+        params![session_id, end],
+        |row| row.get::<_, i64>(0),
+    )? != 0;
+    Ok(SessionConversationWindow {
+        session_id: session_id.to_string(),
+        anchor_source_line: source_line,
+        target_message_index: Some(target),
+        rows,
+        truncated_before,
+        truncated_after,
+    })
 }
 
 fn build_archive_fts_query(query: &str) -> Option<String> {
@@ -3513,6 +3595,48 @@ mod tests {
             tool_call_id: None,
             raw_type: Some("message".to_string()),
         }
+    }
+
+    #[test]
+    fn conversation_window_is_ordered_bounded_and_anchor_aware() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        eval_seed_session(&conn, "s1", 40);
+        let rows = (0..30)
+            .map(|idx| {
+                let mut row = eval_archive_row(idx, &format!("message {idx}"));
+                row.source_line = Some(100 + idx * 2);
+                row
+            })
+            .collect::<Vec<_>>();
+        replace_session_message_archive(&conn, "s1", &rows).expect("archive");
+
+        let window =
+            session_conversation_window_by_source_line(&conn, "s1", 121, 99, 99).expect("window");
+        assert_eq!(window.target_message_index, Some(10));
+        assert_eq!(window.rows.first().map(|row| row.message_index), Some(0));
+        assert_eq!(window.rows.last().map(|row| row.message_index), Some(22));
+        assert!(!window.truncated_before);
+        assert!(window.truncated_after);
+        assert!(window
+            .rows
+            .windows(2)
+            .all(|pair| pair[0].message_index < pair[1].message_index));
+    }
+
+    #[test]
+    fn conversation_window_without_source_anchor_is_empty() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        eval_seed_session(&conn, "s1", 1);
+        let mut row = eval_archive_row(0, "message");
+        row.source_line = None;
+        replace_session_message_archive(&conn, "s1", &[row]).expect("archive");
+
+        let window =
+            session_conversation_window_by_source_line(&conn, "s1", 8, 4, 6).expect("window");
+        assert_eq!(window.target_message_index, None);
+        assert!(window.rows.is_empty());
     }
 
     #[test]
