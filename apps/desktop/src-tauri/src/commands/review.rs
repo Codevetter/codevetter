@@ -309,7 +309,87 @@ struct ReviewMemoryGraph {
     scope: String,
     nodes: Vec<ReviewMemoryGraphNode>,
     edges: Vec<ReviewMemoryGraphEdge>,
+    trusted_paths: Vec<crate::commands::graph_trust::GraphPathResult>,
     truncated: bool,
+}
+
+fn load_latest_native_repo_graph(
+    conn: &rusqlite::Connection,
+    repo_path: &str,
+) -> Option<crate::commands::unpack_types::RepoGraph> {
+    let inventory_json = conn
+        .query_row(
+            "SELECT inventory_json FROM repo_unpacked_reports
+             WHERE repo_path = ?1 AND inventory_json IS NOT NULL
+             ORDER BY datetime(created_at) DESC LIMIT 1",
+            rusqlite::params![repo_path],
+            |row| row.get::<_, String>(0),
+        )
+        .ok()?;
+    serde_json::from_str::<crate::commands::unpack_types::RepoInventory>(&inventory_json)
+        .ok()
+        .map(|inventory| inventory.repo_graph)
+}
+
+fn derive_native_review_paths(
+    graph: Option<&crate::commands::unpack_types::RepoGraph>,
+    changed_files: &[String],
+) -> Vec<crate::commands::graph_trust::GraphPathResult> {
+    let Some(graph) = graph.filter(|graph| graph.schema_version >= 2) else {
+        return Vec::new();
+    };
+    const BOUNDARIES: [&str; 5] = ["route", "tauri_command", "db_table", "test", "script"];
+    let targets = graph
+        .nodes
+        .iter()
+        .filter(|node| BOUNDARIES.contains(&node.kind.as_str()))
+        .take(24)
+        .collect::<Vec<_>>();
+    let mut paths = Vec::new();
+    for changed_file in changed_files.iter().take(8) {
+        let Some(source) = graph.nodes.iter().find(|node| {
+            node.path.as_deref() == Some(changed_file.as_str()) || node.label == *changed_file
+        }) else {
+            continue;
+        };
+        for target in &targets {
+            if target.id == source.id {
+                continue;
+            }
+            let result = crate::commands::graph_trust::trace_graph_path(
+                graph,
+                &source.id,
+                &target.id,
+                Some(&source.id),
+                Some(&target.id),
+                6,
+                2_000,
+            );
+            if result.found && !result.hops.is_empty() {
+                paths.push(result);
+            }
+        }
+    }
+    paths.sort_by(|a, b| {
+        a.requires_verification
+            .cmp(&b.requires_verification)
+            .then_with(|| a.hops.len().cmp(&b.hops.len()))
+            .then_with(|| {
+                a.target
+                    .selected
+                    .as_ref()
+                    .map(|value| value.id.as_str())
+                    .cmp(&b.target.selected.as_ref().map(|value| value.id.as_str()))
+            })
+    });
+    paths.dedup_by(|a, b| {
+        a.source.selected.as_ref().map(|value| &value.id)
+            == b.source.selected.as_ref().map(|value| &value.id)
+            && a.target.selected.as_ref().map(|value| &value.id)
+                == b.target.selected.as_ref().map(|value| &value.id)
+    });
+    paths.truncate(4);
+    paths
 }
 
 fn graph_node_id(kind: &str, value: &str) -> String {
@@ -354,6 +434,7 @@ fn build_review_memory_graph(
     procedure_steps: &[crate::commands::evidence_pattern::EvidenceProcedureStep],
     history_section: &str,
     blast_section: &str,
+    trusted_paths: Vec<crate::commands::graph_trust::GraphPathResult>,
 ) -> ReviewMemoryGraph {
     const MAX_FILE_NODES: usize = 12;
     const MAX_TOTAL_NODES: usize = 28;
@@ -502,6 +583,7 @@ fn build_review_memory_graph(
         scope: "review_changed_files".to_string(),
         nodes,
         edges,
+        trusted_paths,
         truncated,
     }
 }
@@ -536,6 +618,36 @@ fn render_review_memory_graph_for_prompt(graph: &ReviewMemoryGraph) -> String {
         lines.push(format!(
             "  edge: {} -> {} [{} {:.2}]",
             edge.from, edge.to, edge.kind, edge.confidence
+        ));
+    }
+    for path in graph.trusted_paths.iter().take(4) {
+        let route = path
+            .hops
+            .iter()
+            .map(|hop| {
+                format!(
+                    "{} {}[{}; {}; {}] {}",
+                    hop.from.label,
+                    if hop.follows_stored_direction {
+                        "->"
+                    } else {
+                        "<-"
+                    },
+                    hop.kind,
+                    hop.trust,
+                    hop.origin,
+                    hop.to.label
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" | ");
+        let qualification = if path.requires_verification {
+            "navigation lead; verify uncertain/imported/legacy hops against source"
+        } else {
+            "source-backed connectivity context"
+        };
+        lines.push(format!(
+            "  trusted path: {route} ({qualification}; cannot independently create a finding or verified claim)"
         ));
     }
     if graph.truncated {
@@ -1312,12 +1424,18 @@ pub async fn run_cli_review_core(
     );
     let evidence_procedure_steps_json =
         serde_json::to_value(&evidence_procedure_steps).unwrap_or_else(|_| json!([]));
+    let native_repo_graph = {
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        load_latest_native_repo_graph(&conn, &repo_path)
+    };
+    let trusted_paths = derive_native_review_paths(native_repo_graph.as_ref(), &changed_files);
     let review_memory_graph = build_review_memory_graph(
         &changed_files,
         &evidence_candidates,
         &evidence_procedure_steps,
         &history_section,
         &blast_section,
+        trusted_paths,
     );
     let review_memory_graph_section = render_review_memory_graph_for_prompt(&review_memory_graph);
     let review_memory_graph_json =
@@ -2711,6 +2829,7 @@ mod tests {
             &steps,
             "Prior decisions touching this change",
             "Blast radius summary",
+            Vec::new(),
         );
         let rendered = render_review_memory_graph_for_prompt(&graph);
 
@@ -2724,6 +2843,47 @@ mod tests {
         assert!(rendered.contains("Changed-file graph neighborhood"));
         assert!(rendered.contains("ui-change-needs-browser-proof"));
         assert!(rendered.contains("verify_ui_route_change"));
+    }
+
+    #[test]
+    fn native_review_paths_are_bounded_qualified_context_not_claims() {
+        use crate::commands::unpack_types::{RepoGraph, RepoGraphEdge, RepoGraphNode};
+        let node = |id: &str, kind: &str, label: &str, path: Option<&str>| RepoGraphNode {
+            id: id.to_string(),
+            kind: kind.to_string(),
+            label: label.to_string(),
+            path: path.map(ToOwned::to_owned),
+            detail: None,
+            sources: path.into_iter().map(ToOwned::to_owned).collect(),
+            source_location: None,
+            community: None,
+        };
+        let graph = RepoGraph {
+            schema_version: 2,
+            nodes: vec![
+                node("file", "file", "src/page.tsx", Some("src/page.tsx")),
+                node("route", "route", "/billing", Some("src/page.tsx")),
+            ],
+            edges: vec![RepoGraphEdge {
+                from: "file".to_string(),
+                to: "route".to_string(),
+                kind: "routes_to".to_string(),
+                evidence: "route inferred from file convention".to_string(),
+                sources: vec!["src/page.tsx".to_string()],
+                trust: "inferred".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
+            }],
+            truncated: false,
+        };
+        let paths = derive_native_review_paths(Some(&graph), &["src/page.tsx".to_string()]);
+        assert_eq!(paths.len(), 1);
+        assert!(paths[0].requires_verification);
+        let review_graph =
+            build_review_memory_graph(&["src/page.tsx".to_string()], &[], &[], "", "", paths);
+        let rendered = render_review_memory_graph_for_prompt(&review_graph);
+        assert!(rendered.contains("navigation lead"));
+        assert!(rendered.contains("cannot independently create a finding or verified claim"));
     }
 
     #[test]

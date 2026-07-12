@@ -62,6 +62,8 @@ fn file_node(path: &str, kind: &str, detail: &str) -> RepoGraphNode {
         path: Some(path.to_string()),
         detail: Some(detail.to_string()),
         sources: vec![path.to_string()],
+        source_location: None,
+        community: None,
     }
 }
 
@@ -163,6 +165,8 @@ pub fn build_fast_repo_graph(
             path: None,
             detail: Some("Fast local structure graph from walk metadata".to_string()),
             sources: Vec::new(),
+            source_location: None,
+            community: None,
         },
     );
 
@@ -177,6 +181,8 @@ pub fn build_fast_repo_graph(
                 path: Some(dir.path.clone()),
                 detail: Some(format!("{} files | {} bytes", dir.file_count, dir.bytes)),
                 sources: vec![dir.path.clone()],
+                source_location: None,
+                community: None,
             },
         );
         truncated |= !push_edge(
@@ -187,6 +193,9 @@ pub fn build_fast_repo_graph(
                 kind: "contains".to_string(),
                 evidence: "top-level directory from fast file walk".to_string(),
                 sources: vec![dir.path.clone()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         );
     }
@@ -238,6 +247,8 @@ pub fn build_fast_repo_graph(
                     }
                 )),
                 sources,
+                source_location: None,
+                community: None,
             },
         );
 
@@ -250,6 +261,9 @@ pub fn build_fast_repo_graph(
                     kind: "defines".to_string(),
                     evidence: "workspace unit owns this manifest".to_string(),
                     sources: vec![manifest_path.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             );
         }
@@ -267,6 +281,9 @@ pub fn build_fast_repo_graph(
                     kind: "entrypoint".to_string(),
                     evidence: "entrypoint belongs to this workspace unit".to_string(),
                     sources: vec![entrypoint.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             );
         }
@@ -281,6 +298,8 @@ pub fn build_fast_repo_graph(
                     path: Some(test_file.clone()),
                     detail: Some("workspace test/spec file".to_string()),
                     sources: vec![test_file.clone()],
+                    source_location: None,
+                    community: None,
                 },
             );
             truncated |= !push_edge(
@@ -291,6 +310,9 @@ pub fn build_fast_repo_graph(
                     kind: "tests".to_string(),
                     evidence: "test file belongs to this workspace unit".to_string(),
                     sources: vec![test_file.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             );
         }
@@ -310,6 +332,8 @@ pub fn build_fast_repo_graph(
                 path: Some(manifest.path.clone()),
                 detail: Some(format!("{} manifest", manifest.kind)),
                 sources: vec![manifest.path.clone()],
+                source_location: None,
+                community: None,
             },
         );
         truncated |= !push_edge(
@@ -320,6 +344,9 @@ pub fn build_fast_repo_graph(
                 kind: "defines".to_string(),
                 evidence: "manifest discovered during fast scan".to_string(),
                 sources: vec![manifest.path.clone()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         );
 
@@ -334,6 +361,8 @@ pub fn build_fast_repo_graph(
                     path: Some(manifest.path.clone()),
                     detail: Some("package script".to_string()),
                     sources: vec![manifest.path.clone()],
+                    source_location: None,
+                    community: None,
                 },
             );
             truncated |= !push_edge(
@@ -344,6 +373,9 @@ pub fn build_fast_repo_graph(
                     kind: "defines".to_string(),
                     evidence: format!("{} defines script `{script}`", manifest.path),
                     sources: vec![manifest.path.clone()],
+                    trust: "extracted".to_string(),
+                    origin: "codevetter".to_string(),
+                    confidence_label: None,
                 },
             );
         }
@@ -360,6 +392,9 @@ pub fn build_fast_repo_graph(
                 kind: "entrypoint".to_string(),
                 evidence: entry.reason.clone(),
                 sources: vec![entry.path.clone()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         );
     }
@@ -384,6 +419,8 @@ pub fn build_fast_repo_graph(
                 path: Some(source.clone()),
                 detail: Some(flow.goal.clone()),
                 sources: flow.sources.clone(),
+                source_location: None,
+                community: None,
             },
         );
         truncated |= !push_edge(
@@ -394,6 +431,9 @@ pub fn build_fast_repo_graph(
                 kind: "routes_to".to_string(),
                 evidence: "route inferred from page file path".to_string(),
                 sources: flow.sources,
+                trust: "inferred".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         );
     }
@@ -414,6 +454,8 @@ pub fn build_fast_repo_graph(
                 path: Some(path.to_string()),
                 detail: Some("test/spec file".to_string()),
                 sources: vec![path.to_string()],
+                source_location: None,
+                community: None,
             },
         );
         truncated |= !push_edge(
@@ -424,6 +466,9 @@ pub fn build_fast_repo_graph(
                 kind: "tests".to_string(),
                 evidence: "test/spec file discovered during fast scan".to_string(),
                 sources: vec![path.to_string()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         );
     }
@@ -439,6 +484,8 @@ pub fn build_fast_repo_graph(
                 path: Some(doc.path.clone()),
                 detail: Some("documentation file".to_string()),
                 sources: vec![doc.path.clone()],
+                source_location: None,
+                community: None,
             },
         );
         truncated |= !push_edge(
@@ -449,6 +496,9 @@ pub fn build_fast_repo_graph(
                 kind: "documents".to_string(),
                 evidence: "documentation path discovered during fast scan".to_string(),
                 sources: vec![doc.path.clone()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         );
     }
@@ -464,6 +514,8 @@ pub fn build_fast_repo_graph(
                 path: Some(path.clone()),
                 detail: Some("configuration file".to_string()),
                 sources: vec![path.clone()],
+                source_location: None,
+                community: None,
             },
         );
         truncated |= !push_edge(
@@ -474,6 +526,9 @@ pub fn build_fast_repo_graph(
                 kind: "configures".to_string(),
                 evidence: "known config file discovered during fast scan".to_string(),
                 sources: vec![path.clone()],
+                trust: "extracted".to_string(),
+                origin: "codevetter".to_string(),
+                confidence_label: None,
             },
         );
     }
@@ -487,7 +542,7 @@ pub fn build_fast_repo_graph(
     });
 
     RepoGraph {
-        schema_version: 1,
+        schema_version: 2,
         nodes,
         edges,
         truncated,
@@ -562,5 +617,11 @@ mod tests {
         assert!(graph.nodes.iter().any(|n| n.kind == "test"));
         assert!(graph.edges.iter().any(|e| e.kind == "entrypoint"));
         assert!(graph.edges.iter().any(|e| e.kind == "routes_to"));
+        assert_eq!(graph.schema_version, 2);
+        assert!(graph.edges.iter().all(|edge| {
+            matches!(edge.trust.as_str(), "extracted" | "inferred")
+                && edge.origin == "codevetter"
+                && !edge.sources.is_empty()
+        }));
     }
 }

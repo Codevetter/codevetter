@@ -180,6 +180,9 @@ export function graphFromImpactRaw(raw: Record<string, unknown>): UnpackRepoGrap
       kind: sym.depth != null ? `depth_${sym.depth}` : 'affects',
       evidence: 'Deep graph blast radius',
       sources: sym.path ? [sym.path] : [],
+      trust: 'ambiguous',
+      origin: 'imported',
+      confidence_label: null,
     });
   }
 

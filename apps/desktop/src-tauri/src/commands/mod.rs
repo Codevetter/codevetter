@@ -10,6 +10,7 @@ pub mod dora;
 pub mod evidence_pattern;
 pub mod files;
 pub mod git;
+pub mod graph_trust;
 pub mod history;
 pub mod intel;
 pub mod observability;

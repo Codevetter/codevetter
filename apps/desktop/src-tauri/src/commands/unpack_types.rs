@@ -130,7 +130,24 @@ pub(crate) fn default_qa_readiness() -> QaReadiness {
     QaReadiness::default()
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct RepoGraphSourceLocation {
+    pub path: String,
+    #[serde(default)]
+    pub line: Option<u64>,
+    #[serde(default)]
+    pub column: Option<u64>,
+}
+
+fn default_graph_trust() -> String {
+    "legacy".to_string()
+}
+
+fn default_graph_origin() -> String {
+    "codevetter".to_string()
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RepoGraphNode {
     pub id: String,
     pub kind: String,
@@ -138,18 +155,28 @@ pub struct RepoGraphNode {
     pub path: Option<String>,
     pub detail: Option<String>,
     pub sources: Vec<String>,
+    #[serde(default)]
+    pub source_location: Option<RepoGraphSourceLocation>,
+    #[serde(default)]
+    pub community: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RepoGraphEdge {
     pub from: String,
     pub to: String,
     pub kind: String,
     pub evidence: String,
     pub sources: Vec<String>,
+    #[serde(default = "default_graph_trust")]
+    pub trust: String,
+    #[serde(default = "default_graph_origin")]
+    pub origin: String,
+    #[serde(default)]
+    pub confidence_label: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RepoGraph {
     pub schema_version: i64,
     pub nodes: Vec<RepoGraphNode>,
