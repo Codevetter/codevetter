@@ -126,7 +126,7 @@ export function getActiveStandardsPackId(): string | null {
 
 export const PROVIDER_PRESETS: Record<string, { baseUrl: string; model: string }> = {
   'free-ai': {
-    baseUrl: 'https://free-ai-gateway.sarthakagrawal927.workers.dev/v1',
+    baseUrl: 'https://ai-gateway.sassmaker.com/v1',
     model: 'auto',
   },
   anthropic: {
