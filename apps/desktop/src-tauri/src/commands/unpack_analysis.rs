@@ -1,6 +1,6 @@
 //! Full/deferred Repo Unpacked analysis: graph, health, and history.
 
-use crate::commands::history_graph::build_history_graph;
+use crate::commands::history_summary_graph::build_history_graph;
 use crate::commands::unpack_qa::{push_unique_limited, suggested_qa_flows};
 use crate::commands::unpack_scan::is_binary_path;
 use crate::commands::unpack_types::{
@@ -876,8 +876,8 @@ fn detects_io_in_loop(content: &str) -> bool {
             || lower.contains("for_each(")
         {
             loop_window = 18;
-        } else if loop_window > 0 {
-            loop_window -= 1;
+        } else {
+            loop_window = loop_window.saturating_sub(1);
         }
         if loop_window > 0 && looks_like_io_call(&lower) {
             return true;

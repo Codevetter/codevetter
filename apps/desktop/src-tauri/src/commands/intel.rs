@@ -555,7 +555,7 @@ fn window_for<'a>(
     }
 
     let mut tool_counts: Vec<ToolCount> = by_tool.into_values().collect();
-    tool_counts.sort_by(|a, b| b.commits.cmp(&a.commits));
+    tool_counts.sort_by_key(|entry| std::cmp::Reverse(entry.commits));
     let (p50, p95, max_sz) = size_percentiles(&mut sizes);
 
     WindowReport {
@@ -680,9 +680,7 @@ fn author_rollup<'a>(classified: &[ClassifiedRef<'a>]) -> Vec<AuthorRow> {
             entry.last_commit = c.day.clone();
         }
 
-        let mix = tool_mix_by_email
-            .entry(email_key.clone())
-            .or_insert_with(HashMap::new);
+        let mix = tool_mix_by_email.entry(email_key.clone()).or_default();
         let tc = mix.entry(c.tool).or_insert_with(|| ToolCount {
             tool: c.tool.to_string(),
             commits: 0,
@@ -695,7 +693,7 @@ fn author_rollup<'a>(classified: &[ClassifiedRef<'a>]) -> Vec<AuthorRow> {
 
         days_by_email
             .entry(email_key)
-            .or_insert_with(std::collections::HashSet::new)
+            .or_default()
             .insert(c.day.clone());
     }
 
@@ -707,7 +705,7 @@ fn author_rollup<'a>(classified: &[ClassifiedRef<'a>]) -> Vec<AuthorRow> {
                 .unwrap_or_default()
                 .into_values()
                 .collect();
-            mix.sort_by(|a, b| b.commits.cmp(&a.commits));
+            mix.sort_by_key(|entry| std::cmp::Reverse(entry.commits));
             row.tool_mix = mix;
             row.active_days = days_by_email
                 .remove(&key)
@@ -716,7 +714,7 @@ fn author_rollup<'a>(classified: &[ClassifiedRef<'a>]) -> Vec<AuthorRow> {
             row
         })
         .collect();
-    rows.sort_by(|a, b| b.commits.cmp(&a.commits));
+    rows.sort_by_key(|entry| std::cmp::Reverse(entry.commits));
     rows.truncate(20);
     rows
 }
@@ -1299,6 +1297,7 @@ pub(crate) fn top_directory(path: &str) -> &str {
 
 // ─── Tool breakdown query ───────────────────────────────────────────────────
 
+#[cfg(test)]
 fn canonicalize_model(raw: &str) -> String {
     let r = raw.to_ascii_lowercase();
     if r.is_empty() {
@@ -1325,6 +1324,7 @@ fn canonicalize_model(raw: &str) -> String {
     r
 }
 
+#[cfg(test)]
 fn percentiles(values: &mut [f64]) -> (f64, f64) {
     if values.is_empty() {
         return (0.0, 0.0);
@@ -1614,8 +1614,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
     fn percentiles_basic() {
         let mut v = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
         let (p50, p95) = percentiles(&mut v);
-        assert!(p50 >= 5.0 && p50 <= 6.0);
-        assert!(p95 >= 9.0 && p95 <= 10.0);
+        assert!((5.0..=6.0).contains(&p50));
+        assert!((9.0..=10.0).contains(&p95));
     }
 
     #[test]

@@ -80,6 +80,58 @@ export default function HistoryContextPanel({
               </ul>
             </div>
           )}
+          {historyContext.temporal_slice && (
+            <div className="rounded-lg border border-violet-400/15 bg-violet-400/[0.04] p-2">
+              <div className="flex flex-wrap items-center justify-between gap-1">
+                <span className="font-medium text-violet-200">Temporal graph slice</span>
+                <span
+                  className={
+                    historyContext.temporal_slice.stale ? 'text-amber-300' : 'text-emerald-300'
+                  }
+                >
+                  {historyContext.temporal_slice.episodes.length} episodes ·{' '}
+                  {historyContext.temporal_slice.stale ? 'stale' : 'current'}
+                </span>
+              </div>
+              {historyContext.temporal_slice.constraints.length > 0 && (
+                <div className="mt-1.5">
+                  <span className="text-slate-500">Constraints / intent:</span>
+                  <ul className="mt-0.5 space-y-0.5 font-mono text-[9px] text-slate-400">
+                    {historyContext.temporal_slice.constraints.slice(0, 3).map((event) => (
+                      <li key={event.id}>
+                        [{event.trust}] {event.summary} · {event.id}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {historyContext.temporal_slice.failures.length > 0 && (
+                <div className="mt-1.5">
+                  <span className="text-rose-300">Prior failures / regressions:</span>
+                  <ul className="mt-0.5 space-y-0.5 font-mono text-[9px] text-rose-200/75">
+                    {historyContext.temporal_slice.failures.slice(0, 3).map((event) => (
+                      <li key={event.id}>
+                        {event.summary} · {event.id}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {historyContext.temporal_slice.verification.length > 0 && (
+                <div className="mt-1.5 text-[9px] text-slate-500">
+                  {historyContext.temporal_slice.verification.length} linked verification event(s)
+                  {historyContext.temporal_slice.qualified_leads.length > 0
+                    ? ` · ${historyContext.temporal_slice.qualified_leads.length} qualified lead(s) kept separate`
+                    : ''}
+                </div>
+              )}
+              {historyContext.temporal_slice.gaps.length > 0 && (
+                <div className="mt-1.5 text-[9px] leading-4 text-amber-300/70">
+                  Gaps: {historyContext.temporal_slice.gaps.slice(0, 3).join(' · ')}
+                </div>
+              )}
+            </div>
+          )}
           {historyContext.recent_commits && historyContext.recent_commits.length > 0 && (
             <div>
               <span className="text-slate-500">Recent commits:</span>

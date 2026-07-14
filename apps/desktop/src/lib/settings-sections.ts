@@ -4,6 +4,7 @@ const SETTINGS_SECTIONS = [
   'appearance',
   'integrations',
   'agents',
+  'mcp',
   'notifications',
   'usage',
   'rubrics',

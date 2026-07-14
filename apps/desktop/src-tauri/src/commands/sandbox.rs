@@ -149,7 +149,7 @@ pub async fn run_branch_sandbox(
     db: State<'_, DbState>,
     input: SandboxRunInput,
 ) -> Result<SandboxRunResult, String> {
-    run_branch_sandbox_inner(app, &*db, input).await
+    run_branch_sandbox_inner(app, &db, input).await
 }
 
 /// Sandbox runner without the Tauri-State wrapper, so background tasks

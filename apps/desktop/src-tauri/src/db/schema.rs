@@ -5,6 +5,31 @@ use rusqlite::Connection;
 pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
     conn.execute_batch(MIGRATION_SQL)?;
 
+    // History annotations remain append-only, but newer clients attach an explicit
+    // correction decision and optional evidence target. Additive columns keep old
+    // local databases readable without rewriting user-authored records.
+    let _ = conn.execute(
+        "ALTER TABLE history_graph_annotations ADD COLUMN decision TEXT",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE history_graph_annotations ADD COLUMN related_event_id TEXT",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE history_graph_annotations ADD COLUMN metadata_json TEXT NOT NULL DEFAULT '{}'",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE history_graph_events ADD COLUMN schema_version INTEGER NOT NULL DEFAULT 1",
+        [],
+    );
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_history_graph_annotations_evidence
+         ON history_graph_annotations(repo_path, related_event_id, created_at)",
+        [],
+    )?;
+
     // Incremental migrations — safe to re-run (ignore "duplicate column" errors).
     let _ = conn.execute("ALTER TABLE agent_tasks ADD COLUMN project_path TEXT", []);
     let _ = conn.execute("ALTER TABLE provider_accounts ADD COLUMN plan TEXT", []);
@@ -1033,6 +1058,311 @@ CREATE TABLE IF NOT EXISTS repo_unpacked_reports (
 
 CREATE INDEX IF NOT EXISTS idx_repo_unpacked_repo_path
     ON repo_unpacked_reports(repo_path, created_at DESC);
+
+-- ================================================================
+-- Canonical Structural Repository Graph (schema v3)
+-- ================================================================
+
+CREATE TABLE IF NOT EXISTS structural_graph_snapshots (
+    id                  TEXT PRIMARY KEY,
+    repo_path           TEXT NOT NULL,
+    repo_head           TEXT,
+    schema_version      INTEGER NOT NULL,
+    engine_id           TEXT NOT NULL,
+    engine_version      TEXT NOT NULL,
+    engine_json         TEXT NOT NULL,
+    cursor              TEXT,
+    ignore_fingerprint  TEXT,
+    coverage_json       TEXT NOT NULL,
+    truncated           INTEGER NOT NULL DEFAULT 0,
+    status              TEXT NOT NULL DEFAULT 'ready',
+    created_at          TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_structural_graph_snapshots_repo_created
+    ON structural_graph_snapshots(repo_path, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_structural_graph_snapshots_repo_head
+    ON structural_graph_snapshots(repo_path, repo_head);
+
+CREATE TABLE IF NOT EXISTS structural_graph_snapshot_files (
+    snapshot_id   TEXT NOT NULL REFERENCES structural_graph_snapshots(id) ON DELETE CASCADE,
+    path          TEXT NOT NULL,
+    language      TEXT,
+    content_hash  TEXT,
+    disposition   TEXT NOT NULL,
+    byte_size     INTEGER NOT NULL DEFAULT 0,
+    node_count    INTEGER NOT NULL DEFAULT 0,
+    edge_count    INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (snapshot_id, path)
+);
+
+CREATE INDEX IF NOT EXISTS idx_structural_graph_snapshot_files_disposition
+    ON structural_graph_snapshot_files(snapshot_id, disposition, language);
+
+CREATE TABLE IF NOT EXISTS structural_graph_nodes (
+    snapshot_id     TEXT NOT NULL REFERENCES structural_graph_snapshots(id) ON DELETE CASCADE,
+    id              TEXT NOT NULL,
+    kind            TEXT NOT NULL,
+    label           TEXT NOT NULL,
+    qualified_name  TEXT,
+    path            TEXT,
+    detail          TEXT,
+    language        TEXT,
+    community_id    TEXT,
+    trust           TEXT NOT NULL,
+    origin          TEXT NOT NULL,
+    PRIMARY KEY (snapshot_id, id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_structural_graph_nodes_path
+    ON structural_graph_nodes(snapshot_id, path);
+CREATE INDEX IF NOT EXISTS idx_structural_graph_nodes_qualified
+    ON structural_graph_nodes(snapshot_id, qualified_name);
+CREATE INDEX IF NOT EXISTS idx_structural_graph_nodes_kind
+    ON structural_graph_nodes(snapshot_id, kind, label);
+CREATE INDEX IF NOT EXISTS idx_structural_graph_nodes_community
+    ON structural_graph_nodes(snapshot_id, community_id);
+
+CREATE TABLE IF NOT EXISTS structural_graph_edges (
+    snapshot_id     TEXT NOT NULL REFERENCES structural_graph_snapshots(id) ON DELETE CASCADE,
+    id              TEXT NOT NULL,
+    from_id         TEXT NOT NULL,
+    to_id           TEXT NOT NULL,
+    kind            TEXT NOT NULL,
+    evidence        TEXT NOT NULL,
+    trust           TEXT NOT NULL,
+    origin          TEXT NOT NULL,
+    candidates_json TEXT NOT NULL DEFAULT '[]',
+    PRIMARY KEY (snapshot_id, id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_structural_graph_edges_from
+    ON structural_graph_edges(snapshot_id, from_id, kind);
+CREATE INDEX IF NOT EXISTS idx_structural_graph_edges_to
+    ON structural_graph_edges(snapshot_id, to_id, kind);
+CREATE INDEX IF NOT EXISTS idx_structural_graph_edges_kind
+    ON structural_graph_edges(snapshot_id, kind);
+
+CREATE TABLE IF NOT EXISTS structural_graph_sources (
+    snapshot_id   TEXT NOT NULL REFERENCES structural_graph_snapshots(id) ON DELETE CASCADE,
+    target_kind   TEXT NOT NULL,
+    target_id     TEXT NOT NULL,
+    ordinal       INTEGER NOT NULL,
+    path          TEXT NOT NULL,
+    start_line    INTEGER,
+    start_column  INTEGER,
+    end_line      INTEGER,
+    end_column    INTEGER,
+    excerpt       TEXT,
+    PRIMARY KEY (snapshot_id, target_kind, target_id, ordinal)
+);
+
+CREATE INDEX IF NOT EXISTS idx_structural_graph_sources_path
+    ON structural_graph_sources(snapshot_id, path, start_line);
+
+CREATE TABLE IF NOT EXISTS structural_graph_communities (
+    snapshot_id       TEXT NOT NULL REFERENCES structural_graph_snapshots(id) ON DELETE CASCADE,
+    id                TEXT NOT NULL,
+    label             TEXT NOT NULL,
+    member_count      INTEGER NOT NULL,
+    hub_node_ids_json TEXT NOT NULL DEFAULT '[]',
+    bridge_ids_json   TEXT NOT NULL DEFAULT '[]',
+    score             REAL NOT NULL DEFAULT 0,
+    PRIMARY KEY (snapshot_id, id)
+);
+
+CREATE TABLE IF NOT EXISTS structural_graph_diagnostics (
+    snapshot_id  TEXT NOT NULL REFERENCES structural_graph_snapshots(id) ON DELETE CASCADE,
+    ordinal      INTEGER NOT NULL,
+    severity     TEXT NOT NULL,
+    code         TEXT NOT NULL,
+    message      TEXT NOT NULL,
+    path         TEXT,
+    language     TEXT,
+    PRIMARY KEY (snapshot_id, ordinal)
+);
+
+CREATE TABLE IF NOT EXISTS structural_graph_file_cursors (
+    repo_path       TEXT NOT NULL,
+    path            TEXT NOT NULL,
+    content_hash    TEXT NOT NULL,
+    language        TEXT,
+    engine_version  TEXT NOT NULL,
+    indexed_at      TEXT NOT NULL,
+    PRIMARY KEY (repo_path, path)
+);
+
+CREATE INDEX IF NOT EXISTS idx_structural_graph_file_cursors_repo
+    ON structural_graph_file_cursors(repo_path, indexed_at);
+
+CREATE TABLE IF NOT EXISTS history_graph_repositories (
+    repo_path          TEXT PRIMARY KEY,
+    repository_fingerprint TEXT NOT NULL,
+    indexed_head       TEXT,
+    indexed_tags_fingerprint TEXT,
+    status             TEXT NOT NULL DEFAULT 'pending',
+    cursor_json        TEXT NOT NULL DEFAULT '{}',
+    coverage_json      TEXT NOT NULL DEFAULT '{}',
+    created_at         TEXT NOT NULL,
+    updated_at         TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_history_graph_repositories_status
+    ON history_graph_repositories(status, updated_at);
+
+CREATE TABLE IF NOT EXISTS history_graph_revisions (
+    repo_path       TEXT NOT NULL REFERENCES history_graph_repositories(repo_path) ON DELETE CASCADE,
+    sha             TEXT NOT NULL,
+    ordinal         INTEGER NOT NULL,
+    committed_at    TEXT NOT NULL,
+    author_name     TEXT NOT NULL,
+    author_email_hash TEXT,
+    subject         TEXT NOT NULL,
+    parents_json    TEXT NOT NULL DEFAULT '[]',
+    tags_json       TEXT NOT NULL DEFAULT '[]',
+    is_release      INTEGER NOT NULL DEFAULT 0,
+    is_head         INTEGER NOT NULL DEFAULT 0,
+    coverage_json   TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (repo_path, sha)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_history_graph_revisions_ordinal
+    ON history_graph_revisions(repo_path, ordinal);
+CREATE INDEX IF NOT EXISTS idx_history_graph_revisions_time
+    ON history_graph_revisions(repo_path, committed_at, ordinal);
+CREATE INDEX IF NOT EXISTS idx_history_graph_revisions_release
+    ON history_graph_revisions(repo_path, is_release, ordinal);
+
+CREATE TABLE IF NOT EXISTS history_graph_revision_paths (
+    repo_path       TEXT NOT NULL,
+    revision_sha    TEXT NOT NULL,
+    path            TEXT NOT NULL,
+    change_kind     TEXT NOT NULL,
+    old_path        TEXT,
+    additions       INTEGER,
+    deletions       INTEGER,
+    PRIMARY KEY (repo_path, revision_sha, path),
+    FOREIGN KEY (repo_path, revision_sha)
+        REFERENCES history_graph_revisions(repo_path, sha) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_history_graph_paths_path
+    ON history_graph_revision_paths(repo_path, path, revision_sha);
+CREATE INDEX IF NOT EXISTS idx_history_graph_paths_old_path
+    ON history_graph_revision_paths(repo_path, old_path, revision_sha);
+
+CREATE TABLE IF NOT EXISTS history_graph_checkpoints (
+    repo_path       TEXT NOT NULL,
+    revision_sha    TEXT NOT NULL,
+    snapshot_id     TEXT NOT NULL,
+    engine_id       TEXT NOT NULL,
+    engine_version  TEXT NOT NULL,
+    schema_version  INTEGER NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'ready',
+    coverage_json   TEXT NOT NULL DEFAULT '{}',
+    created_at      TEXT NOT NULL,
+    PRIMARY KEY (repo_path, revision_sha, engine_id, engine_version, schema_version),
+    FOREIGN KEY (repo_path, revision_sha)
+        REFERENCES history_graph_revisions(repo_path, sha) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_history_graph_checkpoints_snapshot
+    ON history_graph_checkpoints(snapshot_id);
+
+CREATE TABLE IF NOT EXISTS history_graph_snapshot_blobs (
+    snapshot_id        TEXT PRIMARY KEY,
+    repo_path          TEXT NOT NULL,
+    revision_sha       TEXT NOT NULL,
+    encoding           TEXT NOT NULL,
+    payload            BLOB NOT NULL,
+    uncompressed_bytes INTEGER NOT NULL,
+    created_at         TEXT NOT NULL,
+    FOREIGN KEY (repo_path, revision_sha)
+        REFERENCES history_graph_revisions(repo_path, sha) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_history_graph_snapshot_blobs_revision
+    ON history_graph_snapshot_blobs(repo_path, revision_sha);
+
+CREATE TABLE IF NOT EXISTS history_graph_events (
+    id              TEXT PRIMARY KEY,
+    schema_version  INTEGER NOT NULL DEFAULT 1,
+    repo_path       TEXT NOT NULL REFERENCES history_graph_repositories(repo_path) ON DELETE CASCADE,
+    revision_sha    TEXT,
+    event_kind      TEXT NOT NULL,
+    entity_id       TEXT,
+    related_entity_id TEXT,
+    relation_kind   TEXT,
+    trust           TEXT NOT NULL,
+    origin          TEXT NOT NULL,
+    source_id       TEXT NOT NULL,
+    source_cursor   TEXT,
+    payload_json    TEXT NOT NULL DEFAULT '{}',
+    evidence_json   TEXT NOT NULL DEFAULT '[]',
+    recorded_at     TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_history_graph_events_revision
+    ON history_graph_events(repo_path, revision_sha, event_kind);
+CREATE INDEX IF NOT EXISTS idx_history_graph_events_entity
+    ON history_graph_events(repo_path, entity_id, event_kind, recorded_at);
+CREATE INDEX IF NOT EXISTS idx_history_graph_events_relation
+    ON history_graph_events(repo_path, related_entity_id, relation_kind, recorded_at);
+CREATE INDEX IF NOT EXISTS idx_history_graph_events_source
+    ON history_graph_events(repo_path, source_id, source_cursor);
+CREATE INDEX IF NOT EXISTS idx_history_graph_events_time
+    ON history_graph_events(repo_path, recorded_at DESC, id DESC);
+
+CREATE TABLE IF NOT EXISTS history_graph_event_blobs (
+    event_id           TEXT PRIMARY KEY REFERENCES history_graph_events(id) ON DELETE CASCADE,
+    encoding           TEXT NOT NULL,
+    payload            BLOB NOT NULL,
+    uncompressed_bytes INTEGER NOT NULL,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS history_graph_annotations (
+    id              TEXT PRIMARY KEY,
+    repo_path       TEXT NOT NULL REFERENCES history_graph_repositories(repo_path) ON DELETE CASCADE,
+    revision_sha    TEXT,
+    entity_id       TEXT,
+    author          TEXT NOT NULL,
+    body            TEXT NOT NULL,
+    decision        TEXT,
+    related_event_id TEXT,
+    source          TEXT NOT NULL DEFAULT 'user',
+    metadata_json   TEXT NOT NULL DEFAULT '{}',
+    created_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_history_graph_annotations_target
+    ON history_graph_annotations(repo_path, revision_sha, entity_id, created_at);
+
+CREATE TABLE IF NOT EXISTS mcp_repository_scopes (
+    repo_path       TEXT PRIMARY KEY REFERENCES history_graph_repositories(repo_path) ON DELETE CASCADE,
+    repo_id         TEXT NOT NULL UNIQUE,
+    enabled         INTEGER NOT NULL DEFAULT 0,
+    created_at      TEXT NOT NULL,
+    updated_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_mcp_repository_scopes_enabled
+    ON mcp_repository_scopes(enabled, updated_at);
+
+CREATE TABLE IF NOT EXISTS mcp_access_audit (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_id         TEXT NOT NULL,
+    server_session  TEXT NOT NULL,
+    operation       TEXT NOT NULL,
+    status          TEXT NOT NULL,
+    duration_ms     INTEGER NOT NULL,
+    result_count    INTEGER NOT NULL,
+    response_bytes  INTEGER NOT NULL,
+    created_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_mcp_access_audit_repo_time
+    ON mcp_access_audit(repo_id, created_at DESC, id DESC);
 "#;
 
 #[cfg(test)]
@@ -1140,5 +1470,162 @@ mod tests {
             day_counts(&conn, "zero"),
             vec![("2026-05-12".to_string(), 1)]
         );
+    }
+
+    #[test]
+    fn canonical_structural_graph_schema_has_normalized_query_indexes() {
+        let conn = test_conn();
+        let tables: Vec<String> = {
+            let mut statement = conn
+                .prepare(
+                    "SELECT name FROM sqlite_master
+                     WHERE type = 'table' AND name LIKE 'structural_graph_%'
+                     ORDER BY name",
+                )
+                .expect("prepare tables");
+            statement
+                .query_map([], |row| row.get(0))
+                .expect("query tables")
+                .collect::<Result<Vec<_>, _>>()
+                .expect("table rows")
+        };
+        assert_eq!(
+            tables,
+            vec![
+                "structural_graph_communities",
+                "structural_graph_diagnostics",
+                "structural_graph_edges",
+                "structural_graph_file_cursors",
+                "structural_graph_nodes",
+                "structural_graph_snapshot_files",
+                "structural_graph_snapshots",
+                "structural_graph_sources",
+            ]
+        );
+
+        let index_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master
+                 WHERE type = 'index' AND name LIKE 'idx_structural_graph_%'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("index count");
+        assert!(
+            index_count >= 10,
+            "expected graph query indexes, got {index_count}"
+        );
+    }
+
+    #[test]
+    fn history_graph_schema_has_temporal_and_evidence_indexes() {
+        let conn = test_conn();
+        let table_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master
+                 WHERE type = 'table' AND name LIKE 'history_graph_%'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("history table count");
+        assert_eq!(table_count, 8);
+        let index_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master
+                 WHERE type = 'index' AND name LIKE 'idx_history_graph_%'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("history index count");
+        assert!(
+            index_count >= 12,
+            "expected history indexes, got {index_count}"
+        );
+        let event_schema_version: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM pragma_table_info('history_graph_events')
+                 WHERE name = 'schema_version' AND dflt_value = '1'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("event schema version");
+        assert_eq!(event_schema_version, 1);
+    }
+
+    #[test]
+    fn existing_history_annotations_receive_additive_correction_columns() {
+        let conn = Connection::open_in_memory().expect("database");
+        conn.execute_batch(
+            "CREATE TABLE history_graph_annotations (
+                id TEXT PRIMARY KEY,
+                repo_path TEXT NOT NULL,
+                revision_sha TEXT,
+                entity_id TEXT,
+                author TEXT NOT NULL,
+                body TEXT NOT NULL,
+                source TEXT NOT NULL DEFAULT 'user',
+                created_at TEXT NOT NULL
+            );",
+        )
+        .expect("legacy annotations");
+        run_migrations(&conn).expect("migrate legacy annotations");
+        let mut statement = conn
+            .prepare("PRAGMA table_info(history_graph_annotations)")
+            .expect("table info");
+        let columns = statement
+            .query_map([], |row| row.get::<_, String>(1))
+            .expect("columns")
+            .collect::<Result<Vec<_>, _>>()
+            .expect("column names");
+        assert!(columns.iter().any(|column| column == "decision"));
+        assert!(columns.iter().any(|column| column == "related_event_id"));
+        assert!(columns.iter().any(|column| column == "metadata_json"));
+    }
+
+    #[test]
+    fn mcp_scope_and_audit_schema_are_local_and_metadata_only() {
+        let conn = test_conn();
+        let scope_columns = table_columns(&conn, "mcp_repository_scopes");
+        assert_eq!(
+            scope_columns,
+            vec![
+                "repo_path",
+                "repo_id",
+                "enabled",
+                "created_at",
+                "updated_at"
+            ]
+        );
+        let audit_columns = table_columns(&conn, "mcp_access_audit");
+        assert_eq!(
+            audit_columns,
+            vec![
+                "id",
+                "repo_id",
+                "server_session",
+                "operation",
+                "status",
+                "duration_ms",
+                "result_count",
+                "response_bytes",
+                "created_at",
+            ]
+        );
+        for forbidden in ["arguments", "query", "prompt", "content", "evidence"] {
+            assert!(!audit_columns
+                .iter()
+                .any(|column| column.contains(forbidden)));
+        }
+    }
+
+    fn table_columns(conn: &Connection, table: &str) -> Vec<String> {
+        let mut statement = conn
+            .prepare(&format!("PRAGMA table_info({table})"))
+            .expect("table info");
+        statement
+            .query_map([], |row| row.get::<_, String>(1))
+            .expect("columns")
+            .collect::<Result<Vec<_>, _>>()
+            .expect("column names")
     }
 }

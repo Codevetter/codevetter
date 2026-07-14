@@ -283,6 +283,7 @@ export default function UnpackDeepGraphPanel({ repoPath, disabled }: Props) {
         </div>
         <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
           <Input
+            name="deep-graph-symbol"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
             placeholder={
@@ -297,6 +298,7 @@ export default function UnpackDeepGraphPanel({ repoPath, disabled }: Props) {
             }}
           />
           <Input
+            name="deep-graph-file-path"
             value={filePath}
             onChange={(e) => setFilePath(e.target.value)}
             placeholder="File path (optional, disambiguates)"

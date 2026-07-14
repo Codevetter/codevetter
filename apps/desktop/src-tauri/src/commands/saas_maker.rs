@@ -26,6 +26,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tauri::State;
 
+#[cfg(test)]
 use crate::db::queries;
 use crate::DbState;
 
@@ -302,6 +303,7 @@ fn read_pref(db: &State<'_, DbState>, key: &str) -> Option<String> {
     .ok()
 }
 
+#[cfg(test)]
 fn build_task_payload(
     review: &queries::LocalReviewRow,
     finding: &queries::LocalReviewFindingRow,
@@ -333,6 +335,7 @@ fn build_task_payload(
     })
 }
 
+#[cfg(test)]
 fn build_description(
     review: &queries::LocalReviewRow,
     finding: &queries::LocalReviewFindingRow,
@@ -369,6 +372,7 @@ fn build_description(
     buf
 }
 
+#[cfg(test)]
 fn parse_task_list(body: &str) -> Result<Vec<SaasMakerTask>, String> {
     let v: Value = serde_json::from_str(body)
         .map_err(|e| format!("SaaS Maker tasks response not JSON: {e}"))?;
@@ -389,6 +393,7 @@ fn parse_task_list(body: &str) -> Result<Vec<SaasMakerTask>, String> {
     Ok(out)
 }
 
+#[cfg(test)]
 fn parse_single_task(body: &str) -> Result<SaasMakerTask, String> {
     let v: Value = serde_json::from_str(body)
         .map_err(|e| format!("SaaS Maker create-task response not JSON: {e}"))?;
@@ -947,7 +952,7 @@ mod tests {
 
     #[test]
     fn link_match_pairs_repo_basename_to_project_name() {
-        let projects = vec![
+        let projects = [
             SaasMakerProject {
                 id: "p1".into(),
                 name: "CodeVetter".into(),
@@ -965,7 +970,7 @@ mod tests {
         ];
         // A repo whose dir basename is "CodeVetter" matches by name_key even
         // though the project slug carries a random suffix.
-        let candidate_keys = vec![name_key("CodeVetter")];
+        let candidate_keys = [name_key("CodeVetter")];
         let matched = projects
             .iter()
             .find(|p| candidate_keys.iter().any(|k| k == &name_key(&p.name)));

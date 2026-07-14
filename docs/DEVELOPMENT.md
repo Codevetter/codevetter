@@ -228,7 +228,7 @@ xcode-select --install
 sudo xcode-select --reset
 ```
 
-Then verify Tauri prerequisites at [https://tauri.app/start/prerequisites/](https://tauri.app/start/prerequisites/). For Apple Silicon Macs the sidecar binary bundled in `apps/desktop/src-tauri/binaries/` is `aarch64-apple-darwin` — no additional steps are needed.
+Then verify Tauri prerequisites at [https://tauri.app/start/prerequisites/](https://tauri.app/start/prerequisites/). `pnpm tauri:dev` prepares the local MCP sidecar automatically. For a manual check run `pnpm prepare:mcp-sidecar`; the target-suffixed generated binary under `apps/desktop/src-tauri/binaries/` is ignored by Git and replaced by each build.
 
 ### 2. `npm run build:packages` fails with "Cannot find module"
 

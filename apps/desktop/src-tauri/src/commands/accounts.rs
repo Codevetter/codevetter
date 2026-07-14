@@ -131,14 +131,14 @@ pub async fn check_account_usage(
     // ── Baseline: user-set limit > avg weekly > last week ───────────────
     let baseline = account
         .weekly_limit
-        .or_else(|| {
+        .or({
             if avg_week_cost > 0.0 {
                 Some(avg_week_cost)
             } else {
                 None
             }
         })
-        .or_else(|| {
+        .or({
             if last_week_cost > 0.0 {
                 Some(last_week_cost)
             } else {
@@ -478,7 +478,7 @@ pub async fn detect_provider_accounts(db: State<'_, DbState>) -> Result<Value, S
                     let key_matches = existing_acc
                         .api_key
                         .as_deref()
-                        .map_or(false, |k| detected_anthropic_keys.contains(&k));
+                        .is_some_and(|k| detected_anthropic_keys.contains(&k));
                     if !key_matches {
                         let _ = queries::delete_provider_account(&conn, &existing_acc.id);
                     }
@@ -1814,7 +1814,7 @@ async fn check_live_usage_cursor() -> Result<Value, String> {
 
     let now_epoch = chrono::Utc::now().timestamp();
     let resets_in_secs = cycle_end_epoch.map(|e| (e - now_epoch).max(0));
-    let is_rate_limited = total_pct_used.map_or(false, |p| p >= 100.0);
+    let is_rate_limited = total_pct_used.is_some_and(|p| p >= 100.0);
 
     Ok(json!({
         "supported": true,
@@ -1950,14 +1950,14 @@ async fn check_live_usage_openai() -> Result<Value, String> {
     // Map to the same shape the frontend expects
     Ok(json!({
         "supported": true,
-        "status": if primary_pct.map_or(false, |p| p >= 100.0) { "rate_limited" } else { "allowed" },
+        "status": if primary_pct.is_some_and(|p| p >= 100.0) { "rate_limited" } else { "allowed" },
         "five_h": {
             "utilization": primary_pct.map(|p| p / 100.0),
             "utilization_pct": primary_pct,
             "reset_at": primary_reset,
             "resets_in_secs": primary_reset.map(|r| (r - now_epoch).max(0)),
             "window_total_secs": primary_window_secs,
-            "status": if primary_pct.map_or(false, |p| p >= 100.0) { "rate_limited" } else { "allowed" },
+            "status": if primary_pct.is_some_and(|p| p >= 100.0) { "rate_limited" } else { "allowed" },
         },
         "seven_d": {
             "utilization": secondary_pct.map(|p| p / 100.0),
@@ -2012,7 +2012,8 @@ async fn check_live_usage_gemini_local() -> Result<Value, String> {
     let mut tok_total: i64 = 0;
 
     // Per-model breakdown
-    let mut model_stats: std::collections::HashMap<String, (u64, i64, i64, i64, i64, i64, i64)> =
+    type ModelTokenStats = (u64, i64, i64, i64, i64, i64, i64);
+    let mut model_stats: std::collections::HashMap<String, ModelTokenStats> =
         std::collections::HashMap::new();
 
     // Iterate over project hash directories
@@ -2110,7 +2111,7 @@ async fn check_live_usage_gemini_local() -> Result<Value, String> {
 
     // Build per-model array sorted by request count desc
     let mut models_vec: Vec<_> = model_stats.into_iter().collect();
-    models_vec.sort_by(|a, b| b.1 .0.cmp(&a.1 .0));
+    models_vec.sort_by_key(|entry| std::cmp::Reverse(entry.1 .0));
     let models_json: Vec<Value> = models_vec
         .iter()
         .map(|(name, (reqs, inp, out, cch, tht, tl, tot))| {
@@ -2526,7 +2527,7 @@ fn build_rate_window(
 ) -> Value {
     let now_epoch = chrono::Utc::now().timestamp();
     let resets_in_secs = reset_at_epoch.map(|e| (e - now_epoch).max(0));
-    let is_rate_limited = utilization_pct.map_or(false, |p| p >= 100.0);
+    let is_rate_limited = utilization_pct.is_some_and(|p| p >= 100.0);
     json!({
         "utilization": utilization_pct.map(|p| p / 100.0),
         "utilization_pct": utilization_pct,
@@ -2594,8 +2595,8 @@ async fn check_live_usage_devin() -> Result<Value, String> {
     let weekly_reset_epoch = plan_status.get("weeklyQuotaResetAtUnix").and_then(json_i64);
     let daily_reset_epoch = plan_status.get("dailyQuotaResetAtUnix").and_then(json_i64);
 
-    let status = if weekly_remaining.map_or(false, |r| r <= 0.0)
-        || daily_remaining.map_or(false, |r| r <= 0.0)
+    let status = if weekly_remaining.is_some_and(|r| r <= 0.0)
+        || daily_remaining.is_some_and(|r| r <= 0.0)
     {
         "rate_limited"
     } else {

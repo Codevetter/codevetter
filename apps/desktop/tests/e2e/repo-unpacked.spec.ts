@@ -386,8 +386,214 @@ async function installRepoUnpackedMock(page: import('@playwright/test').Page) {
       ],
     };
 
+    const historyRevisions = Array.from({ length: 120 }, (_, index) => ({
+      sha: index.toString(16).padStart(40, '0'),
+      short_sha: index.toString(16).padStart(8, '0'),
+      parents: index === 0 ? [] : [(index - 1).toString(16).padStart(40, '0')],
+      committed_at: new Date(Date.UTC(2025, 0, index + 1)).toISOString(),
+      author: `Author ${index % 8}`,
+      subject: index % 30 === 0 ? `Release ${index / 30}` : `Change ${index}`,
+      tags: index % 30 === 0 ? [`v1.${index / 30}.0`] : [],
+      is_release: index % 30 === 0,
+      is_head: index === 119,
+    }));
+    const structuralState = (revision: string) => ({
+      schema_version: 1,
+      repo_path: inventory.repo_path,
+      revision,
+      snapshot_id: `snapshot-${revision}`,
+      cached: true,
+      projection: {
+        nodes: Array.from({ length: 96 }, (_, index) => ({
+          id: `node-${index}`,
+          kind: index % 8 === 0 ? 'function' : 'file',
+          label: `Entity ${index}`,
+          qualified_name: `src/entity-${index}.ts::Entity${index}`,
+          path: `src/entity-${index}.ts`,
+          detail: index % 20 === 0 ? `${revision.slice(-4)} · changed` : 'syntax-indexed',
+          language: 'typescript',
+          community_id: `community-${index % 6}`,
+          trust: 'extracted',
+          origin: 'syntax',
+          sources: [{ path: `src/entity-${index}.ts`, start_line: 1 }],
+        })),
+        edges: Array.from({ length: 80 }, (_, index) => ({
+          id: `edge-${index}`,
+          from: `node-${index % 96}`,
+          to: `node-${(index * 7 + 3) % 96}`,
+          kind: index % 4 === 0 ? 'calls' : 'contains',
+          evidence: 'mock structural relationship',
+          trust: 'extracted',
+          origin: 'syntax',
+          sources: [],
+          candidates: [],
+        })),
+        truncated: false,
+        next_cursor: null,
+      },
+      analysis: {
+        communities: [],
+        hubs: [],
+        super_hubs: [],
+        bridges: [],
+        cross_community_edges: [],
+        surprising_connections: [],
+        suggested_questions: [],
+      },
+      changed_paths: ['src/analytics.ts'],
+      path_changes: [
+        {
+          path: 'src/analytics.ts',
+          change_kind: 'modified',
+          old_path: null,
+          additions: 3,
+          deletions: 1,
+        },
+      ],
+      indexed_files: 128,
+      node_count: 96,
+      edge_count: 80,
+      generated_at: '2026-07-13T00:00:00Z',
+    });
+
+    let structuralGraphFresh = false;
+    const structuralGraphNodes = [
+      {
+        id: 'file:app',
+        kind: 'file',
+        label: 'App.tsx',
+        path: 'apps/desktop/src/App.tsx',
+        language: 'typescript',
+        community_id: 'community:app',
+        trust: 'extracted',
+        origin: 'syntax',
+        sources: [{ path: 'apps/desktop/src/App.tsx', start_line: 1 }],
+      },
+      {
+        id: 'function:load-repo',
+        kind: 'function',
+        label: 'loadRepo',
+        qualified_name: 'apps/desktop/src/App.tsx::loadRepo',
+        path: 'apps/desktop/src/App.tsx',
+        language: 'typescript',
+        community_id: 'community:app',
+        trust: 'inferred',
+        origin: 'resolution',
+        sources: [{ path: 'apps/desktop/src/App.tsx', start_line: 42 }],
+      },
+      {
+        id: 'function:ambiguous-resolver',
+        kind: 'function',
+        label: 'Ambiguous resolver',
+        path: 'apps/desktop/src/ambiguous.ts',
+        language: 'typescript',
+        community_id: 'community:resolution',
+        trust: 'ambiguous',
+        origin: 'resolution',
+        sources: [{ path: 'apps/desktop/src/ambiguous.ts', start_line: 9 }],
+      },
+      {
+        id: 'legacy:scan-command',
+        kind: 'tauri_command',
+        label: 'scan_repo_inventory',
+        path: 'apps/desktop/src-tauri/src/commands/unpack.rs',
+        language: 'rust',
+        community_id: 'community:resolution',
+        trust: 'legacy',
+        origin: 'legacy_metadata',
+        sources: [{ path: 'apps/desktop/src-tauri/src/commands/unpack.rs', start_line: 120 }],
+      },
+    ];
+    const structuralGraphEdges = [
+      {
+        id: 'edge:defines-load',
+        from: 'file:app',
+        to: 'function:load-repo',
+        kind: 'defines',
+        evidence: 'function declaration',
+        trust: 'extracted',
+        origin: 'syntax',
+        sources: [{ path: 'apps/desktop/src/App.tsx', start_line: 42 }],
+        candidates: [],
+      },
+      {
+        id: 'edge:calls-resolver',
+        from: 'function:load-repo',
+        to: 'function:ambiguous-resolver',
+        kind: 'calls',
+        evidence: 'multiple local resolution candidates',
+        trust: 'ambiguous',
+        origin: 'resolution',
+        sources: [{ path: 'apps/desktop/src/App.tsx', start_line: 48 }],
+        candidates: ['function:ambiguous-resolver', 'legacy:scan-command'],
+      },
+      {
+        id: 'edge:legacy-command',
+        from: 'function:ambiguous-resolver',
+        to: 'legacy:scan-command',
+        kind: 'calls',
+        evidence: 'legacy metadata relationship',
+        trust: 'legacy',
+        origin: 'legacy_metadata',
+        sources: [{ path: 'apps/desktop/src-tauri/src/commands/unpack.rs', start_line: 120 }],
+        candidates: [],
+      },
+    ];
+    const structuralGraphContext = {
+      snapshot_id: 'snapshot:current',
+      schema_version: 3,
+      engine_id: 'tree-sitter',
+      engine_version: '1.0.0',
+      created_at: '2026-07-14T00:00:00Z',
+      freshness: {
+        indexed_head: inventory.commit_sha,
+        current_head: inventory.commit_sha,
+        stale: false,
+      },
+      coverage: {
+        discovered_files: 130,
+        indexed_files: 127,
+        skipped_files: 3,
+        error_files: 0,
+        generated_files: 8,
+        sensitive_files: 0,
+        binary_files: 0,
+        languages: [
+          {
+            language: 'typescript',
+            supported: true,
+            discovered_files: 127,
+            indexed_files: 127,
+            skipped_files: 0,
+            error_files: 0,
+          },
+          {
+            language: 'COBOL',
+            supported: false,
+            discovered_files: 3,
+            indexed_files: 0,
+            skipped_files: 3,
+            error_files: 0,
+          },
+        ],
+      },
+      trust: { extracted: 2, inferred: 1, ambiguous: 2, legacy: 2 },
+      max_results: 500,
+      max_edges: 2000,
+      max_hops: 32,
+      max_bytes: 1_048_576,
+    };
+    const structuralProjection = (nodes = structuralGraphNodes, edges = structuralGraphEdges) => ({
+      nodes,
+      edges,
+      truncated: true,
+      next_cursor: 'next-page',
+      context: structuralGraphContext,
+    });
+
     window.__TAURI_INTERNALS__ = {
-      invoke: async (cmd: string, args?: { key?: string; repoPath?: string; id?: string }) => {
+      invoke: async (cmd: string, args?: Record<string, unknown>) => {
+        if (cmd.startsWith('plugin:event|')) return cmd.endsWith('|listen') ? 1 : undefined;
         if (cmd === 'get_preference') {
           return {
             key: args?.key ?? '',
@@ -512,6 +718,264 @@ async function installRepoUnpackedMock(page: import('@playwright/test').Page) {
           };
         }
         if (cmd === 'get_unpack_outcome_evidence') return outcomeEvidence;
+        if (cmd === 'get_structural_graph_status') {
+          return {
+            repo_path: inventory.repo_path,
+            indexed: true,
+            building: false,
+            stale: !structuralGraphFresh,
+            current_head: inventory.commit_sha,
+            indexed_head: structuralGraphFresh ? inventory.commit_sha : 'prior-head',
+            snapshot_id: 'snapshot:current',
+            engine_id: 'tree-sitter',
+            engine_version: '1.0.0',
+            schema_version: 3,
+            indexed_files: 127,
+            node_count: 25_000,
+            edge_count: 48_000,
+          };
+        }
+        if (cmd === 'get_structural_graph_overview') return structuralProjection();
+        if (cmd === 'get_structural_graph_analysis') {
+          return {
+            communities: [
+              {
+                id: 'community:app',
+                label: 'App core',
+                member_count: 12_400,
+                hub_node_ids: ['file:app'],
+                bridge_node_ids: ['function:load-repo'],
+                score: 0.98,
+              },
+              {
+                id: 'community:resolution',
+                label: 'Resolution edge cases',
+                member_count: 12_600,
+                hub_node_ids: ['function:ambiguous-resolver'],
+                bridge_node_ids: ['legacy:scan-command'],
+                score: 0.91,
+              },
+            ],
+            hubs: [
+              {
+                node_id: 'file:app',
+                label: 'App.tsx',
+                kind: 'file',
+                path: 'apps/desktop/src/App.tsx',
+                degree: 44,
+                score: 0.95,
+                reason: 'high local degree',
+              },
+            ],
+            super_hubs: [],
+            bridges: [
+              {
+                node_id: 'function:load-repo',
+                label: 'loadRepo',
+                kind: 'function',
+                path: 'apps/desktop/src/App.tsx',
+                degree: 12,
+                score: 0.88,
+                reason: 'connects communities',
+              },
+            ],
+            cross_community_edges: [],
+            surprising_connections: [],
+            suggested_questions: [],
+            truncated: false,
+            context: structuralGraphContext,
+          };
+        }
+        if (cmd === 'list_structural_graph_snapshots') {
+          return [
+            {
+              id: 'snapshot:current',
+              repo_path: inventory.repo_path,
+              repo_head: inventory.commit_sha,
+              schema_version: 3,
+              engine_id: 'tree-sitter',
+              engine_version: '1.0.0',
+              created_at: '2026-07-14T00:00:00Z',
+              node_count: 25_000,
+              edge_count: 48_000,
+              diagnostic_count: 0,
+              coverage: structuralGraphContext.coverage,
+              truncated: false,
+            },
+            {
+              id: 'snapshot:prior',
+              repo_path: inventory.repo_path,
+              repo_head: 'prior-head',
+              schema_version: 3,
+              engine_id: 'tree-sitter',
+              engine_version: '1.0.0',
+              created_at: '2026-07-13T00:00:00Z',
+              node_count: 24_900,
+              edge_count: 47_800,
+              diagnostic_count: 0,
+              coverage: structuralGraphContext.coverage,
+              truncated: false,
+            },
+          ];
+        }
+        if (cmd === 'get_structural_graph_community') {
+          const communityId = String(args?.communityId ?? '');
+          const nodes = structuralGraphNodes.filter((node) => node.community_id === communityId);
+          const nodeIds = new Set(nodes.map((node) => node.id));
+          return structuralProjection(
+            nodes,
+            structuralGraphEdges.filter((edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to))
+          );
+        }
+        if (cmd === 'search_structural_graph') {
+          const term = String(args?.queryText ?? '').toLowerCase();
+          const hits = structuralGraphNodes
+            .filter(
+              (node) =>
+                node.id.toLowerCase().includes(term) ||
+                node.label.toLowerCase().includes(term) ||
+                node.path.toLowerCase().includes(term)
+            )
+            .map((node) => ({ node, score: 1, matched_by: 'label' }));
+          return { hits, truncated: false, next_cursor: null, context: structuralGraphContext };
+        }
+        if (cmd === 'get_structural_graph_neighbors' || cmd === 'get_structural_graph_subgraph') {
+          return structuralProjection();
+        }
+        if (cmd === 'find_structural_graph_path') {
+          return {
+            nodes: structuralGraphNodes.slice(0, 3),
+            edges: structuralGraphEdges.slice(0, 2),
+            total_cost: 1.5,
+            visited: 4,
+            truncated: false,
+            context: structuralGraphContext,
+          };
+        }
+        if (cmd === 'get_structural_graph_impact') {
+          return {
+            root: structuralGraphNodes[0],
+            affected: structuralGraphNodes.slice(1),
+            edges: structuralGraphEdges,
+            depth_reached: 3,
+            truncated: false,
+            context: structuralGraphContext,
+          };
+        }
+        if (cmd === 'diff_structural_graph_snapshots') {
+          return {
+            before_snapshot_id: 'snapshot:prior',
+            after_snapshot_id: 'snapshot:current',
+            added_node_ids: ['function:ambiguous-resolver'],
+            removed_node_ids: [],
+            changed_node_ids: ['function:load-repo'],
+            added_edge_ids: ['edge:calls-resolver'],
+            removed_edge_ids: [],
+            changed_edge_ids: [],
+            truncated: false,
+            context: structuralGraphContext,
+          };
+        }
+        if (cmd === 'build_structural_graph') {
+          structuralGraphFresh = true;
+          return {
+            snapshot_id: 'snapshot:current',
+            repo_path: inventory.repo_path,
+            repo_head: inventory.commit_sha,
+          };
+        }
+        if (cmd === 'get_history_timeline') {
+          return {
+            schema_version: 1,
+            repo_path: inventory.repo_path,
+            head: historyRevisions.at(-1)?.sha,
+            generated_at: '2026-07-13T00:00:00Z',
+            revisions: historyRevisions,
+            total_commits: historyRevisions.length,
+            truncated: false,
+            is_shallow: false,
+            coverage_complete: true,
+            release_ranges: [
+              {
+                id: 'range-v1',
+                label: 'v1.0.0',
+                tag: 'v1.0.0',
+                from_exclusive: null,
+                to_inclusive: historyRevisions[90].sha,
+                commit_shas: historyRevisions.slice(0, 91).map((revision) => revision.sha),
+                is_unreleased: false,
+              },
+              {
+                id: 'range-head',
+                label: 'Unreleased',
+                tag: null,
+                from_exclusive: historyRevisions[90].sha,
+                to_inclusive: historyRevisions[119].sha,
+                commit_shas: historyRevisions.slice(91).map((revision) => revision.sha),
+                is_unreleased: true,
+              },
+            ],
+          };
+        }
+        if (cmd === 'get_history_graph_status') {
+          return {
+            repo_path: inventory.repo_path,
+            indexed: true,
+            backfilling: false,
+            stale: false,
+            current_head: historyRevisions[119].sha,
+            indexed_head: historyRevisions[119].sha,
+            checkpoint_count: 6,
+            event_count: 480,
+            coverage: { coverage_complete: true },
+            updated_at: '2026-07-13T00:00:00Z',
+          };
+        }
+        if (cmd === 'get_history_evidence_adapters') return [];
+        if (cmd === 'get_history_structural_state') {
+          return structuralState(String(args?.revision ?? historyRevisions[119].sha));
+        }
+        if (cmd === 'get_history_structural_delta') {
+          return {
+            schema_version: 1,
+            repo_path: inventory.repo_path,
+            before_revision: String(args?.beforeRevision ?? ''),
+            after_revision: String(args?.afterRevision ?? ''),
+            before_snapshot_id: 'before',
+            after_snapshot_id: 'after',
+            added_node_ids: ['node-95'],
+            removed_node_ids: [],
+            changed_node_ids: ['node-0'],
+            added_edge_ids: [],
+            removed_edge_ids: [],
+            changed_edge_ids: [],
+            added_community_ids: [],
+            removed_community_ids: [],
+            added_hub_ids: [],
+            removed_hub_ids: [],
+            added_bridge_ids: [],
+            removed_bridge_ids: [],
+            path_changes: [],
+            lineage: [],
+            coverage_gap: null,
+            generated_at: '2026-07-13T00:00:00Z',
+          };
+        }
+        if (cmd === 'backfill_history_graph') {
+          await new Promise((resolve) => setTimeout(resolve, 1_200));
+          return {
+            repo_path: inventory.repo_path,
+            total: 10,
+            completed: 10,
+            built: 2,
+            cache_hits: 8,
+            cancelled: false,
+            release_checkpoints: 4,
+            coverage_complete: true,
+            refresh_kind: 'no_op',
+            invalidated: 0,
+          };
+        }
         throw new Error(`unhandled mocked command: ${cmd}`);
       },
       transformCallback: () => 1,
@@ -550,11 +1014,11 @@ test.describe('Repo Unpacked page', () => {
 
     await page
       .getByRole('navigation', { name: 'Unpack sections' })
-      .getByRole('button', { name: 'Memory' })
+      .getByRole('button', { name: 'Handoff' })
       .click();
-    await expect(page.getByRole('heading', { name: 'Repo memory' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Handoff' })).toBeVisible();
     await expect(page.getByText('Start here', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Export memory' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
     await page
       .getByRole('navigation', { name: 'Unpack sections' })
@@ -593,5 +1057,140 @@ test.describe('Repo Unpacked page', () => {
     await expect(page.getByRole('dialog')).toContainText('Resolve failed proof gate');
     await page.getByRole('button', { name: /Copy packet/i }).click();
     await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
+  });
+
+  test('history slider remains frame-responsive while background indexing runs', async ({
+    page,
+  }) => {
+    await installRepoUnpackedMock(page);
+    await navigateTo(page, '/unpack');
+    await waitForNoSpinners(page);
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /^world-class-repo/i })
+      .click();
+    await page
+      .getByRole('navigation', { name: 'Unpack sections' })
+      .getByRole('button', { name: 'Graph' })
+      .click();
+    await expect(page.getByRole('heading', { name: 'Git history playback' })).toBeVisible();
+    await expect(page.getByText(/96 visible of 96 structural nodes/)).toBeVisible();
+    const slider = page.getByRole('slider', { name: 'Git history revision' });
+    await expect(slider).toHaveAttribute('max', '119');
+    await page.getByRole('button', { name: 'Index history' }).click();
+    await expect(page.getByRole('button', { name: 'Indexing history' })).toBeVisible();
+
+    const frameMetrics = await slider.evaluate(async (element) => {
+      const input = element as HTMLInputElement;
+      const frameGaps: number[] = [];
+      let previous = performance.now();
+      await new Promise<void>((resolve) => {
+        let frame = 0;
+        const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+        const scrub = (now: number) => {
+          frameGaps.push(now - previous);
+          previous = now;
+          setValue?.call(input, String(frame % 120));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          frame += 1;
+          if (frame >= 48) resolve();
+          else requestAnimationFrame(scrub);
+        };
+        requestAnimationFrame(scrub);
+      });
+      const ordered = frameGaps.slice(2).sort((left, right) => left - right);
+      return {
+        frames: ordered.length,
+        p50: ordered[Math.floor(ordered.length * 0.5)],
+        p95: ordered[Math.floor(ordered.length * 0.95)],
+        max: ordered.at(-1) ?? 0,
+      };
+    });
+
+    expect(frameMetrics.frames).toBeGreaterThanOrEqual(40);
+    expect(frameMetrics.p95).toBeLessThan(50);
+    expect(frameMetrics.max).toBeLessThan(120);
+    console.log(
+      `history slider frames=${frameMetrics.frames} p50=${frameMetrics.p50.toFixed(2)}ms p95=${frameMetrics.p95.toFixed(2)}ms max=${frameMetrics.max.toFixed(2)}ms`
+    );
+    await expect(page.getByRole('button', { name: 'Index history' })).toBeVisible();
+    await expect(slider).toHaveAttribute('aria-valuetext', /Change|Release/);
+  });
+
+  test('structural workbench keeps large, partial, ambiguous, stale, path, and legacy views inspectable', async ({
+    page,
+  }) => {
+    await installRepoUnpackedMock(page);
+    await navigateTo(page, '/unpack');
+    await waitForNoSpinners(page);
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /^world-class-repo/i })
+      .click();
+    await page
+      .getByRole('navigation', { name: 'Unpack sections' })
+      .getByRole('button', { name: 'Graph' })
+      .click();
+
+    const structural = page
+      .getByRole('heading', { name: 'Structural intelligence graph' })
+      .locator('xpath=ancestor::section');
+    await expect(structural).toBeVisible();
+    await expect(structural.getByText('Refresh available', { exact: true })).toBeVisible();
+    await expect(structural.getByText(/4 visible of 25,000 indexed nodes/)).toBeVisible();
+    await expect(structural.getByLabel('Structural graph coverage')).toContainText(
+      'Coverage 127 / 130 files indexed'
+    );
+    await expect(structural.getByLabel('Structural graph coverage')).toContainText(
+      'Unsupported: COBOL (3 files)'
+    );
+
+    const ambiguousFilter = structural.getByRole('button', { name: 'ambiguous', exact: true });
+    await ambiguousFilter.click();
+    await expect(ambiguousFilter).toHaveAttribute('aria-pressed', 'true');
+    await expect(structural.getByText(/1 visible of 25,000 indexed nodes/)).toBeVisible();
+    await structural.getByRole('button', { name: 'Graph node Ambiguous resolver' }).press('Enter');
+    await expect(structural.getByText('ambiguous', { exact: true }).last()).toBeVisible();
+    await expect(
+      structural.getByRole('button', { name: 'apps/desktop/src/ambiguous.ts#L9' })
+    ).toBeVisible();
+
+    await ambiguousFilter.click();
+    await structural.getByLabel('Path start node').fill('file:app');
+    await structural.getByLabel('Path target node').fill('function:ambiguous-resolver');
+    await structural.getByRole('button', { name: 'Trace' }).click();
+    await expect(structural.getByLabel('Path trace result')).toContainText(
+      'Highlighted trust-weighted path: 3 nodes · 2 edges · cost 1.50'
+    );
+
+    const appCommunity = structural.getByRole('button', { name: /App core/ });
+    await appCommunity.click();
+    await expect(appCommunity).toHaveAttribute('aria-pressed', 'true');
+    await expect(structural.getByText(/2 visible of 25,000 indexed nodes/)).toBeVisible();
+
+    const legacyFilter = structural.getByRole('button', { name: 'legacy', exact: true });
+    await legacyFilter.click();
+    await expect(structural.getByText(/0 visible of 25,000 indexed nodes/)).toBeVisible();
+    await structural.getByRole('button', { name: 'Overview' }).click();
+    await expect(structural.getByText(/1 visible of 25,000 indexed nodes/)).toBeVisible();
+    await structural.getByRole('button', { name: 'Graph node scan_repo_inventory' }).press('Enter');
+    await expect(
+      structural.getByRole('button', {
+        name: 'apps/desktop/src-tauri/src/commands/unpack.rs#L120',
+      })
+    ).toBeVisible();
+
+    await structural.getByRole('button', { name: 'Refresh index' }).click();
+    await expect(structural.getByText('Current', { exact: true })).toBeVisible();
+
+    const metadataSummary = page.locator('summary').filter({ hasText: 'Metadata graph' }).first();
+    await metadataSummary.click();
+    const metadataGraph = metadataSummary.locator('..');
+    await expect(
+      metadataGraph.getByRole('button', { name: 'Graph node Repo Unpacked' })
+    ).toBeVisible();
+    await expect(
+      metadataGraph.getByRole('button', { name: 'Graph node scan_repo_inventory' })
+    ).toBeVisible();
   });
 });

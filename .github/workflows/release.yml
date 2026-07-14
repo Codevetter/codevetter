@@ -53,11 +53,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --ignore-scripts
 
+      - name: Install graph interaction test browser
+        working-directory: apps/desktop
+        run: pnpm exec playwright install chromium
+
+      - name: Qualify canonical graph performance
+        working-directory: apps/desktop
+        run: |
+          pnpm qualify:graph
+          pnpm qualify:graph:browser
+          pnpm bench:mcp
+
       - name: Build Tauri app
         id: tauri
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:

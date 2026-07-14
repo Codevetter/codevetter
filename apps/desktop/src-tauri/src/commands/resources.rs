@@ -20,12 +20,13 @@ use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, RefreshKind, System};
 use tauri::State;
 
 const MIN_ELAPSED_MS: u128 = 500;
+type NetworkSample = (Instant, Option<(u64, u64)>, u64, u64);
 
 pub struct ResourceState {
     sys: Mutex<System>,
     last_refresh: Mutex<Option<Instant>>,
     last_gpu: Mutex<Option<(Instant, Option<f32>)>>,
-    last_net: Mutex<Option<(Instant, Option<(u64, u64)>, u64, u64)>>,
+    last_net: Mutex<Option<NetworkSample>>,
 }
 
 impl ResourceState {
@@ -252,7 +253,7 @@ fn parse_ioreg_gpu(raw: &str) -> Option<f32> {
 
 #[cfg(target_os = "macos")]
 fn sample_net_macos(
-    cache: &Mutex<Option<(Instant, Option<(u64, u64)>, u64, u64)>>,
+    cache: &Mutex<Option<NetworkSample>>,
     pids: &HashSet<u32>,
 ) -> Option<(u64, u64)> {
     // `nettop -P` is slow (~400-700ms cold). Re-sample at most every 2s and

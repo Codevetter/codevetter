@@ -1,8 +1,8 @@
 # PRD: Codebase History Explainer
 
-Status: shipped (local scope) — file-level cited explanations plus a persisted schema-v2 local history graph and bounded query surface in Repo Unpacked
+Status: release-qualified locally — cited file explanations, the schema-v2 summary graph, queryable release/commit history, time-travel graph workbench, trusted Review context, and bounded MCP exposure share local canonical services; signed release publication remains
 Owner: unassigned
-Last updated: 2026-07-13
+Last updated: 2026-07-14
 
 ## Summary
 
@@ -83,9 +83,9 @@ Link files, decisions, commits, tests, and findings in a small graph.
 
 Acceptance:
 
-- The graph can answer file-centric questions. Implemented with exact path/ID/label precedence, ranked token fallback, one-hop relationships, trust/citation metadata, and explicit no-match/truncation language.
-- Prior findings can be surfaced near new diffs. Implemented in Review through recurring finding summaries; Repo Unpacked does not yet include prior finding nodes.
-- Large repositories remain bounded by top-N history slices. Implemented through capped commit-file harvesting plus deterministic 240-node/480-edge graph and bounded query results.
+- The graph can answer file-, entity-, release-, commit-, date-, lineage-, comparison-, and causal-thread questions. Implemented through the shared Rust history query service, thin Tauri commands, and Repo history workbench.
+- Prior findings and verification evidence can be surfaced near new diffs. Implemented through bounded cited history slices shared by Review and reviewer-proof export.
+- Large repositories remain bounded. The schema-v2 summary graph caps itself at 240 nodes/480 edges, while the canonical temporal service uses configurable recent-commit limits, bounded query traversal/pagination, mandatory reachable-release and HEAD checkpoints, compressed commit deltas, progress, cancellation, and explicit partial-coverage metadata.
 
 ### Phase 2: Review Integration
 
@@ -107,6 +107,20 @@ Acceptance:
 - Explanations can be copied into tasks or PRs. Implemented through Repo Unpacked export, the `agent_context_markdown` sidecar, and Review proof handoffs.
 - Artifact schemas remain versioned. Implemented with backward-compatible `history_brief` schema v2; schema-v1 snapshots deserialize to an empty graph without rewrite.
 
+### Phase 4: Agent Access
+
+Expose the same bounded history and graph service to local agents without creating
+a second interpretation layer.
+
+Acceptance:
+
+- MCP tools cover release, commit, date, lineage, comparison, causal-thread, and
+  structural graph questions. Implemented by the opt-in `codevetter-mcp` sidecar.
+- MCP transport reuses canonical queries rather than duplicating SQL or causal
+  interpretation. Implemented through the shared Rust history/query service.
+- Access remains repository-scoped, read-only, locally auditable, and live-disableable.
+- Offline subprocess verification proves protocol negotiation and JSON-only stdout.
+
 ## UX Requirements
 
 - Keep the explanation short and file-specific.
@@ -119,6 +133,24 @@ Acceptance:
 - Reuse Repo Unpacked scanning and Review history inputs.
 - Prefer deterministic extraction from local sources.
 - Bound the number of commits, decisions, and findings shown per file.
+- Read historical files from Git objects without checkout or worktree mutation.
+- Persist compressed immutable release/HEAD checkpoints and commit materialization deltas; rebuild derived history after Git rewrites while preserving imported evidence and user annotations.
+- Keep provider ingestion unknown unless a configured local evidence import proves that external boundary.
+
+Measured on 2026-07-13 against a 24-commit CodeVetter window: cold backfill
+19.62 seconds, one-commit refresh 622.86 ms, exact as-of reconstruction 124.27 ms
+p95, causal queries 4.96 ms p95 over 10,000 events, and 23.88 MiB SQLite growth.
+The slider's browser responsiveness proxy measured 8.4 ms p50 / 16.7 ms p95
+while background indexing was delayed. Peak cold-backfill RSS remains the main
+known performance limit at about 1.05 GiB; see `docs/PERFORMANCE.md`.
+
+The canonical present-state graph was separately qualified on 2026-07-14 against
+the current 445-file repository: 35,775 nodes / 58,344 edges, 369.54 ms cold
+full build, 235.79 ms one-file refresh, 0.02/0.05 ms delete/rename repair,
+1.5589 ms warm status/no-op, 157.08 ms cold hydration, 0.1338/0.1481 ms search
+p50/p95, 82.97 MiB SQLite, and 436.5 MiB sampled peak RSS. These figures do not replace the longer release-history backfill
+measurements above; they describe the fast current-state structural layer used by
+Repo, Review, and MCP.
 
 ## Privacy And Safety
 
@@ -128,13 +160,17 @@ Acceptance:
 
 ## Open Questions
 
-- Should explanations prioritize files, modules, or user-facing features?
-- How much of the graph should be persisted versus recomputed?
-- What citation format is best for repo briefs versus review side panels?
+- Which opt-in provider export should ship first for proving runtime outcomes:
+  analytics delivery, logs, incidents, or GitHub PR/issue evidence?
+- What retention controls should imported runtime evidence use independently of
+  rebuildable Git and structural history?
+- How far should the initial commit backfill extend by default on very long-lived
+  repositories before older deltas become on-demand?
 
 ## Pickup Checklist
 
 - Read `README.md`, `PROJECT_STATUS.md`, `docs/IDEA-DUMP.md`, and this PRD.
 - Inspect History indexing, Repo Unpacked, and review evidence paths.
-- Start with the simplest file-level explanation artifact.
+- Start from the canonical history/query service and its current OpenSpec rather
+  than creating another explanation artifact.
 - Keep the result short, cited, and local-first.

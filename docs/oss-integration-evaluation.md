@@ -45,6 +45,56 @@ suggests concrete refactoring leads, renders in scan-only mode, and feeds the
 synthesis prompt/export sidecars. It deliberately does not claim Repowise's
 calibrated tree-sitter health model.
 
+## Canonical structural graph decision (2026-07-13)
+
+The earlier optional-CLI decision remains correct for review rules, but it is
+not sufficient for the canonical repository graph. The canonical graph now
+uses direct, bundled Tree-sitter integration in Rust so CodeVetter owns parser
+versions, source locations, coverage, cancellation, incremental state, and the
+offline runtime contract.
+
+| Option | Runtime | Language control | Expected query/index latency | Packaging cost | Decision |
+| --- | --- | --- | --- | --- | --- |
+| Direct `tree-sitter` plus selected grammar crates | In-process Rust | Exact promised matrix; independently pinned grammars | Lowest call overhead and supports per-file parallel parsing | Highest native compile/link maintenance; selected grammars add binary size | Chosen |
+| `ast-grep-language` bundled parser set | In-process Rust | Convenient but its default pack bundles languages outside the initial matrix | Similar parsing core with additional abstraction | Larger/uncontrolled grammar set in the current release | Not chosen for the canonical engine; keep optional `sg` rules |
+| Graphify subprocess | Python process | Upstream-controlled | Process/JSON overhead and runtime discovery on every boundary | Requires external Python/package lifecycle | Interchange/parity adapter only |
+| GitNexus subprocess | Node process | Upstream-controlled | Process/JSON overhead | Requires Node 22 and a separately managed index | Optional secondary adapter only |
+
+Pinned direct dependencies resolve to Tree-sitter 0.26.11 and MIT-licensed
+grammar crates for TypeScript/TSX, JavaScript/JSX, Rust, Python, Go, Java,
+C, C++, C#, Ruby, PHP, Kotlin, and Swift. Cargo metadata reports MIT for every
+selected `tree-sitter*` package. A 2026-07-13 RustSec package-index review found
+no advisory entry for the selected core or grammar packages; the visible
+Tree-sitter advisories applied to unrelated `tree-sitter-pkl` and
+`tree-sitter-perl-next` packages. CI still needs an automated Cargo.lock audit
+before release qualification because `cargo-audit` is not installed in the
+current development environment.
+
+Measured on the current macOS development machine after wiring the engine into
+the Tauri command surface:
+
+- pre-change release binary: 28.2 MiB;
+- direct-grammar release binary: 54.4 MiB (57,031,008 bytes), a 26.2 MiB cost;
+- cached release build including the grammar set: 52.22 s wall time;
+- incremental targeted structural-graph test build: 3.3 s wall time;
+- 22 focused schema/storage/extraction/resolution/query/API tests: 0.04 s test execution after compilation.
+
+The first release-mode benchmark against CodeVetter itself indexed 237 files
+into roughly 21,000 nodes and 30,000 edges. Full extraction completed in
+243-271 ms across two runs, a one-file refresh in 193-195 ms, cached status in
+0.84-0.85 ms, cold SQLite hydration in 80-82 ms, and bounded search in 2.2 ms
+p50 / 2.8 ms p95. Reusing prepared SQLite statements reduced normalized
+snapshot persistence from 568 ms to 404 ms. The benchmark database was 46 MiB
+and the release test process peaked near 261 MiB RSS; these are baselines, not
+yet release budgets, and long-history/database compaction work remains.
+
+The binary-size cost is accepted provisionally because direct in-process parsing
+is the lowest-latency, no-runtime path and the product explicitly promises this
+language matrix. Release qualification must still measure cold startup and real
+repository indexing. If binary layout measurably harms startup, evaluate parser
+section stripping or a signed lazy parser sidecar without changing graph
+contracts; do not swap engines based on package size alone.
+
 ## Verification
 
 Docs-only evaluation in this pass. Run:

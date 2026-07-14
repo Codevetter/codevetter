@@ -150,7 +150,7 @@ pub async fn check_github_auth(db: State<'_, DbState>) -> Result<Value, String> 
                     // "Logged in to github.com account username (keyring)"
                     l.split("account")
                         .nth(1)
-                        .map(|s| s.trim().split_whitespace().next().unwrap_or("").to_string())
+                        .map(|s| s.split_whitespace().next().unwrap_or("").to_string())
                 })
                 .unwrap_or_default();
 
@@ -274,7 +274,8 @@ fn validate_github_token(token: &str) -> Option<(String, String)> {
 // All read-only + on-demand. Secrets/env excluded *before* any git/DB access ("history indexing").
 // ─────────────────────────────────────────────────────────────────────────────
 
-const MAX_HISTORY_PROMPT_BYTES: usize = 1200;
+const MAX_LEGACY_HISTORY_PROMPT_BYTES: usize = 1_200;
+const MAX_HISTORY_PROMPT_BYTES: usize = 4_800;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct CommitSignal {
@@ -531,7 +532,7 @@ pub fn build_compact_history_section_for_prompt(
         buf.push_str("\nRecent commit history for touched files (intent context — why these files changed before):\n");
         for c in commits.iter().take(8) {
             let line = format!("- {}: {} ({})\n", c.file, c.subject, c.date);
-            if buf.len() + line.len() > MAX_HISTORY_PROMPT_BYTES {
+            if buf.len() + line.len() > MAX_LEGACY_HISTORY_PROMPT_BYTES {
                 break;
             }
             buf.push_str(&line);
@@ -548,7 +549,7 @@ pub fn build_compact_history_section_for_prompt(
                 _ => String::new(),
             };
             let line = format!("- {}{} [{}]: {}{}\n", d.file, loc, d.source, d.text, suffix);
-            if buf.len() + line.len() > MAX_HISTORY_PROMPT_BYTES {
+            if buf.len() + line.len() > MAX_LEGACY_HISTORY_PROMPT_BYTES {
                 break;
             }
             buf.push_str(&line);
@@ -586,7 +587,7 @@ pub fn build_compact_history_section_for_prompt(
                     &summary
                 }
             );
-            if buf.len() + line.len() > MAX_HISTORY_PROMPT_BYTES {
+            if buf.len() + line.len() > MAX_LEGACY_HISTORY_PROMPT_BYTES {
                 break;
             }
             buf.push_str(&line);
@@ -715,10 +716,10 @@ pub fn build_compact_history_section_for_prompt(
     }
     if !command_lines.is_empty() {
         let header = "\nPrior command/test evidence from agent transcripts:\n";
-        if buf.len() + header.len() < MAX_HISTORY_PROMPT_BYTES {
+        if buf.len() + header.len() < MAX_LEGACY_HISTORY_PROMPT_BYTES {
             buf.push_str(header);
             for line in command_lines {
-                if buf.len() + line.len() + 1 > MAX_HISTORY_PROMPT_BYTES {
+                if buf.len() + line.len() + 1 > MAX_LEGACY_HISTORY_PROMPT_BYTES {
                     break;
                 }
                 buf.push_str(&line);
@@ -753,7 +754,7 @@ pub fn build_compact_history_section_for_prompt(
         // Fallback: top recurring in repo if none matched current files
         if rec_lines.is_empty() {
             let mut by_count: Vec<_> = counts.into_iter().collect();
-            by_count.sort_by(|a, b| b.1 .0.cmp(&a.1 .0));
+            by_count.sort_by_key(|entry| std::cmp::Reverse(entry.1 .0));
             for (f, (cnt, exs)) in by_count.into_iter().take(2) {
                 if cnt > 1 {
                     let ex = exs.first().map(|s| s.as_str()).unwrap_or("");
@@ -764,10 +765,10 @@ pub fn build_compact_history_section_for_prompt(
         if !rec_lines.is_empty() {
             let header =
                 "\nRecurring failure areas (same files or repo patterns from prior reviews):\n";
-            if buf.len() + header.len() < MAX_HISTORY_PROMPT_BYTES {
+            if buf.len() + header.len() < MAX_LEGACY_HISTORY_PROMPT_BYTES {
                 buf.push_str(header);
                 for line in rec_lines {
-                    if buf.len() + line.len() + 1 > MAX_HISTORY_PROMPT_BYTES {
+                    if buf.len() + line.len() + 1 > MAX_LEGACY_HISTORY_PROMPT_BYTES {
                         break;
                     }
                     buf.push_str(&line);
@@ -777,17 +778,24 @@ pub fn build_compact_history_section_for_prompt(
         }
     }
 
-    if buf.is_empty() {
-        return String::new();
+    if !buf.is_empty() {
+        let guidance = "Use the history signals above to understand prior intent before judging the new diff. Only surface issues if the change re-opens or ignores a previous problem.\n";
+        if buf.len() + guidance.len() > MAX_LEGACY_HISTORY_PROMPT_BYTES {
+            buf.truncate(MAX_LEGACY_HISTORY_PROMPT_BYTES.saturating_sub(50));
+            buf.push_str("\n... [history truncated]\n");
+        } else {
+            buf.push_str(guidance);
+        }
     }
 
-    // Final cap + guidance sentence
-    let guidance = "Use the history signals above to understand prior intent before judging the new diff. Only surface issues if the change re-opens or ignores a previous problem.\n";
-    if buf.len() + guidance.len() > MAX_HISTORY_PROMPT_BYTES {
-        buf.truncate(MAX_HISTORY_PROMPT_BYTES.saturating_sub(50));
-        buf.push_str("\n... [history truncated]\n");
-    } else {
-        buf.push_str(guidance);
+    if let Ok(slice) =
+        crate::commands::history_query::build_review_history_slice(conn, repo_path, &safe)
+    {
+        let temporal = crate::commands::history_query::render_review_history_slice(&slice);
+        if !temporal.is_empty() {
+            let remaining = MAX_HISTORY_PROMPT_BYTES.saturating_sub(buf.len());
+            buf.push_str(&temporal.chars().take(remaining).collect::<String>());
+        }
     }
     buf
 }
@@ -987,7 +995,7 @@ fn normalize_structured_status(
     }
 }
 
-fn structured_command_arrays<'a>(root: &'a Value) -> Vec<&'a Vec<Value>> {
+fn structured_command_arrays(root: &Value) -> Vec<&Vec<Value>> {
     let mut arrays = Vec::new();
     for key in [
         "command_signals",
@@ -2021,6 +2029,8 @@ pub async fn get_repo_history_context(
     let talks = queries::list_talks_for_project(&conn, &repo_path, 5).unwrap_or_default();
     let raw_sessions = list_recent_raw_sessions(&conn, &repo_path, 4);
     let findings = queries::get_recent_findings_for_repo(&conn, &repo_path, 20).unwrap_or_default();
+    let temporal_slice =
+        crate::commands::history_query::build_review_history_slice(&conn, &repo_path, &safe).ok();
     drop(conn);
 
     // Build prior agent list (rich for UI)
@@ -2098,7 +2108,7 @@ pub async fn get_repo_history_context(
     }
     if recurring.is_empty() {
         let mut by_c: Vec<_> = counts.into_iter().collect();
-        by_c.sort_by(|a, b| b.1 .0.cmp(&a.1 .0));
+        by_c.sort_by_key(|entry| std::cmp::Reverse(entry.1 .0));
         for (f, (cnt, exs)) in by_c.into_iter().take(3) {
             if cnt >= 2 {
                 recurring.push(json!({ "file": f, "count": cnt, "examples": exs }));
@@ -2124,6 +2134,7 @@ pub async fn get_repo_history_context(
         "command_signals": command_signals,
         "agent_claims": agent_claims,
         "recurring_failures": recurring,
+        "temporal_slice": temporal_slice,
         "prompt_snippet": prompt_snippet,
     }))
 }

@@ -268,9 +268,9 @@ fn outcome_trust_actions_prioritize_failed_rows_and_missing_baselines() {
 
     let trend = outcome_trend(
         &[],
-        &[failing_qa.clone()],
-        &[failed_gate.clone()],
-        &[finding.clone()],
+        std::slice::from_ref(&failing_qa),
+        std::slice::from_ref(&failed_gate),
+        std::slice::from_ref(&finding),
     );
     let actions = outcome_trust_actions(
         &[],
@@ -768,7 +768,7 @@ fn workspace_units_fallback_to_subsystems_for_manifest_light_repos() {
 #[test]
 fn agent_context_sidecar_exports_graph_and_history() {
     let inventory = minimal_inventory();
-    let sidecar = render_agent_context_sidecar("demo", "2026-06-12T00:00:00Z", &inventory);
+    let sidecar = render_agent_context_sidecar("demo", "2026-06-12T00:00:00Z", &inventory, None);
 
     assert!(sidecar.contains("# Agent Context Sidecar"));
     assert!(sidecar.contains("repo_graph.v1 / history_brief.v1"));

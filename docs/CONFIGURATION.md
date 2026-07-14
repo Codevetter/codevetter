@@ -298,6 +298,12 @@ wrangler dev --var DB_USE_IN_MEMORY:true
 
 **Desktop** — Vite serves on port `1420` and Tauri points `devUrl` to `http://localhost:1420`. AI gateway credentials are entered via the Settings UI and persisted in `localStorage`; no env file is needed.
 
+**Local graph/history MCP** — no environment variable, credential, URL, or port is
+used. Enable one repository under **Settings → Agent MCP** after building its
+history, then copy the generated stdio configuration into the client you control.
+The config contains only the packaged binary path, local database path, and an
+opaque repository scope. See [MCP.md](./MCP.md) for privacy and limits.
+
 ### Production (Cloudflare Workers)
 
 All production variables that are non-secret are declared in the `[vars]` block of each `wrangler.toml`. Secrets are uploaded once:
