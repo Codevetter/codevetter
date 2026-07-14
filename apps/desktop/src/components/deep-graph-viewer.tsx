@@ -78,9 +78,26 @@ function layoutGraph(
   graph: UnpackRepoGraph,
   mode: DeepGraphLookupMode,
   width: number,
-  height: number
+  height: number,
+  stableLayout: boolean
 ): LayoutNode[] {
   if (graph.nodes.length === 0) return [];
+
+  if (stableLayout) {
+    const marginX = Math.min(72, width * 0.12);
+    const marginY = Math.min(64, height * 0.15);
+    return graph.nodes.map((node) => {
+      const primary = stableHash(node.id);
+      const secondary = stableHash(`${node.id}:y`);
+      return {
+        id: node.id,
+        x: marginX + (primary / 0xffffffff) * Math.max(1, width - marginX * 2),
+        y: marginY + (secondary / 0xffffffff) * Math.max(1, height - marginY * 2),
+        node,
+        ring: 'query',
+      };
+    });
+  }
 
   const cx = width / 2;
   const cy = height / 2;
@@ -184,14 +201,25 @@ function layoutGraph(
   return [...placed.values()];
 }
 
+function stableHash(value: string): number {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
 type Props = {
   graph: UnpackRepoGraph;
   mode: DeepGraphLookupMode;
   hits?: DeepGraphQueryHit[];
   summary?: string;
   repoPath: string;
-  onSelectSymbol?: (name: string, path?: string | null) => void;
+  onSelectSymbol?: (name: string, path?: string | null, nodeId?: string) => void;
   onDrillContext?: (name: string, path?: string | null) => void;
+  stableLayout?: boolean;
+  nodeStates?: Record<string, 'added' | 'removed' | 'changed'>;
 };
 
 export function DeepGraphViewer({
@@ -202,6 +230,8 @@ export function DeepGraphViewer({
   repoPath,
   onSelectSymbol,
   onDrillContext,
+  stableLayout = false,
+  nodeStates = {},
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState({ width: 720, height: 420 });
@@ -226,8 +256,8 @@ export function DeepGraphViewer({
   }, []);
 
   const layout = useMemo(
-    () => layoutGraph(graph, mode, size.width, size.height),
-    [graph, mode, size.height, size.width]
+    () => layoutGraph(graph, mode, size.width, size.height, stableLayout),
+    [graph, mode, size.height, size.width, stableLayout]
   );
   const layoutById = useMemo(() => new Map(layout.map((n) => [n.id, n])), [layout]);
 
@@ -264,6 +294,10 @@ export function DeepGraphViewer({
 
   return (
     <div className="overflow-hidden rounded-xl border border-cyan-500/18 bg-[#090d10]">
+      <style>{`
+        @keyframes dg-node-enter { from { opacity: 0; transform: scale(0.35); } to { opacity: 1; transform: scale(1); } }
+        @keyframes dg-node-change { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+      `}</style>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/15 px-3 py-2">
         <div className="flex items-center gap-2 text-xs text-cyan-100/90">
           <ModeIcon size={13} className="text-cyan-300" />
@@ -315,7 +349,7 @@ export function DeepGraphViewer({
               )}
               onClick={() => {
                 setSelectedId(hit.id);
-                onSelectSymbol?.(hit.name, hit.path);
+                onSelectSymbol?.(hit.name, hit.path, hit.id);
               }}
               onDoubleClick={() => onDrillContext?.(hit.name, hit.path)}
             >
@@ -368,7 +402,12 @@ export function DeepGraphViewer({
               </marker>
             </defs>
 
-            <rect width={size.width} height={size.height} fill="url(#dg-bg-glow)" />
+            <rect
+              width={size.width}
+              height={size.height}
+              fill="url(#dg-bg-glow)"
+              pointerEvents="none"
+            />
 
             <g transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}>
               {graph.edges.map((edge) => {
@@ -401,19 +440,40 @@ export function DeepGraphViewer({
                 const isCenter = item.ring === 'center';
                 const isSelected = selectedId === item.id;
                 const r = isCenter ? 18 : 12;
+                const changeState = nodeStates[item.id];
                 return (
                   <g
                     key={item.id}
-                    transform={`translate(${item.x} ${item.y})`}
                     className="cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Graph node ${item.node.label}`}
+                    style={{
+                      transform: `translate(${item.x}px, ${item.y}px)`,
+                      transition: 'transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms',
+                      opacity: changeState === 'removed' ? 0.15 : 1,
+                      animation:
+                        changeState === 'added'
+                          ? 'dg-node-enter 320ms cubic-bezier(0.2, 0.8, 0.2, 1)'
+                          : changeState === 'changed'
+                            ? 'dg-node-change 420ms ease-out'
+                            : undefined,
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedId(item.id);
-                      onSelectSymbol?.(item.node.label, item.node.path);
+                      onSelectSymbol?.(item.node.label, item.node.path, item.id);
                     }}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
                       onDrillContext?.(item.node.label, item.node.path);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter' && event.key !== ' ') return;
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setSelectedId(item.id);
+                      onSelectSymbol?.(item.node.label, item.node.path, item.id);
                     }}
                   >
                     {isSelected && (

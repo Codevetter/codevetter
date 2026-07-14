@@ -207,7 +207,7 @@ fn archive_message(
     });
 }
 
-fn first_tool_use<'a>(blocks: &'a [Value]) -> Option<&'a Value> {
+fn first_tool_use(blocks: &[Value]) -> Option<&Value> {
     blocks.iter().find(|block| {
         block
             .get("type")
@@ -216,7 +216,7 @@ fn first_tool_use<'a>(blocks: &'a [Value]) -> Option<&'a Value> {
     })
 }
 
-fn first_tool_result<'a>(blocks: &'a [Value]) -> Option<&'a Value> {
+fn first_tool_result(blocks: &[Value]) -> Option<&Value> {
     blocks.iter().find(|block| {
         block
             .get("type")
@@ -971,7 +971,7 @@ mod tests {
         let unknown = summary.model_usage.get("unknown").expect("unknown row");
         assert_eq!(unknown.input_tokens, 3);
         assert_eq!(unknown.output_tokens, 1);
-        assert!(summary.model_usage.get("<synthetic>").is_none());
+        assert!(!summary.model_usage.contains_key("<synthetic>"));
 
         // The split reconciles with the session totals.
         let split_input: i64 = summary.model_usage.values().map(|u| u.input_tokens).sum();

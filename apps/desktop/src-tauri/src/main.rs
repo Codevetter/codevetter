@@ -1,23 +1,13 @@
 // Prevent a console window from popping up on Windows release builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod agent;
-mod commands;
-mod db;
-mod talk;
-mod timeutil;
-
+use codevetter_desktop::{commands, db, DbState};
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
 const STARTUP_FULL_INDEX_DELAY_SECS: u64 = 6 * 60 * 60;
 const PERIODIC_INDEX_INITIAL_DELAY_SECS: u64 = 6 * 60 * 60;
 const PERIODIC_INDEX_INTERVAL_SECS: u64 = commands::history::FULL_INDEX_RECOVERY_INTERVAL_SECS;
-
-/// Shared database state accessible from every Tauri command via
-/// `tauri::State<DbState>`.
-#[derive(Clone)]
-pub struct DbState(pub Arc<Mutex<rusqlite::Connection>>);
 
 /// Repair `PATH` for GUI launches.
 ///
@@ -93,19 +83,19 @@ fn run_usage_maintenance(app_data_dir: std::path::PathBuf) {
             // Repair Codex token totals corrupted by the old cumulative-add bug
             // (one-time), then refresh stored per-session $ cost if the price
             // table changed.
-            crate::commands::history::fix_codex_token_totals(&conn);
+            commands::history::fix_codex_token_totals(&conn);
             // One-time per-model usage backfill (v1.1.100) — must precede the
             // cost recompute so multi-model sessions reprice from their split.
-            crate::commands::history::backfill_session_model_usage(&conn);
+            commands::history::backfill_session_model_usage(&conn);
             // Relabel o3-defaulted Codex sessions from their turn_context rows
             // before cost recompute so rev-6+ pricing books corrected models.
-            crate::commands::history::backfill_codex_session_models(&conn);
+            commands::history::backfill_codex_session_models(&conn);
             // One-time Claude usage dedup: re-scan on-disk transcripts counting
             // each API response's usage once (duplicate content-block lines
             // inflated Claude numbers ~2.2×). Rewrites totals + cost directly,
             // so ordering vs the pricing recompute below doesn't matter.
-            crate::commands::history::fix_claude_usage_dedup(&conn);
-            crate::commands::history::recompute_all_session_costs(&conn);
+            commands::history::fix_claude_usage_dedup(&conn);
+            commands::history::recompute_all_session_costs(&conn);
             log::info!("Usage maintenance done.");
         }
         Err(e) => log::error!("Usage maintenance DB init failed: {e}"),
@@ -138,7 +128,7 @@ fn main() {
 
             // v1.1.83: resume any T-Rex watchers that were enabled before the
             // last shutdown. Each enabled row spawns its own Tokio polling task.
-            commands::trex_watcher::resume_enabled_watchers(&app.handle());
+            commands::trex_watcher::resume_enabled_watchers(app.handle());
 
             // ── Trigger initial index on startup ─────────────────
             // Storage cleanup (one-time purge of cruft message rows) runs at
@@ -170,7 +160,7 @@ fn main() {
                     match run_full_index(bg_data_dir.clone()) {
                         Ok(summary) => {
                             log::info!("Full index complete: {}", summary.log_message());
-                            crate::commands::history::emit_session_archive_updated(
+                            commands::history::emit_session_archive_updated(
                                 &bg_handle, &summary,
                             );
                         }
@@ -201,7 +191,7 @@ fn main() {
                     loop {
                         match db::init_db(periodic_data_dir.clone()) {
                             Ok(conn) => {
-                                match crate::commands::history::try_run_full_index_summary_with_conn(
+                                match commands::history::try_run_full_index_summary_with_conn(
                                     &conn,
                                 ) {
                                     Ok(Some(summary)) => {
@@ -209,7 +199,7 @@ fn main() {
                                             "Periodic re-index complete: {}",
                                             summary.log_message()
                                         );
-                                        crate::commands::history::emit_session_archive_updated(
+                                        commands::history::emit_session_archive_updated(
                                             &periodic_handle,
                                             &summary,
                                         );
@@ -262,7 +252,7 @@ fn main() {
                         match db::init_db(tail_data_dir.clone()) {
                             Ok(conn) => {
                                 let _ = conn.busy_timeout(std::time::Duration::from_millis(250));
-                                match crate::commands::history::tail_live_transcript_sessions_with_conn(
+                                match commands::history::tail_live_transcript_sessions_with_conn(
                                     &conn,
                                 ) {
                                     Ok(summary) => {
@@ -273,7 +263,7 @@ fn main() {
                                                 summary.sessions_tailed
                                             );
                                             let archive_summary =
-                                                crate::commands::history::FullIndexSummary {
+                                                commands::history::FullIndexSummary {
                                                     indexed_sessions: summary.sessions_tailed,
                                                     indexed_messages: summary.messages_indexed,
                                                     skipped_sessions: 0,
@@ -282,7 +272,7 @@ fn main() {
                                                         as i64,
                                                     indexed_at: summary.tailed_at,
                                                 };
-                                            crate::commands::history::emit_session_archive_updated(
+                                            commands::history::emit_session_archive_updated(
                                                 &tail_handle,
                                                 &archive_summary,
                                             );
@@ -293,12 +283,11 @@ fn main() {
                                     }
                                 }
 
-                                if tick
-                                    % (crate::commands::history::LIVE_SECONDARY_ADAPTER_INTERVAL_SECS
-                                        / crate::commands::history::LIVE_TRANSCRIPT_INTERVAL_SECS)
-                                    == 0
-                                {
-                                    match crate::commands::history::refresh_secondary_agents_with_conn(
+                                if tick.is_multiple_of(
+                                    crate::commands::history::LIVE_SECONDARY_ADAPTER_INTERVAL_SECS
+                                        / crate::commands::history::LIVE_TRANSCRIPT_INTERVAL_SECS,
+                                ) {
+                                    match commands::history::refresh_secondary_agents_with_conn(
                                         &conn,
                                     ) {
                                         Ok(summary) if summary.sessions_tailed > 0 => {
@@ -307,14 +296,14 @@ fn main() {
                                                 summary.sessions_tailed
                                             );
                                             let archive_summary =
-                                                crate::commands::history::FullIndexSummary {
+                                                commands::history::FullIndexSummary {
                                                     indexed_sessions: summary.sessions_tailed,
                                                     indexed_messages: summary.messages_indexed,
                                                     skipped_sessions: 0,
                                                     archive_search_rows_indexed: 0,
                                                     indexed_at: summary.tailed_at,
                                                 };
-                                            crate::commands::history::emit_session_archive_updated(
+                                            commands::history::emit_session_archive_updated(
                                                 &tail_handle,
                                                 &archive_summary,
                                             );
@@ -465,7 +454,7 @@ fn main() {
             commands::unpack::export_repo_unpack_report,
             commands::graph_trust::import_graphify_preview,
             commands::graph_trust::trace_repo_graph_path,
-            commands::history_graph::query_repo_history_graph,
+            commands::history_summary_graph::query_repo_history_graph,
             // Unpack deep graph (call-graph indexing)
             commands::unpack_deep_graph::unpack_deep_graph_status,
             commands::unpack_deep_graph::unpack_deep_graph_analyze,
@@ -474,6 +463,49 @@ fn main() {
             commands::unpack_deep_graph::unpack_deep_graph_symbol_impact,
             commands::unpack_deep_graph::unpack_deep_graph_query,
             commands::unpack_deep_graph::unpack_deep_graph_detect_changes,
+            // Canonical structural repository graph
+            commands::structural_graph::api::build_structural_graph,
+            commands::structural_graph::api::cancel_structural_graph_build,
+            commands::structural_graph::api::diff_structural_graph_snapshots,
+            commands::structural_graph::api::explain_structural_graph_node,
+            commands::structural_graph::api::export_structural_graph_json,
+            commands::structural_graph::api::export_structural_graph_markdown,
+            commands::structural_graph::api::find_structural_graph_path,
+            commands::structural_graph::api::get_structural_graph,
+            commands::structural_graph::api::get_structural_graph_adapters,
+            commands::structural_graph::api::get_structural_graph_analysis,
+            commands::structural_graph::api::get_structural_graph_community,
+            commands::structural_graph::api::get_structural_graph_impact,
+            commands::structural_graph::api::get_structural_graph_metadata,
+            commands::structural_graph::api::get_structural_graph_neighbors,
+            commands::structural_graph::api::get_structural_graph_overview,
+            commands::structural_graph::api::get_structural_graph_status,
+            commands::structural_graph::api::get_structural_graph_subgraph,
+            commands::structural_graph::api::list_structural_graph_snapshots,
+            commands::structural_graph::api::preview_graphify_structural_graph,
+            commands::structural_graph::api::search_structural_graph,
+            commands::history_graph::get_history_revision_topology,
+            commands::history_graph::backfill_history_graph,
+            commands::history_graph::cancel_history_backfill,
+            commands::history_graph::get_history_as_of,
+            commands::history_graph::get_history_entity_evolution,
+            commands::history_graph::get_history_graph_status,
+            commands::history_graph::explain_history_entity,
+            commands::history_graph::add_history_annotation,
+            commands::history_graph::list_history_annotations,
+            commands::history_graph::get_history_structural_delta,
+            commands::history_graph::get_history_structural_state,
+            commands::history_graph::get_history_timeline,
+            commands::history_graph::history_list_releases,
+            commands::history_graph::history_search,
+            commands::history_evidence::get_history_evidence_adapters,
+            commands::history_evidence::refresh_history_evidence,
+            commands::history_evidence::import_history_evidence_export,
+            commands::history_query::get_history_causal_trace,
+            // Local repository-scoped MCP exposure
+            commands::mcp_access::get_mcp_repository_settings,
+            commands::mcp_access::set_mcp_repository_enabled,
+            commands::mcp_access::clear_mcp_access_audit,
             // Synthetic user QA
             commands::synthetic_qa::run_synthetic_qa,
             commands::synthetic_qa::discover_playwright_specs,
@@ -489,7 +521,7 @@ fn main() {
 
 /// Run a lightweight startup index using its own database connection.
 fn run_initial_index(app_data_dir: std::path::PathBuf) -> Result<String, String> {
-    use crate::db::queries;
+    use codevetter_desktop::db::queries;
 
     let conn = db::init_db(app_data_dir).map_err(|e| e.to_string())?;
 
@@ -609,8 +641,8 @@ fn run_initial_index(app_data_dir: std::path::PathBuf) -> Result<String, String>
 
 fn run_full_index(
     app_data_dir: std::path::PathBuf,
-) -> Result<crate::commands::history::FullIndexSummary, String> {
-    use crate::commands::history;
+) -> Result<commands::history::FullIndexSummary, String> {
+    use codevetter_desktop::commands::history;
     let conn = db::init_db(app_data_dir).map_err(|e| e.to_string())?;
     history::run_full_index_summary_with_conn(&conn)
 }
@@ -625,7 +657,7 @@ struct QuickMeta {
 }
 
 fn quick_parse_session_meta(path: &std::path::Path) -> (String, QuickMeta) {
-    use crate::commands::session_adapters::{ClaudeCodeAdapter, SessionSourceAdapter};
+    use codevetter_desktop::commands::session_adapters::{ClaudeCodeAdapter, SessionSourceAdapter};
     use std::io::BufRead;
 
     let file = match std::fs::File::open(path) {

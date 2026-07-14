@@ -488,11 +488,7 @@ pub fn summarize_for_prompt(report: &BlastRadiusReport) -> Option<String> {
     ));
 
     // Show up to 8 symbols: all high + as many medium/safe as fit
-    let mut count = 0;
-    for s in &report.symbols {
-        if count >= 8 {
-            break;
-        }
+    for s in report.symbols.iter().take(8) {
         let risk_note = match s.risk.as_str() {
             "high" => "HIGH RISK — many callers, scrutinize for contract breaks",
             "medium" => "some callers — verify behavior is preserved",
@@ -507,7 +503,6 @@ pub fn summarize_for_prompt(report: &BlastRadiusReport) -> Option<String> {
             if s.caller_count == 1 { "" } else { "s" },
             risk_note,
         ));
-        count += 1;
     }
 
     if report.total_symbols > 8 {

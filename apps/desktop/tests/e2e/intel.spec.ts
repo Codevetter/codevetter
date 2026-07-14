@@ -13,6 +13,65 @@ async function installIntelMock(page: import('@playwright/test').Page) {
       additions: idx === 11 ? 320 : 12,
       deletions: idx === 11 ? 80 : 4,
     }));
+    const inventory = {
+      repo_path: '/tmp/world-class-repo',
+      repo_name: 'world-class-repo',
+      commit_sha: 'abcdef123456',
+      branch: 'main',
+      remote_url: null,
+      files_scanned: 1,
+      files_skipped: 0,
+      bytes_scanned: 100,
+      max_files_hit: false,
+      languages: [],
+      manifests: [],
+      entrypoints: [],
+      top_level_dirs: [],
+      docs: [],
+      config_files: [],
+      stack_tags: ['typescript'],
+      qa_readiness: { score: 0, status: 'unknown', summary: '', signals: [], suggested_flows: [] },
+      repo_graph: { schema_version: 1, nodes: [], edges: [], truncated: false },
+      history_brief: {
+        schema_version: 1,
+        summary: '',
+        recent_commits: [],
+        decisions: [],
+        test_hints: [],
+        sources: [],
+        truncated: false,
+      },
+      repo_health: {
+        schema_version: 1,
+        summary: '',
+        average_score: 0,
+        hotspot_count: 0,
+        files_analyzed: 1,
+        files_with_test_signal: 0,
+        top_files: [],
+        truncated: false,
+      },
+      all_files: ['src/app.tsx'],
+      ignored_dirs: [],
+    };
+    const unpackSummary = {
+      id: 'unpack-1',
+      repo_path: inventory.repo_path,
+      repo_name: inventory.repo_name,
+      commit_sha: inventory.commit_sha,
+      status: 'completed',
+      error_message: null,
+      agent_used: null,
+      model_used: null,
+      files_scanned: 1,
+      files_skipped: 0,
+      runtime_ms: 10,
+      cost_usd: null,
+      started_at: '2026-07-03T00:00:00Z',
+      completed_at: '2026-07-03T00:00:00Z',
+      created_at: '2026-07-03T00:00:00Z',
+      analysis_ready: false,
+    };
     const report = {
       repo_path: '/tmp/world-class-repo',
       windows: ['all', '1y', '90d', '30d', '7d'].map((label) => ({
@@ -168,6 +227,15 @@ async function installIntelMock(page: import('@playwright/test').Page) {
           };
         }
         if (cmd === 'list_repo_intel_reports') return [];
+        if (cmd === 'list_repo_unpack_reports') return { reports: [unpackSummary] };
+        if (cmd === 'get_repo_unpack_report') {
+          return {
+            ...unpackSummary,
+            inventory_json: JSON.stringify(inventory),
+            report_json: null,
+            bytes_scanned: 100,
+          };
+        }
         if (cmd === 'attribute_repo_commits') return report;
         if (cmd === 'get_dora_metrics') return dora;
         if (cmd === 'save_intel_snapshot') {
@@ -201,34 +269,34 @@ test.describe('Intel page', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('/intel redirects to Repo Intel tab', async ({ page }) => {
+  test('/intel redirects to Repo Activity tab', async ({ page }) => {
     await installIntelMock(page);
     await navigateTo(page, '/intel');
     await waitForNoSpinners(page);
 
-    await expect(page).toHaveURL(/\/unpack\?section=intel/);
+    await expect(page).toHaveURL(/\/unpack\?section=activity/);
     await page
       .locator('aside')
-      .getByRole('button', { name: /world-class-repo/i })
+      .getByRole('button', { name: /^world-class-repo\s/i })
       .click();
-    await expect(page.getByRole('button', { name: 'Intel', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Refresh' }).first()).toBeVisible();
-    await expect(page.getByText('No Intel snapshot yet')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Activity', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Refresh activity' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /AI share/ })).toBeVisible();
   });
 
-  test('/unpack?section=intel shows the Intel tab and Refresh control', async ({ page }) => {
+  test('/unpack?section=intel keeps the legacy alias and shows Activity', async ({ page }) => {
     await installIntelMock(page);
     await navigateTo(page, '/unpack?section=intel');
     await waitForNoSpinners(page);
 
     await page
       .locator('aside')
-      .getByRole('button', { name: /world-class-repo/i })
+      .getByRole('button', { name: /^world-class-repo\s/i })
       .click();
     await expect(page.getByRole('heading', { name: 'world-class-repo' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Intel', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Refresh' }).first()).toBeVisible();
-    await expect(page.getByText('No Intel snapshot yet')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Activity', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Refresh activity' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /AI share/ })).toBeVisible();
 
     // Per-Tool LLM card was removed in v1.1.77.
     await expect(page.getByText('Per-Tool LLM Usage')).toHaveCount(0);
@@ -241,9 +309,9 @@ test.describe('Intel page', () => {
 
     await page
       .locator('aside')
-      .getByRole('button', { name: /world-class-repo/i })
+      .getByRole('button', { name: /^world-class-repo\s/i })
       .click();
-    await page.getByRole('button', { name: 'Refresh' }).first().click();
+    await page.getByRole('button', { name: 'Refresh activity' }).click();
 
     await expect(page.getByRole('button', { name: /AI share/ })).toBeVisible();
   });
@@ -269,9 +337,9 @@ test.describe('Intel page', () => {
 
     await page
       .locator('aside')
-      .getByRole('button', { name: /world-class-repo/i })
+      .getByRole('button', { name: /^world-class-repo\s/i })
       .click();
-    await page.getByRole('button', { name: 'Refresh' }).first().click();
+    await page.getByRole('button', { name: 'Refresh activity' }).click();
 
     await expect(page.getByRole('button', { name: /AI share/ })).toBeVisible();
     await page.getByRole('button', { name: /AI share/ }).click();

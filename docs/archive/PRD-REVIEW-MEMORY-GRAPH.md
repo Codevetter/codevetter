@@ -1,12 +1,12 @@
 # PRD: Review Memory Graph
 
-Status: shipped — repo/review graph artifacts, schema-v2 relationship trust/provenance, explicit Graphify preview import, bounded evidence-bearing path traces, prompt/UI/proof integration, Hunk-style notes, and `[`/`]` hunk keyboard navigation in fix diff; full Hunk-like file sidebar remains deferred
+Status: release-qualified locally — schema-v2 trust paths and the original metadata/review graph remain labeled fallbacks; the canonical structural graph, trusted Review/proof context, large-graph workbench, history playback, and Graphify interchange are runtime-verified; signed release publication remains
 Owner: unassigned
-Last updated: 2026-07-13
+Last updated: 2026-07-14
 
 ## Summary
 
-Review Memory Graph adds a local, queryable project graph to CodeVetter's Review and Repo Unpacked workflows. It borrows the useful parts of Hunk and Graphify without turning CodeVetter into a generic diff viewer or generic code intelligence product.
+Review Memory Graph adds a local, queryable project graph to CodeVetter's Review and Repo workflows. The fast legacy metadata map remains available and explicitly labeled, while the canonical graph uses syntax extraction, stable source locations, cross-file resolution, trust, coverage, communities, incremental repair, indexed queries, snapshots, and history playback. It borrows the useful parts of Hunk and Graphify without turning CodeVetter into a generic diff viewer or generic code intelligence product.
 
 The product outcome is simple: when a user reviews an agent-written diff, CodeVetter should show the changed hunks, nearby code relationships, prior decisions, past command/test evidence, and review findings in one evidence-backed loop.
 
@@ -55,7 +55,7 @@ They are not asking for a second IDE. They need to answer:
 
 ### Review Tab
 
-When a repo and diff range are selected, Review should eventually show:
+When a repo and diff range are selected, Review shows:
 
 - File/hunk navigation for changed files.
 - CodeVetter findings anchored to file path and line/hunk when available.
@@ -89,19 +89,26 @@ Candidate artifact names:
 - `codevetter-graph-report.md`
 - `codevetter-graph.html`
 
-The first implementation can avoid HTML and store only JSON plus a compact Markdown report.
+Canonical artifacts remain in CodeVetter's local SQLite/app-data boundary. Versioned
+JSON and Markdown exports are explicit user actions; target repositories are never
+mutated by graph build or refresh.
 
 ## Implementation Plan
 
-### Phase 0: Spike
+### Phase 0: Pinned Parity Spike
 
-Run Graphify manually on CodeVetter or one fleet repo and compare its graph/report against Repo Unpacked output.
+Graphify's `v8` branch is pinned to commit
+`961b78e57a10e9c5bb98421ff3e45b40be73542b`; its fixture and capability matrix
+are kept in-repo for repeatable comparison.
 
 Acceptance:
 
-- Document whether Graphify's output catches relationships Repo Unpacked misses.
-- Document install/runtime cost, artifact size, and privacy behavior.
-- Decide whether to integrate by shelling out to an optional CLI, importing concepts only, or building a minimal CodeVetter graph internally.
+- Document where Graphify is stronger and where CodeVetter meets the functional
+  floor. Implemented in `docs/GRAPHIFY-PARITY.md`.
+- Keep Graphify optional and offline-safe. Implemented through explicit node-link
+  import and adapter boundaries; no Graphify runtime dependency was added.
+- Preserve an honest gap: CodeVetter currently supports 15 documented language
+  variants while Graphify exposes a broader grammar family set.
 
 ### Phase 1: CodeVetter-Owned Minimal Graph
 
@@ -185,6 +192,32 @@ Acceptance:
 - Missing optional CLIs produce clear non-fatal UI errors.
 - No production dependency is added unless a prior spike proves the value and tradeoff. Implemented for the export slice; no Graphify/Hunk runtime dependency was added.
 
+### Phase 5: Canonical Structural Graph
+
+Replace metadata-map claims with a persistent structural graph while retaining the
+legacy map as an explicitly labeled fallback.
+
+Acceptance:
+
+- Supported languages extract named symbols and source ranges with exact coverage,
+  skipped-file, unsupported-language, and diagnostic reporting.
+- Cross-file imports, calls, inheritance, tests, routes, commands, persistence,
+  docs/config, and analytics relationships carry exact/inferred/ambiguous trust and
+  source provenance.
+- Full and incremental builds repair changed, deleted, renamed, and reverted files
+  transactionally without stale nodes or worktree mutation.
+- Indexed search, explain, neighbors, impact, trust-weighted path, community,
+  hub/bridge, projection, pagination, and snapshot-diff operations stay bounded.
+- The Repo workbench supports large graphs, accessible node/list navigation,
+  visible-versus-total counts, filters, source inspection, path highlighting,
+  community focus, stale refresh, comparison, and history playback.
+- Review and proof receive compact trusted context, but graph topology cannot create
+  findings, severity, or verified-runtime evidence.
+- The current 445-file CodeVetter corpus builds 35,775 nodes / 58,344 edges in
+  369.54 ms release mode; one-file refresh is 235.79 ms, delete/rename repair is
+  0.02/0.05 ms, warm status/no-op is 1.5589 ms, and search is
+  0.1338/0.1481 ms p50/p95.
+
 ## UX Requirements
 
 - Do not make users read a graph before reviewing. The graph should answer "what matters for this diff?"
@@ -214,21 +247,24 @@ Acceptance:
 
 ## Open Questions
 
-- Should graph artifacts be stored in CodeVetter app data only, or optionally committed to target repos?
-- What is the smallest useful graph schema for React/Tauri/Rust apps?
-- Should graph context be generated before every review or refreshed manually from Repo Unpacked?
+- Which additional language grammars earn their ongoing binary/test cost after the
+  supported 15-language matrix?
 - Should evidence graph nodes include raw transcript excerpts, or only source/event anchors?
-- What graph output size is acceptable before Review becomes slower than the current flow?
+- Should an optional committed sidecar ever be added, or should app-data plus
+  explicit export remain the only persistence boundary?
+- Which profile would justify a Go dashboard/API layer after Rust IPC, packaging,
+  and duplicated-semantics costs are included?
 
 ## Pickup Checklist
 
 - Read `README.md`, `PROJECT_STATUS.md`, `docs/IDEA-DUMP.md`, and this PRD.
 - Inspect `apps/desktop/src-tauri/src/commands/unpack.rs`, `apps/desktop/src-tauri/src/commands/review.rs`, and `apps/desktop/src/pages/QuickReview.tsx`.
-- Start with Phase 0 unless the user explicitly asks to skip the spike.
-- Keep the first code diff small and local-first.
+- Read `docs/GRAPHIFY-PARITY.md`, `docs/PERFORMANCE.md`, and the active structural
+  graph OpenSpec before changing engine or schema behavior.
+- Preserve the canonical-versus-legacy distinction and the graph-trust boundary.
 - Run the smallest relevant check before handoff.
 
 ## References
 
 - Hunk: https://github.com/modem-dev/hunk
-- Graphify: https://github.com/safishamsi/graphify — repository URL and active HEAD verified 2026-07-13 (`eec7a0183847cbdc8a87d92b233759a5204b89fe`); CodeVetter consumes its local node-link JSON only through explicit import and does not install or invoke it.
+- Graphify: https://github.com/Graphify-Labs/graphify — pinned parity baseline `v8` commit `961b78e57a10e9c5bb98421ff3e45b40be73542b`; CodeVetter imports local node-link JSON only through explicit action and never installs or invokes Graphify implicitly.

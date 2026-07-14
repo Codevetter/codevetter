@@ -10,6 +10,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'pnpm'
+      - uses: dtolnay/rust-toolchain@stable
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
       - name: Lint
@@ -21,3 +22,12 @@ jobs:
       - name: Unit Tests
         working-directory: apps/desktop
         run: pnpm run test:unit
+      - name: MCP protocol and safety tests
+        working-directory: apps/desktop
+        run: cargo test --manifest-path src-tauri/Cargo.toml mcp::
+      - name: MCP release-mode stdio lifecycle
+        working-directory: apps/desktop
+        run: cargo test --release --manifest-path src-tauri/Cargo.toml --test mcp_stdio
+      - name: MCP sidecar build smoke
+        working-directory: apps/desktop
+        run: pnpm run prepare:mcp-sidecar

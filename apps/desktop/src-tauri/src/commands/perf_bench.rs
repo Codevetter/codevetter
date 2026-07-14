@@ -1,7 +1,8 @@
 //! Performance harness for the hot paths that actually cost time in CodeVetter.
 //!
-//! These are `#[ignore]`d benchmarks, not correctness tests — they print tables
-//! and never assert on timing (so they never flake CI). Run them explicitly:
+//! These are `#[ignore]`d benchmarks. Most print comparison tables without timing
+//! assertions. The real-repository graph benchmark becomes an executable release
+//! gate when `CV_ENFORCE_GRAPH_BUDGETS=1` is set.
 //!
 //! ```bash
 //! # from apps/desktop/src-tauri
@@ -16,9 +17,19 @@
 //! erase. `bench_query` measures the FTS search path users hit from the archive UI.
 #![cfg(test)]
 
-use std::time::Instant;
+use std::{fs, process::Command, time::Instant};
 
+use crate::commands::history_query::{query_causal_trace, HistoryCausalSelector};
 use crate::commands::session_adapters::{ClaudeCodeAdapter, SessionSourceAdapter};
+use crate::commands::structural_graph::extract::BundledTreeSitterEngine;
+use crate::commands::structural_graph::query::{self, GraphQueryFilter};
+use crate::commands::structural_graph::storage::{
+    load_latest_snapshot, load_latest_snapshot_summary, persist_snapshot,
+};
+use crate::commands::structural_graph::types::{
+    StructuralGraphBuildInput, StructuralGraphCancellation, StructuralGraphEngine,
+    StructuralGraphProgress,
+};
 use crate::db::queries::{self, SessionMessageArchiveInput};
 use crate::db::schema;
 
@@ -29,7 +40,11 @@ fn synthetic_claude_jsonl(target_bytes: usize) -> String {
     let mut out = String::with_capacity(target_bytes + 1024);
     let mut i = 0usize;
     while out.len() < target_bytes {
-        let role = if i % 2 == 0 { "user" } else { "assistant" };
+        let role = if i.is_multiple_of(2) {
+            "user"
+        } else {
+            "assistant"
+        };
         // ~250-400 bytes/line, similar to real transcripts.
         let line = format!(
             "{{\"type\":\"{role}\",\"sessionId\":\"bench-session-0001\",\"version\":\"1.0.0\",\"gitBranch\":\"main\",\"cwd\":\"/Users/dev/project\",\"timestamp\":\"2026-06-19T10:{:02}:{:02}Z\",\"uuid\":\"uuid-{i}\",\"message\":{{\"role\":\"{role}\",\"content\":\"This is synthetic transcript content line {i} used to exercise the JSON-per-line parser with a representative amount of text to deserialize and scan for fields.\"}}}}",
@@ -50,6 +65,23 @@ fn max_mb() -> usize {
         .ok()
         .and_then(|v| v.parse().ok())
         .unwrap_or(64)
+}
+
+fn current_rss_kib() -> u64 {
+    Command::new("ps")
+        .args(["-o", "rss=", "-p", &std::process::id().to_string()])
+        .output()
+        .ok()
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+        .and_then(|value| value.trim().parse::<u64>().ok())
+        .unwrap_or_default()
+}
+
+fn assert_graph_budget(label: &str, actual: f64, maximum: f64, unit: &str) {
+    assert!(
+        actual <= maximum,
+        "structural graph release budget exceeded: {label} was {actual:.2} {unit}, maximum {maximum:.2} {unit}"
+    );
 }
 
 #[test]
@@ -199,4 +231,584 @@ fn bench_query() {
         "worst case:       {worst_ms:.3} ms/query  (term in every row, {worst_hits} matched)"
     );
     eprintln!("realistic:        {real_ms:.3} ms/query  (selective term, {real_hits} matched)\n");
+}
+
+#[test]
+#[ignore = "perf bench; run with --ignored --nocapture"]
+fn bench_structural_graph_real_repo() {
+    let repo = std::env::var("CV_GRAPH_BENCH_REPO")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|_| {
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../..")
+                .canonicalize()
+                .expect("canonical repo root")
+        });
+    let engine = BundledTreeSitterEngine;
+    let cancellation = StructuralGraphCancellation::default();
+    let progress = |_: StructuralGraphProgress| {};
+
+    let started = Instant::now();
+    let snapshot = engine
+        .build(
+            &StructuralGraphBuildInput::full(repo.clone(), None),
+            &cancellation,
+            &progress,
+        )
+        .expect("full structural graph build");
+    let full_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let mut sampled_rss_kib = vec![current_rss_kib()];
+
+    let db_path = std::env::temp_dir().join(format!(
+        "codevetter-graph-bench-{}.sqlite",
+        uuid::Uuid::new_v4()
+    ));
+    let connection = rusqlite::Connection::open(&db_path).expect("benchmark db");
+    schema::run_migrations(&connection).expect("schema");
+    let persist_started = Instant::now();
+    persist_snapshot(&connection, &snapshot).expect("persist graph");
+    let persist_ms = persist_started.elapsed().as_secs_f64() * 1000.0;
+    sampled_rss_kib.push(current_rss_kib());
+    let database_bytes = [&db_path, &db_path.with_extension("sqlite-wal")]
+        .iter()
+        .filter_map(|path| fs::metadata(path).ok())
+        .map(|metadata| metadata.len())
+        .sum::<u64>();
+
+    let load_started = Instant::now();
+    let loaded = load_latest_snapshot(&connection, snapshot.repo_path.as_str())
+        .expect("load graph")
+        .expect("stored graph");
+    let load_ms = load_started.elapsed().as_secs_f64() * 1000.0;
+    sampled_rss_kib.push(current_rss_kib());
+
+    let no_op_started = Instant::now();
+    for _ in 0..500 {
+        std::hint::black_box(
+            load_latest_snapshot_summary(&connection, snapshot.repo_path.as_str())
+                .expect("load summary"),
+        );
+    }
+    let no_op_ms = no_op_started.elapsed().as_secs_f64() * 2.0;
+
+    let changed_path = "apps/desktop/src-tauri/src/main.rs";
+    let clone_started = Instant::now();
+    let previous_snapshot = loaded.clone();
+    let clone_ms = clone_started.elapsed().as_secs_f64() * 1000.0;
+    let incremental_started = Instant::now();
+    let incremental = engine
+        .build(
+            &StructuralGraphBuildInput {
+                repo_root: repo.clone(),
+                repo_head: None,
+                changed_files: vec![changed_path.to_string()],
+                deleted_files: Vec::new(),
+                previous_cursor: loaded.cursor.clone(),
+                previous_snapshot: Some(Box::new(previous_snapshot)),
+                max_files: 25_000,
+                max_bytes_per_file: 2 * 1024 * 1024,
+            },
+            &cancellation,
+            &progress,
+        )
+        .expect("one-file incremental build");
+    let incremental_ms = incremental_started.elapsed().as_secs_f64() * 1000.0;
+    sampled_rss_kib.push(current_rss_kib());
+
+    let repair_repo = tempfile::tempdir().expect("repair benchmark repo");
+    fs::create_dir_all(repair_repo.path().join("src")).expect("repair src");
+    assert!(
+        Command::new("git")
+            .args(["init", "--quiet"])
+            .current_dir(repair_repo.path())
+            .status()
+            .expect("initialize repair repo")
+            .success(),
+        "initialize repair benchmark repository"
+    );
+    fs::write(
+        repair_repo.path().join("src/old.rs"),
+        "pub fn carried() -> usize { 1 }\n",
+    )
+    .expect("old fixture");
+    fs::write(
+        repair_repo.path().join("src/removed.rs"),
+        "pub fn removed() -> usize { 2 }\n",
+    )
+    .expect("removed fixture");
+    assert!(
+        Command::new("git")
+            .args(["add", "src/old.rs", "src/removed.rs"])
+            .current_dir(repair_repo.path())
+            .status()
+            .expect("stage repair fixture")
+            .success(),
+        "stage repair benchmark fixture"
+    );
+    let repair_snapshot = engine
+        .build(
+            &StructuralGraphBuildInput::full(repair_repo.path().to_path_buf(), None),
+            &cancellation,
+            &progress,
+        )
+        .expect("repair fixture full build");
+
+    fs::remove_file(repair_repo.path().join("src/removed.rs")).expect("delete fixture file");
+    let delete_started = Instant::now();
+    let after_delete = engine
+        .build(
+            &StructuralGraphBuildInput {
+                repo_root: repair_repo.path().to_path_buf(),
+                repo_head: None,
+                changed_files: Vec::new(),
+                deleted_files: vec!["src/removed.rs".to_string()],
+                previous_cursor: repair_snapshot.cursor.clone(),
+                previous_snapshot: Some(Box::new(repair_snapshot)),
+                max_files: 25_000,
+                max_bytes_per_file: 2 * 1024 * 1024,
+            },
+            &cancellation,
+            &progress,
+        )
+        .expect("delete repair");
+    let delete_ms = delete_started.elapsed().as_secs_f64() * 1000.0;
+    assert!(!after_delete
+        .nodes
+        .iter()
+        .any(|node| node.path.as_deref() == Some("src/removed.rs")));
+
+    fs::rename(
+        repair_repo.path().join("src/old.rs"),
+        repair_repo.path().join("src/new.rs"),
+    )
+    .expect("rename fixture file");
+    let rename_started = Instant::now();
+    let after_rename = engine
+        .build(
+            &StructuralGraphBuildInput {
+                repo_root: repair_repo.path().to_path_buf(),
+                repo_head: None,
+                changed_files: vec!["src/new.rs".to_string()],
+                deleted_files: vec!["src/old.rs".to_string()],
+                previous_cursor: after_delete.cursor.clone(),
+                previous_snapshot: Some(Box::new(after_delete)),
+                max_files: 25_000,
+                max_bytes_per_file: 2 * 1024 * 1024,
+            },
+            &cancellation,
+            &progress,
+        )
+        .expect("rename repair");
+    let rename_ms = rename_started.elapsed().as_secs_f64() * 1000.0;
+    assert!(after_rename
+        .nodes
+        .iter()
+        .any(|node| { node.label == "carried" && node.path.as_deref() == Some("src/new.rs") }));
+    assert!(!after_rename
+        .nodes
+        .iter()
+        .any(|node| node.path.as_deref() == Some("src/old.rs")));
+
+    let mut query_samples = Vec::with_capacity(500);
+    for _ in 0..500 {
+        let started = Instant::now();
+        std::hint::black_box(query::search(
+            &loaded,
+            "structural",
+            &GraphQueryFilter::default(),
+            Some(50),
+        ));
+        query_samples.push(started.elapsed().as_secs_f64() * 1000.0);
+    }
+    query_samples.sort_by(f64::total_cmp);
+    let p50 = query_samples[query_samples.len() / 2];
+    let p95 = query_samples[query_samples.len() * 95 / 100];
+    sampled_rss_kib.push(current_rss_kib());
+    let peak_rss_kib = sampled_rss_kib.into_iter().max().unwrap_or_default();
+
+    eprintln!("\n=== bench_structural_graph_real_repo ===");
+    eprintln!("repo:              {}", repo.display());
+    eprintln!(
+        "graph:             {} files | {} nodes | {} edges",
+        snapshot.coverage.indexed_files,
+        snapshot.nodes.len(),
+        snapshot.edges.len()
+    );
+    eprintln!("full build:        {full_ms:.2} ms");
+    eprintln!("snapshot transfer: {clone_ms:.2} ms");
+    eprintln!("one-file refresh:  {incremental_ms:.2} ms");
+    eprintln!("delete repair:     {delete_ms:.2} ms");
+    eprintln!("rename repair:     {rename_ms:.2} ms");
+    eprintln!("warm status/no-op: {no_op_ms:.4} ms average");
+    eprintln!("persist:           {persist_ms:.2} ms");
+    eprintln!("cold hydrate:      {load_ms:.2} ms");
+    eprintln!("search p50/p95:    {p50:.4} / {p95:.4} ms");
+    eprintln!(
+        "database:          {:.2} MiB",
+        database_bytes as f64 / 1_048_576.0
+    );
+    eprintln!(
+        "sampled peak RSS:  {:.1} MiB\n",
+        peak_rss_kib as f64 / 1024.0
+    );
+
+    if std::env::var("CV_ENFORCE_GRAPH_BUDGETS").as_deref() == Ok("1") {
+        assert_graph_budget("cold full build", full_ms, 1_000.0, "ms");
+        assert_graph_budget("one-file refresh", incremental_ms, 700.0, "ms");
+        assert_graph_budget("delete repair", delete_ms, 100.0, "ms");
+        assert_graph_budget("rename repair", rename_ms, 150.0, "ms");
+        assert_graph_budget("warm status/no-op", no_op_ms, 10.0, "ms");
+        assert_graph_budget("persist", persist_ms, 2_000.0, "ms");
+        assert_graph_budget("cold hydrate", load_ms, 500.0, "ms");
+        assert_graph_budget("search p50", p50, 1.0, "ms");
+        assert_graph_budget("search p95", p95, 2.0, "ms");
+        assert_graph_budget(
+            "database growth",
+            database_bytes as f64 / 1_048_576.0,
+            160.0,
+            "MiB",
+        );
+        assert_graph_budget(
+            "sampled peak RSS",
+            peak_rss_kib as f64 / 1024.0,
+            768.0,
+            "MiB",
+        );
+    }
+
+    std::hint::black_box(incremental);
+    drop(connection);
+    let _ = std::fs::remove_file(db_path);
+}
+
+#[derive(Clone, Copy)]
+struct GraphRelevanceCase {
+    query: &'static str,
+    expected_path_suffix: &'static str,
+    expected_label: Option<&'static str>,
+}
+
+#[test]
+#[ignore = "Graphify parity/relevance bench; run with --ignored --nocapture"]
+fn bench_structural_graph_query_relevance() {
+    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let graphify_fixture = manifest.join("tests/fixtures/graphify-v8");
+    let large_repo = std::env::var("CV_GRAPH_BENCH_REPO")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|_| {
+            manifest
+                .join("../../..")
+                .canonicalize()
+                .expect("canonical CodeVetter root")
+        });
+    let fixture_cases = [
+        GraphRelevanceCase {
+            query: "server run",
+            expected_path_suffix: "crate_b/src/lib.rs",
+            expected_label: Some("run"),
+        },
+        GraphRelevanceCase {
+            query: "parse",
+            expected_path_suffix: "crate_a/src/lib.rs",
+            expected_label: Some("parse"),
+        },
+        GraphRelevanceCase {
+            query: "foo two",
+            expected_path_suffix: "swift_cross_file/Foo+Ext.swift",
+            expected_label: Some("two"),
+        },
+    ];
+    let large_cases = [
+        GraphRelevanceCase {
+            query: "StructuralGraphReadService",
+            expected_path_suffix: "commands/structural_graph/service.rs",
+            expected_label: Some("StructuralGraphReadService"),
+        },
+        GraphRelevanceCase {
+            query: "HistoryGraphSlider",
+            expected_path_suffix: "unpack-workspace/HistoryGraphSlider.tsx",
+            expected_label: Some("HistoryGraphSlider"),
+        },
+        GraphRelevanceCase {
+            query: "MCP access audit",
+            expected_path_suffix: "commands/mcp_access.rs",
+            expected_label: None,
+        },
+    ];
+
+    let engine = BundledTreeSitterEngine;
+    let build = |root: &std::path::Path| {
+        engine
+            .build(
+                &StructuralGraphBuildInput::full(root.to_path_buf(), None),
+                &StructuralGraphCancellation::default(),
+                &|_: StructuralGraphProgress| {},
+            )
+            .expect("build benchmark graph")
+    };
+    let fixture = build(&graphify_fixture);
+    let large = build(&large_repo);
+    let fixture_raw = raw_documents(&graphify_fixture, &fixture);
+    let large_raw = raw_documents(&large_repo, &large);
+
+    let fixture_result = benchmark_relevance_corpus(
+        "Graphify v8 pinned fixtures",
+        &fixture,
+        &fixture_raw,
+        &fixture_cases,
+    );
+    let large_result =
+        benchmark_relevance_corpus("CodeVetter large repo", &large, &large_raw, &large_cases);
+
+    assert_eq!(
+        fixture_result.graph_covered,
+        fixture_cases.len(),
+        "canonical graph must answer every pinned Graphify fixture query"
+    );
+    assert_eq!(
+        large_result.graph_covered,
+        large_cases.len(),
+        "canonical graph must answer every large-repo relevance query"
+    );
+}
+
+struct RelevanceBenchResult {
+    graph_covered: usize,
+}
+
+fn benchmark_relevance_corpus(
+    label: &str,
+    snapshot: &crate::commands::structural_graph::types::StructuralGraphSnapshot,
+    raw_documents: &[(String, String)],
+    cases: &[GraphRelevanceCase],
+) -> RelevanceBenchResult {
+    let graph_covered = cases
+        .iter()
+        .filter(|case| graph_case_matches(snapshot, case))
+        .count();
+    let raw_covered = cases
+        .iter()
+        .filter(|case| raw_case_matches(raw_documents, case))
+        .count();
+    let mut graph_samples = Vec::with_capacity(200 * cases.len());
+    let mut raw_samples = Vec::with_capacity(200 * cases.len());
+    for _ in 0..200 {
+        for case in cases {
+            let started = Instant::now();
+            std::hint::black_box(query::search(
+                snapshot,
+                case.query,
+                &GraphQueryFilter::default(),
+                Some(10),
+            ));
+            graph_samples.push(started.elapsed().as_secs_f64() * 1000.0);
+
+            let started = Instant::now();
+            std::hint::black_box(raw_ranked_paths(raw_documents, case.query, 10));
+            raw_samples.push(started.elapsed().as_secs_f64() * 1000.0);
+        }
+    }
+    graph_samples.sort_by(f64::total_cmp);
+    raw_samples.sort_by(f64::total_cmp);
+    let percentile = |samples: &[f64], percentile: usize| {
+        samples[samples.len().saturating_sub(1) * percentile / 100]
+    };
+    eprintln!("\n=== {label} query relevance ===");
+    eprintln!(
+        "graph: {graph_covered}/{} expected answers | p50 {:.4} ms | p95 {:.4} ms",
+        cases.len(),
+        percentile(&graph_samples, 50),
+        percentile(&graph_samples, 95)
+    );
+    eprintln!(
+        "raw:   {raw_covered}/{} expected files   | p50 {:.4} ms | p95 {:.4} ms",
+        cases.len(),
+        percentile(&raw_samples, 50),
+        percentile(&raw_samples, 95)
+    );
+    RelevanceBenchResult { graph_covered }
+}
+
+fn graph_case_matches(
+    snapshot: &crate::commands::structural_graph::types::StructuralGraphSnapshot,
+    case: &GraphRelevanceCase,
+) -> bool {
+    query::search(snapshot, case.query, &GraphQueryFilter::default(), Some(10))
+        .hits
+        .iter()
+        .any(|hit| {
+            hit.node
+                .path
+                .as_deref()
+                .is_some_and(|path| path.ends_with(case.expected_path_suffix))
+                && case
+                    .expected_label
+                    .is_none_or(|label| hit.node.label == label)
+        })
+}
+
+fn raw_documents(
+    root: &std::path::Path,
+    snapshot: &crate::commands::structural_graph::types::StructuralGraphSnapshot,
+) -> Vec<(String, String)> {
+    snapshot
+        .files
+        .iter()
+        .filter_map(|file| {
+            std::fs::read_to_string(root.join(&file.path))
+                .ok()
+                .map(|content| (file.path.clone(), content.to_ascii_lowercase()))
+        })
+        .collect()
+}
+
+fn raw_ranked_paths(documents: &[(String, String)], query_text: &str, limit: usize) -> Vec<String> {
+    let tokens = query_text
+        .split(|character: char| !character.is_alphanumeric() && character != '_')
+        .map(str::to_ascii_lowercase)
+        .filter(|token| token.len() >= 2)
+        .collect::<Vec<_>>();
+    let mut ranked = documents
+        .iter()
+        .filter_map(|(path, content)| {
+            let path_lower = path.to_ascii_lowercase();
+            let score = tokens
+                .iter()
+                .filter(|token| content.contains(token.as_str()) || path_lower.contains(*token))
+                .count();
+            (score > 0).then(|| (usize::MAX - score, path.clone()))
+        })
+        .collect::<Vec<_>>();
+    ranked.sort();
+    ranked
+        .into_iter()
+        .take(limit)
+        .map(|(_, path)| path)
+        .collect()
+}
+
+fn raw_case_matches(documents: &[(String, String)], case: &GraphRelevanceCase) -> bool {
+    raw_ranked_paths(documents, case.query, 10)
+        .iter()
+        .any(|path| path.ends_with(case.expected_path_suffix))
+}
+
+#[test]
+#[ignore = "perf bench; run with --ignored --nocapture"]
+fn bench_history_causal_query() {
+    let repo = std::env::var("CV_GRAPH_BENCH_REPO")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|_| {
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../..")
+                .canonicalize()
+                .expect("canonical repo root")
+        });
+    let head = std::process::Command::new("git")
+        .arg("-C")
+        .arg(&repo)
+        .args(["rev-parse", "HEAD"])
+        .output()
+        .ok()
+        .filter(|output| output.status.success())
+        .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_string())
+        .expect("repository head");
+    let db_path = std::env::temp_dir().join(format!(
+        "codevetter-history-bench-{}.sqlite",
+        uuid::Uuid::new_v4()
+    ));
+    let mut connection = rusqlite::Connection::open(&db_path).expect("benchmark db");
+    schema::run_migrations(&connection).expect("schema");
+    let repo_path = repo.to_string_lossy().to_string();
+    connection
+        .execute(
+            "INSERT INTO history_graph_repositories (
+                repo_path, repository_fingerprint, indexed_head, status, coverage_json,
+                created_at, updated_at
+             ) VALUES (?1, 'bench', ?2, 'ready', '{\"coverage_complete\":true}',
+                '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')",
+            rusqlite::params![repo_path, head],
+        )
+        .expect("repository");
+    let seed_started = Instant::now();
+    let transaction = connection.transaction().expect("seed transaction");
+    {
+        let mut statement = transaction
+            .prepare(
+                "INSERT INTO history_graph_events (
+                    id, repo_path, event_kind, trust, origin, source_id, payload_json,
+                    evidence_json, recorded_at
+                 ) VALUES (?1, ?2, ?3, 'extracted', 'bench', 'bench', ?4, '[]', ?5)",
+            )
+            .expect("seed statement");
+        for index in 0..10_000 {
+            let episode_key = if index >= 9_998 {
+                "bench:target".to_string()
+            } else {
+                format!("bench:{index}")
+            };
+            statement
+                .execute(rusqlite::params![
+                    format!("event-{index:05}"),
+                    repo_path,
+                    if index % 2 == 0 {
+                        "decision_marker"
+                    } else {
+                        "synthetic_qa"
+                    },
+                    serde_json::json!({
+                        "summary": format!("benchmark event {index}"),
+                        "episode_keys": [episode_key],
+                    })
+                    .to_string(),
+                    format!(
+                        "2026-01-01T{:02}:{:02}:{:02}Z",
+                        (index / 3600) % 24,
+                        (index / 60) % 60,
+                        index % 60
+                    ),
+                ])
+                .expect("event");
+        }
+    }
+    transaction.commit().expect("seed commit");
+    let seed_ms = seed_started.elapsed().as_secs_f64() * 1000.0;
+    let selector = HistoryCausalSelector::EpisodeKey {
+        key: "bench:target".to_string(),
+    };
+    let mut samples = Vec::with_capacity(100);
+    let mut last = None;
+    for _ in 0..100 {
+        let started = Instant::now();
+        last = Some(
+            query_causal_trace(&connection, &repo, &head, selector.clone(), 80, None)
+                .expect("causal query"),
+        );
+        samples.push(started.elapsed().as_secs_f64() * 1000.0);
+    }
+    samples.sort_by(f64::total_cmp);
+    let p50 = samples[samples.len() / 2];
+    let p95 = samples[samples.len() * 95 / 100];
+    let result = last.expect("result");
+    let database_bytes = std::fs::metadata(&db_path)
+        .map(|metadata| metadata.len())
+        .unwrap_or_default();
+
+    eprintln!("\n=== bench_history_causal_query ===");
+    eprintln!("seeded:            10000 events in {seed_ms:.2} ms");
+    eprintln!("causal p50/p95:    {p50:.3} / {p95:.3} ms");
+    eprintln!(
+        "coverage:          {} scanned / {} total · {} episode(s) · truncated={}",
+        result.scanned_events,
+        result.total_events,
+        result.episodes.len(),
+        result.truncated
+    );
+    eprintln!(
+        "database:          {:.2} MiB\n",
+        database_bytes as f64 / 1_048_576.0
+    );
+
+    drop(connection);
+    let _ = std::fs::remove_file(db_path);
 }

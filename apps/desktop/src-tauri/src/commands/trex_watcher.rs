@@ -42,6 +42,12 @@ struct WatcherSlot {
     cancel: oneshot::Sender<()>,
 }
 
+impl Default for WatcherHandles {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WatcherHandles {
     pub fn new() -> Self {
         Self(Mutex::new(HashMap::new()))
@@ -445,10 +451,9 @@ fn parse_owner_repo(url: &str) -> Option<(String, String)> {
     let stripped = url.trim_end_matches('/').trim_end_matches(".git");
     let tail = if let Some(rest) = stripped.strip_prefix("git@github.com:") {
         rest.to_string()
-    } else if let Some(idx) = stripped.find("github.com/") {
-        stripped[idx + "github.com/".len()..].to_string()
     } else {
-        return None;
+        let idx = stripped.find("github.com/")?;
+        stripped[idx + "github.com/".len()..].to_string()
     };
     let mut parts = tail.splitn(2, '/');
     let owner = parts.next()?.to_string();
@@ -515,7 +520,7 @@ fn truncate_for_status(s: &str) -> String {
         s.to_string()
     } else {
         let mut out: String = s.chars().take(137).collect();
-        out.push_str("…");
+        out.push('…');
         out
     }
 }

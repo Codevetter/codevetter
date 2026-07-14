@@ -392,6 +392,22 @@ fn derive_native_review_paths(
     paths
 }
 
+#[derive(Debug, Clone, Serialize)]
+struct TrustedReviewGraphContext {
+    schema_version: i64,
+    snapshot_id: String,
+    engine_id: String,
+    engine_version: String,
+    indexed_head: Option<String>,
+    current_head: Option<String>,
+    stale: bool,
+    coverage: crate::commands::structural_graph::types::StructuralGraphCoverage,
+    nodes: Vec<crate::commands::structural_graph::types::StructuralGraphNode>,
+    edges: Vec<crate::commands::structural_graph::types::StructuralGraphEdge>,
+    truncated: bool,
+    qualification: String,
+}
+
 fn graph_node_id(kind: &str, value: &str) -> String {
     let mut slug = value
         .chars()
@@ -657,6 +673,155 @@ fn render_review_memory_graph_for_prompt(graph: &ReviewMemoryGraph) -> String {
     lines.join("\n")
 }
 
+fn build_trusted_review_graph_context(
+    connection: &rusqlite::Connection,
+    repo_path: &str,
+    changed_files: &[String],
+) -> Option<TrustedReviewGraphContext> {
+    use crate::commands::structural_graph::{
+        query::{GraphDirection, GraphQueryFilter},
+        service::StructuralGraphReadService,
+    };
+    use std::collections::{BTreeMap, HashSet};
+
+    const MAX_SEEDS_PER_FILE: usize = 2;
+    const MAX_NODES: usize = 24;
+    const MAX_EDGES: usize = 48;
+
+    let service = StructuralGraphReadService::new(connection, repo_path);
+    let status = service.status().ok()?;
+    if !status.indexed {
+        return None;
+    }
+    let mut nodes = BTreeMap::new();
+    let mut edges = BTreeMap::new();
+    let mut context = None;
+    let mut truncated = status.truncated;
+    let filter = GraphQueryFilter::default();
+
+    for file in changed_files.iter().take(12) {
+        let search = service.search(file, &filter, 12).ok()?;
+        truncated |= search.truncated;
+        context.get_or_insert_with(|| search.context.clone());
+        let seeds = search
+            .hits
+            .iter()
+            .filter(|hit| hit.node.path.as_deref() == Some(file.as_str()))
+            .take(MAX_SEEDS_PER_FILE)
+            .map(|hit| hit.node.clone())
+            .collect::<Vec<_>>();
+        for seed in seeds {
+            nodes.entry(seed.id.clone()).or_insert(seed.clone());
+            let neighborhood = service
+                .neighbors(&seed.id, GraphDirection::Both, &filter, 8, None)
+                .ok()?;
+            truncated |= neighborhood.truncated;
+            for node in neighborhood.nodes {
+                nodes.entry(node.id.clone()).or_insert(node);
+            }
+            for edge in neighborhood.edges {
+                edges.entry(edge.id.clone()).or_insert(edge);
+            }
+        }
+    }
+
+    let context = context?;
+    if nodes.is_empty() {
+        return None;
+    }
+    truncated |= nodes.len() > MAX_NODES || edges.len() > MAX_EDGES;
+    let nodes = nodes.into_values().take(MAX_NODES).collect::<Vec<_>>();
+    let node_ids = nodes
+        .iter()
+        .map(|node| node.id.as_str())
+        .collect::<HashSet<_>>();
+    let edges = edges
+        .into_values()
+        .filter(|edge| node_ids.contains(edge.from.as_str()) && node_ids.contains(edge.to.as_str()))
+        .take(MAX_EDGES)
+        .collect::<Vec<_>>();
+
+    Some(TrustedReviewGraphContext {
+        schema_version: context.schema_version,
+        snapshot_id: context.snapshot_id,
+        engine_id: context.engine_id,
+        engine_version: context.engine_version,
+        indexed_head: status.indexed_head,
+        current_head: status.current_head,
+        stale: status.stale,
+        coverage: context.coverage,
+        nodes,
+        edges,
+        truncated,
+        qualification: "Navigation-only structural context. Trust and source anchors are preserved; topology never creates findings, changes severity, or upgrades a claim to verified evidence."
+            .to_string(),
+    })
+}
+
+fn render_trusted_review_graph_for_prompt(context: &TrustedReviewGraphContext) -> String {
+    let mut lines = vec![
+        "\nCanonical structural graph leads (navigation only; not findings or runtime proof):"
+            .to_string(),
+        format!(
+            "- snapshot {} · engine {}@{} · schema v{} · {} · {}/{} files indexed",
+            context.snapshot_id,
+            context.engine_id,
+            context.engine_version,
+            context.schema_version,
+            if context.stale { "stale" } else { "current" },
+            context.coverage.indexed_files,
+            context.coverage.discovered_files,
+        ),
+        format!("- qualification: {}", context.qualification),
+    ];
+    for node in context.nodes.iter().take(12) {
+        let source = node.sources.first().map(|source| {
+            format!(
+                " · source {}{}",
+                source.path,
+                source
+                    .start_line
+                    .map(|line| format!(":{line}"))
+                    .unwrap_or_default()
+            )
+        });
+        lines.push(format!(
+            "- node [{} / {}] {}{}",
+            node.trust.as_str(),
+            node.origin.as_str(),
+            node.label,
+            source.unwrap_or_default()
+        ));
+    }
+    for edge in context.edges.iter().take(16) {
+        let source = edge.sources.first().map(|source| {
+            format!(
+                " · source {}{}",
+                source.path,
+                source
+                    .start_line
+                    .map(|line| format!(":{line}"))
+                    .unwrap_or_default()
+            )
+        });
+        lines.push(format!(
+            "  edge: {} -> {} [{} / {}]{}",
+            edge.from,
+            edge.to,
+            edge.kind,
+            edge.trust.as_str(),
+            source.unwrap_or_default()
+        ));
+    }
+    if context.truncated {
+        lines.push(
+            "- structural graph context truncated; query the canonical graph for more".to_string(),
+        );
+    }
+    lines.push(String::new());
+    lines.join("\n")
+}
+
 fn value_string<'a>(value: &'a Value, keys: &[&str]) -> Option<&'a str> {
     keys.iter()
         .find_map(|key| value.get(*key).and_then(Value::as_str))
@@ -824,7 +989,7 @@ How to review:
 6. Skip nitpicks (formatting, naming preference, missing comments) unless they will cause real bugs, enforce a false assumption, or break a workflow.
 7. Repo conventions above are authoritative. Drop findings that contradict them.
 8. History signals (if present) explain prior commits and agent work on the touched files — use them to understand *intent* and avoid re-flagging deliberate past decisions. Only call out if the new diff re-opens an old problem or contradicts the stated intent.
-9. Changed-file graph neighborhoods (if present) are local memory edges for navigation. Treat inferred edges as leads; verify against source before making a finding.
+9. Changed-file and canonical structural graph neighborhoods (if present) are navigation leads only. Preserve their extracted/inferred/ambiguous/legacy trust, verify every hop against source or runtime evidence, and never let topology alone create a finding, change severity, or upgrade a claim to verified.
 10. Synthetic QA evidence (if present) is runtime evidence from prior user-flow runs. Use failures to focus review, but do not confuse runner/setup failures with app bugs.
 11. Ranked evidence candidates (if present) are deterministic search leads, not conclusions. Validate them against code/evidence, reject them if wrong, and preserve any remaining open questions in the summary or finding suggestion.
 12. Procedure steps (if present) are explicit evidence gates. Treat blocked steps as remaining work unless the current code/evidence resolves the gate.
@@ -1389,15 +1554,16 @@ pub async fn run_cli_review_core(
     // History context (first signals): recent commits on touched files + prior agent summaries + recurring failures.
     // Computed here so the *reviewer agent* sees intent ("why touched files changed before") before judging the new diff.
     // Uses same changed_files list; compact + capped inside the builder. Secrets excluded in git.rs.
-    let history_section = {
+    let (history_section, trusted_graph_context) = {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
         let h = crate::commands::git::build_compact_history_section_for_prompt(
             &repo_path,
             &changed_files,
             &conn,
         );
+        let graph = build_trusted_review_graph_context(&conn, &repo_path, &changed_files);
         drop(conn);
-        h
+        (h, graph)
     };
 
     let plan = build_review_plan(&diff_text, &changed_files);
@@ -1438,8 +1604,15 @@ pub async fn run_cli_review_core(
         trusted_paths,
     );
     let review_memory_graph_section = render_review_memory_graph_for_prompt(&review_memory_graph);
+    let trusted_graph_section = trusted_graph_context
+        .as_ref()
+        .map(render_trusted_review_graph_for_prompt)
+        .unwrap_or_default();
+    let graph_section = format!("{review_memory_graph_section}{trusted_graph_section}");
     let review_memory_graph_json =
         serde_json::to_value(&review_memory_graph).unwrap_or_else(|_| json!({}));
+    let trusted_graph_context_json =
+        serde_json::to_value(&trusted_graph_context).unwrap_or(Value::Null);
     let qa_evidence_section = render_qa_evidence_for_prompt(&qa_runs);
     let qa_evidence_json = json!(qa_runs.iter().take(5).cloned().collect::<Vec<_>>());
 
@@ -1468,7 +1641,7 @@ pub async fn run_cli_review_core(
             &files_section,
             &blast_section,
             &history_section,
-            &review_memory_graph_section,
+            &graph_section,
             &qa_evidence_section,
             &evidence_section,
             &procedure_section,
@@ -1491,8 +1664,8 @@ pub async fn run_cli_review_core(
     const MAX_CONCURRENT_SPECIALISTS: usize = 3;
     let total = specialist_prompts.len();
     let mut results: Vec<Option<(Value, String)>> = (0..total).map(|_| None).collect();
-    let mut join_set: tokio::task::JoinSet<(usize, Result<(Value, String), String>)> =
-        tokio::task::JoinSet::new();
+    type SpecialistTaskResult = (usize, Result<(Value, String), String>);
+    let mut join_set: tokio::task::JoinSet<SpecialistTaskResult> = tokio::task::JoinSet::new();
     let mut next = 0usize;
 
     while next < total || !join_set.is_empty() {
@@ -1749,6 +1922,7 @@ pub async fn run_cli_review_core(
                     "specialists": plan.specialists.iter().map(|s| s.id).collect::<Vec<_>>(),
                     "sensitive_paths": plan.sensitive_paths.clone(),
                     "review_memory_graph": review_memory_graph_json.clone(),
+                    "trusted_graph_context": trusted_graph_context_json.clone(),
                     "qa_evidence": qa_evidence_json.clone(),
                     "evidence_candidates": evidence_candidates_json.clone(),
                     "evidence_procedure_steps": evidence_procedure_steps_json.clone(),
@@ -1797,6 +1971,7 @@ pub async fn run_cli_review_core(
         "sensitive_paths": plan.sensitive_paths.clone(),
         "coordinator_used": plan.uses_coordinator,
         "review_memory_graph": review_memory_graph_json,
+        "trusted_graph_context": trusted_graph_context_json,
         "qa_evidence": qa_evidence_json,
         "evidence_candidates": evidence_candidates_json,
         "evidence_procedure_steps": evidence_procedure_steps_json,
@@ -2368,6 +2543,7 @@ pub(crate) fn unwrap_agent_envelope(agent: &str, raw: &str) -> String {
     raw.to_string()
 }
 
+#[cfg(test)]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommandCodeModelRow {
@@ -2376,6 +2552,7 @@ pub struct CommandCodeModelRow {
     pub group: String,
 }
 
+#[cfg(test)]
 fn parse_command_code_models_output(raw: &str) -> Vec<CommandCodeModelRow> {
     let known_groups = ["Open Source", "Anthropic", "OpenAI", "Google", "Sakana"];
     let mut current_group = "Other".to_string();
@@ -2599,6 +2776,147 @@ mod tests {
     fn changed_line_count_ignores_diff_headers() {
         let diff = "diff --git a/a.ts b/a.ts\n--- a/a.ts\n+++ b/a.ts\n@@ -1,1 +1,2 @@\n-old\n+new\n+another\n";
         assert_eq!(changed_line_count(diff), 3);
+    }
+
+    #[test]
+    fn trusted_review_graph_preserves_sources_and_is_explicitly_navigation_only() {
+        use crate::commands::structural_graph::{
+            storage::persist_snapshot,
+            types::{
+                GraphOrigin, GraphSourceAnchor, GraphTrust, StructuralGraphCoverage,
+                StructuralGraphEdge, StructuralGraphEngineInfo, StructuralGraphNode,
+                StructuralGraphSnapshot, STRUCTURAL_GRAPH_SCHEMA_VERSION,
+            },
+        };
+
+        let root =
+            std::env::temp_dir().join(format!("codevetter-review-graph-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(root.join("src")).expect("create fixture repo");
+        std::fs::write(root.join("src/review.rs"), "pub fn review() {}\n")
+            .expect("write fixture source");
+        let git = |args: &[&str]| {
+            let output = StdCommand::new("git")
+                .args(args)
+                .current_dir(&root)
+                .env("GIT_AUTHOR_NAME", "CodeVetter test")
+                .env("GIT_AUTHOR_EMAIL", "test@codevetter.local")
+                .env("GIT_COMMITTER_NAME", "CodeVetter test")
+                .env("GIT_COMMITTER_EMAIL", "test@codevetter.local")
+                .output()
+                .expect("run git");
+            assert!(
+                output.status.success(),
+                "git {args:?} failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            String::from_utf8_lossy(&output.stdout).trim().to_string()
+        };
+        git(&["init", "-q"]);
+        git(&["add", "src/review.rs"]);
+        git(&["commit", "-q", "-m", "fixture"]);
+        let head = git(&["rev-parse", "HEAD"]);
+
+        let connection = rusqlite::Connection::open_in_memory().expect("database");
+        crate::db::schema::run_migrations(&connection).expect("migrations");
+        let source = GraphSourceAnchor {
+            path: "src/review.rs".to_string(),
+            start_line: Some(1),
+            start_column: Some(1),
+            end_line: Some(1),
+            end_column: Some(19),
+            excerpt: Some("pub fn review() {}".to_string()),
+        };
+        persist_snapshot(
+            &connection,
+            &StructuralGraphSnapshot {
+                schema_version: STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                id: "snapshot:review-trust".to_string(),
+                repo_path: root.to_string_lossy().to_string(),
+                repo_head: Some(head.clone()),
+                created_at: "2026-07-14T00:00:00Z".to_string(),
+                engine: StructuralGraphEngineInfo {
+                    id: "tree-sitter".to_string(),
+                    version: "1".to_string(),
+                    bundled: true,
+                    syntax_aware: true,
+                    supported_languages: vec!["rust".to_string()],
+                },
+                cursor: None,
+                ignore_fingerprint: None,
+                coverage: StructuralGraphCoverage {
+                    discovered_files: 1,
+                    indexed_files: 1,
+                    ..StructuralGraphCoverage::default()
+                },
+                diagnostics: Vec::new(),
+                communities: Vec::new(),
+                files: Vec::new(),
+                nodes: vec![
+                    StructuralGraphNode {
+                        id: "file:review".to_string(),
+                        kind: "file".to_string(),
+                        label: "src/review.rs".to_string(),
+                        qualified_name: None,
+                        path: Some("src/review.rs".to_string()),
+                        detail: None,
+                        language: Some("rust".to_string()),
+                        community_id: None,
+                        trust: GraphTrust::Extracted,
+                        origin: GraphOrigin::Syntax,
+                        sources: vec![source.clone()],
+                    },
+                    StructuralGraphNode {
+                        id: "function:review".to_string(),
+                        kind: "function".to_string(),
+                        label: "review".to_string(),
+                        qualified_name: Some("src/review.rs::review".to_string()),
+                        path: Some("src/review.rs".to_string()),
+                        detail: None,
+                        language: Some("rust".to_string()),
+                        community_id: None,
+                        trust: GraphTrust::Extracted,
+                        origin: GraphOrigin::Syntax,
+                        sources: vec![source.clone()],
+                    },
+                ],
+                edges: vec![StructuralGraphEdge {
+                    id: "edge:file-review-function-review".to_string(),
+                    from: "file:review".to_string(),
+                    to: "function:review".to_string(),
+                    kind: "defines".to_string(),
+                    evidence: "function declaration".to_string(),
+                    trust: GraphTrust::Extracted,
+                    origin: GraphOrigin::Syntax,
+                    sources: vec![source],
+                    candidates: Vec::new(),
+                }],
+                truncated: false,
+            },
+        )
+        .expect("persist graph fixture");
+
+        let context = build_trusted_review_graph_context(
+            &connection,
+            &root.to_string_lossy(),
+            &["src/review.rs".to_string()],
+        )
+        .expect("trusted graph context");
+        assert_eq!(context.snapshot_id, "snapshot:review-trust");
+        assert_eq!(context.current_head.as_deref(), Some(head.as_str()));
+        assert!(!context.stale);
+        assert!(context
+            .nodes
+            .iter()
+            .all(|node| node.trust == GraphTrust::Extracted && !node.sources.is_empty()));
+        assert_eq!(context.edges.len(), 1);
+        assert_eq!(context.edges[0].sources[0].path, "src/review.rs");
+        assert!(context.qualification.contains("never creates findings"));
+
+        let prompt = render_trusted_review_graph_for_prompt(&context);
+        assert!(prompt.contains("navigation only"));
+        assert!(prompt.contains("extracted / syntax"));
+        assert!(prompt.contains("source src/review.rs:1"));
+        assert!(prompt.contains("never creates findings"));
     }
 
     fn bench_finding(title: &str, line: i64, severity: &str, confidence: f64) -> Value {

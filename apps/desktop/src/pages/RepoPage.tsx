@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { ProjectWorkspaceEmpty } from '@/components/project-workspace/ProjectWorkspaceEmpty';
@@ -36,6 +36,10 @@ export default function RepoPage() {
     );
   }, [searchParams, selectedRepoPath, setSearchParams]);
 
+  const handleSnapshotsChange = useCallback(() => {
+    void refreshProjects({ silent: true });
+  }, [refreshProjects]);
+
   return (
     <TooltipProvider delayDuration={200}>
       <ProjectWorkspaceShell mainClassName="px-4 pb-20 pt-5 lg:px-5">
@@ -46,7 +50,7 @@ export default function RepoPage() {
             <ProjectWorkspaceHeader />
             <UnpackProjectPanel
               repoPath={selectedRepoPath}
-              onSnapshotsChange={() => void refreshProjects({ silent: true })}
+              onSnapshotsChange={handleSnapshotsChange}
             />
           </>
         )}

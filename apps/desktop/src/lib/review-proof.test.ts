@@ -92,6 +92,72 @@ describe('buildQaPostFixComparison', () => {
 });
 
 describe('buildReviewerProofMarkdown', () => {
+  it('exports canonical graph trust and sources without manufacturing findings', () => {
+    const markdown = buildReviewerProofMarkdown({
+      diffRange: 'HEAD~1..HEAD',
+      score: 100,
+      agent: 'codex',
+      findings: [],
+      evidence: [],
+      evidenceCounts: { fixed: 0, reproduced: 0, notReproduced: 0 },
+      trustedGraphContext: {
+        schema_version: 2,
+        snapshot_id: 'snapshot:trusted',
+        engine_id: 'tree-sitter',
+        engine_version: '1',
+        indexed_head: 'abc',
+        current_head: 'abc',
+        stale: false,
+        coverage: {
+          discovered_files: 1,
+          indexed_files: 1,
+          skipped_files: 0,
+          error_files: 0,
+          generated_files: 0,
+          sensitive_files: 0,
+          binary_files: 0,
+          languages: [],
+        },
+        nodes: [
+          {
+            id: 'function:review',
+            kind: 'function',
+            label: 'review',
+            path: 'src/review.rs',
+            trust: 'extracted',
+            origin: 'syntax',
+            sources: [{ path: 'src/review.rs', start_line: 42 }],
+          },
+        ],
+        edges: [
+          {
+            id: 'edge:1',
+            from: 'file:review',
+            to: 'function:review',
+            kind: 'defines',
+            evidence: 'function declaration',
+            trust: 'extracted',
+            origin: 'syntax',
+            sources: [{ path: 'src/review.rs', start_line: 42 }],
+            candidates: [],
+          },
+        ],
+        truncated: false,
+        qualification:
+          'Navigation-only structural context. Topology never creates findings or verified evidence.',
+      },
+      intentReport: null,
+      historyFindingSummaries: new Map(),
+    });
+
+    assert.match(markdown, /### Trusted structural graph/);
+    assert.match(markdown, /snapshot:trusted/);
+    assert.match(markdown, /extracted\/syntax/);
+    assert.match(markdown, /src\/review\.rs:42/);
+    assert.match(markdown, /Graph topology is not a finding/);
+    assert.match(markdown, /### Findings & evidence\n- _No findings\._/);
+  });
+
   it('selects timeline segment findings for fix packets', () => {
     assert.deepEqual(
       selectTimelineSegmentFindingIndexes({
@@ -1344,6 +1410,72 @@ describe('buildReviewerProofMarkdown', () => {
     assert.match(note, /Fix the reproduced issue and attach fresh proof/);
     assert.doesNotMatch(note, /Spot-check adjacent files/);
     assert.match(note, /Agent-context instruction/);
+  });
+});
+
+describe('temporal history reviewer proof', () => {
+  it('copies the same cited temporal slice without turning it into a finding', () => {
+    const intentEvent = {
+      id: 'decision-1',
+      revision_sha: 'abc123',
+      event_kind: 'decision_marker',
+      stage: 'intent' as const,
+      summary: 'Keep analytics delivery separate from code emission',
+      trust: 'extracted' as const,
+      origin: 'metadata',
+      source_id: 'decision-files',
+      source_cursor: null,
+      recorded_at: '2026-01-01T00:00:00Z',
+      effective_at: null,
+      entity_id: 'event:signup',
+      related_entity_id: null,
+      relation_kind: null,
+      episode_keys: ['review:1'],
+      sources: [
+        {
+          path: 'docs/analytics-decision.md',
+          start_line: 4,
+          start_column: null,
+          end_line: 4,
+          end_column: null,
+          excerpt: null,
+        },
+      ],
+      source_available: true,
+    };
+    const markdown = buildReviewerProofMarkdown({
+      diffRange: 'main...HEAD',
+      score: 90,
+      agent: 'codex',
+      findings: [],
+      evidence: [],
+      evidenceCounts: { fixed: 0, reproduced: 0, notReproduced: 0 },
+      temporalHistory: {
+        schema_version: 1,
+        repo_path: '/repo',
+        files: ['src/analytics.ts'],
+        entity_ids: ['event:signup'],
+        episodes: [],
+        constraints: [intentEvent],
+        verification: [],
+        failures: [],
+        regressions: [],
+        qualified_leads: [],
+        gaps: ['No explicitly linked runtime/provider outcome evidence'],
+        indexed_head: 'abc123',
+        stale: false,
+        coverage: { coverage_complete: true },
+        truncated: false,
+      },
+      intentReport: null,
+      historyFindingSummaries: new Map(),
+    });
+
+    assert.match(markdown, /### Temporal history graph/);
+    assert.match(markdown, /decision-1/);
+    assert.match(markdown, /docs\/analytics-decision\.md/);
+    assert.match(markdown, /No explicitly linked runtime\/provider outcome evidence/);
+    assert.match(markdown, /_No findings\._/);
   });
 });
 

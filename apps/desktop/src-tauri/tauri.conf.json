@@ -5,7 +5,7 @@
   "version": "1.2.20",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run prepare:mcp-sidecar:release && npm run build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../out"
   },
@@ -54,6 +54,6 @@
     "shortDescription": "AI code review and agent management",
     "longDescription": "CodeVetter Desktop combines AI-powered code review, agent session management (Mission Control), and unified chat history into a single desktop application.",
     "copyright": "Copyright 2026 CodeVetter",
-    "externalBin": []
+    "externalBin": ["binaries/codevetter-mcp"]
   }
 }

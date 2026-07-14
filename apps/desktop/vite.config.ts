@@ -16,5 +16,6 @@ export default defineConfig({
   build: {
     outDir: 'out',
     emptyOutDir: true,
+    manifest: true,
   },
 });

@@ -298,7 +298,7 @@ fn parse_go_mod(abs: &Path, rel: &str) -> Option<ManifestSummary> {
             name = Some(rest.trim().to_string());
         }
         if trimmed.starts_with("require ") || trimmed.starts_with('\t') {
-            if let Some(dep) = trimmed.split_whitespace().nth(0) {
+            if let Some(dep) = trimmed.split_whitespace().next() {
                 if dep != "require" && !dep.starts_with("//") {
                     deps.push(dep.to_string());
                 }
@@ -761,8 +761,8 @@ fn summarize_workspace_unit_from_files(
         .unwrap_or_default();
     scripts.sort();
 
-    let kind = infer_workspace_unit_kind(root, manifest, &unit_files, &unit_entrypoints);
-    let tags = infer_workspace_unit_tags(manifest, &unit_files, &languages, !test_files.is_empty());
+    let kind = infer_workspace_unit_kind(root, manifest, unit_files, &unit_entrypoints);
+    let tags = infer_workspace_unit_tags(manifest, unit_files, &languages, !test_files.is_empty());
 
     WorkspaceUnitSummary {
         path: root.to_string(),

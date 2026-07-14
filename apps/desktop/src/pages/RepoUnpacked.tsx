@@ -53,6 +53,8 @@ import { UnpackHistoryList } from '@/components/unpack-workspace/UnpackHistoryLi
 import { UnpackMissionControl } from '@/components/unpack-workspace/UnpackMissionControl';
 import { RepoMemoryGraphPanel } from '@/components/unpack-workspace/RepoMemoryGraphPanel';
 import { RepoMemoryPanel } from '@/components/unpack-workspace/RepoMemoryPanel';
+import { HistoryGraphSlider } from '@/components/unpack-workspace/HistoryGraphSlider';
+import { StructuralGraphWorkbench } from '@/components/unpack-workspace/StructuralGraphWorkbench';
 import { TasteVerdictCard } from '@/components/unpack-workspace/TasteVerdictCard';
 import { DisclosurePanel } from '@/components/unpack-workspace/DisclosurePanel';
 import { UnpackSectionNav } from '@/components/unpack-workspace/UnpackSectionNav';
@@ -1125,14 +1127,15 @@ export function UnpackProjectPanel({
     const requested = searchParams.get('section');
     const normalized =
       requested === 'intel' || requested === 'attribution' ? 'activity' : requested;
-    if (!isUnpackSection(normalized) || normalized === activeSection) return;
-    if (!sections.some((section) => section.id === normalized)) return;
-    setActiveSection(normalized);
+    const nextSection =
+      isUnpackSection(normalized) && sections.some((section) => section.id === normalized)
+        ? normalized
+        : 'overview';
+    if (nextSection !== activeSection) setActiveSection(nextSection);
   }, [activeSection, searchParams, sections]);
 
   const handleSectionChange = useCallback(
     (section: UnpackWorkspaceSection) => {
-      setActiveSection(section);
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -3700,7 +3703,14 @@ const InventorySummary = memo(function InventorySummary({
 
         {showIntelligence ? (
           <>
-            <RepoMemoryGraphPanel graph={inventory.repo_graph} repoPath={inventory.repo_path} />
+            <StructuralGraphWorkbench repoPath={inventory.repo_path} />
+            <HistoryGraphSlider repoPath={inventory.repo_path} />
+            <DisclosurePanel
+              title="Metadata graph"
+              summary="Fast routes, commands, tables, tests, scripts, and repo decision markers."
+            >
+              <RepoMemoryGraphPanel graph={inventory.repo_graph} repoPath={inventory.repo_path} />
+            </DisclosurePanel>
             <DisclosurePanel
               title="Deep symbol lookup"
               summary="Build a local symbol index only when the repo map is not enough."
