@@ -23,6 +23,7 @@ interface WarmVerificationPanelProps {
   runs: StoredWarmVerificationRun[];
   loading: boolean;
   action: WarmVerificationAction;
+  ownedRunId: string | null;
   error: string | null;
   cleanupMessage: string | null;
   detailedCapture: boolean;
@@ -83,6 +84,7 @@ export function WarmVerificationPanel({
   runs,
   loading,
   action,
+  ownedRunId,
   error,
   cleanupMessage,
   detailedCapture,
@@ -94,7 +96,11 @@ export function WarmVerificationPanel({
   onCleanup,
 }: WarmVerificationPanelProps) {
   const latest = runs[0]?.result ?? null;
-  const activeRunId = health?.active_run_ids[0] ?? null;
+  const activeRunId = ownedRunId
+    ? health?.active_run_ids.includes(ownedRunId)
+      ? ownedRunId
+      : null
+    : (health?.active_run_ids[0] ?? null);
   const failures = latest
     ? [
         ...latest.observations

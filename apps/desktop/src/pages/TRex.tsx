@@ -10,7 +10,7 @@ import {
   Square,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ProjectWorkspaceEmpty } from '@/components/project-workspace/ProjectWorkspaceEmpty';
 import { ProjectWorkspaceHeader } from '@/components/project-workspace/ProjectWorkspaceHeader';
@@ -78,6 +78,15 @@ function fmtAgo(iso: string | null): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+function createWarmRunId(): string {
+  if (!globalThis.crypto) {
+    throw new Error('Secure random run identity is unavailable in this browser.');
+  }
+  const randomBytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(randomBytes);
+  return `trex-${Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+}
+
 export default function TRex() {
   const { selectedRepoPath } = useProjectWorkspace();
   const [watchers, setWatchers] = useState<TrexWatcher[]>([]);
@@ -94,6 +103,11 @@ export default function TRex() {
   const [warmError, setWarmError] = useState<string | null>(null);
   const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
   const [detailedCapture, setDetailedCapture] = useState(false);
+  const [ownedWarmRun, setOwnedWarmRun] = useState<{
+    repoPath: string;
+    runId: string;
+  } | null>(null);
+  const warmRunPendingRef = useRef(false);
 
   const projectWatcher = useMemo(
     () => watchers.find((w) => w.repo_path === selectedRepoPath) ?? null,
@@ -164,6 +178,37 @@ export default function TRex() {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [refresh]);
+
+  useEffect(() => {
+    if (!ownedWarmRun || ownedWarmRun.repoPath !== selectedRepoPath || !isTauriAvailable()) {
+      return;
+    }
+
+    let disposed = false;
+    let polling = false;
+    const pollWarmRun = async () => {
+      if (polling || document.hidden) return;
+      polling = true;
+      try {
+        const health = await getWarmVerificationDaemonHealth(ownedWarmRun.repoPath);
+        if (!disposed) {
+          setWarmHealth(health);
+          setWarmError(null);
+        }
+      } catch (cause) {
+        if (!disposed) setWarmError(cause instanceof Error ? cause.message : String(cause));
+      } finally {
+        polling = false;
+      }
+    };
+
+    void pollWarmRun();
+    const timer = window.setInterval(() => void pollWarmRun(), 300);
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
+    };
+  }, [ownedWarmRun, selectedRepoPath]);
 
   const handleStart = async () => {
     if (!isTauriAvailable()) {
@@ -243,16 +288,51 @@ export default function TRex() {
 
   const handleWarmRun = () => {
     if (!selectedRepoPath) return;
-    void performWarmAction('run', () =>
-      runWarmChangedVerification({ repoPath: selectedRepoPath, detailedCapture })
-    );
+    let runId: string;
+    try {
+      runId = createWarmRunId();
+    } catch (e) {
+      setWarmError(e instanceof Error ? e.message : String(e));
+      return;
+    }
+    const repoPath = selectedRepoPath;
+
+    warmRunPendingRef.current = true;
+    setOwnedWarmRun({ repoPath, runId });
+    setWarmAction('run');
+    setWarmError(null);
+    setCleanupMessage(null);
+    void (async () => {
+      try {
+        await runWarmChangedVerification({ repoPath, detailedCapture, runId });
+        await refresh();
+      } catch (e) {
+        setWarmError(e instanceof Error ? e.message : String(e));
+      } finally {
+        warmRunPendingRef.current = false;
+        setOwnedWarmRun((current) => (current?.runId === runId ? null : current));
+        setWarmAction((current) => (current === 'run' ? null : current));
+      }
+    })();
   };
 
   const handleWarmCancel = (runId: string) => {
-    if (!selectedRepoPath) return;
-    void performWarmAction('cancel', () =>
-      cancelWarmVerificationRun({ repoPath: selectedRepoPath, runId })
-    );
+    const repoPath = ownedWarmRun?.runId === runId ? ownedWarmRun.repoPath : selectedRepoPath;
+    if (!repoPath) return;
+
+    setWarmAction('cancel');
+    setWarmError(null);
+    setCleanupMessage(null);
+    void (async () => {
+      try {
+        await cancelWarmVerificationRun({ repoPath, runId });
+        await refresh();
+      } catch (e) {
+        setWarmError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setWarmAction(warmRunPendingRef.current ? 'run' : null);
+      }
+    })();
   };
 
   const handleWarmCleanup = () => {
@@ -298,6 +378,7 @@ export default function TRex() {
             runs={warmRuns}
             loading={warmLoading}
             action={warmAction}
+            ownedRunId={ownedWarmRun?.repoPath === selectedRepoPath ? ownedWarmRun.runId : null}
             error={warmError}
             cleanupMessage={cleanupMessage}
             detailedCapture={detailedCapture}
