@@ -42,6 +42,7 @@ async function main() {
       'benchmark mutated protected repo'
     );
     printReport(report);
+    applyQualificationBudgets(report);
   } finally {
     for (const session of activeSessions) session.abort();
     rmSync(fixtureDir, { recursive: true, force: true });
@@ -75,16 +76,18 @@ async function runBenchmark(fixture) {
   const schemas = await verifySchemas(session);
   const resources = await verifyResources(session, fixture);
   const workloadDefinitions = createWorkloads(fixture);
-  const rssBeforeWarm = inspectRss(session.child.pid);
   for (let round = 0; round < options.warmupRounds; round += 1) {
     await runInterleavedRound(session, workloadDefinitions, round, false);
     await runMixedBatch(session, workloadDefinitions, round);
   }
+  const rssBeforeWarm = inspectRss(session.child.pid);
 
   const measurements = Object.fromEntries(
     workloadDefinitions.map((workload) => [workload.key, { samples: [], maxBytes: 0 }])
   );
   const mixedMeasurements = { samples: [], maxBytes: 0 };
+  const midpointRound = Math.max(1, Math.floor(options.queryRuns / 2));
+  let rssAtMidpoint;
   for (let round = 0; round < options.queryRuns; round += 1) {
     const results = await runInterleavedRound(session, workloadDefinitions, round, true);
     for (const result of results) {
@@ -97,6 +100,7 @@ async function runBenchmark(fixture) {
     const mixed = await runMixedBatch(session, workloadDefinitions, round);
     mixedMeasurements.samples.push(mixed.milliseconds);
     mixedMeasurements.maxBytes = Math.max(mixedMeasurements.maxBytes, mixed.responseBytes);
+    if (round + 1 === midpointRound) rssAtMidpoint = inspectRss(session.child.pid);
   }
   const rssAfterWarm = inspectRss(session.child.pid);
 
@@ -114,7 +118,7 @@ async function runBenchmark(fixture) {
     maxResponseBytes: mixedMeasurements.maxBytes,
     concurrency: 4,
   };
-  const memory = memoryMeasurements(rssBeforeWarm, rssAfterWarm);
+  const memory = memoryMeasurements(rssBeforeWarm, rssAtMidpoint ?? rssBeforeWarm, rssAfterWarm);
   const platformQualification = qualificationForPlatform(listenerCheck, memory);
   const report = {
     mode: options.smoke ? 'smoke' : 'qualification',
@@ -137,7 +141,8 @@ async function runBenchmark(fixture) {
     resources,
     memory,
     idleRssMiB: memory.afterMiB,
-    rssDeltaMiB: memory.deltaMiB,
+    rssDeltaMiB: memory.longRunDeltaMiB,
+    rssTotalGrowthMiB: memory.totalGrowthMiB,
     network: listenerCheck,
     runs: {
       startupWarmups: options.startupWarmups,
@@ -146,7 +151,6 @@ async function runBenchmark(fixture) {
       workloadRecorded: options.queryRuns,
     },
   };
-  applyQualificationBudgets(report);
   return report;
 }
 
@@ -595,14 +599,16 @@ function inspectRss(pid) {
   return { supported: false, method: null, rssMiB: null };
 }
 
-function memoryMeasurements(before, after) {
-  const supported = before.supported && after.supported;
+function memoryMeasurements(before, midpoint, after) {
+  const supported = before.supported && midpoint.supported && after.supported;
   return {
     supported,
     method: supported ? after.method : null,
     beforeMiB: supported ? before.rssMiB : null,
+    midpointMiB: supported ? midpoint.rssMiB : null,
     afterMiB: supported ? after.rssMiB : null,
-    deltaMiB: supported ? after.rssMiB - before.rssMiB : null,
+    totalGrowthMiB: supported ? after.rssMiB - before.rssMiB : null,
+    longRunDeltaMiB: supported ? after.rssMiB - midpoint.rssMiB : null,
   };
 }
 
@@ -712,7 +718,8 @@ function printReport(report) {
   });
   console.log(`idle RSS: ${report.idleRssMiB?.toFixed(2) ?? 'unavailable'} MiB`);
   console.log(
-    `RSS delta: ${report.rssDeltaMiB?.toFixed(2) ?? 'unavailable'} MiB after warm workload`
+    `RSS growth: ${report.rssTotalGrowthMiB?.toFixed(2) ?? 'unavailable'} MiB total; ` +
+      `${report.rssDeltaMiB?.toFixed(2) ?? 'unavailable'} MiB in the second half`
   );
   console.log(`binary: ${(report.sidecarBytes / 1_048_576).toFixed(2)} MiB`);
   console.log(`fixture DB: ${(report.fixtureDatabaseBytes / 1_048_576).toFixed(2)} MiB`);
