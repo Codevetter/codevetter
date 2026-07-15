@@ -35,6 +35,6 @@
 ## 6. Qualification and Documentation
 
 - [x] 6.1 Document client setup, repository enablement/revocation, resource/tool contracts, freshness, evidence hydration, redaction, audit retention, troubleshooting, and local-only limits.
-- [ ] 6.2 Run Rust formatting/check/tests, frontend typecheck/lint/browser tests, protocol smoke, realistic benchmark, Tauri production bundle, workflow syntax checks, dependency/license review, and strict OpenSpec validation.
-- [ ] 6.3 Update architecture and project status with measured claims, confirm no external-source references or secrets remain, and keep release/push as separately authorized actions.
+- [x] 6.2 Run Rust formatting/check/tests, frontend typecheck/lint/browser tests, protocol smoke, realistic benchmark, Tauri production bundle, workflow syntax checks, dependency/license review, and strict OpenSpec validation.
+- [x] 6.3 Update architecture and project status with measured claims, confirm no external-source references or secrets remain, and keep release/push as separately authorized actions.
 - [ ] 6.4 Sync and archive this change only after every task and release-qualification proof is complete.

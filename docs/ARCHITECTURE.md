@@ -8,6 +8,8 @@ webview inside a Tauri 2 shell. Rust owns local Git and process operations, loca
 SQLite persistence, and the typed IPC boundary. The webview owns the product UI
 and review orchestration. User-configured AI providers are contacted only for
 AI-assisted review; deterministic warm browser verification makes no model calls.
+An independently packaged Rust stdio sidecar exposes explicitly enabled local
+graph and history scopes to MCP clients without opening a network listener.
 
 The warm verifier deliberately supports one developer, one explicitly configured
 React web app, one Mac, and one Chromium browser. It is not a CI service, cloud
@@ -23,6 +25,8 @@ flowchart LR
   TREX[T-Rex controls and evidence]
   TAURI[Tauri Rust IPC]
   SQLITE[(Local SQLite)]
+  MCP[codevetter-mcp stdio sidecar]
+  AGENT[Local MCP client]
   VERIFYD[verifyd: Node + Playwright]
   TARGET[Configured React/MSW target]
   AI[Anthropic / OpenAI / OpenRouter]
@@ -33,6 +37,9 @@ flowchart LR
   REVIEW --> AI
   TREX --> TAURI
   TAURI --> SQLITE
+  UI -->|enable or revoke opaque scope| TAURI
+  AGENT -->|stdio JSON-RPC| MCP
+  MCP -->|read-only scoped queries| SQLITE
   TAURI -->|repository-owned verify CLI| VERIFYD
   VERIFYD --> TARGET
 ```
@@ -97,6 +104,23 @@ and the run completed with the required passing observations. A legacy QA pass,
 older pass, stale run, cancellation, regression, missing identity, or
 `no_confidence` result cannot satisfy the executable stage.
 
+### Local history MCP
+
+1. Settings prepares a disabled opaque repository scope and shows the exact
+   credential-free client command. Nothing is exposed until the user enables
+   that indexed scope.
+2. The packaged `codevetter-mcp` sidecar serves versioned JSON-RPC over stdio.
+   It opens no TCP listener and rechecks scope enablement on every request, so
+   revocation affects an already-running client.
+3. Thirteen read-only tools and versioned resources share the same structural
+   graph, release, history, lineage, causal-trace, comparison, annotation, and
+   evidence read services used by the desktop product.
+4. Opaque IDs, protected-path and secret-shape filtering, response and traversal
+   bounds, strict schemas, paginated evidence hydration, redacted errors, and
+   metadata-only audit rows apply before a response leaves the process.
+5. Disabling the scope rejects later requests without disclosing repository
+   availability. Setup and reads never modify the protected repository.
+
 ## Persistence and retention
 
 SQLite is embedded through `rusqlite`; there is no application server. The
@@ -122,6 +146,9 @@ automatically.
 | Warm persistence | `apps/desktop/src-tauri/src/commands/warm_verification.rs` | Strict validation and immutable SQLite insert/list operations |
 | T-Rex surface | `apps/desktop/src/pages/TRex.tsx` | Owned run control and evidence display |
 | Review qualification | `apps/desktop/src/lib/audience-validation.ts` | Exact-current executable-evidence policy |
+| MCP sidecar | `apps/desktop/src-tauri/src/bin/codevetter-mcp.rs` | Private stdio server bootstrap and bounded protocol lifecycle |
+| MCP protocol | `apps/desktop/src-tauri/src/mcp/` | Strict tools/resources, scoped access, redaction, pagination, and audit |
+| MCP setup | `apps/desktop/src-tauri/src/commands/mcp_access.rs` | Repository enablement, revocation, client config, and audit controls |
 
 ## Repository layout
 
@@ -147,3 +174,9 @@ cancellations with no leaked contexts, stable browser/server identities, RSS
 growth of 13.6 MB against a 128 MB cap, retention at 20 runs / 4470 bytes, and
 zero production builds. Local release qualification passed on 2026-07-15; the
 release workflow remains a separate explicit action and has not run.
+
+The packaged MCP qualification used 65 commits, 64 releases, 10,000 history
+events, 512 nodes, and 1,024 edges. Process initialization measured 7.17 ms p95;
+graph queries 5.82 ms p95; broad history search 6.45 ms p95; and four-request
+mixed concurrency 12.87 ms p95. The 7.39 MiB sidecar opened no network listener,
+stayed within its 32 MiB RSS gate, and left the protected repository unchanged.
