@@ -5,6 +5,11 @@ Follow the fleet documentation boundary in `../../README.md`.
 Agent-facing rules live in `../../AGENTS.md`: create Symphony tasks by default;
 use docs only for durable reference, design, research, and runbooks.
 
+## Operator guides
+
+- [Local History MCP](./MCP.md) — enable repository-scoped agent access, use the
+  read-only graph/history contracts, and troubleshoot freshness or privacy limits.
+
 ## Product PRDs
 
 All scoped PRDs for this cycle are archived under [`archive/`](./archive/) (2026-06-20).
