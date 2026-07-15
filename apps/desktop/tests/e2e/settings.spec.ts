@@ -86,6 +86,7 @@ test.describe('Settings page', () => {
       'Appearance',
       'Integrations',
       'Agents',
+      'Agent MCP',
       'Notifications',
       'Usage',
       'About',
