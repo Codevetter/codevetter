@@ -10,6 +10,9 @@ const configuredTarget = process.env.TAURI_ENV_TARGET_TRIPLE;
 const target = configuredTarget ?? rustHostTarget();
 const executable = process.platform === 'win32' ? 'codevetter-mcp.exe' : 'codevetter-mcp';
 const profile = release ? 'release' : 'debug';
+const cargoTargetRoot = process.env.CARGO_TARGET_DIR
+  ? resolve(desktopRoot, process.env.CARGO_TARGET_DIR)
+  : join(tauriRoot, 'target');
 const cargoArgs = [
   'build',
   '--manifest-path',
@@ -33,8 +36,8 @@ execFileSync('cargo', cargoArgs, {
 });
 
 const built = configuredTarget
-  ? join(tauriRoot, 'target', target, profile, executable)
-  : join(tauriRoot, 'target', profile, executable);
+  ? join(cargoTargetRoot, target, profile, executable)
+  : join(cargoTargetRoot, profile, executable);
 assertNonEmpty(built, 'built MCP sidecar');
 
 const suffix = process.platform === 'win32' ? '.exe' : '';
