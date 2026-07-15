@@ -3985,20 +3985,6 @@ export async function listSyntheticQaRuns(
   return resp.runs;
 }
 
-export async function recordWarmVerificationRun(input: {
-  reviewId?: string | null;
-  repoPath: string;
-  result: VerifyResult;
-}): Promise<StoredWarmVerificationRun> {
-  return safeInvoke('record_warm_verification_run', {
-    input: {
-      review_id: input.reviewId ?? null,
-      repo_path: input.repoPath,
-      result: input.result,
-    },
-  });
-}
-
 export async function listWarmVerificationRuns(input: {
   repoPath?: string;
   reviewId?: string;
@@ -4012,12 +3998,24 @@ export async function listWarmVerificationRuns(input: {
 }
 
 export interface WarmVerificationCleanupReport {
+  schema_version: 1;
   dry_run: boolean;
   removed_runs: number;
   removed_files: number;
   reclaimed_bytes: number;
   retained_bytes: number;
   shared_playwright_cache_bytes: number;
+}
+
+export interface CurrentWarmVerificationIdentity {
+  schema_version: 1;
+  target_sha: string;
+  change_set_kind: VerifyResult['source']['change_set_kind'];
+  change_set_identity: string;
+  config_hash: string;
+  manifest_hash: string;
+  source_hash: string;
+  observation_policy_profile_id: string;
 }
 
 /** Desktop control boundary for the repository-owned warm verifier. */
@@ -4040,10 +4038,12 @@ export async function stopWarmVerificationDaemon(
 export async function runWarmChangedVerification(input: {
   repoPath: string;
   detailedCapture: boolean;
+  runId?: string;
 }): Promise<StoredWarmVerificationRun> {
   return safeInvoke('run_warm_changed_verification', {
     repoPath: input.repoPath,
     detailedCapture: input.detailedCapture,
+    runId: input.runId,
   });
 }
 
@@ -4065,6 +4065,13 @@ export async function cleanupWarmVerificationArtifacts(input: {
     repoPath: input.repoPath,
     dryRun: input.dryRun ?? false,
   });
+}
+
+/** Read-only exact identity for qualifying staged-verification evidence; does not launch Chromium. */
+export async function getCurrentWarmVerificationIdentity(
+  repoPath: string
+): Promise<CurrentWarmVerificationIdentity> {
+  return safeInvoke('get_current_warm_verification_identity', { repoPath });
 }
 
 export async function runSyntheticQa(
