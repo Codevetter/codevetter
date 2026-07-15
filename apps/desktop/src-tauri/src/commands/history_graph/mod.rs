@@ -404,7 +404,9 @@ pub struct HistoryAnnotationPage {
 }
 
 mod catalog;
+mod delta;
 mod git_objects;
+mod query_helpers;
 mod storage;
 
 pub(crate) use catalog::canonical_repo_path;
@@ -414,6 +416,12 @@ use catalog::persistence::*;
 pub(crate) use catalog::repository_tag_fingerprint;
 use catalog::*;
 pub use catalog::{history_list_releases, history_search, load_history_revisions};
+use delta::*;
 use git_objects::*;
+use query_helpers::*;
+pub(crate) use query_helpers::{
+    history_index_freshness, load_entity_annotation_contradictions, load_entity_occurrences,
+    load_lineage_family, load_outcome_events,
+};
 pub(crate) use storage::history_storage_key;
 use storage::*;
