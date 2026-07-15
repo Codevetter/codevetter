@@ -11,6 +11,7 @@
 pub mod agent;
 pub mod commands;
 pub mod db;
+pub mod mcp;
 pub mod talk;
 pub mod timeutil;
 
