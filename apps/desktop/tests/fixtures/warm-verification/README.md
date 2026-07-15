@@ -10,10 +10,10 @@ separates Vite readiness, the first preoptimization one-shot, and five runs with
 the server and OS caches warm while proving that the old runner still launches a
 new browser each time. It is evidence for prioritization, not a release result.
 
-The corpus targets CodeVetter's current React routes so the benchmark exercises a
-real application shape rather than twenty copies of a toy counter. It remains a
-qualification fixture: named mocked states and interactions describe contracts
-that the later target-owned state bridge and scenario modules must implement.
+The corpus targets CodeVetter's current React routes through a lean Vite React
+qualification app. Every browser context installs its scenario's checked-in
+named state through the target-owned state bridge, then reads client-scoped data
+through MSW before rendering route-specific state and actions.
 
 ## What makes a scenario meaningful
 
@@ -49,6 +49,13 @@ browser-agent calls. Two warm-up batches are excluded; at least 20 complete warm
 batches are recorded, and the p95 of the whole invocation must remain below 30
 seconds on the documented benchmark Mac. Intentional observer-negative fixtures
 run separately and must not inflate or weaken this performance sample.
+
+Run `pnpm bench:verify` from `apps/desktop/` to profile parallelism 1 through 4,
+select the fastest stable setting, execute the independent qualification gate,
+and atomically replace the dated machine-readable report. The 2026-07-15 report
+selected parallelism 4 and recorded 3499.347 ms p95 across 20 measured batches,
+including exact versioned screenshot checkpoints and source hashes for the
+benchmark script, harness, manifest, and qualification app.
 
 The manifest is invalid for qualification if an ID is duplicated, a route is not
 direct, a state is missing, fewer than two interactions are declared, the strict

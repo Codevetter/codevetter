@@ -24,6 +24,41 @@ interface FixtureStateTemplate {
   readonly mutationCount: number;
 }
 
+export const benchmarkStateNames = Object.freeze([
+  'home-usage-multi-provider',
+  'home-sessions-mixed-status',
+  'home-source-health-degraded',
+  'review-worktree-three-files',
+  'review-findings-mixed-severity',
+  'review-verification-ready',
+  'review-evidence-complete',
+  'unpack-inventory-polyglot',
+  'unpack-activity-linear-history',
+  'unpack-graph-connected-components',
+  'unpack-graph-three-releases',
+  'unpack-quality-ranked-risks',
+  'agents-runs-mixed-status',
+  'agents-one-running-job',
+  'trex-idle-valid-repository',
+  'trex-events-mixed-outcomes',
+  'settings-provider-empty-safe',
+  'settings-rubrics-mixed-language',
+  'settings-memories-searchable',
+  'shell-navigation-ready',
+] as const);
+
+const BENCHMARK_STATES: Readonly<Record<string, FixtureStateTemplate>> = Object.fromEntries(
+  benchmarkStateNames.map((stateName, index) => [
+    stateName,
+    {
+      cashCents: 900_000 - index * 10_000,
+      investments:
+        index % 3 === 0 ? [{ id: `${stateName}-seed`, amountCents: 10_000 + index * 1_000 }] : [],
+      mutationCount: 0,
+    },
+  ])
+);
+
 const NAMED_STATES: Readonly<Record<string, FixtureStateTemplate>> = {
   'funded-empty-portfolio': {
     cashCents: 1_000_000,
@@ -35,6 +70,7 @@ const NAMED_STATES: Readonly<Record<string, FixtureStateTemplate>> = {
     investments: [{ id: 'investment-existing', amountCents: 50_000 }],
     mutationCount: 0,
   },
+  ...BENCHMARK_STATES,
 };
 
 export const VERIFY_CLIENT_HEADER = 'x-codevetter-verify-client';

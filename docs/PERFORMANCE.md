@@ -191,6 +191,47 @@ concurrency 30 ms p95; final RSS 32 MiB; second-half growth 8 MiB; binary 10 MiB
 Other machines still run every correctness and safety check but report timings
 without claiming that these hardware-specific gates passed.
 
+## 5. Warm local browser verification
+
+The warm-verification qualification uses the checked-in 20-scenario manifest,
+one persistent loopback target, and one persistent Playwright Chromium process.
+Each recorded invocation includes exact Git worktree collection, deterministic
+capability selection, 20 fresh browser contexts, automatic observation,
+reporting, and context teardown. Intentional observer-negative fixtures remain
+in correctness tests and are excluded from timing samples.
+
+Run from `apps/desktop/`:
+
+```bash
+pnpm bench:verify
+```
+
+The 2026-07-15 qualification on the Apple M5 Pro used Chromium revision 1217,
+two excluded warm-up batches, and 20 recorded batches. Cold harness startup was
+833.504 ms (96.208 ms browser launch; 677.852 ms Vite server readiness). The
+qualification target runs React through Vite and installs client-scoped named
+state through the real MSW state bridge. Vite's HMR client and target modules
+were ready in 645.945 ms before a recorded 250 ms settle window completed.
+
+| batch parallelism | profile p50 | profile p95 | max |
+|---:|---:|---:|---:|
+| 1 | 9580.482 ms | 9597.592 ms | 9597.592 ms |
+| 2 | 5284.565 ms | 5326.225 ms | 5326.225 ms |
+| 3 | 3998.799 ms | 3999.704 ms | 3999.704 ms |
+| 4 | 3457.331 ms | 3471.157 ms | 3471.157 ms |
+
+Parallelism 4 is therefore the fastest stable default on the recorded machine.
+The independent 20-sample gate at that setting passed with **3432.874 ms p50,
+3499.347 ms p95, and 3517.521 ms max**, against the required p95 below 30 seconds.
+
+The machine-readable report at
+`tests/fixtures/warm-verification/qualification-2026-07-15.json` preserves all
+20 invocation durations, target/config/manifest identities, exact benchmark and
+app source hashes, machine and browser details, cold startup, HMR conditions,
+parallelism profiles, and per-stage summaries. Per-scenario stage values are
+summed work time and can overlap under parallel execution; `whole_invocation` is
+the wall-clock release gate.
+
 ## Principle
 
 A feature is on-budget when it doesn't make the app re-do work proportional to
