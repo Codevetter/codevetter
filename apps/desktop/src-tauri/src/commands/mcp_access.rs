@@ -267,10 +267,9 @@ fn git_head(repo_path: &str) -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
-#[tauri::command]
-pub async fn get_mcp_repository_settings(
+fn load_mcp_repository_settings(
     repo_path: String,
-    db: State<'_, DbState>,
+    db: &DbState,
 ) -> Result<McpRepositorySettings, String> {
     let canonical = canonical_repo_path(&repo_path)?;
     let current_head = git_head(&canonical);
@@ -292,6 +291,18 @@ pub async fn get_mcp_repository_settings(
         )
         .optional()
         .map_err(|error| format!("Load repository history status: {error}"))?;
+    // A disabled scope is safe to preview and gives the user an exact,
+    // credential-free client command before they opt into exposure.
+    let now = Utc::now().to_rfc3339();
+    connection
+        .execute(
+            "INSERT INTO mcp_repository_scopes (
+                repo_path, repo_id, enabled, created_at, updated_at
+             ) VALUES (?1, ?2, 0, ?3, ?3)
+             ON CONFLICT(repo_path) DO NOTHING",
+            params![canonical, uuid::Uuid::new_v4().to_string(), now],
+        )
+        .map_err(|error| format!("Prepare MCP settings preview: {error}"))?;
     let scope = connection
         .query_row(
             "SELECT repo_id, enabled FROM mcp_repository_scopes WHERE repo_path = ?1",
@@ -359,10 +370,20 @@ pub async fn get_mcp_repository_settings(
 }
 
 #[tauri::command]
-pub async fn set_mcp_repository_enabled(
+pub async fn get_mcp_repository_settings(
+    repo_path: String,
+    db: State<'_, DbState>,
+) -> Result<McpRepositorySettings, String> {
+    let db = db.inner().clone();
+    tokio::task::spawn_blocking(move || load_mcp_repository_settings(repo_path, &db))
+        .await
+        .map_err(|_| "MCP settings worker failed".to_string())?
+}
+
+fn update_mcp_repository_enabled(
     repo_path: String,
     enabled: bool,
-    db: State<'_, DbState>,
+    db: &DbState,
 ) -> Result<McpRepositorySettings, String> {
     let canonical = canonical_repo_path(&repo_path)?;
     {
@@ -399,7 +420,34 @@ pub async fn set_mcp_repository_enabled(
             )
             .map_err(|error| format!("Update MCP repository access: {error}"))?;
     }
-    get_mcp_repository_settings(repo_path, db).await
+    load_mcp_repository_settings(repo_path, db)
+}
+
+#[tauri::command]
+pub async fn set_mcp_repository_enabled(
+    repo_path: String,
+    enabled: bool,
+    db: State<'_, DbState>,
+) -> Result<McpRepositorySettings, String> {
+    let db = db.inner().clone();
+    tokio::task::spawn_blocking(move || update_mcp_repository_enabled(repo_path, enabled, &db))
+        .await
+        .map_err(|_| "MCP settings worker failed".to_string())?
+}
+
+fn delete_mcp_access_audit(repo_path: String, db: &DbState) -> Result<usize, String> {
+    let canonical = canonical_repo_path(&repo_path)?;
+    let connection =
+        db.0.lock()
+            .map_err(|_| "CodeVetter database is unavailable".to_string())?;
+    connection
+        .execute(
+            "DELETE FROM mcp_access_audit WHERE repo_id = (
+                SELECT repo_id FROM mcp_repository_scopes WHERE repo_path = ?1
+             )",
+            [&canonical],
+        )
+        .map_err(|error| format!("Clear MCP access metadata: {error}"))
 }
 
 #[tauri::command]
@@ -407,19 +455,10 @@ pub async fn clear_mcp_access_audit(
     repo_path: String,
     db: State<'_, DbState>,
 ) -> Result<usize, String> {
-    let canonical = canonical_repo_path(&repo_path)?;
-    let connection =
-        db.0.lock()
-            .map_err(|_| "CodeVetter database is unavailable".to_string())?;
-    let deleted = connection
-        .execute(
-            "DELETE FROM mcp_access_audit WHERE repo_id = (
-                SELECT repo_id FROM mcp_repository_scopes WHERE repo_path = ?1
-             )",
-            [&canonical],
-        )
-        .map_err(|error| format!("Clear MCP access metadata: {error}"))?;
-    Ok(deleted)
+    let db = db.inner().clone();
+    tokio::task::spawn_blocking(move || delete_mcp_access_audit(repo_path, &db))
+        .await
+        .map_err(|_| "MCP settings worker failed".to_string())?
 }
 
 #[cfg(test)]
