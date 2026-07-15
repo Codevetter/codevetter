@@ -1,4 +1,5 @@
 use crate::commands::git_metadata::{is_release_tag, read_git_tags};
+use crate::commands::history_evidence::refresh_builtin_adapters;
 use crate::commands::structural_graph::analysis::StructuralGraphAnalysisSummary;
 use crate::commands::structural_graph::extract::{
     build_snapshot_from_blob_delta, build_snapshot_from_blobs, HistoricalFileBlob,
@@ -403,6 +404,7 @@ pub struct HistoryAnnotationPage {
     pub next_cursor: Option<String>,
 }
 
+mod api;
 mod catalog;
 mod delta;
 mod git_objects;
@@ -410,27 +412,33 @@ mod query_helpers;
 mod state;
 mod storage;
 
-pub(crate) use catalog::canonical_repo_path;
-use catalog::git::*;
-pub(crate) use catalog::git::{git_text, resolve_revision};
-use catalog::persistence::*;
-pub(crate) use catalog::repository_tag_fingerprint;
-use catalog::*;
-pub use catalog::{history_list_releases, history_search, load_history_revisions};
-use delta::*;
-use git_objects::*;
-use query_helpers::*;
-pub(crate) use query_helpers::{
-    history_index_freshness, load_entity_annotation_contradictions, load_entity_occurrences,
-    load_lineage_family, load_outcome_events,
+pub use api::{
+    add_history_annotation, backfill_history_graph, cancel_history_backfill,
+    explain_history_entity, get_history_graph_status, get_history_timeline,
+    list_history_annotations,
 };
-use state::*;
+pub use catalog::{history_list_releases, history_search, load_history_revisions};
 pub use state::{
     get_history_as_of, get_history_entity_evolution, get_history_structural_delta,
     get_history_structural_state,
 };
+
+pub(crate) use catalog::git::{git_text, resolve_revision};
+pub(crate) use catalog::{canonical_repo_path, repository_tag_fingerprint};
+pub(crate) use query_helpers::{
+    history_index_freshness, load_entity_annotation_contradictions, load_entity_occurrences,
+    load_lineage_family, load_outcome_events,
+};
 pub(crate) use state::{reconstruct_history_as_of, resolve_temporal_reference};
 pub(crate) use storage::history_storage_key;
+
+use catalog::git::*;
+use catalog::persistence::*;
+use catalog::*;
+use delta::*;
+use git_objects::*;
+use query_helpers::*;
+use state::*;
 use storage::*;
 
 #[cfg(test)]
