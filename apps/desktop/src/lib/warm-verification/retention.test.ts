@@ -152,6 +152,7 @@ describe('WarmArtifactRetention', () => {
 
     assert.equal(dryRun.dryRun, true);
     assert.deepEqual(dryRun.removedRunIds, ['run-old']);
+    assert.equal(dryRun.removedFiles, 1);
     assert.ok(dryRun.skippedEntries >= 2);
     assert.ok(await readFile(path.join(retentionRoot, 'run-old', 'run-summary.json')));
     assert.ok(await readFile(path.join(retentionRoot, 'run-latest', 'run-summary.json')));
