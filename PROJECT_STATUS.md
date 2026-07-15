@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-07-11
+Last updated: 2026-07-15
 
 ## Why / What
 
@@ -17,7 +17,7 @@ External:
 - GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on `tauri.conf.json` version bumps, dispatching `release.yml` to build/sign/upload Tauri binaries; `@tauri-apps/plugin-updater` consumes the `latest.json` manifest.
 - Cloudflare Pages — hosts the landing page (`codevetter` project, codevetter.com).
 - Optional `ast-grep` on PATH for structural evidence matches (no required runtime dependency).
-- Playwright — e2e testing and the built-in synthetic-QA runner.
+- Playwright — e2e testing, existing synthetic-QA runners, and the repository-owned warm Chromium verifier.
 
 Internal (fleet):
 - SaaS Maker — system of record for durable tasks/feedback; the desktop Fleet tab (`/fleet`) links local repos to SaaS Maker fleet projects; `fnd` CLI for API workflows.
@@ -25,6 +25,7 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-15 — Warm local verification implementation qualified; release qualification pending:** implemented a repository-owned Node/Playwright daemon with exact Git change modes, authoritative capability selection plus safe smoke/fallback, fresh isolated contexts over one warm server/browser, target-owned React/MSW state, zero-model deterministic execution, strict automatic observation, cancellation/source invalidation, exact visual baselines, immutable additive `warm_verification_runs` persistence, and owner-aware redacted retention. The Tauri bridge now finds one repository-owned verifier, selects its package manager from the repository lockfile, starts/stops the daemon, runs/cancels changed verification, reports health, persists results, and performs bounded cleanup. T-Rex owns those controls and shows current evidence; Review is a read-only consumer that qualifies only the newest exact-current run. On the Apple M5 Pro, the mandatory 20-scenario gate measured **3605.560 ms p50, 4792.196 ms p95, and 5320.379 ms max**; the small changed-capability path measured **506.426 ms p50, 512.035 ms p95, and 515.900 ms max**. A separate 100-batch gate completed 80 passes, 10 intentional regressions, and 10 cancellations with no leaked contexts, stable browser/server reuse, RSS growth of 13.6 MB against a 128 MB cap, retention at 20 runs / 4470 bytes, and zero production builds. Scope remains one developer, one configured React app, one Mac, and one Chromium—not CI, cloud, teams, mobile, cross-browser, or arbitrary repositories. Final release qualification is still pending; this is not a release claim.
 - **2026-07-13 — Trusted graph paths shipped:** Repo Unpacked graph snapshots now emit schema v2 with categorical trust, origin, evidence, and source anchors while schema-v1 snapshots load conservatively as legacy without disk rewrites. The Repo graph surface explicitly imports bounded local `nodes` plus `links`/`edges` JSON into a transient preview, preserves supported confidence/source/community metadata, resolves endpoint ambiguity, and traces trust-weighted bounded paths with stored direction and hop evidence. Review derives at most four native paths from changed files to routes, Tauri commands, tables, scripts, or tests and carries the same qualified summaries into prompts, UI, and reviewer-proof Markdown; uncertain/imported/legacy hops are navigation leads and cannot independently create findings or verified claims. Verification: 286 Rust tests (273 passed, 13 ignored), 140 desktop unit tests, TypeScript typecheck, Biome lint, Vite production build, and command-boundary fixture smoke for explicit generic graph import plus native/imported path tracing.
 - **2026-07-11 — Desloppification sweep:** one package manager (pnpm) across all CI workflows — root package-lock.json and the nested desktop pnpm-lock deleted (the dual-lockfile drift is what broke CF Pages in May); dead surfaces removed (design.html scratch, LiveAgentRunner/SaasMakerTasksPanel orphaned by earlier page removals, the tauri-driver native-e2e path that never actually supported macOS); six unused npm deps dropped incl. @tauri-apps/plugin-sql (docs claimed it was the DB layer — Rust has used rusqlite all along); 34 caller-less Tauri commands reaped along with three fully dead Rust modules (session_intelligence, talks, github_ops), ~45 unused TS ipc wrappers, and 98 unused exported types. Net ≈−3,600 lines. Kept deliberately: shadcn/ui boilerplate exports, the feature-gated browser-agent module, weekly.yml's lockfile-agnostic fallback, and get_dora_metrics (Rust-internal caller). All suites green (264 Rust, 136 unit, tsc, biome, vite build).
 - **2026-07-11 — Coordinator dedup fix flips the head-to-head:** replaced exact `file:line:title` dedup with same-file near-line token-similarity clustering (calibrated on real duplicate pairs from the first benchmark run, 3 regression tests). Full 27-case re-run: findings 95→65, catch stays 1.000 (29/29), precision 0.299→0.433, F1 0.460→0.604 — CodeVetter now beats raw Claude on all three axes (0.931/0.397/0.557). The two-gate "measurably better than raw Claude" question now has a first affirmative, internal-only answer; real agent-PR case curation still pending before external claims.
@@ -43,7 +44,7 @@ Internal (fleet):
 - **2026-07-03 — Surface consolidation + finishes (multi-agent pass):** removed redundant standalone pages QaReplay (`/qa-replay`) and IntentDebugger (`/intent-debugger`) — their functionality lives in Review. Finished Rubrics (review↔pack linkage via `local_reviews.standards_pack`, exact prompt preview, per-pack usage stats, pack cloning), T-Rex (per-watcher error recovery + retry, run drill-down dialog with persisted findings/log excerpt, pre-flight gh/token validation, per-PR base-branch inference), and AgentMemories (copy-as-markdown export, substring//regex/ line filter, git-diff-vs-HEAD view with secret redaction). Refactored QuickReview.tsx 6,264→3,050 lines into 12 components + 4 lib modules (behavior-preserving, 15 commits). Raw-Claude baseline scored on the 27 public benchmark cases (catch 0.931 / precision 0.397 / F1 0.557); CodeVetter's own comparator slot still needs generation before head-to-head claims.
 - **2026-07-03 (shipped in v1.2.8) — By-model cost attribution fix:** session-level `model_used` is last-model-wins, so multi-model Claude sessions booked ALL tokens/cost to the final model (a 211MB session with 17k opus-4-7 messages + 1.6k fable-5 messages billed $3.6k entirely to fable). Fix: per-message `session_model_usage` table populated by the indexer + one-time streaming backfill over existing Claude JSONL; by-model panel and per-session costs now sum per-model parts. Also added Fable/Mythos 5 pricing ($10/$50; was falling to sonnet default), folded `<synthetic>` into "unknown", and removed the Top-projects cost panel from Home (with its query/command/IPC). Verified by replaying the fix over the live DB: opus-4-7 $21,986→$29,473 (was under-credited), fable-5 correctly repriced. Guarded by `multi_model_claude_session_splits_usage_per_model`.
 - **2026-07-03:** Removed legacy Next.js landing page (`apps/landing-page`) — fully superseded by Astro site; `next-env.d.ts` git-removed, stale doc references cleaned up.
-- **2026-07-03:** Published 27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7 languages (TypeScript, Python, Go, Rust, JavaScript, Java) and 15+ vulnerability types (SQL injection, XSS, hardcoded secrets, race conditions, path traversal, SSRF, prototype pollution, regex DoS, zip bombs, etc.). Scorer script (`scripts/run-public-benchmark.mjs`) validates labels and computes catch-rate/precision/F1 per reviewer. `npm run bench:public`. Enterprise claims now backed by external, repeatable proof.
+- **2026-07-03:** Published 27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7 languages (TypeScript, Python, Go, Rust, JavaScript, Java) and 15+ vulnerability types (SQL injection, XSS, hardcoded secrets, race conditions, path traversal, SSRF, prototype pollution, regex DoS, zip bombs, etc.). Scorer script (`scripts/run-public-benchmark.mjs`) validates labels and computes catch-rate/precision/F1 per reviewer. `pnpm bench:public`. Enterprise claims now backed by external, repeatable proof.
 - **2026-07-02/03:** Streamlined telemetry + fleet navigation, guarded manual deploy command in CI, polished repo intelligence evidence surfaces.
 - **2026-06-28:** Devin agent indexing, agent hide/show filter, Grok parser improvements; PROJECT_STATUS audited as source of truth.
 - **2026-06-21 (v1.1.99) — Codex cost over-count fix:** Codex reports session-CUMULATIVE token totals; the incremental indexer was ADDING that running total every pass, inflating one session to 61.5B tokens / $35k (true: 391M / ~$220) and making "today" read ~$12.9k. Fix: `tokens_absolute` flag so cumulative tokens are SET not added, plus a one-time `fix_codex_token_totals` repair re-reading each Codex file. Verified on a live-DB copy: today $12,896→$377, year $82k→$38k (Claude cache-read costs, which are real, dominate the remainder). Guarded by `eval_append_delta_sets_cumulative_tokens_but_adds_per_message`.
@@ -55,7 +56,7 @@ Internal (fleet):
 
 - **CodeVetter desktop app** (`apps/desktop`) — Tauri 2 + React 19 + Vite, macOS build distributed via GitHub Releases with auto-updater. The core product; runs offline with local SQLite, no server.
 - **Landing page** (`apps/landing-page-astro`) — Astro static export deployed to Cloudflare Pages at codevetter.com via `deploy-landing.yml`.
-- **Benchmark harness** (`benchmarks/agent-prs`) — local catch-rate benchmark tooling (`npm run bench:catch-rate` etc.), not a deploy surface.
+- **Benchmark harness** (`benchmarks/agent-prs`) — local catch-rate benchmark tooling (`pnpm bench:catch-rate` etc.), not a deploy surface.
 
 ## Features (shipped)
 
@@ -96,7 +97,7 @@ Internal (fleet):
 ### Benchmarks
 - Catch-rate benchmark harness (`benchmarks/agent-prs`): per-case or combined fixtures, `bench:new-case` starter, `bench:curation` readiness report, strict fixture validation, named CodeVetter / CodeRabbit free-tier / Claude Code comparator slots, false-positive and redundant-match counts, precision/F1, baseline deltas, severity-specific gates, JSON/Markdown report output.
 - `--evidence-comparison=with:without` mode compares stored outputs with and without deterministic evidence search.
-- 27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7 languages and 15+ vulnerability types; `npm run bench:public` scores catch-rate/precision/F1.
+- 27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7 languages and 15+ vulnerability types; `pnpm bench:public` scores catch-rate/precision/F1.
 
 ### Evidence Pattern Search
 - Deterministic risk candidate packets from changed files, sensitive paths, optional `ast-grep` structural matches, blast/history context, and verification signals; top candidates and procedure gates injected into review prompts.
@@ -142,6 +143,7 @@ Internal (fleet):
 4. Curate real CodeRabbit free-tier and Claude Code `/review` outputs into the named benchmark comparator slots.
 5. Curate larger public benchmark fixtures.
 6. Add richer screenshot/report previews once the local preview security model is explicit; text-like QA artifacts already have bounded inline previews.
+7. Complete final release qualification for warm local verification, including the remaining whole-product checks and release evidence. The daemon, repository-owned CLI bridge, T-Rex controls, 100-batch stability/resource gate, and Review exact-current read-only qualification are implemented; no release is claimed until the final gate passes.
 
 ### Deferred / Parked
 
