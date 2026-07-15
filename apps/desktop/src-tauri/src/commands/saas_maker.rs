@@ -5,10 +5,6 @@
 //! the `preferences` row (`saas_maker_token`). Calls return graceful
 //! "skipped"/"not configured" rather than panicking when unset.
 //!
-//! Two write-paths the UI uses today:
-//!   - `push_finding_to_saas_maker` → POST /v1/tasks from a CodeVetter finding.
-//!   - `update_saas_maker_task` → PATCH /v1/tasks/{id} for status transitions.
-//!
 //! v1.1.76 added the sign-in flow:
 //!   - `start_saas_maker_signin` opens the cockpit's existing /cli/auth?code=
 //!     page (reuses the CLI auth flow — no new infra on the cockpit side).
@@ -26,7 +22,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tauri::State;
 
-use crate::db::queries;
 use crate::DbState;
 
 const DEFAULT_BASE_URL: &str = "https://api.sassmaker.com";
@@ -49,28 +44,6 @@ const POLL_TIMEOUT_SECS: u64 = 300;
 // ─── Public IO ──────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SaasMakerTask {
-    pub id: String,
-    pub title: String,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub status: Option<String>,
-    #[serde(default)]
-    pub priority: Option<String>,
-    #[serde(default)]
-    pub project_slug: Option<String>,
-    #[serde(default)]
-    pub task_type: Option<String>,
-    #[serde(default)]
-    pub created_at: Option<String>,
-    #[serde(default)]
-    pub updated_at: Option<String>,
-    #[serde(default)]
-    pub pr_url: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SaasMakerStatus {
     pub configured: bool,
     pub base_url: String,
@@ -87,23 +60,6 @@ pub struct SaasMakerSetConfig {
     pub base_url: Option<String>,
     #[serde(default)]
     pub project_slug: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PushFindingInput {
-    pub review_id: String,
-    pub finding_id: String,
-    #[serde(default)]
-    pub project_slug: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PushFindingResult {
-    pub task: Option<SaasMakerTask>,
-    pub skipped: bool,
-    pub skipped_reason: Option<String>,
-    /// True when the finding was already linked to a task before this call.
-    pub already_synced: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -163,18 +119,6 @@ pub struct RepoDetectResult {
     /// "git_url" (matched via fleet `git_url` field), "manual_mapping"
     /// (matched via local `repo_project_mapping` row), or "none".
     pub source: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateTaskPatch {
-    #[serde(default)]
-    pub status: Option<String>,
-    #[serde(default)]
-    pub priority: Option<String>,
-    #[serde(default)]
-    pub title: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
 }
 
 // ─── Tauri commands ─────────────────────────────────────────────────────────
@@ -300,101 +244,6 @@ fn read_pref(db: &State<'_, DbState>, key: &str) -> Option<String> {
         |r| r.get::<_, String>(0),
     )
     .ok()
-}
-
-fn build_task_payload(
-    review: &queries::LocalReviewRow,
-    finding: &queries::LocalReviewFindingRow,
-    project_slug: Option<&str>,
-) -> Value {
-    let discovery = finding
-        .discovery_method
-        .clone()
-        .unwrap_or_else(|| "inspection".into());
-    let severity = finding.severity.clone().unwrap_or_else(|| "medium".into());
-    let priority = match severity.to_ascii_lowercase().as_str() {
-        "critical" | "high" => "high",
-        "low" | "info" => "low",
-        _ => "medium",
-    };
-    let description = build_description(review, finding, &discovery);
-    let title = finding
-        .title
-        .clone()
-        .unwrap_or_else(|| "CodeVetter finding".into());
-
-    json!({
-        "title": title,
-        "description": description,
-        "status": "todo",
-        "priority": priority,
-        "project_slug": project_slug.unwrap_or(""),
-        "task_type": "bug",
-    })
-}
-
-fn build_description(
-    review: &queries::LocalReviewRow,
-    finding: &queries::LocalReviewFindingRow,
-    discovery: &str,
-) -> String {
-    let summary = finding.summary.clone().unwrap_or_default();
-    let suggestion = finding.suggestion.clone().unwrap_or_default();
-    let mut buf = String::new();
-    if !summary.is_empty() {
-        buf.push_str(&summary);
-        buf.push_str("\n\n");
-    }
-    if !suggestion.is_empty() {
-        buf.push_str("**Suggestion:** ");
-        buf.push_str(&suggestion);
-        buf.push_str("\n\n");
-    }
-    if let Some(p) = finding.file_path.as_deref() {
-        let suffix = finding.line.map(|l| format!(":{l}")).unwrap_or_default();
-        buf.push_str(&format!("**Location:** `{p}{suffix}`\n"));
-    }
-    buf.push_str(&format!("**Discovered via:** {discovery}\n"));
-    if let Some(repo) = review
-        .repo_full_name
-        .as_deref()
-        .or(review.repo_path.as_deref())
-    {
-        buf.push_str(&format!("**Repo:** {repo}\n"));
-    }
-    buf.push_str(&format!(
-        "\n_Pushed from CodeVetter review {}_\n",
-        review.id
-    ));
-    buf
-}
-
-fn parse_task_list(body: &str) -> Result<Vec<SaasMakerTask>, String> {
-    let v: Value = serde_json::from_str(body)
-        .map_err(|e| format!("SaaS Maker tasks response not JSON: {e}"))?;
-    // Match reel-pipeline: payload.data is the array; fall back to the root if
-    // an older shape ever appears.
-    let arr = v
-        .get("data")
-        .and_then(|x| x.as_array())
-        .cloned()
-        .or_else(|| v.as_array().cloned())
-        .ok_or_else(|| "expected `data` array in SaaS Maker tasks response".to_string())?;
-    let mut out: Vec<SaasMakerTask> = Vec::with_capacity(arr.len());
-    for item in arr {
-        if let Ok(t) = serde_json::from_value::<SaasMakerTask>(item) {
-            out.push(t);
-        }
-    }
-    Ok(out)
-}
-
-fn parse_single_task(body: &str) -> Result<SaasMakerTask, String> {
-    let v: Value = serde_json::from_str(body)
-        .map_err(|e| format!("SaaS Maker create-task response not JSON: {e}"))?;
-    let inner = v.get("data").cloned().unwrap_or(v);
-    serde_json::from_value::<SaasMakerTask>(inner)
-        .map_err(|e| format!("SaaS Maker create-task shape: {e}"))
 }
 
 fn parse_project_list(body: &str) -> Result<Vec<SaasMakerProject>, String> {
@@ -884,45 +733,6 @@ fn lookup_local_repo_mapping(db: &State<'_, DbState>, repo_path: &str) -> Option
 mod tests {
     use super::*;
 
-    fn mk_review() -> queries::LocalReviewRow {
-        queries::LocalReviewRow {
-            id: "rev-1".into(),
-            review_type: Some("pr".into()),
-            source_label: None,
-            repo_path: Some("/repo/path".into()),
-            repo_full_name: Some("acme/widget".into()),
-            pr_number: Some(42),
-            agent_used: "claude-code".into(),
-            score_composite: Some(0.7),
-            findings_count: Some(1),
-            review_action: None,
-            summary_markdown: None,
-            status: "completed".into(),
-            error_message: None,
-            started_at: None,
-            completed_at: None,
-            created_at: "2026-06-16T00:00:00Z".into(),
-            standards_pack: None,
-        }
-    }
-
-    fn mk_finding(method: Option<&str>) -> queries::LocalReviewFindingRow {
-        queries::LocalReviewFindingRow {
-            id: "f-1".into(),
-            review_id: "rev-1".into(),
-            severity: Some("high".into()),
-            title: Some("Null pointer in checkout".into()),
-            summary: Some("the cart total crashes when count == 0".into()),
-            suggestion: Some("guard with `if cart.items.is_empty()`".into()),
-            file_path: Some("src/checkout.rs".into()),
-            line: Some(89),
-            confidence: Some(0.9),
-            fingerprint: None,
-            discovery_method: method.map(String::from),
-            disposition: None,
-        }
-    }
-
     #[test]
     fn name_key_normalizes_casing_and_separators() {
         assert_eq!(name_key("CodeVetter"), "codevetter");
@@ -970,64 +780,6 @@ mod tests {
             .iter()
             .find(|p| candidate_keys.iter().any(|k| k == &name_key(&p.name)));
         assert_eq!(matched.map(|p| p.id.as_str()), Some("p1"));
-    }
-
-    #[test]
-    fn payload_has_priority_from_severity_and_renders_description() {
-        let review = mk_review();
-        let finding = mk_finding(Some("execution"));
-        let v = build_task_payload(&review, &finding, Some("widget"));
-        assert_eq!(v["priority"], "high");
-        assert_eq!(v["status"], "todo");
-        assert_eq!(v["task_type"], "bug");
-        assert_eq!(v["project_slug"], "widget");
-        let desc = v["description"].as_str().unwrap();
-        assert!(desc.contains("the cart total crashes"));
-        assert!(desc.contains("`if cart.items.is_empty()`"));
-        assert!(desc.contains("src/checkout.rs:89"));
-        assert!(desc.contains("execution"));
-        assert!(desc.contains("acme/widget"));
-        assert!(desc.contains("rev-1"));
-    }
-
-    #[test]
-    fn severity_low_maps_to_low_priority() {
-        let review = mk_review();
-        let mut finding = mk_finding(None);
-        finding.severity = Some("low".into());
-        let v = build_task_payload(&review, &finding, None);
-        assert_eq!(v["priority"], "low");
-    }
-
-    #[test]
-    fn parses_task_list_with_data_envelope() {
-        let body =
-            r#"{"data":[{"id":"t1","title":"Bug X","status":"todo"},{"id":"t2","title":"Bug Y"}]}"#;
-        let tasks = parse_task_list(body).unwrap();
-        assert_eq!(tasks.len(), 2);
-        assert_eq!(tasks[0].id, "t1");
-        assert_eq!(tasks[1].title, "Bug Y");
-    }
-
-    #[test]
-    fn parses_task_list_root_array_fallback() {
-        let body = r#"[{"id":"t1","title":"Bug X"}]"#;
-        let tasks = parse_task_list(body).unwrap();
-        assert_eq!(tasks.len(), 1);
-    }
-
-    #[test]
-    fn parses_single_task_with_data_envelope() {
-        let body = r#"{"data":{"id":"t99","title":"Created"}}"#;
-        let t = parse_single_task(body).unwrap();
-        assert_eq!(t.id, "t99");
-    }
-
-    #[test]
-    fn parses_single_task_with_bare_object() {
-        let body = r#"{"id":"t99","title":"Created"}"#;
-        let t = parse_single_task(body).unwrap();
-        assert_eq!(t.id, "t99");
     }
 
     #[test]
