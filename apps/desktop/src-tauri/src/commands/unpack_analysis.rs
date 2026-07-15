@@ -1,6 +1,6 @@
 //! Full/deferred Repo Unpacked analysis: graph, health, and history.
 
-use crate::commands::history_graph::build_history_graph;
+use crate::commands::history_summary_graph::build_history_graph;
 use crate::commands::unpack_qa::{push_unique_limited, suggested_qa_flows};
 use crate::commands::unpack_scan::is_binary_path;
 use crate::commands::unpack_types::{

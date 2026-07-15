@@ -12,7 +12,7 @@ pub mod files;
 pub mod git;
 pub mod graph_trust;
 pub mod history;
-pub mod history_graph;
+pub mod history_summary_graph;
 pub mod intel;
 pub mod observability;
 #[cfg(test)]

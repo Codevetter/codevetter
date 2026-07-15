@@ -455,7 +455,7 @@ fn main() {
             commands::unpack::export_repo_unpack_report,
             commands::graph_trust::import_graphify_preview,
             commands::graph_trust::trace_repo_graph_path,
-            commands::history_graph::query_repo_history_graph,
+            commands::history_summary_graph::query_repo_history_graph,
             // Canonical structural repository graph
             commands::structural_graph::api::build_structural_graph,
             commands::structural_graph::api::cancel_structural_graph_build,
