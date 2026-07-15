@@ -94,3 +94,6 @@ pub fn sanitize_error_message(message: &str, repo_path: &str) -> String {
     }
     message.replace(repo_path, "[repository]")
 }
+
+#[cfg(test)]
+mod tests;
