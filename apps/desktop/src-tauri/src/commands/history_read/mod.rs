@@ -158,3 +158,6 @@ pub(super) fn source_is_available(source: &GraphSourceAnchor) -> bool {
         PathBuf::from(&source.path).exists()
     }
 }
+
+#[cfg(test)]
+mod tests;
