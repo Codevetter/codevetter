@@ -9,6 +9,8 @@ use docs only for durable reference, design, research, and runbooks.
 
 - [Local History MCP](./MCP.md) — enable repository-scoped agent access, use the
   read-only graph/history contracts, and troubleshoot freshness or privacy limits.
+- [Warm Local Verification](./WARM-VERIFICATION.md) — configure the persistent
+  browser loop, deterministic MSW state, capability selection, CLI, and retention.
 
 ## Product PRDs
 
