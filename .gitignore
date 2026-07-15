@@ -61,5 +61,8 @@ apps/desktop/coverage/
 .fallow/
 cache.bin
 
+# Warm local verification artifacts (redacted but intentionally ephemeral)
+.codevetter/verify-artifacts/
+
 # codex CLI project dir
 .codex/
