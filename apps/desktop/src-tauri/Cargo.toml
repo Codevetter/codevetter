@@ -28,6 +28,7 @@ jwalk = "0.8"
 rayon = "1.10"
 libc = "0.2"
 portable-pty = "0.9.0"
+rmcp = { version = "=2.2.0", default-features = false, features = ["server", "transport-io"] }
 tree-sitter = "0.26.3"
 tree-sitter-c = "0.24.0"
 tree-sitter-c-sharp = "0.23.0"
