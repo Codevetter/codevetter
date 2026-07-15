@@ -111,6 +111,32 @@ describe('warm verification evidence adapters', () => {
     ]);
   });
 
+  it('retains every required staged provenance family in bounded evidence', () => {
+    const value = result({
+      limitations: [{ code: 'other', message: 'Local Chromium only.', affects_confidence: false }],
+    });
+    const evidence = warmResultToExecutableStage(value, currentIdentity(value)).evidence.join('\n');
+
+    for (const expected of [
+      'schema:result=1,protocol=1',
+      'finished:2026-07-15T00:00:01.000Z',
+      'runtime:warm',
+      'source-before:',
+      'source-after:',
+      'selected:portfolio-empty,smoke-shell',
+      'mandatory-smoke:smoke-shell',
+      'fallback:none',
+      'selection:Explicit portfolio mapping',
+      'policy:v1:strict-local',
+      'timings:total=1000ms',
+      'observations:route-1:passed',
+      'limitations:other:Local Chromium only.',
+      'artifacts:report-1:warm-run-1/summary.json',
+    ]) {
+      assert.match(evidence, new RegExp(expected.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    }
+  });
+
   it('turns a regression into executable findings and a failed eligible stage', () => {
     const regression = result({
       outcome: 'regression',

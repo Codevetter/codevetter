@@ -276,6 +276,53 @@ function sameSet(left: string[], right: string[]): boolean {
   );
 }
 
+function compactText(value: string, limit = 1_000): string {
+  return value.length <= limit ? value : `${value.slice(0, limit - 1)}…`;
+}
+
+function summarizedList(label: string, values: string[], limit = 20): string {
+  const visible = values.slice(0, limit);
+  const remainder = values.length - visible.length;
+  return `${label}:${visible.join(',') || 'none'}${remainder > 0 ? ` (+${remainder} more)` : ''}`;
+}
+
+function executableProvenance(result: VerifyResult): string[] {
+  const batchTimings = result.timings
+    .filter((timing) => timing.scenario_id === undefined)
+    .slice(0, 20)
+    .map((timing) => `${timing.stage}=${timing.duration_ms}ms`);
+  const observationRefs = result.observations
+    .slice(0, 20)
+    .map((observation) => `${observation.id}:${observation.disposition}`);
+  const limitationRefs = result.limitations
+    .slice(0, 20)
+    .map((limitation) => `${limitation.code}:${compactText(limitation.message, 200)}`);
+  const artifactRefs = result.artifacts
+    .slice(0, 20)
+    .map((artifact) => `${artifact.id}:${artifact.relative_path}`);
+  return [
+    `warm:${result.run_id}`,
+    `schema:result=${result.schema_version},protocol=${result.protocol_version}`,
+    `finished:${result.finished_at}`,
+    `runtime:${result.warm ? 'warm' : 'cold'}`,
+    `${result.source.change_set_kind}:${result.source.change_set_identity}`,
+    `target:${result.source.target_sha}`,
+    `config:${result.source.config_hash}`,
+    `manifest:${result.source.manifest_hash}`,
+    `source-before:${result.source.source_hash_before}`,
+    `source-after:${result.source.source_hash_after}`,
+    `policy:v${result.observation_policy.schema_version}:${result.observation_policy.profile_id}`,
+    summarizedList('selected', result.selection.selected_scenario_ids),
+    summarizedList('mandatory-smoke', result.selection.mandatory_smoke_ids),
+    summarizedList('fallback', result.selection.fallback_scenario_ids),
+    `selection:${compactText(result.selection.explanation)}`,
+    summarizedList('timings', batchTimings),
+    summarizedList('observations', observationRefs),
+    summarizedList('limitations', limitationRefs),
+    summarizedList('artifacts', artifactRefs),
+  ];
+}
+
 export function warmResultIsInternallyComplete(result: VerifyResult): boolean {
   const selected = result.selection.selected_scenario_ids;
   const executed = result.scenarios.map((scenario) => scenario.scenario_id);
@@ -347,15 +394,7 @@ export function evaluateWarmExecutableEvidence(
     eligible,
     status: eligible ? (result.outcome === 'passed' ? 'passed' : 'failed') : 'not_verified',
     reasons,
-    evidence: [
-      `warm:${result.run_id}`,
-      `${result.source.change_set_kind}:${result.source.change_set_identity}`,
-      `target:${result.source.target_sha}`,
-      `config:${result.source.config_hash}`,
-      `manifest:${result.source.manifest_hash}`,
-      `policy:${result.observation_policy.profile_id}`,
-      ...artifactPaths(result.artifacts),
-    ],
+    evidence: executableProvenance(result),
   };
 }
 
