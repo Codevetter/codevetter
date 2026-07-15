@@ -30,7 +30,7 @@
 - [x] 5.2 Update CI and release workflows to prepare, test, and verify the executable sidecar at the final bundle boundary.
 - [x] 5.3 Add a deterministic isolated fixture with non-empty commits, releases, events, structural nodes, and edges whose actual persisted counts are emitted and asserted.
 - [x] 5.4 Replace the invalid empty-data benchmark with a robust process-cold and interleaved warm benchmark covering correctness, latency, memory, binary size, response bounds, network listeners, and protected-repository integrity.
-- [ ] 5.5 Record enough samples on the named Apple Silicon qualification machine, publish honest p50/p95/max measurements, and set evidence-based regression gates without applying those absolute gates to other hardware.
+- [x] 5.5 Record enough samples on the named Apple Silicon qualification machine, publish honest p50/p95/max measurements, and set evidence-based regression gates without applying those absolute gates to other hardware.
 
 ## 6. Qualification and Documentation
 

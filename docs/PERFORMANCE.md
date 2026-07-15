@@ -147,6 +147,50 @@ land silently:
 | `RepoUnpacked-*` | 49.5   | 12.6    | lazy route                    |
 | **total**        | 855.4  | 260.1   | within budget                 |
 
+## 4. Local history MCP
+
+The MCP benchmark uses a separate temporary Git repository and SQLite database;
+it never writes to the repository being protected. The qualification fixture has
+65 commits, 64 tagged releases, 10,000 history events, 512 structural nodes, and
+1,024 edges. Before timing, the harness verifies strict read-only schemas,
+non-empty graph/history/evidence results, complete resource pagination, redaction,
+the 256 KiB response ceiling, zero TCP listeners, and unchanged protected-repo
+HEAD/status.
+
+Run from `apps/desktop/`:
+
+```bash
+pnpm bench:mcp:smoke            # quick correctness check; never enforces budgets
+pnpm bench:mcp                  # full named-machine qualification
+pnpm bench:mcp --skip-build     # reuse an already-built release sidecar
+```
+
+Qualification captured 2026-07-15 at commit `3111da7` on an Apple M5 Pro with a
+release sidecar, 3 process warmups, 50 recorded starts, 10 workload warmups, and
+200 recorded rounds. Each round includes the five individual workloads and a
+true four-request concurrent batch.
+
+| workload | p50 | p95 | max |
+|---|---:|---:|---:|
+| process initialize, disk warm | 6.44 ms | 7.17 ms | 7.47 ms |
+| graph query | 4.75 ms | 5.82 ms | 9.97 ms |
+| release list | 3.99 ms | 5.00 ms | 7.22 ms |
+| broad 10k-event history search | 4.75 ms | 6.45 ms | 27.25 ms |
+| evidence hydration | 3.56 ms | 4.22 ms | 22.41 ms |
+| resource list | 2.43 ms | 3.10 ms | 23.83 ms |
+| mixed concurrency 4 | 10.96 ms | 12.87 ms | 28.77 ms |
+
+The 7.39 MiB sidecar finished at 30.38 MiB RSS. RSS grew 6.92 MiB from the end of
+warmup to completion and 2.81 MiB across the second half of the recorded rounds,
+which distinguishes bounded cache population from continuing growth. The fixture
+database was 14.75 MiB and the process opened no TCP listeners.
+
+Absolute gates apply only to the named Apple M5 Pro qualification profile:
+initialize 25 ms p95; simple queries 10 ms p95; broad history 15 ms p95; mixed
+concurrency 30 ms p95; final RSS 32 MiB; second-half growth 8 MiB; binary 10 MiB.
+Other machines still run every correctness and safety check but report timings
+without claiming that these hardware-specific gates passed.
+
 ## Principle
 
 A feature is on-budget when it doesn't make the app re-do work proportional to
