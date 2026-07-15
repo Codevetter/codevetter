@@ -6,10 +6,10 @@ const REPO_PATH = '/tmp/warm-verification-app';
 
 async function installWarmVerificationMock(
   page: Page,
-  options: { offline?: boolean; activeRun?: boolean } = {}
+  options: { offline?: boolean; activeRun?: boolean; holdRunUntilCancelled?: boolean } = {}
 ) {
   await page.addInitScript(
-    ({ repoPath, offline, activeRun }) => {
+    ({ repoPath, offline, activeRun, holdRunUntilCancelled }) => {
       const result = {
         schema_version: 1,
         protocol_version: 1,
@@ -142,6 +142,7 @@ async function installWarmVerificationMock(
 
       const browserWindow = window as unknown as {
         __warmCommands: Array<{ cmd: string; args: unknown }>;
+        __warmCancelObservedPendingRun: boolean;
         __TAURI_INTERNALS__: {
           invoke: (cmd: string, args?: Record<string, unknown>) => Promise<unknown>;
           transformCallback: () => number;
@@ -150,6 +151,9 @@ async function installWarmVerificationMock(
         };
       };
       browserWindow.__warmCommands = [];
+      browserWindow.__warmCancelObservedPendingRun = false;
+      let pendingRun = false;
+      let settlePendingRun: (() => void) | null = null;
       browserWindow.__TAURI_INTERNALS__ = {
         invoke: async (cmd, args) => {
           browserWindow.__warmCommands.push({ cmd, args });
@@ -186,13 +190,29 @@ async function installWarmVerificationMock(
           if (cmd === 'get_warm_verification_daemon_health') return health;
           if (cmd === 'start_warm_verification_daemon') return health;
           if (cmd === 'stop_warm_verification_daemon') return { active_run_ids: [] };
-          if (cmd === 'run_warm_changed_verification') return storedRun;
+          if (cmd === 'run_warm_changed_verification') {
+            if (!holdRunUntilCancelled) return storedRun;
+            const requestedRunId = String(args?.runId ?? '');
+            if (health) health.active_run_ids = ['run-unrelated-1', requestedRunId];
+            pendingRun = true;
+            await new Promise<void>((resolve) => {
+              settlePendingRun = resolve;
+            });
+            pendingRun = false;
+            return {
+              ...storedRun,
+              result: { ...result, run_id: requestedRunId },
+            };
+          }
           if (cmd === 'cancel_warm_verification_run') {
+            browserWindow.__warmCancelObservedPendingRun = pendingRun;
             if (health) health.active_run_ids = [];
+            settlePendingRun?.();
             return { accepted: true };
           }
           if (cmd === 'cleanup_warm_verification_artifacts') {
             return {
+              schema_version: 1,
               dry_run: false,
               removed_runs: 2,
               removed_files: 4,
@@ -212,6 +232,7 @@ async function installWarmVerificationMock(
       repoPath: REPO_PATH,
       offline: options.offline ?? false,
       activeRun: options.activeRun ?? false,
+      holdRunUntilCancelled: options.holdRunUntilCancelled ?? false,
     }
   );
 }
@@ -254,6 +275,8 @@ test.describe('T-Rex warm verification', () => {
     });
     expect(commands.map(({ cmd }) => cmd)).toContain('run_warm_changed_verification');
     expect(commands.map(({ cmd }) => cmd)).toContain('cleanup_warm_verification_artifacts');
+    const runCommand = commands.find(({ cmd }) => cmd === 'run_warm_changed_verification');
+    expect(runCommand?.args).toMatchObject({ runId: expect.stringMatching(/^trex-[0-9a-f]{32}$/) });
   });
 
   test('keeps operational failures no-confidence and exposes cancellation for an active run', async ({
@@ -275,5 +298,72 @@ test.describe('T-Rex warm verification', () => {
     const activePanel = page.getByTestId('warm-verification-panel');
     await activePanel.getByRole('button', { name: 'Cancel run' }).click();
     await expect(activePanel.getByRole('button', { name: 'Verify changed' })).toBeVisible();
+  });
+
+  test('cancels the UI-owned run while its invocation is still pending', async ({ page }) => {
+    await installWarmVerificationMock(page, { holdRunUntilCancelled: true });
+    await navigateTo(page, '/trex');
+    await waitForNoSpinners(page);
+
+    const panel = page.getByTestId('warm-verification-panel');
+    await panel.getByRole('button', { name: 'Verify changed' }).click();
+    await expect(panel.getByRole('button', { name: 'Cancel run' })).toBeVisible();
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const browserWindow = window as unknown as {
+            __warmCommands: Array<{ cmd: string }>;
+          };
+          return browserWindow.__warmCommands.filter(
+            ({ cmd }) => cmd === 'get_warm_verification_daemon_health'
+          ).length;
+        })
+      )
+      .toBeGreaterThan(1);
+
+    await panel.getByRole('button', { name: 'Cancel run' }).click();
+    await expect(panel.getByRole('button', { name: 'Verify changed' })).toBeVisible();
+
+    const proof = await page.evaluate(() => {
+      const browserWindow = window as unknown as {
+        __warmCommands: Array<{ cmd: string; args: Record<string, unknown> }>;
+        __warmCancelObservedPendingRun: boolean;
+      };
+      const run = browserWindow.__warmCommands.find(
+        ({ cmd }) => cmd === 'run_warm_changed_verification'
+      );
+      const cancel = browserWindow.__warmCommands.find(
+        ({ cmd }) => cmd === 'cancel_warm_verification_run'
+      );
+      return {
+        runId: run?.args.runId,
+        cancelledRunId: cancel?.args.runId,
+        cancelObservedPendingRun: browserWindow.__warmCancelObservedPendingRun,
+      };
+    });
+    expect(proof.runId).toMatch(/^trex-[0-9a-f]{32}$/);
+    expect(proof.cancelledRunId).toBe(proof.runId);
+    expect(proof.cancelledRunId).not.toBe('run-unrelated-1');
+    expect(proof.cancelObservedPendingRun).toBe(true);
+
+    const healthPollCount = await page.evaluate(() => {
+      const browserWindow = window as unknown as {
+        __warmCommands: Array<{ cmd: string }>;
+      };
+      return browserWindow.__warmCommands.filter(
+        ({ cmd }) => cmd === 'get_warm_verification_daemon_health'
+      ).length;
+    });
+    await page.waitForTimeout(700);
+    const healthPollCountAfterSettling = await page.evaluate(() => {
+      const browserWindow = window as unknown as {
+        __warmCommands: Array<{ cmd: string }>;
+      };
+      return browserWindow.__warmCommands.filter(
+        ({ cmd }) => cmd === 'get_warm_verification_daemon_health'
+      ).length;
+    });
+    expect(healthPollCountAfterSettling).toBe(healthPollCount);
   });
 });
