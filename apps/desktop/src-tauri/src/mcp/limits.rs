@@ -1,9 +1,10 @@
+pub const DEFAULT_PAGE_SIZE: usize = 25;
 pub const MAX_PAGE_SIZE: usize = 100;
-pub const MAX_GRAPH_NODES: usize = 360;
-pub const MAX_GRAPH_EDGES: usize = 1_500;
-pub const MAX_HOPS: usize = 16;
-pub const MAX_EVIDENCE_IDS: usize = 50;
-pub const MAX_EXCERPT_BYTES: usize = 4_096;
-pub const MAX_RESPONSE_BYTES: usize = 512 * 1_024;
+pub const MAX_GRAPH_NODES: usize = 240;
+pub const MAX_GRAPH_EDGES: usize = 480;
+pub const MAX_HOPS: usize = 8;
+pub const MAX_EVIDENCE_IDS: usize = 32;
+pub const MAX_EXCERPT_BYTES: usize = 2_048;
+pub const MAX_RESPONSE_BYTES: usize = 256 * 1_024;
 pub const QUERY_TIMEOUT_MS: u64 = 5_000;
-pub const MAX_AUDIT_ROWS: usize = 500;
+pub const MAX_AUDIT_ROWS: usize = 1_000;
