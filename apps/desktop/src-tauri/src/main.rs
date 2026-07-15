@@ -508,6 +508,8 @@ fn main() {
             commands::synthetic_qa::discover_playwright_specs,
             commands::synthetic_qa::record_synthetic_qa_run,
             commands::synthetic_qa::list_synthetic_qa_runs,
+            commands::warm_verification::record_warm_verification_run,
+            commands::warm_verification::list_warm_verification_runs,
             // Live browser agent (drives real Chrome via chromiumoxide)
             #[cfg(feature = "browser-agent")]
             commands::agent::agent_run_task,

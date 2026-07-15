@@ -51,3 +51,4 @@ pub mod unpack_scan;
 pub mod unpack_scan_profile;
 pub mod unpack_snapshot;
 pub mod unpack_types;
+pub mod warm_verification;

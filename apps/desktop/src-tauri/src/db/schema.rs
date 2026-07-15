@@ -697,6 +697,33 @@ CREATE INDEX IF NOT EXISTS idx_synthetic_qa_runs_review_created
 CREATE INDEX IF NOT EXISTS idx_synthetic_qa_runs_repo_created
     ON synthetic_qa_runs(repo_path, created_at DESC);
 
+-- Warm verifier evidence is intentionally additive. Keeping its versioned
+-- payload separate avoids rewriting or weakening legacy synthetic_qa_runs.
+CREATE TABLE IF NOT EXISTS warm_verification_runs (
+    id               TEXT PRIMARY KEY,
+    review_id        TEXT REFERENCES local_reviews(id) ON DELETE SET NULL,
+    repo_path        TEXT NOT NULL,
+    run_id           TEXT UNIQUE NOT NULL,
+    schema_version   INTEGER NOT NULL CHECK (schema_version = 1),
+    protocol_version INTEGER NOT NULL CHECK (protocol_version = 1),
+    outcome          TEXT NOT NULL CHECK (outcome IN ('passed', 'regression', 'no_confidence')),
+    target_sha       TEXT NOT NULL,
+    change_set_kind  TEXT NOT NULL,
+    change_set_id    TEXT NOT NULL,
+    started_at       TEXT NOT NULL,
+    finished_at      TEXT NOT NULL,
+    warm             INTEGER NOT NULL CHECK (warm IN (0, 1)),
+    stale            INTEGER NOT NULL CHECK (stale IN (0, 1)),
+    result_json      TEXT NOT NULL,
+    created_at       TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_warm_verification_runs_repo_created
+    ON warm_verification_runs(repo_path, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_warm_verification_runs_review_created
+    ON warm_verification_runs(review_id, created_at DESC);
+
 CREATE TABLE IF NOT EXISTS audience_validation_runs (
     id                       TEXT PRIMARY KEY,
     review_id                TEXT NOT NULL REFERENCES local_reviews(id) ON DELETE CASCADE,

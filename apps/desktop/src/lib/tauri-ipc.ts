@@ -7,6 +7,7 @@ import {
 } from '@tauri-apps/plugin-notification';
 
 import { buildActiveStandardsContext, getActiveStandardsPackId } from '@/lib/review-service';
+import type { VerifyResult } from '@/lib/warm-verification/contracts';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -3937,6 +3938,14 @@ export interface StoredSyntheticQaRun {
   created_at: string;
 }
 
+export interface StoredWarmVerificationRun {
+  id: string;
+  review_id: string | null;
+  repo_path: string;
+  result: VerifyResult;
+  created_at: string;
+}
+
 export interface PlaywrightSpecCandidate {
   path: string;
   reason: string;
@@ -3974,6 +3983,32 @@ export async function listSyntheticQaRuns(
     limit: limit ?? 8,
   });
   return resp.runs;
+}
+
+export async function recordWarmVerificationRun(input: {
+  reviewId?: string | null;
+  repoPath: string;
+  result: VerifyResult;
+}): Promise<StoredWarmVerificationRun> {
+  return safeInvoke('record_warm_verification_run', {
+    input: {
+      review_id: input.reviewId ?? null,
+      repo_path: input.repoPath,
+      result: input.result,
+    },
+  });
+}
+
+export async function listWarmVerificationRuns(input: {
+  repoPath?: string;
+  reviewId?: string;
+  limit?: number;
+}): Promise<StoredWarmVerificationRun[]> {
+  return safeInvoke('list_warm_verification_runs', {
+    repoPath: input.repoPath ?? null,
+    reviewId: input.reviewId ?? null,
+    limit: input.limit ?? 20,
+  });
 }
 
 export async function runSyntheticQa(
