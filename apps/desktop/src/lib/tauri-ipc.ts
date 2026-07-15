@@ -1249,6 +1249,618 @@ export async function analyzeBlastRadius(
   });
 }
 
+// ─── Canonical structural graph (local Tree-sitter index) ──────────────────
+
+export type StructuralGraphTrust = 'extracted' | 'inferred' | 'ambiguous' | 'legacy';
+export type StructuralGraphOrigin =
+  | 'syntax'
+  | 'resolution'
+  | 'analysis'
+  | 'metadata'
+  | 'imported_node_link'
+  | 'user_annotation'
+  | 'legacy_metadata';
+
+export interface StructuralGraphSourceAnchor {
+  path: string;
+  start_line?: number | null;
+  start_column?: number | null;
+  end_line?: number | null;
+  end_column?: number | null;
+  excerpt?: string | null;
+}
+
+export interface StructuralGraphNode {
+  id: string;
+  kind: string;
+  label: string;
+  qualified_name?: string | null;
+  path?: string | null;
+  detail?: string | null;
+  language?: string | null;
+  community_id?: string | null;
+  trust: StructuralGraphTrust;
+  origin: StructuralGraphOrigin;
+  sources: StructuralGraphSourceAnchor[];
+}
+
+export interface StructuralGraphEdge {
+  id: string;
+  from: string;
+  to: string;
+  kind: string;
+  evidence: string;
+  trust: StructuralGraphTrust;
+  origin: StructuralGraphOrigin;
+  sources: StructuralGraphSourceAnchor[];
+  candidates: string[];
+}
+
+export interface StructuralControlFlowFact {
+  id: string;
+  kind: string;
+  parent_id?: string | null;
+  nesting: number;
+  source: StructuralGraphSourceAnchor;
+}
+
+export interface StructuralBoundaryFact {
+  kind: string;
+  target: string;
+  source: StructuralGraphSourceAnchor;
+}
+
+export interface StructuralCodeMetrics {
+  line_count: number;
+  statement_count: number;
+  parameter_count: number;
+  cyclomatic_complexity: number;
+  cognitive_complexity: number;
+  max_nesting: number;
+  fan_in: number;
+  fan_out: number;
+  cohesion?: number | null;
+}
+
+export interface StructuralGraphMetricFact {
+  schema_version: number;
+  id: string;
+  node_id: string;
+  path: string;
+  scope_kind: string;
+  language: string;
+  public_surface: boolean;
+  public_surface_reason?: string | null;
+  syntax_fingerprint: string;
+  normalized_token_count: number;
+  normalization_method: string;
+  metrics: StructuralCodeMetrics;
+  control_flow: StructuralControlFlowFact[];
+  definitions: string[];
+  uses: string[];
+  boundaries: StructuralBoundaryFact[];
+  sources: StructuralGraphSourceAnchor[];
+  limitations: string[];
+}
+
+export interface StructuralCloneRegion {
+  metric_id: string;
+  node_id: string;
+  path: string;
+  source: StructuralGraphSourceAnchor;
+}
+
+export interface StructuralCloneGroup {
+  id: string;
+  syntax_fingerprint: string;
+  normalization_method: string;
+  normalized_token_count: number;
+  similarity: number;
+  regions: StructuralCloneRegion[];
+  exclusions: string[];
+}
+
+export interface StructuralGraphLanguageCoverage {
+  language: string;
+  supported: boolean;
+  discovered_files: number;
+  indexed_files: number;
+  skipped_files: number;
+  error_files: number;
+}
+
+export interface StructuralGraphCoverage {
+  discovered_files: number;
+  indexed_files: number;
+  skipped_files: number;
+  error_files: number;
+  generated_files: number;
+  sensitive_files: number;
+  binary_files: number;
+  languages: StructuralGraphLanguageCoverage[];
+}
+
+export interface TrustedReviewGraphContext {
+  schema_version: number;
+  snapshot_id: string;
+  engine_id: string;
+  engine_version: string;
+  indexed_head?: string | null;
+  current_head?: string | null;
+  stale: boolean;
+  coverage: StructuralGraphCoverage;
+  nodes: StructuralGraphNode[];
+  edges: StructuralGraphEdge[];
+  truncated: boolean;
+  qualification: string;
+}
+
+export interface StructuralGraphTrustSummary {
+  extracted: number;
+  inferred: number;
+  ambiguous: number;
+  legacy: number;
+}
+
+export interface StructuralGraphQueryContext {
+  snapshot_id: string;
+  schema_version: number;
+  engine_id: string;
+  engine_version: string;
+  created_at: string;
+  freshness: {
+    indexed_head?: string | null;
+    current_head?: string | null;
+    stale?: boolean | null;
+  };
+  coverage: StructuralGraphCoverage;
+  trust: StructuralGraphTrustSummary;
+  max_results: number;
+  max_edges: number;
+  max_hops: number;
+  max_bytes: number;
+}
+
+export interface StructuralGraphProjection {
+  nodes: StructuralGraphNode[];
+  edges: StructuralGraphEdge[];
+  truncated: boolean;
+  next_cursor?: string | null;
+  context: StructuralGraphQueryContext;
+}
+
+export interface StructuralGraphQueryFilter {
+  node_kinds?: string[];
+  edge_kinds?: string[];
+  trust?: StructuralGraphTrust[];
+}
+
+export interface StructuralGraphMetadata {
+  snapshot_id: string;
+  schema_version: number;
+  repo_path: string;
+  repo_head?: string | null;
+  created_at: string;
+  engine_id: string;
+  engine_version: string;
+  indexed_files: number;
+  node_count: number;
+  edge_count: number;
+  diagnostic_count: number;
+  coverage: StructuralGraphCoverage;
+  trust?: StructuralGraphTrustSummary | null;
+  freshness: StructuralGraphQueryContext['freshness'];
+  truncated: boolean;
+}
+
+export interface StructuralGraphStatus {
+  repo_path: string;
+  indexed: boolean;
+  building: boolean;
+  stale: boolean;
+  current_head?: string | null;
+  indexed_head?: string | null;
+  snapshot_id?: string | null;
+  schema_version?: number | null;
+  engine_id?: string | null;
+  engine_version?: string | null;
+  created_at?: string | null;
+  indexed_files: number;
+  node_count: number;
+  edge_count: number;
+}
+
+export interface StructuralGraphSearchResult {
+  hits: Array<{
+    node: StructuralGraphNode;
+    score: number;
+    matched_by: string;
+  }>;
+  truncated: boolean;
+  next_cursor?: string | null;
+  context: StructuralGraphQueryContext;
+}
+
+export interface StructuralGraphExplanation {
+  node: StructuralGraphNode;
+  incoming_count: number;
+  outgoing_count: number;
+  incoming_kinds: string[];
+  outgoing_kinds: string[];
+  truncated: boolean;
+  context: StructuralGraphQueryContext;
+}
+
+export interface StructuralGraphPathResult {
+  nodes: StructuralGraphNode[];
+  edges: StructuralGraphEdge[];
+  total_cost: number;
+  visited: number;
+  truncated: boolean;
+  context: StructuralGraphQueryContext;
+}
+
+export interface StructuralGraphImpactResult {
+  root: StructuralGraphNode;
+  affected: StructuralGraphNode[];
+  edges: StructuralGraphEdge[];
+  depth_reached: number;
+  truncated: boolean;
+  context: StructuralGraphQueryContext;
+}
+
+export interface StructuralGraphStoredSummary {
+  id: string;
+  repo_path: string;
+  repo_head?: string | null;
+  schema_version: number;
+  engine_id: string;
+  engine_version: string;
+  created_at: string;
+  node_count: number;
+  edge_count: number;
+  diagnostic_count: number;
+  coverage: StructuralGraphCoverage;
+  truncated: boolean;
+}
+
+export interface StructuralGraphSnapshotDiff {
+  before_snapshot_id: string;
+  after_snapshot_id: string;
+  added_node_ids: string[];
+  removed_node_ids: string[];
+  changed_node_ids: string[];
+  added_edge_ids: string[];
+  removed_edge_ids: string[];
+  changed_edge_ids: string[];
+  truncated: boolean;
+  context: StructuralGraphQueryContext;
+}
+
+export interface StructuralGraphProgress {
+  phase: string;
+  completed: number;
+  total: number;
+  detail: string;
+}
+
+export interface StructuralGraphCommunity {
+  id: string;
+  label: string;
+  member_count: number;
+  hub_node_ids: string[];
+  bridge_node_ids: string[];
+  score: number;
+}
+
+export interface StructuralGraphNodeRank {
+  node_id: string;
+  label: string;
+  kind: string;
+  path?: string | null;
+  degree: number;
+  score: number;
+  reason: string;
+}
+
+export interface StructuralGraphConnectionInsight {
+  edge_id: string;
+  from_community_id: string;
+  to_community_id: string;
+  score: number;
+  reason: string;
+}
+
+export interface StructuralGraphSuggestedQuestion {
+  question: string;
+  node_ids: string[];
+  source_paths: string[];
+}
+
+export interface StructuralGraphAnalysisPolicy {
+  algorithm_version: string;
+  included_edge_kinds: string[];
+  execution_edge_kinds: string[];
+  included_trust: StructuralGraphTrust[];
+  direction: 'from_to';
+  max_ranked_metrics: number;
+  max_components: number;
+  max_execution_flows: number;
+  max_execution_flow_depth: number;
+}
+
+export interface StructuralGraphAnalysisCoverage {
+  complete: boolean;
+  reachability_complete: boolean;
+  trusted_edge_count: number;
+  excluded_edge_count: number;
+  unresolved_endpoint_count: number;
+  gaps: string[];
+  output_truncated: boolean;
+}
+
+export interface StructuralGraphNodeMetric {
+  node_id: string;
+  in_degree: number;
+  out_degree: number;
+  total_degree: number;
+  degree_centrality: number;
+  pagerank: number;
+}
+
+export interface StructuralGraphComponent {
+  id: string;
+  node_ids: string[];
+  edge_ids: string[];
+  cyclic: boolean;
+}
+
+export interface StructuralGraphExecutionFlow {
+  entrypoint_node_id: string;
+  node_ids: string[];
+  edge_ids: string[];
+  terminal_reason: 'terminal' | 'cycle_avoided' | 'depth_limit';
+}
+
+export interface StructuralGraphAlgorithmResults {
+  node_metrics: StructuralGraphNodeMetric[];
+  strongly_connected_components: StructuralGraphComponent[];
+  cycles: StructuralGraphComponent[];
+  articulation_node_ids: string[];
+  entrypoint_node_ids: string[];
+  reachable_node_ids: string[];
+  unreachable_node_ids: string[];
+  execution_flows: StructuralGraphExecutionFlow[];
+}
+
+export interface StructuralGraphAnalysisSummary {
+  policy: StructuralGraphAnalysisPolicy;
+  coverage: StructuralGraphAnalysisCoverage;
+  algorithms: StructuralGraphAlgorithmResults;
+  communities: StructuralGraphCommunity[];
+  hubs: StructuralGraphNodeRank[];
+  super_hubs: StructuralGraphNodeRank[];
+  bridges: StructuralGraphNodeRank[];
+  cross_community_edges: StructuralGraphConnectionInsight[];
+  surprising_connections: StructuralGraphConnectionInsight[];
+  suggested_questions: StructuralGraphSuggestedQuestion[];
+  truncated: boolean;
+  context: StructuralGraphQueryContext;
+}
+
+export interface StructuralGraphAdapterDescriptor {
+  id: string;
+  label: string;
+  mode: string;
+  bundled: boolean;
+  mutates_repository: boolean;
+  requires_explicit_action: boolean;
+  runtime_behavior: string;
+}
+
+export interface StructuralGraphInterchangePreview {
+  snapshot: {
+    schema_version: number;
+    id: string;
+    repo_path: string;
+    engine: { id: string; version: string; bundled: boolean; syntax_aware: boolean };
+    nodes: StructuralGraphNode[];
+    edges: StructuralGraphEdge[];
+    metrics: StructuralGraphMetricFact[];
+    clone_groups: StructuralCloneGroup[];
+    communities: StructuralGraphCommunity[];
+    truncated: boolean;
+  };
+  warnings: string[];
+}
+
+export async function onStructuralGraphProgress(
+  handler: (progress: StructuralGraphProgress) => void
+): Promise<UnlistenFn> {
+  return listen<StructuralGraphProgress>('structural-graph-progress', (event) => {
+    handler(event.payload);
+  });
+}
+
+export async function buildStructuralGraph(repoPath: string): Promise<StructuralGraphMetadata> {
+  return safeInvoke('build_structural_graph', { repoPath });
+}
+
+export async function cancelStructuralGraphBuild(repoPath: string): Promise<boolean> {
+  return safeInvoke('cancel_structural_graph_build', { repoPath });
+}
+
+export async function getStructuralGraphStatus(repoPath: string): Promise<StructuralGraphStatus> {
+  return safeInvoke('get_structural_graph_status', { repoPath });
+}
+
+export async function getStructuralGraphMetadata(
+  repoPath: string
+): Promise<StructuralGraphMetadata | null> {
+  return safeInvoke('get_structural_graph_metadata', { repoPath });
+}
+
+export async function getStructuralGraphAdapters(): Promise<StructuralGraphAdapterDescriptor[]> {
+  return safeInvoke('get_structural_graph_adapters');
+}
+
+export async function previewNodeLinkStructuralGraph(
+  repoPath: string,
+  jsonText: string
+): Promise<StructuralGraphInterchangePreview> {
+  return safeInvoke('preview_node_link_structural_graph', { repoPath, jsonText });
+}
+
+export async function exportStructuralGraphJson(repoPath: string): Promise<string | null> {
+  return safeInvoke('export_structural_graph_json', { repoPath });
+}
+
+export async function exportStructuralGraphMarkdown(repoPath: string): Promise<string | null> {
+  return safeInvoke('export_structural_graph_markdown', { repoPath });
+}
+
+export async function getStructuralGraphAnalysis(
+  repoPath: string
+): Promise<StructuralGraphAnalysisSummary | null> {
+  return safeInvoke('get_structural_graph_analysis', { repoPath });
+}
+
+export async function getStructuralGraphOverview(
+  repoPath: string,
+  limit?: number,
+  cursor?: string | null
+): Promise<StructuralGraphProjection | null> {
+  return safeInvoke('get_structural_graph_overview', {
+    repoPath,
+    limit: limit ?? null,
+    cursor: cursor ?? null,
+  });
+}
+
+export async function getStructuralGraphCommunity(
+  repoPath: string,
+  communityId: string,
+  limit?: number,
+  cursor?: string | null
+): Promise<StructuralGraphProjection | null> {
+  return safeInvoke('get_structural_graph_community', {
+    repoPath,
+    communityId,
+    limit: limit ?? null,
+    cursor: cursor ?? null,
+  });
+}
+
+export async function getStructuralGraphSubgraph(
+  repoPath: string,
+  seeds: string[],
+  options?: { depth?: number; filter?: StructuralGraphQueryFilter; limit?: number }
+): Promise<StructuralGraphProjection | null> {
+  return safeInvoke('get_structural_graph_subgraph', {
+    repoPath,
+    seeds,
+    depth: options?.depth ?? null,
+    filter: options?.filter ?? null,
+    limit: options?.limit ?? null,
+  });
+}
+
+export async function listStructuralGraphSnapshots(
+  repoPath: string,
+  limit?: number
+): Promise<StructuralGraphStoredSummary[]> {
+  return safeInvoke('list_structural_graph_snapshots', { repoPath, limit: limit ?? null });
+}
+
+export async function diffStructuralGraphSnapshots(
+  repoPath: string,
+  beforeSnapshotId: string,
+  afterSnapshotId: string
+): Promise<StructuralGraphSnapshotDiff> {
+  return safeInvoke('diff_structural_graph_snapshots', {
+    repoPath,
+    beforeSnapshotId,
+    afterSnapshotId,
+  });
+}
+
+export async function searchStructuralGraph(
+  repoPath: string,
+  queryText: string,
+  filter?: StructuralGraphQueryFilter,
+  limit?: number,
+  cursor?: string | null
+): Promise<StructuralGraphSearchResult | null> {
+  return safeInvoke('search_structural_graph', {
+    repoPath,
+    queryText,
+    filter: filter ?? null,
+    limit: limit ?? null,
+    cursor: cursor ?? null,
+  });
+}
+
+export async function explainStructuralGraphNode(
+  repoPath: string,
+  node: string
+): Promise<StructuralGraphExplanation | null> {
+  return safeInvoke('explain_structural_graph_node', { repoPath, node });
+}
+
+export async function getStructuralGraphNeighbors(
+  repoPath: string,
+  node: string,
+  options?: {
+    direction?: 'incoming' | 'outgoing' | 'both';
+    filter?: StructuralGraphQueryFilter;
+    limit?: number;
+    cursor?: string | null;
+  }
+): Promise<StructuralGraphProjection | null> {
+  return safeInvoke('get_structural_graph_neighbors', {
+    repoPath,
+    node,
+    direction: options?.direction ?? null,
+    filter: options?.filter ?? null,
+    limit: options?.limit ?? null,
+    cursor: options?.cursor ?? null,
+  });
+}
+
+export async function findStructuralGraphPath(
+  repoPath: string,
+  from: string,
+  to: string,
+  filter?: StructuralGraphQueryFilter
+): Promise<StructuralGraphPathResult | null> {
+  return safeInvoke('find_structural_graph_path', {
+    repoPath,
+    from,
+    to,
+    filter: filter ?? null,
+  });
+}
+
+export async function getStructuralGraphImpact(
+  repoPath: string,
+  node: string,
+  options?: {
+    direction?: 'incoming' | 'outgoing' | 'both';
+    depth?: number;
+    filter?: StructuralGraphQueryFilter;
+    limit?: number;
+  }
+): Promise<StructuralGraphImpactResult | null> {
+  return safeInvoke('get_structural_graph_impact', {
+    repoPath,
+    node,
+    direction: options?.direction ?? null,
+    depth: options?.depth ?? null,
+    filter: options?.filter ?? null,
+    limit: options?.limit ?? null,
+  });
+}
+
 // ─── Unpack deep graph (call-graph indexing) ─────────────────────────────────
 
 interface UnpackDeepGraphStats {
