@@ -1959,6 +1959,545 @@ export async function unpackDeepGraphDetectChanges(
   });
 }
 
+// ─── Git history topology ──────────────────────────────────────────────────
+
+export interface HistoryRevision {
+  sha: string;
+  short_sha: string;
+  parents: string[];
+  committed_at: string;
+  author: string;
+  subject: string;
+  tags: string[];
+  is_release: boolean;
+  is_head: boolean;
+}
+
+export interface HistoryTimeline {
+  schema_version: number;
+  repo_path: string;
+  head: string;
+  generated_at: string;
+  revisions: HistoryRevision[];
+  total_commits: number;
+  truncated: boolean;
+  is_shallow: boolean;
+  coverage_complete: boolean;
+  release_ranges: HistoryReleaseRange[];
+}
+
+export interface HistoryReleaseRange {
+  id: string;
+  label: string;
+  tag?: string | null;
+  from_exclusive?: string | null;
+  to_inclusive: string;
+  commit_shas: string[];
+  is_unreleased: boolean;
+}
+
+export interface HistoryPathChange {
+  path: string;
+  change_kind: string;
+  old_path?: string | null;
+  additions?: number | null;
+  deletions?: number | null;
+}
+
+export interface HistoryStructuralState {
+  schema_version: number;
+  repo_path: string;
+  revision: string;
+  snapshot_id: string;
+  cached: boolean;
+  projection: StructuralGraphProjection;
+  analysis: StructuralGraphAnalysisSummary;
+  changed_paths: string[];
+  path_changes: HistoryPathChange[];
+  indexed_files: number;
+  node_count: number;
+  edge_count: number;
+  generated_at: string;
+}
+
+export interface HistoryStructuralDelta {
+  schema_version: number;
+  repo_path: string;
+  before_revision: string;
+  after_revision: string;
+  before_snapshot_id: string;
+  after_snapshot_id: string;
+  added_node_ids: string[];
+  removed_node_ids: string[];
+  changed_node_ids: string[];
+  added_edge_ids: string[];
+  removed_edge_ids: string[];
+  changed_edge_ids: string[];
+  added_community_ids: string[];
+  removed_community_ids: string[];
+  added_hub_ids: string[];
+  removed_hub_ids: string[];
+  added_bridge_ids: string[];
+  removed_bridge_ids: string[];
+  path_changes: HistoryPathChange[];
+  lineage: HistoryLineageEdge[];
+  coverage_gap?: string | null;
+  generated_at: string;
+}
+
+export interface HistoryLineageEdge {
+  id: string;
+  from_entity_id: string;
+  to_entity_id: string;
+  relation: string;
+  trust: StructuralGraphTrust;
+  evidence: string;
+  sources: StructuralGraphSourceAnchor[];
+  candidates: string[];
+}
+
+export interface HistoryEntityMoment {
+  revision_sha: string;
+  committed_at: string;
+  ordinal: number;
+  entity_id: string;
+  label: string;
+  kind: string;
+  path?: string | null;
+  detail?: string | null;
+}
+
+export interface HistoryEntityEvolution {
+  schema_version: number;
+  repo_path: string;
+  resolved_revision: string;
+  entity_id: string;
+  entity_label: string;
+  entity_kind: string;
+  lineage: HistoryLineageEdge[];
+  occurrences: HistoryEntityMoment[];
+  first_seen?: HistoryEntityMoment | null;
+  last_changed?: HistoryEntityMoment | null;
+  last_present?: HistoryEntityMoment | null;
+  indexed_head: string;
+  stale: boolean;
+  coverage_gap?: string | null;
+  truncated: boolean;
+  next_cursor?: string | null;
+}
+
+export type HistoryTemporalReference =
+  | { kind: 'revision'; revision: string }
+  | { kind: 'release'; tag: string }
+  | { kind: 'date'; at: string };
+
+export interface HistoryAsOfState {
+  requested: HistoryTemporalReference;
+  resolved_revision: string;
+  committed_at: string;
+  exact: boolean;
+  state: HistoryStructuralState;
+}
+
+export interface HistoryBackfillProgress {
+  phase: string;
+  completed: number;
+  total: number;
+  revision?: string | null;
+  detail: string;
+  eta_ms?: number | null;
+}
+
+export interface HistoryBackfillResult {
+  repo_path: string;
+  total: number;
+  completed: number;
+  built: number;
+  cache_hits: number;
+  cancelled: boolean;
+  release_checkpoints: number;
+  coverage_complete: boolean;
+  refresh_kind: string;
+  invalidated: number;
+}
+
+export interface HistoryGraphStatus {
+  repo_path: string;
+  indexed: boolean;
+  backfilling: boolean;
+  stale: boolean;
+  current_head: string;
+  indexed_head?: string | null;
+  checkpoint_count: number;
+  event_count: number;
+  coverage: Record<string, unknown>;
+  updated_at?: string | null;
+}
+
+export type HistoryAdapterAvailability =
+  | 'available'
+  | 'empty'
+  | 'needs_configuration'
+  | 'unavailable';
+export type HistoryAdapterConsent = 'local_default' | 'explicit_import';
+
+export interface HistoryEvidenceAdapterDescriptor {
+  id: string;
+  label: string;
+  source_kind: string;
+  availability: HistoryAdapterAvailability;
+  consent: HistoryAdapterConsent;
+  configured: boolean;
+  local_only: boolean;
+  network_access: boolean;
+  reads: string[];
+  redaction: string;
+  source_cursor?: string | null;
+  last_observed_at?: string | null;
+  freshness: string;
+}
+
+export interface HistoryEvidenceRefreshResult {
+  repo_path: string;
+  imported: number;
+  already_present: number;
+  adapters: Array<[string, number]>;
+  network_requests: number;
+  refreshed_at: string;
+}
+
+export type HistoryFacetStatus = 'evidenced' | 'qualified_lead' | 'unknown';
+
+export interface HistoryFacet {
+  name: 'what' | 'why' | 'when' | 'how' | 'verification' | 'outcome' | string;
+  status: HistoryFacetStatus;
+  summary: string;
+  trust: StructuralGraphTrust;
+  sources: StructuralGraphSourceAnchor[];
+  event_ids: string[];
+}
+
+export interface HistoryFacetPacket {
+  schema_version: number;
+  repo_path: string;
+  as_of_revision: string;
+  entity_id: string;
+  entity_label: string;
+  entity_kind: string;
+  facets: HistoryFacet[];
+  gaps: string[];
+  contradictions: string[];
+  trust_summary: Record<string, number>;
+  indexed_head: string;
+  stale: boolean;
+  truncated: boolean;
+  next_cursor?: string | null;
+}
+
+export type HistoryCausalSelector =
+  | { kind: 'event'; event_id: string }
+  | { kind: 'entity'; entity_id: string }
+  | { kind: 'revision'; revision: string }
+  | { kind: 'release'; tag: string }
+  | { kind: 'episode_key'; key: string };
+
+export type HistoryCausalStage =
+  | 'intent'
+  | 'implementation'
+  | 'verification'
+  | 'release'
+  | 'outcome'
+  | 'regression'
+  | 'follow_up'
+  | 'context';
+
+export type HistoryCausalLinkStatus = 'evidenced' | 'qualified_lead';
+
+export interface HistoryCausalEvent {
+  id: string;
+  revision_sha?: string | null;
+  event_kind: string;
+  stage: HistoryCausalStage;
+  summary: string;
+  trust: StructuralGraphTrust;
+  origin: string;
+  source_id: string;
+  source_cursor?: string | null;
+  recorded_at: string;
+  effective_at?: string | null;
+  entity_id?: string | null;
+  related_entity_id?: string | null;
+  relation_kind?: string | null;
+  episode_keys: string[];
+  sources: StructuralGraphSourceAnchor[];
+  source_available: boolean;
+}
+
+export interface HistoryCausalLink {
+  id: string;
+  from_event_id: string;
+  to_event_id: string;
+  relation: string;
+  status: HistoryCausalLinkStatus;
+  trust: StructuralGraphTrust;
+  evidence: string;
+  sources: StructuralGraphSourceAnchor[];
+}
+
+export interface HistoryChangeEpisode {
+  id: string;
+  anchor_event_id: string;
+  episode_keys: string[];
+  events: HistoryCausalEvent[];
+  links: HistoryCausalLink[];
+  qualified_leads: HistoryCausalLink[];
+  qualified_lead_events: HistoryCausalEvent[];
+  stages_present: HistoryCausalStage[];
+  gaps: string[];
+  contradictions: string[];
+  trust_summary: Record<string, number>;
+  started_at: string;
+  ended_at: string;
+  truncated: boolean;
+}
+
+export interface HistoryCausalTrace {
+  schema_version: number;
+  repo_path: string;
+  selector: HistoryCausalSelector;
+  episodes: HistoryChangeEpisode[];
+  indexed_head: string;
+  stale: boolean;
+  coverage: Record<string, unknown>;
+  gaps: string[];
+  scanned_events: number;
+  total_events: number;
+  truncated: boolean;
+  next_cursor?: string | null;
+}
+
+export interface HistoryReviewSlice {
+  schema_version: number;
+  repo_path: string;
+  files: string[];
+  entity_ids: string[];
+  episodes: HistoryChangeEpisode[];
+  constraints: HistoryCausalEvent[];
+  verification: HistoryCausalEvent[];
+  failures: HistoryCausalEvent[];
+  regressions: HistoryCausalEvent[];
+  qualified_leads: HistoryCausalEvent[];
+  gaps: string[];
+  indexed_head: string;
+  stale: boolean;
+  coverage: Record<string, unknown>;
+  truncated: boolean;
+}
+
+export type HistoryAnnotationDecision = 'note' | 'confirm' | 'reject' | 'correction';
+
+export interface HistoryAnnotation {
+  id: string;
+  repo_path: string;
+  revision_sha?: string | null;
+  entity_id?: string | null;
+  author: string;
+  body: string;
+  decision: HistoryAnnotationDecision;
+  related_event_id?: string | null;
+  source: string;
+  created_at: string;
+}
+
+export interface HistoryAnnotationPage {
+  annotations: HistoryAnnotation[];
+  truncated: boolean;
+  next_cursor?: string | null;
+}
+
+export interface HistorySearchResult {
+  revisions: HistoryRevision[];
+  truncated: boolean;
+}
+
+export async function getHistoryTimeline(
+  repoPath: string,
+  limit?: number
+): Promise<HistoryTimeline> {
+  return safeInvoke('get_history_timeline', { repoPath, limit: limit ?? null });
+}
+
+export async function onHistoryBackfillProgress(
+  handler: (progress: HistoryBackfillProgress) => void
+): Promise<UnlistenFn> {
+  return listen<HistoryBackfillProgress>('history-backfill-progress', (event) => {
+    handler(event.payload);
+  });
+}
+
+export async function backfillHistoryGraph(
+  repoPath: string,
+  recentCommitLimit?: number
+): Promise<HistoryBackfillResult> {
+  return safeInvoke('backfill_history_graph', {
+    repoPath,
+    recentCommitLimit: recentCommitLimit ?? null,
+  });
+}
+
+export async function cancelHistoryBackfill(repoPath: string): Promise<boolean> {
+  return safeInvoke('cancel_history_backfill', { repoPath });
+}
+
+export async function getHistoryGraphStatus(repoPath: string): Promise<HistoryGraphStatus> {
+  return safeInvoke('get_history_graph_status', { repoPath });
+}
+
+export async function getHistoryEvidenceAdapters(
+  repoPath: string
+): Promise<HistoryEvidenceAdapterDescriptor[]> {
+  return safeInvoke('get_history_evidence_adapters', { repoPath });
+}
+
+export async function refreshHistoryEvidence(
+  repoPath: string
+): Promise<HistoryEvidenceRefreshResult> {
+  return safeInvoke('refresh_history_evidence', { repoPath });
+}
+
+export async function importHistoryEvidenceExport(
+  repoPath: string,
+  filePath: string
+): Promise<HistoryEvidenceRefreshResult> {
+  return safeInvoke('import_history_evidence_export', { repoPath, filePath });
+}
+
+export async function explainHistoryEntity(
+  repoPath: string,
+  entity: string,
+  revision?: string
+): Promise<HistoryFacetPacket> {
+  return safeInvoke('explain_history_entity', {
+    repoPath,
+    entity,
+    revision: revision ?? null,
+  });
+}
+
+export async function getHistoryCausalTrace(
+  repoPath: string,
+  selector: HistoryCausalSelector,
+  options?: { limit?: number; cursor?: string | null }
+): Promise<HistoryCausalTrace> {
+  return safeInvoke('get_history_causal_trace', {
+    repoPath,
+    selector,
+    limit: options?.limit ?? null,
+    cursor: options?.cursor ?? null,
+  });
+}
+
+export async function addHistoryAnnotation(input: {
+  repoPath: string;
+  revisionSha?: string | null;
+  entityId?: string | null;
+  author: string;
+  body: string;
+  decision: HistoryAnnotationDecision;
+  relatedEventId?: string | null;
+}): Promise<HistoryAnnotation> {
+  return safeInvoke('add_history_annotation', {
+    repoPath: input.repoPath,
+    revisionSha: input.revisionSha ?? null,
+    entityId: input.entityId ?? null,
+    author: input.author,
+    body: input.body,
+    decision: input.decision,
+    relatedEventId: input.relatedEventId ?? null,
+  });
+}
+
+export async function listHistoryAnnotations(
+  repoPath: string,
+  options?: {
+    revisionSha?: string | null;
+    entityId?: string | null;
+    limit?: number;
+    cursor?: string | null;
+  }
+): Promise<HistoryAnnotationPage> {
+  return safeInvoke('list_history_annotations', {
+    repoPath,
+    revisionSha: options?.revisionSha ?? null,
+    entityId: options?.entityId ?? null,
+    limit: options?.limit ?? null,
+    cursor: options?.cursor ?? null,
+  });
+}
+
+export async function getHistoryStructuralState(
+  repoPath: string,
+  revision: string,
+  maxNodes?: number
+): Promise<HistoryStructuralState> {
+  return safeInvoke('get_history_structural_state', {
+    repoPath,
+    revision,
+    maxNodes: maxNodes ?? null,
+  });
+}
+
+export async function getHistoryStructuralDelta(
+  repoPath: string,
+  beforeRevision: string,
+  afterRevision: string
+): Promise<HistoryStructuralDelta> {
+  return safeInvoke('get_history_structural_delta', {
+    repoPath,
+    beforeRevision,
+    afterRevision,
+  });
+}
+
+export async function getHistoryEntityEvolution(
+  repoPath: string,
+  entity: string,
+  revision?: string
+): Promise<HistoryEntityEvolution> {
+  return safeInvoke('get_history_entity_evolution', {
+    repoPath,
+    entity,
+    revision: revision ?? null,
+  });
+}
+
+export async function getHistoryAsOf(
+  repoPath: string,
+  reference: HistoryTemporalReference,
+  maxNodes?: number
+): Promise<HistoryAsOfState> {
+  return safeInvoke('get_history_as_of', {
+    repoPath,
+    reference,
+    maxNodes: maxNodes ?? null,
+  });
+}
+
+export async function listHistoryReleases(
+  repoPath: string,
+  limit?: number
+): Promise<HistorySearchResult> {
+  return safeInvoke('history_list_releases', { repoPath, limit: limit ?? null });
+}
+
+export async function searchHistory(
+  repoPath: string,
+  query: string,
+  limit?: number
+): Promise<HistorySearchResult> {
+  return safeInvoke('history_search', { repoPath, query, limit: limit ?? null });
+}
+
 export async function getRepoHistoryContext(
   repoPath: string,
   diffRange: string

@@ -404,12 +404,12 @@ pub struct HistoryAnnotationPage {
     pub next_cursor: Option<String>,
 }
 
-mod api;
-mod catalog;
+pub mod api;
+pub mod catalog;
 mod delta;
 mod git_objects;
 mod query_helpers;
-mod state;
+pub mod state;
 mod storage;
 
 pub use api::{

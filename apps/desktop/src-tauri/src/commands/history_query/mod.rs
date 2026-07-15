@@ -1,4 +1,4 @@
-mod service;
+pub mod service;
 mod types;
 
 pub use service::get_history_causal_trace;

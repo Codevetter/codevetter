@@ -1,4 +1,4 @@
-mod service;
+pub mod service;
 mod types;
 
 pub(crate) use service::refresh_builtin_adapters;
