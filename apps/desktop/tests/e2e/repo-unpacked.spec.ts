@@ -386,8 +386,88 @@ async function installRepoUnpackedMock(page: import('@playwright/test').Page) {
       ],
     };
 
+    const historyRevisions = Array.from({ length: 120 }, (_, index) => ({
+      sha: index.toString(16).padStart(40, '0'),
+      short_sha: index.toString(16).padStart(8, '0'),
+      parents: index === 0 ? [] : [(index - 1).toString(16).padStart(40, '0')],
+      committed_at: new Date(Date.UTC(2025, 0, index + 1)).toISOString(),
+      author: `Author ${index % 8}`,
+      subject: index % 30 === 0 ? `Release ${index / 30}` : `Change ${index}`,
+      tags: index % 30 === 0 ? [`v1.${index / 30}.0`] : [],
+      is_release: index % 30 === 0,
+      is_head: index === 119,
+    }));
+    const structuralState = (revision: string) => ({
+      schema_version: 1,
+      repo_path: inventory.repo_path,
+      revision,
+      snapshot_id: `snapshot-${revision}`,
+      cached: true,
+      projection: {
+        nodes: Array.from({ length: 96 }, (_, index) => ({
+          id: `node-${index}`,
+          kind: index % 8 === 0 ? 'function' : 'file',
+          label: `Entity ${index}`,
+          qualified_name: `src/entity-${index}.ts::Entity${index}`,
+          path: `src/entity-${index}.ts`,
+          detail: index % 20 === 0 ? `${revision.slice(-4)} · changed` : 'syntax-indexed',
+          language: 'typescript',
+          community_id: `community-${index % 6}`,
+          trust: 'extracted',
+          origin: 'syntax',
+          sources: [{ path: `src/entity-${index}.ts`, start_line: 1 }],
+        })),
+        edges: Array.from({ length: 80 }, (_, index) => ({
+          id: `edge-${index}`,
+          from: `node-${index % 96}`,
+          to: `node-${(index * 7 + 3) % 96}`,
+          kind: index % 4 === 0 ? 'calls' : 'contains',
+          evidence: 'mock structural relationship',
+          trust: 'extracted',
+          origin: 'syntax',
+          sources: [],
+          candidates: [],
+        })),
+        truncated: false,
+        next_cursor: null,
+      },
+      analysis: {
+        communities: [],
+        hubs: [],
+        super_hubs: [],
+        bridges: [],
+        cross_community_edges: [],
+        surprising_connections: [],
+        suggested_questions: [],
+      },
+      changed_paths: ['src/analytics.ts'],
+      path_changes: [
+        {
+          path: 'src/analytics.ts',
+          change_kind: 'modified',
+          old_path: null,
+          additions: 3,
+          deletions: 1,
+        },
+      ],
+      indexed_files: 128,
+      node_count: 96,
+      edge_count: 80,
+      generated_at: '2026-07-13T00:00:00Z',
+    });
+
     window.__TAURI_INTERNALS__ = {
-      invoke: async (cmd: string, args?: { key?: string; repoPath?: string; id?: string }) => {
+      invoke: async (
+        cmd: string,
+        args?: {
+          key?: string;
+          repoPath?: string;
+          id?: string;
+          revision?: string;
+          beforeRevision?: string;
+          afterRevision?: string;
+        }
+      ) => {
         if (cmd === 'get_preference') {
           return {
             key: args?.key ?? '',
@@ -530,6 +610,79 @@ async function installRepoUnpackedMock(page: import('@playwright/test').Page) {
             edge_count: 0,
           };
         }
+        if (cmd === 'get_history_timeline') {
+          return {
+            schema_version: 1,
+            repo_path: inventory.repo_path,
+            head: historyRevisions.at(-1)?.sha,
+            generated_at: '2026-07-13T00:00:00Z',
+            revisions: historyRevisions,
+            total_commits: historyRevisions.length,
+            truncated: false,
+            is_shallow: false,
+            coverage_complete: true,
+            release_ranges: [],
+          };
+        }
+        if (cmd === 'get_history_graph_status') {
+          return {
+            repo_path: inventory.repo_path,
+            indexed: true,
+            backfilling: false,
+            stale: false,
+            current_head: historyRevisions[119].sha,
+            indexed_head: historyRevisions[119].sha,
+            checkpoint_count: 6,
+            event_count: 480,
+            coverage: { coverage_complete: true },
+            updated_at: '2026-07-13T00:00:00Z',
+          };
+        }
+        if (cmd === 'get_history_evidence_adapters') return [];
+        if (cmd === 'get_history_structural_state') {
+          return structuralState(args?.revision ?? historyRevisions[119].sha);
+        }
+        if (cmd === 'get_history_structural_delta') {
+          return {
+            schema_version: 1,
+            repo_path: inventory.repo_path,
+            before_revision: args?.beforeRevision ?? '',
+            after_revision: args?.afterRevision ?? '',
+            before_snapshot_id: 'before',
+            after_snapshot_id: 'after',
+            added_node_ids: ['node-95'],
+            removed_node_ids: [],
+            changed_node_ids: ['node-0'],
+            added_edge_ids: [],
+            removed_edge_ids: [],
+            changed_edge_ids: [],
+            added_community_ids: [],
+            removed_community_ids: [],
+            added_hub_ids: [],
+            removed_hub_ids: [],
+            added_bridge_ids: [],
+            removed_bridge_ids: [],
+            path_changes: [],
+            lineage: [],
+            coverage_gap: null,
+            generated_at: '2026-07-13T00:00:00Z',
+          };
+        }
+        if (cmd === 'backfill_history_graph') {
+          await new Promise((resolve) => setTimeout(resolve, 1_200));
+          return {
+            repo_path: inventory.repo_path,
+            total: 10,
+            completed: 10,
+            built: 2,
+            cache_hits: 8,
+            cancelled: false,
+            release_checkpoints: 4,
+            coverage_complete: true,
+            refresh_kind: 'no_op',
+            invalidated: 0,
+          };
+        }
         if (cmd.startsWith('plugin:event|')) return 1;
         throw new Error(`unhandled mocked command: ${cmd}`);
       },
@@ -633,5 +786,59 @@ test.describe('Repo Unpacked page', () => {
     ).toBeVisible();
     await expect(page.getByText('Build the canonical local index')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Build index' })).toBeVisible();
+  });
+
+  test('history slider stays frame-responsive while background indexing runs', async ({ page }) => {
+    await installRepoUnpackedMock(page);
+    await navigateTo(page, '/unpack');
+    await waitForNoSpinners(page);
+
+    await page
+      .locator('aside')
+      .getByRole('button', { name: /^world-class-repo/i })
+      .click();
+    await page
+      .getByRole('navigation', { name: 'Unpack sections' })
+      .getByRole('button', { name: 'Graph' })
+      .click();
+    await expect(page.getByRole('heading', { name: 'Git history playback' })).toBeVisible();
+    await expect(page.getByText(/96 visible of 96 structural nodes/)).toBeVisible();
+
+    const slider = page.getByRole('slider', { name: 'Git history revision' });
+    await expect(slider).toHaveAttribute('max', '119');
+    await page.getByRole('button', { name: 'Index history' }).click();
+    await expect(page.getByRole('button', { name: 'Indexing history' })).toBeVisible();
+
+    const frameMetrics = await slider.evaluate(async (element) => {
+      const input = element as HTMLInputElement;
+      const frameGaps: number[] = [];
+      let previous = performance.now();
+      await new Promise<void>((resolve) => {
+        let frame = 0;
+        const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+        const scrub = (now: number) => {
+          frameGaps.push(now - previous);
+          previous = now;
+          setValue?.call(input, String(frame % 120));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          frame += 1;
+          if (frame >= 48) resolve();
+          else requestAnimationFrame(scrub);
+        };
+        requestAnimationFrame(scrub);
+      });
+      const ordered = frameGaps.slice(2).sort((left, right) => left - right);
+      return {
+        frames: ordered.length,
+        p95: ordered[Math.floor(ordered.length * 0.95)],
+        max: ordered.at(-1) ?? 0,
+      };
+    });
+
+    expect(frameMetrics.frames).toBeGreaterThanOrEqual(40);
+    expect(frameMetrics.p95).toBeLessThan(50);
+    expect(frameMetrics.max).toBeLessThan(120);
+    await expect(page.getByRole('button', { name: 'Index history' })).toBeVisible();
+    await expect(slider).toHaveAttribute('aria-valuetext', /Change|Release/);
   });
 });
