@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import SaasMakerConfigPanel from '@/components/SaasMakerConfigPanel';
+import McpHistoryPanel from '@/components/settings/McpHistoryPanel';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -511,6 +512,7 @@ const categories: CategoryDef[] = [
   { key: 'appearance', label: 'Appearance', icon: '\u25E8' },
   { key: 'integrations', label: 'Integrations', icon: '\u2687' },
   { key: 'agents', label: 'Agents', icon: '\u2699' },
+  { key: 'mcp', label: 'Agent MCP', icon: '\u21c4' },
   { key: 'notifications', label: 'Notifications', icon: '\u2709' },
   { key: 'usage', label: 'Usage', icon: '\u2261' },
   { key: 'rubrics', label: 'Rubrics', icon: '\u2713' },
@@ -927,6 +929,9 @@ export default function Settings() {
           </div>
         );
 
+      case 'mcp':
+        return <McpHistoryPanel />;
+
       case 'notifications':
         return (
           <div className="flex flex-col">
@@ -1198,6 +1203,7 @@ export default function Settings() {
                 key={cat.key}
                 variant="ghost"
                 onClick={() => selectCategory(cat.key)}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
                   'justify-start gap-2.5 h-auto px-2.5 py-2 text-[13px] font-medium',
                   active
@@ -1223,7 +1229,9 @@ export default function Settings() {
         <div className="flex-1 min-w-0 overflow-y-auto">{renderContent()}</div>
       ) : (
         <div className="flex-1 min-w-0 overflow-y-auto p-8">
-          <div className="max-w-xl">{renderContent()}</div>
+          <div className={activeCategory === 'mcp' ? 'max-w-4xl' : 'max-w-xl'}>
+            {renderContent()}
+          </div>
         </div>
       )}
     </div>
