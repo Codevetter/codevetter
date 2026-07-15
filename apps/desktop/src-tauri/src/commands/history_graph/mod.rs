@@ -404,7 +404,12 @@ pub struct HistoryAnnotationPage {
 }
 
 mod catalog;
+mod git_objects;
 
 pub(crate) use catalog::canonical_repo_path;
 use catalog::git::*;
 pub(crate) use catalog::git::{git_text, resolve_revision};
+pub(crate) use catalog::repository_tag_fingerprint;
+use catalog::*;
+pub use catalog::{history_list_releases, history_search, load_history_revisions};
+use git_objects::*;

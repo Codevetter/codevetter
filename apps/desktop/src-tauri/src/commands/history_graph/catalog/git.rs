@@ -263,6 +263,20 @@ pub(crate) fn git_text(root: &Path, arguments: &[&str]) -> Result<String, String
         .map_err(|error| format!("Git returned invalid UTF-8: {error}"))
 }
 
+pub(in crate::commands::history_graph) fn git_is_ancestor(
+    root: &Path,
+    ancestor: &str,
+    descendant: &str,
+) -> bool {
+    Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["merge-base", "--is-ancestor", ancestor, descendant])
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
+
 pub(in crate::commands::history_graph) fn git_bytes(
     root: &Path,
     arguments: &[&str],
