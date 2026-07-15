@@ -72,3 +72,6 @@ impl McpCursor {
             .map_err(|_| "Invalid MCP cursor position".to_string())
     }
 }
+
+#[cfg(test)]
+mod tests;

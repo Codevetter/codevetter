@@ -90,3 +90,6 @@ fn validate_repo_id(repo_id: &str) -> Result<(), String> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests;
