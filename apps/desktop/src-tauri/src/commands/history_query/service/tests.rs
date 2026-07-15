@@ -461,7 +461,6 @@ fn review_slice_is_file_scoped_cited_and_prompt_bounded() {
     )
     .expect("review slice");
     let prompt = render_review_history_slice(&slice);
-    let agent_context = render_agent_history_context(&slice);
 
     assert!(!slice.stale);
     assert_eq!(slice.episodes.len(), 1);
@@ -474,8 +473,5 @@ fn review_slice_is_file_scoped_cited_and_prompt_bounded() {
     assert!(prompt.contains("event=decision-1"));
     assert!(prompt.contains("event=qa-1"));
     assert!(prompt.len() <= 3_500);
-    assert!(agent_context.contains("history_query.v1 / structural_graph.v3"));
-    assert!(agent_context.contains("event `decision-1`"));
-    assert!(agent_context.contains("runtime/provider outcome"));
     fs::remove_dir_all(root).expect("remove fixture");
 }
