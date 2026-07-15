@@ -8,6 +8,7 @@ import {
 } from '../../../tests/fixtures/warm-verification/msw-app/bridge';
 import { createFixtureHandlers } from '../../../tests/fixtures/warm-verification/msw-app/handlers';
 import {
+  benchmarkStateNames,
   FixtureStateRegistry,
   namedStateNames,
   verificationHeadersFor,
@@ -85,8 +86,11 @@ describe('client-scoped MSW named state', () => {
 
   after(() => server.close());
 
-  it('provides at least two deterministic named states', async () => {
-    assert.deepEqual(namedStateNames, ['funded-empty-portfolio', 'funded-existing-portfolio']);
+  it('preserves the two portfolio states while registering every benchmark state', async () => {
+    assert.ok(namedStateNames.includes('funded-empty-portfolio'));
+    assert.ok(namedStateNames.includes('funded-existing-portfolio'));
+    assert.ok(benchmarkStateNames.every((stateName) => namedStateNames.includes(stateName)));
+    assert.equal(new Set(namedStateNames).size, 22);
     const empty = request('run-empty', 'scenario-empty');
     const existing = request('run-existing', 'scenario-existing', 'funded-existing-portfolio');
     registry.install(empty);
