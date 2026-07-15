@@ -66,7 +66,7 @@ pub(super) fn open_read_only(path: &PathBuf) -> Result<Connection, String> {
             "PRAGMA query_only = ON;
              PRAGMA mmap_size = 268435456;
              PRAGMA temp_store = MEMORY;
-             PRAGMA cache_size = -8192;",
+             PRAGMA cache_size = -4096;",
         )
         .map_err(|error| format!("Configure read-only history connection: {error}"))?;
     Ok(connection)
