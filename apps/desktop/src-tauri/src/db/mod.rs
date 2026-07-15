@@ -1,3 +1,4 @@
+pub(crate) mod history_graph_schema;
 pub mod queries;
 pub mod schema;
 pub(crate) mod structural_graph_schema;
