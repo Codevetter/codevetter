@@ -42,7 +42,7 @@
 - [x] 5.3 Implement starting/intermediate/final route records, unexpected-transition policies, interaction timing, and slow-interaction budgets.
 - [x] 5.4 Decide and document the accessibility scope; if full rules-engine auditing is accepted, add pinned dev-only `@axe-core/playwright`, otherwise ship and label the bounded smoke contract.
 - [x] 5.5 Implement deterministic screenshot checkpoint hashing, exact versioned baseline compatibility, bounded failure artifacts, and no-confidence handling for missing/stale baselines.
-- [ ] 5.6 Add observer negative fixtures for uncaught exceptions, hidden network errors, 5xx responses, unexpected calls, double submit, auth redirect, slow interaction, accessibility failure, and visual change.
+- [x] 5.6 Add observer negative fixtures for uncaught exceptions, hidden network errors, 5xx responses, unexpected calls, double submit, auth redirect, slow interaction, accessibility failure, and visual change.
 
 ## 6. Changed-Capability Selection
 
@@ -66,10 +66,10 @@
 
 ## 8. Performance, Storage, and Reliability Gates
 
-- [ ] 8.1 Implement timing instrumentation for diff, selection, context/auth/state, navigation, actions, observation, screenshots, reporting, and teardown, with cold startup reported separately.
+- [x] 8.1 Implement timing instrumentation for diff, selection, context/auth/state, navigation, actions, observation, screenshots, reporting, and teardown, with cold startup reported separately.
 - [ ] 8.2 Run two warm-up batches plus at least 20 recorded 20-scenario batches and enforce whole-invocation p95 below 30 seconds on the recorded Mac.
 - [ ] 8.3 Measure and publish the normal small changed-capability hot path, then set a regression budget from evidence without weakening the mandatory 20-scenario gate.
-- [ ] 8.4 Run observer negative fixtures outside performance samples and prove all required automatic regressions are detected without handwritten assertions.
+- [x] 8.4 Run observer negative fixtures outside performance samples and prove all required automatic regressions are detected without handwritten assertions.
 - [ ] 8.5 Implement passing-summary-only retention, failure/explicit artifact capture, count/byte/age caps, redacted cleanup controls, and shared Playwright-cache report-only behavior.
 - [ ] 8.6 Run 100 warm batches with failures and cancellations; gate context/process cleanup, bounded RSS, stable browser/server reuse, artifact caps, and no Cargo/Tauri/production build invocation.
 - [ ] 8.7 Profile parallelism one through four on the benchmark Mac and select the fastest stable default while retaining deterministic isolation.

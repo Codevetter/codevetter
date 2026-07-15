@@ -149,7 +149,16 @@ describe('ScenarioRunner', () => {
     assert.equal(result.outcome, 'passed');
     assert.ok(
       result.scenarios.every((entry) =>
-        entry.timings.some((timing) => timing.stage === 'observation')
+        [
+          'auth',
+          'context',
+          'state',
+          'navigation',
+          'actions',
+          'screenshots',
+          'observation',
+          'teardown',
+        ].every((stage) => entry.timings.some((timing) => timing.stage === stage))
       )
     );
     assert.deepEqual(

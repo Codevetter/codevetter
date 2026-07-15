@@ -201,6 +201,21 @@ describe('VerificationDaemon', () => {
     assert.equal(validateDaemonResponseEnvelope(envelope).ok, true);
   });
 
+  it('reports cold startup separately from warm verification timings', async () => {
+    const root = await fixtureRepo();
+    const runtime = fakeRuntime();
+    runtime.start = async () => runtime.health();
+    const ticks = [100, 250];
+    const daemon = await VerificationDaemon.create(root, gitSha, lease(root), runtime, {
+      monotonicNow: () => ticks.shift() ?? 250,
+      collectChangeSet: matchingChangeSet(root, []),
+    });
+
+    assert.equal(daemon.health().cold_startup_ms, null);
+    await daemon.start();
+    assert.equal(daemon.health().cold_startup_ms, 150);
+  });
+
   it('returns no confidence instead of passing an empty change selection', async () => {
     const root = await fixtureRepo();
     const daemon = await VerificationDaemon.create(root, gitSha, lease(root), fakeRuntime(), {

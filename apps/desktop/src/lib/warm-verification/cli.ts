@@ -250,8 +250,12 @@ function print(options: CliOptions, response: DaemonResponse): void {
     return;
   }
   if (response.type === 'health') {
+    const cold =
+      response.health.cold_startup_ms === null
+        ? 'cold startup pending'
+        : `cold ${Math.round(response.health.cold_startup_ms)}ms`;
     process.stdout.write(
-      `verifyd ${response.health.warm ? 'warm' : 'not warm'} · ${response.health.active_run_ids.length} active · ${response.health.chromium_revision}\n`
+      `verifyd ${response.health.warm ? 'warm' : 'not warm'} · ${response.health.active_run_ids.length} active · ${response.health.chromium_revision} · ${cold}\n`
     );
   } else if (response.type === 'verify_result') {
     printResult(response.result);

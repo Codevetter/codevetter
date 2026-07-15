@@ -226,6 +226,7 @@ export class ScenarioRunner {
           now: this.#now,
         }),
         now: this.#now,
+        monotonicNow: this.#monotonicNow,
       });
       const stateRequest = stateRequestForScenario(runId, scenario);
       stageStarted = this.#monotonicNow();
@@ -280,6 +281,7 @@ export class ScenarioRunner {
       await raceAbort(observer.auditAccessibility('final'), signal);
       observerResult = observer.finish();
       observer = undefined;
+      timings.push(timing('screenshots', scenario.id, observerResult.screenshotDurationMs));
       timings.push(timing('observation', scenario.id, elapsed(this.#monotonicNow, stageStarted)));
       outcome = observerResult.hasNoConfidence
         ? 'no_confidence'
@@ -290,6 +292,7 @@ export class ScenarioRunner {
       if (!observerResult && observer) {
         const observationStarted = this.#monotonicNow();
         observerResult = observer.finish();
+        timings.push(timing('screenshots', scenario.id, observerResult.screenshotDurationMs));
         timings.push(
           timing('observation', scenario.id, elapsed(this.#monotonicNow, observationStarted))
         );

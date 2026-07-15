@@ -107,6 +107,7 @@ function validHealthResponse(): DaemonResponseEnvelope {
         target_sha: gitSha,
         config_hash: sha256,
         chromium_revision: 'chromium-1245',
+        cold_startup_ms: 1_250,
         warm: true,
         server: process,
         browser: {

@@ -85,6 +85,7 @@ export interface DaemonHealth {
   target_sha: string;
   config_hash: string;
   chromium_revision: string;
+  cold_startup_ms: number | null;
   warm: boolean;
   server: OwnedRuntimeHealth;
   browser: OwnedRuntimeHealth;
@@ -565,6 +566,9 @@ function validateHealth(value: unknown, path: string, issues: ContractIssue[]): 
   stringField(value, 'target_sha', path, issues, { pattern: GIT_SHA_PATTERN });
   stringField(value, 'config_hash', path, issues, { pattern: SHA256_PATTERN });
   stringField(value, 'chromium_revision', path, issues);
+  if (value.cold_startup_ms !== null) {
+    numberField(value, 'cold_startup_ms', path, issues, { min: 0, max: 300_000 });
+  }
   if (typeof value.warm !== 'boolean')
     issues.push({ path: `${path}.warm`, message: 'must be a boolean' });
   validateOwnedProcess(value.server, `${path}.server`, issues);

@@ -14,6 +14,7 @@ export interface AutomaticObserverOptions {
   slowInteractionMs: number;
   visualCheckpointVerifier?: Pick<VisualCheckpointVerifier, 'verify'>;
   now?: () => Date;
+  monotonicNow?: () => number;
 }
 
 export interface MutationLedgerEntry {
@@ -27,6 +28,7 @@ export interface AutomaticObserverResult {
   observations: VerifyObservation[];
   artifacts: VerifyArtifact[];
   routes: string[];
+  screenshotDurationMs: number;
   hasRegression: boolean;
   hasNoConfidence: boolean;
 }
@@ -51,6 +53,7 @@ export class AutomaticObserver implements ScenarioObserve {
   readonly #accessibilityCheckpoints = new Set<string>();
   #page: Page | undefined;
   #nextObservation = 1;
+  #screenshotDurationMs = 0;
   #detachers: Array<() => void> = [];
 
   constructor(options: AutomaticObserverOptions) {
@@ -194,7 +197,11 @@ export class AutomaticObserver implements ScenarioObserve {
       await this.auditAccessibility(name);
       return;
     }
-    const result = await verifier.verify(name, this.#requirePage());
+    const started = (this.#options.monotonicNow ?? (() => performance.now()))();
+    const result = await verifier.verify(name, this.#requirePage()).finally(() => {
+      this.#screenshotDurationMs +=
+        (this.#options.monotonicNow ?? (() => performance.now()))() - started;
+    });
     if (result.artifact) this.#artifacts.push(result.artifact);
     this.#record(
       'screenshot',
@@ -289,6 +296,7 @@ export class AutomaticObserver implements ScenarioObserve {
       observations: [...this.#observations],
       artifacts: [...this.#artifacts],
       routes: [...this.#routes],
+      screenshotDurationMs: Math.max(0, Math.round(this.#screenshotDurationMs * 1_000) / 1_000),
       hasRegression: this.#observations.some((entry) => entry.disposition === 'regression'),
       hasNoConfidence: this.#observations.some((entry) => entry.disposition === 'no_confidence'),
     };
