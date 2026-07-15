@@ -2,7 +2,7 @@
 
 use crate::{db, DbState};
 use rusqlite::{params, Connection};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::{Map, Value};
 use std::path::{Component, Path};
 use tauri::State;
@@ -13,14 +13,6 @@ const MAX_ARRAY_ITEMS: usize = 1_000;
 const MAX_OBJECT_KEYS: usize = 128;
 const MAX_DEPTH: usize = 12;
 const MAX_LIST_LIMIT: i64 = 100;
-
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct RecordWarmVerificationRunInput {
-    review_id: Option<String>,
-    repo_path: String,
-    result: Value,
-}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct StoredWarmVerificationRun {
@@ -441,7 +433,16 @@ fn validate_repo_path(repo_path: &str) -> Result<String, String> {
     if repo_path.is_empty() || repo_path.len() > 4_096 || !Path::new(repo_path).is_absolute() {
         return Err("repo_path must be a bounded absolute path".into());
     }
-    Ok(repo_path.to_owned())
+    let canonical = Path::new(repo_path)
+        .canonicalize()
+        .map_err(|_| "repo_path is not accessible".to_string())?;
+    if !canonical.is_dir() {
+        return Err("repo_path must be a directory".into());
+    }
+    canonical
+        .to_str()
+        .map(str::to_owned)
+        .ok_or_else(|| "repo_path must be valid UTF-8".to_string())
 }
 
 fn map_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<StoredWarmVerificationRun> {
@@ -506,6 +507,25 @@ fn insert_run(
     })
 }
 
+pub(crate) fn persist_validated_run(
+    conn: &Connection,
+    review_id: Option<&str>,
+    repo_path: &str,
+    result: &Value,
+) -> Result<StoredWarmVerificationRun, String> {
+    let repo_path = validate_repo_path(repo_path)?;
+    let review_id = review_id.map(str::trim).filter(|id| !id.is_empty());
+    if review_id.is_some_and(|id| !valid_id(id)) {
+        return Err("review_id has an invalid identifier".into());
+    }
+    let result_json = validate_result(result)?;
+    db::with_busy_retry(
+        || insert_run(conn, review_id, &repo_path, result, &result_json),
+        5,
+    )
+    .map_err(|error| error.to_string())
+}
+
 fn list_runs(
     conn: &Connection,
     repo_path: Option<&str>,
@@ -528,29 +548,6 @@ fn list_runs(
     let mut stmt = conn.prepare(sql)?;
     let rows = stmt.query_map(params![filter, limit], map_row)?.collect();
     rows
-}
-
-#[tauri::command]
-pub async fn record_warm_verification_run(
-    db: State<'_, DbState>,
-    input: RecordWarmVerificationRunInput,
-) -> Result<StoredWarmVerificationRun, String> {
-    let repo_path = validate_repo_path(&input.repo_path)?;
-    let review_id = input
-        .review_id
-        .as_deref()
-        .map(str::trim)
-        .filter(|id| !id.is_empty());
-    if review_id.is_some_and(|id| !valid_id(id)) {
-        return Err("review_id has an invalid identifier".into());
-    }
-    let result_json = validate_result(&input.result)?;
-    let conn = db.0.lock().map_err(|error| error.to_string())?;
-    db::with_busy_retry(
-        || insert_run(&conn, review_id, &repo_path, &input.result, &result_json),
-        5,
-    )
-    .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -652,6 +649,23 @@ mod tests {
             )
             .expect("legacy remains");
         assert_eq!(legacy, ("old".into(), 1, "unchanged".into()));
+    }
+
+    #[test]
+    fn canonicalizes_repository_filters_and_rejects_files() {
+        let temp = tempfile::tempdir().expect("temp repo");
+        std::fs::create_dir_all(temp.path().join("nested")).expect("nested");
+        let alias = temp.path().join("nested").join("..");
+        assert_eq!(
+            validate_repo_path(alias.to_str().expect("path")).expect("canonical"),
+            temp.path()
+                .canonicalize()
+                .expect("canonical temp")
+                .to_string_lossy()
+        );
+        let file = temp.path().join("file");
+        std::fs::write(&file, "not a repo").expect("file");
+        assert!(validate_repo_path(file.to_str().expect("file path")).is_err());
     }
 
     #[test]

@@ -14,7 +14,8 @@ const PERIODIC_INDEX_INTERVAL_SECS: u64 = commands::history::FULL_INDEX_RECOVERY
 /// When the app is started from Finder/Dock (not a terminal), macOS gives it a
 /// bare `PATH` of `/usr/bin:/bin:/usr/sbin:/sbin`. Tools installed by Homebrew
 /// (`/opt/homebrew/bin` on Apple Silicon, `/usr/local/bin` on Intel) and user
-/// installs (`~/.local/bin`) are then invisible, so `StdCommand::new("gh")`
+/// installs (`~/.local/bin`, mise, Volta, or pnpm home) are then invisible, so
+/// `StdCommand::new("gh")`
 /// fails with "not found" and GitHub auth detection reports "not connected"
 /// even though the user is fully signed in via the `gh` CLI in their terminal.
 ///
@@ -34,6 +35,9 @@ fn repair_path_for_gui() {
     ];
     if let Ok(home) = std::env::var("HOME") {
         candidates.push(format!("{home}/.local/bin"));
+        candidates.push(format!("{home}/.local/share/mise/shims"));
+        candidates.push(format!("{home}/.volta/bin"));
+        candidates.push(format!("{home}/Library/pnpm"));
     }
     for dir in candidates {
         if !present.contains(dir.as_str()) && std::path::Path::new(&dir).is_dir() {
@@ -508,8 +512,14 @@ fn main() {
             commands::synthetic_qa::discover_playwright_specs,
             commands::synthetic_qa::record_synthetic_qa_run,
             commands::synthetic_qa::list_synthetic_qa_runs,
-            commands::warm_verification::record_warm_verification_run,
             commands::warm_verification::list_warm_verification_runs,
+            commands::warm_verification_bridge::get_warm_verification_daemon_health,
+            commands::warm_verification_bridge::start_warm_verification_daemon,
+            commands::warm_verification_bridge::stop_warm_verification_daemon,
+            commands::warm_verification_bridge::run_warm_changed_verification,
+            commands::warm_verification_bridge::cancel_warm_verification_run,
+            commands::warm_verification_bridge::cleanup_warm_verification_artifacts,
+            commands::warm_verification_bridge::get_current_warm_verification_identity,
             // Live browser agent (drives real Chrome via chromiumoxide)
             #[cfg(feature = "browser-agent")]
             commands::agent::agent_run_task,
