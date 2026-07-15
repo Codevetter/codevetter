@@ -701,7 +701,6 @@ CREATE INDEX IF NOT EXISTS idx_synthetic_qa_runs_repo_created
 -- payload separate avoids rewriting or weakening legacy synthetic_qa_runs.
 CREATE TABLE IF NOT EXISTS warm_verification_runs (
     id               TEXT PRIMARY KEY,
-    review_id        TEXT REFERENCES local_reviews(id) ON DELETE SET NULL,
     repo_path        TEXT NOT NULL,
     run_id           TEXT UNIQUE NOT NULL,
     schema_version   INTEGER NOT NULL CHECK (schema_version = 1),
@@ -720,9 +719,6 @@ CREATE TABLE IF NOT EXISTS warm_verification_runs (
 
 CREATE INDEX IF NOT EXISTS idx_warm_verification_runs_repo_created
     ON warm_verification_runs(repo_path, created_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_warm_verification_runs_review_created
-    ON warm_verification_runs(review_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS audience_validation_runs (
     id                       TEXT PRIMARY KEY,

@@ -62,7 +62,7 @@
 - [x] 7.4 Update staged verification so only exact, current, complete warm runs satisfy executable evidence; stale, skipped, cancelled, or operational runs remain unverified.
 - [x] 7.5 Add T-Rex daemon/server/browser health, selection explanation, run/cancel, timing, failure, artifact, retention, cleanup, and no-confidence states; keep Review and staged verification as read-only evidence consumers rather than duplicate control surfaces.
 - [x] 7.6 Add migration/rollback, legacy-row, CLI contract, persistence, Review proof, staged outcome, and mocked-browser UI tests.
-- [ ] 7.7 Run the third cleanup gate across CLI, persistence, T-Rex, and Review adapters; delete superseded code paths, report file/LOC growth, and rerun the complete warm-verification and UI checks.
+- [x] 7.7 Run the third cleanup gate across CLI, persistence, T-Rex, and Review adapters; delete superseded code paths, report file/LOC growth, and rerun the complete warm-verification and UI checks.
 
 ## 8. Performance, Storage, and Reliability Gates
 

@@ -3940,7 +3940,6 @@ export interface StoredSyntheticQaRun {
 
 export interface StoredWarmVerificationRun {
   id: string;
-  review_id: string | null;
   repo_path: string;
   result: VerifyResult;
   created_at: string;
@@ -3986,13 +3985,11 @@ export async function listSyntheticQaRuns(
 }
 
 export async function listWarmVerificationRuns(input: {
-  repoPath?: string;
-  reviewId?: string;
+  repoPath: string;
   limit?: number;
 }): Promise<StoredWarmVerificationRun[]> {
   return safeInvoke('list_warm_verification_runs', {
-    repoPath: input.repoPath ?? null,
-    reviewId: input.reviewId ?? null,
+    repoPath: input.repoPath,
     limit: input.limit ?? 20,
   });
 }
@@ -4038,7 +4035,7 @@ export async function stopWarmVerificationDaemon(
 export async function runWarmChangedVerification(input: {
   repoPath: string;
   detailedCapture: boolean;
-  runId?: string;
+  runId: string;
 }): Promise<StoredWarmVerificationRun> {
   return safeInvoke('run_warm_changed_verification', {
     repoPath: input.repoPath,

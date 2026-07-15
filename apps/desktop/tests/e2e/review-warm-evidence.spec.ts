@@ -214,14 +214,12 @@ async function installReviewMock(page: Page, newestIsStale: boolean) {
       warmRuns: [
         {
           id: 'stored-newest',
-          review_id: null,
           repo_path: REPO_PATH,
           result: newest,
           created_at: newest.finished_at,
         },
         {
           id: 'stored-older',
-          review_id: REVIEW_ID,
           repo_path: REPO_PATH,
           result: older,
           created_at: '2026-07-14T08:00:01.000Z',
@@ -257,6 +255,14 @@ for (const evidence of [
     await expect(
       panel.getByRole('button', { name: /^(verify changed|start|run|cancel)/i })
     ).toHaveCount(0);
+    await expect(page.getByText('Warm verification history').first()).toBeVisible();
+    if (!evidence.stale) {
+      await page.getByRole('button').filter({ hasText: 'Verification' }).click();
+      const executionFindings = page.getByTestId('warm-execution-findings');
+      await expect(executionFindings).toContainText('Recent read-only execution findings');
+      await expect(executionFindings).toContainText('older-regression');
+      await expect(executionFindings).toContainText('Warm verification detected a regression');
+    }
 
     const commands = await page.evaluate(() => {
       const controlled = window as unknown as {
@@ -267,8 +273,12 @@ for (const evidence of [
     const historyReads = commands.filter(({ cmd }) => cmd === 'list_warm_verification_runs');
     expect(historyReads.length).toBeGreaterThan(0);
     for (const read of historyReads) {
-      expect(read.args).toEqual({ repoPath: REPO_PATH, reviewId: null, limit: 1 });
+      expect(read.args?.repoPath).toBe(REPO_PATH);
+      expect(read.args?.reviewId).toBeUndefined();
+      expect([1, 8]).toContain(read.args?.limit);
     }
+    expect(historyReads.some(({ args }) => args?.limit === 1)).toBe(true);
+    expect(historyReads.some(({ args }) => args?.limit === 8)).toBe(true);
     const identityReads = commands.filter(
       ({ cmd }) => cmd === 'get_current_warm_verification_identity'
     );
@@ -283,6 +293,15 @@ for (const evidence of [
         ].includes(cmd)
       )
     ).toBe(false);
+    expect(commands.some(({ cmd }) => cmd === 'record_synthetic_qa_run')).toBe(false);
+    const legacyQaWrites = commands.filter(
+      ({ cmd, args }) =>
+        cmd === 'set_preference' && String(args?.key ?? '').startsWith('quick_review_qa_runs_')
+    );
+    for (const write of legacyQaWrites) {
+      expect(String(write.args?.value ?? '')).not.toContain('warm_verifyd');
+      expect(String(write.args?.value ?? '')).not.toContain('older-regression');
+    }
     consoleErrors.assertNoErrors();
   });
 }

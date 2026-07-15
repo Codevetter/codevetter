@@ -255,6 +255,38 @@ or production-build invocations. Its raw samples, exact source hashes, resource
 gates, command audit, and temporary-root cleanup proof are in
 `tests/fixtures/warm-verification/stability-2026-07-15.json`.
 
+## 6. Warm-verification implementation growth
+
+The third cleanup gate measured the complete warm-verification surface against
+`75f1deb1`, the parent of the first runtime implementation commit. These are
+source-line changes, not bundle size:
+
+| Surface | Files | Net lines |
+|---|---:|---:|
+| TypeScript runtime core | 25 | +9589 |
+| TypeScript runtime tests | 26 | +5688 |
+| Rust persistence and repository bridge | 2 | +1762 |
+| T-Rex UI and focused browser spec | 3 | +999 |
+| Review read-only integration and proof | 9 | +710 |
+| Qualification scripts | 2 | +890 |
+| Browser target, fixtures, and recorded reports | 15 | +3730 |
+| Full selected surface, including config/operator docs | 85 | +23701 |
+
+The number is intentionally reported rather than described as small. It includes
+5688 lines of unit tests plus checked-in browser fixtures and raw qualification
+evidence. The production core is still substantial and should not grow by
+copying another runtime or control surface.
+
+The cleanup removed the unused review-specific warm-run column/filter/index,
+the backend run-ID fallback, a duplicate current-identity type, an unused CLI
+error field, and a 20-row T-Rex read where only the newest row was rendered. It
+also found that the existing projection adapter was test-only; deleting it would
+have hidden an incomplete spec. The adapter is now used by a bounded read-only
+Review history, timeline, same-flow comparison, and historical execution-finding
+surface without duplicating legacy QA rows, preferences, controls, or persisted
+review-finding indices. That correction made the cleanup slice net +122 lines
+across 14 feature files (+228/-106) while closing the missing production path.
+
 ## Principle
 
 A feature is on-budget when it doesn't make the app re-do work proportional to

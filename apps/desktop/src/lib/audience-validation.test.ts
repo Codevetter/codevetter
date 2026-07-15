@@ -62,7 +62,6 @@ function warmResult(overrides: Partial<VerifyResult> = {}): VerifyResult {
 function storedWarm(result = warmResult()): StoredWarmVerificationRun {
   return {
     id: 'stored-warm-1',
-    review_id: null,
     repo_path: '/tmp/repo',
     result,
     created_at: result.finished_at,

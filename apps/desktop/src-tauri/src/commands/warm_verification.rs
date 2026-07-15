@@ -17,7 +17,6 @@ const MAX_LIST_LIMIT: i64 = 100;
 #[derive(Debug, Clone, Serialize)]
 pub struct StoredWarmVerificationRun {
     id: String,
-    review_id: Option<String>,
     repo_path: String,
     result: Value,
     created_at: String,
@@ -446,7 +445,7 @@ fn validate_repo_path(repo_path: &str) -> Result<String, String> {
 }
 
 fn map_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<StoredWarmVerificationRun> {
-    let result_json: String = row.get(3)?;
+    let result_json: String = row.get(2)?;
     let result = serde_json::from_str(&result_json).map_err(|error| {
         rusqlite::Error::FromSqlConversionFailure(
             result_json.len(),
@@ -456,16 +455,14 @@ fn map_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<StoredWarmVerificationRu
     })?;
     Ok(StoredWarmVerificationRun {
         id: row.get(0)?,
-        review_id: row.get(1)?,
-        repo_path: row.get(2)?,
+        repo_path: row.get(1)?,
         result,
-        created_at: row.get(4)?,
+        created_at: row.get(3)?,
     })
 }
 
 fn insert_run(
     conn: &Connection,
-    review_id: Option<&str>,
     repo_path: &str,
     result: &Value,
     result_json: &str,
@@ -475,13 +472,12 @@ fn insert_run(
     let source = &result["source"];
     conn.execute(
         "INSERT INTO warm_verification_runs (
-            id, review_id, repo_path, run_id, schema_version, protocol_version,
+            id, repo_path, run_id, schema_version, protocol_version,
             outcome, target_sha, change_set_kind, change_set_id, started_at,
             finished_at, warm, stale, result_json, created_at
-         ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16)",
+         ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
         params![
             id,
-            review_id,
             repo_path,
             result["run_id"].as_str(),
             result["schema_version"].as_u64(),
@@ -500,7 +496,6 @@ fn insert_run(
     )?;
     Ok(StoredWarmVerificationRun {
         id,
-        review_id: review_id.map(str::to_owned),
         repo_path: repo_path.to_owned(),
         result: result.clone(),
         created_at,
@@ -509,75 +504,44 @@ fn insert_run(
 
 pub(crate) fn persist_validated_run(
     conn: &Connection,
-    review_id: Option<&str>,
     repo_path: &str,
     result: &Value,
 ) -> Result<StoredWarmVerificationRun, String> {
     let repo_path = validate_repo_path(repo_path)?;
-    let review_id = review_id.map(str::trim).filter(|id| !id.is_empty());
-    if review_id.is_some_and(|id| !valid_id(id)) {
-        return Err("review_id has an invalid identifier".into());
-    }
     let result_json = validate_result(result)?;
-    db::with_busy_retry(
-        || insert_run(conn, review_id, &repo_path, result, &result_json),
-        5,
-    )
-    .map_err(|error| error.to_string())
+    db::with_busy_retry(|| insert_run(conn, &repo_path, result, &result_json), 5)
+        .map_err(|error| error.to_string())
 }
 
 fn list_runs(
     conn: &Connection,
-    repo_path: Option<&str>,
-    review_id: Option<&str>,
+    repo_path: &str,
     limit: i64,
 ) -> rusqlite::Result<Vec<StoredWarmVerificationRun>> {
-    let (sql, filter) = if let Some(repo_path) = repo_path {
-        (
-            "SELECT id, review_id, repo_path, result_json, created_at FROM warm_verification_runs
-             WHERE repo_path = ?1 ORDER BY created_at DESC, id DESC LIMIT ?2",
-            repo_path,
-        )
-    } else {
-        (
-            "SELECT id, review_id, repo_path, result_json, created_at FROM warm_verification_runs
-             WHERE review_id = ?1 ORDER BY created_at DESC, id DESC LIMIT ?2",
-            review_id.expect("validated review filter"),
-        )
-    };
-    let mut stmt = conn.prepare(sql)?;
-    let rows = stmt.query_map(params![filter, limit], map_row)?.collect();
+    let mut stmt = conn.prepare(
+        "SELECT id, repo_path, result_json, created_at FROM warm_verification_runs
+         WHERE repo_path = ?1 ORDER BY created_at DESC, id DESC LIMIT ?2",
+    )?;
+    let rows = stmt
+        .query_map(params![repo_path, limit], map_row)?
+        .collect();
     rows
 }
 
 #[tauri::command]
 pub async fn list_warm_verification_runs(
     db: State<'_, DbState>,
-    repo_path: Option<String>,
-    review_id: Option<String>,
+    repo_path: String,
     limit: Option<i64>,
 ) -> Result<Vec<StoredWarmVerificationRun>, String> {
-    let repo_path = repo_path.as_deref().map(validate_repo_path).transpose()?;
-    let review_id = review_id
-        .as_deref()
-        .map(str::trim)
-        .filter(|id| !id.is_empty());
-    if repo_path.is_some() == review_id.is_some() {
-        return Err("provide exactly one of repo_path or review_id".into());
-    }
-    if review_id.is_some_and(|id| !valid_id(id)) {
-        return Err("review_id has an invalid identifier".into());
-    }
+    let repo_path = validate_repo_path(&repo_path)?;
     let limit = limit.unwrap_or(20);
     if !(1..=MAX_LIST_LIMIT).contains(&limit) {
         return Err(format!("limit must be between 1 and {MAX_LIST_LIMIT}"));
     }
     let conn = db.0.lock().map_err(|error| error.to_string())?;
-    db::with_busy_retry(
-        || list_runs(&conn, repo_path.as_deref(), review_id, limit),
-        5,
-    )
-    .map_err(|error| error.to_string())
+    db::with_busy_retry(|| list_runs(&conn, &repo_path, limit), 5)
+        .map_err(|error| error.to_string())
 }
 
 #[cfg(test)]
@@ -630,12 +594,12 @@ mod tests {
         conn.execute("INSERT INTO synthetic_qa_runs (id, loop_id, runner_type, pass, notes, created_at) VALUES ('legacy','old','playwright_builtin',1,'unchanged','2026-01-01')", []).expect("legacy");
         let result = result("warm-run-1");
         let json = validate_result(&result).expect("valid");
-        insert_run(&conn, None, "/repo", &result, &json).expect("insert");
+        insert_run(&conn, "/repo", &result, &json).expect("insert");
 
         db::schema::run_migrations(&conn).expect("idempotent schema rerun");
         db::schema::run_migrations(&conn).expect("second idempotent schema rerun");
 
-        let rows = list_runs(&conn, Some("/repo"), None, 10).expect("list");
+        let rows = list_runs(&conn, "/repo", 10).expect("list");
         assert_eq!(
             rows[0].result["selection"]["selected_scenario_ids"][0],
             "app-smoke"
@@ -678,7 +642,7 @@ mod tests {
             .expect("legacy list after warm data");
         assert_eq!(legacy_runs.len(), 1);
         assert_eq!(legacy_runs[0].id, later_legacy.id);
-        assert_eq!(list_runs(&conn, Some("/repo"), None, 10).unwrap().len(), 1);
+        assert_eq!(list_runs(&conn, "/repo", 10).unwrap().len(), 1);
     }
 
     #[test]
@@ -704,12 +668,12 @@ mod tests {
         db::schema::run_migrations(&conn).expect("schema");
         let first_result = result("warm-run-1");
         let json = validate_result(&first_result).expect("valid");
-        insert_run(&conn, None, "/repo", &first_result, &json).expect("insert");
-        assert!(insert_run(&conn, None, "/repo", &first_result, &json).is_err());
+        insert_run(&conn, "/repo", &first_result, &json).expect("insert");
+        assert!(insert_run(&conn, "/repo", &first_result, &json).is_err());
         let mut stale_pass = result("warm-run-2");
         stale_pass["stale"] = json!(true);
         assert!(validate_result(&stale_pass).is_err());
-        assert_eq!(list_runs(&conn, Some("/repo"), None, 10).unwrap().len(), 1);
+        assert_eq!(list_runs(&conn, "/repo", 10).unwrap().len(), 1);
     }
 
     #[test]

@@ -1,6 +1,6 @@
 import type { FindingEvidence } from '@/lib/synthetic-qa/apply-evidence';
 import type { SyntheticQaRunResult } from '@/lib/synthetic-qa/types';
-import type { CliReviewFinding } from '@/lib/tauri-ipc';
+import type { CliReviewFinding, CurrentWarmVerificationIdentity } from '@/lib/tauri-ipc';
 import type { QaComparisonRun, VerificationTimelineItem } from '@/lib/review-proof';
 
 import type { VerifyArtifact, VerifyObservation, VerifyResult } from './contracts';
@@ -12,16 +12,6 @@ type DeepReadonly<T> = T extends (...args: never[]) => unknown
     : T extends object
       ? { readonly [Key in keyof T]: DeepReadonly<T[Key]> }
       : T;
-
-export interface CurrentWarmVerificationIdentity {
-  target_sha: string;
-  change_set_kind: VerifyResult['source']['change_set_kind'];
-  change_set_identity: string;
-  config_hash: string;
-  manifest_hash: string;
-  source_hash: string;
-  observation_policy_profile_id: string;
-}
 
 export interface WarmExecutableEvidenceDecision {
   eligible: boolean;

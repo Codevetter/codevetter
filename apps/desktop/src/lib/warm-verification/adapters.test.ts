@@ -79,6 +79,7 @@ function result(overrides: Partial<VerifyResult> = {}): VerifyResult {
 
 function currentIdentity(value: VerifyResult) {
   return {
+    schema_version: 1 as const,
     target_sha: value.source.target_sha,
     change_set_kind: value.source.change_set_kind,
     change_set_identity: value.source.change_set_identity,
@@ -327,5 +328,31 @@ describe('warm verification evidence adapters', () => {
     assert.equal(beforeComparison.flowKey, afterComparison.flowKey);
     assert.equal(comparison?.status, 'fixed');
     assert.equal(comparison?.before.flowKey, comparison?.after?.flowKey);
+  });
+
+  it('does not compare warm runs after their verifier contract changes', () => {
+    const before = warmResultToComparisonRun(
+      result({
+        outcome: 'regression',
+        finished_at: '2026-07-15T00:00:01.000Z',
+        scenarios: [
+          { scenario_id: 'portfolio-empty', outcome: 'regression', duration_ms: 400 },
+          { scenario_id: 'smoke-shell', outcome: 'passed', duration_ms: 200 },
+        ],
+      })
+    );
+    const after = warmResultToComparisonRun(
+      result({
+        run_id: 'warm-run-contract-change',
+        started_at: '2026-07-15T00:02:00.000Z',
+        finished_at: '2026-07-15T00:02:01.000Z',
+        source: { ...result().source, manifest_hash: hash('1') },
+      })
+    );
+    const comparison = buildQaPostFixComparison([after, before], '2026-07-15T00:01:00.000Z');
+
+    assert.notEqual(before.flowKey, after.flowKey);
+    assert.equal(comparison?.status, 'needs_rerun');
+    assert.equal(comparison?.after, undefined);
   });
 });

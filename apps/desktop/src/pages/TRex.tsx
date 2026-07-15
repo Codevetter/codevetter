@@ -121,7 +121,7 @@ export default function TRex() {
       listTrexPrRuns(selectedRepoPath ?? undefined, 50),
     ]);
     const warmRunsRequest = selectedRepoPath
-      ? listWarmVerificationRuns({ repoPath: selectedRepoPath, limit: 20 })
+      ? listWarmVerificationRuns({ repoPath: selectedRepoPath, limit: 1 })
       : Promise.resolve([]);
     const healthRequest = selectedRepoPath
       ? getWarmVerificationDaemonHealth(selectedRepoPath)
