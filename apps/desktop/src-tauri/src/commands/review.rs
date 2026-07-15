@@ -1496,10 +1496,10 @@ pub async fn run_cli_review_core(
     // flight at once. Results are collected by index so the order matches the
     // plan regardless of completion order.
     const MAX_CONCURRENT_SPECIALISTS: usize = 3;
+    type SpecialistTaskResult = (usize, Result<(Value, String), String>);
     let total = specialist_prompts.len();
     let mut results: Vec<Option<(Value, String)>> = (0..total).map(|_| None).collect();
-    let mut join_set: tokio::task::JoinSet<(usize, Result<(Value, String), String>)> =
-        tokio::task::JoinSet::new();
+    let mut join_set: tokio::task::JoinSet<SpecialistTaskResult> = tokio::task::JoinSet::new();
     let mut next = 0usize;
 
     while next < total || !join_set.is_empty() {

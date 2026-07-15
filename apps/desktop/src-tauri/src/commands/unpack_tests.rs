@@ -268,9 +268,9 @@ fn outcome_trust_actions_prioritize_failed_rows_and_missing_baselines() {
 
     let trend = outcome_trend(
         &[],
-        &[failing_qa.clone()],
-        &[failed_gate.clone()],
-        &[finding.clone()],
+        std::slice::from_ref(&failing_qa),
+        std::slice::from_ref(&failed_gate),
+        std::slice::from_ref(&finding),
     );
     let actions = outcome_trust_actions(
         &[],

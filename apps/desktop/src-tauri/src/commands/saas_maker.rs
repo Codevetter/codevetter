@@ -757,7 +757,7 @@ mod tests {
 
     #[test]
     fn link_match_pairs_repo_basename_to_project_name() {
-        let projects = vec![
+        let projects = [
             SaasMakerProject {
                 id: "p1".into(),
                 name: "CodeVetter".into(),
@@ -775,7 +775,7 @@ mod tests {
         ];
         // A repo whose dir basename is "CodeVetter" matches by name_key even
         // though the project slug carries a random suffix.
-        let candidate_keys = vec![name_key("CodeVetter")];
+        let candidate_keys = [name_key("CodeVetter")];
         let matched = projects
             .iter()
             .find(|p| candidate_keys.iter().any(|k| k == &name_key(&p.name)));

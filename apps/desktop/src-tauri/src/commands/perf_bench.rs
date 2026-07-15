@@ -29,7 +29,11 @@ fn synthetic_claude_jsonl(target_bytes: usize) -> String {
     let mut out = String::with_capacity(target_bytes + 1024);
     let mut i = 0usize;
     while out.len() < target_bytes {
-        let role = if i % 2 == 0 { "user" } else { "assistant" };
+        let role = if i.is_multiple_of(2) {
+            "user"
+        } else {
+            "assistant"
+        };
         // ~250-400 bytes/line, similar to real transcripts.
         let line = format!(
             "{{\"type\":\"{role}\",\"sessionId\":\"bench-session-0001\",\"version\":\"1.0.0\",\"gitBranch\":\"main\",\"cwd\":\"/Users/dev/project\",\"timestamp\":\"2026-06-19T10:{:02}:{:02}Z\",\"uuid\":\"uuid-{i}\",\"message\":{{\"role\":\"{role}\",\"content\":\"This is synthetic transcript content line {i} used to exercise the JSON-per-line parser with a representative amount of text to deserialize and scan for fields.\"}}}}",
