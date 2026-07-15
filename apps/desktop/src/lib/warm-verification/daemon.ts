@@ -2,7 +2,11 @@ import { createHash } from 'node:crypto';
 import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-import { collectWorktreeChangeSet } from './change-set';
+import {
+  collectGitChangeSet,
+  type CollectedGitChangeSet,
+  type GitChangeSetRequest,
+} from './change-set';
 import type {
   DaemonHealth,
   DaemonRequestEnvelope,
@@ -45,7 +49,10 @@ export interface VerificationDaemonDependencies {
     changedPaths: readonly string[]
   ) => Promise<string>;
   onShutdown?: (graceMs: number) => void;
-  collectChangeSet?: typeof collectWorktreeChangeSet;
+  collectChangeSet?: (
+    repoRoot: string,
+    request: GitChangeSetRequest
+  ) => Promise<CollectedGitChangeSet>;
   watchSources?: typeof watchVerificationSources;
 }
 
@@ -65,7 +72,7 @@ export class VerificationDaemon {
   readonly #monotonicNow: () => number;
   readonly #sourceHash: NonNullable<VerificationDaemonDependencies['sourceHash']>;
   readonly #onShutdown: (graceMs: number) => void;
-  readonly #collectChangeSet: typeof collectWorktreeChangeSet;
+  readonly #collectChangeSet: NonNullable<VerificationDaemonDependencies['collectChangeSet']>;
   readonly #watchSources: typeof watchVerificationSources;
   readonly #activeRuns = new Map<string, ActiveRun>();
 
@@ -95,7 +102,7 @@ export class VerificationDaemon {
     this.#monotonicNow = dependencies.monotonicNow ?? (() => performance.now());
     this.#sourceHash = dependencies.sourceHash ?? hashVerificationSources;
     this.#onShutdown = dependencies.onShutdown ?? (() => undefined);
-    this.#collectChangeSet = dependencies.collectChangeSet ?? collectWorktreeChangeSet;
+    this.#collectChangeSet = dependencies.collectChangeSet ?? collectGitChangeSet;
     this.#watchSources = dependencies.watchSources ?? watchVerificationSources;
   }
 
@@ -291,10 +298,11 @@ export class VerificationDaemon {
     const daemonTimings: VerifyResult['timings'] = [];
     let warm = false;
     let sourceWatch: VerificationSourceWatch | undefined;
+    const changeSetRequest = requestForChangeSet(changeSet);
 
     try {
       const currentChangeSet = await this.#timed('diff', daemonTimings, () =>
-        raceAbort(this.#collectChangeSet(this.#repoRoot), runSignal)
+        raceAbort(this.#collectChangeSet(this.#repoRoot, changeSetRequest), runSignal)
       );
       if (
         currentChangeSet.changeSet.target_sha !== changeSet.target_sha ||
@@ -378,7 +386,10 @@ export class VerificationDaemon {
         this.#sourceHash(this.#repoRoot, afterConfig, afterManifest, changeSet.changed_paths),
         runSignal
       );
-      const afterChangeSet = await raceAbort(this.#collectChangeSet(this.#repoRoot), runSignal);
+      const afterChangeSet = await raceAbort(
+        this.#collectChangeSet(this.#repoRoot, changeSetRequest),
+        runSignal
+      );
       if (
         afterChangeSet.changeSet.target_sha !== changeSet.target_sha ||
         afterChangeSet.changeSet.identity !== changeSet.identity
@@ -465,7 +476,7 @@ export class VerificationDaemon {
       timings: [],
       observations: batch?.observations ?? [],
       limitations: [...(batch?.limitations ?? []), ...limitations],
-      artifacts: [],
+      artifacts: batch?.artifacts ?? [],
       cancellation,
     };
     daemonTimings.push({
@@ -542,6 +553,19 @@ function selectionSummary(
     complete: selection.complete,
     explanation: explanation || 'Explicit changed-capability selection completed',
   };
+}
+
+function requestForChangeSet(changeSet: VerifyChangeSetIdentity): GitChangeSetRequest {
+  if (changeSet.kind === 'worktree' || changeSet.kind === 'staged') {
+    return { kind: changeSet.kind };
+  }
+  if (!changeSet.revision) {
+    throw new VerificationRunError(
+      'source_stale',
+      `${changeSet.kind} change set omitted its immutable revision`
+    );
+  }
+  return { kind: changeSet.kind, revision: changeSet.revision };
 }
 
 function limitationForRunError(error: unknown): VerifyLimitation {
