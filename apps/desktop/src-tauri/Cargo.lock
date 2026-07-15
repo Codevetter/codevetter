@@ -635,6 +635,7 @@ dependencies = [
  "chromiumoxide",
  "chrono",
  "env_logger",
+ "flate2",
  "futures",
  "jwalk",
  "libc",
