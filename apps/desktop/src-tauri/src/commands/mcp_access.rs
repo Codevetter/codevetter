@@ -421,3 +421,6 @@ pub async fn clear_mcp_access_audit(
         .map_err(|error| format!("Clear MCP access metadata: {error}"))?;
     Ok(deleted)
 }
+
+#[cfg(test)]
+mod tests;
