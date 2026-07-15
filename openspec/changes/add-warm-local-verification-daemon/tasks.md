@@ -30,7 +30,7 @@
 - [x] 4.1 Load, validate, hash, and atomically publish the scenario manifest; reject unsupported versions, duplicates, unknown capabilities, and partial reloads.
 - [x] 4.2 Implement the deterministic `scenario({ page, observe })` runtime with step/action records and scenario-specific assertions.
 - [x] 4.3 Implement bounded one-to-four-context scheduling, per-action/scenario/batch timeouts, cancellation propagation, deterministic result ordering, and guaranteed context teardown.
-- [ ] 4.4 Watch relevant target/config/scenario sources and invalidate any result whose source, config, manifest, or change-set identity drifts during execution.
+- [x] 4.4 Watch relevant target/config/scenario sources and invalidate any result whose source, config, manifest, or change-set identity drifts during execution.
 - [ ] 4.5 Instrument all model/provider/browser-agent boundaries and add a qualification test proving normal benchmark execution performs zero model calls.
 - [x] 4.6 Add deterministic runtime tests for pass, assertion regression, timeout, cancellation, stale source, invalid manifest, and teardown failure outcomes.
 - [x] 4.7 Run the second cleanup gate: remove duplicated state/scheduling/observer helpers, simplify public contracts, report file/LOC growth, and rerun focused browser tests plus full typechecking.

@@ -23,6 +23,7 @@ import { elapsed, raceAbort, safeErrorMessage, throwIfAborted } from './runtime-
 import type { ScenarioManifest } from './scenario';
 import { selectChangedCapabilities, type ChangedCapabilitySelection } from './selection';
 import type { VerifyDaemonLease } from './singleton';
+import { type VerificationSourceWatch, watchVerificationSources } from './source-watcher';
 import { SupervisionError, type WarmRuntimeSupervisor } from './supervision';
 
 const MAX_HASHED_FILE_BYTES = 64 * 1024 * 1024;
@@ -45,6 +46,7 @@ export interface VerificationDaemonDependencies {
   ) => Promise<string>;
   onShutdown?: (graceMs: number) => void;
   collectChangeSet?: typeof collectWorktreeChangeSet;
+  watchSources?: typeof watchVerificationSources;
 }
 
 export type WarmRuntimeFactory = (
@@ -64,6 +66,7 @@ export class VerificationDaemon {
   readonly #sourceHash: NonNullable<VerificationDaemonDependencies['sourceHash']>;
   readonly #onShutdown: (graceMs: number) => void;
   readonly #collectChangeSet: typeof collectWorktreeChangeSet;
+  readonly #watchSources: typeof watchVerificationSources;
   readonly #activeRuns = new Map<string, ActiveRun>();
 
   #targetSha: string;
@@ -93,6 +96,7 @@ export class VerificationDaemon {
     this.#sourceHash = dependencies.sourceHash ?? hashVerificationSources;
     this.#onShutdown = dependencies.onShutdown ?? (() => undefined);
     this.#collectChangeSet = dependencies.collectChangeSet ?? collectWorktreeChangeSet;
+    this.#watchSources = dependencies.watchSources ?? watchVerificationSources;
   }
 
   static async create(
@@ -286,6 +290,7 @@ export class VerificationDaemon {
     const limitations: VerifyLimitation[] = [];
     const daemonTimings: VerifyResult['timings'] = [];
     let warm = false;
+    let sourceWatch: VerificationSourceWatch | undefined;
 
     try {
       const currentChangeSet = await this.#timed('diff', daemonTimings, () =>
@@ -311,6 +316,15 @@ export class VerificationDaemon {
       beforeHash = await raceAbort(
         this.#sourceHash(this.#repoRoot, config, manifest, changeSet.changed_paths),
         runSignal
+      );
+      sourceWatch = await this.#watchSources(
+        this.#repoRoot,
+        config,
+        changeSet.changed_paths,
+        () => {
+          this.#configLoader.invalidate();
+          this.#manifestLoader.invalidate();
+        }
       );
       throwIfAborted(runSignal);
       selection = await this.#timed('selection', daemonTimings, async () =>
@@ -388,6 +402,17 @@ export class VerificationDaemon {
               affects_confidence: true,
             }
       );
+    } finally {
+      sourceWatch?.close();
+    }
+
+    if (sourceWatch?.changed) {
+      afterHash = fallbackHash('watched-source-drift', afterHash, ...sourceWatch.changedPaths);
+      limitations.push({
+        code: 'source_stale',
+        message: `Watched verification source changed during execution: ${sourceWatch.changedPaths.join(', ')}`,
+        affects_confidence: true,
+      });
     }
 
     const stale = beforeHash !== afterHash;

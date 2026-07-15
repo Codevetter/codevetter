@@ -294,6 +294,54 @@ describe('VerificationDaemon', () => {
     assert.ok(response.result.limitations.some((entry) => entry.code === 'source_stale'));
   });
 
+  it('marks a run stale when a watched source changes and always closes the watcher', async () => {
+    const root = await fixtureRepo();
+    let closed = 0;
+    let changed = false;
+    let reportChange: (path: string) => void = () => undefined;
+    const runtime = fakeRuntime();
+    runtime.ensureReady = async () => {
+      changed = true;
+      reportChange('src/app.ts');
+      throw new Error('runner should not start after watched drift');
+    };
+    const daemon = await VerificationDaemon.create(root, gitSha, lease(root), runtime, {
+      sourceHash: async () => identity,
+      collectChangeSet: matchingChangeSet(root, ['src/app.ts']),
+      watchSources: async (_root, _config, _paths, onChange) => {
+        reportChange = onChange;
+        return {
+          get changed() {
+            return changed;
+          },
+          get changedPaths() {
+            return changed ? ['src/app.ts'] : [];
+          },
+          close: () => {
+            closed += 1;
+          },
+        };
+      },
+    });
+
+    const response = await daemon.handle(verifyRequest(['src/app.ts']));
+
+    assert.equal(response.type, 'verify_result');
+    if (response.type !== 'verify_result') return;
+    assert.equal(response.result.stale, true);
+    assert.equal(response.result.outcome, 'no_confidence');
+    assert.notEqual(
+      response.result.source.source_hash_before,
+      response.result.source.source_hash_after
+    );
+    assert.ok(
+      response.result.limitations.some(
+        (entry) => entry.code === 'source_stale' && entry.message.includes('src/app.ts')
+      )
+    );
+    assert.equal(closed, 1);
+  });
+
   it('reports diff, selection, reporting, and whole-invocation timings on failed runs', async () => {
     const root = await fixtureRepo();
     let tick = 0;
