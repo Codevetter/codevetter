@@ -2,7 +2,7 @@ use super::*;
 use std::fs;
 
 #[test]
-fn timeline_and_topology_are_stable_and_release_aware() {
+fn timeline_is_stable_and_release_aware() {
     let root = std::env::temp_dir().join(format!("cv-history-{}", uuid::Uuid::new_v4()));
     fs::create_dir_all(root.join("src")).expect("fixture");
     run_git(&root, &["init"]);
@@ -36,22 +36,6 @@ fn timeline_and_topology_are_stable_and_release_aware() {
         .expect("release reference"),
         timeline.revisions[0].sha
     );
-    let topology = build_topology(&root, &timeline.head, Some(40)).expect("topology");
-    let first_topology =
-        build_topology(&root, &timeline.revisions[0].sha, Some(40)).expect("first topology");
-    assert_eq!(topology.total_files, 2);
-    assert!(topology.nodes.iter().any(|node| node.path == "src/b.rs"));
-    let first_a = first_topology
-        .nodes
-        .iter()
-        .find(|node| node.path == "src/a.rs")
-        .expect("first a");
-    let current_a = topology
-        .nodes
-        .iter()
-        .find(|node| node.path == "src/a.rs")
-        .expect("current a");
-    assert_eq!(first_a.id, current_a.id, "persistent paths keep stable IDs");
     fs::write(root.join("src/a.rs"), "fn worktree_only() {}\n").expect("dirty worktree");
     let blobs = GitObjectReader::new(&root)
         .blobs_at(&timeline.revisions[0].sha)
@@ -79,7 +63,6 @@ fn timeline_and_topology_are_stable_and_release_aware() {
     let connection = Connection::open_in_memory().expect("database");
     crate::db::schema::run_migrations(&connection).expect("migrations");
     persist_timeline(&connection, &timeline).expect("persist timeline");
-    persist_changed_paths(&connection, &topology).expect("persist changed paths");
     let revision_count: i64 = connection
         .query_row("SELECT COUNT(*) FROM history_graph_revisions", [], |row| {
             row.get(0)
@@ -102,14 +85,6 @@ fn timeline_and_topology_are_stable_and_release_aware() {
         load_history_revisions(&connection, &timeline.repo_path, Some("second"), false, 10)
             .expect("history search");
     assert_eq!(search.revisions[0].subject, "feat: second");
-    let changed_count: i64 = connection
-        .query_row(
-            "SELECT COUNT(*) FROM history_graph_revision_paths",
-            [],
-            |row| row.get(0),
-        )
-        .expect("changed path count");
-    assert!(changed_count >= 1);
     run_git(&root, &["tag", "v1.1.0"]);
     let retagged = build_timeline(&root, Some(20)).expect("retagged timeline");
     persist_timeline(&connection, &retagged).expect("persist retagged timeline");

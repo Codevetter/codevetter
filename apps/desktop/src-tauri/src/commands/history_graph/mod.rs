@@ -29,8 +29,6 @@ use tauri::{Emitter, State};
 
 const DEFAULT_HISTORY_LIMIT: usize = 250;
 const MAX_HISTORY_LIMIT: usize = 2_000;
-const DEFAULT_GRAPH_LIMIT: usize = 360;
-const MAX_GRAPH_LIMIT: usize = 1_500;
 const MAX_HISTORICAL_FILES: usize = 25_000;
 const MAX_HISTORICAL_BLOB_BYTES: usize = 2 * 1024 * 1024;
 
@@ -98,36 +96,6 @@ pub struct HistoryReleaseRange {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HistorySearchResult {
     pub revisions: Vec<HistoryRevision>,
-    pub truncated: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct HistoryTopologyNode {
-    pub id: String,
-    pub kind: String,
-    pub label: String,
-    pub path: String,
-    pub detail: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct HistoryTopologyEdge {
-    pub id: String,
-    pub from: String,
-    pub to: String,
-    pub kind: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct HistoryTopology {
-    pub schema_version: i64,
-    pub repo_path: String,
-    pub revision: String,
-    pub nodes: Vec<HistoryTopologyNode>,
-    pub edges: Vec<HistoryTopologyEdge>,
-    pub changed_paths: Vec<String>,
-    pub path_changes: Vec<HistoryPathChange>,
-    pub total_files: usize,
     pub truncated: bool,
 }
 

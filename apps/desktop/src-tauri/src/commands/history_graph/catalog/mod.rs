@@ -100,54 +100,6 @@ pub fn load_history_revisions(
     })
 }
 
-pub(super) fn persist_changed_paths(
-    connection: &Connection,
-    topology: &HistoryTopology,
-) -> Result<(), String> {
-    let transaction = connection
-        .unchecked_transaction()
-        .map_err(|error| format!("Start history path transaction: {error}"))?;
-    let mut statement = transaction
-        .prepare(
-            "INSERT INTO history_graph_revision_paths (
-                repo_path, revision_sha, path, change_kind, old_path, additions, deletions
-             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-             ON CONFLICT(repo_path, revision_sha, path) DO UPDATE SET
-                change_kind = excluded.change_kind,
-                old_path = excluded.old_path,
-                additions = excluded.additions,
-                deletions = excluded.deletions",
-        )
-        .map_err(|error| format!("Prepare history changed paths: {error}"))?;
-    for path in &topology.changed_paths {
-        let change = topology
-            .path_changes
-            .iter()
-            .find(|change| change.path == *path);
-        statement
-            .execute(params![
-                topology.repo_path,
-                topology.revision,
-                path,
-                change
-                    .map(|change| change.change_kind.as_str())
-                    .unwrap_or("changed"),
-                change.and_then(|change| change.old_path.as_deref()),
-                change
-                    .and_then(|change| change.additions)
-                    .map(|value| value as i64),
-                change
-                    .and_then(|change| change.deletions)
-                    .map(|value| value as i64),
-            ])
-            .map_err(|error| format!("Persist history changed path: {error}"))?;
-    }
-    drop(statement);
-    transaction
-        .commit()
-        .map_err(|error| format!("Commit history changed paths: {error}"))
-}
-
 pub(super) fn build_timeline(root: &Path, limit: Option<usize>) -> Result<HistoryTimeline, String> {
     let limit = limit
         .unwrap_or(DEFAULT_HISTORY_LIMIT)
