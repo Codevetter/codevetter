@@ -27,6 +27,7 @@ pub mod sandbox;
 pub mod session_adapters;
 pub mod sessions;
 pub mod setup;
+pub mod structural_graph;
 pub mod synthetic_qa;
 pub mod taste;
 pub mod trex_watcher;
