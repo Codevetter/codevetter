@@ -1,5 +1,6 @@
 pub mod analysis;
 mod contracts;
+pub mod extract;
 pub mod interchange;
 pub mod language;
 pub mod legacy;
