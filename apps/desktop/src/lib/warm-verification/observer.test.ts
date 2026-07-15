@@ -233,4 +233,33 @@ describe('AutomaticObserver', () => {
     );
     await page.context().close();
   });
+
+  it('measures declared screenshot checkpoints as a separate timing stage', async () => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const ticks = [10, 17];
+    const observer = new AutomaticObserver({
+      scenarioId: 'portfolio-create',
+      firstPartyOrigins: ['http://app.local'],
+      allowedFirstPartyRequests: ['GET /**'],
+      slowInteractionMs: 1_000,
+      visualCheckpointVerifier: {
+        verify: async () => ({
+          disposition: 'passed',
+          policyId: 'visual.exact-baseline',
+          message: 'Screenshot matched',
+          evidence: { checkpoint: 'ready' },
+        }),
+      },
+      monotonicNow: () => ticks.shift() ?? 17,
+    });
+    observer.attach(page);
+    await page.setContent('<main><h1>Ready</h1></main>');
+
+    await observer.checkpoint('ready');
+    const result = observer.finish();
+
+    assert.equal(result.screenshotDurationMs, 7);
+    await context.close();
+  });
 });

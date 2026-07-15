@@ -74,9 +74,11 @@ export class VerificationDaemon {
   readonly #onShutdown: (graceMs: number) => void;
   readonly #collectChangeSet: NonNullable<VerificationDaemonDependencies['collectChangeSet']>;
   readonly #watchSources: typeof watchVerificationSources;
+  readonly #startupStartedAt: number;
   readonly #activeRuns = new Map<string, ActiveRun>();
 
   #targetSha: string;
+  #coldStartupMs: number | null = null;
   #runner: ScenarioRunner | undefined;
   #runnerGeneration = -1;
   #shuttingDown = false;
@@ -89,6 +91,7 @@ export class VerificationDaemon {
     configLoader: VerifyConfigLoader,
     manifestLoader: ScenarioManifestLoader,
     startupConfig: VerifyConfigSnapshot,
+    startupStartedAt: number,
     dependencies: VerificationDaemonDependencies
   ) {
     this.#repoRoot = repoRoot;
@@ -98,6 +101,7 @@ export class VerificationDaemon {
     this.#configLoader = configLoader;
     this.#manifestLoader = manifestLoader;
     this.#startupConfig = startupConfig;
+    this.#startupStartedAt = startupStartedAt;
     this.#now = dependencies.now ?? (() => new Date());
     this.#monotonicNow = dependencies.monotonicNow ?? (() => performance.now());
     this.#sourceHash = dependencies.sourceHash ?? hashVerificationSources;
@@ -113,6 +117,8 @@ export class VerificationDaemon {
     runtimeOrFactory: WarmRuntimeSupervisor | WarmRuntimeFactory,
     dependencies: VerificationDaemonDependencies = {}
   ): Promise<VerificationDaemon> {
+    const monotonicNow = dependencies.monotonicNow ?? (() => performance.now());
+    const startupStartedAt = monotonicNow();
     const canonicalRoot = await realpath(repoRoot);
     const configLoader = await VerifyConfigLoader.create(canonicalRoot);
     const manifestLoader = await ScenarioManifestLoader.create(canonicalRoot);
@@ -130,12 +136,14 @@ export class VerificationDaemon {
       configLoader,
       manifestLoader,
       startupConfig,
+      startupStartedAt,
       dependencies
     );
   }
 
   async start(): Promise<void> {
     await this.#runtime.start();
+    this.#coldStartupMs = elapsed(this.#monotonicNow, this.#startupStartedAt);
   }
 
   health(): DaemonHealth {
@@ -149,6 +157,7 @@ export class VerificationDaemon {
       target_sha: this.#targetSha,
       config_hash: this.#startupConfig.hash,
       chromium_revision: runtime.browser.revision,
+      cold_startup_ms: this.#coldStartupMs,
       warm: runtime.warm && !this.#shuttingDown,
       server: {
         kind: 'process',
