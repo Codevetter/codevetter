@@ -624,13 +624,16 @@ mod tests {
     }
 
     #[test]
-    fn round_trips_without_rewriting_legacy_qa() {
+    fn additive_migration_is_idempotent_and_legacy_qa_remains_operational() {
         let conn = Connection::open_in_memory().expect("db");
         db::schema::run_migrations(&conn).expect("schema");
         conn.execute("INSERT INTO synthetic_qa_runs (id, loop_id, runner_type, pass, notes, created_at) VALUES ('legacy','old','playwright_builtin',1,'unchanged','2026-01-01')", []).expect("legacy");
         let result = result("warm-run-1");
         let json = validate_result(&result).expect("valid");
         insert_run(&conn, None, "/repo", &result, &json).expect("insert");
+
+        db::schema::run_migrations(&conn).expect("idempotent schema rerun");
+        db::schema::run_migrations(&conn).expect("second idempotent schema rerun");
 
         let rows = list_runs(&conn, Some("/repo"), None, 10).expect("list");
         assert_eq!(
@@ -649,6 +652,33 @@ mod tests {
             )
             .expect("legacy remains");
         assert_eq!(legacy, ("old".into(), 1, "unchanged".into()));
+
+        let later_legacy = db::queries::insert_synthetic_qa_run(
+            &conn,
+            &db::queries::SyntheticQaRunInput {
+                review_id: None,
+                repo_path: Some("/repo".into()),
+                loop_id: "legacy-after-warm".into(),
+                runner_type: "playwright_builtin".into(),
+                base_url: None,
+                route: Some("/".into()),
+                goal: Some("Legacy QA remains available".into()),
+                pass: true,
+                duration_ms: 20,
+                notes: Some("legacy path still works".into()),
+                screenshot_path: None,
+                artifacts: Vec::new(),
+                console_errors: 0,
+                error: None,
+                trace_json: None,
+            },
+        )
+        .expect("legacy insert after warm data");
+        let legacy_runs = db::queries::list_synthetic_qa_runs_for_repo(&conn, "/repo", 10)
+            .expect("legacy list after warm data");
+        assert_eq!(legacy_runs.len(), 1);
+        assert_eq!(legacy_runs[0].id, later_legacy.id);
+        assert_eq!(list_runs(&conn, Some("/repo"), None, 10).unwrap().len(), 1);
     }
 
     #[test]
