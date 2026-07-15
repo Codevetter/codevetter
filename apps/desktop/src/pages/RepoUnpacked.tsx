@@ -1125,7 +1125,11 @@ export function UnpackProjectPanel({
   useEffect(() => {
     const requested = searchParams.get('section');
     const normalized =
-      requested === 'intel' || requested === 'attribution' ? 'activity' : requested;
+      requested == null
+        ? 'overview'
+        : requested === 'intel' || requested === 'attribution'
+          ? 'activity'
+          : requested;
     if (!isUnpackSection(normalized) || normalized === activeSection) return;
     if (!sections.some((section) => section.id === normalized)) return;
     setActiveSection(normalized);
@@ -1133,7 +1137,6 @@ export function UnpackProjectPanel({
 
   const handleSectionChange = useCallback(
     (section: UnpackWorkspaceSection) => {
-      setActiveSection(section);
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
