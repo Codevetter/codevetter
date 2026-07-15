@@ -24,6 +24,7 @@ pub mod resources;
 pub mod review;
 pub mod saas_maker;
 pub mod sandbox;
+pub(crate) mod secret_policy;
 pub mod session_adapters;
 pub mod sessions;
 pub mod setup;
