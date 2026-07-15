@@ -76,8 +76,6 @@ struct ProcessOutput {
 struct CliError {
     code: String,
     message: String,
-    #[allow(dead_code)]
-    retryable: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -719,9 +717,8 @@ pub async fn run_warm_changed_verification(
     db: State<'_, DbState>,
     repo_path: String,
     detailed_capture: bool,
-    run_id: Option<String>,
+    run_id: String,
 ) -> Result<warm_verification::StoredWarmVerificationRun, String> {
-    let run_id = run_id.unwrap_or_else(|| format!("run-{}", uuid::Uuid::new_v4()));
     if !valid_id(&run_id) {
         return Err("Run identity is invalid".into());
     }
@@ -749,12 +746,7 @@ pub async fn run_warm_changed_verification(
         return Err("Repository verifier returned a different run identity".into());
     }
     let conn = db.0.lock().map_err(|error| error.to_string())?;
-    warm_verification::persist_validated_run(
-        &conn,
-        None,
-        &package.repo_root.to_string_lossy(),
-        &result,
-    )
+    warm_verification::persist_validated_run(&conn, &package.repo_root.to_string_lossy(), &result)
 }
 
 #[tauri::command]
