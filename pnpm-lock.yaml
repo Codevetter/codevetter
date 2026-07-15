@@ -139,6 +139,9 @@ importers:
       vite:
         specifier: ^6.0.0
         version: 6.4.2(@types/node@22.19.17)(jiti@1.21.7)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.3)
+      yaml:
+        specifier: 2.8.3
+        version: 2.8.3
 
   apps/landing-page-astro:
     dependencies:
