@@ -1391,13 +1391,20 @@ pub async fn run_cli_review_core(
     // Uses same changed_files list; compact + capped inside the builder. Secrets excluded in git.rs.
     let history_section = {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
-        let h = crate::commands::git::build_compact_history_section_for_prompt(
+        let compact = crate::commands::git::build_compact_history_section_for_prompt(
             &repo_path,
             &changed_files,
             &conn,
         );
+        let temporal = crate::commands::history_query::build_review_history_slice(
+            &conn,
+            &repo_path,
+            &changed_files,
+        )
+        .map(|slice| crate::commands::history_query::render_review_history_slice(&slice))
+        .unwrap_or_default();
         drop(conn);
-        h
+        format!("{compact}{temporal}")
     };
 
     let plan = build_review_plan(&diff_text, &changed_files);
@@ -2688,13 +2695,14 @@ mod tests {
 
     #[test]
     fn review_prompt_includes_ranked_evidence_candidates() {
+        let history = "\nTemporal history graph for changed files:\n- [intent|extracted] Preserve the auth boundary event=decision-1\n";
         let prompt = build_review_prompt(
             "Local desktop reviewer",
             "Change auth boundary",
             "",
             "\nFiles changed in this range (1 total):\n- src/auth.ts\n",
             "",
-            "",
+            history,
             "",
             "",
             "\nRanked evidence candidates (deterministic pre-review search):\n- [sensitive-path-needs-boundary-proof] sensitive_path_without_boundary_evidence severity_hint=high confidence=0.86 scale=1 sensitive file(s)\n",
@@ -2708,6 +2716,7 @@ mod tests {
         assert!(prompt.contains("sensitive-path-needs-boundary-proof"));
         assert!(prompt.contains("Procedure steps"));
         assert!(prompt.contains("blocked steps as remaining work"));
+        assert!(prompt.contains("Preserve the auth boundary event=decision-1"));
         assert!(prompt.contains("Start by extracting the material assumptions"));
         assert!(prompt.contains("contradicted assumption"));
     }

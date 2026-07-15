@@ -1,8 +1,6 @@
 use super::types::*;
 use crate::commands::history_graph::{canonical_repo_path, git_text, resolve_revision};
-use crate::commands::structural_graph::types::{
-    stable_graph_id, GraphSourceAnchor, GraphTrust, STRUCTURAL_GRAPH_SCHEMA_VERSION,
-};
+use crate::commands::structural_graph::types::{stable_graph_id, GraphSourceAnchor, GraphTrust};
 use crate::DbState;
 use rusqlite::{params, Connection, OptionalExtension};
 use serde_json::Value;
@@ -237,86 +235,6 @@ pub(crate) fn render_review_history_slice(slice: &HistoryReviewSlice) -> String 
                 .take(MAX_BYTES - output.len())
                 .collect::<String>(),
         );
-    }
-    output
-}
-
-pub(crate) fn render_agent_history_context(slice: &HistoryReviewSlice) -> String {
-    let mut output = String::new();
-    output.push_str("## Temporal Structural History\n\n");
-    output.push_str(&format!(
-        "_Schemas: history_query.v{} / structural_graph.v{} · indexed head `{}` · {}{}_\n\n",
-        slice.schema_version,
-        STRUCTURAL_GRAPH_SCHEMA_VERSION,
-        slice.indexed_head,
-        if slice.stale { "stale" } else { "current" },
-        if slice.truncated { " · truncated" } else { "" }
-    ));
-    output.push_str(&format!(
-        "Scope: {} files · {} stable entities · {} causal episodes.\n\n",
-        slice.files.len(),
-        slice.entity_ids.len(),
-        slice.episodes.len()
-    ));
-    for episode in slice.episodes.iter().take(6) {
-        output.push_str(&format!("### Episode `{}`\n\n", episode.id));
-        for event in episode.events.iter().take(24) {
-            let revision = event
-                .revision_sha
-                .as_deref()
-                .map(|revision| format!(" revision `{}`", &revision[..revision.len().min(12)]))
-                .unwrap_or_default();
-            let source = event
-                .sources
-                .first()
-                .map(|source| format!(" source `{}`", source.path))
-                .unwrap_or_default();
-            let entities = match (&event.entity_id, &event.related_entity_id) {
-                (Some(from), Some(to)) => format!(" entities `{from}` -> `{to}`"),
-                (Some(entity), None) | (None, Some(entity)) => {
-                    format!(" entity `{entity}`")
-                }
-                (None, None) => String::new(),
-            };
-            output.push_str(&format!(
-                "- [{} / {}] {} — event `{}`{}{}{}{}\n",
-                stage_label(&event.stage),
-                event.trust.as_str(),
-                event.summary.replace('\n', " "),
-                event.id,
-                revision,
-                source,
-                entities,
-                event
-                    .relation_kind
-                    .as_deref()
-                    .map(|relation| format!(" relation `{relation}`"))
-                    .unwrap_or_default()
-            ));
-        }
-        for contradiction in episode.contradictions.iter().take(5) {
-            output.push_str(&format!("- Contradiction: {contradiction}\n"));
-        }
-        for gap in episode.gaps.iter().take(5) {
-            output.push_str(&format!("- Gap: {gap}\n"));
-        }
-        for lead in episode.qualified_leads.iter().take(5) {
-            output.push_str(&format!(
-                "- Qualified lead only: {} -> {} — {}\n",
-                lead.from_event_id, lead.to_event_id, lead.evidence
-            ));
-        }
-        output.push('\n');
-    }
-    if slice.episodes.is_empty() {
-        output.push_str("No explicit causal episodes map to the bounded export scope.\n\n");
-    }
-    if !slice.gaps.is_empty() {
-        output.push_str("### Coverage Gaps\n\n");
-        for gap in slice.gaps.iter().take(12) {
-            output.push_str(&format!("- {gap}\n"));
-        }
-        output.push('\n');
     }
     output
 }
