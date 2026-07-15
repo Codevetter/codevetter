@@ -28,6 +28,8 @@
     "test:verify": "node --import tsx --test \"src/lib/warm-verification/*.test.ts\"",
     "lint": "biome check .",
     "bench:bundle": "node scripts/bundle-budget.mjs",
+    "bench:mcp": "node scripts/mcp-benchmark.mjs",
+    "bench:mcp:smoke": "node scripts/mcp-benchmark.mjs --smoke",
     "bench:rust": "cargo test --release --manifest-path src-tauri/Cargo.toml perf_bench -- --ignored --nocapture",
     "bench": "npm run build && npm run bench:bundle && npm run bench:rust"
   },
