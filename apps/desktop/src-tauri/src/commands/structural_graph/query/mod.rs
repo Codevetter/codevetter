@@ -4,7 +4,8 @@ use super::types::{
     StructuralGraphSnapshot,
 };
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::cmp::Ordering;
+use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::sync::{Arc, Mutex, OnceLock};
 
 const DEFAULT_LIMIT: usize = 50;
@@ -12,6 +13,7 @@ const MAX_LIMIT: usize = 500;
 const MAX_EDGE_LIMIT: usize = 2_000;
 const MAX_RESPONSE_BYTES: usize = 1024 * 1024;
 const MAX_PATH_HOPS: usize = 32;
+const MAX_PATH_VISITS: usize = 25_000;
 const MAX_DIFF_IDS: usize = 500;
 const MAX_QUERY_INDEXES: usize = 16;
 
@@ -184,14 +186,20 @@ pub struct StructuralGraphMetadata {
 
 mod index;
 mod limits;
+mod path_visit;
 mod projection;
 mod search;
+mod traversal;
 
 use index::{
     edge_matches_filter, lexical_tokens, node_map, node_matches_filter, normalize, query_index,
-    rank_node, rank_question_tokens,
+    rank_node, rank_question_tokens, trust_cost,
 };
-use limits::{bounded_limit, enforce_projection_bytes, enforce_search_bytes, parse_cursor};
+use limits::{
+    bounded_limit, enforce_impact_bytes, enforce_path_bytes, enforce_projection_bytes,
+    enforce_search_bytes, parse_cursor,
+};
+use path_visit::PathVisit;
 use projection::query_context;
 
 pub use projection::{
@@ -199,3 +207,7 @@ pub use projection::{
     overview_page, subgraph,
 };
 pub use search::{explain, neighbors, resolve_node, search, search_page};
+pub use traversal::{impact, shortest_path};
+
+#[cfg(test)]
+mod tests;
