@@ -31,6 +31,7 @@ interface OwnedRun {
   directory: string;
   createdAtMs: number;
   bytes: number;
+  files: number;
 }
 
 export interface RetentionFinalizeInput {
@@ -51,6 +52,7 @@ export interface RetentionCleanupReport {
   dryRun: boolean;
   removedRunIds: string[];
   reclaimedBytes: number;
+  removedFiles: number;
   retainedRuns: number;
   retainedBytes: number;
   skippedEntries: number;
@@ -233,6 +235,7 @@ async function cleanupOwnedRuns(
     dryRun,
     removedRunIds: selected.map((run) => run.id),
     reclaimedBytes: selected.reduce((total, run) => total + run.bytes, 0),
+    removedFiles: selected.reduce((total, run) => total + run.files, 0),
     retainedRuns: retained.length,
     retainedBytes: retained.reduce((total, run) => total + run.bytes, 0),
     skippedEntries,
@@ -258,7 +261,7 @@ async function readOwnedRun(root: string, runId: string): Promise<OwnedRun | und
     if (!Number.isFinite(createdAtMs)) return undefined;
     const usage = await inspectTree(directory);
     if (usage.skipped > 0) return undefined;
-    return { id: runId, directory, createdAtMs, bytes: usage.bytes };
+    return { id: runId, directory, createdAtMs, bytes: usage.bytes, files: usage.files };
   } catch {
     return undefined;
   }
@@ -341,8 +344,11 @@ async function sha256File(file: string): Promise<string> {
   return hash.digest('hex');
 }
 
-async function inspectTree(root: string): Promise<{ bytes: number; skipped: number }> {
+async function inspectTree(
+  root: string
+): Promise<{ bytes: number; files: number; skipped: number }> {
   let bytes = 0;
+  let files = 0;
   let skipped = 0;
   const pending = [root];
   while (pending.length > 0) {
@@ -352,11 +358,13 @@ async function inspectTree(root: string): Promise<{ bytes: number; skipped: numb
       const candidate = path.join(current, entry.name);
       if (entry.isSymbolicLink()) skipped += 1;
       else if (entry.isDirectory()) pending.push(candidate);
-      else if (entry.isFile()) bytes += (await lstat(candidate)).size;
-      else skipped += 1;
+      else if (entry.isFile()) {
+        bytes += (await lstat(candidate)).size;
+        files += 1;
+      } else skipped += 1;
     }
   }
-  return { bytes, skipped };
+  return { bytes, files, skipped };
 }
 
 export async function ensureOwnedDirectory(root: string, relative: string): Promise<string> {

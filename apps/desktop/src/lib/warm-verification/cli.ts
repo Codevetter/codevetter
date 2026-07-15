@@ -11,16 +11,22 @@ import {
 } from './change-set';
 import type { DaemonRequest, DaemonResponse, VerifyResult } from './contracts';
 import { exitCodeForOutcome, VERIFY_PROTOCOL_VERSION, VERIFY_USAGE_EXIT_CODE } from './contracts';
+import { hashVerificationSources } from './daemon';
+import { VerifyConfigLoader } from './config-loader';
 import { requestDaemon, VerifyIpcError } from './ipc';
+import { ScenarioManifestLoader } from './manifest-loader';
+import { reportSharedPlaywrightCache, WarmArtifactRetention } from './retention';
 import { resolveVerifyRuntimePaths, type VerifyRuntimePaths } from './runtime-paths';
 
 interface CliOptions {
-  command: 'start' | 'status' | 'stop' | 'changed';
+  command: 'start' | 'status' | 'stop' | 'changed' | 'cancel' | 'cleanup' | 'current';
   repo: string;
   json: boolean;
   detailed: boolean;
   timeoutMs: number;
   changeSetRequest: GitChangeSetRequest;
+  runId?: string;
+  dryRun: boolean;
 }
 
 class CliUsageError extends Error {}
@@ -36,13 +42,22 @@ export async function runVerifyCli(argv: readonly string[]): Promise<number> {
 
   try {
     const collected =
-      options.command === 'changed'
+      options.command === 'changed' || options.command === 'current'
         ? await collectGitChangeSet(options.repo, options.changeSetRequest)
         : undefined;
     options = {
       ...options,
       repo: collected?.repositoryRoot ?? (await resolveGitRepositoryRoot(options.repo)),
     };
+    if (options.command === 'current') {
+      if (!collected) throw new Error('Current identity did not collect a Git change set');
+      printJsonValue(options, await collectCurrentIdentity(collected));
+      return 0;
+    }
+    if (options.command === 'cleanup') {
+      printJsonValue(options, await cleanupArtifacts(options.repo, options.dryRun));
+      return 0;
+    }
     const paths = await resolveVerifyRuntimePaths(options.repo);
     if (options.command === 'start') {
       const health = await ensureDaemon(paths);
@@ -61,10 +76,33 @@ export async function runVerifyCli(argv: readonly string[]): Promise<number> {
       await waitForDaemonStop(paths, 10_000);
       return 0;
     }
+    if (options.command === 'cancel') {
+      if (!options.runId) throw new Error('cancel requires a run ID');
+      const response = await daemonRequest(
+        paths,
+        { type: 'cancel', run_id: options.runId, reason: 'T-Rex requested cancellation' },
+        5_000
+      );
+      print(options, response);
+      return response.type === 'cancel_ack' ? 0 : 3;
+    }
     if (!collected) throw new Error('Changed verification did not collect a Git change set');
     return runChanged(options, paths, collected);
   } catch (error) {
-    process.stderr.write(`verify ${options.command} failed: ${safeMessage(error)}\n`);
+    const message = safeMessage(error);
+    if (options.json) {
+      const code = error instanceof VerifyIpcError ? error.code : 'cli_failure';
+      printJsonValue(options, {
+        type: 'error',
+        error: {
+          code,
+          message,
+          retryable: error instanceof VerifyIpcError && ['connection', 'timeout'].includes(code),
+        },
+      });
+    } else {
+      process.stderr.write(`verify ${options.command} failed: ${message}\n`);
+    }
     return 3;
   }
 }
@@ -75,7 +113,7 @@ async function runChanged(
   collected: CollectedGitChangeSet
 ): Promise<number> {
   await ensureDaemon(paths);
-  const runId = `run-${randomUUID()}`;
+  const runId = options.runId ?? `run-${randomUUID()}`;
   const controller = new AbortController();
   let cancelling = false;
   const cancel = () => {
@@ -184,11 +222,15 @@ async function daemonRequest(
 export function parseCli(argv: readonly string[]): CliOptions {
   const daemonCommand = argv[0] === 'daemon';
   const command = daemonCommand ? argv[1] : argv[0];
-  if (!['start', 'status', 'stop', 'changed'].includes(command ?? '')) {
-    throw new CliUsageError('Expected daemon start, daemon status, daemon stop, or changed');
+  if (
+    !['start', 'status', 'stop', 'changed', 'cancel', 'cleanup', 'current'].includes(command ?? '')
+  ) {
+    throw new CliUsageError(
+      'Expected daemon start, daemon status, daemon stop, changed, cancel, cleanup, or current'
+    );
   }
-  if (daemonCommand && command === 'changed') {
-    throw new CliUsageError('changed is not a daemon lifecycle command');
+  if (daemonCommand && !['start', 'status', 'stop'].includes(command ?? '')) {
+    throw new CliUsageError(`${command} is not a daemon lifecycle command`);
   }
   let repo = process.cwd();
   let json = false;
@@ -196,6 +238,8 @@ export function parseCli(argv: readonly string[]): CliOptions {
   let timeoutMs = 30_000;
   let changeSetRequest: GitChangeSetRequest = { kind: 'worktree' };
   let changeSetOption = false;
+  let runId: string | undefined;
+  let dryRun = false;
   const selectChangeSet = (request: GitChangeSetRequest) => {
     if (changeSetOption)
       throw new CliUsageError('Choose only one of --staged, --commit, or --range');
@@ -206,7 +250,14 @@ export function parseCli(argv: readonly string[]): CliOptions {
     const argument = argv[index];
     if (argument === '--json') json = true;
     else if (argument === '--detailed') detailed = true;
-    else if (argument === '--staged') selectChangeSet({ kind: 'staged' });
+    else if (argument === '--dry-run') dryRun = true;
+    else if (argument === '--run-id') {
+      const value = argv[++index];
+      if (!value || !/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/.test(value)) {
+        throw new CliUsageError('--run-id requires a bounded safe identifier');
+      }
+      runId = value;
+    } else if (argument === '--staged') selectChangeSet({ kind: 'staged' });
     else if (argument === '--commit') {
       const value = argv[++index];
       if (!value) throw new CliUsageError('--commit requires a revision');
@@ -229,10 +280,22 @@ export function parseCli(argv: readonly string[]): CliOptions {
       throw new CliUsageError(`Unknown argument: ${argument}`);
     }
   }
-  if (command !== 'changed' && (detailed || timeoutMs !== 30_000 || changeSetOption)) {
+  if (!['changed', 'current'].includes(command ?? '') && changeSetOption) {
     throw new CliUsageError(
-      '--detailed, --timeout-ms, --staged, --commit, and --range are only valid with changed'
+      '--staged, --commit, and --range are only valid with changed or current'
     );
+  }
+  if (command !== 'changed' && (detailed || timeoutMs !== 30_000)) {
+    throw new CliUsageError('--detailed and --timeout-ms are only valid with changed');
+  }
+  if (runId && !['changed', 'cancel'].includes(command ?? '')) {
+    throw new CliUsageError('--run-id is only valid with changed or cancel');
+  }
+  if (command === 'cancel' && !runId) throw new CliUsageError('cancel requires --run-id');
+  if (dryRun && command !== 'cleanup')
+    throw new CliUsageError('--dry-run is only valid with cleanup');
+  if (['cleanup', 'current'].includes(command ?? '') && !json) {
+    throw new CliUsageError(`${command} requires --json`);
   }
   return {
     command: command as CliOptions['command'],
@@ -241,12 +304,55 @@ export function parseCli(argv: readonly string[]): CliOptions {
     detailed,
     timeoutMs,
     changeSetRequest,
+    ...(runId ? { runId } : {}),
+    dryRun,
+  };
+}
+
+async function collectCurrentIdentity(collected: CollectedGitChangeSet) {
+  const configLoader = await VerifyConfigLoader.create(collected.repositoryRoot);
+  const manifestLoader = await ScenarioManifestLoader.create(collected.repositoryRoot);
+  const config = await configLoader.load();
+  const manifest = await manifestLoader.load(config);
+  const sourceHash = await hashVerificationSources(
+    collected.repositoryRoot,
+    config,
+    manifest,
+    collected.changeSet.changed_paths
+  );
+  return {
+    schema_version: 1,
+    target_sha: collected.changeSet.target_sha,
+    change_set_kind: collected.changeSet.kind,
+    change_set_identity: collected.changeSet.identity,
+    config_hash: config.hash,
+    manifest_hash: manifest.manifestHash,
+    source_hash: sourceHash,
+    observation_policy_profile_id: 'strict-default-v1',
+  };
+}
+
+async function cleanupArtifacts(repoRoot: string, dryRun: boolean) {
+  const loader = await VerifyConfigLoader.create(repoRoot);
+  const config = await loader.load();
+  const cleanup = await new WarmArtifactRetention(repoRoot, config.config.retention).enforce(
+    dryRun
+  );
+  const shared = await reportSharedPlaywrightCache();
+  return {
+    schema_version: 1,
+    dry_run: cleanup.dryRun,
+    removed_runs: cleanup.removedRunIds.length,
+    removed_files: cleanup.removedFiles,
+    reclaimed_bytes: cleanup.reclaimedBytes,
+    retained_bytes: cleanup.retainedBytes,
+    shared_playwright_cache_bytes: shared.bytes,
   };
 }
 
 function print(options: CliOptions, response: DaemonResponse): void {
   if (options.json) {
-    process.stdout.write(`${JSON.stringify(response, null, 2)}\n`);
+    printJsonValue(options, response);
     return;
   }
   if (response.type === 'health') {
@@ -270,6 +376,11 @@ function print(options: CliOptions, response: DaemonResponse): void {
   }
 }
 
+function printJsonValue(options: Pick<CliOptions, 'json'>, value: unknown): void {
+  if (!options.json) throw new Error('This command requires --json');
+  process.stdout.write(`${JSON.stringify(value)}\n`);
+}
+
 function printResult(result: VerifyResult): void {
   const duration =
     result.timings.filter((timing) => timing.stage === 'total' && !timing.scenario_id).at(-1)
@@ -284,7 +395,7 @@ function printResult(result: VerifyResult): void {
 }
 
 function usage(): string {
-  return 'Usage: verify daemon <start|status|stop> [--repo PATH] [--json] | verify changed [--repo PATH] [--json] [--detailed] [--timeout-ms N] [--staged | --commit REV | --range BASE..HEAD]';
+  return 'Usage: verify daemon <start|status|stop> [--repo PATH] [--json] | verify changed [--repo PATH] [--json] [--run-id ID] [--detailed] [--timeout-ms N] [--staged | --commit REV | --range BASE..HEAD] | verify cancel --run-id ID [--repo PATH] [--json] | verify cleanup [--repo PATH] [--json] [--dry-run] | verify current [--repo PATH] --json';
 }
 
 function safeMessage(error: unknown): string {
