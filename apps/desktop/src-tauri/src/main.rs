@@ -495,6 +495,10 @@ fn main() {
             commands::history_evidence::service::refresh_history_evidence,
             commands::history_evidence::service::import_history_evidence_export,
             commands::history_query::service::get_history_causal_trace,
+            // Repository-scoped local MCP access
+            commands::mcp_access::get_mcp_repository_settings,
+            commands::mcp_access::set_mcp_repository_enabled,
+            commands::mcp_access::clear_mcp_access_audit,
             // Unpack deep graph (call-graph indexing)
             commands::unpack_deep_graph::unpack_deep_graph_status,
             commands::unpack_deep_graph::unpack_deep_graph_analyze,

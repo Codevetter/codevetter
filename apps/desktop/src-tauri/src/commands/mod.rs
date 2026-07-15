@@ -19,6 +19,7 @@ pub mod history_query;
 pub mod history_read;
 pub mod history_summary_graph;
 pub mod intel;
+pub mod mcp_access;
 pub mod observability;
 #[cfg(test)]
 mod perf_bench;
