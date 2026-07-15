@@ -215,6 +215,35 @@ describe('VerificationDaemon', () => {
     assert.ok(response.result.limitations.some((entry) => entry.code === 'selection_incomplete'));
   });
 
+  it('revalidates the exact requested Git change-set mode', async () => {
+    const root = await fixtureRepo();
+    const envelope = verifyRequest([]);
+    if (envelope.request.type !== 'verify_changed') assert.fail('expected verify request');
+    const changeSet = {
+      kind: 'range' as const,
+      target_sha: gitSha,
+      identity,
+      revision: `${'b'.repeat(40)}..${gitSha}`,
+      changed_paths: [],
+    };
+    envelope.request.change_set = changeSet;
+    const requests: unknown[] = [];
+    const daemon = await VerificationDaemon.create(root, gitSha, lease(root), fakeRuntime(), {
+      collectChangeSet: async (_repo, changeSetRequest) => {
+        requests.push(changeSetRequest);
+        return { repositoryRoot: root, changeSet };
+      },
+    });
+
+    const response = await daemon.handle(envelope);
+
+    assert.equal(response.type, 'verify_result');
+    assert.deepEqual(requests, [
+      { kind: 'range', revision: `${'b'.repeat(40)}..${gitSha}` },
+      { kind: 'range', revision: `${'b'.repeat(40)}..${gitSha}` },
+    ]);
+  });
+
   it('cancels an active run and never converts it into a pass', async () => {
     const root = await fixtureRepo();
     let releaseHash: (() => void) | undefined;

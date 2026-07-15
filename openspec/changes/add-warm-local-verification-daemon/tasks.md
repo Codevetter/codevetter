@@ -48,7 +48,7 @@
 
 - [x] 6.1 Add the direct `yaml` development dependency with lockfile update and license/security review; do not import an undeclared transitive parser or add a production dependency.
 - [x] 6.2 Validate and cache explicit capability path globs, scenario IDs, mandatory smoke rules, shared-infrastructure rules, fallback sets, and budgets with actionable diagnostics.
-- [ ] 6.3 Reuse CodeVetter's exact worktree/staged/commit/range Git change collection and preserve target/change-set identities in daemon requests and results.
+- [x] 6.3 Reuse CodeVetter's exact worktree/staged/commit/range Git change collection and preserve target/change-set identities in daemon requests and results.
 - [x] 6.4 Implement deterministic path-to-capability-to-scenario selection, deduplication, stable ordering, and complete selection explanations.
 - [x] 6.5 Force mandatory smoke and configured broad fallback for unmatched/shared paths, incomplete mappings, absent commands, or stale/truncated/untrusted supporting evidence.
 - [ ] 6.6 Integrate impacted-test and graph/import/coverage evidence as additive ranked hints only, proving it cannot remove explicit scenarios, override fallback, or create pass evidence.

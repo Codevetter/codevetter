@@ -4,8 +4,9 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
-  collectWorktreeChangeSet,
+  collectGitChangeSet,
   type CollectedGitChangeSet,
+  type GitChangeSetRequest,
   resolveGitRepositoryRoot,
 } from './change-set';
 import type { DaemonRequest, DaemonResponse, VerifyResult } from './contracts';
@@ -19,6 +20,7 @@ interface CliOptions {
   json: boolean;
   detailed: boolean;
   timeoutMs: number;
+  changeSetRequest: GitChangeSetRequest;
 }
 
 class CliUsageError extends Error {}
@@ -34,7 +36,9 @@ export async function runVerifyCli(argv: readonly string[]): Promise<number> {
 
   try {
     const collected =
-      options.command === 'changed' ? await collectWorktreeChangeSet(options.repo) : undefined;
+      options.command === 'changed'
+        ? await collectGitChangeSet(options.repo, options.changeSetRequest)
+        : undefined;
     options = {
       ...options,
       repo: collected?.repositoryRoot ?? (await resolveGitRepositoryRoot(options.repo)),
@@ -177,7 +181,7 @@ async function daemonRequest(
   return envelope.response;
 }
 
-function parseCli(argv: readonly string[]): CliOptions {
+export function parseCli(argv: readonly string[]): CliOptions {
   const daemonCommand = argv[0] === 'daemon';
   const command = daemonCommand ? argv[1] : argv[0];
   if (!['start', 'status', 'stop', 'changed'].includes(command ?? '')) {
@@ -190,11 +194,28 @@ function parseCli(argv: readonly string[]): CliOptions {
   let json = false;
   let detailed = false;
   let timeoutMs = 30_000;
+  let changeSetRequest: GitChangeSetRequest = { kind: 'worktree' };
+  let changeSetOption = false;
+  const selectChangeSet = (request: GitChangeSetRequest) => {
+    if (changeSetOption)
+      throw new CliUsageError('Choose only one of --staged, --commit, or --range');
+    changeSetRequest = request;
+    changeSetOption = true;
+  };
   for (let index = daemonCommand ? 2 : 1; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--json') json = true;
     else if (argument === '--detailed') detailed = true;
-    else if (argument === '--repo') {
+    else if (argument === '--staged') selectChangeSet({ kind: 'staged' });
+    else if (argument === '--commit') {
+      const value = argv[++index];
+      if (!value) throw new CliUsageError('--commit requires a revision');
+      selectChangeSet({ kind: 'commit', revision: value });
+    } else if (argument === '--range') {
+      const value = argv[++index];
+      if (!value) throw new CliUsageError('--range requires BASE..HEAD');
+      selectChangeSet({ kind: 'range', revision: value });
+    } else if (argument === '--repo') {
       const value = argv[++index];
       if (!value) throw new CliUsageError('--repo requires a path');
       repo = path.resolve(value);
@@ -208,8 +229,10 @@ function parseCli(argv: readonly string[]): CliOptions {
       throw new CliUsageError(`Unknown argument: ${argument}`);
     }
   }
-  if (command !== 'changed' && (detailed || timeoutMs !== 30_000)) {
-    throw new CliUsageError('--detailed and --timeout-ms are only valid with changed');
+  if (command !== 'changed' && (detailed || timeoutMs !== 30_000 || changeSetOption)) {
+    throw new CliUsageError(
+      '--detailed, --timeout-ms, --staged, --commit, and --range are only valid with changed'
+    );
   }
   return {
     command: command as CliOptions['command'],
@@ -217,6 +240,7 @@ function parseCli(argv: readonly string[]): CliOptions {
     json,
     detailed,
     timeoutMs,
+    changeSetRequest,
   };
 }
 
@@ -256,7 +280,7 @@ function printResult(result: VerifyResult): void {
 }
 
 function usage(): string {
-  return 'Usage: verify daemon <start|status|stop> [--repo PATH] [--json] | verify changed [--repo PATH] [--json] [--detailed] [--timeout-ms N]';
+  return 'Usage: verify daemon <start|status|stop> [--repo PATH] [--json] | verify changed [--repo PATH] [--json] [--detailed] [--timeout-ms N] [--staged | --commit REV | --range BASE..HEAD]';
 }
 
 function safeMessage(error: unknown): string {
