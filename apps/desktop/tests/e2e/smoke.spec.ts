@@ -47,9 +47,9 @@ test.describe('Smoke tests', () => {
     const nav = page.locator('nav');
     await expect(nav).toBeVisible();
 
-    // Nav links: Home, Review, Repo, T-Rex, Settings.
+    // Nav links: Home, Review, Repo, Agents, T-Rex, Settings.
     const links = nav.locator('a');
-    await expect(links).toHaveCount(5);
+    await expect(links).toHaveCount(6);
     await expect(nav.getByText('Roadmap')).toHaveCount(0);
     await expect(nav.getByText('Now')).toHaveCount(0);
   });
