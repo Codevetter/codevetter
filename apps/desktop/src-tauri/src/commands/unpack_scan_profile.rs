@@ -83,7 +83,7 @@ fn process_peak_rss_bytes() -> Option<u64> {
         }
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
-            return Some(raw as u64);
+            Some(raw as u64)
         }
     }
 

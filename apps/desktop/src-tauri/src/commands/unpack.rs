@@ -576,7 +576,7 @@ pub fn build_inventory_with_progress(
             bytes,
         })
         .collect();
-    languages.sort_by(|a, b| b.bytes.cmp(&a.bytes));
+    languages.sort_by_key(|language| std::cmp::Reverse(language.bytes));
     profiler.step("languages", "Language breakdown");
 
     // Manifests (only plausible manifest paths — avoid scanning 4k basenames)
@@ -639,7 +639,7 @@ pub fn build_inventory_with_progress(
             bytes,
         })
         .collect();
-    top_level_dirs.sort_by(|a, b| b.file_count.cmp(&a.file_count));
+    top_level_dirs.sort_by_key(|dir| std::cmp::Reverse(dir.file_count));
     let coverage = build_inventory_coverage(
         &all_files,
         tracked_files.as_deref(),
@@ -1307,7 +1307,7 @@ in what you actually read. Return ONLY valid JSON (no markdown fences, no commen
     buf.push_str("- extension_points: where new code is meant to plug in — registries, command tables, plugin/provider interfaces, route lists, factory functions, config schemas. For each, name the file and the shape of the contract.\n");
     buf.push_str("- agent_handoff: conventions (naming, lint rules, formatting), safe edit boundaries (\"changing X almost always also requires Y\"), important files an agent must read before making changes, recommended tests to run, known traps.\n");
     buf.push_str("- agent_prompt: a copy-pasteable handoff prompt summarising the project for future agents. Should let a fresh agent be productive without re-reading the repo.\n");
-    buf.push_str("\n");
+    buf.push('\n');
 
     append_inventory_context(&mut buf, inv);
     buf
@@ -1563,7 +1563,7 @@ fn append_inventory_context(buf: &mut String, inv: &RepoInventory) {
         for d in inv.docs.iter().take(8) {
             buf.push_str(&format!("---- {} ----\n", d.path));
             buf.push_str(d.preview.as_str());
-            buf.push_str("\n");
+            buf.push('\n');
         }
     }
 

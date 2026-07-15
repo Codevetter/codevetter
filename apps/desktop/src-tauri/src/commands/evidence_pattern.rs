@@ -145,8 +145,8 @@ fn resolve_sg_path() -> Option<String> {
         [
             format!("{home}/.local/bin/sg"),
             format!("{home}/.cargo/bin/sg"),
-            format!("/opt/homebrew/bin/sg"),
-            format!("/usr/local/bin/sg"),
+            "/opt/homebrew/bin/sg".to_string(),
+            "/usr/local/bin/sg".to_string(),
         ]
         .into_iter()
         .find(|candidate| Path::new(candidate).is_file())

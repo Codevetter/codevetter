@@ -87,10 +87,11 @@ fn scan_json_objects(text: &str) -> Vec<String> {
                 if depth > 0 {
                     depth -= 1;
                     if depth == 0 {
-                        if let Some(s) = start.take() {
-                            if let Ok(slice) = std::str::from_utf8(&bytes[s..=i]) {
-                                out.push(slice.to_string());
-                            }
+                        if let Some(slice) = start
+                            .take()
+                            .and_then(|s| std::str::from_utf8(&bytes[s..=i]).ok())
+                        {
+                            out.push(slice.to_string());
                         }
                     }
                 }

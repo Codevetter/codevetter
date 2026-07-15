@@ -876,8 +876,8 @@ fn detects_io_in_loop(content: &str) -> bool {
             || lower.contains("for_each(")
         {
             loop_window = 18;
-        } else if loop_window > 0 {
-            loop_window -= 1;
+        } else {
+            loop_window = loop_window.saturating_sub(1);
         }
         if loop_window > 0 && looks_like_io_call(&lower) {
             return true;
@@ -1837,4 +1837,28 @@ fn read_first_bytes(path: &Path, limit: usize) -> String {
     let n = file.read(&mut buf).unwrap_or(0);
     buf.truncate(n);
     String::from_utf8_lossy(&buf).to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::detects_io_in_loop;
+
+    #[test]
+    fn io_loop_window_saturates_and_preserves_boundary() {
+        let inside_window = format!(
+            "for item in items {{\n{}std::fs::read_to_string(path);",
+            "let value = item;\n".repeat(16)
+        );
+        assert!(detects_io_in_loop(&inside_window));
+
+        let outside_window = format!(
+            "for item in items {{\n{}std::fs::read_to_string(path);",
+            "let value = item;\n".repeat(17)
+        );
+        assert!(!detects_io_in_loop(&outside_window));
+
+        assert!(!detects_io_in_loop(
+            "let a = 1;\nlet b = 2;\nstd::fs::read_to_string(path);"
+        ));
+    }
 }

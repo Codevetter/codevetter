@@ -170,7 +170,7 @@ fn is_within_unignored_dir(pattern: &str, rel: &str) -> bool {
 }
 
 fn should_skip_dir_name(name: &str) -> bool {
-    ALWAYS_SKIP.iter().any(|skip| *skip == name)
+    ALWAYS_SKIP.contains(&name)
 }
 
 fn simple_glob_match(pattern: &str, rel: &str, name: &str) -> bool {
@@ -241,7 +241,7 @@ fn should_emit_progress(last_emit: &mut Instant, file_count: usize) -> bool {
     if file_count == 1 {
         return true;
     }
-    if file_count % PROGRESS_EVERY_N_FILES != 0 {
+    if !file_count.is_multiple_of(PROGRESS_EVERY_N_FILES) {
         return false;
     }
     let now = Instant::now();
