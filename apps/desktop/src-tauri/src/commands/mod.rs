@@ -13,6 +13,7 @@ pub mod git;
 pub mod git_metadata;
 pub mod graph_trust;
 pub mod history;
+pub mod history_evidence;
 pub mod history_summary_graph;
 pub mod intel;
 pub mod observability;
