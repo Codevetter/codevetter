@@ -4431,3 +4431,48 @@ export async function listTrexPrRuns(repoPath?: string, limit?: number): Promise
 export async function forcePollTrexWatcher(repoPath: string): Promise<number> {
   return (await safeInvoke<number>('force_poll_trex_watcher', { repoPath })) ?? 0;
 }
+
+// ─── Local MCP history exposure ────────────────────────────────────────────
+
+export interface McpAuditEntry {
+  id: number;
+  repo_id: string;
+  server_session: string;
+  operation: string;
+  status: string;
+  duration_ms: number;
+  result_count: number;
+  response_bytes: number;
+  created_at: string;
+}
+
+export interface McpRepositorySettings {
+  repo_id: string | null;
+  enabled: boolean;
+  indexed: boolean;
+  indexed_head: string | null;
+  current_head: string | null;
+  stale: boolean;
+  server_path: string;
+  client_config: Record<string, unknown> | null;
+  resource_kinds: string[];
+  tool_names: string[];
+  redaction_rules: string[];
+  limits: Record<string, number>;
+  recent_audit: McpAuditEntry[];
+}
+
+export async function getMcpRepositorySettings(repoPath: string): Promise<McpRepositorySettings> {
+  return safeInvoke<McpRepositorySettings>('get_mcp_repository_settings', { repoPath });
+}
+
+export async function setMcpRepositoryEnabled(
+  repoPath: string,
+  enabled: boolean
+): Promise<McpRepositorySettings> {
+  return safeInvoke<McpRepositorySettings>('set_mcp_repository_enabled', { repoPath, enabled });
+}
+
+export async function clearMcpAccessAudit(repoPath: string): Promise<number> {
+  return safeInvoke<number>('clear_mcp_access_audit', { repoPath });
+}
