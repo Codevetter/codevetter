@@ -7,7 +7,7 @@ import {
 } from '@tauri-apps/plugin-notification';
 
 import { buildActiveStandardsContext, getActiveStandardsPackId } from '@/lib/review-service';
-import type { VerifyResult } from '@/lib/warm-verification/contracts';
+import type { DaemonHealth, VerifyResult } from '@/lib/warm-verification/contracts';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -4008,6 +4008,62 @@ export async function listWarmVerificationRuns(input: {
     repoPath: input.repoPath ?? null,
     reviewId: input.reviewId ?? null,
     limit: input.limit ?? 20,
+  });
+}
+
+export interface WarmVerificationCleanupReport {
+  dry_run: boolean;
+  removed_runs: number;
+  removed_files: number;
+  reclaimed_bytes: number;
+  retained_bytes: number;
+  shared_playwright_cache_bytes: number;
+}
+
+/** Desktop control boundary for the repository-owned warm verifier. */
+export async function getWarmVerificationDaemonHealth(
+  repoPath: string
+): Promise<DaemonHealth | null> {
+  return safeInvoke('get_warm_verification_daemon_health', { repoPath });
+}
+
+export async function startWarmVerificationDaemon(repoPath: string): Promise<DaemonHealth> {
+  return safeInvoke('start_warm_verification_daemon', { repoPath });
+}
+
+export async function stopWarmVerificationDaemon(
+  repoPath: string
+): Promise<{ active_run_ids: string[] }> {
+  return safeInvoke('stop_warm_verification_daemon', { repoPath });
+}
+
+export async function runWarmChangedVerification(input: {
+  repoPath: string;
+  detailedCapture: boolean;
+}): Promise<StoredWarmVerificationRun> {
+  return safeInvoke('run_warm_changed_verification', {
+    repoPath: input.repoPath,
+    detailedCapture: input.detailedCapture,
+  });
+}
+
+export async function cancelWarmVerificationRun(input: {
+  repoPath: string;
+  runId: string;
+}): Promise<{ accepted: boolean }> {
+  return safeInvoke('cancel_warm_verification_run', {
+    repoPath: input.repoPath,
+    runId: input.runId,
+  });
+}
+
+export async function cleanupWarmVerificationArtifacts(input: {
+  repoPath: string;
+  dryRun?: boolean;
+}): Promise<WarmVerificationCleanupReport> {
+  return safeInvoke('cleanup_warm_verification_artifacts', {
+    repoPath: input.repoPath,
+    dryRun: input.dryRun ?? false,
   });
 }
 

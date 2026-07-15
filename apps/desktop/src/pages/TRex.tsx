@@ -15,21 +15,34 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ProjectWorkspaceEmpty } from '@/components/project-workspace/ProjectWorkspaceEmpty';
 import { ProjectWorkspaceHeader } from '@/components/project-workspace/ProjectWorkspaceHeader';
 import { ProjectWorkspaceShell } from '@/components/project-workspace/ProjectWorkspaceShell';
+import {
+  type WarmVerificationAction,
+  WarmVerificationPanel,
+} from '@/components/trex/WarmVerificationPanel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useProjectWorkspace } from '@/lib/project-workspace';
 import {
+  cancelWarmVerificationRun,
+  cleanupWarmVerificationArtifacts,
   forcePollTrexWatcher,
+  getWarmVerificationDaemonHealth,
   isTauriAvailable,
+  listWarmVerificationRuns,
   listTrexPrRuns,
   listTrexWatchers,
+  runWarmChangedVerification,
+  startWarmVerificationDaemon,
   startTrexWatcher,
+  stopWarmVerificationDaemon,
   stopTrexWatcher,
+  type StoredWarmVerificationRun,
   type TrexPrRun,
   type TrexWatcher,
 } from '@/lib/tauri-ipc';
+import type { DaemonHealth } from '@/lib/warm-verification/contracts';
 
 function verdictBadge(v: string) {
   const cls =
@@ -74,6 +87,13 @@ export default function TRex() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [warmHealth, setWarmHealth] = useState<DaemonHealth | null>(null);
+  const [warmRuns, setWarmRuns] = useState<StoredWarmVerificationRun[]>([]);
+  const [warmLoading, setWarmLoading] = useState(true);
+  const [warmAction, setWarmAction] = useState<WarmVerificationAction>(null);
+  const [warmError, setWarmError] = useState<string | null>(null);
+  const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
+  const [detailedCapture, setDetailedCapture] = useState(false);
 
   const projectWatcher = useMemo(
     () => watchers.find((w) => w.repo_path === selectedRepoPath) ?? null,
@@ -82,16 +102,51 @@ export default function TRex() {
 
   const refresh = useCallback(async () => {
     if (!isTauriAvailable()) return;
-    try {
-      const [w, r] = await Promise.all([
-        listTrexWatchers(),
-        listTrexPrRuns(selectedRepoPath ?? undefined, 50),
-      ]);
-      setWatchers(w);
-      setRuns(r);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+    const watcherRequest = Promise.all([
+      listTrexWatchers(),
+      listTrexPrRuns(selectedRepoPath ?? undefined, 50),
+    ]);
+    const warmRunsRequest = selectedRepoPath
+      ? listWarmVerificationRuns({ repoPath: selectedRepoPath, limit: 20 })
+      : Promise.resolve([]);
+    const healthRequest = selectedRepoPath
+      ? getWarmVerificationDaemonHealth(selectedRepoPath)
+      : Promise.resolve(null);
+    const [watcherResult, warmRunsResult, healthResult] = await Promise.allSettled([
+      watcherRequest,
+      warmRunsRequest,
+      healthRequest,
+    ]);
+
+    if (watcherResult.status === 'fulfilled') {
+      setWatchers(watcherResult.value[0]);
+      setRuns(watcherResult.value[1]);
+      setError(null);
+    } else {
+      setError(
+        watcherResult.reason instanceof Error
+          ? watcherResult.reason.message
+          : String(watcherResult.reason)
+      );
     }
+    let nextWarmError: string | null = null;
+    if (warmRunsResult.status === 'fulfilled') setWarmRuns(warmRunsResult.value);
+    else
+      nextWarmError =
+        warmRunsResult.reason instanceof Error
+          ? warmRunsResult.reason.message
+          : String(warmRunsResult.reason);
+    if (healthResult.status === 'fulfilled') {
+      setWarmHealth(healthResult.value);
+    } else {
+      setWarmHealth(null);
+      nextWarmError =
+        healthResult.reason instanceof Error
+          ? healthResult.reason.message
+          : String(healthResult.reason);
+    }
+    setWarmError(nextWarmError);
+    setWarmLoading(false);
   }, [selectedRepoPath]);
 
   useEffect(() => {
@@ -159,6 +214,57 @@ export default function TRex() {
     }
   };
 
+  const performWarmAction = async (
+    action: Exclude<WarmVerificationAction, null>,
+    operation: () => Promise<unknown>
+  ) => {
+    setWarmAction(action);
+    setWarmError(null);
+    setCleanupMessage(null);
+    try {
+      await operation();
+      await refresh();
+    } catch (e) {
+      setWarmError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setWarmAction(null);
+    }
+  };
+
+  const handleWarmStart = () => {
+    if (!selectedRepoPath) return;
+    void performWarmAction('start', () => startWarmVerificationDaemon(selectedRepoPath));
+  };
+
+  const handleWarmStop = () => {
+    if (!selectedRepoPath) return;
+    void performWarmAction('stop', () => stopWarmVerificationDaemon(selectedRepoPath));
+  };
+
+  const handleWarmRun = () => {
+    if (!selectedRepoPath) return;
+    void performWarmAction('run', () =>
+      runWarmChangedVerification({ repoPath: selectedRepoPath, detailedCapture })
+    );
+  };
+
+  const handleWarmCancel = (runId: string) => {
+    if (!selectedRepoPath) return;
+    void performWarmAction('cancel', () =>
+      cancelWarmVerificationRun({ repoPath: selectedRepoPath, runId })
+    );
+  };
+
+  const handleWarmCleanup = () => {
+    if (!selectedRepoPath) return;
+    void performWarmAction('cleanup', async () => {
+      const report = await cleanupWarmVerificationArtifacts({ repoPath: selectedRepoPath });
+      setCleanupMessage(
+        `Removed ${report.removed_runs} runs and reclaimed ${report.reclaimed_bytes.toLocaleString()} bytes. Shared browser cache was not changed.`
+      );
+    });
+  };
+
   return (
     <ProjectWorkspaceShell mainClassName="px-6 pb-24 pt-6">
       {!selectedRepoPath ? (
@@ -186,6 +292,22 @@ export default function TRex() {
               </p>
             </div>
           </ProjectWorkspaceHeader>
+
+          <WarmVerificationPanel
+            health={warmHealth}
+            runs={warmRuns}
+            loading={warmLoading}
+            action={warmAction}
+            error={warmError}
+            cleanupMessage={cleanupMessage}
+            detailedCapture={detailedCapture}
+            onDetailedCaptureChange={setDetailedCapture}
+            onStart={handleWarmStart}
+            onStop={handleWarmStop}
+            onRun={handleWarmRun}
+            onCancel={handleWarmCancel}
+            onCleanup={handleWarmCleanup}
+          />
 
           <Card className="mb-6 border-[var(--cv-line)] bg-[var(--bg-surface)]">
             <CardHeader className="pb-3">
