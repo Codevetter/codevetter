@@ -7,5 +7,6 @@ pub mod legacy;
 pub(crate) mod metrics;
 pub mod query;
 pub mod resolve;
+pub mod service;
 pub mod storage;
 pub mod types;
