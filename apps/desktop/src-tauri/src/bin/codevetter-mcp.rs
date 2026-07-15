@@ -64,3 +64,26 @@ fn parse_arguments(arguments: impl IntoIterator<Item = String>) -> Result<Argume
         repo_id: repo_id.ok_or_else(|| "--repo-id is required".to_string())?,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn arguments_are_explicit_and_repository_scoped() {
+        assert_eq!(
+            parse_arguments([
+                "--database".to_string(),
+                "/tmp/codevetter.db".to_string(),
+                "--repo-id".to_string(),
+                "repo_0123456789abcdef".to_string(),
+            ])
+            .expect("arguments"),
+            Arguments {
+                database: PathBuf::from("/tmp/codevetter.db"),
+                repo_id: "repo_0123456789abcdef".to_string(),
+            }
+        );
+        assert!(parse_arguments(["--repo".to_string(), "/tmp/repo".to_string()]).is_err());
+    }
+}
