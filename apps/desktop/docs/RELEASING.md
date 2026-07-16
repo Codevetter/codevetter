@@ -32,7 +32,7 @@
 
    Prefer the app archive for manual installs until the macOS bundle is Developer ID signed and notarized. Unsigned or ad-hoc signed DMGs fail Gatekeeper for new installs.
 
-4. Create a GitHub release at `sarthak-fleet/CodeVetter`:
+4. Create a GitHub release at `Codevetter/codevetter`:
    - Tag: `v{x.y.z}`
    - Upload all build artifacts including `latest.json`
 

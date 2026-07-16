@@ -737,11 +737,11 @@ mod tests {
     #[test]
     fn owner_repo_from_https() {
         assert_eq!(
-            parse_owner_repo("https://github.com/sarthak-fleet/CodeVetter.git"),
+            parse_owner_repo("https://github.com/Codevetter/codevetter.git"),
             Some(("sarthak-fleet".into(), "CodeVetter".into()))
         );
         assert_eq!(
-            parse_owner_repo("https://github.com/sarthak-fleet/CodeVetter"),
+            parse_owner_repo("https://github.com/Codevetter/codevetter"),
             Some(("sarthak-fleet".into(), "CodeVetter".into()))
         );
     }
@@ -749,7 +749,7 @@ mod tests {
     #[test]
     fn owner_repo_from_ssh() {
         assert_eq!(
-            parse_owner_repo("git@github.com:sarthak-fleet/CodeVetter.git"),
+            parse_owner_repo("git@github.com:Codevetter/codevetter.git"),
             Some(("sarthak-fleet".into(), "CodeVetter".into()))
         );
     }

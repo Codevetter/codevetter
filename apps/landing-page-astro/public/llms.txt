@@ -14,8 +14,8 @@ Open source (ISC). macOS desktop app with optional Claude, Codex, or Gemini CLI 
 
 ## Docs
 
-- [README](https://github.com/sarthak-fleet/CodeVetter#readme): Architecture, desktop app setup, and product direction
-- [Releases](https://github.com/sarthak-fleet/CodeVetter/releases): Changelog and binaries
+- [README](https://github.com/Codevetter/codevetter#readme): Architecture, desktop app setup, and product direction
+- [Releases](https://github.com/Codevetter/codevetter/releases): Changelog and binaries
 
 ## Optional
 
