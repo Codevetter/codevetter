@@ -1042,40 +1042,40 @@ mod tests {
     #[test]
     fn normalizes_https_with_dot_git() {
         assert_eq!(
-            normalize_git_url("https://github.com/sarthak-fleet/CodeVetter.git"),
-            "github.com/sarthak-fleet/codevetter"
+            normalize_git_url("https://github.com/Codevetter/codevetter.git"),
+            "github.com/Codevetter/codevetter"
         );
     }
 
     #[test]
     fn normalizes_https_without_dot_git() {
         assert_eq!(
-            normalize_git_url("https://github.com/sarthak-fleet/CodeVetter"),
-            "github.com/sarthak-fleet/codevetter"
+            normalize_git_url("https://github.com/Codevetter/codevetter"),
+            "github.com/Codevetter/codevetter"
         );
     }
 
     #[test]
     fn normalizes_ssh_form() {
         assert_eq!(
-            normalize_git_url("git@github.com:sarthak-fleet/CodeVetter.git"),
-            "github.com/sarthak-fleet/codevetter"
+            normalize_git_url("git@github.com:Codevetter/codevetter.git"),
+            "github.com/Codevetter/codevetter"
         );
     }
 
     #[test]
     fn normalizes_ssh_form_with_user_and_port() {
         assert_eq!(
-            normalize_git_url("ssh://git@github.com/sarthak-fleet/CodeVetter.git"),
-            "github.com/sarthak-fleet/codevetter"
+            normalize_git_url("ssh://git@github.com/Codevetter/codevetter.git"),
+            "github.com/Codevetter/codevetter"
         );
     }
 
     #[test]
     fn normalizes_trailing_slash_and_casing() {
         assert_eq!(
-            normalize_git_url("https://GitHub.com/Sarthak-FLEET/CodeVetter/"),
-            "github.com/sarthak-fleet/codevetter"
+            normalize_git_url("https://GitHub.com/Codevetter/codevetter/"),
+            "github.com/Codevetter/codevetter"
         );
     }
 
@@ -1100,10 +1100,10 @@ mod tests {
                 name: "CodeVetter".into(),
                 slug: Some("codevetter".into()),
                 source: None,
-                git_url: Some("git@github.com:sarthak-fleet/CodeVetter.git".into()),
+                git_url: Some("git@github.com:Codevetter/codevetter.git".into()),
             },
         ];
-        let local = "https://github.com/sarthak-fleet/CodeVetter";
+        let local = "https://github.com/Codevetter/codevetter";
         let m = match_project_by_url(local, &projects);
         assert!(m.is_some());
         assert_eq!(m.unwrap().slug.as_deref(), Some("codevetter"));
