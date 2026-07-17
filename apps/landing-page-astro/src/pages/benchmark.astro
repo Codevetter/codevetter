@@ -2,46 +2,235 @@
 import Layout from '@/layouts/Layout.astro';
 import Nav from '@/components/Nav.astro';
 import Footer from '@/components/Footer.astro';
+import dataset from '@/../public/benchmark/codevetter-benchmark-v1.json';
+import results from '@/data/benchmark-results.json';
+
+// Real numbers, sourced from benchmark/cases + benchmark/reviews scored by
+// scripts/run-public-benchmark.mjs. Regenerate with `node /tmp/gen-benchmark.mjs`
+// (or the committed generator) after any case/review change.
+const cv = results.codevetter;
+const rc = results['raw-claude'];
+
+const pct = (n) => `${(n * 100).toFixed(1)}%`;
+const fmt = (n) => n.toFixed(3);
+
+const langs = dataset.languages;
+const cats = dataset.categories;
+const totalFindings = dataset.expected_findings_total;
+
+// Per-case issue type + severity for the cases summary table.
+const caseRows = dataset.cases.map((c) => {
+  const g = c.expected_findings[0];
+  const severities = [...new Set(c.expected_findings.map((f) => f.severity))];
+  const types = [...new Set(c.expected_findings.map((f) => f.type))];
+  return {
+    id: c.id,
+    title: c.title,
+    language: c.language,
+    category: c.category,
+    types: types.join(', '),
+    severity: severities.join('/'),
+    expected: c.expected_findings.length,
+  };
+});
+
+// Merge per-case results from both reviewers into one row per case.
+const byId = new Map(cv.cases.map((c) => [c.id, c]));
+const merged = cv.cases.map((c) => {
+  const r = rc.cases.find((x) => x.id === c.id)!;
+  return { id: c.id, title: c.title, language: c.language, expected: c.expected, cv: c, rc: r };
+});
+
+const datasetUrl = '/benchmark/codevetter-benchmark-v1.json';
+const datasetSizeKb = Math.round(JSON.stringify(dataset).length / 1024);
+
+// schema.org Dataset JSON-LD, anchored to the real published file.
+const datasetJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: dataset.name,
+  description: dataset.description,
+  url: 'https://codevetter.com/benchmark',
+  distribution: {
+    '@type': 'DataDownload',
+    encodingFormat: 'application/json',
+    contentUrl: `https://codevetter.com${datasetUrl}`,
+  },
+  license: 'https://creativecommons.org/publicdomain/zero/1.0/',
+  isAccessibleForFree: true,
+  creator: { '@type': 'Organization', name: 'CodeVetter', url: 'https://codevetter.com' },
+  datePublished: dataset.released,
+  keywords: ['code review', 'static analysis', 'security', 'benchmark', 'AI code review'],
+  variableMeasured: 'catch rate, precision, F1, false positives, redundant matches',
+};
 ---
 
 <Layout
-  title="Agent PR Benchmark — CodeVetter"
-  description="Public benchmark plan: agent-generated pull requests with hand-labeled ground truth for measuring AI code review catch rate."
+  title="Public Benchmark — CodeVetter"
+  description="27 hand-labeled cases, 29 expected findings. CodeVetter catches 29/29 (100%); raw Claude catches 27/29 (93.1%). Download the dataset and rerun the scorer yourself."
   path="/benchmark"
 >
-  <main class="min-h-screen bg-stone-950 text-stone-200">
+  <main class="min-h-screen bg-[--color-bg] text-[--color-text]">
     <Nav />
-    <article class="mx-auto max-w-3xl px-4 py-16 leading-7 pt-32">
-      <a href="/" class="text-xs text-stone-500 hover:text-amber-400">← CodeVetter</a>
-      <h1 class="mt-3 text-3xl font-bold tracking-tight text-white">Agent PR Benchmark</h1>
-      <p class="mt-3 text-xs text-stone-500">Status: in progress · Last updated: 2026-06-10</p>
-
-      <p class="mt-6 text-sm text-stone-300">
-        Generic AI review claims are noise. CodeVetter is building a public, hand-labeled set of
-        real agent-generated diffs so catch-rate numbers mean something.
+    <article class="mx-auto max-w-3xl px-6 py-20 pt-32 leading-7">
+      <a href="/" class="text-xs text-[--color-text-mute] hover:text-[--color-accent]">← CodeVetter</a>
+      <p class="mt-4 text-xs font-mono uppercase tracking-[0.16em] text-[--color-text-mute]">Public Benchmark v1 · {dataset.released}</p>
+      <h1 class="mt-2 text-4xl font-bold tracking-tight text-white">A hand-labeled benchmark for AI code review</h1>
+      <p class="mt-5 text-[--color-text-dim]">
+        Generic “our AI catches bugs” claims are noise. So we built a public, hand-labeled set of
+        {dataset.case_count} self-contained code snippets with {totalFindings} expected findings,
+        scored any reviewer against it, and published everything — cases, ground truth, reviewer
+        outputs, and the scorer. You can rerun the numbers yourself in under a minute.
       </p>
 
-      <h2 class="mt-8 text-base font-semibold text-white">Methodology</h2>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm marker:text-stone-600">
-        <li>20–30 public PRs where an agent made the primary code changes</li>
-        <li>Each finding hand-labeled: bug, regression, style-only, or false positive</li>
-        <li>Tools scored on recall@severity, not vibes</li>
-        <li>Dataset published when v1 threshold (≥10 cases) is met</li>
+      <section class="mt-10 grid grid-cols-2 gap-4">
+        <div class="rounded-lg border border-[--color-line] bg-[--color-surface] p-5">
+          <div class="text-xs font-mono uppercase tracking-widest text-[--color-text-mute]">CodeVetter</div>
+          <div class="mt-2 text-3xl font-bold text-white">{pct(cv.overall.catchRate)}</div>
+          <div class="text-sm text-[--color-text-dim]">{cv.overall.totalCaught}/{cv.overall.totalExpected} findings caught</div>
+          <div class="mt-3 text-xs text-[--color-text-mute] font-mono">
+            precision {fmt(cv.overall.precision)} · F1 {fmt(cv.overall.f1)} · FP {cv.overall.falsePositives}
+          </div>
+        </div>
+        <div class="rounded-lg border border-[--color-line] bg-[--color-surface] p-5">
+          <div class="text-xs font-mono uppercase tracking-widest text-[--color-text-mute]">Raw Claude (baseline)</div>
+          <div class="mt-2 text-3xl font-bold text-white">{pct(rc.overall.catchRate)}</div>
+          <div class="text-sm text-[--color-text-dim]">{rc.overall.totalCaught}/{rc.overall.totalExpected} findings caught</div>
+          <div class="mt-3 text-xs text-[--color-text-mute] font-mono">
+            precision {fmt(rc.overall.precision)} · F1 {fmt(rc.overall.f1)} · FP {rc.overall.falsePositives}
+          </div>
+        </div>
+      </section>
+      <p class="mt-3 text-xs text-[--color-text-mute]">
+        Raw Claude = the same model (Claude) prompted once with “review this code,” no review
+        harness, no rubric, no diff context. CodeVetter wraps that model in its review pipeline
+        (rubric, diff framing, finding normalization). The point of the baseline is to isolate
+        what the harness adds, not to dunk on the model.
+      </p>
+
+      <h2 class="mt-14 text-xl font-semibold text-white">What's in the dataset</h2>
+      <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-[--color-text-dim] marker:text-[--color-text-mute]">
+        <li><span class="text-white font-medium">{dataset.case_count} cases</span>, each a single self-contained source file with a known issue.</li>
+        <li><span class="text-white font-medium">{totalFindings} hand-labeled expected findings</span> across those cases (two cases carry two findings each).</li>
+        <li><span class="text-white font-medium">{langs.length} languages</span>: {langs.join(', ')}.</li>
+        <li><span class="text-white font-medium">{cats.length} categories</span>: {cats.join(', ')}.</li>
+        <li>Every case is synthetic and reproducible — no proprietary code, no network calls, no repo setup.</li>
       </ul>
 
-      <h2 class="mt-8 text-base font-semibold text-white">Contribute</h2>
-      <p class="mt-2 text-sm">
-        Have an agent PR with a known bug the reviewer missed?
-        <a href="https://github.com/Codevetter/codevetter/issues" class="text-amber-400 hover:underline">Open an issue</a>
-        with a link to the diff (no proprietary code required — sanitized excerpts welcome).
+      <h2 class="mt-12 text-xl font-semibold text-white">Methodology</h2>
+      <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-[--color-text-dim] marker:text-[--color-accent]">
+        <li>Each case lives in <code class="text-[--color-text]">benchmark/cases/&lt;id&gt;/</code> with a <code class="text-[--color-text]">source.&lt;ext&gt;</code> and a hand-written <code class="text-[--color-text]">label.json</code> ground truth (type, severity, line range, description).</li>
+        <li>A reviewer's output is normalized into <code class="text-[--color-text]">reviews/&lt;case-id&gt;.&lt;reviewer&gt;.json</code> with a <code class="text-[--color-text]">matched_ground_truth</code> array per finding.</li>
+        <li>The scorer (<code class="text-[--color-text]">scripts/run-public-benchmark.mjs</code>) computes catch rate, precision, F1, false positives, and redundant matches.</li>
+        <li><strong class="text-white">Catch rate</strong> = matched ground-truth issues ÷ total expected. <strong class="text-white">Precision</strong> = matched ÷ (matched + false positives + redundant). <strong class="text-white">F1</strong> = harmonic mean.</li>
+        <li>Findings with empty <code class="text-[--color-text]">matched_ground_truth</code> count as false positives; repeats of an already-caught issue count as redundant.</li>
+      </ol>
+      <p class="mt-3 text-xs text-[--color-text-mute] font-mono">
+        Reproduce: <code>git clone</code> → <code>npm run bench:public -- --reviewer=codevetter</code>
       </p>
 
-      <h2 class="mt-8 text-base font-semibold text-white">Try CodeVetter</h2>
-      <p class="mt-2 text-sm">
-        <a href="/download" class="text-amber-400 hover:underline">Download for macOS</a>
-        · <a href="https://github.com/Codevetter/codevetter" class="text-amber-400 hover:underline">GitHub</a>
+      <h2 class="mt-12 text-xl font-semibold text-white">Per-reviewer results by case</h2>
+      <p class="mt-2 text-sm text-[--color-text-dim]">
+        Expected = labeled findings. Caught = matched. FP = false positives. Red = redundant matches.
+      </p>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-xs font-mono border-collapse">
+          <thead>
+            <tr class="text-left text-[--color-text-mute] border-b border-[--color-line]">
+              <th class="py-2 pr-3 font-medium">Case</th>
+              <th class="py-2 px-2 font-medium">Exp</th>
+              <th class="py-2 px-2 font-medium text-[--color-accent]">CV ✓</th>
+              <th class="py-2 px-2 font-medium text-[--color-accent]">CV FP</th>
+              <th class="py-2 px-2 font-medium">RC ✓</th>
+              <th class="py-2 px-2 font-medium">RC FP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {merged.map((row) => (
+              <tr class="border-b border-[--color-line]/60 hover:bg-[--color-surface]/50">
+                <td class="py-1.5 pr-3 text-[--color-text]">
+                  <span class="text-[--color-text-mute]">{row.language}/</span>{row.id}
+                </td>
+                <td class="py-1.5 px-2 text-[--color-text-dim]">{row.expected}</td>
+                <td class="py-1.5 px-2 text-[--color-ok]">{row.cv.caught}{row.cv.missed ? '' : ''}</td>
+                <td class="py-1.5 px-2 text-[--color-text-dim]">{row.cv.false_positives}</td>
+                <td class={`py-1.5 px-2 ${row.rc.missed ? 'text-[--color-danger]' : 'text-[--color-ok]'}`}>{row.rc.caught}</td>
+                <td class="py-1.5 px-2 text-[--color-text-dim]">{row.rc.false_positives}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-xs text-[--color-text-mute]">
+        Red = a missed finding. Raw Claude missed one finding each in <code>py-zip-bomb</code> (resource exhaustion) and <code>rust-integer-overflow</code> (one of two overflow sites). CodeVetter caught all 29.
+      </p>
+
+      <h2 class="mt-12 text-xl font-semibold text-white">The 27 cases</h2>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-xs border-collapse">
+          <thead>
+            <tr class="text-left text-[--color-text-mute] border-b border-[--color-line]">
+              <th class="py-2 pr-3 font-medium font-mono">Case</th>
+              <th class="py-2 px-2 font-medium">Language</th>
+              <th class="py-2 px-2 font-medium">Category</th>
+              <th class="py-2 px-2 font-medium">Issue type</th>
+              <th class="py-2 px-2 font-medium">Sev</th>
+            </tr>
+          </thead>
+          <tbody>
+            {caseRows.map((c) => (
+              <tr class="border-b border-[--color-line]/60">
+                <td class="py-1.5 pr-3 font-mono text-[--color-text]">{c.id}</td>
+                <td class="py-1.5 px-2 text-[--color-text-dim]">{c.language}</td>
+                <td class="py-1.5 px-2 text-[--color-text-dim]">{c.category}</td>
+                <td class="py-1.5 px-2 text-[--color-text-dim]">{c.types}</td>
+                <td class="py-1.5 px-2 text-[--color-text-dim]">{c.severity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="mt-12 text-xl font-semibold text-white">Honest limitations</h2>
+      <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-[--color-text-dim] marker:text-[--color-text-mute]">
+        <li><strong class="text-white">Synthetic, not real PRs.</strong> Cases are hand-written snippets, not diffs mined from production repos. They test whether a reviewer recognizes a known issue in isolation, not whether it surfaces inside a 400-line PR with unrelated churn. The sibling <code class="text-[--color-text]">benchmarks/agent-prs/</code> harness measures the latter on real public agent PRs.</li>
+        <li><strong class="text-white">Small.</strong> 27 cases / 29 findings is enough to be reproducible and to separate 100% from 93%, but not enough to claim statistical significance between two reviewers that both sit near the top. Treat the gap as directional, not proven.</li>
+        <li><strong class="text-white">One finding per case (mostly).</strong> Two cases carry two findings; the rest carry one. This over-weights breadth of issue type vs. depth of reasoning inside a single file.</li>
+        <li><strong class="text-white">Precision is the weak spot for both reviewers.</strong> CodeVetter emits 29 false positives across the set; raw Claude emits 31. Catch rate is the headline, but a reviewer that shouts on every line would also hit 100% catch rate — which is why precision and F1 are reported alongside it.</li>
+        <li><strong class="text-white">Ground truth is human-written and could be wrong.</strong> Labels were written by one person. A missed “real” issue that isn't in the label would inflate catch rate. PRs that add or correct a label are welcome.</li>
+        <li><strong class="text-white">No timing / cost dimension.</strong> The benchmark scores correctness only. It does not account for tokens, latency, or provider cost, which matter in practice.</li>
+      </ul>
+
+      <h2 class="mt-12 text-xl font-semibold text-white">Download the dataset</h2>
+      <p class="mt-2 text-sm text-[--color-text-dim]">
+        The full dataset — all 27 cases, source code, expected findings, scoring method, and a CC0 license note — is a single JSON file (~{datasetSizeKb} KB).
+      </p>
+      <a
+        href={datasetUrl}
+        download="codevetter-benchmark-v1.json"
+        class="mt-4 inline-flex items-center gap-2 h-10 px-5 text-xs font-medium bg-white text-black hover:bg-gray-200 rounded-full transition-colors"
+      >
+        codevetter-benchmark-v1.json
+      </a>
+      <p class="mt-3 text-xs text-[--color-text-mute] font-mono">
+        License: CC0 1.0 (Public Domain Dedication). Attribution appreciated, not required.
+      </p>
+
+      <h2 class="mt-12 text-xl font-semibold text-white">Reproduce it yourself</h2>
+      <pre class="mt-3 rounded-lg border border-[--color-line] bg-[--color-surface] p-4 text-xs font-mono overflow-x-auto text-[--color-text-dim]"><code>git clone https://github.com/Codevetter/codevetter
+cd codevetter
+npm run bench:public -- --reviewer=codevetter
+npm run bench:public -- --reviewer=raw-claude</code></pre>
+
+      <h2 class="mt-12 text-xl font-semibold text-white">Try CodeVetter</h2>
+      <p class="mt-2 text-sm text-[--color-text-dim]">
+        <a href="/download" class="text-[--color-accent] hover:underline">Download for macOS</a>
+        · <a href="https://github.com/Codevetter/codevetter" class="text-[--color-accent] hover:underline">GitHub</a>
+        · <a href="https://github.com/Codevetter/codevetter/issues" class="text-[--color-accent] hover:underline">Contribute a case</a>
       </p>
     </article>
     <Footer />
   </main>
+
+  <script type="application/ld+json" set:html={JSON.stringify(datasetJsonLd)} />
 </Layout>
