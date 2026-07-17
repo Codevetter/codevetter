@@ -63,14 +63,15 @@ const dataset = {
     false_positives: 'reviewer findings with empty matched_ground_truth',
     redundant_matches: 'repeated matches to an issue already caught in the same case',
   },
-  license: 'CC0 1.0 Universal (Public Domain Dedication). Attribution appreciated but not required.',
+  license:
+    'CC0 1.0 Universal (Public Domain Dedication). Attribution appreciated but not required.',
   cases,
 };
 
 fs.mkdirSync(path.join(LANDING_PUBLIC, 'benchmark'), { recursive: true });
 fs.writeFileSync(
   path.join(LANDING_PUBLIC, 'benchmark', 'codevetter-benchmark-v1.json'),
-  JSON.stringify(dataset, null, 2) + '\n'
+  `${JSON.stringify(dataset, null, 2)}\n`
 );
 
 const REVIEWERS = [
@@ -104,7 +105,7 @@ for (const { name, scoreFile } of REVIEWERS) {
 fs.mkdirSync(LANDING_DATA, { recursive: true });
 fs.writeFileSync(
   path.join(LANDING_DATA, 'benchmark-results.json'),
-  JSON.stringify(results, null, 2) + '\n'
+  `${JSON.stringify(results, null, 2)}\n`
 );
 
 console.log('Dataset cases:', cases.length);

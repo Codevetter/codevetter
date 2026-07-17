@@ -4,20 +4,8 @@
   "released": "2026-07-17",
   "case_count": 27,
   "expected_findings_total": 29,
-  "languages": [
-    "go",
-    "java",
-    "javascript",
-    "python",
-    "rust",
-    "typescript"
-  ],
-  "categories": [
-    "bug",
-    "concurrency",
-    "maintainability",
-    "security"
-  ],
+  "languages": ["go", "java", "javascript", "python", "rust", "typescript"],
+  "categories": ["bug", "concurrency", "maintainability", "security"],
   "description": "A public, hand-labeled benchmark for measuring whether code review / security analysis tools catch known issues. Each case is a small, self-contained code snippet with one or more hand-labeled expected findings. Cases are synthetic and intentionally reproducible by anyone, anywhere.",
   "scoring_method": {
     "catch_rate": "matched ground-truth issues / total expected issues",
@@ -42,10 +30,7 @@
           "severity": "medium",
           "location": {
             "file": "source.go",
-            "lines": [
-              12,
-              12
-            ]
+            "lines": [12, 12]
           },
           "description": "The error return from os.WriteFile is discarded, so disk-full, permission, and invalid-path failures are silently swallowed and callers assume the config was saved."
         }
@@ -65,10 +50,7 @@
           "severity": "high",
           "location": {
             "file": "source.go",
-            "lines": [
-              7,
-              9
-            ]
+            "lines": [7, 9]
           },
           "description": "Production database username, password, and host are committed in plaintext as package-level constants, exposing credentials to anyone with repository access."
         }
@@ -88,10 +70,7 @@
           "severity": "medium",
           "location": {
             "file": "source.go",
-            "lines": [
-              16,
-              16
-            ]
+            "lines": [16, 16]
           },
           "description": "FindUser dereferences u.Email without checking that the map lookup returned a non-nil pointer, so a missing id causes a nil pointer dereference and a process crash."
         }
@@ -111,10 +90,7 @@
           "severity": "high",
           "location": {
             "file": "source.go",
-            "lines": [
-              21,
-              21
-            ]
+            "lines": [21, 21]
           },
           "description": "Get reads the shared map without holding the mutex while Set writes to it under the lock, causing a concurrent map read/write data race."
         }
@@ -134,10 +110,7 @@
           "severity": "high",
           "location": {
             "file": "source.go",
-            "lines": [
-              13,
-              13
-            ]
+            "lines": [13, 13]
           },
           "description": "User-supplied email is interpolated into the SQL query via fmt.Sprintf instead of parameterized placeholders, allowing injection of arbitrary SQL."
         }
@@ -157,10 +130,7 @@
           "severity": "high",
           "location": {
             "file": "source.java",
-            "lines": [
-              10,
-              11
-            ]
+            "lines": [10, 11]
           },
           "description": "Reset tokens are generated with java.util.Random, a predictable PRNG whose seed is recoverable from observed outputs, allowing token forgery. SecureRandom should be used instead."
         }
@@ -180,10 +150,7 @@
           "severity": "high",
           "location": {
             "file": "source.js",
-            "lines": [
-              7,
-              7
-            ]
+            "lines": [7, 7]
           },
           "description": "Caller-supplied expression is passed directly to eval(), turning any user-controlled value into executing JavaScript and enabling arbitrary code execution."
         }
@@ -203,10 +170,7 @@
           "severity": "medium",
           "location": {
             "file": "source.js",
-            "lines": [
-              9,
-              10
-            ]
+            "lines": [9, 10]
           },
           "description": "The next query parameter is passed directly to res.redirect without an allowlist or same-origin check, enabling phishing redirects off the trusted domain."
         }
@@ -226,10 +190,7 @@
           "severity": "medium",
           "location": {
             "file": "source.py",
-            "lines": [
-              9,
-              11
-            ]
+            "lines": [9, 11]
           },
           "description": "A bare except catches BaseException (including KeyboardInterrupt and SystemExit), hides JSON parse failures, and silently returns an empty dict so callers never learn the config failed to parse."
         }
@@ -249,10 +210,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              9,
-              10
-            ]
+            "lines": [9, 10]
           },
           "description": "subprocess.run is called with shell=True and a string command containing user-controlled host, allowing shell metacharacters to inject arbitrary commands."
         }
@@ -272,10 +230,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              10,
-              11
-            ]
+            "lines": [10, 11]
           },
           "description": "A live AWS access key id and secret access key are hardcoded in source. Anyone with repository access can extract and abuse these credentials."
         }
@@ -295,10 +250,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              9,
-              9
-            ]
+            "lines": [9, 9]
           },
           "description": "pickle.loads is called on a user-supplied base64 blob. pickle can execute arbitrary code during deserialization, so untrusted input lets an attacker run any payload on the server."
         }
@@ -318,10 +270,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              9,
-              9
-            ]
+            "lines": [9, 9]
           },
           "description": "User-supplied report_name is joined into the filesystem path without normalization or containment checks, allowing traversal sequences like ../../etc/passwd to read arbitrary files outside base_dir."
         }
@@ -341,10 +290,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              8,
-              8
-            ]
+            "lines": [8, 8]
           },
           "description": "User-supplied name is interpolated into the SQL query via an f-string, allowing injection of arbitrary SQL such as a UNION SELECT to exfiltrate other tables."
         }
@@ -364,10 +310,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              9,
-              9
-            ]
+            "lines": [9, 9]
           },
           "description": "The server fetches a user-supplied URL with no scheme, host, or private-range restrictions, allowing requests to cloud metadata endpoints (e.g. 169.254.169.254) to steal credentials or to internal services for pivoting."
         }
@@ -387,10 +330,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              7,
-              7
-            ]
+            "lines": [7, 7]
           },
           "description": "Passwords are hashed with unsalted MD5, which is cryptographically broken and trivially reversed with rainbow tables; identical passwords produce identical hashes."
         }
@@ -410,10 +350,7 @@
           "severity": "high",
           "location": {
             "file": "source.py",
-            "lines": [
-              9,
-              9
-            ]
+            "lines": [9, 9]
           },
           "description": "extractall is called without checking uncompressed sizes or compression ratios, so a small zip bomb can decompress to petabytes and exhaust disk and memory."
         }
@@ -433,10 +370,7 @@
           "severity": "high",
           "location": {
             "file": "source.rs",
-            "lines": [
-              11,
-              11
-            ]
+            "lines": [11, 11]
           },
           "description": "credit uses += on u64 without checked/saturating arithmetic; in release builds an overflowing credit wraps the balance silently, enabling balance manipulation."
         },
@@ -446,10 +380,7 @@
           "severity": "high",
           "location": {
             "file": "source.rs",
-            "lines": [
-              18,
-              18
-            ]
+            "lines": [18, 18]
           },
           "description": "debit uses -= on u64 without checked arithmetic; an over-debit underflows, panicking in debug or wrapping to a huge balance in release."
         }
@@ -469,10 +400,7 @@
           "severity": "medium",
           "location": {
             "file": "source.ts",
-            "lines": [
-              12,
-              15
-            ]
+            "lines": [12, 15]
           },
           "description": "The if (score >= 70) branch and final return are unreachable because an unconditional return at line 8 always exits the function first."
         },
@@ -482,10 +410,7 @@
           "severity": "low",
           "location": {
             "file": "source.ts",
-            "lines": [
-              18,
-              20
-            ]
+            "lines": [18, 20]
           },
           "description": "neverCalled is defined but never referenced anywhere, so it is dead code that should be removed."
         }
@@ -505,10 +430,7 @@
           "severity": "high",
           "location": {
             "file": "source.ts",
-            "lines": [
-              8,
-              8
-            ]
+            "lines": [8, 8]
           },
           "description": "The production database password is committed in plaintext inside the source file, exposing credentials to anyone with repository access."
         }
@@ -528,10 +450,7 @@
           "severity": "high",
           "location": {
             "file": "source.ts",
-            "lines": [
-              8,
-              8
-            ]
+            "lines": [8, 8]
           },
           "description": "The session cookie is set without Secure, HttpOnly, or SameSite attributes, so it is transmitted over HTTP, readable by JavaScript/XSS, and vulnerable to CSRF."
         }
@@ -551,10 +470,7 @@
           "severity": "medium",
           "location": {
             "file": "source.ts",
-            "lines": [
-              8,
-              8
-            ]
+            "lines": [8, 8]
           },
           "description": "deleteSession returns a promise but is not awaited, so a rejection becomes an unhandled promise rejection and logout resolves before the session is actually deleted, leaving stale sessions."
         }
@@ -574,10 +490,7 @@
           "severity": "high",
           "location": {
             "file": "source.ts",
-            "lines": [
-              11,
-              19
-            ]
+            "lines": [11, 19]
           },
           "description": "The recursive merge walks user-supplied keys without blocking __proto__/constructor/prototype, so a payload like {\"__proto__\": {\"admin\": true}} pollutes Object.prototype and escalates privileges across the application."
         }
@@ -597,10 +510,7 @@
           "severity": "high",
           "location": {
             "file": "source.ts",
-            "lines": [
-              4,
-              4
-            ]
+            "lines": [4, 4]
           },
           "description": "The regex uses a nested + quantifier ((...+)+) causing exponential backtracking on non-matching inputs; a long crafted string hangs the event loop and denies service to all other requests."
         }
@@ -620,10 +530,7 @@
           "severity": "high",
           "location": {
             "file": "source.ts",
-            "lines": [
-              14,
-              14
-            ]
+            "lines": [14, 14]
           },
           "description": "User-controlled emailInput is concatenated directly into the SQL query string, allowing injection of arbitrary SQL by breaking out of the single-quoted value."
         }
@@ -643,10 +550,7 @@
           "severity": "medium",
           "location": {
             "file": "source.ts",
-            "lines": [
-              19,
-              19
-            ]
+            "lines": [19, 19]
           },
           "description": "The payload is cast through `as any` to Order, bypassing the compiler so a Refund-shaped object is treated as an Order; at runtime items is undefined and the .length access throws or silently corrupts downstream totals."
         }
@@ -666,10 +570,7 @@
           "severity": "high",
           "location": {
             "file": "source.tsx",
-            "lines": [
-              12,
-              12
-            ]
+            "lines": [12, 12]
           },
           "description": "User-supplied comment body is rendered as raw HTML via dangerouslySetInnerHTML without any sanitization, enabling stored/reflected XSS."
         }
