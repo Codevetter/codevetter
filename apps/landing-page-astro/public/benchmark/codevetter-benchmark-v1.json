@@ -1,0 +1,679 @@
+{
+  "name": "CodeVetter Public Benchmark v1",
+  "version": "1.0.0",
+  "released": "2026-07-17",
+  "case_count": 27,
+  "expected_findings_total": 29,
+  "languages": [
+    "go",
+    "java",
+    "javascript",
+    "python",
+    "rust",
+    "typescript"
+  ],
+  "categories": [
+    "bug",
+    "concurrency",
+    "maintainability",
+    "security"
+  ],
+  "description": "A public, hand-labeled benchmark for measuring whether code review / security analysis tools catch known issues. Each case is a small, self-contained code snippet with one or more hand-labeled expected findings. Cases are synthetic and intentionally reproducible by anyone, anywhere.",
+  "scoring_method": {
+    "catch_rate": "matched ground-truth issues / total expected issues",
+    "precision": "matched issues / (matched + false positives + redundant matches)",
+    "f1": "harmonic mean of catch rate and precision",
+    "false_positives": "reviewer findings with empty matched_ground_truth",
+    "redundant_matches": "repeated matches to an issue already caught in the same case"
+  },
+  "license": "CC0 1.0 Universal (Public Domain Dedication). Attribution appreciated but not required.",
+  "cases": [
+    {
+      "id": "go-errcheck",
+      "title": "Unchecked error return in Go",
+      "language": "go",
+      "source_file": "source.go",
+      "category": "bug",
+      "source": "// Case: Ignored error return from a write that can fail.\npackage writer\n\nimport (\n\t\"os\"\n)\n\nfunc SaveConfig(path string, contents []byte) {\n\t// BUG: WriteFile's error is discarded. If the disk is full, permissions\n\t// are wrong, or the path is invalid, the failure is silently swallowed and\n\t// callers proceed as if the config was saved.\n\tos.WriteFile(path, contents, 0o600)\n}\n",
+      "expected_findings": [
+        {
+          "id": "ignored-writefile-error",
+          "type": "unchecked_error",
+          "severity": "medium",
+          "location": {
+            "file": "source.go",
+            "lines": [
+              12,
+              12
+            ]
+          },
+          "description": "The error return from os.WriteFile is discarded, so disk-full, permission, and invalid-path failures are silently swallowed and callers assume the config was saved."
+        }
+      ]
+    },
+    {
+      "id": "go-hardcoded-credentials",
+      "title": "Hardcoded database credentials in Go",
+      "language": "go",
+      "source_file": "source.go",
+      "category": "security",
+      "source": "// Case: Hardcoded database credentials in a Go service.\npackage db\n\nconst (\n\t// BUG: production database credentials are committed in plaintext.\n\tdsnUser = \"billing_admin\"\n\tdsnPass = \"supersecret-prod-2024\"\n\tdsnHost = \"10.0.0.5:5432\"\n\tdsnName = \"billing\"\n)\n\nfunc DSN() string {\n\treturn \"postgres://\" + dsnUser + \":\" + dsnPass + \"@\" + dsnHost + \"/\" + dsnName\n}\n",
+      "expected_findings": [
+        {
+          "id": "hardcoded-dsn-credentials",
+          "type": "hardcoded_secret",
+          "severity": "high",
+          "location": {
+            "file": "source.go",
+            "lines": [
+              7,
+              9
+            ]
+          },
+          "description": "Production database username, password, and host are committed in plaintext as package-level constants, exposing credentials to anyone with repository access."
+        }
+      ]
+    },
+    {
+      "id": "go-nil-pointer",
+      "title": "Nil-pointer dereference on missing map value in Go",
+      "language": "go",
+      "source_file": "source.go",
+      "category": "bug",
+      "source": "// Case: Nil-pointer dereference when a lookup returns no value.\npackage user\n\ntype User struct {\n\tID    int\n\tEmail string\n}\n\nfunc FindUser(users map[int]*User, id int) string {\n\t// BUG: FindUser returns the dereferenced Email without checking that the\n\t// map lookup returned a non-nil pointer. A missing id causes a nil pointer\n\t// dereference and a process crash.\n\tu := users[id]\n\treturn u.Email\n}\n",
+      "expected_findings": [
+        {
+          "id": "nil-pointer-missing-user",
+          "type": "nil_dereference",
+          "severity": "medium",
+          "location": {
+            "file": "source.go",
+            "lines": [
+              16,
+              16
+            ]
+          },
+          "description": "FindUser dereferences u.Email without checking that the map lookup returned a non-nil pointer, so a missing id causes a nil pointer dereference and a process crash."
+        }
+      ]
+    },
+    {
+      "id": "go-race-condition",
+      "title": "Data race on a shared map in Go",
+      "language": "go",
+      "source_file": "source.go",
+      "category": "concurrency",
+      "source": "// Case: Data race on a shared map accessed from concurrent goroutines\n// without synchronization.\npackage cache\n\nimport (\n\t\"sync\"\n)\n\ntype Cache struct {\n\tmu   sync.Mutex\n\tdata map[string]string\n}\n\nfunc NewCache() *Cache {\n\treturn &Cache{data: make(map[string]string)}\n}\n\n// Get is called from many goroutines but reads the map without holding mu.\nfunc (c *Cache) Get(key string) (string, bool) {\n\tv, ok := c.data[key] // BUG: unsynchronized concurrent map read\n\treturn v, ok\n}\n\n// Set holds the lock, but concurrent reads above still race with writes here.\nfunc (c *Cache) Set(key, value string) {\n\tc.mu.Lock()\n\tc.data[key] = value\n\tc.mu.Unlock()\n}\n",
+      "expected_findings": [
+        {
+          "id": "unsynchronized-map-read",
+          "type": "race_condition",
+          "severity": "high",
+          "location": {
+            "file": "source.go",
+            "lines": [
+              21,
+              21
+            ]
+          },
+          "description": "Get reads the shared map without holding the mutex while Set writes to it under the lock, causing a concurrent map read/write data race."
+        }
+      ]
+    },
+    {
+      "id": "go-sql-injection",
+      "title": "SQL injection via fmt.Sprintf in Go",
+      "language": "go",
+      "source_file": "source.go",
+      "category": "security",
+      "source": "// Case: SQL injection via fmt.Sprintf in a Go database query.\npackage store\n\nimport (\n\t\"database/sql\"\n\t\"fmt\"\n)\n\nfunc FindByEmail(db *sql.DB, email string) (*sql.Row, error) {\n\t// BUG: email is interpolated into the query string with fmt.Sprintf instead\n\t// of using parameterized placeholders, allowing SQL injection.\n\tq := fmt.Sprintf(\"SELECT id, email FROM users WHERE email = '%s'\", email)\n\trow := db.QueryRow(q)\n\treturn row, row.Err()\n}\n",
+      "expected_findings": [
+        {
+          "id": "sprintf-sql-injection",
+          "type": "sql_injection",
+          "severity": "high",
+          "location": {
+            "file": "source.go",
+            "lines": [
+              13,
+              13
+            ]
+          },
+          "description": "User-supplied email is interpolated into the SQL query via fmt.Sprintf instead of parameterized placeholders, allowing injection of arbitrary SQL."
+        }
+      ]
+    },
+    {
+      "id": "java-insecure-random",
+      "title": "Predictable PRNG for security tokens in Java",
+      "language": "java",
+      "source_file": "source.java",
+      "category": "security",
+      "source": "// Case: Using java.util.Random for security-sensitive tokens.\nimport java.util.Random;\n\npublic class TokenGenerator {\n    private static final Random RNG = new Random();\n\n    // BUG: java.util.Random is a predictable PRNG. Session/reset tokens derived\n    // from it can be guessed by an attacker who observes one output, because\n    // the internal seed is recoverable. Use SecureRandom instead.\n    public static String resetToken() {\n        return Long.toHexString(RNG.nextLong());\n    }\n}\n",
+      "expected_findings": [
+        {
+          "id": "predictable-reset-token",
+          "type": "insecure_random",
+          "severity": "high",
+          "location": {
+            "file": "source.java",
+            "lines": [
+              10,
+              11
+            ]
+          },
+          "description": "Reset tokens are generated with java.util.Random, a predictable PRNG whose seed is recoverable from observed outputs, allowing token forgery. SecureRandom should be used instead."
+        }
+      ]
+    },
+    {
+      "id": "js-eval-injection",
+      "title": "Arbitrary code execution via eval() in JavaScript",
+      "language": "javascript",
+      "source_file": "source.js",
+      "category": "security",
+      "source": "// Case: Arbitrary code execution via eval() on user input.\n'use strict';\n\nfunction buildFilter(expression) {\n  // BUG: the caller-supplied expression is passed straight to eval(), so any\n  // user-controlled value becomes running JavaScript (e.g. stealing cookies\n  // via fetch, or crashing the process).\n  const predicate = eval('(' + expression + ')');\n  return (item) => predicate(item);\n}\n\nmodule.exports = { buildFilter };\n",
+      "expected_findings": [
+        {
+          "id": "eval-on-user-input",
+          "type": "code_injection",
+          "severity": "high",
+          "location": {
+            "file": "source.js",
+            "lines": [
+              7,
+              7
+            ]
+          },
+          "description": "Caller-supplied expression is passed directly to eval(), turning any user-controlled value into executing JavaScript and enabling arbitrary code execution."
+        }
+      ]
+    },
+    {
+      "id": "js-open-redirect",
+      "title": "Open redirect via unvalidated URL in Express",
+      "language": "javascript",
+      "source_file": "source.js",
+      "category": "security",
+      "source": "// Case: Open redirect via unvalidated user-controlled URL.\nconst express = require('express');\nconst app = express();\n\napp.get('/login', (req, res) => {\n  // BUG: the `next` query param is used directly in res.redirect without any\n  // allowlist or same-origin check, so an attacker can craft\n  // /login?next=https://evil.example to phish users off the trusted domain.\n  const next = req.query.next;\n  if (next) {\n    return res.redirect(next);\n  }\n  res.redirect('/dashboard');\n});\n",
+      "expected_findings": [
+        {
+          "id": "open-redirect-next-param",
+          "type": "open_redirect",
+          "severity": "medium",
+          "location": {
+            "file": "source.js",
+            "lines": [
+              9,
+              10
+            ]
+          },
+          "description": "The next query parameter is passed directly to res.redirect without an allowlist or same-origin check, enabling phishing redirects off the trusted domain."
+        }
+      ]
+    },
+    {
+      "id": "py-bare-except",
+      "title": "Bare except swallows all errors in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "bug",
+      "source": "# Case: Bare except swallows all errors including KeyboardInterrupt.\nimport json\n\n\ndef parse_config(raw: str) -> dict:\n    try:\n        return json.loads(raw)\n    except:  # BUG: catches BaseException, hiding bugs, KeyboardInterrupt, and\n            # SystemExit, and returns an empty dict so callers never learn the\n            # config failed to parse.\n        return {}\n\n\ndef load_settings(path: str) -> dict:\n    with open(path, \"r\", encoding=\"utf-8\") as fh:\n        return parse_config(fh.read())\n",
+      "expected_findings": [
+        {
+          "id": "bare-except-swallows-errors",
+          "type": "swallowed_error",
+          "severity": "medium",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              9,
+              11
+            ]
+          },
+          "description": "A bare except catches BaseException (including KeyboardInterrupt and SystemExit), hides JSON parse failures, and silently returns an empty dict so callers never learn the config failed to parse."
+        }
+      ]
+    },
+    {
+      "id": "py-command-injection",
+      "title": "Command injection via subprocess shell=True in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: Command injection via subprocess with shell=True.\nimport subprocess\nimport sys\n\n\ndef ping_host(host: str) -> str:\n    # BUG: shell=True with a string command lets a malicious host value append\n    # shell metacharacters, e.g. \"8.8.8.8; rm -rf /\" runs an extra command.\n    cmd = f\"ping -c 1 {host}\"\n    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)\n    return result.stdout\n",
+      "expected_findings": [
+        {
+          "id": "shell-true-command-injection",
+          "type": "command_injection",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              9,
+              10
+            ]
+          },
+          "description": "subprocess.run is called with shell=True and a string command containing user-controlled host, allowing shell metacharacters to inject arbitrary commands."
+        }
+      ]
+    },
+    {
+      "id": "py-hardcoded-secret",
+      "title": "Hardcoded cloud API credentials in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: Hardcoded cloud API key committed to source.\nimport os\nimport requests\n\n\ndef fetch_billing(account_id: str) -> dict:\n    # BUG: a live AWS access key is hardcoded in source instead of being read\n    # from a secret manager or environment variable. Anyone with repo access\n    # can impersonate this account.\n    aws_access_key_id = \"AKIAIOSFODNN7EXAMPLE\"\n    aws_secret_access_key = \"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n    region = \"us-east-1\"\n\n    url = f\"https://billing.example.com/{account_id}\"\n    resp = requests.get(\n        url,\n        headers={\n            \"X-Aws-Key\": aws_access_key_id,\n            \"X-Aws-Secret\": aws_secret_access_key,\n            \"X-Aws-Region\": region,\n        },\n        timeout=10,\n    )\n    resp.raise_for_status()\n    return resp.json()\n",
+      "expected_findings": [
+        {
+          "id": "hardcoded-aws-access-key",
+          "type": "hardcoded_secret",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              10,
+              11
+            ]
+          },
+          "description": "A live AWS access key id and secret access key are hardcoded in source. Anyone with repository access can extract and abuse these credentials."
+        }
+      ]
+    },
+    {
+      "id": "py-insecure-deserialization",
+      "title": "Insecure pickle deserialization in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: Insecure deserialization of untrusted pickle data.\nimport pickle\nimport base64\n\n\ndef load_state(blob: str) -> dict:\n    # BUG: pickle can execute arbitrary code during deserialization. Decoding\n    # and unpickling a user-supplied blob lets an attacker run any payload on\n    # the server. Use JSON or a restricted schema instead.\n    raw = base64.b64decode(blob)\n    return pickle.loads(raw)\n",
+      "expected_findings": [
+        {
+          "id": "pickle-loads-untrusted",
+          "type": "insecure_deserialization",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              9,
+              9
+            ]
+          },
+          "description": "pickle.loads is called on a user-supplied base64 blob. pickle can execute arbitrary code during deserialization, so untrusted input lets an attacker run any payload on the server."
+        }
+      ]
+    },
+    {
+      "id": "py-path-traversal",
+      "title": "Path traversal in a Python file handler",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: Path traversal in a file download handler.\nimport os\n\n\ndef read_report(report_name: str) -> str:\n    base_dir = \"/var/app/reports\"\n    # BUG: report_name is joined directly into the filesystem path without\n    # normalization or containment checks. A request like\n    # \"../../etc/passwd\" escapes base_dir and reads arbitrary files.\n    full_path = os.path.join(base_dir, report_name)\n    with open(full_path, \"r\", encoding=\"utf-8\") as fh:\n        return fh.read()\n",
+      "expected_findings": [
+        {
+          "id": "path-traversal-unnormalized-join",
+          "type": "path_traversal",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              9,
+              9
+            ]
+          },
+          "description": "User-supplied report_name is joined into the filesystem path without normalization or containment checks, allowing traversal sequences like ../../etc/passwd to read arbitrary files outside base_dir."
+        }
+      ]
+    },
+    {
+      "id": "py-sql-injection",
+      "title": "SQL injection via f-string in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: SQL injection via f-string in a Python ORM call.\nimport sqlite3\n\n\ndef search_products(db: sqlite3.Connection, name: str) -> list:\n    # BUG: name is interpolated into the SQL string with an f-string. A value\n    # like \"x' UNION SELECT password FROM users--\" appends an arbitrary query.\n    cursor = db.execute(f\"SELECT id, name FROM products WHERE name LIKE '%{name}%'\")\n    return cursor.fetchall()\n",
+      "expected_findings": [
+        {
+          "id": "fstring-sql-injection",
+          "type": "sql_injection",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              8,
+              8
+            ]
+          },
+          "description": "User-supplied name is interpolated into the SQL query via an f-string, allowing injection of arbitrary SQL such as a UNION SELECT to exfiltrate other tables."
+        }
+      ]
+    },
+    {
+      "id": "py-ssrf",
+      "title": "Server-side request forgery in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: Server-side request forgery via a user-supplied URL.\nimport requests\n\n\ndef fetch_preview(image_url: str) -> bytes:\n    # BUG: the server fetches whatever URL the user supplies, with no scheme,\n    # host, or private-range restrictions. An attacker can point this at\n    # http://169.254.169.254/latest/meta-data/ to read cloud metadata creds or\n    # at internal services to pivot.\n    resp = requests.get(image_url, timeout=5)\n    resp.raise_for_status()\n    return resp.content\n",
+      "expected_findings": [
+        {
+          "id": "ssrf-unvalidated-url-fetch",
+          "type": "ssrf",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              9,
+              9
+            ]
+          },
+          "description": "The server fetches a user-supplied URL with no scheme, host, or private-range restrictions, allowing requests to cloud metadata endpoints (e.g. 169.254.169.254) to steal credentials or to internal services for pivoting."
+        }
+      ]
+    },
+    {
+      "id": "py-weak-hash",
+      "title": "Weak password hashing with MD5 in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: Using MD5 to hash passwords.\nimport hashlib\n\n\ndef hash_password(password: str) -> str:\n    # BUG: MD5 is cryptographically broken and unsalted, so identical passwords\n    # produce identical hashes that are trivially cracked via rainbow tables.\n    return hashlib.md5(password.encode()).hexdigest()\n\n\ndef verify_password(password: str, stored: str) -> bool:\n    return hash_password(password) == stored\n",
+      "expected_findings": [
+        {
+          "id": "md5-unsalted-password-hash",
+          "type": "weak_crypto",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              7,
+              7
+            ]
+          },
+          "description": "Passwords are hashed with unsalted MD5, which is cryptographically broken and trivially reversed with rainbow tables; identical passwords produce identical hashes."
+        }
+      ]
+    },
+    {
+      "id": "py-zip-bomb",
+      "title": "Unbounded zip extraction (zip bomb) in Python",
+      "language": "python",
+      "source_file": "source.py",
+      "category": "security",
+      "source": "# Case: Zip extraction without size/decompression-ratio limits (zip bomb).\nimport zipfile\n\n\ndef extract_archive(archive_path: str, dest: str) -> None:\n    # BUG: there is no check on the uncompressed size or the compression ratio.\n    # A 42KB zip can decompress to petabytes, exhausting disk and memory.\n    with zipfile.ZipFile(archive_path) as zf:\n        zf.extractall(dest)\n",
+      "expected_findings": [
+        {
+          "id": "unbounded-zip-extractall",
+          "type": "resource_exhaustion",
+          "severity": "high",
+          "location": {
+            "file": "source.py",
+            "lines": [
+              9,
+              9
+            ]
+          },
+          "description": "extractall is called without checking uncompressed sizes or compression ratios, so a small zip bomb can decompress to petabytes and exhaust disk and memory."
+        }
+      ]
+    },
+    {
+      "id": "rust-integer-overflow",
+      "title": "Unchecked integer arithmetic in Rust",
+      "language": "rust",
+      "source_file": "source.rs",
+      "category": "bug",
+      "source": "// Case: Unchecked arithmetic that panics on overflow and can wrap balances.\npub struct Account {\n    pub balance: u64,\n}\n\nimpl Account {\n    pub fn credit(&mut self, amount: u64) {\n        // BUG: in debug builds this panics on overflow; in release builds it\n        // wraps silently, so crediting a huge amount can roll the balance back\n        // to a small value. Use checked_add / saturating_add explicitly.\n        self.balance += amount;\n    }\n\n    pub fn debit(&mut self, amount: u64) -> u64 {\n        // BUG: subtraction underflow panics in debug and wraps in release,\n        // letting an over-debit produce a huge balance.\n        self.balance -= amount;\n        self.balance\n    }\n}\n",
+      "expected_findings": [
+        {
+          "id": "credit-overflow-wrap",
+          "type": "integer_overflow",
+          "severity": "high",
+          "location": {
+            "file": "source.rs",
+            "lines": [
+              11,
+              11
+            ]
+          },
+          "description": "credit uses += on u64 without checked/saturating arithmetic; in release builds an overflowing credit wraps the balance silently, enabling balance manipulation."
+        },
+        {
+          "id": "debit-underflow-wrap",
+          "type": "integer_overflow",
+          "severity": "high",
+          "location": {
+            "file": "source.rs",
+            "lines": [
+              18,
+              18
+            ]
+          },
+          "description": "debit uses -= on u64 without checked arithmetic; an over-debit underflows, panicking in debug or wrapping to a huge balance in release."
+        }
+      ]
+    },
+    {
+      "id": "ts-dead-code",
+      "title": "Unreachable code after unconditional return",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "maintainability",
+      "source": "// Case: Dead/unreachable code after an unconditional return.\nexport function classify(score: number): string {\n  if (score >= 90) {\n    return 'A';\n  }\n  if (score >= 80) {\n    return 'B';\n  }\n  return 'C';\n\n  // BUG: everything below this point is unreachable. The unconditional return\n  // above means this branch can never execute, and the helper is never used.\n  if (score >= 70) {\n    return 'D';\n  }\n  return 'F';\n}\n\nfunction neverCalled(): void {\n  console.log('this function has no callers');\n}\n",
+      "expected_findings": [
+        {
+          "id": "unreachable-branch-after-return",
+          "type": "dead_code",
+          "severity": "medium",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              12,
+              15
+            ]
+          },
+          "description": "The if (score >= 70) branch and final return are unreachable because an unconditional return at line 8 always exits the function first."
+        },
+        {
+          "id": "unused-helper-function",
+          "type": "dead_code",
+          "severity": "low",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              18,
+              20
+            ]
+          },
+          "description": "neverCalled is defined but never referenced anywhere, so it is dead code that should be removed."
+        }
+      ]
+    },
+    {
+      "id": "ts-hardcoded-credentials",
+      "title": "Hardcoded database password in TypeScript",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "security",
+      "source": "// Case: Hardcoded database credentials in a TypeScript service config.\nexport const dbConfig = {\n  host: 'db.prod.internal',\n  port: 5432,\n  user: 'admin',\n  // BUG: the production database password is committed in plaintext.\n  password: 'P@ssw0rd-prod-2024!',\n  database: 'orders',\n};\n\nexport async function connect() {\n  const url = `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`;\n  return fetch(url);\n}\n",
+      "expected_findings": [
+        {
+          "id": "hardcoded-db-password",
+          "type": "hardcoded_secret",
+          "severity": "high",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              8,
+              8
+            ]
+          },
+          "description": "The production database password is committed in plaintext inside the source file, exposing credentials to anyone with repository access."
+        }
+      ]
+    },
+    {
+      "id": "ts-insecure-cookie",
+      "title": "Insecure session cookie attributes in TypeScript",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "security",
+      "source": "// Case: Session cookie set without Secure, HttpOnly, or SameSite attributes.\nimport type { Response } from 'express';\n\nexport function setSessionCookie(res: Response, token: string): void {\n  // BUG: the cookie is set without Secure (sent over HTTP), HttpOnly (readable\n  // by JS/XSS), and SameSite (vulnerable to CSRF). A stolen cookie value is a\n  // stolen session.\n  res.cookie('session', token, { maxAge: 86400000 });\n}\n",
+      "expected_findings": [
+        {
+          "id": "cookie-missing-secure-httponly-samesite",
+          "type": "insecure_cookie",
+          "severity": "high",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              8,
+              8
+            ]
+          },
+          "description": "The session cookie is set without Secure, HttpOnly, or SameSite attributes, so it is transmitted over HTTP, readable by JavaScript/XSS, and vulnerable to CSRF."
+        }
+      ]
+    },
+    {
+      "id": "ts-missing-await",
+      "title": "Missing await on async operation in TypeScript",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "bug",
+      "source": "// Case: Missing await on a rejected promise swallows an error.\nimport { deleteSession } from './session';\n\nexport async function logout(userId: string): Promise<void> {\n  // BUG: deleteSession returns a promise but is not awaited. If it rejects,\n  // the rejection becomes an unhandled promise rejection and logout resolves\n  // as if the session were deleted, leaving stale sessions behind.\n  deleteSession(userId);\n  console.log('user logged out');\n}\n",
+      "expected_findings": [
+        {
+          "id": "fire-and-forget-delete-session",
+          "type": "missing_await",
+          "severity": "medium",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              8,
+              8
+            ]
+          },
+          "description": "deleteSession returns a promise but is not awaited, so a rejection becomes an unhandled promise rejection and logout resolves before the session is actually deleted, leaving stale sessions."
+        }
+      ]
+    },
+    {
+      "id": "ts-prototype-pollution",
+      "title": "Prototype pollution via recursive merge in TypeScript",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "security",
+      "source": "// Case: Prototype pollution via recursive object merge.\nfunction isObject(v: unknown): v is Record<string, unknown> {\n  return typeof v === 'object' && v !== null;\n}\n\n// BUG: the merge walks user-supplied keys without blocking __proto__,\n// constructor, or prototype. A payload like {\"__proto__\": {\"admin\": true}}\n// pollutes Object.prototype and escalates privileges app-wide.\nexport function merge(target: Record<string, unknown>, source: unknown): Record<string, unknown> {\n  if (!isObject(source)) return target;\n  for (const key of Object.keys(source)) {\n    const tv = target[key];\n    const sv = source[key];\n    if (isObject(tv) && isObject(sv)) {\n      merge(tv, sv);\n    } else {\n      target[key] = sv;\n    }\n  }\n  return target;\n}\n",
+      "expected_findings": [
+        {
+          "id": "proto-pollution-merge",
+          "type": "prototype_pollution",
+          "severity": "high",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              11,
+              19
+            ]
+          },
+          "description": "The recursive merge walks user-supplied keys without blocking __proto__/constructor/prototype, so a payload like {\"__proto__\": {\"admin\": true}} pollutes Object.prototype and escalates privileges across the application."
+        }
+      ]
+    },
+    {
+      "id": "ts-regex-dos",
+      "title": "Catastrophic backtracking regex (ReDoS) in TypeScript",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "security",
+      "source": "// Case: Catastrophic backtracking regex (ReDoS).\n// This regex is used to validate user-supplied email-like strings.\nexport const emailLikePattern = /^([a-zA-Z0-9._%+-]+)+$/;\n\n// BUG: the nested + quantifier ((...+)+) creates exponential backtracking on\n// non-matching inputs. A long string like \"a\".repeat(30) + \"!\" hangs the event\n// loop and denies service to all other requests.\nexport function isEmailLike(input: string): boolean {\n  return emailLikePattern.test(input);\n}\n",
+      "expected_findings": [
+        {
+          "id": "redos-nested-quantifier",
+          "type": "regex_dos",
+          "severity": "high",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              4,
+              4
+            ]
+          },
+          "description": "The regex uses a nested + quantifier ((...+)+) causing exponential backtracking on non-matching inputs; a long crafted string hangs the event loop and denies service to all other requests."
+        }
+      ]
+    },
+    {
+      "id": "ts-sql-injection",
+      "title": "SQL injection via string concatenation in TypeScript",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "security",
+      "source": "// Case: SQL injection via string concatenation in a TypeScript query builder.\nimport { db } from './db';\n\ninterface User {\n  id: number;\n  email: string;\n}\n\nexport async function findUserByEmail(emailInput: string): Promise<User | null> {\n  // BUG: user-controlled emailInput is concatenated directly into the SQL\n  // string, allowing an attacker to break out of the quoted value and append\n  // arbitrary SQL (e.g. \"' OR '1'='1\").\n  const sql = `SELECT id, email FROM users WHERE email = '${emailInput}' LIMIT 1`;\n  const rows = await db.query<User>(sql);\n  return rows[0] ?? null;\n}\n",
+      "expected_findings": [
+        {
+          "id": "sql-injection-email-concat",
+          "type": "sql_injection",
+          "severity": "high",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              14,
+              14
+            ]
+          },
+          "description": "User-controlled emailInput is concatenated directly into the SQL query string, allowing injection of arbitrary SQL by breaking out of the single-quoted value."
+        }
+      ]
+    },
+    {
+      "id": "ts-type-confusion",
+      "title": "Type-safety bypass via `as any` in TypeScript",
+      "language": "typescript",
+      "source_file": "source.ts",
+      "category": "bug",
+      "source": "// Case: Type-safety bypass via `as any` that hides a real shape mismatch.\ninterface Order {\n  id: string;\n  total: number;\n  items: string[];\n}\n\ninterface Refund {\n  id: string;\n  amount: number;\n  reason: string;\n}\n\n// BUG: the caller casts the payload to `any` so the compiler cannot catch that\n// a Refund is being treated as an Order. At runtime `items` is undefined and\n// the .length access throws, or worse, silently corrupts downstream totals.\nexport function processOrder(payload: unknown): number {\n  const order = payload as any as Order;\n  return order.total + order.items.length;\n}\n",
+      "expected_findings": [
+        {
+          "id": "as-any-type-confusion",
+          "type": "type_confusion",
+          "severity": "medium",
+          "location": {
+            "file": "source.ts",
+            "lines": [
+              19,
+              19
+            ]
+          },
+          "description": "The payload is cast through `as any` to Order, bypassing the compiler so a Refund-shaped object is treated as an Order; at runtime items is undefined and the .length access throws or silently corrupts downstream totals."
+        }
+      ]
+    },
+    {
+      "id": "ts-xss",
+      "title": "Reflected XSS via dangerouslySetInnerHTML in React",
+      "language": "typescript",
+      "source_file": "source.tsx",
+      "category": "security",
+      "source": "// Case: Reflected XSS via dangerouslySetInnerHTML in a React component.\nimport React from 'react';\n\ninterface CommentProps {\n  body: string; // user-supplied comment markdown/html\n}\n\nexport const Comment: React.FC<CommentProps> = ({ body }) => {\n  // BUG: raw user-supplied content is rendered as HTML without sanitization.\n  // An attacker can inject <script> or event-handler payloads that execute in\n  // every viewer's session.\n  return <div dangerouslySetInnerHTML={{ __html: body }} />;\n};\n",
+      "expected_findings": [
+        {
+          "id": "xss-dangerously-set-inner-html",
+          "type": "xss",
+          "severity": "high",
+          "location": {
+            "file": "source.tsx",
+            "lines": [
+              12,
+              12
+            ]
+          },
+          "description": "User-supplied comment body is rendered as raw HTML via dangerouslySetInnerHTML without any sanitization, enabling stored/reflected XSS."
+        }
+      ]
+    }
+  ]
+}
