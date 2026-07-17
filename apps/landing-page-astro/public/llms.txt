@@ -14,11 +14,6 @@
 - [Homepage markdown](https://codevetter.com/index.md): Product brief without JS
 - [This index](https://codevetter.com/llms.txt)
 
-## Docs
-
-- [README](https://github.com/Codevetter/codevetter#readme): Architecture, desktop app setup, and product direction
-- [Releases](https://github.com/Codevetter/codevetter/releases): Changelog and binaries
-
 ## Optional
 
 - [Foundry](https://sassmaker.com): Parent fleet showcase
