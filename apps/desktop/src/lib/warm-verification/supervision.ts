@@ -598,14 +598,16 @@ export class AppServerSupervisor {
     }
     return new Promise((resolveWait) => {
       let complete = false;
+      let timer: NodeJS.Timeout | undefined;
       const finish = (exited: boolean) => {
         if (!complete) {
           complete = true;
+          if (timer) clearTimeout(timer);
           resolveWait(exited);
         }
       };
       child.once('exit', () => finish(true));
-      setTimeout(() => finish(false), milliseconds).unref();
+      timer = setTimeout(() => finish(false), milliseconds);
     });
   }
 

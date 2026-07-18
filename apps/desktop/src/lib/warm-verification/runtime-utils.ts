@@ -4,6 +4,23 @@ export function throwIfAborted(signal?: AbortSignal): void {
   }
 }
 
+export interface DeadlineSignal {
+  readonly signal: AbortSignal;
+  dispose(): void;
+}
+
+export function createDeadlineSignal(milliseconds: number): DeadlineSignal {
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(new DOMException('Operation timed out', 'TimeoutError')),
+    milliseconds
+  );
+  return {
+    signal: controller.signal,
+    dispose: () => clearTimeout(timer),
+  };
+}
+
 export function raceAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
   if (signal.aborted) {
     // The operation may have started synchronously before the caller observed
