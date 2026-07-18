@@ -10,11 +10,14 @@ describe('warm verification evidence redaction', () => {
     const bearer = 'plaincredentialwithoutprefix12345';
     const text = redactEvidenceText(
       `Authorization: Bearer ${bearer} https://app.local/?access_token=${secret} ` +
-        `{"password":"${secret}"} ${'x'.repeat(3_000)}`
+        `{"password":"${secret}"} storageState=/tmp/auth.json ` +
+        `postgres://user:pass@database.local/app ${'x'.repeat(3_000)}`
     );
 
     assert.equal(text.includes(secret), false);
     assert.equal(text.includes(bearer), false);
+    assert.equal(text.includes('/tmp/auth.json'), false);
+    assert.equal(text.includes('user:pass'), false);
     assert.match(text, /\[REDACTED\]/);
     assert.ok(text.length <= 2_000);
   });

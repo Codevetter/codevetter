@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import { lstat, open, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
 import type { VerifyArtifact, VerifyObservationDisposition } from './contracts';
@@ -11,6 +12,8 @@ export const VISUAL_BASELINE_DIRECTORY = '.codevetter/verify-baselines';
 
 const CHECKPOINT_PATTERN = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/;
 const MAX_BASELINE_BYTES = 64 * 1024;
+const MAX_PINNED_BASELINES = 2_000;
+const MAX_PINNED_BASELINE_BYTES = 16 * 1024 * 1024;
 const DEFAULT_MAX_ARTIFACT_BYTES = 16 * 1024 * 1024;
 const DEFAULT_MAX_ARTIFACTS = 20;
 const SENSITIVE_SELECTOR = [
@@ -53,6 +56,45 @@ export interface VisualCheckpointResult {
   artifact?: VerifyArtifact;
 }
 
+export interface VisualBaselineSelection {
+  scenarioId: string;
+  checkpoint: string;
+}
+
+export type PinnedVisualBaselineResult =
+  | { readonly kind: 'loaded'; readonly value: Readonly<VisualBaseline> }
+  | {
+      readonly kind: 'missing' | 'invalid';
+      readonly policyId: string;
+      readonly message: string;
+    };
+
+export interface PinnedVisualBaselineBundle {
+  readonly schemaVersion: 1;
+  readonly identityHash: string;
+  readonly candidateRootHash: string;
+  readonly selectedCount: number;
+  readonly loadedBytes: number;
+  get(scenarioId: string, checkpoint: string): PinnedVisualBaselineResult | undefined;
+}
+
+export type VisualBaselineBundleErrorCode =
+  | 'invalid_selection'
+  | 'unsafe_baseline'
+  | 'baseline_overflow'
+  | 'baseline_unreadable';
+
+export class VisualBaselineBundleError extends Error {
+  constructor(
+    readonly code: VisualBaselineBundleErrorCode,
+    message: string,
+    options?: ErrorOptions
+  ) {
+    super(message, options);
+    this.name = 'VisualBaselineBundleError';
+  }
+}
+
 export interface VisualCheckpointVerifierOptions {
   repoRoot: string;
   retentionDirectory: string;
@@ -61,10 +103,86 @@ export interface VisualCheckpointVerifierOptions {
   scenarioId: string;
   scenarioSourceHash: string;
   artifactBudget: VisualArtifactBudget;
+  baselineBundle?: PinnedVisualBaselineBundle;
   detailedCapture?: boolean;
   now?: () => Date;
   capture?: (page: Page) => Promise<Uint8Array>;
   environment?: (page: Page) => Promise<VisualEnvironment>;
+}
+
+export async function loadPinnedVisualBaselineBundle(
+  candidateRoot: string,
+  selections: readonly VisualBaselineSelection[]
+): Promise<PinnedVisualBaselineBundle> {
+  const canonicalRoot = await realpath(candidateRoot).catch((error) => {
+    throw new VisualBaselineBundleError(
+      'baseline_unreadable',
+      'Candidate-owned visual baseline root is not readable',
+      { cause: error }
+    );
+  });
+  const selected = canonicalBaselineSelections(selections);
+  if (selected.length > MAX_PINNED_BASELINES) {
+    throw new VisualBaselineBundleError(
+      'baseline_overflow',
+      `Selected visual baselines exceed the ${MAX_PINNED_BASELINES} entry limit`
+    );
+  }
+
+  const entries = new Map<string, PinnedVisualBaselineResult>();
+  const identities: Array<{
+    scenario_id: string;
+    checkpoint: string;
+    relative_path: string;
+    kind: PinnedVisualBaselineResult['kind'];
+    source_hash: string;
+  }> = [];
+  let loadedBytes = 0;
+  for (const selection of selected) {
+    const relativePath = baselineRelativePath(selection.scenarioId, selection.checkpoint);
+    const loaded = await readPinnedBaseline(canonicalRoot, relativePath, selection.checkpoint);
+    if (
+      loaded.bytes > MAX_BASELINE_BYTES ||
+      loadedBytes + loaded.bytes > MAX_PINNED_BASELINE_BYTES
+    ) {
+      throw new VisualBaselineBundleError(
+        'baseline_overflow',
+        `Selected visual baselines exceed the ${MAX_PINNED_BASELINE_BYTES} byte limit`
+      );
+    }
+    loadedBytes += loaded.bytes;
+    entries.set(baselineKey(selection.scenarioId, selection.checkpoint), loaded.result);
+    identities.push({
+      scenario_id: selection.scenarioId,
+      checkpoint: selection.checkpoint,
+      relative_path: relativePath,
+      kind: loaded.result.kind,
+      source_hash: loaded.sourceHash,
+    });
+  }
+
+  const candidateRootHash = sha256(canonicalRoot);
+  const identityHash = sha256(
+    JSON.stringify({
+      schema_version: 1,
+      candidate_root_hash: candidateRootHash,
+      baseline_version: VISUAL_BASELINE_VERSION,
+      capture_contract: VISUAL_CAPTURE_CONTRACT,
+      entries: identities,
+    })
+  );
+  return Object.freeze({
+    schemaVersion: 1 as const,
+    identityHash,
+    candidateRootHash,
+    selectedCount: selected.length,
+    loadedBytes,
+    get(scenarioId: string, checkpoint: string) {
+      if (!CHECKPOINT_PATTERN.test(scenarioId) || !CHECKPOINT_PATTERN.test(checkpoint))
+        return undefined;
+      return entries.get(baselineKey(scenarioId, checkpoint));
+    },
+  });
 }
 
 export class VisualArtifactBudget {
@@ -203,6 +321,15 @@ export class VisualCheckpointVerifier {
   }
 
   async #loadBaseline(name: string): Promise<BaselineLoadResult> {
+    if (this.#options.baselineBundle) {
+      return (
+        this.#options.baselineBundle.get(this.#options.scenarioId, name) ?? {
+          kind: 'invalid',
+          policyId: 'visual.baseline-not-pinned',
+          message: `Screenshot checkpoint ${name} was not part of the pinned baseline bundle`,
+        }
+      );
+    }
     const baselinePath = visualBaselinePath(this.#options.repoRoot, this.#options.scenarioId, name);
     let raw: Buffer;
     try {
@@ -228,30 +355,7 @@ export class VisualCheckpointVerifier {
         message: `Screenshot checkpoint ${name} baseline exceeds ${MAX_BASELINE_BYTES} bytes`,
       };
     }
-    try {
-      const value: unknown = JSON.parse(raw.toString('utf8'));
-      if (
-        value &&
-        typeof value === 'object' &&
-        !Array.isArray(value) &&
-        ((value as Record<string, unknown>).version !== VISUAL_BASELINE_VERSION ||
-          (value as Record<string, unknown>).capture_contract !== VISUAL_CAPTURE_CONTRACT)
-      ) {
-        return {
-          kind: 'invalid',
-          policyId: 'visual.baseline-version-incompatible',
-          message: `Screenshot checkpoint ${name} baseline capture version is incompatible`,
-        };
-      }
-      if (!isVisualBaseline(value)) throw new Error('schema validation failed');
-      return { kind: 'loaded', value };
-    } catch (error) {
-      return {
-        kind: 'invalid',
-        policyId: 'visual.baseline-invalid',
-        message: `Screenshot checkpoint ${name} baseline is invalid: ${safeError(error)}`,
-      };
-    }
+    return parseBaselineBytes(name, raw);
   }
 
   async #retainArtifact(
@@ -322,6 +426,154 @@ export function visualBaselinePath(
   );
 }
 
+function canonicalBaselineSelections(
+  selections: readonly VisualBaselineSelection[]
+): VisualBaselineSelection[] {
+  const selected = new Map<string, VisualBaselineSelection>();
+  for (const selection of selections) {
+    if (
+      !CHECKPOINT_PATTERN.test(selection.scenarioId) ||
+      !CHECKPOINT_PATTERN.test(selection.checkpoint)
+    ) {
+      throw new VisualBaselineBundleError(
+        'invalid_selection',
+        'Pinned visual baseline identifiers must be stable lowercase identifiers'
+      );
+    }
+    selected.set(baselineKey(selection.scenarioId, selection.checkpoint), {
+      scenarioId: selection.scenarioId,
+      checkpoint: selection.checkpoint,
+    });
+  }
+  return [...selected.values()].sort(
+    (left, right) =>
+      left.scenarioId.localeCompare(right.scenarioId) ||
+      left.checkpoint.localeCompare(right.checkpoint)
+  );
+}
+
+async function readPinnedBaseline(
+  candidateRoot: string,
+  relativePath: string,
+  checkpoint: string
+): Promise<{ result: PinnedVisualBaselineResult; sourceHash: string; bytes: number }> {
+  const components = relativePath.split('/');
+  let current = candidateRoot;
+  for (const [index, component] of components.entries()) {
+    current = path.join(current, component);
+    let metadata: Awaited<ReturnType<typeof lstat>>;
+    try {
+      metadata = await lstat(current);
+    } catch (error) {
+      if (isNodeError(error) && error.code === 'ENOENT') {
+        const result = freezeBaselineResult({
+          kind: 'missing',
+          policyId: 'visual.baseline-missing',
+          message: `Screenshot checkpoint ${checkpoint} has no versioned baseline`,
+        });
+        return {
+          result,
+          sourceHash: sha256(`missing\0${relativePath}`),
+          bytes: 0,
+        };
+      }
+      throw new VisualBaselineBundleError(
+        'baseline_unreadable',
+        `Screenshot checkpoint ${checkpoint} baseline could not be inspected`,
+        { cause: error }
+      );
+    }
+    if (metadata.isSymbolicLink()) {
+      throw new VisualBaselineBundleError(
+        'unsafe_baseline',
+        `Screenshot checkpoint ${checkpoint} baseline path contains a symbolic link`
+      );
+    }
+    const final = index === components.length - 1;
+    if ((!final && !metadata.isDirectory()) || (final && !metadata.isFile())) {
+      throw new VisualBaselineBundleError(
+        'unsafe_baseline',
+        `Screenshot checkpoint ${checkpoint} baseline path contains a non-regular file`
+      );
+    }
+    if (final && metadata.size > MAX_BASELINE_BYTES) {
+      throw new VisualBaselineBundleError(
+        'baseline_overflow',
+        `Screenshot checkpoint ${checkpoint} baseline exceeds ${MAX_BASELINE_BYTES} bytes`
+      );
+    }
+  }
+
+  let resolved: string;
+  try {
+    resolved = await realpath(current);
+  } catch (error) {
+    throw new VisualBaselineBundleError(
+      'baseline_unreadable',
+      `Screenshot checkpoint ${checkpoint} baseline could not be resolved`,
+      { cause: error }
+    );
+  }
+  if (!isWithin(candidateRoot, resolved)) {
+    throw new VisualBaselineBundleError(
+      'unsafe_baseline',
+      `Screenshot checkpoint ${checkpoint} baseline resolves outside the candidate root`
+    );
+  }
+
+  let handle: Awaited<ReturnType<typeof open>> | undefined;
+  try {
+    handle = await open(resolved, fsConstants.O_RDONLY | (fsConstants.O_NOFOLLOW ?? 0));
+    const metadata = await handle.stat();
+    if (!metadata.isFile()) {
+      throw new VisualBaselineBundleError(
+        'unsafe_baseline',
+        `Screenshot checkpoint ${checkpoint} baseline is not a regular file`
+      );
+    }
+    if (metadata.size > MAX_BASELINE_BYTES) {
+      throw new VisualBaselineBundleError(
+        'baseline_overflow',
+        `Screenshot checkpoint ${checkpoint} baseline exceeds ${MAX_BASELINE_BYTES} bytes`
+      );
+    }
+    const raw = await handle.readFile();
+    if (raw.byteLength > MAX_BASELINE_BYTES) {
+      throw new VisualBaselineBundleError(
+        'baseline_overflow',
+        `Screenshot checkpoint ${checkpoint} baseline exceeds ${MAX_BASELINE_BYTES} bytes`
+      );
+    }
+    return {
+      result: freezeBaselineResult(parseBaselineBytes(checkpoint, raw)),
+      sourceHash: sha256(raw),
+      bytes: raw.byteLength,
+    };
+  } catch (error) {
+    if (error instanceof VisualBaselineBundleError) throw error;
+    throw new VisualBaselineBundleError(
+      isNodeError(error) && error.code === 'ELOOP' ? 'unsafe_baseline' : 'baseline_unreadable',
+      `Screenshot checkpoint ${checkpoint} baseline could not be pinned`,
+      { cause: error }
+    );
+  } finally {
+    await handle?.close().catch(() => undefined);
+  }
+}
+
+function baselineRelativePath(scenarioId: string, checkpoint: string): string {
+  return path.posix.join(
+    VISUAL_BASELINE_DIRECTORY,
+    `v${VISUAL_BASELINE_VERSION}`,
+    scenarioId,
+    `${checkpoint}.json`
+  );
+}
+
+function baselineKey(scenarioId: string, checkpoint: string): string {
+  return `${scenarioId}\0${checkpoint}`;
+}
+
 async function captureExactScreenshot(page: Page): Promise<Uint8Array> {
   return page.screenshot({
     animations: 'disabled',
@@ -386,9 +638,42 @@ function baselineIncompatibility(
   return undefined;
 }
 
-type BaselineLoadResult =
-  | { kind: 'loaded'; value: VisualBaseline }
-  | { kind: 'missing' | 'invalid'; policyId: string; message: string };
+type BaselineLoadResult = PinnedVisualBaselineResult;
+
+function parseBaselineBytes(checkpoint: string, raw: Uint8Array): BaselineLoadResult {
+  try {
+    const value: unknown = JSON.parse(new TextDecoder().decode(raw));
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      ((value as Record<string, unknown>).version !== VISUAL_BASELINE_VERSION ||
+        (value as Record<string, unknown>).capture_contract !== VISUAL_CAPTURE_CONTRACT)
+    ) {
+      return {
+        kind: 'invalid',
+        policyId: 'visual.baseline-version-incompatible',
+        message: `Screenshot checkpoint ${checkpoint} baseline capture version is incompatible`,
+      };
+    }
+    if (!isVisualBaseline(value)) throw new Error('schema validation failed');
+    return {
+      kind: 'loaded',
+      value: Object.freeze({ ...value, environment: Object.freeze({ ...value.environment }) }),
+    };
+  } catch (error) {
+    return {
+      kind: 'invalid',
+      policyId: 'visual.baseline-invalid',
+      message: `Screenshot checkpoint ${checkpoint} baseline is invalid: ${safeError(error)}`,
+    };
+  }
+}
+
+function freezeBaselineResult(result: BaselineLoadResult): PinnedVisualBaselineResult {
+  if (result.kind === 'loaded') return Object.freeze(result);
+  return Object.freeze({ ...result });
+}
 
 function noConfidence(
   policyId: string,

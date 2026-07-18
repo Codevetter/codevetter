@@ -100,6 +100,70 @@ async function installWarmVerificationMock(
         result,
         created_at: result.finished_at,
       };
+      const compilerCandidate = {
+        schema_version: 1,
+        candidate_id: 'candidate-recurring-1',
+        candidate_hash: '1'.repeat(64),
+        cache_key: '2'.repeat(64),
+        status: 'candidate',
+        created_at: '2026-07-15T08:00:00.000Z',
+        expires_at: '2026-07-29T08:00:00.000Z',
+        spec_source_path: 'docs/recurring.md',
+        spec_section: 'Create recurring investment',
+        spec_hash: '3'.repeat(64),
+        target_sha: '4'.repeat(40),
+        config_hash: '5'.repeat(64),
+        manifest_hash: '6'.repeat(64),
+        provider: {
+          kind: 'fixture',
+          provider: 'fixture',
+          model: 'compiler-v1',
+          cost_class: 'free',
+          paid_approved: false,
+        },
+        provider_duration_ms: 84,
+        cache_hit: false,
+        usage: {
+          input_tokens: 220,
+          output_tokens: 180,
+          estimated_cost_usd: 0,
+          actual_cost_usd: 0,
+        },
+        unresolved_requirements: [],
+        validation: { qualified: true, issues: [] },
+        dry_run: {
+          status: 'passed',
+          duration_ms: 430,
+          summary: 'Candidate completed its isolated deterministic dry run.',
+          diagnostics: [],
+          evidence_persisted: false,
+          baselines_updated: false,
+        },
+        files: [
+          {
+            kind: 'scenario',
+            destination: 'verify/scenarios.mjs',
+            sha256: '7'.repeat(64),
+            replaces_existing: true,
+            diff: '- old scenario\n+ new recurring scenario',
+          },
+          {
+            kind: 'verification_config',
+            destination: '.codevetter/verify.yaml',
+            sha256: '8'.repeat(64),
+            replaces_existing: true,
+            diff: '+ add generated module and capability mapping',
+          },
+          {
+            kind: 'provenance',
+            destination: 'verify/generated/scenario-recurring.provenance.json',
+            sha256: '9'.repeat(64),
+            replaces_existing: false,
+            diff: '+ provenance',
+          },
+        ],
+        accepted_file_hashes: {},
+      };
       const health = offline
         ? null
         : {
@@ -139,6 +203,28 @@ async function installWarmVerificationMock(
             },
             checked_at: '2026-07-15T08:00:02.000Z',
           };
+      const differentialSummary = {
+        schema_version: 1,
+        run_id: 'differential-mocked-1',
+        status: 'complete',
+        classification: 'regressed',
+        plan_identity: '1'.repeat(64),
+        reference_sha: '2'.repeat(40),
+        candidate_kind: 'worktree',
+        candidate_identity: '3'.repeat(64),
+        scenario_count: 2,
+        delta_count: 1,
+        blocking_delta_count: 1,
+        delta_previews: [],
+        delta_previews_truncated: false,
+        reason_codes: [],
+        comparison_policy_identities: ['comparison-v1'],
+        duration_ms: 640,
+        cleanup_complete: true,
+        creates_pass_evidence: false,
+        model_call_count: 0,
+      };
+      let differentialRun: unknown = null;
 
       const browserWindow = window as unknown as {
         __warmCommands: Array<{ cmd: string; args: unknown }>;
@@ -186,7 +272,92 @@ async function installWarmVerificationMock(
             ];
           }
           if (cmd === 'list_trex_watchers' || cmd === 'list_trex_pr_runs') return [];
+          if (cmd === 'run_scenario_compiler_action') {
+            const action = args?.action as { kind?: string } | undefined;
+            if (action?.kind === 'cleanup') {
+              return {
+                schema_version: 1,
+                action: 'cleanup',
+                status: 'ok',
+                message: 'Expired candidates cleaned.',
+                candidate: null,
+                candidates: [compilerCandidate],
+                cleanup: {
+                  removed_candidates: 2,
+                  removed_files: 4,
+                  reclaimed_bytes: 8_192,
+                  retained_candidates: 1,
+                },
+              };
+            }
+            const candidate =
+              action?.kind === 'accept'
+                ? { ...compilerCandidate, status: 'accepted' }
+                : compilerCandidate;
+            return {
+              schema_version: 1,
+              action: action?.kind ?? 'inspect',
+              status: 'ok',
+              message:
+                action?.kind === 'accept'
+                  ? 'Selected destinations accepted.'
+                  : 'Private candidate loaded.',
+              candidate,
+              candidates: [candidate],
+              cleanup: null,
+            };
+          }
           if (cmd === 'list_warm_verification_runs') return [storedRun];
+          if (cmd === 'list_differential_verification_runs') {
+            return differentialRun ? [differentialRun] : [];
+          }
+          if (cmd === 'prepare_differential_verification') {
+            return {
+              schema_version: 1,
+              run_id: args?.runId,
+              status: 'ready',
+              reference_sha: '2'.repeat(40),
+              candidate_kind: 'worktree',
+              candidate_identity: '3'.repeat(64),
+              selection_identity: '4'.repeat(64),
+              scenario_count: 2,
+              source_cache_hits: 2,
+              dependency_cache_hit: true,
+              prepared_bytes: 4_096,
+              reason_codes: [],
+              model_call_count: 0,
+              cleanup_complete: true,
+            };
+          }
+          if (cmd === 'run_differential_verification') {
+            differentialRun = {
+              id: 'stored-differential-1',
+              repo_path: repoPath,
+              summary: { ...differentialSummary, run_id: args?.runId },
+              created_at: '2026-07-15T08:00:03.000Z',
+            };
+            return differentialRun;
+          }
+          if (cmd === 'cancel_differential_verification_run') return { accepted: true };
+          if (cmd === 'cleanup_differential_verification_artifacts') {
+            return {
+              schema_version: 1,
+              dry_run: false,
+              complete: true,
+              removed_source_cache_keys: ['a'.repeat(64)],
+              removed_dependency_cache_keys: ['b'.repeat(64)],
+              removed_targets: 2,
+              removed_staging: 1,
+              skipped_entries: 0,
+              retained_entries: 1,
+              retained_logical_bytes: 2_048,
+              retained_allocated_bytes: 4_096,
+              warm_artifact_reclaimed_bytes: 0,
+              warm_artifact_removed_files: 0,
+              shared_playwright_cache_bytes: 50_000_000,
+              error_codes: [],
+            };
+          }
           if (cmd === 'get_warm_verification_daemon_health') return health;
           if (cmd === 'start_warm_verification_daemon') return health;
           if (cmd === 'stop_warm_verification_daemon') return { active_run_ids: [] };
@@ -264,7 +435,7 @@ test.describe('T-Rex warm verification', () => {
     await expect(panel.getByText(/failure\.png/)).toBeVisible();
 
     await panel.getByRole('button', { name: 'Verify changed' }).click();
-    await panel.getByRole('button', { name: 'Clean owned artifacts' }).click();
+    await panel.getByRole('button', { name: 'Clean run artifacts' }).click();
     await expect(panel.getByText(/Removed 2 runs and reclaimed 8,192 bytes/)).toBeVisible();
 
     const commands = await page.evaluate(() => {
@@ -277,6 +448,136 @@ test.describe('T-Rex warm verification', () => {
     expect(commands.map(({ cmd }) => cmd)).toContain('cleanup_warm_verification_artifacts');
     const runCommand = commands.find(({ cmd }) => cmd === 'run_warm_changed_verification');
     expect(runCommand?.args).toMatchObject({ runId: expect.stringMatching(/^trex-[0-9a-f]{32}$/) });
+  });
+
+  test('prepares, compares, and cleans differential evidence without claiming pass', async ({
+    page,
+  }) => {
+    await installWarmVerificationMock(page);
+    await navigateTo(page, '/trex');
+    await waitForNoSpinners(page);
+
+    await page.getByRole('button', { name: 'Prepare & check parity' }).click();
+    await expect(page.getByText(/Parity ready · 2 scenarios · source cache 2\/2/)).toBeVisible();
+    await page.getByRole('button', { name: 'Compare' }).click();
+    await expect(page.getByText('regressed', { exact: true })).toBeVisible();
+    await expect(page.getByText(/2 scenarios · 1 deltas · 640 ms/)).toBeVisible();
+    await page.getByRole('button', { name: 'Clean differential data' }).click();
+    await expect(page.getByText(/Cleanup complete · removed 2 targets/)).toBeVisible();
+
+    const commands = await page.evaluate(() => {
+      const browserWindow = window as unknown as {
+        __warmCommands: Array<{ cmd: string; args: unknown }>;
+      };
+      return browserWindow.__warmCommands.map(({ cmd }) => cmd);
+    });
+    expect(commands).toEqual(
+      expect.arrayContaining([
+        'prepare_differential_verification',
+        'run_differential_verification',
+        'cleanup_differential_verification_artifacts',
+      ])
+    );
+    await expect(page.getByText(/never replaces the warm verification run/)).toBeVisible();
+  });
+
+  test('keeps generated destinations private until reviewed and explicitly accepted', async ({
+    page,
+  }) => {
+    await installWarmVerificationMock(page);
+    await navigateTo(page, '/trex');
+    await waitForNoSpinners(page);
+
+    const panel = page.getByTestId('scenario-compiler-panel');
+    await expect(panel.getByText('Scenario candidates')).toBeVisible();
+    await expect(panel.getByText('candidate-recurring-1')).toBeVisible();
+    await expect(panel.getByText('Dry run · qualification only')).toBeVisible();
+    await expect(panel.getByText('fixture / compiler-v1')).toBeVisible();
+
+    await expect(panel.getByText('Approve this paid-provider generation request')).toHaveCount(0);
+    await panel.getByLabel('Specification path').fill('docs/recurring.md');
+    await panel.getByLabel('Specification section').fill('Create recurring investment');
+    await panel.getByRole('button', { name: 'Generate candidate' }).click();
+    await expect(panel.getByText('Private candidate loaded.')).toBeVisible();
+    await panel.getByRole('button', { name: 'Validate' }).click();
+    await panel.getByRole('button', { name: 'Dry run', exact: true }).click();
+
+    const accept = panel.getByRole('button', { name: 'Accept selected' });
+    await expect(accept).toBeDisabled();
+    await panel.getByRole('checkbox', { name: 'Select verify/scenarios.mjs' }).check();
+    await expect(
+      panel.getByRole('checkbox', { name: 'Select .codevetter/verify.yaml' })
+    ).toBeChecked();
+    await expect(
+      panel.getByRole('checkbox', {
+        name: 'Select verify/generated/scenario-recurring.provenance.json',
+      })
+    ).toBeChecked();
+    await expect(accept).toBeDisabled();
+    await panel.getByText('I reviewed the current file diff').click();
+    await expect(accept).toBeEnabled();
+    await accept.click();
+    await expect(panel.getByText('Selected destinations accepted.')).toBeVisible();
+
+    const compilerCommands = await page.evaluate(() => {
+      const browserWindow = window as unknown as {
+        __warmCommands: Array<{ cmd: string; args: Record<string, unknown> }>;
+      };
+      const compiler = browserWindow.__warmCommands.filter(
+        ({ cmd }) => cmd === 'run_scenario_compiler_action'
+      );
+      return {
+        actions: compiler.map(({ args }) => (args.action as { kind?: string } | undefined)?.kind),
+        generate: compiler.find(
+          ({ args }) => (args.action as { kind?: string } | undefined)?.kind === 'generate'
+        ),
+        accept: compiler.find(
+          ({ cmd, args }) =>
+            cmd === 'run_scenario_compiler_action' &&
+            (args.action as { kind?: string } | undefined)?.kind === 'accept'
+        ),
+      };
+    });
+    expect(compilerCommands.generate?.args).toMatchObject({
+      repoPath: REPO_PATH,
+      action: {
+        kind: 'generate',
+        spec_source_path: 'docs/recurring.md',
+        spec_section: 'Create recurring investment',
+        provider: {
+          kind: 'local_command',
+          provider: 'local',
+          model: 'qwen2.5-coder:7b',
+          cost_class: 'free',
+          paid_approved: false,
+        },
+        context: {
+          capabilities: [],
+          auth_profiles: [],
+          states: [],
+          routes: [],
+          include_request_policy: true,
+          examples: [],
+        },
+      },
+    });
+    expect(compilerCommands.actions).toEqual(
+      expect.arrayContaining(['inspect', 'generate', 'validate', 'dry_run', 'accept'])
+    );
+    expect(compilerCommands.accept?.args).toMatchObject({
+      repoPath: REPO_PATH,
+      action: {
+        kind: 'accept',
+        candidate_id: 'candidate-recurring-1',
+        expected_candidate_hash: '1'.repeat(64),
+        selected_destinations: [
+          'verify/scenarios.mjs',
+          '.codevetter/verify.yaml',
+          'verify/generated/scenario-recurring.provenance.json',
+        ],
+        approve_replacements: true,
+      },
+    });
   });
 
   test('keeps operational failures no-confidence and exposes cancellation for an active run', async ({

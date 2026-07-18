@@ -108,4 +108,37 @@ describe('verification source watcher', () => {
     );
     assert.equal(partialCleanup, 1, 'partial setup closes every created watcher');
   });
+
+  it('watches the nearest existing parent for deleted source trees', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'codevetter-source-watch-deleted-'));
+    await Promise.all([
+      mkdir(path.join(root, '.codevetter', 'auth'), { recursive: true }),
+      mkdir(path.join(root, 'verify'), { recursive: true }),
+      mkdir(path.join(root, 'src'), { recursive: true }),
+    ]);
+    await Promise.all([
+      writeFile(path.join(root, '.codevetter', 'verify.yaml'), configSource),
+      writeFile(path.join(root, '.codevetter', 'auth', 'developer.json'), '{}'),
+      writeFile(path.join(root, 'verify', 'scenarios.mjs'), 'export default {}'),
+    ]);
+    const config = await (await VerifyConfigLoader.create(root)).load();
+    const canonicalRoot = await realpath(root);
+    const listeners = new Map<string, (event: string, filename: string | Buffer | null) => void>();
+    const sourceWatch = await watchVerificationSources(
+      root,
+      config,
+      ['src/removed/a.ts', 'src/removed/b.ts'],
+      () => undefined,
+      (directory, listener) => {
+        listeners.set(directory, listener);
+        return { close: () => undefined };
+      }
+    );
+
+    listeners.get(path.join(canonicalRoot, 'src'))?.('rename', 'unrelated');
+    assert.equal(sourceWatch.changed, false);
+    listeners.get(path.join(canonicalRoot, 'src'))?.('rename', 'removed');
+    assert.deepEqual(sourceWatch.changedPaths, ['src/removed/a.ts', 'src/removed/b.ts']);
+    sourceWatch.close();
+  });
 });

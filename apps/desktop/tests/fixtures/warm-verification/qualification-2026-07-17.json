@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "capturedAt": "2026-07-15T10:44:19.883Z",
+  "capturedAt": "2026-07-17T12:45:28.857Z",
   "scope": "warm local whole invocation: Git diff, deterministic selection, browser batch, reporting",
   "machine": {
     "platform": "darwin",
@@ -15,18 +15,18 @@
     "build": "26A5378j"
   },
   "target": {
-    "protectedRepositoryHead": "45e3266c4cb04c3fc1aa542e1557cdf9d1ad4cc2",
-    "fixtureTargetSha": "c517bc81fe3f07d78cc403332696a224a65e371f",
-    "changeSetIdentity": "be1f82949102ade0323da81a8dbb461082fdc8af622844f720b2adba34a6fbea",
-    "baseUrl": "http://127.0.0.1:5173",
+    "protectedRepositoryHead": "2d34728a06c48f5ef2c3b8e471a3d20854d09a76",
+    "fixtureTargetSha": "0efb43b67a81eb32ce599f513017822ea233eebd",
+    "changeSetIdentity": "667713199a4c415fdeee90b88750aa5f038f4bc4035ea0f04695a8069f7d173f",
+    "baseUrl": "http://127.0.0.1:59761",
     "scenarioCount": 20,
-    "configHash": "ec5877e8f817bc012b258e3de88f35b97dbd83679196628538dcef3e7d7f55eb",
-    "manifestHash": "d090804c6e604486ddda6e751d8a95f49b442c41a59427cbf8a81a490e6d30e1",
+    "configHash": "5a2697d4f6191abb0deddbf3a713629e48555e006fc1c49172071ac523776e9b",
+    "manifestHash": "1d13ac5a98c4fa8cbf03855c9f7761d86af38c84400106313717525188999f01",
     "moduleSourceHashes": ["8da6cc15b50388f0e51d41e0c9c8ec3a719179164c77cee6f021d251ece6a978"],
     "benchmarkSourceHashes": {
       "scripts/warm-verification-benchmark.ts": "aee06f4367d9841113b66130580ea588bb48d993eb095650f30e3f362ff82cc9",
       "tests/fixtures/warm-verification/benchmark-manifest.json": "8da6cc15b50388f0e51d41e0c9c8ec3a719179164c77cee6f021d251ece6a978",
-      "tests/fixtures/warm-verification/qualification-fixture.ts": "f914e36a220d852656909d0f5085db63e3e72efbe907bdb5804a991d78fe1e6d",
+      "tests/fixtures/warm-verification/qualification-fixture.ts": "4d559cc69c6277d807badea092d85fae9c0b286e920b4bdbd26545b3f38423c9",
       "tests/fixtures/warm-verification/msw-app/index.html": "078ee2ddce3078e3495000e83e954b59b1341ace3e074057151fb9e4d6802b4c",
       "tests/fixtures/warm-verification/msw-app/main.tsx": "e020a74c26b7c39282583486df01b892bd7b2ad0e21a8d9c1f2a9d9a4f3a943c",
       "tests/fixtures/warm-verification/msw-app/vite.config.ts": "84f9e248d7915fce872a84b863679dc89cc1a269c4b47c0e82b7bb9a0499a717",
@@ -40,7 +40,7 @@
       "clientModuleReady": true,
       "settled": true,
       "settleMs": 250,
-      "readinessMs": 787.844
+      "readinessMs": 653.843
     }
   },
   "browser": {
@@ -51,9 +51,9 @@
     "reusedAcrossEveryBatch": true
   },
   "coldStartup": {
-    "totalMs": 1054.265,
-    "serverReadyMs": 845.355,
-    "browserLaunchMs": 148.949
+    "totalMs": 1021.386,
+    "serverReadyMs": 687.498,
+    "browserLaunchMs": 277.82
   },
   "workload": {
     "checkedInManifest": "tests/fixtures/warm-verification/benchmark-manifest.json",
@@ -71,40 +71,40 @@
         "parallelism": 1,
         "warmupBatches": 1,
         "sampleCount": 3,
-        "invocationMs": [9616.101, 9625.403, 9850.835],
-        "p50": 9625.403,
-        "p95": 9850.835,
-        "max": 9850.835,
+        "invocationMs": [10891.93, 10842.607, 10849.983],
+        "p50": 10849.983,
+        "p95": 10891.93,
+        "max": 10891.93,
         "stable": true
       },
       {
         "parallelism": 2,
         "warmupBatches": 1,
         "sampleCount": 3,
-        "invocationMs": [5319.061, 5288.303, 5257.685],
-        "p50": 5288.303,
-        "p95": 5319.061,
-        "max": 5319.061,
+        "invocationMs": [7355.443, 7360.937, 7257.835],
+        "p50": 7355.443,
+        "p95": 7360.937,
+        "max": 7360.937,
         "stable": true
       },
       {
         "parallelism": 3,
         "warmupBatches": 1,
         "sampleCount": 3,
-        "invocationMs": [4058.937, 4047.724, 4046.857],
-        "p50": 4047.724,
-        "p95": 4058.937,
-        "max": 4058.937,
+        "invocationMs": [6274.039, 6360.151, 6182.226],
+        "p50": 6274.039,
+        "p95": 6360.151,
+        "max": 6360.151,
         "stable": true
       },
       {
         "parallelism": 4,
         "warmupBatches": 1,
         "sampleCount": 3,
-        "invocationMs": [3464.603, 3558.023, 3520.239],
-        "p50": 3520.239,
-        "p95": 3558.023,
-        "max": 3558.023,
+        "invocationMs": [5860.796, 5714.184, 5697.502],
+        "p50": 5714.184,
+        "p95": 5860.796,
+        "max": 5860.796,
         "stable": true
       }
     ],
@@ -116,80 +116,80 @@
     "warmupBatches": 2,
     "sampleCount": 20,
     "invocationMs": [
-      3691.341, 3740.724, 3797.004, 3677.113, 3478.87, 3522.236, 3608.484, 3671.779, 3575.903,
-      3470.277, 3515.402, 3547.945, 3627.114, 3455.891, 3361.292, 3426.601, 4792.196, 5320.379,
-      4056.521, 3605.56
+      5955.39, 5755.89, 5648.972, 5831.792, 5814.469, 5780.337, 5609.356, 5845.542, 5726.918,
+      5782.896, 5670.226, 5677.696, 5799.138, 5851.376, 5637.761, 5552.314, 5807.156, 5800.463,
+      5799.031, 5650.066
     ],
     "timingMs": {
-      "p50": 3605.56,
-      "p95": 4792.196,
-      "max": 5320.379
+      "p50": 5780.337,
+      "p95": 5851.376,
+      "max": 5955.39
     },
     "stageTimingMs": {
       "actions_work": {
-        "p50": 7114.386,
-        "p95": 9243.66,
-        "max": 9935.853
+        "p50": 9453.429,
+        "p95": 9749.737,
+        "max": 9822.567
       },
       "auth_work": {
-        "p50": 26.173,
-        "p95": 58.405,
-        "max": 97.804
+        "p50": 13.515,
+        "p95": 17.05,
+        "max": 20.4
       },
       "context_work": {
-        "p50": 78.671,
-        "p95": 107.405,
-        "max": 150.425
+        "p50": 500.733,
+        "p95": 636.548,
+        "max": 665.254
       },
       "diff": {
-        "p50": 32.113,
-        "p95": 46.454,
-        "max": 108.888
+        "p50": 31.021,
+        "p95": 35.956,
+        "max": 37.374
       },
       "navigation_work": {
-        "p50": 2251.583,
-        "p95": 3001.503,
-        "max": 3770.452
+        "p50": 4454.147,
+        "p95": 4706.275,
+        "max": 4797.577
       },
       "observation_work": {
-        "p50": 3359.899,
-        "p95": 4345.549,
-        "max": 4826.777
+        "p50": 5433.378,
+        "p95": 5715.468,
+        "max": 5976.887
       },
       "reporting": {
         "p50": 0.001,
-        "p95": 0.002,
-        "max": 0.003
+        "p95": 0.001,
+        "max": 0.001
       },
       "runner_total": {
-        "p50": 3570.281,
-        "p95": 4760.874,
-        "max": 5210.352
+        "p50": 5749.663,
+        "p95": 5815.116,
+        "max": 5922.525
       },
       "screenshots_work": {
-        "p50": 630.274,
-        "p95": 882.783,
-        "max": 979.959
+        "p50": 980.588,
+        "p95": 1058.204,
+        "max": 1153.064
       },
       "selection": {
-        "p50": 0.672,
-        "p95": 0.817,
-        "max": 1.1
+        "p50": 0.651,
+        "p95": 0.691,
+        "max": 1.142
       },
       "state_work": {
-        "p50": 780.387,
-        "p95": 960.021,
-        "max": 1174.026
+        "p50": 2275.89,
+        "p95": 2478.132,
+        "max": 2602.318
       },
       "teardown_work": {
-        "p50": 100.53,
-        "p95": 147.894,
-        "max": 201.968
+        "p50": 308.343,
+        "p95": 395.755,
+        "max": 405.921
       },
       "whole_invocation": {
-        "p50": 3605.56,
-        "p95": 4792.196,
-        "max": 5320.379
+        "p50": 5780.337,
+        "p95": 5851.376,
+        "max": 5955.39
       }
     },
     "p95GateMs": 30000,

@@ -3,9 +3,11 @@ import { describe, it } from 'node:test';
 
 import {
   publishScenarioManifest,
+  ScenarioCheckpointContractError,
   ScenarioContractError,
   validateScenarioManifest,
   type DeterministicScenario,
+  type ScenarioExecutionContext,
   type ScenarioManifest,
 } from './scenario';
 
@@ -140,5 +142,41 @@ describe('validateScenarioManifest', () => {
         return true;
       }
     );
+  });
+
+  it('allows only declared visual checkpoint names at runtime', async () => {
+    const checkpoints: string[] = [];
+    const published = manifest([
+      scenario({
+        assertions: [{ id: 'ready', kind: 'visual', description: 'Ready state is stable' }],
+        async run({ observe }) {
+          await observe.checkpoint('ready');
+          await observe.checkpoint('undeclared');
+        },
+      }),
+    ]);
+    const context = {
+      page: {},
+      signal: new AbortController().signal,
+      step: async (_id: string, operation: () => Promise<unknown>) => operation(),
+      observe: {
+        expectNoRuntimeErrors: async () => undefined,
+        expectMutationCount: async () => undefined,
+        expectVisible: async () => undefined,
+        expectRoute: async () => undefined,
+        checkpoint: async (name: string) => {
+          checkpoints.push(name);
+        },
+        auditAccessibility: async () => undefined,
+      },
+    } as unknown as ScenarioExecutionContext;
+
+    await assert.rejects(
+      published.scenarios[0]!.run(context),
+      (error: unknown) =>
+        error instanceof ScenarioCheckpointContractError &&
+        error.code === 'undeclared_visual_checkpoint'
+    );
+    assert.deepEqual(checkpoints, ['ready']);
   });
 });

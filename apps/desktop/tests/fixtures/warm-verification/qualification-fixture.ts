@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
+import { createServer } from 'node:net';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { chromium, type Browser } from '@playwright/test';
@@ -22,7 +23,10 @@ import {
   selectChangedCapabilities,
   type ChangedCapabilitySelection,
 } from '../../../src/lib/warm-verification/selection';
-import { chromiumRevisionFromExecutablePath } from '../../../src/lib/warm-verification/supervision';
+import {
+  chromiumLaunchOptions,
+  chromiumRevisionFromExecutablePath,
+} from '../../../src/lib/warm-verification/supervision';
 import {
   VISUAL_BASELINE_VERSION,
   VISUAL_CAPTURE_CONTRACT,
@@ -83,6 +87,15 @@ export interface QualificationRuntimeHealth {
   activeContexts: number;
 }
 
+export interface QualificationCleanupState {
+  browserOwnership: 'owned' | 'shared';
+  browserReleased: boolean;
+  serverClosed: boolean;
+  repositoryRemoved: boolean;
+  activeOwnedContexts: number;
+  complete: boolean;
+}
+
 export interface QualificationHarness {
   readonly baseUrl: string;
   readonly browserRevision: string;
@@ -91,6 +104,7 @@ export interface QualificationHarness {
   readonly benchmark: BenchmarkManifest;
   readonly scenarioIds: readonly string[];
   readonly repositoryRoot: string;
+  browser(): Browser;
   config(parallelism: 1 | 2 | 3 | 4): VerifyConfig;
   manifest(parallelism: 1 | 2 | 3 | 4): Readonly<ScenarioManifest>;
   run(parallelism: 1 | 2 | 3 | 4, runId: string): Promise<ScenarioBatchResult>;
@@ -104,7 +118,7 @@ export interface QualificationHarness {
   invoke(parallelism: 1 | 2 | 3 | 4, runId: string): Promise<QualificationInvocation>;
   runtimeHealth(): QualificationRuntimeHealth;
   activeContextCount(): number;
-  close(): Promise<void>;
+  close(): Promise<QualificationCleanupState>;
 }
 
 export function benchmarkManifestPath(): string {
@@ -117,28 +131,33 @@ export async function readBenchmarkManifest(): Promise<BenchmarkManifest> {
 
 export async function startQualificationHarness(options?: {
   onIntelligenceGuard?: (guard: ExternalIntelligenceGuard) => void;
+  sharedBrowser?: Browser;
 }): Promise<QualificationHarness> {
   const startupStarted = performance.now();
   const benchmark = await readBenchmarkManifest();
   const source = await readFile(benchmarkManifestPath());
-  const root = await mkdtemp(path.join(os.tmpdir(), 'codevetter-warm-benchmark-'));
-  await mkdir(path.join(root, '.codevetter', 'auth'), { recursive: true });
-  await writeFile(
-    path.join(root, '.codevetter', 'auth', 'local-developer.json'),
-    JSON.stringify({ cookies: [], origins: [] })
-  );
-  await prepareGitFixture(root);
-
   const appRoot = path.resolve(process.cwd(), 'tests/fixtures/warm-verification/msw-app');
+  let root: string | undefined;
   let server: ViteDevServer | undefined;
-  let browser: Browser | undefined;
+  let browser: Browser | undefined = options?.sharedBrowser;
+  const ownsBrowser = browser === undefined;
+  const preexistingContexts = new Set(browser?.contexts() ?? []);
   try {
+    root = await mkdtemp(path.join(os.tmpdir(), 'codevetter-warm-benchmark-'));
+    await mkdir(path.join(root, '.codevetter', 'auth'), { recursive: true });
+    await writeFile(
+      path.join(root, '.codevetter', 'auth', 'local-developer.json'),
+      JSON.stringify({ cookies: [], origins: [] })
+    );
+    await prepareGitFixture(root);
+
     const serverStarted = performance.now();
+    const port = await availableLoopbackPort();
     server = await createViteServer({
       root: appRoot,
       configFile: path.join(appRoot, 'vite.config.ts'),
       logLevel: 'silent',
-      server: { host: '127.0.0.1', port: 0, strictPort: true },
+      server: { host: '127.0.0.1', port, strictPort: true },
     });
     await server.listen();
     const address = server.httpServer?.address();
@@ -163,7 +182,7 @@ export async function startQualificationHarness(options?: {
     const serverReadyMs = performance.now() - serverStarted;
 
     const browserStarted = performance.now();
-    browser = await chromium.launch({ headless: true });
+    browser ??= await chromium.launch(chromiumLaunchOptions());
     const browserLaunchMs = performance.now() - browserStarted;
     const coldStartup = {
       totalMs: performance.now() - startupStarted,
@@ -171,6 +190,7 @@ export async function startQualificationHarness(options?: {
       browserLaunchMs,
     };
     const ownedBrowser = browser;
+    const ownedRoot = root;
     const runnerByParallelism = new Map<number, ScenarioRunner>();
     const manifestByParallelism = new Map<number, Readonly<ScenarioManifest>>();
     const scenarioIds = benchmark.scenarios.map((scenario) => scenario.id);
@@ -202,7 +222,7 @@ export async function startQualificationHarness(options?: {
     const runnerFor = async (parallelism: 1 | 2 | 3 | 4) => {
       let runner = runnerByParallelism.get(parallelism);
       if (!runner) {
-        runner = await ScenarioRunner.create(ownedBrowser, root, config(parallelism), {
+        runner = await ScenarioRunner.create(ownedBrowser, ownedRoot, config(parallelism), {
           intelligenceGuardFactory: (scenarioIds) => {
             const guard = new ExternalIntelligenceGuard(scenarioIds);
             options?.onIntelligenceGuard?.(guard);
@@ -236,6 +256,7 @@ export async function startQualificationHarness(options?: {
     const serverIdentity = `vite:${baseUrl}:generation-1`;
     const browserIdentity = `chromium:${browserRevision}:generation-1`;
 
+    let closePromise: Promise<QualificationCleanupState> | undefined;
     return {
       baseUrl,
       browserRevision,
@@ -243,7 +264,8 @@ export async function startQualificationHarness(options?: {
       hmr,
       benchmark,
       scenarioIds,
-      repositoryRoot: root,
+      repositoryRoot: ownedRoot,
+      browser: () => ownedBrowser,
       config,
       manifest,
       run,
@@ -280,7 +302,7 @@ export async function startQualificationHarness(options?: {
       async invoke(parallelism, runId) {
         const totalStarted = performance.now();
         const diffStarted = performance.now();
-        const changeSet = await collectWorktreeChangeSet(root);
+        const changeSet = await collectWorktreeChangeSet(ownedRoot);
         const diffMs = performance.now() - diffStarted;
 
         const selectionStarted = performance.now();
@@ -324,12 +346,63 @@ export async function startQualificationHarness(options?: {
         browserReady: ownedBrowser.isConnected(),
         activeContexts: ownedBrowser.contexts().length,
       }),
-      close: () => closeHarness(ownedBrowser, server, root),
+      close: () => {
+        closePromise ??= closeHarness({
+          browser: ownedBrowser,
+          ownsBrowser,
+          preexistingContexts,
+          server,
+          root: ownedRoot,
+        });
+        return closePromise;
+      },
     };
   } catch (error) {
-    await closeHarness(browser, server, root);
+    try {
+      await closeHarness({ browser, ownsBrowser, preexistingContexts, server, root });
+    } catch (cleanupError) {
+      throw preservePrimaryError(error, cleanupError);
+    }
     throw error;
   }
+}
+
+async function availableLoopbackPort(): Promise<number> {
+  const server = createServer();
+  let port: number | undefined;
+  let primaryError: unknown;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    const address = server.address();
+    if (!address || typeof address === 'string') {
+      throw new Error('could not reserve benchmark port');
+    }
+    port = address.port;
+  } catch (error) {
+    primaryError = error;
+  }
+
+  let cleanupError: unknown;
+  if (server.listening) {
+    try {
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve()))
+      );
+    } catch (error) {
+      cleanupError = error;
+    }
+  }
+  if (primaryError !== undefined) {
+    throw cleanupError === undefined
+      ? primaryError
+      : preservePrimaryError(primaryError, cleanupError);
+  }
+  if (cleanupError !== undefined) throw cleanupError;
+  if (port === undefined) throw new Error('could not reserve benchmark port');
+  return port;
 }
 
 function publishStabilityManifest(
@@ -459,13 +532,18 @@ function executableScenario(
   benchmark: BenchmarkScenario,
   frozenTime: string
 ): DeterministicScenario {
-  const assertions: ScenarioAssertionDeclaration[] = benchmark.assertions.map(
-    (description, index) => ({
+  const assertions: ScenarioAssertionDeclaration[] = [
+    ...benchmark.assertions.map((description, index) => ({
       id: `assertion-${index + 1}`,
-      kind: 'custom',
+      kind: 'custom' as const,
       description,
-    })
-  );
+    })),
+    ...benchmark.screenshotCheckpoints.map((checkpoint) => ({
+      id: checkpoint,
+      kind: 'visual' as const,
+      description: `Capture ${checkpoint}`,
+    })),
+  ];
   return {
     schemaVersion: 1,
     id: benchmark.id,
@@ -567,12 +645,106 @@ async function assertReady(url: string): Promise<void> {
   if (!response.ok) throw new Error(`qualification target not ready: ${url} (${response.status})`);
 }
 
-async function closeHarness(
-  browser: Browser | undefined,
-  server: ViteDevServer | undefined,
-  root: string
-): Promise<void> {
-  await browser?.close();
-  await server?.close();
-  await rm(root, { recursive: true, force: true });
+async function closeHarness(options: {
+  browser: Browser | undefined;
+  ownsBrowser: boolean;
+  preexistingContexts: ReadonlySet<ReturnType<Browser['contexts']>[number]>;
+  server: ViteDevServer | undefined;
+  root: string | undefined;
+}): Promise<QualificationCleanupState> {
+  const failures: Error[] = [];
+  const attempt = async (cleanup: () => Promise<void>) => {
+    try {
+      await cleanup();
+    } catch (error) {
+      failures.push(asError(error));
+    }
+  };
+
+  let contextInspectionFailed = false;
+  const ownedContexts = () => {
+    try {
+      return (
+        options.browser
+          ?.contexts()
+          .filter((context) => !options.preexistingContexts.has(context)) ?? []
+      );
+    } catch (error) {
+      contextInspectionFailed = true;
+      failures.push(asError(error));
+      return [];
+    }
+  };
+  for (const context of ownedContexts()) {
+    await attempt(() => context.close());
+  }
+  if (options.ownsBrowser && options.browser) {
+    await attempt(() => options.browser!.close());
+  }
+  if (options.server) {
+    await attempt(() => options.server!.close());
+  }
+  if (options.root) {
+    await attempt(() => rm(options.root!, { recursive: true, force: true }));
+  }
+
+  const remainingOwnedContexts = ownedContexts();
+  const browserReleased = options.ownsBrowser
+    ? options.browser?.isConnected() !== true
+    : !contextInspectionFailed && remainingOwnedContexts.length === 0;
+  let repositoryRemoved = options.root === undefined;
+  if (options.root) {
+    await attempt(async () => {
+      repositoryRemoved = !(await pathExists(options.root!));
+    });
+  }
+  const state: QualificationCleanupState = {
+    browserOwnership: options.ownsBrowser ? 'owned' : 'shared',
+    browserReleased,
+    serverClosed: options.server?.httpServer?.listening !== true,
+    repositoryRemoved,
+    activeOwnedContexts: options.ownsBrowser && browserReleased ? 0 : remainingOwnedContexts.length,
+    complete: false,
+  };
+  state.complete =
+    state.browserReleased &&
+    state.serverClosed &&
+    state.repositoryRemoved &&
+    state.activeOwnedContexts === 0;
+  if (failures.length > 0 || !state.complete) {
+    throw new AggregateError(failures, 'Qualification harness cleanup was incomplete', {
+      cause: state,
+    });
+  }
+  return state;
+}
+
+async function pathExists(target: string): Promise<boolean> {
+  try {
+    await stat(target);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+function preservePrimaryError(primary: unknown, cleanup: unknown): unknown {
+  if (!(primary instanceof Error)) {
+    return new Error(String(primary), { cause: cleanup });
+  }
+  try {
+    Object.defineProperty(primary, 'cleanupError', {
+      configurable: true,
+      enumerable: false,
+      value: cleanup,
+    });
+  } catch {
+    // The original error remains the authoritative failure even when it is not extensible.
+  }
+  return primary;
+}
+
+function asError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
 }

@@ -136,6 +136,57 @@ describe('daemon wire contracts', () => {
     if (validation.ok) assert.ok(validation.bytes > 0);
   });
 
+  it('accepts bounded candidate qualification and forbids evidence persistence claims', () => {
+    const request: DaemonRequestEnvelope = {
+      protocol_version: 1,
+      request_id: 'request-candidate',
+      sent_at: now,
+      request: {
+        type: 'dry_run_candidate',
+        run_id: 'candidate-run-1',
+        target: { target_sha: gitSha, config_hash: sha256, manifest_hash: sha256 },
+        plans: [{ schemaVersion: 1, id: 'candidate-scenario' }],
+      },
+    };
+    assert.equal(validateDaemonRequestEnvelope(request).ok, true);
+    const requestPayload = request.request as unknown as Record<string, unknown>;
+    const target = requestPayload.target as Record<string, unknown>;
+    requestPayload.extra = true;
+    target.extra = true;
+    assert.equal(validateDaemonRequestEnvelope(request).ok, false);
+    delete requestPayload.extra;
+    delete target.extra;
+    const response: DaemonResponseEnvelope = {
+      protocol_version: 1,
+      request_id: 'request-candidate',
+      sent_at: later,
+      response: {
+        type: 'candidate_dry_run',
+        report: {
+          schema_version: 1,
+          run_id: 'candidate-run-1',
+          qualified: true,
+          duration_ms: 12,
+          issues: [],
+          model_call_count: 0,
+          evidence_persisted: false,
+          visual_baselines_updated: false,
+        },
+      },
+    };
+    assert.equal(validateDaemonResponseEnvelope(response).ok, true);
+    if (response.response.type !== 'candidate_dry_run') assert.fail('expected candidate report');
+    const responsePayload = response.response as unknown as Record<string, unknown>;
+    const report = responsePayload.report as Record<string, unknown>;
+    responsePayload.extra = true;
+    report.extra = true;
+    assert.equal(validateDaemonResponseEnvelope(response).ok, false);
+    delete responsePayload.extra;
+    delete report.extra;
+    response.response.report.evidence_persisted = true as false;
+    assert.equal(validateDaemonResponseEnvelope(response).ok, false);
+  });
+
   it('rejects unsupported protocol versions and invalid change identities', () => {
     const request = validRequest() as unknown as Record<string, unknown>;
     request.protocol_version = 2;

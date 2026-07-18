@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { chromium, type Browser, type Page } from '@playwright/test';
 import { AutomaticObserver } from './observer';
+import { chromiumLaunchOptions } from './supervision';
 
 let browser: Browser;
 
 before(async () => {
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch(chromiumLaunchOptions());
 });
 
 after(async () => {

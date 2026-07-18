@@ -2,6 +2,7 @@ import type { Server } from 'node:net';
 
 import { collectWorktreeChangeSet } from './change-set';
 import { VerificationDaemon } from './daemon';
+import { createDefaultDifferentialVerificationService } from './differential-composition';
 import { closeServer, closeServerWithin, listenVerifyIpcServer } from './ipc';
 import { resolveVerifyRuntimePaths } from './runtime-paths';
 import { throwIfAborted } from './runtime-utils';
@@ -48,7 +49,11 @@ export class VerificationDaemonHost {
             new AppServerSupervisor(repoRoot, config.config.target),
             new WarmChromiumSupervisor()
           ),
-        { onShutdown: (graceMs) => void host?.stop(graceMs) }
+        {
+          onShutdown: (graceMs) => void host?.stop(graceMs),
+          differentialServiceFactory: (repoRoot, lease, runtime) =>
+            createDefaultDifferentialVerificationService(repoRoot, lease, runtime.browser),
+        }
       );
       await daemon.start();
       throwIfAborted(signal);

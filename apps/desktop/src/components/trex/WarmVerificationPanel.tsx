@@ -388,7 +388,7 @@ export function WarmVerificationPanel({
                   ) : (
                     <Trash2 size={12} className="mr-1" />
                   )}
-                  Clean owned artifacts
+                  Clean run artifacts
                 </Button>
               </div>
               {cleanupMessage && (

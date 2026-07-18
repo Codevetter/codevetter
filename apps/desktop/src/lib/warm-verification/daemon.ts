@@ -11,6 +11,7 @@ import type {
   DaemonHealth,
   DaemonRequestEnvelope,
   DaemonResponse,
+  CandidateDryRunReport,
   VerifyCancellation,
   VerifyChangeSetIdentity,
   VerifyLimitation,
@@ -20,12 +21,21 @@ import type {
 import { VERIFY_CONTRACT_LIMITS, VERIFY_PROTOCOL_VERSION } from './contracts';
 import type { VerifyConfigSnapshot } from './config-loader';
 import { VerifyConfigLoader } from './config-loader';
+import type {
+  DifferentialDaemonRequestEnvelope,
+  DifferentialDaemonResponse,
+} from './differential-daemon-contracts';
+import type { DifferentialVerificationService } from './differential-service';
 import { ScenarioManifestLoader } from './manifest-loader';
-import { redactVerifyResult } from './redaction';
+import {
+  materializeDeclarativeScenario,
+  type DeclarativeScenarioPlan,
+} from './declarative-scenario';
+import { redactEvidenceText, redactVerifyResult } from './redaction';
 import { WarmArtifactRetention } from './retention';
 import { ScenarioRunner, type ScenarioBatchResult } from './runner';
 import { elapsed, raceAbort, safeErrorMessage, throwIfAborted } from './runtime-utils';
-import type { ScenarioManifest } from './scenario';
+import { publishScenarioManifest, type ScenarioManifest } from './scenario';
 import { selectChangedCapabilities, type ChangedCapabilitySelection } from './selection';
 import type { VerifyDaemonLease } from './singleton';
 import { type VerificationSourceWatch, watchVerificationSources } from './source-watcher';
@@ -55,6 +65,12 @@ export interface VerificationDaemonDependencies {
     request: GitChangeSetRequest
   ) => Promise<CollectedGitChangeSet>;
   watchSources?: typeof watchVerificationSources;
+  differentialService?: DifferentialVerificationService;
+  differentialServiceFactory?: (
+    repoRoot: string,
+    lease: VerifyDaemonLease,
+    runtime: WarmRuntimeSupervisor
+  ) => Promise<DifferentialVerificationService>;
 }
 
 export type WarmRuntimeFactory = (
@@ -78,6 +94,7 @@ export class VerificationDaemon {
   readonly #retention: WarmArtifactRetention;
   readonly #startupStartedAt: number;
   readonly #activeRuns = new Map<string, ActiveRun>();
+  readonly #differentialService?: DifferentialVerificationService;
 
   #targetSha: string;
   #coldStartupMs: number | null = null;
@@ -110,6 +127,7 @@ export class VerificationDaemon {
     this.#onShutdown = dependencies.onShutdown ?? (() => undefined);
     this.#collectChangeSet = dependencies.collectChangeSet ?? collectGitChangeSet;
     this.#watchSources = dependencies.watchSources ?? watchVerificationSources;
+    this.#differentialService = dependencies.differentialService;
     this.#retention = new WarmArtifactRetention(
       repoRoot,
       startupConfig.config.retention,
@@ -135,6 +153,9 @@ export class VerificationDaemon {
       typeof runtimeOrFactory === 'function'
         ? runtimeOrFactory(canonicalRoot, startupConfig)
         : runtimeOrFactory;
+    const differentialService =
+      dependencies.differentialService ??
+      (await dependencies.differentialServiceFactory?.(canonicalRoot, lease, runtime));
     return new VerificationDaemon(
       canonicalRoot,
       targetSha,
@@ -144,7 +165,7 @@ export class VerificationDaemon {
       manifestLoader,
       startupConfig,
       startupStartedAt,
-      dependencies
+      { ...dependencies, differentialService }
     );
   }
 
@@ -201,9 +222,12 @@ export class VerificationDaemon {
   }
 
   async handle(
-    envelope: DaemonRequestEnvelope,
+    envelope: DaemonRequestEnvelope | DifferentialDaemonRequestEnvelope,
     connectionSignal?: AbortSignal
-  ): Promise<DaemonResponse> {
+  ): Promise<DaemonResponse | DifferentialDaemonResponse> {
+    if (isDifferentialEnvelope(envelope)) {
+      return this.#handleDifferential(envelope.request, connectionSignal);
+    }
     const request = envelope.request;
     if (request.type === 'health') return { type: 'health', health: this.health() };
     if (request.type === 'cancel') {
@@ -248,6 +272,11 @@ export class VerificationDaemon {
     else connectionSignal?.addEventListener('abort', disconnect, { once: true });
     this.#activeRuns.set(request.run_id, active);
     try {
+      if (request.type === 'dry_run_candidate') {
+        const report = await this.#dryRunCandidate(request, active);
+        return { type: 'candidate_dry_run', report };
+      }
+      await this.#retention.reserveRun(request.run_id, this.#now().toISOString());
       const result = await this.#verifyChanged(
         request.run_id,
         request.change_set,
@@ -259,6 +288,106 @@ export class VerificationDaemon {
     } finally {
       connectionSignal?.removeEventListener('abort', disconnect);
       this.#activeRuns.delete(request.run_id);
+    }
+  }
+
+  async #handleDifferential(
+    request: DifferentialDaemonRequestEnvelope['request'],
+    connectionSignal?: AbortSignal
+  ): Promise<DifferentialDaemonResponse> {
+    const service = this.#differentialService;
+    if (!service) throw new Error('Differential verification service is unavailable');
+    if (request.type === 'differential_status') {
+      return { type: 'differential_status', summary: service.status(request.run_id) };
+    }
+    if (request.type === 'differential_cancel') {
+      service.cancel(request.run_id, 'Differential CLI requested cancellation');
+      return { type: 'differential_status', summary: service.status(request.run_id) };
+    }
+    if (request.type === 'differential_cleanup') {
+      return { type: 'differential_cleanup', summary: await service.cleanup(request.dry_run) };
+    }
+    const input = {
+      runId: request.run_id,
+      referenceRevision: request.reference_revision,
+      candidate: request.candidate,
+      ...(connectionSignal ? { signal: connectionSignal } : {}),
+    };
+    return request.type === 'differential_prepare'
+      ? { type: 'differential_prepared', summary: await service.prepare(input) }
+      : { type: 'differential_result', summary: await service.run(input) };
+  }
+
+  async #dryRunCandidate(
+    request: Extract<DaemonRequestEnvelope['request'], { type: 'dry_run_candidate' }>,
+    active: ActiveRun
+  ): Promise<CandidateDryRunReport> {
+    const started = this.#monotonicNow();
+    const issues: string[] = [];
+    const signal = AbortSignal.any([
+      active.controller.signal,
+      AbortSignal.timeout(this.#startupConfig.config.budgets.batchMs),
+    ]);
+    try {
+      const config = await raceAbort(this.#configLoader.load(), signal);
+      const acceptedManifest = await raceAbort(this.#manifestLoader.load(config), signal);
+      if (
+        request.target.target_sha !== this.#targetSha ||
+        request.target.config_hash !== config.hash ||
+        request.target.manifest_hash !== acceptedManifest.manifestHash
+      ) {
+        throw new Error('Candidate target, config, or manifest identity drifted');
+      }
+      const scenarios = request.plans.map((entry) =>
+        materializeDeclarativeScenario(entry as unknown as DeclarativeScenarioPlan)
+      );
+      const capabilityIds = new Set(config.config.capabilities.map((entry) => entry.id));
+      const stateNames = new Set(acceptedManifest.scenarios.map((entry) => entry.stateName));
+      const routes = new Set(acceptedManifest.scenarios.map((entry) => entry.route));
+      for (const scenario of scenarios) {
+        if (!(scenario.authProfileId in config.config.authProfiles))
+          throw new Error(`Candidate references unknown auth profile ${scenario.authProfileId}`);
+        if (scenario.capabilityIds.some((entry) => !capabilityIds.has(entry)))
+          throw new Error(`Candidate ${scenario.id} references an unknown capability`);
+        if (!stateNames.has(scenario.stateName))
+          throw new Error(`Candidate ${scenario.id} references an unavailable named state`);
+        if (!routes.has(scenario.route))
+          throw new Error(`Candidate ${scenario.id} references an unselected target route`);
+      }
+      const manifest = publishScenarioManifest({
+        generatedAt: this.#now().toISOString(),
+        batchTimeoutMs: config.config.budgets.batchMs,
+        parallelism: config.config.budgets.parallelism,
+        modules: [
+          {
+            id: `candidate-${request.run_id}`,
+            source: JSON.stringify(request.plans),
+            scenarios,
+          },
+        ],
+      });
+      const runtimeHealth = await raceAbort(this.#runtime.ensureReady(), signal);
+      const runner = await this.#runnerForGeneration(runtimeHealth.browser.generation, config);
+      const batch = await runner.run(manifest, {
+        runId: request.run_id,
+        scenarioIds: scenarios.map((scenario) => scenario.id),
+        detailedCapture: false,
+        qualificationOnly: true,
+        signal,
+      });
+      issues.push(...candidateDryRunBlockingIssues(batch));
+      if (batch.intelligenceCalls.total !== 0)
+        issues.push('Candidate dry run reached intelligence');
+      return candidateDryRunReport(
+        request.run_id,
+        issues.length === 0,
+        elapsed(this.#monotonicNow, started),
+        issues
+      );
+    } catch (error) {
+      return candidateDryRunReport(request.run_id, false, elapsed(this.#monotonicNow, started), [
+        safeErrorMessage(error),
+      ]);
     }
   }
 
@@ -280,7 +409,10 @@ export class VerificationDaemon {
     let timer: NodeJS.Timeout | undefined;
     try {
       await Promise.race([
-        this.#runtime.stop(),
+        (async () => {
+          await this.#differentialService?.stop(remaining);
+          await this.#runtime.stop();
+        })(),
         new Promise<never>((_, reject) => {
           timer = setTimeout(
             () => reject(new Error('Timed out stopping owned warm runtime')),
@@ -526,6 +658,7 @@ export class VerificationDaemon {
         });
       }
     } catch (error) {
+      await this.#retention.abandonRun(runId).catch(() => false);
       redacted.artifacts = [];
       redacted.limitations.push({
         code: 'artifact_limit',
@@ -563,6 +696,28 @@ export class VerificationDaemon {
     this.#runnerGeneration = generation;
     return this.#runner;
   }
+}
+
+export function candidateDryRunBlockingIssues(
+  batch: Pick<ScenarioBatchResult, 'limitations' | 'observations'>
+): string[] {
+  return [
+    ...batch.limitations.map((limitation) => limitation.message),
+    ...batch.observations
+      .filter(
+        (observation) =>
+          observation.disposition === 'regression' ||
+          (observation.disposition === 'no_confidence' &&
+            observation.policy_id !== 'visual.baseline-missing')
+      )
+      .map((observation) => observation.message),
+  ];
+}
+
+function isDifferentialEnvelope(
+  envelope: DaemonRequestEnvelope | DifferentialDaemonRequestEnvelope
+): envelope is DifferentialDaemonRequestEnvelope {
+  return envelope.request.type.startsWith('differential_');
 }
 
 class VerificationRunError extends Error {
@@ -646,6 +801,24 @@ function cancellationFor(active: ActiveRun, completedAt: Date): VerifyCancellati
         ...(active.reason ? { reason: active.reason } : {}),
       }
     : { state: 'not_requested' };
+}
+
+function candidateDryRunReport(
+  runId: string,
+  qualified: boolean,
+  durationMs: number,
+  issues: readonly string[]
+): CandidateDryRunReport {
+  return {
+    schema_version: 1,
+    run_id: runId,
+    qualified,
+    duration_ms: Math.max(0, Math.round(durationMs)),
+    issues: issues.slice(0, 100).map((entry) => redactEvidenceText(entry).slice(0, 1_000)),
+    model_call_count: 0,
+    evidence_persisted: false,
+    visual_baselines_updated: false,
+  };
 }
 
 function daemonError(code: string, message: string, retryable: boolean): DaemonResponse {
