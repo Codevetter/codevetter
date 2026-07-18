@@ -66,6 +66,8 @@ limits, stable links, and structured data.
 | `graph_path` | Find a trust-weighted path between two nodes. |
 | `graph_impact` | Find bounded upstream or downstream impact leads. |
 | `history_list_releases` | List indexed release summaries. |
+| `history_list_landmarks` | List bounded release and candidate-inflection landmarks. |
+| `history_list_contributors` | Summarize bounded ancestry-aware contributor participation for one interval. |
 | `history_search` | Search releases, commits, entities, events, and annotations. |
 | `history_get_state` | Reconstruct an indexed state at a release, revision, or date. |
 | `history_lineage` | Follow an entity through moves, renames, splits, merges, and removal. |
@@ -84,7 +86,8 @@ execution never makes a model or provider call.
 Resources use opaque `codevetter-history://` URIs; repository paths do not
 appear in those URIs. Repository and graph overviews, recent structural
 snapshots, and indexed releases are discoverable through resource listing.
-Parameterized templates expose the remaining kinds.
+Parameterized templates expose the remaining kinds. The versioned landmark
+catalog and release-scoped contributor summaries are also discoverable directly.
 
 | Resource kind | Contents |
 |---|---|
@@ -93,6 +96,8 @@ Parameterized templates expose the remaining kinds.
 | `snapshot` | Metadata, analysis, and projection for one structural snapshot. |
 | `community` | One bounded structural community. |
 | `release` | State at an indexed release tag. |
+| `landmark-catalog` | Versioned bounded release and candidate-inflection catalog. |
+| `contributor-summary` | Versioned bounded release-cycle participation summary. |
 | `commit` | State at an indexed Git revision. |
 | `episode` | One causal episode. |
 | `entity-lineage` | Head-relative lineage for one stable entity. |

@@ -36,6 +36,16 @@ pub(crate) fn tool_definitions() -> Vec<Tool> {
             &[],
         ),
         (
+            "history_list_landmarks",
+            "List bounded release or candidate-inflection landmarks from the canonical local history index",
+            &[],
+        ),
+        (
+            "history_list_contributors",
+            "Summarize bounded, ancestry-aware contributor participation for one local history interval",
+            &["contributor_scope"],
+        ),
+        (
             "history_search",
             "Search releases, commits, entities, events, and annotations",
             &["query"],
@@ -70,6 +80,41 @@ pub(crate) fn tool_definitions() -> Vec<Tool> {
             "Hydrate only selected stable evidence identifiers",
             &["ids"],
         ),
+        (
+            "archaeology_list_rules",
+            "List or search bounded evidence-traced business rules",
+            &[],
+        ),
+        (
+            "archaeology_list_domains",
+            "List bounded business-rule domain summaries",
+            &[],
+        ),
+        (
+            "archaeology_get_rule",
+            "Explain one exact evidence-traced business rule",
+            &["rule_id"],
+        ),
+        (
+            "archaeology_reverse_source",
+            "Find rules linked to one opaque source identity",
+            &["source"],
+        ),
+        (
+            "archaeology_list_relations",
+            "List bounded rule dependencies, conflicts, aliases, and supersession",
+            &["rule_id"],
+        ),
+        (
+            "archaeology_compare_temporal",
+            "Compare two persisted archaeology generations, revisions, or releases",
+            &["before", "after"],
+        ),
+        (
+            "archaeology_hydrate_evidence",
+            "Hydrate only selected evidence owned by one rule",
+            &["rule_id", "evidence"],
+        ),
     ];
     specs
         .into_iter()
@@ -89,7 +134,7 @@ pub(crate) fn tool_definitions() -> Vec<Tool> {
 
 fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
     let mut properties = Map::new();
-    for field in ["query", "node", "from", "to", "entity", "cursor"] {
+    for field in ["query", "node", "from", "to", "entity", "cursor", "rule_id"] {
         properties.insert(
             field.to_string(),
             json!({"type": "string", "maxLength": 4096}),
@@ -109,11 +154,15 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
     );
     properties.insert(
         "filter".to_string(),
-        json!({"type": "object", "additionalProperties": false, "properties": {
-            "node_kinds": {"type": "array", "items": {"type": "string"}, "maxItems": 32},
-            "edge_kinds": {"type": "array", "items": {"type": "string"}, "maxItems": 32},
-            "trust": {"type": "array", "items": {"type": "string"}, "maxItems": 4}
-        }}),
+        if name == "archaeology_list_rules" {
+            archaeology_filter_schema()
+        } else {
+            json!({"type": "object", "additionalProperties": false, "properties": {
+                "node_kinds": {"type": "array", "items": {"type": "string"}, "maxItems": 32},
+                "edge_kinds": {"type": "array", "items": {"type": "string"}, "maxItems": 32},
+                "trust": {"type": "array", "items": {"type": "string"}, "maxItems": 4}
+            }})
+        },
     );
     properties.insert(
         "history_filter".to_string(),
@@ -132,11 +181,51 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
             }
         }),
     );
+    properties.insert(
+        "landmark_kind".to_string(),
+        json!({"type": "string", "enum": ["release", "candidate_inflection"]}),
+    );
+    properties.insert(
+        "contributor_scope".to_string(),
+        json!({
+            "oneOf": [
+                {"type": "object", "additionalProperties": false,
+                 "required": ["kind", "tag"],
+                 "properties": {"kind": {"const": "release_cycle_through"}, "tag": {"type": "string", "minLength": 1, "maxLength": 256}, "to_inclusive": {"type": "string", "minLength": 40, "maxLength": 64}}},
+                {"type": "object", "additionalProperties": false,
+                 "required": ["kind", "to_inclusive"],
+                 "properties": {"kind": {"const": "exact_interval"}, "from_exclusive": {"type": ["string", "null"], "minLength": 40, "maxLength": 64}, "to_inclusive": {"type": "string", "minLength": 40, "maxLength": 64}}}
+            ]
+        }),
+    );
     for field in ["reference", "before", "after"] {
         properties.insert(field.to_string(), temporal_schema());
     }
+    if name == "archaeology_compare_temporal" {
+        for field in ["before", "after"] {
+            properties.insert(field.to_string(), archaeology_temporal_schema());
+        }
+    }
     properties.insert("selector".to_string(), selector_schema());
     properties.insert("ids".to_string(), json!({"type": "array", "items": {"type": "string", "maxLength": 4096}, "minItems": 1, "maxItems": MAX_EVIDENCE_IDS}));
+    properties.insert("source".to_string(), archaeology_source_schema());
+    properties.insert(
+        "kinds".to_string(),
+        json!({"type": "array", "maxItems": 6, "uniqueItems": true, "items": {
+            "type": "string", "enum": ["depends_on", "precedes", "overrides", "aliases", "conflicts_with", "supersedes"]
+        }}),
+    );
+    properties.insert(
+        "evidence".to_string(),
+        json!({"type": "array", "minItems": 1, "maxItems": MAX_EVIDENCE_IDS, "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["kind", "evidence_id"],
+            "properties": {
+                "kind": {"type": "string", "enum": ["fact", "span"]},
+                "evidence_id": {"type": "string", "minLength": 1, "maxLength": 256}
+            }
+        }}),
+    );
     let applicable = tool_fields(name).unwrap_or_default();
     properties.retain(|key, _| applicable.contains(&key.as_str()));
     Arc::new(
@@ -150,6 +239,46 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
         .expect("tool schema object")
         .clone(),
     )
+}
+
+fn archaeology_filter_schema() -> Value {
+    json!({
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "query": {"type": "string", "maxLength": 512},
+            "kinds": {"type": "array", "maxItems": 32, "uniqueItems": true, "items": {
+                "type": "string", "enum": ["validation", "calculation", "eligibility", "entitlement", "routing", "mutation", "exception", "lifecycle", "transaction", "other"]
+            }},
+            "trust": {"type": "array", "maxItems": 32, "uniqueItems": true, "items": {
+                "type": "string", "enum": ["extracted", "deterministic", "model_synthesized", "human_confirmed", "unknown"]
+            }},
+            "lifecycle": {"type": "array", "maxItems": 32, "uniqueItems": true, "items": {
+                "type": "string", "enum": ["candidate", "review_needed", "accepted", "rejected", "superseded", "conflicted", "unavailable"]
+            }},
+            "domain_ids": {"type": "array", "maxItems": 32, "uniqueItems": true, "items": {"type": "string", "maxLength": 256}}
+        }
+    })
+}
+
+fn archaeology_source_schema() -> Value {
+    json!({
+        "oneOf": [
+            {"type": "object", "additionalProperties": false, "properties": {"kind": {"const": "path"}, "path_identity": {"type": "string", "maxLength": 256}}, "required": ["kind", "path_identity"]},
+            {"type": "object", "additionalProperties": false, "properties": {"kind": {"const": "unit"}, "source_unit_id": {"type": "string", "maxLength": 256}}, "required": ["kind", "source_unit_id"]},
+            {"type": "object", "additionalProperties": false, "properties": {"kind": {"const": "span"}, "span_id": {"type": "string", "maxLength": 256}}, "required": ["kind", "span_id"]}
+        ]
+    })
+}
+
+fn archaeology_temporal_schema() -> Value {
+    json!({
+        "oneOf": [
+            {"type": "object", "additionalProperties": false, "properties": {"kind": {"const": "generation"}, "generation_id": {"type": "string", "maxLength": 256}}, "required": ["kind", "generation_id"]},
+            {"type": "object", "additionalProperties": false, "properties": {"kind": {"const": "revision"}, "revision_sha": {"type": "string", "maxLength": 64}}, "required": ["kind", "revision_sha"]},
+            {"type": "object", "additionalProperties": false, "properties": {"kind": {"const": "release"}, "tag": {"type": "string", "maxLength": 256}}, "required": ["kind", "tag"]}
+        ]
+    })
 }
 
 fn temporal_schema() -> Value {
@@ -223,6 +352,8 @@ pub(crate) fn tool_fields(name: &str) -> Option<&'static [&'static str]> {
         "graph_path" => &["from", "to", "filter"],
         "graph_impact" => &["node", "direction", "depth", "filter", "limit"],
         "history_list_releases" => &["limit", "cursor", "history_filter"],
+        "history_list_landmarks" => &["landmark_kind", "limit", "cursor"],
+        "history_list_contributors" => &["contributor_scope", "limit", "cursor"],
         "history_search" => &["query", "limit", "cursor", "history_filter"],
         "history_get_state" => &["reference"],
         "history_lineage" => &["entity", "reference", "limit", "cursor"],
@@ -230,6 +361,13 @@ pub(crate) fn tool_fields(name: &str) -> Option<&'static [&'static str]> {
         "history_trace" => &["selector", "limit", "cursor"],
         "history_compare" => &["before", "after"],
         "history_get_evidence" => &["ids"],
+        "archaeology_list_rules" => &["filter", "limit", "cursor"],
+        "archaeology_list_domains" => &["limit", "cursor"],
+        "archaeology_get_rule" => &["rule_id"],
+        "archaeology_reverse_source" => &["source", "limit", "cursor"],
+        "archaeology_list_relations" => &["rule_id", "kinds", "direction", "limit", "cursor"],
+        "archaeology_compare_temporal" => &["before", "after", "limit", "cursor"],
+        "archaeology_hydrate_evidence" => &["rule_id", "evidence", "limit", "cursor"],
         _ => return None,
     })
 }

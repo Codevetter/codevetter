@@ -10,6 +10,53 @@ use rmcp::{ClientHandler, ServiceExt};
 use rusqlite::params;
 use std::{fs, process::Command};
 
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn timed_out_sql_workers_release_all_query_capacity() {
+    let semaphore = Arc::new(Semaphore::new(4));
+    let mut tasks = Vec::new();
+    for _ in 0..4 {
+        let permit = Arc::clone(&semaphore)
+            .acquire_owned()
+            .await
+            .expect("permit");
+        tasks.push(tokio::spawn(async move {
+            let (interrupt_sender, interrupt_receiver) = oneshot::channel();
+            let worker = tokio::task::spawn_blocking(move || {
+                let _permit = permit;
+                let connection = Connection::open_in_memory().map_err(|error| error.to_string())?;
+                let _ = interrupt_sender.send(connection.get_interrupt_handle());
+                connection
+                    .query_row(
+                        "WITH RECURSIVE count(value) AS (
+                           VALUES(0) UNION ALL SELECT value+1 FROM count WHERE value<1000000000
+                         ) SELECT sum(value) FROM count",
+                        [],
+                        |row| row.get::<_, i64>(0),
+                    )
+                    .map_err(|error| error.to_string())
+            });
+            await_interruptible_query(
+                worker,
+                interrupt_receiver,
+                Duration::from_millis(20),
+                "test query",
+            )
+            .await
+        }));
+    }
+    for task in tasks {
+        let result = task.await.expect("timeout task");
+        assert!(result
+            .expect_err("query must time out")
+            .contains("exceeded"));
+    }
+    let permit = tokio::time::timeout(Duration::from_millis(100), semaphore.acquire())
+        .await
+        .expect("capacity restored")
+        .expect("semaphore open");
+    drop(permit);
+}
+
 #[test]
 fn every_tool_is_explicitly_read_only_and_schema_bounded() {
     let tools = tool_definitions();
@@ -25,6 +72,8 @@ fn every_tool_is_explicitly_read_only_and_schema_bounded() {
             "graph_path",
             "graph_impact",
             "history_list_releases",
+            "history_list_landmarks",
+            "history_list_contributors",
             "history_search",
             "history_get_state",
             "history_lineage",
@@ -32,6 +81,13 @@ fn every_tool_is_explicitly_read_only_and_schema_bounded() {
             "history_trace",
             "history_compare",
             "history_get_evidence",
+            "archaeology_list_rules",
+            "archaeology_list_domains",
+            "archaeology_get_rule",
+            "archaeology_reverse_source",
+            "archaeology_list_relations",
+            "archaeology_compare_temporal",
+            "archaeology_hydrate_evidence",
         ]
     );
     for tool in tools {
@@ -49,6 +105,13 @@ fn every_tool_is_explicitly_read_only_and_schema_bounded() {
             assert!(tool.input_schema["properties"]["selector"]
                 .get("oneOf")
                 .is_some());
+        }
+        if tool.name == "archaeology_compare_temporal" {
+            assert_eq!(
+                tool.input_schema["properties"]["limit"]["maximum"],
+                MAX_PAGE_SIZE
+            );
+            assert!(tool.input_schema["properties"].get("cursor").is_some());
         }
     }
 }
@@ -200,8 +263,20 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     });
     let client = TestClient.serve(client_transport).await.expect("client");
     let tools = client.list_tools(None).await.expect("tools");
-    assert_eq!(tools.tools.len(), 13);
+    assert_eq!(tools.tools.len(), 22);
     assert!(tools.tools.iter().all(|tool| tool.output_schema.is_some()));
+    let templates = client
+        .list_resource_templates(None)
+        .await
+        .expect("resource templates");
+    assert!(templates
+        .resource_templates
+        .iter()
+        .any(|template| template.uri_template.contains("/landmark-catalog/")));
+    assert!(templates
+        .resource_templates
+        .iter()
+        .any(|template| template.uri_template.contains("/contributor-summary/")));
     assert!(client
         .call_tool(
             CallToolRequestParams::new("graph_query").with_arguments(
@@ -234,6 +309,10 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
             .and_then(|annotations| annotations.last_modified.as_ref())
             .is_some()
     }));
+    assert!(resources
+        .resources
+        .iter()
+        .any(|resource| resource.uri.contains("/landmark-catalog/")));
     let snapshot_resource = resources
         .resources
         .iter()
@@ -246,6 +325,18 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
         .await
         .expect("read snapshot resource");
     assert_eq!(read.contents.len(), 1);
+    let landmark_resource = resources
+        .resources
+        .iter()
+        .find(|resource| resource.uri.contains("/landmark-catalog/"))
+        .expect("landmark catalog resource");
+    let landmark_read = client
+        .read_resource(ReadResourceRequestParams::new(
+            landmark_resource.uri.clone(),
+        ))
+        .await
+        .expect("read landmark catalog resource");
+    assert_eq!(landmark_read.contents.len(), 1);
     assert!(client
         .read_resource(ReadResourceRequestParams::new(format!(
             "codevetter-history://{repo_id}/snapshot/../evidence"
@@ -316,6 +407,34 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
             .map(Vec::len),
         Some(0)
     );
+    let landmarks = client
+        .call_tool(
+            CallToolRequestParams::new("history_list_landmarks")
+                .with_arguments(json!({"limit": 1}).as_object().expect("arguments").clone()),
+        )
+        .await
+        .expect("landmark catalog")
+        .structured_content
+        .expect("landmark catalog structured");
+    assert_eq!(landmarks["schemaVersion"], 1);
+    assert!(landmarks["data"]["data"]["landmarks"].is_array());
+    let contributors = client
+        .call_tool(
+            CallToolRequestParams::new("history_list_contributors").with_arguments(
+                json!({
+                    "contributor_scope": {"kind": "exact_interval", "to_inclusive": head}
+                })
+                .as_object()
+                .expect("arguments")
+                .clone(),
+            ),
+        )
+        .await
+        .expect("contributor summary")
+        .structured_content
+        .expect("contributor summary structured");
+    assert_eq!(contributors["schemaVersion"], 1);
+    assert!(contributors["data"]["data"]["contributors"].is_array());
     let invalid_range = client
         .call_tool(
             CallToolRequestParams::new("history_search").with_arguments(
@@ -473,6 +592,54 @@ fn request_validation_rejects_unknown_and_out_of_bounds_arguments() {
     .expect("arguments")
     .clone();
     assert!(validate_tool_arguments("history_trace", &arguments).is_ok());
+
+    arguments = json!({
+        "landmark_kind": "candidate_inflection",
+        "limit": 10,
+        "unexpected": true
+    })
+    .as_object()
+    .expect("arguments")
+    .clone();
+    assert!(validate_tool_arguments("history_list_landmarks", &arguments).is_err());
+
+    arguments = json!({
+        "contributor_scope": {
+            "kind": "exact_interval",
+            "to_inclusive": "a".repeat(40),
+            "unknown": true
+        }
+    })
+    .as_object()
+    .expect("arguments")
+    .clone();
+    assert!(validate_tool_arguments("history_list_contributors", &arguments).is_err());
+
+    arguments = json!({
+        "filter": {"query": "claim", "unknown": true}
+    })
+    .as_object()
+    .expect("arguments")
+    .clone();
+    assert!(validate_tool_arguments("archaeology_list_rules", &arguments).is_err());
+
+    arguments = json!({
+        "source": {"kind": "span", "span_id": "span:one", "path": "/private/repo"}
+    })
+    .as_object()
+    .expect("arguments")
+    .clone();
+    assert!(validate_tool_arguments("archaeology_reverse_source", &arguments).is_err());
+
+    arguments = json!({
+        "rule_id": format!("sha256:{}", "a".repeat(64)),
+        "evidence": [{"kind": "span", "evidence_id": "span:one"}],
+        "limit": 1
+    })
+    .as_object()
+    .expect("arguments")
+    .clone();
+    assert!(validate_tool_arguments("archaeology_hydrate_evidence", &arguments).is_ok());
 }
 
 #[test]
