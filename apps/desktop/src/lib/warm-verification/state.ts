@@ -1,17 +1,28 @@
 import { createHash } from 'node:crypto';
-import { readFile, realpath } from 'node:fs/promises';
-import path from 'node:path';
-import type { BrowserContext, Page } from '@playwright/test';
+import { realpath } from 'node:fs/promises';
+import type { BrowserContext, BrowserContextOptions, Page } from '@playwright/test';
 import type { VerifyConfig } from './config';
 import type { ExternalIntelligenceGuard } from './intelligence-boundary';
 import type { AutomaticObserver } from './observer';
+import { OwnedFileReadError, readBoundedOwnedFile } from './owned-file';
 import type { DeterministicScenario, ScenarioFlagValue } from './scenario';
 
 export const MAX_AUTH_STATE_BYTES = 1_048_576;
+export const MAX_PINNED_AUTH_PROFILES = 32;
+export const MAX_PINNED_AUTH_TOTAL_BYTES = 8 * 1_048_576;
+
+export const DETERMINISTIC_CONTEXT_ENVIRONMENT = Object.freeze({
+  viewport: Object.freeze({ width: 1280, height: 800 }),
+  colorScheme: 'dark' as const,
+  reducedMotion: 'reduce' as const,
+  locale: 'en-US',
+  timezoneId: 'UTC',
+});
 
 export interface CachedAuthState {
   profileId: string;
   sourceHash: string;
+  sourceBytes: number;
   storageState: Awaited<ReturnType<BrowserContext['storageState']>>;
 }
 
@@ -60,31 +71,35 @@ export class AuthStateCache {
   }
 
   async load(profileId: string, configuredPath: string): Promise<CachedAuthState> {
-    const expectedPath = path.resolve(this.#repoRoot, configuredPath);
-    let sourcePath: string;
     let source: Uint8Array;
     try {
-      sourcePath = await realpath(expectedPath);
-      source = await readFile(sourcePath);
+      source = (await readBoundedOwnedFile(this.#repoRoot, configuredPath, MAX_AUTH_STATE_BYTES))
+        .bytes;
     } catch (error) {
+      if (error instanceof OwnedFileReadError) {
+        if (error.code === 'oversized') {
+          throw new BrowserStateError(
+            'auth_invalid',
+            `Authentication profile ${profileId} exceeds ${MAX_AUTH_STATE_BYTES} bytes`,
+            { cause: error }
+          );
+        }
+        if (
+          ['outside_root', 'symlink', 'not_regular', 'not_owned', 'changed'].includes(error.code)
+        ) {
+          throw new BrowserStateError(
+            'auth_unsafe',
+            `Authentication profile ${profileId} is not a safe repository-owned regular file`,
+            { cause: error }
+          );
+        }
+      }
       throw new BrowserStateError(
         'auth_missing',
         `Authentication profile ${profileId} is not readable`,
         {
           cause: error,
         }
-      );
-    }
-    if (sourcePath !== this.#repoRoot && !sourcePath.startsWith(`${this.#repoRoot}${path.sep}`)) {
-      throw new BrowserStateError(
-        'auth_unsafe',
-        `Authentication profile ${profileId} resolves outside the target repository`
-      );
-    }
-    if (source.byteLength > MAX_AUTH_STATE_BYTES) {
-      throw new BrowserStateError(
-        'auth_invalid',
-        `Authentication profile ${profileId} exceeds ${MAX_AUTH_STATE_BYTES} bytes`
       );
     }
 
@@ -114,6 +129,7 @@ export class AuthStateCache {
     const entry = Object.freeze({
       profileId,
       sourceHash,
+      sourceBytes: source.byteLength,
       storageState: deepFreeze(structuredClone(value)),
     });
     this.#cache.set(profileId, entry);
@@ -128,6 +144,89 @@ export class AuthStateCache {
     if (profileId) this.#cache.delete(profileId);
     else this.#cache.clear();
   }
+}
+
+export class PinnedAuthBundle {
+  readonly identityHash: string;
+  readonly profileIds: readonly string[];
+  readonly sourceBytes: number;
+  readonly #profiles: ReadonlyMap<string, CachedAuthState>;
+
+  private constructor(entries: readonly (readonly [string, CachedAuthState])[]) {
+    this.profileIds = Object.freeze(entries.map(([profileId]) => profileId));
+    this.sourceBytes = entries.reduce((total, [, profile]) => total + profile.sourceBytes, 0);
+    this.identityHash = createHash('sha256')
+      .update(
+        JSON.stringify({
+          version: 1,
+          profiles: entries.map(([profileId, profile]) => [profileId, profile.sourceHash]),
+        })
+      )
+      .digest('hex');
+    this.#profiles = new Map(entries);
+    Object.freeze(this);
+  }
+
+  static async create(
+    repoRoot: string,
+    configuredProfiles: VerifyConfig['authProfiles'],
+    selectedProfileIds: readonly string[]
+  ): Promise<PinnedAuthBundle> {
+    const selected = [...new Set(selectedProfileIds)].sort((left, right) =>
+      left.localeCompare(right)
+    );
+    if (selected.length > MAX_PINNED_AUTH_PROFILES) {
+      throw new BrowserStateError(
+        'auth_invalid',
+        `Pinned authentication bundle exceeds ${MAX_PINNED_AUTH_PROFILES} profiles`
+      );
+    }
+
+    const cache = await AuthStateCache.create(repoRoot);
+    const entries: Array<readonly [string, CachedAuthState]> = [];
+    let sourceBytes = 0;
+    for (const profileId of selected) {
+      const profile = configuredProfiles[profileId];
+      if (!profile) {
+        throw new BrowserStateError(
+          'auth_missing',
+          `Selected authentication profile ${profileId} is not configured`
+        );
+      }
+      const entry = await cache.load(profileId, profile.storageState);
+      sourceBytes += entry.sourceBytes;
+      if (sourceBytes > MAX_PINNED_AUTH_TOTAL_BYTES) {
+        throw new BrowserStateError(
+          'auth_invalid',
+          `Pinned authentication bundle exceeds ${MAX_PINNED_AUTH_TOTAL_BYTES} bytes`
+        );
+      }
+      entries.push(Object.freeze([profileId, entry] as const));
+    }
+    return new PinnedAuthBundle(entries);
+  }
+
+  get(profileId: string): CachedAuthState | undefined {
+    return this.#profiles.get(profileId);
+  }
+
+  copy(profileId: string): CachedAuthState['storageState'] | undefined {
+    const profile = this.#profiles.get(profileId);
+    return profile ? structuredClone(profile.storageState) : undefined;
+  }
+}
+
+export function deterministicContextOptions(
+  storageState: CachedAuthState['storageState']
+): BrowserContextOptions {
+  return {
+    storageState: structuredClone(storageState),
+    viewport: { ...DETERMINISTIC_CONTEXT_ENVIRONMENT.viewport },
+    colorScheme: DETERMINISTIC_CONTEXT_ENVIRONMENT.colorScheme,
+    reducedMotion: DETERMINISTIC_CONTEXT_ENVIRONMENT.reducedMotion,
+    locale: DETERMINISTIC_CONTEXT_ENVIRONMENT.locale,
+    timezoneId: DETERMINISTIC_CONTEXT_ENVIRONMENT.timezoneId,
+  };
 }
 
 export async function installDeterministicContextState(

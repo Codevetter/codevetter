@@ -48,6 +48,7 @@ export interface ScenarioBatchRequest {
   scenarioIds: readonly string[];
   detailedCapture?: boolean;
   signal?: AbortSignal;
+  qualificationOnly?: boolean;
 }
 
 export interface ScenarioRunnerDependencies {
@@ -126,7 +127,9 @@ export class ScenarioRunner {
       ? AbortSignal.any([request.signal, batchTimeout])
       : batchTimeout;
     const artifactBudget = new VisualArtifactBudget(
-      Math.max(0, this.#config.retention.maxBytes - RETENTION_SUMMARY_RESERVE_BYTES)
+      request.qualificationOnly
+        ? 0
+        : Math.max(0, this.#config.retention.maxBytes - RETENTION_SUMMARY_RESERVE_BYTES)
     );
     const results = await intelligenceGuard.runBatch(() =>
       runBounded(
@@ -140,7 +143,7 @@ export class ScenarioRunner {
               batchSignal,
               intelligenceGuard,
               artifactBudget,
-              request.detailedCapture === true
+              request.detailedCapture === true && request.qualificationOnly !== true
             )
           )
       )
@@ -277,6 +280,8 @@ export class ScenarioRunner {
           page,
           observe: activeObserver,
           signal,
+          stateRequest,
+          actionTimeoutMs: Math.min(scenario.timeouts.actionMs, this.#config.budgets.actionMs),
           step: (actionId, operation) =>
             activeObserver.step(actionId, () => raceAbort(operation(), signal)),
         }),

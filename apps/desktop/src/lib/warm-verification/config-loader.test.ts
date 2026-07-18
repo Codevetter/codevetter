@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { describe, it } from 'node:test';
+import { afterEach, describe, it } from 'node:test';
 import {
   MAX_VERIFY_CONFIG_BYTES,
   VerifyConfigLoadError,
@@ -49,8 +49,15 @@ budgets:
   slowInteractionMs: 500
 `;
 
+const roots: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
+});
+
 async function createRepo(source = VALID_YAML): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'codevetter-config-'));
+  roots.push(root);
   await mkdir(path.join(root, '.codevetter'), { recursive: true });
   await writeFile(path.join(root, '.codevetter', 'verify.yaml'), source);
   return root;
@@ -124,6 +131,37 @@ describe('VerifyConfigLoader', () => {
     await assert.rejects(oversizedLoader.load(), (error) => {
       assert.ok(error instanceof VerifyConfigLoadError);
       assert.equal(error.code, 'oversized');
+      return true;
+    });
+  });
+
+  it('rejects outside-root directory links and in-repository config file links', async () => {
+    const parent = await mkdtemp(path.join(os.tmpdir(), 'codevetter-config-boundary-'));
+    roots.push(parent);
+    const escapedRoot = path.join(parent, 'escaped-repo');
+    const outsideDirectory = path.join(parent, 'outside');
+    await mkdir(escapedRoot, { recursive: true });
+    await mkdir(outsideDirectory, { recursive: true });
+    await writeFile(path.join(outsideDirectory, 'verify.yaml'), VALID_YAML);
+    await symlink(outsideDirectory, path.join(escapedRoot, '.codevetter'), 'dir');
+
+    const escapedLoader = await VerifyConfigLoader.create(escapedRoot);
+    await assert.rejects(escapedLoader.load(), (error) => {
+      assert.ok(error instanceof VerifyConfigLoadError);
+      assert.equal(error.code, 'unsafe_path');
+      return true;
+    });
+
+    const linkedRoot = path.join(parent, 'linked-repo');
+    const linkedDirectory = path.join(linkedRoot, '.codevetter');
+    await mkdir(linkedDirectory, { recursive: true });
+    await writeFile(path.join(linkedDirectory, 'actual.yaml'), VALID_YAML);
+    await symlink('actual.yaml', path.join(linkedDirectory, 'verify.yaml'));
+
+    const linkedLoader = await VerifyConfigLoader.create(linkedRoot);
+    await assert.rejects(linkedLoader.load(), (error) => {
+      assert.ok(error instanceof VerifyConfigLoadError);
+      assert.equal(error.code, 'unsafe_path');
       return true;
     });
   });

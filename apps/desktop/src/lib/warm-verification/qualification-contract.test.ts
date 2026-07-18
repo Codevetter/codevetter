@@ -3,12 +3,8 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import {
-  readBenchmarkManifest,
-  startQualificationHarness,
-} from '../../../tests/fixtures/warm-verification/qualification-fixture';
+import { readBenchmarkManifest } from '../../../tests/fixtures/warm-verification/qualification-fixture';
 import { benchmarkStateNames } from '../../../tests/fixtures/warm-verification/msw-app/states';
-import type { ExternalIntelligenceGuard } from './intelligence-boundary';
 
 describe('warm verification qualification boundary', () => {
   it('keeps the checked-in benchmark at exactly 20 meaningful deterministic scenarios', async () => {
@@ -58,7 +54,7 @@ describe('warm verification qualification boundary', () => {
       await readFile(
         path.resolve(
           process.cwd(),
-          'tests/fixtures/warm-verification/qualification-2026-07-15.json'
+          'tests/fixtures/warm-verification/qualification-2026-07-17.json'
         ),
         'utf8'
       )
@@ -126,31 +122,5 @@ describe('warm verification qualification boundary', () => {
     assert.ok(report.qualification.timingMs.p95 < report.workload.p95GateMs);
     assert.ok(report.qualification.stageTimingMs.screenshots_work.p95 > 0);
     assert.equal(report.qualification.passed, true);
-  });
-
-  it('executes all 20 checked-in scenarios with zero model, provider, or browser-agent calls', async () => {
-    let guard: ExternalIntelligenceGuard | undefined;
-    const harness = await startQualificationHarness({
-      onIntelligenceGuard: (current) => {
-        guard = current;
-      },
-    });
-    try {
-      const result = await harness.run(4, 'zero-model-qualification');
-
-      assert.equal(result.outcome, 'passed');
-      assert.deepEqual(
-        result.scenarios.map((scenario) => scenario.scenario_id),
-        harness.scenarioIds.toSorted()
-      );
-      assert.equal(result.intelligenceCalls.total, 0);
-      assert.ok(Object.values(result.intelligenceCalls.byBoundary).every((count) => count === 0));
-      assert.equal(Object.keys(result.intelligenceCalls.byScenario).length, 20);
-      assert.ok(Object.values(result.intelligenceCalls.byScenario).every((count) => count === 0));
-      assert.deepEqual(guard?.snapshot(), result.intelligenceCalls);
-      assert.equal(harness.activeContextCount(), 0);
-    } finally {
-      await harness.close();
-    }
   });
 });

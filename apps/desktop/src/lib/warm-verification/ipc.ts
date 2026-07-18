@@ -9,6 +9,12 @@ import {
   validateDaemonRequestEnvelope,
   validateDaemonResponseEnvelope,
 } from './contracts';
+import {
+  type DifferentialDaemonRequestEnvelope,
+  type DifferentialDaemonResponseEnvelope,
+  validateDifferentialDaemonRequestEnvelope,
+  validateDifferentialDaemonResponseEnvelope,
+} from './differential-daemon-contracts';
 import { secureRuntimeSocket } from './runtime-paths';
 
 const DEFAULT_FRAME_TIMEOUT_MS = 5_000;
@@ -44,16 +50,38 @@ export interface VerifyIpcServerOptions {
 }
 
 export type VerifyIpcHandler = (
-  request: DaemonRequestEnvelope,
+  request: DaemonRequestEnvelope | DifferentialDaemonRequestEnvelope,
   signal: AbortSignal
-) => DaemonResponse | Promise<DaemonResponse>;
+) =>
+  | DaemonResponse
+  | import('./differential-daemon-contracts').DifferentialDaemonResponse
+  | Promise<DaemonResponse | import('./differential-daemon-contracts').DifferentialDaemonResponse>;
 
 export async function requestDaemon(
   socketPath: string,
   request: DaemonRequestEnvelope,
   options: VerifyIpcClientOptions = {}
 ): Promise<DaemonResponseEnvelope> {
-  const validation = validateDaemonRequestEnvelope(request);
+  return requestValidated(
+    socketPath,
+    request,
+    validateDaemonRequestEnvelope,
+    validateDaemonResponseEnvelope,
+    options
+  );
+}
+
+async function requestValidated<
+  Request extends { request_id: string },
+  Response extends { request_id: string },
+>(
+  socketPath: string,
+  request: Request,
+  validateRequest: (value: unknown) => import('./contracts').ContractValidation<Request>,
+  validateResponse: (value: unknown) => import('./contracts').ContractValidation<Response>,
+  options: VerifyIpcClientOptions
+): Promise<Response> {
+  const validation = validateRequest(request);
   if (!validation.ok) {
     throw protocolError('Outbound daemon request is invalid', validation.issues);
   }
@@ -71,7 +99,7 @@ export async function requestDaemon(
     await waitForConnect(socket, remaining(deadline));
     socket.write(encodeFrame(request));
     const value = await readJsonFrame(socket, remaining(deadline));
-    const response = validateDaemonResponseEnvelope(value);
+    const response = validateResponse(value);
     if (!response.ok) {
       throw protocolError('Daemon response is invalid', response.issues);
     }
@@ -86,6 +114,20 @@ export async function requestDaemon(
     options.signal?.removeEventListener('abort', abort);
     socket.destroy();
   }
+}
+
+export async function requestDifferentialDaemon(
+  socketPath: string,
+  request: DifferentialDaemonRequestEnvelope,
+  options: VerifyIpcClientOptions = {}
+): Promise<DifferentialDaemonResponseEnvelope> {
+  return requestValidated(
+    socketPath,
+    request,
+    validateDifferentialDaemonRequestEnvelope,
+    validateDifferentialDaemonResponseEnvelope,
+    options
+  );
 }
 
 export async function listenVerifyIpcServer(
@@ -254,19 +296,23 @@ async function handleConnection(
   );
   try {
     const value = await readJsonFrame(socket, frameTimeoutMs);
-    const validation = validateDaemonRequestEnvelope(value);
+    const generic = validateDaemonRequestEnvelope(value);
+    const differential = validateDifferentialDaemonRequestEnvelope(value);
+    const validation = differential.ok ? differential : generic;
     if (!validation.ok) {
       throw protocolError('Daemon request is invalid', validation.issues);
     }
     requestId = validation.value.request_id;
     const response = await handler(validation.value, connection.signal);
-    const envelope: DaemonResponseEnvelope = {
+    const envelope = {
       protocol_version: VERIFY_PROTOCOL_VERSION,
       request_id: requestId,
       sent_at: new Date().toISOString(),
       response,
     };
-    const responseValidation = validateDaemonResponseEnvelope(envelope);
+    const responseValidation = response.type.startsWith('differential_')
+      ? validateDifferentialDaemonResponseEnvelope(envelope)
+      : validateDaemonResponseEnvelope(envelope);
     if (!responseValidation.ok) {
       throw protocolError('Daemon handler produced an invalid response', responseValidation.issues);
     }

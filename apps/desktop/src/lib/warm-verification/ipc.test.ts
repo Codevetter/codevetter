@@ -10,12 +10,14 @@ import {
   VERIFY_CONTRACT_LIMITS,
   VERIFY_PROTOCOL_VERSION,
 } from './contracts';
+import type { DifferentialDaemonRequestEnvelope } from './differential-daemon-contracts';
 import {
   closeServer,
   closeServerWithin,
   listenVerifyIpcServer,
   readJsonFrame,
   requestDaemon,
+  requestDifferentialDaemon,
   VerifyIpcError,
 } from './ipc';
 import { ensurePrivateRuntimeDirectory, resolveVerifyRuntimePaths } from './runtime-paths';
@@ -30,6 +32,40 @@ function healthRequest(requestId = 'health-1'): DaemonRequestEnvelope {
 }
 
 describe('verifyd NDJSON IPC', () => {
+  it('round-trips bounded differential envelopes on the same owner socket', async () => {
+    const fixture = await mkdtemp(path.join(os.tmpdir(), 'cv-d-'));
+    const paths = await resolveVerifyRuntimePaths(fixture, {
+      runtimeRoot: path.join(fixture, 'r'),
+    });
+    await ensurePrivateRuntimeDirectory(paths);
+    const server = await listenVerifyIpcServer(paths.socketPath, () => ({
+      type: 'differential_status',
+      summary: {
+        schema_version: 1,
+        run_id: 'diff-run',
+        state: 'running',
+        updated_at: new Date().toISOString(),
+        classification: null,
+        reason_codes: [],
+      },
+    }));
+    const request: DifferentialDaemonRequestEnvelope = {
+      protocol_version: 1,
+      request_id: 'diff-request',
+      sent_at: new Date().toISOString(),
+      request: { type: 'differential_status', run_id: 'diff-run' },
+    };
+    try {
+      const response = await requestDifferentialDaemon(paths.socketPath, request);
+      assert.equal(response.request_id, request.request_id);
+      assert.equal(response.response.type, 'differential_status');
+      assert.ok(Buffer.byteLength(JSON.stringify(response)) <= 262_144);
+    } finally {
+      await closeServer(server);
+      await rm(fixture, { recursive: true, force: true });
+    }
+  });
+
   it('serves one validated request per owner-only Unix socket connection', async () => {
     const fixture = await mkdtemp(path.join(os.tmpdir(), 'cv-ipc-test-'));
     const paths = await resolveVerifyRuntimePaths(fixture, {

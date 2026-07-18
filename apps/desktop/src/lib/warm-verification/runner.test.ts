@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createServer, type Server } from 'node:http';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
@@ -9,6 +9,7 @@ import type { VerifyConfig } from './config';
 import { ExternalIntelligenceBoundaryError } from './intelligence-boundary';
 import { publishScenarioManifest, type DeterministicScenario } from './scenario';
 import { ScenarioRunner } from './runner';
+import { chromiumLaunchOptions } from './supervision';
 
 let browser: Browser;
 let server: Server;
@@ -16,7 +17,7 @@ let baseUrl: string;
 let repoRoot: string;
 
 before(async () => {
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch(chromiumLaunchOptions());
   server = createServer((request, response) => {
     if (request.url === '/sw.js') {
       response.writeHead(200, { 'content-type': 'text/javascript' });
@@ -137,6 +138,28 @@ function manifest(scenarios: DeterministicScenario[]) {
 }
 
 describe('ScenarioRunner', () => {
+  it('never retains candidate qualification artifacts or updates visual baselines', async () => {
+    const runner = await ScenarioRunner.create(browser, repoRoot, config());
+    const visual = scenario('scenario-qualification', async ({ observe }) => {
+      await observe.checkpoint('candidate-visual');
+    });
+    visual.assertions = [
+      { id: 'candidate-visual', kind: 'visual', description: 'Compare existing visual truth' },
+    ];
+    const result = await runner.run(manifest([visual]), {
+      runId: 'candidate-qualification',
+      scenarioIds: [visual.id],
+      qualificationOnly: true,
+    });
+    assert.equal(result.artifacts.length, 0);
+    await assert.rejects(() =>
+      access(path.join(repoRoot, '.codevetter', 'artifacts', 'candidate-qualification'))
+    );
+    await assert.rejects(() =>
+      access(path.join(repoRoot, '.codevetter', 'verify-baselines', visual.id))
+    );
+  });
+
   it('runs fresh isolated contexts in bounded parallel order', async () => {
     const runner = await ScenarioRunner.create(browser, repoRoot, config());
     const scenarios = [1, 2, 3, 4].map((index) => scenario(`scenario-${index}`));

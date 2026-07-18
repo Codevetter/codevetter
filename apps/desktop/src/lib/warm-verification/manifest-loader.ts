@@ -4,6 +4,10 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { VerifyConfigSnapshot } from './config-loader';
 import {
+  materializeDeclarativeScenario,
+  type DeclarativeScenarioPlan,
+} from './declarative-scenario';
+import {
   publishScenarioManifest,
   type DeterministicScenario,
   type ScenarioManifest,
@@ -40,6 +44,11 @@ export class ScenarioManifestLoadError extends Error {
 interface ImportedScenarioModule {
   id: string;
   scenarios: readonly DeterministicScenario[];
+}
+
+interface ImportedScenarioPlanModule {
+  id: string;
+  plans: readonly DeclarativeScenarioPlan[];
 }
 
 interface LoadedSource {
@@ -218,20 +227,37 @@ async function importScenarioModule(source: LoadedSource): Promise<ImportedScena
     );
   }
   const value = namespace.scenarioModule ?? namespace.default;
-  if (!isImportedScenarioModule(value)) {
+  const moduleKind = importedModuleKind(value);
+  if (moduleKind === undefined) {
     throw new ScenarioManifestLoadError(
       'contract',
-      `Scenario module ${path.basename(source.path)} must export scenarioModule or default with id and scenarios`
+      `Scenario module ${path.basename(source.path)} must export scenarioModule or default with id and exactly one of scenarios or plans`
     );
   }
-  return value;
+  if (moduleKind === 'scenarios') return value as ImportedScenarioModule;
+  try {
+    const planModule = value as ImportedScenarioPlanModule;
+    return {
+      id: planModule.id,
+      scenarios: planModule.plans.map(materializeDeclarativeScenario),
+    };
+  } catch (error) {
+    throw new ScenarioManifestLoadError(
+      'contract',
+      `Scenario plans in ${path.basename(source.path)} could not be materialized`,
+      [],
+      { cause: error }
+    );
+  }
 }
 
-function isImportedScenarioModule(value: unknown): value is ImportedScenarioModule {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as { id?: unknown }).id === 'string' &&
-    Array.isArray((value as { scenarios?: unknown }).scenarios)
-  );
+function importedModuleKind(value: unknown): 'scenarios' | 'plans' | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const module = value as Record<string, unknown>;
+  if (typeof module.id !== 'string') return undefined;
+  const hasScenarios = Object.hasOwn(module, 'scenarios');
+  const hasPlans = Object.hasOwn(module, 'plans');
+  if (hasScenarios === hasPlans) return undefined;
+  if (hasScenarios) return Array.isArray(module.scenarios) ? 'scenarios' : undefined;
+  return Array.isArray(module.plans) ? 'plans' : undefined;
 }

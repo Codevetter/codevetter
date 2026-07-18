@@ -653,8 +653,29 @@ export interface BrowserSupervisorOptions {
   maxRecoveryAttempts?: number;
 }
 
+export interface BrowserCheckout {
+  browser: WarmBrowser;
+  generation: number;
+  revision: string;
+  version: string;
+  isCurrent(): boolean;
+  release(): boolean;
+}
+
+export function chromiumLaunchOptions() {
+  const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
+  if (executablePath && !isAbsolute(executablePath)) {
+    throw new SupervisionError(
+      'invalid_target',
+      'PLAYWRIGHT_EXECUTABLE_PATH must be absolute',
+      false
+    );
+  }
+  return executablePath ? { executablePath, headless: true } : { headless: true };
+}
+
 async function launchPinnedChromium(): Promise<Browser> {
-  return chromium.launch();
+  return chromium.launch(chromiumLaunchOptions());
 }
 
 export function chromiumRevisionFromExecutablePath(executablePath: string): string {
@@ -675,6 +696,7 @@ export class WarmChromiumSupervisor {
   private intentionallyStopping = false;
   private everStarted = false;
   private transitionInFlight: Promise<BrowserSupervisionHealth> | null = null;
+  private readonly checkouts = new Set<symbol>();
 
   constructor(
     dependencies: BrowserSupervisorDependencies = {},
@@ -719,6 +741,13 @@ export class WarmChromiumSupervisor {
     if (this.state === 'ready' && this.browser?.isConnected()) {
       return this.health();
     }
+    if (this.checkouts.size > 0) {
+      throw new SupervisionError(
+        'browser_unavailable',
+        'Pinned Chromium cannot start a new generation while a differential checkout is active',
+        true
+      );
+    }
     if (this.state === 'locked') {
       throw recoveryLocked('Chromium');
     }
@@ -756,6 +785,13 @@ export class WarmChromiumSupervisor {
   }
 
   async restart(): Promise<BrowserSupervisionHealth> {
+    if (this.checkouts.size > 0) {
+      throw new SupervisionError(
+        'browser_unavailable',
+        'Pinned Chromium cannot restart while a differential checkout is active',
+        true
+      );
+    }
     await this.stop();
     this.recoveryAttempts = 0;
     this.state = 'stopped';
@@ -772,13 +808,34 @@ export class WarmChromiumSupervisor {
     this.intentionallyStopping = true;
     try {
       await browser.close();
-    } finally {
-      if (this.browser === browser) {
-        this.browser = null;
+    } catch (error) {
+      if (browser.isConnected()) {
+        this.browser = browser;
+        this.state = 'ready';
+        throw new SupervisionError(
+          'browser_unavailable',
+          'Owned Chromium remained connected after shutdown failed',
+          true,
+          error
+        );
       }
-      this.state = 'stopped';
+      throw error;
+    } finally {
       this.intentionallyStopping = false;
     }
+    if (browser.isConnected()) {
+      this.browser = browser;
+      this.state = 'ready';
+      throw new SupervisionError(
+        'browser_unavailable',
+        'Owned Chromium reported shutdown without disconnecting',
+        true
+      );
+    }
+    if (this.browser === browser) {
+      this.browser = null;
+    }
+    this.state = 'stopped';
   }
 
   currentBrowser(): WarmBrowser {
@@ -792,7 +849,41 @@ export class WarmChromiumSupervisor {
     return this.browser;
   }
 
+  checkout(): BrowserCheckout {
+    const browser = this.currentBrowser();
+    const generation = this.generation;
+    const revision = chromiumRevisionFromExecutablePath(this.executablePath());
+    const version = browser.version();
+    const token = Symbol('chromium-checkout');
+    this.checkouts.add(token);
+    let active = true;
+    return Object.freeze({
+      browser,
+      generation,
+      revision,
+      version,
+      isCurrent: () =>
+        active &&
+        this.state === 'ready' &&
+        this.browser === browser &&
+        this.generation === generation &&
+        browser.isConnected(),
+      release: () => {
+        if (!active) return false;
+        active = false;
+        return this.checkouts.delete(token);
+      },
+    });
+  }
+
   private async recover(): Promise<BrowserSupervisionHealth> {
+    if (this.checkouts.size > 0) {
+      throw new SupervisionError(
+        'browser_unavailable',
+        'Pinned Chromium disconnected during an active differential checkout',
+        true
+      );
+    }
     if (this.state === 'locked' || this.recoveryAttempts >= this.maxRecoveryAttempts) {
       this.state = 'locked';
       throw recoveryLocked('Chromium');

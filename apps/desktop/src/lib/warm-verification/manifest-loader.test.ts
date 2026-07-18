@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
@@ -71,6 +72,35 @@ export const scenarioModule = {
 };
 `;
 
+const PLAN_MODULE_SOURCE = `
+export const scenarioModule = {
+  id: 'portfolio-plans',
+  plans: [{
+    schemaVersion: 1,
+    id: 'portfolio-empty',
+    capabilityIds: ['portfolio'],
+    route: '/portfolio',
+    authProfileId: 'developer',
+    stateName: 'empty',
+    frozenTime: '2026-07-15T10:00:00.000Z',
+    flags: { portfolio: true },
+    timeouts: { actionMs: 1000, scenarioMs: 5000 },
+    actions: [{
+      id: 'open',
+      kind: 'click',
+      description: 'Open portfolio',
+      locator: { by: 'role', role: 'button', name: 'Open' }
+    }],
+    assertions: [{
+      id: 'visible',
+      kind: 'visible',
+      description: 'Portfolio is visible',
+      locator: { by: 'role', role: 'heading', name: 'Portfolio' }
+    }]
+  }]
+};
+`;
+
 async function fixtureRepo(source = MODULE_SOURCE): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'codevetter-manifest-'));
   await mkdir(path.join(root, 'verify'), { recursive: true });
@@ -99,6 +129,36 @@ describe('ScenarioManifestLoader', () => {
     assert.match(first.manifestHash, /^[a-f0-9]{64}$/);
     assert.match(first.scenarios[0]?.sourceHash ?? '', /^[a-f0-9]{64}$/);
     assert.ok(Object.isFrozen(first));
+  });
+
+  it('materializes import-free declarative plans without changing source identity', async () => {
+    const root = await fixtureRepo(PLAN_MODULE_SOURCE);
+    const source = await readFile(path.join(root, 'verify', 'scenarios.mjs'));
+    const expectedSourceHash = createHash('sha256').update(source).digest('hex');
+    const loader = await ScenarioManifestLoader.create(root);
+
+    const manifest = await loader.load(snapshot(root));
+
+    assert.equal(manifest.modules[0]?.id, 'portfolio-plans');
+    assert.equal(manifest.modules[0]?.sourceHash, expectedSourceHash);
+    assert.equal(manifest.scenarios[0]?.sourceHash, expectedSourceHash);
+    assert.equal(typeof manifest.scenarios[0]?.run, 'function');
+    assert.deepEqual(manifest.scenarios[0]?.actions, [
+      { id: 'open', kind: 'click', description: 'Open portfolio' },
+    ]);
+  });
+
+  it('rejects modules that export both or neither scenarios and plans', async () => {
+    for (const fields of ['scenarios: [], plans: []', 'metadata: true']) {
+      const root = await fixtureRepo(`export default { id: 'invalid-module', ${fields} };`);
+      const loader = await ScenarioManifestLoader.create(root);
+      await assert.rejects(loader.load(snapshot(root)), (error) => {
+        assert.ok(error instanceof ScenarioManifestLoadError);
+        assert.equal(error.code, 'contract');
+        assert.match(error.message, /exactly one of scenarios or plans/);
+        return true;
+      });
+    }
   });
 
   it('publishes a new manifest when source bytes change', async () => {

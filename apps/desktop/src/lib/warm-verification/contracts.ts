@@ -3,6 +3,7 @@ export const VERIFY_RESULT_SCHEMA_VERSION = 1 as const;
 
 export const VERIFY_CONTRACT_LIMITS = {
   maxFrameBytes: 1_048_576,
+  maxDifferentialResponseBytes: 262_144,
   maxStringBytes: 16_384,
   maxArrayItems: 1_000,
   maxObjectKeys: 128,
@@ -14,6 +15,7 @@ export const VERIFY_CONTRACT_LIMITS = {
   maxLimitations: 100,
   maxArtifacts: 100,
   maxActiveRuns: 32,
+  maxDifferentialDeltaPreviews: 20,
 } as const;
 
 export type VerifyOutcome = 'passed' | 'regression' | 'no_confidence';
@@ -49,6 +51,12 @@ export type DaemonRequest =
       run_id: string;
       change_set: VerifyChangeSetIdentity;
       options: VerifyChangedOptions;
+    }
+  | {
+      type: 'dry_run_candidate';
+      run_id: string;
+      target: { target_sha: string; config_hash: string; manifest_hash: string };
+      plans: Record<string, unknown>[];
     }
   | { type: 'cancel'; run_id: string; reason?: string }
   | { type: 'shutdown'; grace_ms: number };
@@ -252,9 +260,21 @@ export interface DaemonError {
   retryable: boolean;
 }
 
+export interface CandidateDryRunReport {
+  schema_version: 1;
+  run_id: string;
+  qualified: boolean;
+  duration_ms: number;
+  issues: string[];
+  model_call_count: 0;
+  evidence_persisted: false;
+  visual_baselines_updated: false;
+}
+
 export type DaemonResponse =
   | { type: 'health'; health: DaemonHealth }
   | { type: 'verify_result'; result: VerifyResult }
+  | { type: 'candidate_dry_run'; report: CandidateDryRunReport }
   | { type: 'cancel_ack'; run_id: string; accepted: boolean }
   | { type: 'shutdown_ack'; active_run_ids: string[] }
   | { type: 'error'; error: DaemonError };
@@ -345,8 +365,20 @@ const PROCESS_STATES: readonly OwnedRuntimeHealth['state'][] = [
   'locked',
 ];
 
-function isObject(value: unknown): value is JsonObject {
+export function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function exactKeys(
+  value: JsonObject,
+  path: string,
+  allowed: readonly string[],
+  issues: ContractIssue[]
+): void {
+  const keys = new Set(allowed);
+  for (const key of Object.keys(value)) {
+    if (!keys.has(key)) issues.push({ path: `${path}.${key}`, message: 'is not supported' });
+  }
 }
 
 function jsonBytes(value: unknown): number | null {
@@ -401,7 +433,7 @@ function validateBoundedValue(
   }
 }
 
-function stringField(
+export function stringField(
   object: JsonObject,
   key: string,
   path: string,
@@ -420,7 +452,7 @@ function stringField(
   return value;
 }
 
-function numberField(
+export function numberField(
   object: JsonObject,
   key: string,
   path: string,
@@ -444,7 +476,7 @@ function numberField(
   return value;
 }
 
-function timestampField(
+export function timestampField(
   object: JsonObject,
   key: string,
   path: string,
@@ -456,7 +488,7 @@ function timestampField(
   }
 }
 
-function stringArrayField(
+export function stringArrayField(
   object: JsonObject,
   key: string,
   path: string,
@@ -724,6 +756,33 @@ function validateRequest(value: unknown, issues: ContractIssue[]): void {
       }
       return;
     }
+    case 'dry_run_candidate': {
+      exactKeys(value, '$.request', ['type', 'run_id', 'target', 'plans'], issues);
+      stringField(value, 'run_id', '$.request', issues, { pattern: ID_PATTERN });
+      if (!isObject(value.target)) {
+        issues.push({ path: '$.request.target', message: 'must be an object' });
+      } else {
+        exactKeys(
+          value.target,
+          '$.request.target',
+          ['target_sha', 'config_hash', 'manifest_hash'],
+          issues
+        );
+        stringField(value.target, 'target_sha', '$.request.target', issues, {
+          pattern: GIT_SHA_PATTERN,
+        });
+        stringField(value.target, 'config_hash', '$.request.target', issues, {
+          pattern: SHA256_PATTERN,
+        });
+        stringField(value.target, 'manifest_hash', '$.request.target', issues, {
+          pattern: SHA256_PATTERN,
+        });
+      }
+      if (!Array.isArray(value.plans) || value.plans.length < 1 || value.plans.length > 20) {
+        issues.push({ path: '$.request.plans', message: 'must contain from 1 through 20 plans' });
+      }
+      return;
+    }
     case 'cancel':
       stringField(value, 'run_id', '$.request', issues, { pattern: ID_PATTERN });
       if (value.reason !== undefined) stringField(value, 'reason', '$.request', issues);
@@ -931,6 +990,10 @@ function validateResponse(value: unknown, issues: ContractIssue[]): void {
     case 'verify_result':
       validateResult(value.result, '$.response.result', issues);
       return;
+    case 'candidate_dry_run':
+      exactKeys(value, '$.response', ['type', 'report'], issues);
+      validateCandidateDryRun(value.report, '$.response.report', issues);
+      return;
     case 'cancel_ack':
       stringField(value, 'run_id', '$.response', issues, { pattern: ID_PATTERN });
       if (typeof value.accepted !== 'boolean') {
@@ -965,10 +1028,46 @@ function validateResponse(value: unknown, issues: ContractIssue[]): void {
   }
 }
 
-function validateEnvelope<T>(
+function validateCandidateDryRun(value: unknown, path: string, issues: ContractIssue[]): void {
+  if (!isObject(value)) {
+    issues.push({ path, message: 'must be an object' });
+    return;
+  }
+  exactKeys(
+    value,
+    path,
+    [
+      'schema_version',
+      'run_id',
+      'qualified',
+      'duration_ms',
+      'issues',
+      'model_call_count',
+      'evidence_persisted',
+      'visual_baselines_updated',
+    ],
+    issues
+  );
+  if (value.schema_version !== 1)
+    issues.push({ path: `${path}.schema_version`, message: 'must equal 1' });
+  stringField(value, 'run_id', path, issues, { pattern: ID_PATTERN });
+  if (typeof value.qualified !== 'boolean')
+    issues.push({ path: `${path}.qualified`, message: 'must be a boolean' });
+  numberField(value, 'duration_ms', path, issues, { min: 0, max: 300_000 });
+  stringArrayField(value, 'issues', path, issues, 100);
+  if (value.model_call_count !== 0)
+    issues.push({ path: `${path}.model_call_count`, message: 'must equal zero' });
+  if (value.evidence_persisted !== false)
+    issues.push({ path: `${path}.evidence_persisted`, message: 'must equal false' });
+  if (value.visual_baselines_updated !== false)
+    issues.push({ path: `${path}.visual_baselines_updated`, message: 'must equal false' });
+}
+
+export function validateContractEnvelope<T>(
   value: unknown,
   payloadKey: 'request' | 'response',
-  validatePayload: (value: unknown, issues: ContractIssue[]) => void
+  validatePayload: (value: unknown, issues: ContractIssue[]) => void,
+  strictRoot = false
 ): ContractValidation<T> {
   const issues: ContractIssue[] = [];
   const bytes = jsonBytes(value);
@@ -980,7 +1079,12 @@ function validateEnvelope<T>(
     });
   }
   validateBoundedValue(value, '$', 0, issues);
-  if (validateEnvelopeBase(value, issues)) validatePayload(value[payloadKey], issues);
+  if (validateEnvelopeBase(value, issues)) {
+    if (strictRoot) {
+      exactKeys(value, '$', ['protocol_version', 'request_id', 'sent_at', payloadKey], issues);
+    }
+    validatePayload(value[payloadKey], issues);
+  }
   return issues.length === 0
     ? { ok: true, value: value as T, bytes: bytes as number }
     : { ok: false, issues, bytes };
@@ -989,13 +1093,13 @@ function validateEnvelope<T>(
 export function validateDaemonRequestEnvelope(
   value: unknown
 ): ContractValidation<DaemonRequestEnvelope> {
-  return validateEnvelope(value, 'request', validateRequest);
+  return validateContractEnvelope(value, 'request', validateRequest);
 }
 
 export function validateDaemonResponseEnvelope(
   value: unknown
 ): ContractValidation<DaemonResponseEnvelope> {
-  return validateEnvelope(value, 'response', validateResponse);
+  return validateContractEnvelope(value, 'response', validateResponse);
 }
 
 export function exitCodeForOutcome(outcome: VerifyOutcome): VerifyExitCode {

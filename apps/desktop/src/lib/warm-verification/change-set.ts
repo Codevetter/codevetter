@@ -331,6 +331,19 @@ async function resolveCommit(
   return resolved;
 }
 
+export async function resolveImmutableGitCommit(
+  repositoryPath: string,
+  revision: string,
+  dependencies: GitChangeSetDependencies = {}
+): Promise<{ repositoryRoot: string; sha: string }> {
+  const execute = dependencies.execFile ?? defaultExecFile;
+  const repositoryRoot = await resolveGitRepositoryRoot(repositoryPath, dependencies);
+  return {
+    repositoryRoot,
+    sha: await resolveCommit(repositoryRoot, revision, execute),
+  };
+}
+
 async function hashUntrackedPaths(root: string, paths: readonly string[]): Promise<string> {
   const digest = createHash('sha256');
   let totalBytes = 0;

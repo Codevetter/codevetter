@@ -153,7 +153,7 @@ async function runChanged(
   }
 }
 
-async function ensureDaemon(paths: VerifyRuntimePaths): Promise<DaemonResponse> {
+export async function ensureDaemon(paths: VerifyRuntimePaths): Promise<DaemonResponse> {
   const current = await tryHealth(paths);
   if (current?.type === 'health') {
     if (current.health.warm) return current;
@@ -200,7 +200,7 @@ async function tryHealth(paths: VerifyRuntimePaths): Promise<DaemonResponse | un
   }
 }
 
-async function daemonRequest(
+export async function daemonRequest(
   paths: VerifyRuntimePaths,
   request: DaemonRequest,
   timeoutMs: number,
@@ -371,6 +371,10 @@ function print(options: CliOptions, response: DaemonResponse): void {
     );
   } else if (response.type === 'cancel_ack') {
     process.stdout.write(`${response.accepted ? 'cancelling' : 'not active'} ${response.run_id}\n`);
+  } else if (response.type === 'candidate_dry_run') {
+    process.stdout.write(
+      `candidate ${response.report.qualified ? 'qualified' : 'blocked'} · ${response.report.duration_ms}ms\n`
+    );
   } else {
     process.stderr.write(`${response.error.code}: ${response.error.message}\n`);
   }

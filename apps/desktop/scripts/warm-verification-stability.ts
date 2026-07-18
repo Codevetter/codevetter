@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { lstat, readFile, rename, writeFile } from 'node:fs/promises';
+import { lstat, readFile, readdir, rename, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -10,7 +10,10 @@ import {
   type GitExecFile,
 } from '../src/lib/warm-verification/change-set';
 import type { VerifyConfig } from '../src/lib/warm-verification/config';
-import { WarmArtifactRetention } from '../src/lib/warm-verification/retention';
+import {
+  reportSharedPlaywrightCache,
+  WarmArtifactRetention,
+} from '../src/lib/warm-verification/retention';
 import type { ScenarioBatchResult } from '../src/lib/warm-verification/runner';
 import { selectChangedCapabilities } from '../src/lib/warm-verification/selection';
 import {
@@ -78,6 +81,18 @@ interface CommandAudit {
   invocations: number;
 }
 
+interface BrowserProcessSnapshot {
+  processCount: number;
+  rssBytes: number;
+}
+
+interface DirectoryUsageSnapshot {
+  bytes: number;
+  files: number;
+  directories: number;
+  skippedEntries: number;
+}
+
 async function main(): Promise<void> {
   const capturedAt = new Date();
   const commandAudit: CommandAudit = { counts: new Map(), invocations: 0 };
@@ -118,23 +133,34 @@ async function main(): Promise<void> {
     const retentionConfig = harness.config(1).retention;
     const retention = new WarmArtifactRetention(harness.repositoryRoot, retentionConfig);
     const initialHealth = requireHealthyRuntime(harness.runtimeHealth(), 'initial');
+    const initialBrowserProcesses = await browserProcessSnapshot(process.pid);
     const initialRssBytes = process.memoryUsage().rss;
     const stabilitySamples: StabilitySample[] = [];
     for (let index = 0; index < STABILITY_BATCHES; index += 1) {
       const batch = index + 1;
       const kind = stabilityKind(batch);
       const runId = `stability-${String(batch).padStart(3, '0')}-${kind}`;
-      const started = performance.now();
-      const result = await runStabilityBatch(harness, runId, kind, index);
-      const durationMs = performance.now() - started;
-      assertExpectedOutcome(result, kind, runId);
-      const retained = await retention.finalize({
-        runId,
-        outcome: result.outcome,
-        createdAt: new Date(capturedAt.getTime() + batch * 1_000).toISOString(),
-        detailedCapture: false,
-        artifacts: result.artifacts,
-      });
+      const createdAt = new Date(capturedAt.getTime() + batch * 1_000).toISOString();
+      await retention.reserveRun(runId, createdAt);
+      const { durationMs, result, retained } = await (async () => {
+        try {
+          const started = performance.now();
+          const result = await runStabilityBatch(harness, runId, kind, index);
+          const durationMs = performance.now() - started;
+          assertExpectedOutcome(result, kind, runId);
+          const retained = await retention.finalize({
+            runId,
+            outcome: result.outcome,
+            createdAt,
+            detailedCapture: false,
+            artifacts: result.artifacts,
+          });
+          return { durationMs, result, retained };
+        } catch (error) {
+          await retention.abandonRun(runId).catch(() => false);
+          throw error;
+        }
+      })();
       const health = requireHealthyRuntime(harness.runtimeHealth(), runId);
       if (
         health.serverIdentity !== initialHealth.serverIdentity ||
@@ -175,6 +201,12 @@ async function main(): Promise<void> {
     }
     const finalCleanup = await retention.enforce();
     const finalHealth = requireHealthyRuntime(harness.runtimeHealth(), 'final');
+    const finalBrowserProcesses = await browserProcessSnapshot(process.pid);
+    const temporaryHarnessUsage = await directoryUsage(harness.repositoryRoot);
+    const repositoryViteCacheUsage = await directoryUsage(
+      path.resolve(process.cwd(), 'node_modules/.vite')
+    );
+    const sharedPlaywrightCache = await reportSharedPlaywrightCache();
     const mandatoryGate = await readMandatoryGate();
     const observedExecutables = Object.fromEntries(
       [...commandAudit.counts.entries()].sort(([left], [right]) => left.localeCompare(right))
@@ -202,6 +234,44 @@ async function main(): Promise<void> {
         mandatoryQualificationReportHash: mandatoryGate.reportHash,
       },
       mandatoryTwentyScenarioGate: mandatoryGate.gate,
+      singleTargetBaseline: {
+        source: 'measured before differential runtime implementation',
+        processModel: {
+          hostNodeProcesses: 1,
+          serverProcesses: 0,
+          serverExecution: 'Vite runs in the measured host Node process',
+          initialBrowserProcesses,
+          finalBrowserProcesses,
+          stable: initialBrowserProcesses.processCount === finalBrowserProcesses.processCount,
+        },
+        contexts: {
+          initialActive: initialHealth.activeContexts,
+          finalActive: finalHealth.activeContexts,
+          peakAfterBatch: Math.max(...stabilitySamples.map((sample) => sample.activeContexts)),
+        },
+        rss: {
+          hostInitialBytes: initialRssBytes,
+          hostFinalBytes: process.memoryUsage().rss,
+          hostPeakBytes: Math.max(
+            initialRssBytes,
+            ...stabilitySamples.map((sample) => sample.rssBytes)
+          ),
+          browserInitialBytes: initialBrowserProcesses.rssBytes,
+          browserFinalBytes: finalBrowserProcesses.rssBytes,
+        },
+        artifacts: {
+          retainedRuns: finalCleanup.retainedRuns,
+          retainedBytes: finalCleanup.retainedBytes,
+          maxConfiguredBytes: retentionConfig.maxBytes,
+        },
+        caches: {
+          temporaryHarness: temporaryHarnessUsage,
+          repositoryVite: repositoryViteCacheUsage,
+          sharedPlaywright: sharedPlaywrightCache,
+        },
+        measurementBoundary:
+          'Process and cache snapshots run outside timed browser batches; shared Playwright cache is report-only.',
+      },
       changedCapabilityHotPath: {
         scenarioCount: 1,
         selectedScenarioIds: [hotScenarioId],
@@ -285,7 +355,7 @@ async function main(): Promise<void> {
   report.cleanup = { temporaryHarnessRemoved: true };
   const reportPath = path.resolve(
     process.cwd(),
-    `tests/fixtures/warm-verification/stability-${capturedAt.toISOString().slice(0, 10)}.json`
+    'tests/fixtures/warm-verification/stability-current.json'
   );
   const temporaryPath = `${reportPath}.${process.pid}.tmp.json`;
   await writeFile(temporaryPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -294,6 +364,81 @@ async function main(): Promise<void> {
   });
   await rename(temporaryPath, reportPath);
   process.stdout.write(`${JSON.stringify({ reportPath, passed: true })}\n`);
+}
+
+async function browserProcessSnapshot(rootPid: number): Promise<BrowserProcessSnapshot> {
+  if (process.platform === 'win32') return { processCount: 0, rssBytes: 0 };
+  const { stdout } = await execFileAsync('ps', ['-axo', 'pid=,ppid=,rss=,comm=']);
+  const rows = stdout
+    .split('\n')
+    .map((line) => line.trim().match(/^(\d+)\s+(\d+)\s+(\d+)\s+(.+)$/))
+    .filter((row): row is RegExpMatchArray => row !== null)
+    .map((row) => ({
+      pid: Number(row[1]),
+      parentPid: Number(row[2]),
+      rssBytes: Number(row[3]) * 1024,
+      command: row[4] ?? '',
+    }));
+  const descendants = new Set<number>([rootPid]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const row of rows) {
+      if (descendants.has(row.parentPid) && !descendants.has(row.pid)) {
+        descendants.add(row.pid);
+        changed = true;
+      }
+    }
+  }
+  const chromium = rows.filter(
+    (row) => descendants.has(row.pid) && /chrom(e|ium)/i.test(row.command)
+  );
+  return {
+    processCount: chromium.length,
+    rssBytes: chromium.reduce((total, row) => total + row.rssBytes, 0),
+  };
+}
+
+async function directoryUsage(root: string): Promise<DirectoryUsageSnapshot> {
+  const usage: DirectoryUsageSnapshot = {
+    bytes: 0,
+    files: 0,
+    directories: 0,
+    skippedEntries: 0,
+  };
+  const pending = [root];
+  const maxEntries = 100_000;
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (!current) break;
+    let metadata: Awaited<ReturnType<typeof lstat>>;
+    try {
+      metadata = await lstat(current);
+    } catch (error) {
+      if (isNodeError(error) && error.code === 'ENOENT') continue;
+      throw error;
+    }
+    if (metadata.isSymbolicLink()) {
+      usage.skippedEntries += 1;
+      continue;
+    }
+    if (!metadata.isDirectory()) {
+      usage.files += 1;
+      usage.bytes += metadata.size;
+      continue;
+    }
+    usage.directories += 1;
+    if (usage.files + usage.directories > maxEntries) {
+      throw new Error(`baseline directory usage exceeded ${maxEntries} entries`);
+    }
+    const entries = await readdir(current);
+    for (const entry of entries) pending.push(path.join(current, entry));
+  }
+  return usage;
+}
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error;
 }
 
 function smallChangedCapabilityConfig(harness: QualificationHarness): VerifyConfig {
@@ -468,7 +613,7 @@ function roundHotSample(sample: HotPathSample): HotPathSample {
 }
 
 async function readMandatoryGate() {
-  const reportPath = 'tests/fixtures/warm-verification/qualification-2026-07-15.json';
+  const reportPath = 'tests/fixtures/warm-verification/qualification-2026-07-17.json';
   const absolutePath = path.resolve(process.cwd(), reportPath);
   const bytes = await readFile(absolutePath);
   const report = JSON.parse(bytes.toString('utf8')) as {

@@ -6,6 +6,7 @@ import type { VerifyServerConfig } from './config';
 import {
   AppServerSupervisor,
   buildServerEnvironment,
+  chromiumLaunchOptions,
   chromiumRevisionFromExecutablePath,
   SupervisionError,
   WarmChromiumSupervisor,
@@ -51,6 +52,8 @@ class FakeChild extends EventEmitter implements OwnedChildProcess {
 class FakeBrowser extends EventEmitter implements WarmBrowser {
   connected = true;
   closeCalls = 0;
+  failNextClose = false;
+  keepConnectedOnClose = false;
 
   constructor(private readonly browserVersion = '135.0.1') {
     super();
@@ -78,6 +81,14 @@ class FakeBrowser extends EventEmitter implements WarmBrowser {
 
   async close(): Promise<void> {
     this.closeCalls += 1;
+    if (this.failNextClose) {
+      this.failNextClose = false;
+      throw new Error('forced browser close failure');
+    }
+    if (this.keepConnectedOnClose) {
+      this.keepConnectedOnClose = false;
+      return;
+    }
     this.disconnect();
   }
 }
@@ -407,6 +418,86 @@ describe('WarmChromiumSupervisor', () => {
     assert.equal(launchIndex, 3);
   });
 
+  it('does not recover to another browser generation during an active checkout', async () => {
+    const browsers = [new FakeBrowser('1'), new FakeBrowser('2')];
+    let launchIndex = 0;
+    const supervisor = new WarmChromiumSupervisor({
+      executablePath: () => '/cache/chromium-1217/chrome',
+      launchBrowser: async () => browsers[launchIndex++]!,
+    });
+    await supervisor.start();
+    const checkout = supervisor.checkout();
+    assert.equal(checkout.generation, 1);
+    assert.equal(checkout.revision, '1217');
+    assert.equal(checkout.isCurrent(), true);
+
+    browsers[0]?.disconnect();
+    assert.equal(checkout.isCurrent(), false);
+    await expectSupervisionError(supervisor.ensureReady(), 'browser_unavailable');
+    assert.equal(launchIndex, 1);
+    assert.equal(checkout.release(), true);
+    assert.equal(checkout.release(), false);
+
+    const recovered = await supervisor.ensureReady();
+    assert.equal(recovered.generation, 2);
+    assert.equal(launchIndex, 2);
+    await supervisor.stop();
+  });
+
+  it('blocks stopped-to-start generation replacement until the active checkout is released', async () => {
+    const browsers = [new FakeBrowser('1'), new FakeBrowser('2')];
+    let launchIndex = 0;
+    const supervisor = new WarmChromiumSupervisor({
+      launchBrowser: async () => browsers[launchIndex++]!,
+    });
+    await supervisor.start();
+    const checkout = supervisor.checkout();
+
+    await supervisor.stop();
+    assert.equal(checkout.isCurrent(), false);
+    await expectSupervisionError(supervisor.start(), 'browser_unavailable');
+    assert.equal(launchIndex, 1);
+
+    assert.equal(checkout.release(), true);
+    const restarted = await supervisor.start();
+    assert.equal(restarted.generation, 2);
+    assert.equal(launchIndex, 2);
+    await supervisor.stop();
+  });
+
+  it('retains connected browser ownership when shutdown fails', async () => {
+    const browser = new FakeBrowser();
+    browser.failNextClose = true;
+    const supervisor = new WarmChromiumSupervisor({ launchBrowser: async () => browser });
+    await supervisor.start();
+    const checkout = supervisor.checkout();
+
+    await expectSupervisionError(supervisor.stop(), 'browser_unavailable');
+    assert.equal(supervisor.health().state, 'ready');
+    assert.equal(supervisor.health().owned, true);
+    assert.equal(checkout.isCurrent(), true);
+
+    checkout.release();
+    await supervisor.stop();
+    assert.equal(supervisor.health().state, 'stopped');
+  });
+
+  it('rejects a resolved shutdown that leaves the owned browser connected', async () => {
+    const browser = new FakeBrowser();
+    browser.keepConnectedOnClose = true;
+    const supervisor = new WarmChromiumSupervisor({ launchBrowser: async () => browser });
+    await supervisor.start();
+    const checkout = supervisor.checkout();
+
+    await expectSupervisionError(supervisor.stop(), 'browser_unavailable');
+    assert.equal(supervisor.health().state, 'ready');
+    assert.equal(supervisor.health().owned, true);
+    assert.equal(checkout.isCurrent(), true);
+
+    checkout.release();
+    await supervisor.stop();
+  });
+
   it('rejects a browser that is already disconnected', async () => {
     const browser = new FakeBrowser();
     browser.disconnect();
@@ -487,5 +578,24 @@ describe('supervision helpers', () => {
       '1217'
     );
     assert.equal(chromiumRevisionFromExecutablePath('/Applications/Chromium'), 'unknown');
+  });
+
+  it('accepts only an absolute explicit Chromium override', () => {
+    const previous = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
+    try {
+      process.env.PLAYWRIGHT_EXECUTABLE_PATH = 'relative/chrome';
+      assert.throws(
+        () => chromiumLaunchOptions(),
+        (error: unknown) => error instanceof SupervisionError && error.code === 'invalid_target'
+      );
+      process.env.PLAYWRIGHT_EXECUTABLE_PATH = '/Applications/Chromium';
+      assert.deepEqual(chromiumLaunchOptions(), {
+        executablePath: '/Applications/Chromium',
+        headless: true,
+      });
+    } finally {
+      if (previous === undefined) delete process.env.PLAYWRIGHT_EXECUTABLE_PATH;
+      else process.env.PLAYWRIGHT_EXECUTABLE_PATH = previous;
+    }
   });
 });

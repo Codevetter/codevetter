@@ -1,6 +1,9 @@
 //! Safe Tauri orchestration for a repository-owned warm-verification CLI.
 
-use crate::{commands::warm_verification, DbState};
+use crate::{
+    commands::{differential_verification, warm_verification},
+    DbState,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -23,6 +26,8 @@ const STOP_TIMEOUT: Duration = Duration::from_secs(20);
 // `verify changed` may spend up to 30 seconds warming the owned daemon before
 // its separately bounded 30-second batch and 5-second IPC response window.
 const RUN_TIMEOUT: Duration = Duration::from_secs(70);
+const DIFFERENTIAL_RUN_TIMEOUT: Duration = Duration::from_secs(320);
+const DIFFERENTIAL_PREPARE_TIMEOUT: Duration = Duration::from_secs(320);
 const SETUP_REMEDIATION: &str = "Add one workspace package with a compatible `verify` script, install its lockfile dependencies, and ensure that lockfile's package manager is on PATH.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -93,6 +98,145 @@ pub struct WarmCancelResponse {
 #[derive(Debug, Serialize)]
 pub struct WarmStopResponse {
     active_run_ids: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DifferentialPreparedSummary {
+    schema_version: u8,
+    run_id: String,
+    status: String,
+    reference_sha: Option<String>,
+    candidate_kind: String,
+    candidate_identity: Option<String>,
+    selection_identity: Option<String>,
+    scenario_count: u32,
+    source_cache_hits: u8,
+    dependency_cache_hit: bool,
+    prepared_bytes: u64,
+    reason_codes: Vec<String>,
+    model_call_count: u8,
+    cleanup_complete: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DifferentialCleanupSummary {
+    schema_version: u8,
+    dry_run: bool,
+    complete: bool,
+    removed_source_cache_keys: Vec<String>,
+    removed_dependency_cache_keys: Vec<String>,
+    removed_targets: u32,
+    removed_staging: u32,
+    skipped_entries: u32,
+    retained_entries: u32,
+    retained_logical_bytes: u64,
+    retained_allocated_bytes: u64,
+    warm_artifact_reclaimed_bytes: u64,
+    warm_artifact_removed_files: u32,
+    shared_playwright_cache_bytes: u64,
+    error_codes: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DifferentialStatusSummary {
+    schema_version: u8,
+    run_id: String,
+    state: String,
+    updated_at: String,
+    classification: Option<String>,
+    reason_codes: Vec<String>,
+}
+
+fn valid_reason_codes(values: &[String]) -> bool {
+    values.len() <= 100
+        && values
+            .iter()
+            .all(|value| valid_bounded_text(value) && value.len() <= 256)
+}
+
+fn validate_differential_prepared(
+    summary: DifferentialPreparedSummary,
+) -> Result<DifferentialPreparedSummary, String> {
+    let hashes_valid = summary
+        .reference_sha
+        .as_deref()
+        .is_none_or(|value| valid_hash(value, 40, 64))
+        && summary
+            .candidate_identity
+            .as_deref()
+            .is_none_or(|value| valid_hash(value, 64, 64))
+        && summary
+            .selection_identity
+            .as_deref()
+            .is_none_or(|value| valid_hash(value, 64, 64));
+    if summary.schema_version != 1
+        || !valid_id(&summary.run_id)
+        || !matches!(summary.status.as_str(), "ready" | "incomparable")
+        || !matches!(
+            summary.candidate_kind.as_str(),
+            "worktree" | "staged" | "commit" | "range"
+        )
+        || summary.scenario_count > 500
+        || summary.source_cache_hits > 2
+        || summary.model_call_count != 0
+        || !hashes_valid
+        || !valid_reason_codes(&summary.reason_codes)
+    {
+        return Err("Repository verifier returned invalid differential preparation data".into());
+    }
+    Ok(summary)
+}
+
+fn validate_differential_cleanup(
+    summary: DifferentialCleanupSummary,
+) -> Result<DifferentialCleanupSummary, String> {
+    let valid_cache_keys = |values: &[String]| {
+        values.len() <= 1_000 && values.iter().all(|value| valid_hash(value, 64, 64))
+    };
+    if summary.schema_version != 1
+        || !valid_cache_keys(&summary.removed_source_cache_keys)
+        || !valid_cache_keys(&summary.removed_dependency_cache_keys)
+        || !valid_reason_codes(&summary.error_codes)
+    {
+        return Err("Repository verifier returned invalid differential cleanup data".into());
+    }
+    Ok(summary)
+}
+
+fn validate_differential_status(
+    summary: DifferentialStatusSummary,
+) -> Result<DifferentialStatusSummary, String> {
+    if summary.schema_version != 1
+        || !valid_id(&summary.run_id)
+        || !matches!(
+            summary.state.as_str(),
+            "not_found"
+                | "preparing"
+                | "running"
+                | "cancelling"
+                | "completed"
+                | "incomparable"
+                | "cancelled"
+                | "locked"
+        )
+        || summary
+            .classification
+            .as_deref()
+            .is_some_and(|classification| {
+                !matches!(
+                    classification,
+                    "regressed" | "improved" | "unchanged" | "incomparable"
+                )
+            })
+        || !valid_reason_codes(&summary.reason_codes)
+        || chrono::DateTime::parse_from_rfc3339(&summary.updated_at).is_err()
+    {
+        return Err("Repository verifier returned invalid differential status data".into());
+    }
+    Ok(summary)
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -519,9 +663,24 @@ fn parse_json_output(output: &ProcessOutput) -> Result<Value, String> {
             return Err(format!("{}: {}", error.error.code, error.error.message));
         }
     }
-    let result_exit = value.get("type").and_then(Value::as_str) == Some("verify_result")
-        && matches!(output.status_code, Some(0 | 2 | 3));
-    if !output.success && !result_exit {
+    let result_exit = matches!(
+        value.get("type").and_then(Value::as_str),
+        Some(
+            "verify_result"
+                | "differential_result"
+                | "differential_prepared"
+                | "differential_status"
+                | "differential_cleanup"
+        )
+    ) && matches!(output.status_code, Some(0 | 2 | 3));
+    let scenario_exit = value.get("schema_version").and_then(Value::as_u64) == Some(1)
+        && value.get("action").and_then(Value::as_str).is_some()
+        && matches!(
+            value.get("status").and_then(Value::as_str),
+            Some("rejected" | "failed")
+        )
+        && matches!(output.status_code, Some(2 | 3));
+    if !output.success && !result_exit && !scenario_exit {
         let detail = bounded_diagnostic(&output.stderr);
         return Err(format!(
             "Repository verifier exited {:?}{}",
@@ -534,6 +693,84 @@ fn parse_json_output(output: &ProcessOutput) -> Result<Value, String> {
         ));
     }
     Ok(value)
+}
+
+fn differential_candidate_arguments<'a>(
+    candidate_kind: &'a str,
+    candidate_revision: Option<&'a str>,
+) -> Result<Vec<&'a str>, String> {
+    match candidate_kind {
+        "worktree" => Ok(Vec::new()),
+        "staged" => Ok(vec!["--staged"]),
+        "commit" | "range" => {
+            let revision = candidate_revision
+                .filter(|revision| valid_bounded_text(revision))
+                .ok_or("Differential candidate revision is invalid")?;
+            Ok(vec![
+                if candidate_kind == "commit" {
+                    "--commit"
+                } else {
+                    "--range"
+                },
+                revision,
+            ])
+        }
+        _ => Err("Differential candidate kind is invalid".into()),
+    }
+}
+
+fn require_pnpm_differential(package: &VerifyPackage) -> Result<(), String> {
+    if package.manager != PackageManager::Pnpm {
+        return Err(
+            "Differential verification currently supports pnpm repositories only; use warm verification for this repository"
+                .into(),
+        );
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn prepare_differential_verification(
+    repo_path: String,
+    run_id: String,
+    reference_revision: String,
+    candidate_kind: String,
+    candidate_revision: Option<String>,
+) -> Result<DifferentialPreparedSummary, String> {
+    if !valid_id(&run_id) || !valid_bounded_text(&reference_revision) {
+        return Err("Differential run identity or reference is invalid".into());
+    }
+    let mut command = vec![
+        "differential",
+        "prepare",
+        "--run-id",
+        run_id.as_str(),
+        "--reference",
+        reference_revision.as_str(),
+    ];
+    command.extend(differential_candidate_arguments(
+        candidate_kind.as_str(),
+        candidate_revision.as_deref(),
+    )?);
+    let package = find_verify_package(&repo_path)?;
+    require_pnpm_differential(&package)?;
+    let output = execute_verify(
+        &package,
+        &cli_args(&package.repo_root, &command),
+        DIFFERENTIAL_PREPARE_TIMEOUT,
+    )
+    .await?;
+    let value = parse_json_output(&output)?;
+    let summary = validate_differential_prepared(
+        serde_json::from_value(response_payload(value, "differential_prepared", "summary")?)
+            .map_err(|_| "Repository verifier returned invalid differential preparation data")?,
+    )?;
+    if summary.run_id != run_id || summary.candidate_kind != candidate_kind {
+        return Err(
+            "Repository verifier returned different differential preparation inputs".into(),
+        );
+    }
+    Ok(summary)
 }
 
 fn bounded_diagnostic(bytes: &[u8]) -> String {
@@ -655,8 +892,23 @@ fn response_payload(value: Value, expected_type: &str, field: &str) -> Result<Va
         .ok_or_else(|| format!("Repository verifier response is missing {field}"))
 }
 
-async fn run_cli(repo_path: &str, command: &[&str], deadline: Duration) -> Result<Value, String> {
+pub(crate) async fn run_cli(
+    repo_path: &str,
+    command: &[&str],
+    deadline: Duration,
+) -> Result<Value, String> {
     let package = find_verify_package(repo_path)?;
+    let output = execute_verify(&package, &cli_args(&package.repo_root, command), deadline).await?;
+    parse_json_output(&output)
+}
+
+async fn run_differential_cli(
+    repo_path: &str,
+    command: &[&str],
+    deadline: Duration,
+) -> Result<Value, String> {
+    let package = find_verify_package(repo_path)?;
+    require_pnpm_differential(&package)?;
     let output = execute_verify(&package, &cli_args(&package.repo_root, command), deadline).await?;
     parse_json_output(&output)
 }
@@ -750,6 +1002,72 @@ pub async fn run_warm_changed_verification(
 }
 
 #[tauri::command]
+pub async fn run_differential_verification(
+    db: State<'_, DbState>,
+    repo_path: String,
+    run_id: String,
+    reference_revision: String,
+    candidate_kind: String,
+    candidate_revision: Option<String>,
+) -> Result<differential_verification::StoredDifferentialVerificationRun, String> {
+    if !valid_id(&run_id) || !valid_bounded_text(&reference_revision) {
+        return Err("Differential run identity or reference is invalid".into());
+    }
+    let mut command = vec![
+        "differential",
+        "run",
+        "--run-id",
+        run_id.as_str(),
+        "--reference",
+        reference_revision.as_str(),
+    ];
+    command.extend(differential_candidate_arguments(
+        candidate_kind.as_str(),
+        candidate_revision.as_deref(),
+    )?);
+    let package = find_verify_package(&repo_path)?;
+    require_pnpm_differential(&package)?;
+    let output = execute_verify(
+        &package,
+        &cli_args(&package.repo_root, &command),
+        DIFFERENTIAL_RUN_TIMEOUT,
+    )
+    .await?;
+    let value = parse_json_output(&output)?;
+    let summary = response_payload(value, "differential_result", "summary")?;
+    if summary.get("run_id").and_then(Value::as_str) != Some(run_id.as_str()) {
+        return Err("Repository verifier returned a different differential run identity".into());
+    }
+    let conn = db.0.lock().map_err(|error| error.to_string())?;
+    differential_verification::persist_validated_run(
+        &conn,
+        &package.repo_root.to_string_lossy(),
+        &summary,
+    )
+}
+
+#[tauri::command]
+pub async fn cleanup_differential_verification_artifacts(
+    repo_path: String,
+    dry_run: bool,
+) -> Result<DifferentialCleanupSummary, String> {
+    let command = if dry_run {
+        vec!["differential", "cleanup", "--dry-run"]
+    } else {
+        vec!["differential", "cleanup"]
+    };
+    let value = run_differential_cli(&repo_path, &command, RUN_TIMEOUT).await?;
+    let summary = validate_differential_cleanup(
+        serde_json::from_value(response_payload(value, "differential_cleanup", "summary")?)
+            .map_err(|_| "Repository verifier returned invalid differential cleanup data")?,
+    )?;
+    if summary.dry_run != dry_run {
+        return Err("Repository verifier returned a different differential cleanup mode".into());
+    }
+    Ok(summary)
+}
+
+#[tauri::command]
 pub async fn cancel_warm_verification_run(
     repo_path: String,
     run_id: String,
@@ -762,6 +1080,34 @@ pub async fn cancel_warm_verification_run(
         .as_bool()
         .ok_or("Repository verifier returned an invalid cancellation acknowledgement")?;
     Ok(WarmCancelResponse { accepted })
+}
+
+#[tauri::command]
+pub async fn cancel_differential_verification_run(
+    repo_path: String,
+    run_id: String,
+) -> Result<WarmCancelResponse, String> {
+    if !valid_id(&run_id) {
+        return Err("Differential run identity is invalid".into());
+    }
+    let value = run_differential_cli(
+        &repo_path,
+        &["differential", "cancel", "--run-id", &run_id],
+        STATUS_TIMEOUT,
+    )
+    .await?;
+    let summary = validate_differential_status(
+        serde_json::from_value(response_payload(value, "differential_status", "summary")?)
+            .map_err(|_| "Repository verifier returned invalid differential cancellation")?,
+    )?;
+    if summary.run_id != run_id {
+        return Err(
+            "Repository verifier returned a different differential cancellation identity".into(),
+        );
+    }
+    Ok(WarmCancelResponse {
+        accepted: summary.state != "not_found",
+    })
 }
 
 #[tauri::command]
@@ -869,6 +1215,40 @@ mod tests {
         let error = find_verify_package(temp.path().to_str().expect("path")).expect_err("missing");
         assert!(error.contains("found 0"));
         assert!(error.contains("remediation") || error.contains("Add one workspace"));
+    }
+
+    #[test]
+    fn differential_candidate_arguments_are_exact_and_bounded() {
+        assert!(differential_candidate_arguments("worktree", None)
+            .expect("worktree")
+            .is_empty());
+        assert_eq!(
+            differential_candidate_arguments("staged", None).expect("staged"),
+            ["--staged"]
+        );
+        assert_eq!(
+            differential_candidate_arguments("commit", Some("main~1")).expect("commit"),
+            ["--commit", "main~1"]
+        );
+        assert_eq!(
+            differential_candidate_arguments("range", Some("main..HEAD")).expect("range"),
+            ["--range", "main..HEAD"]
+        );
+        assert!(differential_candidate_arguments("commit", None).is_err());
+        assert!(differential_candidate_arguments("remote", None).is_err());
+    }
+
+    #[test]
+    fn differential_commands_reject_non_pnpm_packages_without_narrowing_warm_verification() {
+        let temp = fixture();
+        let package = VerifyPackage {
+            repo_root: temp.path().to_path_buf(),
+            package_root: temp.path().join("apps/web"),
+            manager: PackageManager::Npm,
+        };
+        let error = require_pnpm_differential(&package).expect_err("npm must be rejected");
+        assert!(error.contains("supports pnpm repositories only"));
+        assert_eq!(package.manager.arguments(&["current".into()])[3], "--");
     }
 
     #[test]
@@ -984,6 +1364,16 @@ mod tests {
         assert_eq!(
             parse_json_output(&regression).expect("regression result")["type"],
             "verify_result"
+        );
+        let incomparable_prepare = ProcessOutput {
+            success: false,
+            status_code: Some(3),
+            stdout: br#"{"type":"differential_prepared","summary":{"run_id":"run-1","status":"incomparable"}}"#.to_vec(),
+            stderr: Vec::new(),
+        };
+        assert_eq!(
+            parse_json_output(&incomparable_prepare).expect("incomparable preparation")["type"],
+            "differential_prepared"
         );
     }
 

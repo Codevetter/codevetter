@@ -8,7 +8,10 @@ import type { Page } from '@playwright/test';
 import {
   VISUAL_BASELINE_VERSION,
   VISUAL_CAPTURE_CONTRACT,
+  loadPinnedVisualBaselineBundle,
+  type PinnedVisualBaselineBundle,
   type VisualBaseline,
+  VisualBaselineBundleError,
   type VisualEnvironment,
   VisualArtifactBudget,
   VisualCheckpointVerifier,
@@ -151,21 +154,133 @@ describe('VisualCheckpointVerifier', () => {
     assert.equal(duplicate.policyId, 'visual.duplicate-checkpoint');
     assert.equal(fixture.captureCount(), 1);
   });
+
+  it('uses an immutable candidate-owned baseline bundle without rereading disk', async () => {
+    const fixture = await createFixture();
+    await fixture.writeBaseline(baseline(screenshot));
+    const bundle = await loadPinnedVisualBaselineBundle(fixture.root, [
+      { scenarioId: 'scenario-1', checkpoint: 'ready' },
+    ]);
+    await fixture.writeBaseline(baseline(Buffer.from('changed after pin')));
+
+    const result = await fixture.verifier(false, bundle).verify('ready', page);
+
+    assert.equal(result.disposition, 'passed');
+    assert.equal(bundle.selectedCount, 1);
+    assert.ok(bundle.loadedBytes > 0);
+    assert.equal(Object.isFrozen(bundle), true);
+    assert.equal(Object.isFrozen(bundle.get('scenario-1', 'ready')), true);
+  });
+
+  it('represents selected missing baselines deterministically', async () => {
+    const fixture = await createFixture();
+    const selection = [{ scenarioId: 'scenario-1', checkpoint: 'ready' }] as const;
+
+    const first = await loadPinnedVisualBaselineBundle(fixture.root, selection);
+    const second = await loadPinnedVisualBaselineBundle(fixture.root, selection);
+
+    assert.equal(first.identityHash, second.identityHash);
+    assert.deepEqual(first.get('scenario-1', 'ready'), {
+      kind: 'missing',
+      policyId: 'visual.baseline-missing',
+      message: 'Screenshot checkpoint ready has no versioned baseline',
+    });
+    const result = await fixture.verifier(false, first).verify('ready', page);
+    assert.equal(result.policyId, 'visual.baseline-missing');
+  });
+
+  it('rejects symlinked, non-regular, and oversized selected baselines', async (t) => {
+    await t.test('symlink', async () => {
+      const fixture = await createFixture();
+      const outside = await mkdtemp(path.join(os.tmpdir(), 'codevetter-baseline-outside-'));
+      roots.push(outside);
+      const baselinePath = visualBaselinePath(fixture.root, 'scenario-1', 'ready');
+      const outsideBaseline = path.join(outside, 'ready.json');
+      await mkdir(path.dirname(baselinePath), { recursive: true });
+      await writeFile(outsideBaseline, JSON.stringify(baseline(screenshot)));
+      await symlink(outsideBaseline, baselinePath);
+
+      await assert.rejects(
+        loadPinnedVisualBaselineBundle(fixture.root, [
+          { scenarioId: 'scenario-1', checkpoint: 'ready' },
+        ]),
+        (error: unknown) =>
+          error instanceof VisualBaselineBundleError && error.code === 'unsafe_baseline'
+      );
+    });
+
+    await t.test('non-regular file', async () => {
+      const fixture = await createFixture();
+      const baselinePath = visualBaselinePath(fixture.root, 'scenario-1', 'ready');
+      await mkdir(baselinePath, { recursive: true });
+
+      await assert.rejects(
+        loadPinnedVisualBaselineBundle(fixture.root, [
+          { scenarioId: 'scenario-1', checkpoint: 'ready' },
+        ]),
+        (error: unknown) =>
+          error instanceof VisualBaselineBundleError && error.code === 'unsafe_baseline'
+      );
+    });
+
+    await t.test('overflow', async () => {
+      const fixture = await createFixture();
+      const baselinePath = visualBaselinePath(fixture.root, 'scenario-1', 'ready');
+      await mkdir(path.dirname(baselinePath), { recursive: true });
+      await writeFile(baselinePath, Buffer.alloc(64 * 1024 + 1));
+
+      await assert.rejects(
+        loadPinnedVisualBaselineBundle(fixture.root, [
+          { scenarioId: 'scenario-1', checkpoint: 'ready' },
+        ]),
+        (error: unknown) =>
+          error instanceof VisualBaselineBundleError && error.code === 'baseline_overflow'
+      );
+    });
+  });
+
+  it('reads baselines from the candidate bundle while retaining artifacts under repoRoot', async () => {
+    const fixture = await createFixture();
+    await fixture.writeBaseline(baseline(Buffer.from('reference bytes')));
+    const bundle = await loadPinnedVisualBaselineBundle(fixture.root, [
+      { scenarioId: 'scenario-1', checkpoint: 'ready' },
+    ]);
+    const artifactRoot = await mkdtemp(path.join(os.tmpdir(), 'codevetter-artifact-owner-'));
+    roots.push(artifactRoot);
+
+    const result = await fixture.verifier(false, bundle, artifactRoot).verify('ready', page);
+
+    assert.equal(result.disposition, 'regression');
+    assert.ok(result.artifact);
+    assert.deepEqual(
+      await readFile(path.join(artifactRoot, result.artifact?.relative_path ?? 'missing')),
+      screenshot
+    );
+    await assert.rejects(
+      readFile(path.join(fixture.root, result.artifact?.relative_path ?? 'missing')),
+      { code: 'ENOENT' }
+    );
+  });
 });
 
 async function createFixture(artifactBudget = new VisualArtifactBudget()) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'codevetter-visual-'));
   roots.push(root);
   let captures = 0;
-  const verifier = (detailedCapture = false) =>
+  const verifier = (
+    detailedCapture = false,
+    baselineBundle?: PinnedVisualBaselineBundle,
+    repoRoot = root
+  ) =>
     new VisualCheckpointVerifier({
-      repoRoot: root,
+      repoRoot,
       retentionDirectory: '.codevetter/artifacts',
       retentionMaxAgeDays: 7,
       runId: 'run-1',
       scenarioId: 'scenario-1',
       scenarioSourceHash: 'a'.repeat(64),
       artifactBudget,
+      baselineBundle,
       detailedCapture,
       now: () => new Date('2026-07-15T00:00:00.000Z'),
       capture: async () => {

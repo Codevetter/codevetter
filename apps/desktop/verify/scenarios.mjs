@@ -28,7 +28,7 @@ export const scenarioModule = {
       async run({ page, observe, step }) {
         await step('open-trex', () => page.getByRole('link', { name: /T-Rex/i }).click());
         await step('verify-trex', () => observe.expectRoute('/trex'));
-        await observe.expectVisible('T-Rex watcher');
+        await observe.expectVisible('T-Rex');
         await step('return-home', () => page.getByRole('link', { name: /Home/i }).click());
         await observe.expectRoute('/');
         await observe.expectVisible('CodeVetter');

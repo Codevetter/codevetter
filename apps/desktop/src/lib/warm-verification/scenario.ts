@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import type { Page } from '@playwright/test';
+import type { VerificationStateRequest } from './state';
 
 export const VERIFY_SCENARIO_SCHEMA_VERSION = 1 as const;
 export const VERIFY_MANIFEST_SCHEMA_VERSION = 1 as const;
@@ -65,13 +66,27 @@ export interface ScenarioObserve {
   expectVisible(name: string): Promise<void>;
   expectRoute(route: string): Promise<void>;
   checkpoint(name: string): Promise<void>;
+  auditAccessibility(checkpoint?: string): Promise<void>;
 }
 
 export interface ScenarioExecutionContext {
   page: Page;
   observe: ScenarioObserve;
   signal: AbortSignal;
+  stateRequest: VerificationStateRequest;
+  actionTimeoutMs: number;
   step<T>(actionId: string, operation: () => Promise<T>): Promise<T>;
+}
+
+export class ScenarioCheckpointContractError extends Error {
+  readonly code = 'undeclared_visual_checkpoint' as const;
+
+  constructor(scenarioId: string, checkpoint: string) {
+    super(
+      `Scenario ${JSON.stringify(scenarioId)} used undeclared visual checkpoint ${JSON.stringify(checkpoint)}`
+    );
+    this.name = 'ScenarioCheckpointContractError';
+  }
 }
 
 export interface DeterministicScenario {
@@ -388,6 +403,12 @@ function validatePublishedScenario(
 }
 
 function freezeScenario<T extends DeterministicScenario>(scenario: T): Readonly<T> {
+  const run = scenario.run;
+  const visualCheckpoints = new Set(
+    scenario.assertions
+      .filter((assertion) => assertion.kind === 'visual')
+      .map((assertion) => assertion.id)
+  );
   return Object.freeze({
     ...scenario,
     capabilityIds: Object.freeze([...scenario.capabilityIds]),
@@ -398,7 +419,34 @@ function freezeScenario<T extends DeterministicScenario>(scenario: T): Readonly<
     assertions: Object.freeze(
       scenario.assertions.map((assertion) => Object.freeze({ ...assertion }))
     ),
+    async run(context: ScenarioExecutionContext) {
+      await run({
+        ...context,
+        observe: guardVisualCheckpoints(context.observe, scenario.id, visualCheckpoints),
+      });
+    },
   }) as Readonly<T>;
+}
+
+function guardVisualCheckpoints(
+  observe: ScenarioObserve,
+  scenarioId: string,
+  declared: ReadonlySet<string>
+): ScenarioObserve {
+  return {
+    expectNoRuntimeErrors: () => observe.expectNoRuntimeErrors(),
+    expectMutationCount: (routePattern, expected) =>
+      observe.expectMutationCount(routePattern, expected),
+    expectVisible: (name) => observe.expectVisible(name),
+    expectRoute: (route) => observe.expectRoute(route),
+    checkpoint: (name) => {
+      if (!declared.has(name)) {
+        return Promise.reject(new ScenarioCheckpointContractError(scenarioId, name));
+      }
+      return observe.checkpoint(name);
+    },
+    auditAccessibility: (checkpoint) => observe.auditAccessibility(checkpoint),
+  };
 }
 
 function sha256(value: string | Uint8Array): string {

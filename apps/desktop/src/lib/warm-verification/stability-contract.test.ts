@@ -155,7 +155,7 @@ describe('warm verification stability qualification', () => {
 async function readReport(): Promise<StabilityReport> {
   return JSON.parse(
     await readFile(
-      path.resolve(process.cwd(), 'tests/fixtures/warm-verification/stability-2026-07-15.json'),
+      path.resolve(process.cwd(), 'tests/fixtures/warm-verification/stability-current.json'),
       'utf8'
     )
   ) as StabilityReport;

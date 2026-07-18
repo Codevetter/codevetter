@@ -1,17 +1,43 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 
 import type { DaemonRequestEnvelope, DaemonResponseEnvelope } from './contracts';
 import { validateDaemonResponseEnvelope } from './contracts';
-import { VerificationDaemon } from './daemon';
+import { candidateDryRunBlockingIssues, VerificationDaemon } from './daemon';
+import {
+  validateDifferentialDaemonResponseEnvelope,
+  type DifferentialDaemonRequestEnvelope,
+} from './differential-daemon-contracts';
+import type { DifferentialVerificationService } from './differential-service';
 import type { VerifyDaemonLease } from './singleton';
 import type { WarmRuntimeSupervisor } from './supervision';
 
 const gitSha = 'a'.repeat(40);
 const identity = 'b'.repeat(64);
+
+describe('candidate dry-run policy', () => {
+  it('allows a missing visual baseline but blocks capture and runtime failures', () => {
+    const observation = (policy_id: string, disposition: 'regression' | 'no_confidence') => ({
+      policy_id,
+      disposition,
+      message: policy_id,
+    });
+    assert.deepEqual(
+      candidateDryRunBlockingIssues({
+        limitations: [],
+        observations: [
+          observation('visual.baseline-missing', 'no_confidence'),
+          observation('visual.capture-failed', 'no_confidence'),
+          observation('runtime.no-errors', 'regression'),
+        ],
+      } as never),
+      ['visual.capture-failed', 'runtime.no-errors']
+    );
+  });
+});
 
 const scenarioSource = `
 export const scenarioModule = {
@@ -131,6 +157,181 @@ function fakeRuntime(): WarmRuntimeSupervisor {
     stop: async () => undefined,
     browser: { currentBrowser: () => assert.fail('browser should not be requested') },
   } as unknown as WarmRuntimeSupervisor;
+}
+
+describe('differential daemon ownership boundary', () => {
+  it('constructs one daemon-owned differential service and tears it down first', async () => {
+    const root = await fixtureRepo();
+    const runtime = fakeRuntime();
+    const events: string[] = [];
+    runtime.stop = async () => {
+      events.push('runtime-stop');
+    };
+    const service = {
+      async stop() {
+        events.push('differential-stop');
+      },
+    } as unknown as DifferentialVerificationService;
+    let factories = 0;
+    const daemon = await VerificationDaemon.create(root, gitSha, lease(root), runtime, {
+      async differentialServiceFactory(repoRoot, factoryLease, factoryRuntime) {
+        factories += 1;
+        assert.equal(repoRoot, await realpath(root));
+        assert.strictEqual(factoryLease.canonical_root, root);
+        assert.strictEqual(factoryRuntime, runtime);
+        return service;
+      },
+    });
+
+    await daemon.stop();
+
+    assert.equal(factories, 1);
+    assert.deepEqual(events, ['differential-stop', 'runtime-stop']);
+  });
+
+  it('routes every differential operation through its one owned service', async () => {
+    const root = await fixtureRepo();
+    const calls: string[] = [];
+    const service = {
+      async prepare(input: { runId: string }) {
+        calls.push(`prepare:${input.runId}`);
+        return prepared(input.runId);
+      },
+      async run(input: { runId: string }) {
+        calls.push(`run:${input.runId}`);
+        return result(input.runId);
+      },
+      status(runId: string) {
+        calls.push(`status:${runId}`);
+        return status(runId, 'completed');
+      },
+      cancel(runId: string) {
+        calls.push(`cancel:${runId}`);
+        return true;
+      },
+      async cleanup(dryRun: boolean) {
+        calls.push(`cleanup:${dryRun}`);
+        return cleanup(dryRun);
+      },
+    } as unknown as DifferentialVerificationService;
+    const daemon = await VerificationDaemon.create(root, gitSha, lease(root), fakeRuntime(), {
+      differentialService: service,
+    });
+    for (const request of [
+      {
+        type: 'differential_prepare' as const,
+        run_id: 'prepare-1',
+        reference_revision: 'main',
+        candidate: { kind: 'worktree' as const },
+      },
+      {
+        type: 'differential_run' as const,
+        run_id: 'run-1',
+        reference_revision: 'main',
+        candidate: { kind: 'worktree' as const },
+      },
+      { type: 'differential_status' as const, run_id: 'run-1' },
+      { type: 'differential_cancel' as const, run_id: 'run-1' },
+      { type: 'differential_cleanup' as const, dry_run: true },
+    ]) {
+      const envelope: DifferentialDaemonRequestEnvelope = {
+        protocol_version: 1,
+        request_id: `request-${calls.length}`,
+        sent_at: '2026-07-16T00:00:00.000Z',
+        request,
+      };
+      const response = await daemon.handle(envelope);
+      const validation = validateDifferentialDaemonResponseEnvelope({
+        protocol_version: 1,
+        request_id: envelope.request_id,
+        sent_at: envelope.sent_at,
+        response,
+      });
+      assert.equal(validation.ok, true, JSON.stringify(validation));
+    }
+    assert.deepEqual(calls, [
+      'prepare:prepare-1',
+      'run:run-1',
+      'status:run-1',
+      'cancel:run-1',
+      'status:run-1',
+      'cleanup:true',
+    ]);
+  });
+});
+
+function prepared(runId: string) {
+  return {
+    schema_version: 1 as const,
+    run_id: runId,
+    status: 'ready' as const,
+    reference_sha: gitSha,
+    candidate_kind: 'worktree' as const,
+    candidate_identity: identity,
+    selection_identity: identity,
+    scenario_count: 1,
+    source_cache_hits: 2,
+    dependency_cache_hit: true,
+    prepared_bytes: 1,
+    reason_codes: [],
+    model_call_count: 0 as const,
+    cleanup_complete: true,
+  };
+}
+
+function result(runId: string) {
+  return {
+    schema_version: 1 as const,
+    run_id: runId,
+    status: 'complete' as const,
+    classification: 'unchanged' as const,
+    plan_identity: identity,
+    reference_sha: gitSha,
+    candidate_kind: 'worktree' as const,
+    candidate_identity: identity,
+    scenario_count: 1,
+    delta_count: 0,
+    blocking_delta_count: 0,
+    delta_previews: [],
+    delta_previews_truncated: false,
+    reason_codes: [],
+    comparison_policy_identities: [identity],
+    duration_ms: 1,
+    cleanup_complete: true,
+    creates_pass_evidence: false as const,
+    model_call_count: 0 as const,
+  };
+}
+
+function status(runId: string, state: 'completed') {
+  return {
+    schema_version: 1 as const,
+    run_id: runId,
+    state,
+    updated_at: '2026-07-16T00:00:00.000Z',
+    classification: 'unchanged' as const,
+    reason_codes: [],
+  };
+}
+
+function cleanup(dryRun: boolean) {
+  return {
+    schema_version: 1 as const,
+    dry_run: dryRun,
+    complete: true,
+    removed_source_cache_keys: [],
+    removed_dependency_cache_keys: [],
+    removed_targets: 0,
+    removed_staging: 0,
+    retained_entries: 0,
+    retained_logical_bytes: 0,
+    retained_allocated_bytes: 0,
+    skipped_entries: 0,
+    warm_artifact_reclaimed_bytes: 0,
+    warm_artifact_removed_files: 0,
+    shared_playwright_cache_bytes: 0,
+    error_codes: [],
+  };
 }
 
 function request(

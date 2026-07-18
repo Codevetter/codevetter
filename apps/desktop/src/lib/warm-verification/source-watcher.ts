@@ -29,15 +29,16 @@ export async function watchVerificationSources(
 ): Promise<VerificationSourceWatch> {
   const canonicalRoot = await realpath(repoRoot);
   const sources = verificationSourcePaths(canonicalRoot, config, changedPaths);
-  const byDirectory = new Map<string, Map<string, string>>();
+  const byDirectory = new Map<string, Map<string, Set<string>>>();
 
   for (const relativePath of sources) {
     const absolutePath = path.resolve(canonicalRoot, relativePath);
-    const canonicalDirectory = await realpath(path.dirname(absolutePath));
-    assertWithinRepo(canonicalRoot, canonicalDirectory, relativePath);
-    const entries = byDirectory.get(canonicalDirectory) ?? new Map<string, string>();
-    entries.set(path.basename(absolutePath), relativePath);
-    byDirectory.set(canonicalDirectory, entries);
+    const target = await resolveWatchTarget(canonicalRoot, absolutePath, relativePath);
+    const entries = byDirectory.get(target.directory) ?? new Map<string, Set<string>>();
+    const paths = entries.get(target.entry) ?? new Set<string>();
+    paths.add(relativePath);
+    entries.set(target.entry, paths);
+    byDirectory.set(target.directory, entries);
   }
 
   const changed = new Set<string>();
@@ -52,17 +53,21 @@ export async function watchVerificationSources(
     for (const [directory, entries] of byDirectory) {
       const watcher = watchDirectory(directory, (_eventType, filename) => {
         if (filename === null) {
-          for (const relativePath of entries.values()) markChanged(relativePath);
+          for (const paths of entries.values()) {
+            for (const relativePath of paths) markChanged(relativePath);
+          }
           return;
         }
-        const relativePath = entries.get(
-          Buffer.isBuffer(filename) ? filename.toString() : filename
-        );
-        if (relativePath) markChanged(relativePath);
+        const paths = entries.get(Buffer.isBuffer(filename) ? filename.toString() : filename);
+        if (paths) {
+          for (const relativePath of paths) markChanged(relativePath);
+        }
       });
       watchers.push(watcher);
       watcher.on?.('error', () => {
-        for (const relativePath of entries.values()) markChanged(relativePath);
+        for (const paths of entries.values()) {
+          for (const relativePath of paths) markChanged(relativePath);
+        }
       });
     }
   } catch (error) {
@@ -84,6 +89,29 @@ export async function watchVerificationSources(
       closeWatchers(watchers);
     },
   };
+}
+
+async function resolveWatchTarget(
+  canonicalRoot: string,
+  absolutePath: string,
+  relativePath: string
+): Promise<{ directory: string; entry: string }> {
+  let directory = path.dirname(absolutePath);
+  let entry = path.basename(absolutePath);
+
+  while (true) {
+    try {
+      const canonicalDirectory = await realpath(directory);
+      assertWithinRepo(canonicalRoot, canonicalDirectory, relativePath);
+      return { directory: canonicalDirectory, entry };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      const parent = path.dirname(directory);
+      if (parent === directory) throw error;
+      entry = path.basename(directory);
+      directory = parent;
+    }
+  }
 }
 
 export function verificationSourcePaths(
