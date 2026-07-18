@@ -243,9 +243,14 @@ pub(crate) fn reconstruct_history_as_of(
     }
     let mut checkpoint_statement = connection
         .prepare(
-            "SELECT revision_sha, snapshot_id FROM history_graph_checkpoints
-             WHERE repo_path = ?1 AND status = 'ready'
-               AND engine_id = ?2 AND engine_version = ?3 AND schema_version = ?4",
+            "SELECT checkpoint.revision_sha, checkpoint.snapshot_id
+             FROM history_graph_checkpoints checkpoint
+             LEFT JOIN structural_graph_snapshots snapshot ON snapshot.id = checkpoint.snapshot_id
+             WHERE checkpoint.repo_path = ?1 AND checkpoint.status = 'ready'
+               AND checkpoint.engine_id = ?2 AND checkpoint.engine_version = ?3
+               AND checkpoint.schema_version = ?4
+               AND (snapshot.id IS NULL OR snapshot.ignore_fingerprint IS NULL
+                    OR snapshot.ignore_fingerprint = ?5)",
         )
         .map_err(|error| format!("Prepare compatible history checkpoints: {error}"))?;
     let checkpoints = checkpoint_statement
@@ -255,6 +260,7 @@ pub(crate) fn reconstruct_history_as_of(
                 BUNDLED_ENGINE_ID,
                 BUNDLED_ENGINE_VERSION,
                 STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                crate::commands::structural_graph::extract::current_ignore_fingerprint(),
             ],
             |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
         )

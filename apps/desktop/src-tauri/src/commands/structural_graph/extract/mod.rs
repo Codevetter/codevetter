@@ -1,6 +1,8 @@
 use super::contracts::extract_contracts;
 use super::language::{supported_language_names, SupportedLanguage};
-use super::metrics::{detect_clone_groups, extract_scope_metrics, finalize_metric_degrees};
+use super::metrics::{
+    detect_clone_groups, extract_scope_metrics_with_cancellation, finalize_metric_degrees,
+};
 use super::types::{
     stable_graph_id, GraphOrigin, GraphSourceAnchor, GraphTrust, LanguageCoverage,
     StructuralGraphBuildInput, StructuralGraphCancellation, StructuralGraphCoverage,
@@ -21,8 +23,12 @@ use tree_sitter::{Node, Parser};
 
 const IGNORE_POLICY_VERSION: &str = "structural-ignore-v1";
 
+pub(crate) fn current_ignore_fingerprint() -> String {
+    stable_graph_id("ignore", IGNORE_POLICY_VERSION)
+}
+
 #[derive(Debug)]
-struct FileContribution {
+pub(crate) struct FileContribution {
     path: String,
     language: Option<String>,
     content_hash: Option<String>,
@@ -32,6 +38,20 @@ struct FileContribution {
     metrics: Vec<StructuralGraphMetricFact>,
     diagnostics: Vec<StructuralGraphDiagnostic>,
     disposition: FileDisposition,
+}
+
+impl FileContribution {
+    pub(crate) fn nodes(&self) -> &[StructuralGraphNode] {
+        &self.nodes
+    }
+
+    pub(crate) fn metrics(&self) -> &[StructuralGraphMetricFact] {
+        &self.metrics
+    }
+
+    pub(crate) fn diagnostics(&self) -> &[StructuralGraphDiagnostic] {
+        &self.diagnostics
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -68,16 +88,17 @@ mod syntax;
 
 use assembly::{
     coverage_from_file_records, deduplicate_edges, deduplicate_metrics, deduplicate_nodes,
-    file_record_from_contribution, is_binary_path, is_generated_path, metadata_file_contribution,
-    node_belongs_to_paths, parse_error_contribution, skipped_contribution, sources_touch_paths,
+    file_record_from_contribution, metadata_file_contribution, node_belongs_to_paths,
+    parse_error_contribution, skipped_contribution, sources_touch_paths,
 };
 #[cfg(test)]
 use files::extract_metadata_path;
 use files::{discover_paths, extract_blob, extract_path};
 use metadata::{attach_metadata_to_syntax_owners, extract_metadata_signals};
-use syntax::{extract_source, make_edge};
+use syntax::make_edge;
+pub(crate) use syntax::{extract_source, extract_source_with_cancellation};
 
-pub(crate) use assembly::is_sensitive_path;
+pub(crate) use assembly::{is_binary_path, is_generated_path, is_sensitive_path, is_vendor_path};
 pub use engine::BundledTreeSitterEngine;
 pub use history::{build_snapshot_from_blob_delta, build_snapshot_from_blobs, HistoricalFileBlob};
 

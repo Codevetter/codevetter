@@ -1,16 +1,55 @@
 use super::*;
+use std::ops::ControlFlow;
+use tree_sitter::ParseOptions;
 
-pub(super) fn extract_source(
+pub(crate) fn extract_source(
     path: &str,
     language: SupportedLanguage,
     source: &str,
 ) -> FileContribution {
+    extract_source_with_cancellation(
+        path,
+        language,
+        source,
+        &StructuralGraphCancellation::default(),
+    )
+}
+
+pub(crate) fn extract_source_with_cancellation(
+    path: &str,
+    language: SupportedLanguage,
+    source: &str,
+    cancellation: &StructuralGraphCancellation,
+) -> FileContribution {
+    if cancellation.is_cancelled() {
+        return cancelled_contribution(path, language);
+    }
     let mut parser = Parser::new();
     let ts_language = language.tree_sitter_language();
     if let Err(error) = parser.set_language(&ts_language) {
         return parse_error_contribution(path, language, format!("Parser setup failed: {error}"));
     }
-    let Some(tree) = parser.parse(source, None) else {
+    let bytes = source.as_bytes();
+    let mut read = |offset: usize, _| {
+        if cancellation.is_cancelled() {
+            &bytes[bytes.len()..]
+        } else {
+            bytes.get(offset..).unwrap_or_default()
+        }
+    };
+    let mut progress = |_: &tree_sitter::ParseState| {
+        if cancellation.is_cancelled() {
+            ControlFlow::Break(())
+        } else {
+            ControlFlow::Continue(())
+        }
+    };
+    let options = ParseOptions::new().progress_callback(&mut progress);
+    let tree = parser.parse_with_options(&mut read, None, Some(options));
+    if cancellation.is_cancelled() {
+        return cancelled_contribution(path, language);
+    }
+    let Some(tree) = tree else {
         return parse_error_contribution(path, language, "Parser returned no tree".to_string());
     };
 
@@ -29,7 +68,7 @@ pub(super) fn extract_source(
         sources: vec![GraphSourceAnchor::path(path)],
     }];
     let mut edges = Vec::new();
-    let mut metrics = vec![extract_scope_metrics(
+    let Some(root_metric) = extract_scope_metrics_with_cancellation(
         path,
         language,
         source,
@@ -38,9 +77,14 @@ pub(super) fn extract_source(
         "file",
         false,
         None,
-    )];
+        Some(cancellation),
+    ) else {
+        return cancelled_contribution(path, language);
+    };
+    let mut metrics = vec![root_metric];
     let mut identity_counts = HashMap::new();
-    visit_node(
+    let mut visited = 0_usize;
+    if !visit_node(
         tree.root_node(),
         source,
         path,
@@ -51,7 +95,14 @@ pub(super) fn extract_source(
         &mut nodes,
         &mut edges,
         &mut metrics,
-    );
+        cancellation,
+        &mut visited,
+    ) {
+        return cancelled_contribution(path, language);
+    }
+    if cancellation.is_cancelled() {
+        return cancelled_contribution(path, language);
+    }
     extract_metadata_signals(
         path,
         source,
@@ -61,6 +112,9 @@ pub(super) fn extract_source(
         &mut edges,
     );
     attach_metadata_to_syntax_owners(&nodes, &mut edges);
+    if cancellation.is_cancelled() {
+        return cancelled_contribution(path, language);
+    }
     let mut diagnostics = Vec::new();
     if tree.root_node().has_error() {
         diagnostics.push(StructuralGraphDiagnostic {
@@ -85,6 +139,14 @@ pub(super) fn extract_source(
     }
 }
 
+fn cancelled_contribution(path: &str, language: SupportedLanguage) -> FileContribution {
+    parse_error_contribution(
+        path,
+        language,
+        "Structural extraction cancelled".to_string(),
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 fn visit_node(
     node: Node<'_>,
@@ -97,12 +159,21 @@ fn visit_node(
     nodes: &mut Vec<StructuralGraphNode>,
     edges: &mut Vec<StructuralGraphEdge>,
     metrics: &mut Vec<StructuralGraphMetricFact>,
-) {
+    cancellation: &StructuralGraphCancellation,
+    visited: &mut usize,
+) -> bool {
+    *visited += 1;
+    if (*visited).is_multiple_of(256) && cancellation.is_cancelled() {
+        return false;
+    }
     let mut child_owner = owner_id.to_string();
     let mut child_containers = containers.to_vec();
 
     if let Some(kind) = declaration_kind(node.kind()) {
-        if let Some(name) = declaration_name(node, source) {
+        if let Some(name_node) = declaration_name_node(node) {
+            let Some(name) = compact_node_text(name_node, source, 120) else {
+                return true;
+            };
             let qualified_name = if containers.is_empty() {
                 name.clone()
             } else {
@@ -112,14 +183,14 @@ fn visit_node(
             let ordinal = identity_counts.entry(identity.clone()).or_insert(0);
             let node_id = stable_graph_id(kind, &format!("{identity}\0{ordinal}"));
             *ordinal += 1;
-            let anchor = source_anchor(path, node, source);
+            let anchor = source_anchor(path, name_node, source);
             nodes.push(StructuralGraphNode {
                 id: node_id.clone(),
                 kind: kind.to_string(),
                 label: name.clone(),
                 qualified_name: Some(format!("{path}::{qualified_name}")),
                 path: Some(path.to_string()),
-                detail: Some(node.kind().to_string()),
+                detail: Some(declaration_detail(node, source)),
                 language: Some(language.name().to_string()),
                 community_id: None,
                 trust: GraphTrust::Extracted,
@@ -129,7 +200,7 @@ fn visit_node(
             if is_metric_scope(kind) {
                 let (public_surface, public_surface_reason) =
                     public_surface(node, source, language);
-                metrics.push(extract_scope_metrics(
+                let Some(metric) = extract_scope_metrics_with_cancellation(
                     path,
                     language,
                     source,
@@ -138,7 +209,11 @@ fn visit_node(
                     kind,
                     public_surface,
                     public_surface_reason,
-                ));
+                    Some(cancellation),
+                ) else {
+                    return false;
+                };
+                metrics.push(metric);
             }
             edges.push(make_edge(
                 owner_id,
@@ -246,7 +321,7 @@ fn visit_node(
 
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
-        visit_node(
+        if !visit_node(
             child,
             source,
             path,
@@ -257,8 +332,13 @@ fn visit_node(
             nodes,
             edges,
             metrics,
-        );
+            cancellation,
+            visited,
+        ) {
+            return false;
+        }
     }
+    true
 }
 
 fn is_explicitly_exported(node: Node<'_>) -> bool {
@@ -441,26 +521,30 @@ fn declaration_kind(node_kind: &str) -> Option<&'static str> {
 }
 
 fn declaration_name(node: Node<'_>, source: &str) -> Option<String> {
+    declaration_name_node(node).and_then(|name| compact_node_text(name, source, 120))
+}
+
+fn declaration_name_node(node: Node<'_>) -> Option<Node<'_>> {
     for field in ["name", "declarator", "type", "identifier"] {
         if let Some(candidate) = node.child_by_field_name(field) {
-            if let Some(name) = first_identifier_text(candidate, source, 0) {
+            if let Some(name) = first_identifier_node(candidate, 0) {
                 return Some(name);
             }
         }
     }
-    first_identifier_text(node, source, 0)
+    first_identifier_node(node, 0)
 }
 
-fn first_identifier_text(node: Node<'_>, source: &str, depth: usize) -> Option<String> {
+fn first_identifier_node(node: Node<'_>, depth: usize) -> Option<Node<'_>> {
     if depth > 5 {
         return None;
     }
     if is_identifier_kind(node.kind()) {
-        return compact_node_text(node, source, 120);
+        return Some(node);
     }
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
-        if let Some(value) = first_identifier_text(child, source, depth + 1) {
+        if let Some(value) = first_identifier_node(child, depth + 1) {
             return Some(value);
         }
     }
@@ -558,6 +642,22 @@ fn compact_node_text(node: Node<'_>, source: &str, max_chars: usize) -> Option<S
         return None;
     }
     Some(text.chars().take(max_chars).collect())
+}
+
+fn declaration_detail(node: Node<'_>, source: &str) -> String {
+    let signature_end = node
+        .child_by_field_name("body")
+        .map(|body| body.start_byte())
+        .unwrap_or_else(|| node.end_byte());
+    let signature = source
+        .get(node.start_byte()..signature_end)
+        .unwrap_or(node.kind())
+        .trim();
+    format!(
+        "{} · {}",
+        node.kind(),
+        stable_graph_id("declaration-shape", signature)
+    )
 }
 
 fn normalize_reference(value: &str) -> String {

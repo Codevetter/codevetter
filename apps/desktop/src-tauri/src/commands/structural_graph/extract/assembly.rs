@@ -239,7 +239,14 @@ pub(crate) fn is_sensitive_path(path: &str) -> bool {
     crate::commands::secret_policy::is_sensitive_path(path)
 }
 
-pub(super) fn is_generated_path(path: &str) -> bool {
+pub(crate) fn is_vendor_path(path: &str) -> bool {
+    let lower = format!("/{}/", path.to_ascii_lowercase().trim_matches('/'));
+    ["/node_modules/", "/vendor/", "/.venv/", "/site-packages/"]
+        .iter()
+        .any(|segment| lower.contains(segment))
+}
+
+pub(crate) fn is_generated_path(path: &str) -> bool {
     let lower = format!("/{}/", path.to_ascii_lowercase().trim_matches('/'));
     [
         "/node_modules/",
@@ -248,18 +255,18 @@ pub(super) fn is_generated_path(path: &str) -> bool {
         "/build/",
         "/out/",
         "/coverage/",
-        "/vendor/",
         "/.next/",
         "/.turbo/",
     ]
     .iter()
     .any(|segment| lower.contains(segment))
+        || is_vendor_path(path)
         || path.ends_with(".min.js")
         || path.ends_with(".generated.ts")
         || path.ends_with(".g.cs")
 }
 
-pub(super) fn is_binary_path(path: &str) -> bool {
+pub(crate) fn is_binary_path(path: &str) -> bool {
     let extension = Path::new(path)
         .extension()
         .and_then(|extension| extension.to_str())

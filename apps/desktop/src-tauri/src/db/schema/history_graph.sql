@@ -141,4 +141,3 @@ CREATE TABLE IF NOT EXISTS history_graph_annotations (
 CREATE INDEX IF NOT EXISTS idx_history_graph_annotations_target
     ON history_graph_annotations(repo_path, revision_sha, entity_id, created_at);
 
-

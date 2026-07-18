@@ -26,7 +26,13 @@ pub(in crate::commands::history_graph) fn repair_derived_history(
             .prepare(
                 "SELECT snapshot_id FROM history_graph_checkpoints
                  WHERE repo_path = ?1
-                   AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4)",
+                   AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4
+                        OR EXISTS(
+                            SELECT 1 FROM structural_graph_snapshots snapshot
+                            WHERE snapshot.id = history_graph_checkpoints.snapshot_id
+                              AND snapshot.ignore_fingerprint IS NOT NULL
+                              AND snapshot.ignore_fingerprint != ?5
+                        ))",
             )
             .map_err(|error| format!("Prepare engine checkpoint repair: {error}"))?;
         let snapshot_ids = statement
@@ -36,6 +42,7 @@ pub(in crate::commands::history_graph) fn repair_derived_history(
                     BUNDLED_ENGINE_ID,
                     BUNDLED_ENGINE_VERSION,
                     STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                    crate::commands::structural_graph::extract::current_ignore_fingerprint(),
                 ],
                 |row| row.get::<_, String>(0),
             )
@@ -56,12 +63,19 @@ pub(in crate::commands::history_graph) fn repair_derived_history(
             .execute(
                 "DELETE FROM history_graph_checkpoints
                  WHERE repo_path = ?1
-                   AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4)",
+                   AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4
+                        OR EXISTS(
+                            SELECT 1 FROM structural_graph_snapshots snapshot
+                            WHERE snapshot.id = history_graph_checkpoints.snapshot_id
+                              AND snapshot.ignore_fingerprint IS NOT NULL
+                              AND snapshot.ignore_fingerprint != ?5
+                        ))",
                 params![
                     repo_path,
                     BUNDLED_ENGINE_ID,
                     BUNDLED_ENGINE_VERSION,
                     STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                    crate::commands::structural_graph::extract::current_ignore_fingerprint(),
                 ],
             )
             .map_err(|error| format!("Delete incompatible checkpoints: {error}"))?
@@ -148,10 +162,10 @@ pub(in crate::commands::history_graph) fn repair_derived_history(
 
 pub(in crate::commands::history_graph) fn prune_unreachable_history(
     connection: &Connection,
-    root: &Path,
+    reachable_revisions: &[String],
     repo_path: &str,
 ) -> Result<usize, String> {
-    let reachable = revision_ordinals(root)?.into_keys().collect::<HashSet<_>>();
+    let reachable = reachable_revisions.iter().collect::<HashSet<_>>();
     let mut statement = connection
         .prepare("SELECT sha FROM history_graph_revisions WHERE repo_path = ?1 ORDER BY sha")
         .map_err(|error| format!("Prepare unreachable history cleanup: {error}"))?;
@@ -220,7 +234,13 @@ pub(in crate::commands::history_graph) fn prune_incompatible_history_checkpoints
         .prepare(
             "SELECT snapshot_id FROM history_graph_checkpoints
              WHERE repo_path = ?1
-               AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4)",
+               AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4
+                    OR EXISTS(
+                        SELECT 1 FROM structural_graph_snapshots snapshot
+                        WHERE snapshot.id = history_graph_checkpoints.snapshot_id
+                          AND snapshot.ignore_fingerprint IS NOT NULL
+                          AND snapshot.ignore_fingerprint != ?5
+                    ))",
         )
         .map_err(|error| format!("Prepare incompatible checkpoint cleanup: {error}"))?;
     let snapshot_ids = statement
@@ -230,6 +250,7 @@ pub(in crate::commands::history_graph) fn prune_incompatible_history_checkpoints
                 BUNDLED_ENGINE_ID,
                 BUNDLED_ENGINE_VERSION,
                 STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                crate::commands::structural_graph::extract::current_ignore_fingerprint(),
             ],
             |row| row.get::<_, String>(0),
         )
@@ -244,12 +265,19 @@ pub(in crate::commands::history_graph) fn prune_incompatible_history_checkpoints
         .execute(
             "DELETE FROM history_graph_checkpoints
              WHERE repo_path = ?1
-               AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4)",
+               AND (engine_id != ?2 OR engine_version != ?3 OR schema_version != ?4
+                    OR EXISTS(
+                        SELECT 1 FROM structural_graph_snapshots snapshot
+                        WHERE snapshot.id = history_graph_checkpoints.snapshot_id
+                          AND snapshot.ignore_fingerprint IS NOT NULL
+                          AND snapshot.ignore_fingerprint != ?5
+                    ))",
             params![
                 repo_path,
                 BUNDLED_ENGINE_ID,
                 BUNDLED_ENGINE_VERSION,
                 STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                crate::commands::structural_graph::extract::current_ignore_fingerprint(),
             ],
         )
         .map_err(|error| format!("Delete incompatible checkpoints: {error}"))?;
@@ -317,32 +345,51 @@ pub(in crate::commands::history_graph) fn persist_timeline(
     connection: &Connection,
     timeline: &HistoryTimeline,
 ) -> Result<(), String> {
-    persist_timeline_with_publication(connection, timeline, true)
+    persist_timeline_with_publication(connection, timeline, true, None)
 }
 
+#[cfg(test)]
 pub(in crate::commands::history_graph) fn persist_timeline_catalog(
     connection: &Connection,
     timeline: &HistoryTimeline,
 ) -> Result<(), String> {
-    persist_timeline_with_publication(connection, timeline, false)
+    persist_timeline_with_publication(connection, timeline, false, None)
+}
+
+pub(in crate::commands::history_graph) fn persist_timeline_catalog_with_fingerprint(
+    connection: &Connection,
+    timeline: &HistoryTimeline,
+    tag_fingerprint: &str,
+) -> Result<(), String> {
+    persist_timeline_with_publication(connection, timeline, false, Some(tag_fingerprint))
 }
 
 pub(in crate::commands::history_graph) fn persist_timeline_with_publication(
     connection: &Connection,
     timeline: &HistoryTimeline,
     publish: bool,
+    known_tag_fingerprint: Option<&str>,
 ) -> Result<(), String> {
     let root = Path::new(&timeline.repo_path);
-    let tag_fingerprint =
-        repository_tag_fingerprint(root).unwrap_or_else(|_| timeline_tag_fingerprint(timeline));
-    let ordinals = revision_ordinals(root).unwrap_or_else(|_| {
+    let tag_fingerprint = known_tag_fingerprint
+        .map(str::to_string)
+        .unwrap_or_else(|| {
+            repository_tag_fingerprint(root).unwrap_or_else(|_| timeline_tag_fingerprint(timeline))
+        });
+    let ordinals = if timeline.reachable_revisions.is_empty() {
         timeline
             .revisions
             .iter()
+            .map(|revision| (revision.sha.clone(), revision.ordinal))
+            .collect::<HashMap<_, _>>()
+    } else {
+        timeline
+            .reachable_revisions
+            .iter()
             .enumerate()
-            .map(|(ordinal, revision)| (revision.sha.clone(), ordinal as i64))
+            .map(|(ordinal, revision)| (revision.clone(), ordinal as i64))
             .collect()
-    });
+    };
     let previous_tag_fingerprint = connection
         .query_row(
             "SELECT indexed_tags_fingerprint FROM history_graph_repositories
@@ -592,4 +639,90 @@ pub(in crate::commands::history_graph) fn persist_timeline_with_publication(
     transaction
         .commit()
         .map_err(|error| format!("Commit history timeline: {error}"))
+}
+
+pub(in crate::commands::history_graph) fn publish_release_catalog(
+    connection: &rusqlite::Transaction<'_>,
+    timeline: &HistoryTimeline,
+    tags: &[GitTagRecord],
+    tag_fingerprint: &str,
+    ancestry_complete: bool,
+) -> Result<String, String> {
+    let release_tag_count = tags.iter().filter(|tag| is_release_tag(&tag.name)).count();
+    let index_identity = stable_graph_id(
+        "release-catalog",
+        &format!(
+            "{}\0{}\0{}\0{}",
+            HISTORY_RELEASE_CATALOG_SCHEMA_VERSION,
+            timeline.repo_path,
+            timeline.head,
+            tag_fingerprint
+        ),
+    );
+    let status = if ancestry_complete {
+        "ready"
+    } else {
+        "partial"
+    };
+    connection
+        .execute(
+            "INSERT INTO history_graph_release_catalogs (
+                 repo_path, schema_version, index_identity, indexed_head,
+                 tags_fingerprint, status, coverage_json, updated_at
+             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+             ON CONFLICT(repo_path) DO UPDATE SET
+                 schema_version = excluded.schema_version,
+                 index_identity = excluded.index_identity,
+                 indexed_head = excluded.indexed_head,
+                 tags_fingerprint = excluded.tags_fingerprint,
+                 status = excluded.status,
+                 coverage_json = excluded.coverage_json,
+                 updated_at = excluded.updated_at",
+            params![
+                timeline.repo_path,
+                HISTORY_RELEASE_CATALOG_SCHEMA_VERSION,
+                index_identity,
+                timeline.head,
+                tag_fingerprint,
+                status,
+                serde_json::json!({
+                    "ancestry_complete": ancestry_complete,
+                    "is_shallow": timeline.is_shallow,
+                    "release_tag_count": release_tag_count,
+                })
+                .to_string(),
+                timeline.generated_at,
+            ],
+        )
+        .map_err(|error| format!("Stage release catalog identity: {error}"))?;
+    connection
+        .execute(
+            "DELETE FROM history_graph_release_tags WHERE repo_path = ?1",
+            params![timeline.repo_path],
+        )
+        .map_err(|error| format!("Replace release catalog rows: {error}"))?;
+    let mut statement = connection
+        .prepare(
+            "INSERT INTO history_graph_release_tags (
+                 repo_path, tag, revision_sha, tag_object_sha, tag_kind, tagged_at
+             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        )
+        .map_err(|error| format!("Prepare release catalog rows: {error}"))?;
+    for tag in tags.iter().filter(|tag| is_release_tag(&tag.name)) {
+        statement
+            .execute(params![
+                timeline.repo_path,
+                tag.name,
+                tag.commit_sha,
+                tag.object_sha,
+                if tag.object_sha == tag.commit_sha {
+                    "lightweight"
+                } else {
+                    "annotated"
+                },
+                tag.created_ts,
+            ])
+            .map_err(|error| format!("Persist release catalog row: {error}"))?;
+    }
+    Ok(index_identity)
 }

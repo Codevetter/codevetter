@@ -1,4 +1,4 @@
-use crate::commands::git_metadata::{is_release_tag, read_git_tags};
+use crate::commands::git_metadata::{is_release_tag, read_git_tags, GitTagRecord};
 use crate::commands::history_evidence::refresh_builtin_adapters;
 use crate::commands::structural_graph::analysis::StructuralGraphAnalysisSummary;
 use crate::commands::structural_graph::extract::{
@@ -66,6 +66,8 @@ pub struct HistoryRevision {
     pub tags: Vec<String>,
     pub is_release: bool,
     pub is_head: bool,
+    #[serde(default)]
+    pub ordinal: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -80,6 +82,8 @@ pub struct HistoryTimeline {
     pub is_shallow: bool,
     pub coverage_complete: bool,
     pub release_ranges: Vec<HistoryReleaseRange>,
+    #[serde(skip, default)]
+    pub reachable_revisions: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -91,6 +95,208 @@ pub struct HistoryReleaseRange {
     pub to_inclusive: String,
     pub commit_shas: Vec<String>,
     pub is_unreleased: bool,
+}
+
+pub const HISTORY_RELEASE_CATALOG_SCHEMA_VERSION: i64 = 1;
+pub const HISTORY_TIMELINE_WINDOW_SCHEMA_VERSION: i64 = 1;
+pub const HISTORY_LANDMARK_CATALOG_SCHEMA_VERSION: i64 = 1;
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum HistoryTimelineCenter {
+    Release { tag: String },
+    Revision { revision_sha: String },
+    Landmark { landmark_id: String },
+    Cursor { cursor: HistoryOpaqueCursor },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(transparent)]
+pub struct HistoryOpaqueCursor(pub String);
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum HistoryReleaseTagKind {
+    Annotated,
+    Lightweight,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum HistoryCoverageState {
+    Complete,
+    Partial,
+    #[default]
+    Unavailable,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
+pub struct HistoryReadCoverage {
+    pub state: HistoryCoverageState,
+    pub ancestry_complete: bool,
+    pub is_shallow: bool,
+    pub truncated: bool,
+    pub reasons: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
+pub struct HistoryReadFreshness {
+    pub indexed_revision: Option<String>,
+    pub current_revision: Option<String>,
+    pub indexed_tags_fingerprint: Option<String>,
+    pub current_tags_fingerprint: Option<String>,
+    pub stale: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct HistoryReleaseCatalogEntry {
+    pub id: String,
+    pub tag: String,
+    pub tag_kind: HistoryReleaseTagKind,
+    pub revision_sha: String,
+    pub ordinal: i64,
+    pub tagged_at: Option<String>,
+    /// All tags at this rail position, while this row still represents one tag.
+    pub coincident_tags: Vec<String>,
+    pub evidence_ids: Vec<String>,
+    #[serde(default)]
+    pub interval: Option<HistoryReleaseIntervalMetadata>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct HistoryReleaseIntervalMetadata {
+    pub schema_version: i64,
+    pub from_exclusive_sha: Option<String>,
+    pub commit_count: Option<usize>,
+    pub observed_commit_count: usize,
+    pub coverage: HistoryCoverageState,
+    pub coverage_reason: Option<String>,
+}
+
+/// A select-able point on the revision timeline. Release tags are extracted
+/// Git facts; candidate inflections are qualified, non-causal observations.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum HistoryLandmarkKind {
+    Release,
+    CandidateInflection,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum HistoryLandmarkTrust {
+    Extracted,
+    Qualified,
+    QualifiedPartial,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct HistoryLandmark {
+    pub id: String,
+    pub kind: HistoryLandmarkKind,
+    pub revision_sha: String,
+    pub ordinal: i64,
+    pub label: String,
+    /// Every release tag at this revision. Candidate inflections leave this empty.
+    pub tags: Vec<String>,
+    pub trust: HistoryLandmarkTrust,
+    pub score_milli: Option<i64>,
+    pub components: Value,
+    pub reasons: Vec<String>,
+    pub caveats: Vec<String>,
+    pub coverage: Value,
+    pub evidence_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct HistoryLandmarkCatalog {
+    pub schema_version: i64,
+    pub landmarks: Vec<HistoryLandmark>,
+    pub coverage: HistoryReadCoverage,
+    pub freshness: HistoryReadFreshness,
+    pub applied_limit: usize,
+    pub truncated: bool,
+    pub next_cursor: Option<HistoryOpaqueCursor>,
+}
+
+impl Default for HistoryLandmarkCatalog {
+    fn default() -> Self {
+        Self {
+            schema_version: HISTORY_LANDMARK_CATALOG_SCHEMA_VERSION,
+            landmarks: Vec::new(),
+            coverage: HistoryReadCoverage::default(),
+            freshness: HistoryReadFreshness::default(),
+            applied_limit: 0,
+            truncated: false,
+            next_cursor: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
+pub struct HistoryReleaseCatalog {
+    pub schema_version: i64,
+    /// One canonical row per tag; coincident tags are not collapsed here.
+    pub releases: Vec<HistoryReleaseCatalogEntry>,
+    pub coverage: HistoryReadCoverage,
+    pub freshness: HistoryReadFreshness,
+    pub applied_limit: usize,
+    pub truncated: bool,
+    pub next_cursor: Option<HistoryOpaqueCursor>,
+}
+
+impl Default for HistoryReleaseCatalog {
+    fn default() -> Self {
+        Self {
+            schema_version: HISTORY_RELEASE_CATALOG_SCHEMA_VERSION,
+            releases: Vec::new(),
+            coverage: HistoryReadCoverage::default(),
+            freshness: HistoryReadFreshness::default(),
+            applied_limit: 0,
+            truncated: false,
+            next_cursor: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
+pub struct HistoryTimelineWindow {
+    pub schema_version: i64,
+    pub center_revision: Option<String>,
+    pub revisions: Vec<HistoryRevision>,
+    pub releases: Vec<HistoryReleaseCatalogEntry>,
+    pub coverage: HistoryReadCoverage,
+    pub freshness: HistoryReadFreshness,
+    pub applied_limit: usize,
+    pub truncated: bool,
+    pub has_older: bool,
+    pub has_newer: bool,
+    pub older_cursor: Option<HistoryOpaqueCursor>,
+    pub newer_cursor: Option<HistoryOpaqueCursor>,
+}
+
+impl Default for HistoryTimelineWindow {
+    fn default() -> Self {
+        Self {
+            schema_version: HISTORY_TIMELINE_WINDOW_SCHEMA_VERSION,
+            center_revision: None,
+            revisions: Vec::new(),
+            releases: Vec::new(),
+            coverage: HistoryReadCoverage::default(),
+            freshness: HistoryReadFreshness::default(),
+            applied_limit: 0,
+            truncated: false,
+            has_older: false,
+            has_newer: false,
+            older_cursor: None,
+            newer_cursor: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -376,6 +582,10 @@ pub mod api;
 pub mod catalog;
 mod delta;
 mod git_objects;
+mod history_facts;
+// The pure detector is integrated with atomic landmark publication in task 3.3.
+#[allow(dead_code)]
+pub(crate) mod inflections;
 mod query_helpers;
 pub mod state;
 mod storage;

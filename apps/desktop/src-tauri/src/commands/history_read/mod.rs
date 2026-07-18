@@ -11,7 +11,8 @@ use crate::commands::{
         repository_tag_fingerprint, resolve_temporal_reference, HistoryAnnotation,
         HistoryAnnotationDecision, HistoryAnnotationPage, HistoryAsOfState, HistoryEntityEvolution,
         HistoryFacet, HistoryFacetPacket, HistoryFacetStatus, HistoryGraphStatus,
-        HistorySearchResult, HistoryStructuralState, HistoryTemporalReference,
+        HistoryOpaqueCursor, HistoryReleaseCatalog, HistorySearchResult, HistoryStructuralState,
+        HistoryTemporalReference, HistoryTimelineCenter, HistoryTimelineWindow,
     },
     history_query::{query_causal_trace, HistoryCausalSelector, HistoryCausalTrace},
     structural_graph::{
@@ -19,10 +20,11 @@ use crate::commands::{
         types::{GraphSourceAnchor, GraphTrust},
     },
 };
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use rusqlite::{params, Connection, OptionalExtension};
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -123,11 +125,16 @@ impl<'a> HistoryReadService<'a> {
 }
 
 mod annotations;
+pub mod api;
+pub(crate) mod contributors;
 mod evidence;
 mod explain;
+mod landmarks;
+mod releases;
 mod search;
 mod state;
 mod status;
+pub(crate) mod temporal;
 
 pub(super) fn unknown_facet(name: &str, summary: &str) -> HistoryFacet {
     HistoryFacet {
@@ -151,12 +158,37 @@ pub(super) fn weakest_trust(values: impl Iterator<Item = GraphTrust>) -> GraphTr
         .unwrap_or(GraphTrust::Inferred)
 }
 
-pub(super) fn source_is_available(source: &GraphSourceAnchor) -> bool {
+pub(super) fn source_is_available(root: &std::path::Path, source: &GraphSourceAnchor) -> bool {
     if source.path.is_empty() {
         true
     } else {
-        PathBuf::from(&source.path).exists()
+        let path = PathBuf::from(&source.path);
+        if path.is_absolute() {
+            path.exists()
+        } else {
+            root.join(path).exists()
+        }
     }
+}
+
+/// Keeps cursor transport identical across read services while each service
+/// retains ownership of its schema and scope validation.
+pub(super) fn encode_opaque_cursor(
+    payload: &impl Serialize,
+    context: &str,
+) -> Result<HistoryOpaqueCursor, String> {
+    serde_json::to_vec(payload)
+        .map(|bytes| HistoryOpaqueCursor(URL_SAFE_NO_PAD.encode(bytes)))
+        .map_err(|error| format!("Encode {context}: {error}"))
+}
+
+pub(super) fn decode_opaque_cursor<T: DeserializeOwned>(
+    cursor: &HistoryOpaqueCursor,
+) -> Result<T, String> {
+    let bytes = URL_SAFE_NO_PAD
+        .decode(&cursor.0)
+        .map_err(|_| "Invalid history cursor".to_string())?;
+    serde_json::from_slice(&bytes).map_err(|_| "Invalid history cursor".to_string())
 }
 
 #[cfg(test)]
