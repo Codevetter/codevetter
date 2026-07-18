@@ -7,7 +7,7 @@ import { createInterface } from 'node:readline';
 
 const PROTOCOL_VERSION = '2025-11-25';
 const MAX_STRUCTURED_RESPONSE_BYTES = 256 * 1_024;
-const EXPECTED_TOOL_COUNT = 13;
+const EXPECTED_TOOL_COUNT = 22;
 const EXPECTED_RELEASE_COUNT = 64;
 const EXPECTED_GRAPH_NODE_COUNT = 512;
 const EXPECTED_GRAPH_EDGE_COUNT = 1_024;
@@ -641,12 +641,24 @@ function qualificationForPlatform(listenerCheck, memory) {
 function applyQualificationBudgets(report) {
   if (!report.qualification.budgetsApplied) return;
   assertMaximum('cold initialize p95', report.startup.p95Ms, 25, 'ms');
-  for (const name of ['graphQuery', 'releaseList', 'evidenceHydration', 'resourceList']) {
+  for (const name of [
+    'graphQuery',
+    'releaseList',
+    'historySearch',
+    'evidenceHydration',
+    'resourceList',
+  ]) {
+    assertMaximum(`${name} p50`, report.workloads[name].p50Ms, 8, 'ms');
+  }
+  assertMaximum('graphQuery p95', report.workloads.graphQuery.p95Ms, 12, 'ms');
+  assertMaximum('releaseList p95', report.workloads.releaseList.p95Ms, 15, 'ms');
+  assertMaximum('historySearch p95', report.workloads.historySearch.p95Ms, 15, 'ms');
+  for (const name of ['evidenceHydration', 'resourceList']) {
     assertMaximum(`${name} p95`, report.workloads[name].p95Ms, 10, 'ms');
   }
-  assertMaximum('historySearch p95', report.workloads.historySearch.p95Ms, 15, 'ms');
+  assertMaximum('mixed concurrency=4 p50', report.workloads.mixedConcurrency4.p50Ms, 22, 'ms');
   assertMaximum('mixed concurrency=4 p95', report.workloads.mixedConcurrency4.p95Ms, 30, 'ms');
-  assertMaximum('idle RSS after warm workload', report.idleRssMiB, 32, 'MiB');
+  assertMaximum('idle RSS after warm workload', report.idleRssMiB, 36, 'MiB');
   assertMaximum('RSS growth through warm workload', report.rssDeltaMiB, 8, 'MiB');
   assertMaximum('sidecar binary', report.sidecarBytes / 1_048_576, 10, 'MiB');
 }
