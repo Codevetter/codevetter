@@ -15,6 +15,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ProjectWorkspaceEmpty } from '@/components/project-workspace/ProjectWorkspaceEmpty';
 import { ProjectWorkspaceHeader } from '@/components/project-workspace/ProjectWorkspaceHeader';
 import { ProjectWorkspaceShell } from '@/components/project-workspace/ProjectWorkspaceShell';
+import { DifferentialVerificationPanel } from '@/components/trex/DifferentialVerificationPanel';
+import { ScenarioCompilerPanel } from '@/components/trex/ScenarioCompilerPanel';
 import {
   type WarmVerificationAction,
   WarmVerificationPanel,
@@ -349,8 +351,8 @@ export default function TRex() {
     <ProjectWorkspaceShell mainClassName="px-6 pb-24 pt-6">
       {!selectedRepoPath ? (
         <ProjectWorkspaceEmpty
-          title="T-Rex watcher"
-          description="Select a project from the sidebar, then register a PR watcher for that repo. T-Rex polls open PRs and posts sandbox verdicts back to GitHub."
+          title="T-Rex"
+          description="Select a project to compile verification scenarios, run changed-capability checks, or watch pull requests."
         />
       ) : (
         <div className="mx-auto max-w-6xl">
@@ -363,15 +365,17 @@ export default function TRex() {
             }
           >
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
-                T-Rex watcher
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-100">T-Rex</h1>
               <p className="mt-1 max-w-3xl text-sm text-[var(--text-secondary)]">
-                Polls open PRs on the active project, runs the sandbox when a head SHA changes, and
-                posts a <span className="font-mono">codevetter/t-rex</span> commit status to GitHub.
+                Turn product intent into reviewable scenarios, verify local changes in warm
+                Chromium, and watch pull requests for sandbox regressions.
               </p>
             </div>
           </ProjectWorkspaceHeader>
+
+          <ScenarioCompilerPanel repoPath={selectedRepoPath} />
+
+          <DifferentialVerificationPanel key={selectedRepoPath} repoPath={selectedRepoPath} />
 
           <WarmVerificationPanel
             health={warmHealth}

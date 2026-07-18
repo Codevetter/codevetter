@@ -4,6 +4,7 @@ use rusqlite::Connection;
 /// (`IF NOT EXISTS`) so this function is safe to call on every startup.
 pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
     conn.execute_batch(MIGRATION_SQL)?;
+    super::archaeology_schema::run_migration(conn)?;
     super::history_graph_schema::run_migration(conn)?;
     super::mcp_schema::run_migration(conn)?;
     super::structural_graph_schema::run_migration(conn)?;
@@ -719,6 +720,27 @@ CREATE TABLE IF NOT EXISTS warm_verification_runs (
 
 CREATE INDEX IF NOT EXISTS idx_warm_verification_runs_repo_created
     ON warm_verification_runs(repo_path, created_at DESC);
+
+-- Differential evidence remains separate from warm and synthetic QA evidence.
+CREATE TABLE IF NOT EXISTS differential_verification_runs (
+    id                 TEXT PRIMARY KEY,
+    repo_path          TEXT NOT NULL,
+    run_id             TEXT UNIQUE NOT NULL,
+    schema_version     INTEGER NOT NULL CHECK (schema_version = 1),
+    status             TEXT NOT NULL CHECK (status IN ('complete', 'incomparable')),
+    classification     TEXT NOT NULL CHECK (classification IN ('regressed', 'improved', 'unchanged', 'incomparable')),
+    reference_sha      TEXT,
+    candidate_kind     TEXT NOT NULL,
+    candidate_identity TEXT,
+    plan_identity      TEXT,
+    duration_ms        REAL NOT NULL,
+    cleanup_complete   INTEGER NOT NULL CHECK (cleanup_complete IN (0, 1)),
+    summary_json       TEXT NOT NULL,
+    created_at         TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_differential_verification_runs_repo_created
+    ON differential_verification_runs(repo_path, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS audience_validation_runs (
     id                       TEXT PRIMARY KEY,

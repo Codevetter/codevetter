@@ -107,6 +107,10 @@ requires exactly one `verify` script. It does not bundle Node or Chromium.
 Normal scenario execution must make zero model or browser-agent calls. Use direct
 route entry and injected auth/state; do not repeat login as feature setup.
 
+Model-assisted scenario authoring is a separate short-lived path documented in
+`SCENARIO-COMPILATION.md`. Its candidate dry runs are qualification only and must
+never be stored or presented as warm-verification evidence.
+
 ## Code style and boundaries
 
 - TypeScript and TSX are formatted and checked by Biome.

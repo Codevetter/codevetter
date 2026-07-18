@@ -41,6 +41,7 @@ import UnpackDeepGraphPanel from '@/components/unpack-deep-graph-panel';
 import { UnpackScanProfileHeatmap } from '@/components/unpack-scan-profile-heatmap';
 import { IntelProjectPanel } from '@/components/project-workspace/IntelProjectPanel';
 import { UnpackAiPanel, type UnpackAskEntry } from '@/components/unpack-workspace/UnpackAiPanel';
+import { BusinessRuleArchaeologyPanel } from '@/components/unpack-workspace/BusinessRuleArchaeologyPanel';
 import { UnpackRunKindBadge } from '@/components/unpack-workspace/UnpackRunKindBadge';
 import { UnpackAgentStream } from '@/components/unpack-agent-stream';
 import {
@@ -1304,6 +1305,10 @@ export function UnpackProjectPanel({
           disabled={isBusy || !active.reportId}
           onExportMemory={() => handleExport('repo_memory_markdown')}
         />
+      ) : null}
+
+      {activeSection === 'rules' && active?.inventory ? (
+        <BusinessRuleArchaeologyPanel repoPath={active.inventory.repo_path} />
       ) : null}
 
       {activeSection === 'inventory' && active?.inventory ? (

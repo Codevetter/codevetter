@@ -85,6 +85,7 @@ import {
   buildQaPostFixComparison,
   buildReviewerProofMarkdown,
   buildVerificationTimeline,
+  projectDifferentialVerificationHistory,
   type EvidenceCandidateStatus,
   formatHistoryCommandEvidence,
   type HistoryFindingSummary,
@@ -116,6 +117,7 @@ import type {
   RepoHistoryContext,
   ReviewProcedureEvent,
   ReviewVerificationCommandSuggestion,
+  StoredDifferentialVerificationRun,
 } from '@/lib/tauri-ipc';
 import {
   analyzeBlastRadius,
@@ -137,6 +139,7 @@ import {
   listPullRequests,
   listReviewProcedureEvents,
   listReviews,
+  listDifferentialVerificationRuns,
   listSyntheticQaRuns,
   listWarmVerificationRuns,
   mergeFix,
@@ -302,6 +305,10 @@ export default function QuickReview() {
     repoPath: string;
     projections: WarmVerificationProjection[];
   }>({ repoPath: '', projections: [] });
+  const [differentialVerificationHistory, setDifferentialVerificationHistory] = useState<{
+    repoPath: string;
+    runs: StoredDifferentialVerificationRun[];
+  }>({ repoPath: '', runs: [] });
   const [qaRunning, setQaRunning] = useState(false);
   const [postFixQaRunning, setPostFixQaRunning] = useState(false);
   const [qaLastRun, setQaLastRun] = useState<SyntheticQaRunResult | null>(null);
@@ -338,6 +345,19 @@ export default function QuickReview() {
     : 'Global QA workflow';
   const warmVerificationProjections =
     warmVerificationEvidence.repoPath === repoPath ? warmVerificationEvidence.projections : [];
+  const differentialTimelineHistory = useMemo(
+    () =>
+      differentialVerificationHistory.repoPath === repoPath
+        ? projectDifferentialVerificationHistory(
+            differentialVerificationHistory.runs.map((run) => ({
+              id: run.id,
+              createdAt: run.created_at,
+              summary: run.summary,
+            }))
+          )
+        : [],
+    [differentialVerificationHistory, repoPath]
+  );
   const warmQaRunHistory = useMemo<QaRunHistoryEntry[]>(
     () =>
       warmVerificationProjections.map(({ comparisonRun, syntheticQa }) => ({
@@ -922,6 +942,7 @@ export default function QuickReview() {
         detail: `recorded ${projection.provenance.finished_at} · ${projection.timelineProof.detail}`,
         status: 'idle' as const,
       })),
+      ...differentialTimelineHistory,
     ];
   }, [
     evidenceCounts,
@@ -941,6 +962,7 @@ export default function QuickReview() {
     sortedFindings,
     sortedFindings.length,
     taskGoal,
+    differentialTimelineHistory,
     warmVerificationProjections,
   ]);
 
@@ -1595,6 +1617,23 @@ export default function QuickReview() {
       })
       .catch(() => {
         if (!canceled) setWarmVerificationEvidence({ repoPath, projections: [] });
+      });
+    return () => {
+      canceled = true;
+    };
+  }, [repoPath]);
+
+  useEffect(() => {
+    let canceled = false;
+    setDifferentialVerificationHistory({ repoPath, runs: [] });
+    if (!repoPath || !isTauriAvailable()) return;
+
+    void listDifferentialVerificationRuns({ repoPath, limit: 8 })
+      .then((runs) => {
+        if (!canceled) setDifferentialVerificationHistory({ repoPath, runs });
+      })
+      .catch(() => {
+        if (!canceled) setDifferentialVerificationHistory({ repoPath, runs: [] });
       });
     return () => {
       canceled = true;

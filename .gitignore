@@ -65,5 +65,9 @@ cache.bin
 # Warm local verification artifacts (redacted but intentionally ephemeral)
 .codevetter/verify-artifacts/
 
+# Model-assisted scenario candidates remain private until explicit acceptance.
+.codevetter/scenario-candidates/
+.codevetter/private-notes/
+
 # codex CLI project dir
 .codex/

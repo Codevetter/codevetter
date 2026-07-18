@@ -1,3 +1,4 @@
+pub(crate) mod archaeology_schema;
 pub(crate) mod history_graph_schema;
 pub(crate) mod mcp_schema;
 pub mod queries;

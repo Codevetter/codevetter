@@ -225,7 +225,7 @@ The independent 20-sample gate at that setting passed with **3605.560 ms p50,
 4792.196 ms p95, and 5320.379 ms max**, against the required p95 below 30 seconds.
 
 The machine-readable report at
-`tests/fixtures/warm-verification/qualification-2026-07-15.json` preserves all
+`tests/fixtures/warm-verification/qualification-2026-07-17.json` preserves all
 20 invocation durations, target/config/manifest identities, exact benchmark and
 app source hashes, machine and browser details, cold startup, HMR conditions,
 parallelism profiles, and per-stage summaries. Per-scenario stage values are
@@ -253,7 +253,7 @@ at its 20-run cap using 4470 bytes, below its 104,857,600-byte cap. The measured
 path recorded only its 110 required Git subprocess calls and zero Cargo, Tauri,
 or production-build invocations. Its raw samples, exact source hashes, resource
 gates, command audit, and temporary-root cleanup proof are in
-`tests/fixtures/warm-verification/stability-2026-07-15.json`.
+`tests/fixtures/warm-verification/stability-2026-07-17.json`.
 
 ## 6. Warm-verification implementation growth
 
