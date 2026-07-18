@@ -2,6 +2,7 @@ use super::types::{
     stable_graph_id, GraphTrust, StructuralGraphCommunity, StructuralGraphCoverage,
     StructuralGraphEdge, StructuralGraphNode,
 };
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::Path;
@@ -253,39 +254,37 @@ fn assign_community_keys<'a>(
         .collect::<Vec<_>>();
     ordered_ids.sort_unstable();
     for _ in 0..8 {
-        let mut next = labels.clone();
-        let mut changed = false;
-        for node_id in &ordered_ids {
-            let Some(current) = labels.get(*node_id) else {
-                continue;
-            };
-            let mut scores = BTreeMap::<String, usize>::new();
-            *scores.entry(current.clone()).or_default() += 2;
-            if let Some(seed) = path_seed.get(*node_id) {
-                *scores.entry(seed.clone()).or_default() += 1;
-            }
-            for neighbor in adjacency.get(*node_id).into_iter().flatten() {
-                if let Some(label) = labels.get(*neighbor) {
-                    *scores.entry(label.clone()).or_default() += 1;
+        let selections = ordered_ids
+            .par_iter()
+            .filter_map(|node_id| {
+                let current = labels.get(*node_id)?;
+                let mut scores = HashMap::<&str, usize>::new();
+                *scores.entry(current.as_str()).or_default() += 2;
+                if let Some(seed) = path_seed.get(*node_id) {
+                    *scores.entry(seed.as_str()).or_default() += 1;
                 }
-            }
-            let selected = scores
-                .into_iter()
-                .max_by(|(left_label, left_score), (right_label, right_score)| {
-                    left_score
-                        .cmp(right_score)
-                        .then_with(|| right_label.cmp(left_label))
-                })
-                .map(|(label, _)| label)
-                .unwrap_or_else(|| current.clone());
-            if selected != *current {
-                next.insert((*node_id).to_string(), selected);
-                changed = true;
-            }
-        }
-        labels = next;
-        if !changed {
+                for neighbor in adjacency.get(*node_id).into_iter().flatten() {
+                    if let Some(label) = labels.get(*neighbor) {
+                        *scores.entry(label.as_str()).or_default() += 1;
+                    }
+                }
+                let selected = scores
+                    .into_iter()
+                    .max_by(|(left_label, left_score), (right_label, right_score)| {
+                        left_score
+                            .cmp(right_score)
+                            .then_with(|| right_label.cmp(left_label))
+                    })
+                    .map(|(label, _)| label)
+                    .unwrap_or(current.as_str());
+                (selected != current).then(|| ((*node_id).to_string(), selected.to_string()))
+            })
+            .collect::<Vec<_>>();
+        if selections.is_empty() {
             break;
+        }
+        for (node_id, selected) in selections {
+            labels.insert(node_id, selected);
         }
     }
     labels
