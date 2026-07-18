@@ -131,8 +131,20 @@ pub async fn check_account_usage(
     // ── Baseline: user-set limit > avg weekly > last week ───────────────
     let baseline = account
         .weekly_limit
-        .or((avg_week_cost > 0.0).then_some(avg_week_cost))
-        .or((last_week_cost > 0.0).then_some(last_week_cost));
+        .or({
+            if avg_week_cost > 0.0 {
+                Some(avg_week_cost)
+            } else {
+                None
+            }
+        })
+        .or({
+            if last_week_cost > 0.0 {
+                Some(last_week_cost)
+            } else {
+                None
+            }
+        });
 
     let week_pct = baseline.map(|b| if b > 0.0 { week_cost / b * 100.0 } else { 0.0 });
     let week_remaining = baseline.map(|b| (b - week_cost).max(0.0));
@@ -1964,8 +1976,6 @@ async fn check_live_usage_openai() -> Result<Value, String> {
 
 /// Gemini local usage: parse `~/.gemini/tmp/*/chats/session-*.json` files
 /// from today, summing token counts across all sessions and messages.
-type GeminiModelStats = (u64, i64, i64, i64, i64, i64, i64);
-
 async fn check_live_usage_gemini_local() -> Result<Value, String> {
     use std::fs;
     use std::path::PathBuf;
@@ -2002,7 +2012,8 @@ async fn check_live_usage_gemini_local() -> Result<Value, String> {
     let mut tok_total: i64 = 0;
 
     // Per-model breakdown
-    let mut model_stats: std::collections::HashMap<String, GeminiModelStats> =
+    type ModelTokenStats = (u64, i64, i64, i64, i64, i64, i64);
+    let mut model_stats: std::collections::HashMap<String, ModelTokenStats> =
         std::collections::HashMap::new();
 
     // Iterate over project hash directories
@@ -2100,7 +2111,7 @@ async fn check_live_usage_gemini_local() -> Result<Value, String> {
 
     // Build per-model array sorted by request count desc
     let mut models_vec: Vec<_> = model_stats.into_iter().collect();
-    models_vec.sort_by_key(|(_, stats)| std::cmp::Reverse(stats.0));
+    models_vec.sort_by_key(|entry| std::cmp::Reverse(entry.1 .0));
     let models_json: Vec<Value> = models_vec
         .iter()
         .map(|(name, (reqs, inp, out, cch, tht, tl, tot))| {

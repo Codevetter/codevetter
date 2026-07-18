@@ -768,7 +768,7 @@ fn workspace_units_fallback_to_subsystems_for_manifest_light_repos() {
 #[test]
 fn agent_context_sidecar_exports_graph_and_history() {
     let inventory = minimal_inventory();
-    let sidecar = render_agent_context_sidecar("demo", "2026-06-12T00:00:00Z", &inventory);
+    let sidecar = render_agent_context_sidecar("demo", "2026-06-12T00:00:00Z", &inventory, None);
 
     assert!(sidecar.contains("# Agent Context Sidecar"));
     assert!(sidecar.contains("repo_graph.v1 / history_brief.v1"));

@@ -45,7 +45,7 @@ The original worktrees were dirty when consolidation began and were preserved un
 - Worker `taste-capture` does not exist.
 - R2 bucket `taste-captures` does not exist.
 - No taste/ShipRank queue exists.
-- GitHub `sarthak-fleet/taste` is public, on `main`, and not archived.
+- GitHub `sarthakagrawal927/taste` is public, on `main`, and not archived.
 - `shiprank.dev` is an unrelated Vercel-hosted leaderboard and is not attached to the Cloudflare Pages project; it must not be touched.
 
 No external resource was changed by this inventory. Exact proposed closure actions remain gated: export then delete D1, delete the Pages project, and archive rather than delete the GitHub repository.

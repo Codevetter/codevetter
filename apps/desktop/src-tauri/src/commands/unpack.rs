@@ -486,7 +486,37 @@ pub async fn export_repo_unpack_report(
             let Some(inventory) = inventory.as_ref() else {
                 return Err("Report missing inventory context.".to_string());
             };
-            render_agent_context_sidecar(&repo_name, &created_at, inventory)
+            let mut history_files = std::collections::BTreeSet::new();
+            history_files.extend(inventory.entrypoints.iter().map(|entry| entry.path.clone()));
+            history_files.extend(inventory.config_files.iter().cloned());
+            history_files.extend(
+                inventory
+                    .repo_health
+                    .top_files
+                    .iter()
+                    .map(|file| file.path.clone()),
+            );
+            history_files.extend(
+                inventory
+                    .repo_graph
+                    .nodes
+                    .iter()
+                    .filter_map(|node| node.path.clone()),
+            );
+            history_files.extend(inventory.all_files.iter().take(100).cloned());
+            let history_files = history_files.into_iter().take(100).collect::<Vec<_>>();
+            let temporal_history = crate::commands::history_query::build_review_history_slice(
+                &conn,
+                &inventory.repo_path,
+                &history_files,
+            )
+            .ok();
+            render_agent_context_sidecar(
+                &repo_name,
+                &created_at,
+                inventory,
+                temporal_history.as_ref(),
+            )
         }
         "repo_memory_markdown" => {
             let Some(inventory) = inventory.as_ref() else {
@@ -576,7 +606,7 @@ pub fn build_inventory_with_progress(
             bytes,
         })
         .collect();
-    languages.sort_by_key(|language| std::cmp::Reverse(language.bytes));
+    languages.sort_by_key(|entry| std::cmp::Reverse(entry.bytes));
     profiler.step("languages", "Language breakdown");
 
     // Manifests (only plausible manifest paths — avoid scanning 4k basenames)
@@ -639,7 +669,7 @@ pub fn build_inventory_with_progress(
             bytes,
         })
         .collect();
-    top_level_dirs.sort_by_key(|dir| std::cmp::Reverse(dir.file_count));
+    top_level_dirs.sort_by_key(|entry| std::cmp::Reverse(entry.file_count));
     let coverage = build_inventory_coverage(
         &all_files,
         tracked_files.as_deref(),

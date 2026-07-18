@@ -752,6 +752,7 @@ export interface CliReviewResult {
   sensitive_paths?: string[];
   coordinator_used?: boolean;
   review_memory_graph?: ReviewMemoryGraph;
+  trusted_graph_context?: TrustedReviewGraphContext | null;
   qa_evidence?: ReviewQaRunEvidence[];
   evidence_candidates?: EvidenceCandidate[];
   evidence_procedure_steps?: EvidenceProcedureStep[];
@@ -1125,6 +1126,7 @@ export interface RepoHistoryContext {
     count: number;
     examples?: string[];
   }>;
+  temporal_slice?: HistoryReviewSlice | null;
   prompt_snippet?: string;
 }
 
@@ -2441,6 +2443,24 @@ export interface HistoryChangeEpisode {
   trust_summary: Record<string, number>;
   started_at: string;
   ended_at: string;
+  truncated: boolean;
+}
+
+export interface HistoryReviewSlice {
+  schema_version: number;
+  repo_path: string;
+  files: string[];
+  entity_ids: string[];
+  episodes: HistoryChangeEpisode[];
+  constraints: HistoryCausalEvent[];
+  verification: HistoryCausalEvent[];
+  failures: HistoryCausalEvent[];
+  regressions: HistoryCausalEvent[];
+  qualified_leads: HistoryCausalEvent[];
+  gaps: string[];
+  indexed_head: string;
+  stale: boolean;
+  coverage: Record<string, unknown>;
   truncated: boolean;
 }
 

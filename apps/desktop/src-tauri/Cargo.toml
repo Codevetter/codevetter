@@ -5,6 +5,14 @@ edition = "2021"
 description = "CodeVetter Desktop — code review + agent management"
 default-run = "codevetter-desktop"
 
+[[bin]]
+name = "codevetter-desktop"
+path = "src/main.rs"
+
+[[bin]]
+name = "codevetter-mcp"
+path = "src/bin/codevetter-mcp.rs"
+
 [dependencies]
 tauri = { version = "2", features = ["devtools", "tray-icon", "image-png"] }
 tauri-plugin-dialog = "2"
@@ -22,6 +30,8 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-feature
 log = "0.4"
 env_logger = "0.11"
 base64 = "0.22"
+# Immutable historical graphs and commit deltas are large, repetitive JSON.
+# zlib keeps local history bounded without duplicating the normalized live graph tables.
 flate2 = "1"
 chromiumoxide = { version = "0.7", default-features = false, features = ["tokio-runtime"], optional = true }
 futures = { version = "0.3", optional = true }
@@ -30,7 +40,6 @@ jwalk = "0.8"
 rayon = "1.10"
 libc = "0.2"
 portable-pty = "0.9.0"
-rmcp = { version = "=2.2.0", default-features = false, features = ["server", "transport-io"] }
 tree-sitter = "0.26.3"
 tree-sitter-c = "0.24.0"
 tree-sitter-c-sharp = "0.23.0"
@@ -45,13 +54,18 @@ tree-sitter-ruby = "0.23.0"
 tree-sitter-rust = "0.24.0"
 tree-sitter-swift = "0.7.0"
 tree-sitter-typescript = "0.23.2"
+# Official MCP lifecycle/framing/schema implementation. Only local stdio server
+# features are enabled: no HTTP transport, OAuth, client, or network stack.
+rmcp = { version = "=2.2.0", default-features = false, features = ["server", "transport-io", "macros"] }
+
+[dev-dependencies]
+# In-process protocol client and temporary repositories are test-only; the
+# shipped sidecar keeps the minimal server/stdio feature set above.
+rmcp = { version = "=2.2.0", default-features = false, features = ["client", "server", "transport-io"] }
+tempfile = "3"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
-
-[dev-dependencies]
-rmcp = { version = "=2.2.0", default-features = false, features = ["client"] }
-tempfile = "3"
 
 [profile.dev]
 debug = 1

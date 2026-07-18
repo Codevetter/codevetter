@@ -7,6 +7,7 @@ import type {
   EvidenceProcedureStep,
   RepoHistoryContext,
   ReviewMemoryGraph,
+  TrustedReviewGraphContext,
 } from '@/lib/tauri-ipc';
 
 interface EvidenceCounts {
@@ -258,9 +259,11 @@ export interface ReviewerProofInput {
   evidenceProcedureSteps?: EvidenceProcedureStep[];
   reviewMemoryGraph?: ReviewMemoryGraph;
   focusedReviewMemoryGraph?: ReviewMemoryGraph | null;
+  trustedGraphContext?: TrustedReviewGraphContext | null;
   verificationTimeline?: VerificationTimelineItem[];
   qaPostFixComparison?: QaPostFixComparison | null;
   historyExplanations?: CodebaseHistoryExplanation[];
+  temporalHistory?: RepoHistoryContext['temporal_slice'];
   procedureExecutionEvents?: ProcedureExecutionEvent[];
   intentReport: ReviewIntentReport | null;
   historyFindingSummaries: Map<number, HistoryFindingSummary>;
@@ -1557,6 +1560,39 @@ export function buildReviewerProofMarkdown(input: ReviewerProofInput): string {
     });
   }
 
+  if (input.trustedGraphContext && input.trustedGraphContext.nodes.length > 0) {
+    const graph = input.trustedGraphContext;
+    lines.push('', '### Trusted structural graph');
+    lines.push(
+      `Snapshot \`${graph.snapshot_id}\` · ${graph.engine_id}@${graph.engine_version} · schema v${graph.schema_version} · ${graph.stale ? 'stale' : 'current'}${graph.truncated ? ' · truncated' : ''}`
+    );
+    lines.push(
+      `Coverage: ${graph.coverage.indexed_files}/${graph.coverage.discovered_files} files indexed · ${graph.coverage.error_files} errors · ${graph.coverage.skipped_files} skipped`
+    );
+    lines.push(`Qualification: ${graph.qualification}`);
+    lines.push(
+      '_Navigation context only. Graph topology is not a finding and is not verified runtime evidence._'
+    );
+    graph.nodes.slice(0, 12).forEach((node) => {
+      const source = node.sources[0];
+      const sourceLabel = source
+        ? ` · source: \`${source.path}${source.start_line != null ? `:${source.start_line}` : ''}\``
+        : ' · source: unavailable';
+      lines.push(
+        `- node [${node.trust}/${node.origin}] ${node.label}${node.path ? ` (\`${node.path}\`)` : ''}${sourceLabel}`
+      );
+    });
+    graph.edges.slice(0, 16).forEach((edge) => {
+      const source = edge.sources[0];
+      const sourceLabel = source
+        ? ` · source: \`${source.path}${source.start_line != null ? `:${source.start_line}` : ''}\``
+        : ' · source: unavailable';
+      lines.push(
+        `  - edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.trust}/${edge.origin})${sourceLabel}`
+      );
+    });
+  }
+
   if (input.historyExplanations && input.historyExplanations.length > 0) {
     lines.push('', '### Codebase history explanations');
     input.historyExplanations.slice(0, 5).forEach((explanation) => {
@@ -1564,6 +1600,25 @@ export function buildReviewerProofMarkdown(input: ReviewerProofInput): string {
       explanation.citations.slice(0, 3).forEach((citation) => {
         lines.push(`  - ${citation}`);
       });
+    });
+  }
+
+  if (input.temporalHistory) {
+    lines.push('', '### Temporal history graph');
+    lines.push(
+      `Schema v${input.temporalHistory.schema_version} · ${input.temporalHistory.episodes.length} episodes · ${input.temporalHistory.stale ? 'stale' : 'current'}${input.temporalHistory.truncated ? ' · truncated' : ''}`
+    );
+    input.temporalHistory.constraints.slice(0, 5).forEach((event) => {
+      const source = event.sources[0]?.path ? ` · source: \`${event.sources[0].path}\`` : '';
+      lines.push(
+        `- [${event.stage}/${event.trust}] ${event.summary}${source} · event: \`${event.id}\``
+      );
+    });
+    input.temporalHistory.failures.slice(0, 5).forEach((event) => {
+      lines.push(`- [prior failure/${event.trust}] ${event.summary} · event: \`${event.id}\``);
+    });
+    input.temporalHistory.gaps.slice(0, 5).forEach((gap) => {
+      lines.push(`- Gap: ${gap}`);
     });
   }
 

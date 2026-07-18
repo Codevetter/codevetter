@@ -251,6 +251,7 @@ pub(crate) fn render_agent_context_sidecar(
     repo_name: &str,
     created_at: &str,
     inventory: &RepoInventory,
+    temporal_history: Option<&crate::commands::history_query::HistoryReviewSlice>,
 ) -> String {
     let mut out = String::new();
     out.push_str(&format!("# Agent Context Sidecar — {repo_name}\n\n"));
@@ -387,6 +388,11 @@ pub(crate) fn render_agent_context_sidecar(
         out.push_str(
             "> This sidecar was truncated by CodeVetter's bounded local inventory scan.\n",
         );
+    }
+
+    if let Some(history) = temporal_history {
+        out.push('\n');
+        out.push_str(&crate::commands::history_query::render_review_history_slice(history));
     }
 
     out

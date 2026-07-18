@@ -1,0 +1,636 @@
+{
+  "codevetter": {
+    "reviewer": "codevetter",
+    "overall": {
+      "cases": 27,
+      "totalExpected": 29,
+      "totalCaught": 29,
+      "catchRate": 1,
+      "precision": 0.43283582089552236,
+      "f1": 0.6041666666666666,
+      "falsePositives": 29,
+      "redundant": 9,
+      "bySeverity": {
+        "medium": 1,
+        "high": 1,
+        "low": 1
+      }
+    },
+    "cases": [
+      {
+        "id": "go-errcheck",
+        "title": "Unchecked error return in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-hardcoded-credentials",
+        "title": "Hardcoded database credentials in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-nil-pointer",
+        "title": "Nil-pointer dereference on missing map value in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-race-condition",
+        "title": "Data race on a shared map in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-sql-injection",
+        "title": "SQL injection via fmt.Sprintf in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "java-insecure-random",
+        "title": "Predictable PRNG for security tokens in Java",
+        "language": "java",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "js-eval-injection",
+        "title": "Arbitrary code execution via eval() in JavaScript",
+        "language": "javascript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "js-open-redirect",
+        "title": "Open redirect via unvalidated URL in Express",
+        "language": "javascript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-bare-except",
+        "title": "Bare except swallows all errors in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-command-injection",
+        "title": "Command injection via subprocess shell=True in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 3,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-hardcoded-secret",
+        "title": "Hardcoded cloud API credentials in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 4,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-insecure-deserialization",
+        "title": "Insecure pickle deserialization in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-path-traversal",
+        "title": "Path traversal in a Python file handler",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-sql-injection",
+        "title": "SQL injection via f-string in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-ssrf",
+        "title": "Server-side request forgery in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-weak-hash",
+        "title": "Weak password hashing with MD5 in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-zip-bomb",
+        "title": "Unbounded zip extraction (zip bomb) in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "rust-integer-overflow",
+        "title": "Unchecked integer arithmetic in Rust",
+        "language": "rust",
+        "expected": 2,
+        "caught": 2,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-dead-code",
+        "title": "Unreachable code after unconditional return",
+        "language": "typescript",
+        "expected": 2,
+        "caught": 2,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 3,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-hardcoded-credentials",
+        "title": "Hardcoded database password in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-insecure-cookie",
+        "title": "Insecure session cookie attributes in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-missing-await",
+        "title": "Missing await on async operation in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-prototype-pollution",
+        "title": "Prototype pollution via recursive merge in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-regex-dos",
+        "title": "Catastrophic backtracking regex (ReDoS) in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-sql-injection",
+        "title": "SQL injection via string concatenation in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-type-confusion",
+        "title": "Type-safety bypass via `as any` in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-xss",
+        "title": "Reflected XSS via dangerouslySetInnerHTML in React",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      }
+    ]
+  },
+  "raw-claude": {
+    "reviewer": "raw-claude",
+    "overall": {
+      "cases": 27,
+      "totalExpected": 29,
+      "totalCaught": 27,
+      "catchRate": 0.9310344827586207,
+      "precision": 0.39705882352941174,
+      "f1": 0.5567010309278351,
+      "falsePositives": 31,
+      "redundant": 10,
+      "bySeverity": {
+        "medium": 1,
+        "high": 0.9047619047619048,
+        "low": 1
+      }
+    },
+    "cases": [
+      {
+        "id": "go-errcheck",
+        "title": "Unchecked error return in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-hardcoded-credentials",
+        "title": "Hardcoded database credentials in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-nil-pointer",
+        "title": "Nil-pointer dereference on missing map value in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-race-condition",
+        "title": "Data race on a shared map in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "go-sql-injection",
+        "title": "SQL injection via fmt.Sprintf in Go",
+        "language": "go",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "java-insecure-random",
+        "title": "Predictable PRNG for security tokens in Java",
+        "language": "java",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "js-eval-injection",
+        "title": "Arbitrary code execution via eval() in JavaScript",
+        "language": "javascript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "js-open-redirect",
+        "title": "Open redirect via unvalidated URL in Express",
+        "language": "javascript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-bare-except",
+        "title": "Bare except swallows all errors in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 3,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-command-injection",
+        "title": "Command injection via subprocess shell=True in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 3,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-hardcoded-secret",
+        "title": "Hardcoded cloud API credentials in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 3,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-insecure-deserialization",
+        "title": "Insecure pickle deserialization in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-path-traversal",
+        "title": "Path traversal in a Python file handler",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-sql-injection",
+        "title": "SQL injection via f-string in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-ssrf",
+        "title": "Server-side request forgery in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 3,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-weak-hash",
+        "title": "Weak password hashing with MD5 in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "py-zip-bomb",
+        "title": "Unbounded zip extraction (zip bomb) in Python",
+        "language": "python",
+        "expected": 1,
+        "caught": 0,
+        "missed": 1,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 0
+      },
+      {
+        "id": "rust-integer-overflow",
+        "title": "Unchecked integer arithmetic in Rust",
+        "language": "rust",
+        "expected": 2,
+        "caught": 1,
+        "missed": 1,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 0.5
+      },
+      {
+        "id": "ts-dead-code",
+        "title": "Unreachable code after unconditional return",
+        "language": "typescript",
+        "expected": 2,
+        "caught": 2,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-hardcoded-credentials",
+        "title": "Hardcoded database password in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 3,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-insecure-cookie",
+        "title": "Insecure session cookie attributes in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 2,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-missing-await",
+        "title": "Missing await on async operation in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-prototype-pollution",
+        "title": "Prototype pollution via recursive merge in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 3,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-regex-dos",
+        "title": "Catastrophic backtracking regex (ReDoS) in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 2,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-sql-injection",
+        "title": "SQL injection via string concatenation in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-type-confusion",
+        "title": "Type-safety bypass via `as any` in TypeScript",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 1,
+        "redundant": 1,
+        "catch_rate": 1
+      },
+      {
+        "id": "ts-xss",
+        "title": "Reflected XSS via dangerouslySetInnerHTML in React",
+        "language": "typescript",
+        "expected": 1,
+        "caught": 1,
+        "missed": 0,
+        "false_positives": 0,
+        "redundant": 0,
+        "catch_rate": 1
+      }
+    ]
+  }
+}
