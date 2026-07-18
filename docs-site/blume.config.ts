@@ -25,9 +25,7 @@ export default defineConfig({
     // the repo, not as canonical pages). See docs/development/docs.md.
     include: ['**/*.md'],
     // archive is never rendered; PRDs/OpenSpec render while open-source.
-    exclude: publicInternal
-      ? ['archive/**']
-      : ['archive/**', 'prds/**', 'openspec/**'],
+    exclude: publicInternal ? ['archive/**'] : ['archive/**', 'prds/**', 'openspec/**'],
   },
 
   theme: {
