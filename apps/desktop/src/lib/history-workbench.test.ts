@@ -11,6 +11,7 @@ import type { HistoryRevision, UnpackRepoGraph } from '@/lib/tauri-ipc';
 function revision(index: number, tags: string[] = []): HistoryRevision {
   const sha = `${index}`.padStart(40, '0');
   return {
+    ordinal: index,
     sha,
     short_sha: sha.slice(0, 8),
     parents: index === 0 ? [] : [`${index - 1}`.padStart(40, '0')],

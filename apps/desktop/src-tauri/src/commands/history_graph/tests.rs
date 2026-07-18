@@ -1,5 +1,10 @@
+use super::api::{
+    automatic_release_checkpoint_revisions, fast_forward_delta_pairs, normalized_facts_are_current,
+    HistoryFactCatalogProbe,
+};
 use super::*;
-use std::fs;
+use crate::commands::history_read::{contributors::HistoryContributorScope, HistoryReadService};
+use std::{collections::HashSet, fs};
 
 #[test]
 fn timeline_is_stable_and_release_aware() {
@@ -97,6 +102,496 @@ fn timeline_is_stable_and_release_aware() {
         .expect("invalidation count");
     assert_eq!(invalidations, 1);
     fs::remove_dir_all(root).expect("remove fixture");
+}
+
+#[test]
+fn fast_forward_and_tag_only_refreshes_reuse_indexed_facts() {
+    let root =
+        std::env::temp_dir().join(format!("cv-history-incremental-{}", uuid::Uuid::new_v4()));
+    fs::create_dir_all(root.join("src")).expect("fixture");
+    run_git(&root, &["init"]);
+    run_git(&root, &["config", "user.email", "fixture@local"]);
+    run_git(&root, &["config", "user.name", "Fixture"]);
+    fs::write(root.join("src/lib.rs"), "pub fn first() {}\n").expect("first source");
+    run_git(&root, &["add", "."]);
+    run_git(&root, &["commit", "-m", "feat: first"]);
+    fs::write(root.join("src/lib.rs"), "pub fn second() {}\n").expect("second source");
+    run_git(&root, &["add", "."]);
+    run_git(&root, &["commit", "-m", "feat: second"]);
+
+    let connection = Connection::open_in_memory().expect("database");
+    crate::db::schema::run_migrations(&connection).expect("migrations");
+    let initial_tags = read_git_tags(&root).expect("initial tags");
+    let initial = build_timeline_bundle_with_tags_cancellable(
+        &root,
+        Some(20),
+        &initial_tags,
+        &StructuralGraphCancellation::default(),
+    )
+    .expect("initial facts");
+    persist_timeline(&connection, &initial.timeline).expect("persist initial timeline");
+    {
+        let publication = connection
+            .unchecked_transaction()
+            .expect("fact publication");
+        publish_history_facts(
+            &publication,
+            &initial,
+            &initial_tags,
+            "initial",
+            &StructuralGraphCancellation::default(),
+        )
+        .expect("publish initial facts");
+        publication.commit().expect("commit initial facts");
+    }
+
+    fs::write(root.join("src/lib.rs"), "pub fn third() {}\n").expect("third source");
+    run_git(&root, &["add", "."]);
+    run_git(&root, &["commit", "-m", "feat: third"]);
+    let current_tags = read_git_tags(&root).expect("current tags");
+    let (incremental, introduced) =
+        catalog::build_incremental_timeline_bundle_with_tags_cancellable(
+            &connection,
+            &root,
+            Some(20),
+            &current_tags,
+            &initial.timeline.head,
+            &StructuralGraphCancellation::default(),
+        )
+        .expect("incremental timeline");
+    let clean = build_timeline_bundle_with_tags_cancellable(
+        &root,
+        Some(20),
+        &current_tags,
+        &StructuralGraphCancellation::default(),
+    )
+    .expect("clean timeline");
+
+    assert_eq!(incremental.timeline.revisions, clean.timeline.revisions);
+    assert_eq!(
+        incremental.timeline.reachable_revisions,
+        clean.timeline.reachable_revisions
+    );
+    assert_eq!(
+        incremental.timeline.release_ranges,
+        clean.timeline.release_ranges
+    );
+    persist_timeline_catalog(&connection, &incremental.timeline)
+        .expect("stage incremental timeline catalog");
+    {
+        let publication = connection
+            .unchecked_transaction()
+            .expect("incremental fact publication");
+        publish_incremental_history_facts(
+            &publication,
+            &incremental,
+            &current_tags,
+            "incremental",
+            &StructuralGraphCancellation::default(),
+            &introduced,
+        )
+        .expect("publish only introduced facts");
+        publication.commit().expect("commit incremental facts");
+    }
+    let path_rows: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM history_graph_revision_paths WHERE repo_path = ?1",
+            [&incremental.timeline.repo_path],
+            |row| row.get(0),
+        )
+        .expect("incremental path count");
+    let primary_rows: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM history_graph_revision_contributors
+             WHERE repo_path = ?1 AND role = 'primary'",
+            [&incremental.timeline.repo_path],
+            |row| row.get(0),
+        )
+        .expect("incremental primary count");
+    assert_eq!(path_rows, 3);
+    assert_eq!(primary_rows, 3);
+
+    run_git(&root, &["tag", "v1.0.0"]);
+    let retagged = build_indexed_timeline_bundle_with_tags(
+        &connection,
+        &root,
+        Some(20),
+        &read_git_tags(&root).expect("retagged tags"),
+        &incremental.timeline.head,
+    )
+    .expect("tag-only indexed timeline");
+    persist_timeline_catalog(&connection, &retagged.timeline)
+        .expect("stage tag-only timeline catalog");
+    {
+        let publication = connection
+            .unchecked_transaction()
+            .expect("tag-only fact publication");
+        publish_incremental_history_facts(
+            &publication,
+            &retagged,
+            &read_git_tags(&root).expect("tag-only tags"),
+            "tag-only",
+            &StructuralGraphCancellation::default(),
+            &HashSet::new(),
+        )
+        .expect("publish tag-only metadata");
+        publication.commit().expect("commit tag-only metadata");
+    }
+    let tag_rows: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM history_graph_fact_tags WHERE repo_path = ?1",
+            [&retagged.timeline.repo_path],
+            |row| row.get(0),
+        )
+        .expect("tag-only tag count");
+    let retained_path_rows: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM history_graph_revision_paths WHERE repo_path = ?1",
+            [&retagged.timeline.repo_path],
+            |row| row.get(0),
+        )
+        .expect("tag-only path count");
+    assert_eq!(tag_rows, 1);
+    assert_eq!(retained_path_rows, path_rows);
+    fs::remove_dir_all(root).expect("remove fixture");
+}
+
+#[test]
+fn fast_forward_structural_deltas_stay_within_new_bounded_revisions() {
+    let a = "a".repeat(40);
+    let b = "b".repeat(40);
+    let c = "c".repeat(40);
+    let timeline = HistoryTimeline {
+        schema_version: 1,
+        repo_path: "/fixture".to_string(),
+        head: c.clone(),
+        generated_at: "2026-01-01T00:00:00Z".to_string(),
+        revisions: vec![
+            HistoryRevision {
+                sha: a.clone(),
+                short_sha: "aaaaaaaa".to_string(),
+                parents: Vec::new(),
+                committed_at: "2026-01-01T00:00:00Z".to_string(),
+                author: "Fixture".to_string(),
+                subject: "base".to_string(),
+                tags: Vec::new(),
+                is_release: false,
+                is_head: false,
+                ordinal: 0,
+            },
+            HistoryRevision {
+                sha: b.clone(),
+                short_sha: "bbbbbbbb".to_string(),
+                parents: vec![a.clone()],
+                committed_at: "2026-01-02T00:00:00Z".to_string(),
+                author: "Fixture".to_string(),
+                subject: "first append".to_string(),
+                tags: Vec::new(),
+                is_release: false,
+                is_head: false,
+                ordinal: 1,
+            },
+            HistoryRevision {
+                sha: c.clone(),
+                short_sha: "cccccccc".to_string(),
+                parents: vec![b.clone()],
+                committed_at: "2026-01-03T00:00:00Z".to_string(),
+                author: "Fixture".to_string(),
+                subject: "second append".to_string(),
+                tags: Vec::new(),
+                is_release: false,
+                is_head: true,
+                ordinal: 2,
+            },
+        ],
+        total_commits: 3,
+        truncated: false,
+        is_shallow: false,
+        coverage_complete: true,
+        release_ranges: Vec::new(),
+        reachable_revisions: vec![a.clone(), b.clone(), c.clone()],
+    };
+    let introduced = HashSet::from([b.clone(), c.clone()]);
+    assert_eq!(
+        fast_forward_delta_pairs(&timeline, &introduced),
+        vec![(a, b), ("b".repeat(40), c)]
+    );
+    assert!(fast_forward_delta_pairs(&timeline, &HashSet::new()).is_empty());
+}
+
+#[test]
+fn indexed_timeline_reads_normalized_facts_without_git_and_keeps_old_releases_visible() {
+    let connection = Connection::open_in_memory().expect("database");
+    crate::db::schema::run_migrations(&connection).expect("migrations");
+    let timeline = HistoryTimeline {
+        schema_version: 1,
+        repo_path: "/indexed-history".to_string(),
+        head: "c".repeat(40),
+        generated_at: "2026-01-01T00:00:00Z".to_string(),
+        revisions: vec![
+            HistoryRevision {
+                sha: "a".repeat(40),
+                short_sha: "aaaaaaaa".to_string(),
+                parents: Vec::new(),
+                committed_at: "2026-01-01T00:00:00Z".to_string(),
+                author: "Fixture".to_string(),
+                subject: "old release".to_string(),
+                tags: vec!["v1.0.0".to_string()],
+                is_release: true,
+                is_head: false,
+                ordinal: 0,
+            },
+            HistoryRevision {
+                sha: "b".repeat(40),
+                short_sha: "bbbbbbbb".to_string(),
+                parents: vec!["a".repeat(40)],
+                committed_at: "2026-01-02T00:00:00Z".to_string(),
+                author: "Fixture".to_string(),
+                subject: "middle".to_string(),
+                tags: Vec::new(),
+                is_release: false,
+                is_head: false,
+                ordinal: 1,
+            },
+            HistoryRevision {
+                sha: "c".repeat(40),
+                short_sha: "cccccccc".to_string(),
+                parents: vec!["b".repeat(40)],
+                committed_at: "2026-01-03T00:00:00Z".to_string(),
+                author: "Fixture".to_string(),
+                subject: "head".to_string(),
+                tags: Vec::new(),
+                is_release: false,
+                is_head: true,
+                ordinal: 2,
+            },
+        ],
+        total_commits: 3,
+        truncated: false,
+        is_shallow: false,
+        coverage_complete: true,
+        release_ranges: Vec::new(),
+        reachable_revisions: vec!["a".repeat(40), "b".repeat(40), "c".repeat(40)],
+    };
+    persist_timeline(&connection, &timeline).expect("persist indexed timeline");
+    connection
+        .execute(
+            "INSERT INTO history_graph_fact_catalogs (
+                repo_path, schema_version, classification_version, index_identity,
+                indexed_head, tags_fingerprint, mailmap_fingerprint, facts_fingerprint,
+                status, updated_at
+             ) VALUES (?1, 1, 1, 'facts', ?2, 'tags', 'mailmap', 'facts', 'ready', ?3)",
+            params![timeline.repo_path, timeline.head, timeline.generated_at],
+        )
+        .expect("fact catalog");
+
+    let loaded = load_indexed_timeline(&connection, &timeline.repo_path, Some(1))
+        .expect("load indexed timeline")
+        .expect("indexed timeline");
+    assert_eq!(loaded.total_commits, 3);
+    assert!(loaded.truncated);
+    assert_eq!(loaded.revisions.len(), 2);
+    assert_eq!(loaded.revisions[0].sha, "a".repeat(40));
+    assert_eq!(loaded.revisions[1].sha, "c".repeat(40));
+    assert_eq!(loaded.revisions[0].tags, ["v1.0.0"]);
+}
+
+#[test]
+fn deterministic_release_fixture_preserves_tag_kinds_and_coincident_old_releases() {
+    let root = std::env::temp_dir().join(format!(
+        "cv-history-release-contract-{}",
+        uuid::Uuid::new_v4()
+    ));
+    fs::create_dir_all(&root).expect("fixture");
+    run_git(&root, &["init"]);
+    run_git(&root, &["config", "user.email", "fixture@local"]);
+    run_git(&root, &["config", "user.name", "Fixture"]);
+
+    fs::write(root.join("history.txt"), "release 0\n").expect("initial release");
+    run_git_at(&root, &["add", "."], "2026-01-01T00:00:00+00:00");
+    run_git_at(
+        &root,
+        &["commit", "-m", "release: initial"],
+        "2026-01-01T00:00:00+00:00",
+    );
+    run_git_at(&root, &["tag", "v0.1.0"], "2026-01-01T01:00:00+00:00");
+    run_git_at(
+        &root,
+        &["tag", "-a", "v0.1.0-stable", "-m", "stable release"],
+        "2026-01-01T02:00:00+00:00",
+    );
+
+    for index in 1..=4 {
+        fs::write(root.join("history.txt"), format!("release {index}\n")).expect("history");
+        let timestamp = format!("2026-01-0{}T00:00:00+00:00", index + 1);
+        run_git_at(&root, &["add", "."], &timestamp);
+        run_git_at(
+            &root,
+            &["commit", "-m", &format!("change: {index}")],
+            &timestamp,
+        );
+    }
+
+    let tags = read_git_tags(&root).expect("tag facts");
+    let lightweight = tags
+        .iter()
+        .find(|tag| tag.name == "v0.1.0")
+        .expect("lightweight tag");
+    let annotated = tags
+        .iter()
+        .find(|tag| tag.name == "v0.1.0-stable")
+        .expect("annotated tag");
+    assert_eq!(lightweight.object_sha, lightweight.commit_sha);
+    assert_ne!(annotated.object_sha, annotated.commit_sha);
+    assert_eq!(lightweight.commit_sha, annotated.commit_sha);
+
+    let timeline = build_timeline(&root, Some(2)).expect("bounded timeline");
+    assert!(timeline.truncated);
+    let old_release = timeline
+        .revisions
+        .iter()
+        .find(|revision| revision.sha == lightweight.commit_sha)
+        .expect("old release outside recent window");
+    assert_eq!(
+        old_release.tags,
+        vec!["v0.1.0".to_string(), "v0.1.0-stable".to_string()]
+    );
+    assert_eq!(
+        timeline
+            .release_ranges
+            .iter()
+            .filter(|range| !range.is_unreleased)
+            .count(),
+        1,
+        "the legacy timeline groups coincident tags at one position; the catalog preserves both"
+    );
+
+    let connection = Connection::open_in_memory().expect("database");
+    crate::db::schema::run_migrations(&connection).expect("migrations");
+    persist_timeline(&connection, &timeline).expect("timeline");
+    let initial_fingerprint = release_tag_fingerprint(&tags);
+    let initial_identity = publish_catalog(&connection, &timeline, &tags, &initial_fingerprint)
+        .expect("initial release catalog");
+    let expected_initial = (
+        initial_identity.clone(),
+        vec![
+            (
+                "v0.1.0".to_string(),
+                "lightweight".to_string(),
+                lightweight.commit_sha.clone(),
+            ),
+            (
+                "v0.1.0-stable".to_string(),
+                "annotated".to_string(),
+                annotated.commit_sha.clone(),
+            ),
+        ],
+    );
+    assert_eq!(
+        release_catalog_state(&connection, &timeline.repo_path),
+        expected_initial
+    );
+
+    run_git(&root, &["tag", "-d", "v0.1.0-stable"]);
+    let remaining_tags = read_git_tags(&root).expect("remaining tags");
+    let remaining_timeline =
+        build_timeline_with_tags(&root, Some(2), &remaining_tags).expect("remaining timeline");
+    let remaining_fingerprint = release_tag_fingerprint(&remaining_tags);
+    persist_timeline_catalog_with_fingerprint(
+        &connection,
+        &remaining_timeline,
+        &remaining_fingerprint,
+    )
+    .expect("stage tag removal");
+    assert_eq!(
+        release_catalog_state(&connection, &timeline.repo_path),
+        expected_initial,
+        "staging or cancellation leaves the prior ready catalog untouched"
+    );
+
+    let publish_remaining = || {
+        publish_catalog(
+            &connection,
+            &remaining_timeline,
+            &remaining_tags,
+            &remaining_fingerprint,
+        )
+        .expect("remaining release catalog")
+    };
+    let remaining_identity = publish_remaining();
+    let expected_remaining = (
+        remaining_identity.clone(),
+        vec![(
+            "v0.1.0".to_string(),
+            "lightweight".to_string(),
+            lightweight.commit_sha.clone(),
+        )],
+    );
+    assert_eq!(
+        release_catalog_state(&connection, &timeline.repo_path),
+        expected_remaining
+    );
+    assert_eq!(publish_remaining(), remaining_identity);
+    assert_eq!(
+        release_catalog_state(&connection, &timeline.repo_path),
+        expected_remaining,
+        "republication is idempotent"
+    );
+
+    let invalid_tag = GitTagRecord {
+        name: "v9.0.0".to_string(),
+        object_sha: "missing-revision".to_string(),
+        commit_sha: "missing-revision".to_string(),
+        created_ts: 1,
+    };
+    assert!(publish_catalog(
+        &connection,
+        &remaining_timeline,
+        &[invalid_tag],
+        "failed-fingerprint",
+    )
+    .is_err());
+    assert_eq!(
+        release_catalog_state(&connection, &timeline.repo_path),
+        expected_remaining,
+        "failed publication rolls back identity, deletion, and rows"
+    );
+    fs::remove_dir_all(root).expect("remove fixture");
+}
+
+#[test]
+fn release_navigation_contract_defaults_are_versioned_and_bounded() {
+    let catalog: HistoryReleaseCatalog = serde_json::from_str("{}").expect("legacy catalog");
+    assert_eq!(
+        catalog.schema_version,
+        HISTORY_RELEASE_CATALOG_SCHEMA_VERSION
+    );
+    assert!(catalog.releases.is_empty());
+    assert_eq!(catalog.coverage.state, HistoryCoverageState::Unavailable);
+    assert!(!catalog.truncated);
+    assert!(catalog.next_cursor.is_none());
+
+    let window: HistoryTimelineWindow = serde_json::from_str("{}").expect("legacy window");
+    assert_eq!(
+        window.schema_version,
+        HISTORY_TIMELINE_WINDOW_SCHEMA_VERSION
+    );
+    assert!(window.center_revision.is_none());
+    assert!(window.revisions.is_empty());
+    assert_eq!(window.applied_limit, 0);
+    assert!(!window.truncated);
+    assert!(!window.has_older);
+    assert!(!window.has_newer);
+
+    let cursor = HistoryOpaqueCursor("opaque:v1:fixture".to_string());
+    assert_eq!(
+        serde_json::to_string(&cursor).expect("cursor serialization"),
+        "\"opaque:v1:fixture\""
+    );
+    assert!(serde_json::from_str::<HistoryTimelineCenter>(
+        r#"{"kind":"release","tag":"v1.0.0","extra":true}"#
+    )
+    .is_err());
 }
 
 #[test]
@@ -887,6 +1382,122 @@ fn refresh_classification_prioritizes_rewrites_and_engine_repairs() {
 }
 
 #[test]
+fn automatic_release_checkpoints_are_bounded_and_prefer_recent_releases() {
+    let releases = (0..40)
+        .rev()
+        .map(|index| format!("release-{index:02}"))
+        .collect::<Vec<_>>();
+    let selected = automatic_release_checkpoint_revisions(&releases);
+    assert_eq!(selected.len(), 24);
+    assert_eq!(selected.first().map(String::as_str), Some("release-39"));
+    assert_eq!(selected.last().map(String::as_str), Some("release-16"));
+    assert_eq!(
+        automatic_release_checkpoint_revisions(&releases[..3]),
+        releases[..3]
+    );
+}
+
+#[test]
+fn checkpoint_compatibility_invalidates_changed_structural_ignore_policy() {
+    let connection = Connection::open_in_memory().expect("database");
+    crate::db::schema::run_migrations(&connection).expect("migrations");
+    let repo = "/ignore-policy-fixture";
+    let revision = "a".repeat(40);
+    connection
+        .execute(
+            "INSERT INTO history_graph_repositories (
+                repo_path, repository_fingerprint, status, created_at, updated_at
+             ) VALUES (?1, 'fixture', 'ready', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')",
+            [repo],
+        )
+        .expect("repository");
+    connection
+        .execute(
+            "INSERT INTO history_graph_revisions (
+                repo_path, sha, ordinal, committed_at, author_name, subject
+             ) VALUES (?1, ?2, 0, '2026-01-01T00:00:00Z', 'Fixture', 'fixture')",
+            params![repo, revision],
+        )
+        .expect("revision");
+    connection
+        .execute(
+            "INSERT INTO structural_graph_snapshots (
+                id, repo_path, repo_head, schema_version, engine_id, engine_version,
+                engine_json, ignore_fingerprint, coverage_json, created_at
+             ) VALUES ('snapshot', ?1, ?2, ?3, ?4, ?5, '{}', ?6, '{}', '2026-01-01T00:00:00Z')",
+            params![
+                repo,
+                revision,
+                STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                BUNDLED_ENGINE_ID,
+                BUNDLED_ENGINE_VERSION,
+                crate::commands::structural_graph::extract::current_ignore_fingerprint(),
+            ],
+        )
+        .expect("snapshot");
+    connection
+        .execute(
+            "INSERT INTO history_graph_checkpoints (
+                repo_path, revision_sha, snapshot_id, engine_id, engine_version,
+                schema_version, status, coverage_json, created_at
+             ) VALUES (?1, ?2, 'snapshot', ?3, ?4, ?5, 'ready', '{}', '2026-01-01T00:00:00Z')",
+            params![
+                repo,
+                revision,
+                BUNDLED_ENGINE_ID,
+                BUNDLED_ENGINE_VERSION,
+                STRUCTURAL_GRAPH_SCHEMA_VERSION,
+            ],
+        )
+        .expect("checkpoint");
+    assert!(!has_incompatible_history_checkpoints(&connection, repo).expect("compatible"));
+    connection
+        .execute(
+            "UPDATE structural_graph_snapshots SET ignore_fingerprint = 'old-policy' WHERE id = 'snapshot'",
+            [],
+        )
+        .expect("change ignore policy");
+    assert!(has_incompatible_history_checkpoints(&connection, repo).expect("incompatible"));
+}
+
+#[test]
+fn normalized_fact_probe_skips_all_history_scan_only_for_exactly_matching_inputs() {
+    let probe = HistoryFactCatalogProbe::ready_for_test(
+        "a".repeat(40),
+        "tags".to_string(),
+        "mailmap".to_string(),
+    );
+    assert!(normalized_facts_are_current(
+        &probe,
+        &"a".repeat(40),
+        "tags",
+        "mailmap",
+        false,
+    ));
+    assert!(!normalized_facts_are_current(
+        &probe,
+        &"b".repeat(40),
+        "tags",
+        "mailmap",
+        false,
+    ));
+    assert!(!normalized_facts_are_current(
+        &probe,
+        &"a".repeat(40),
+        "tags",
+        "changed-mailmap",
+        false,
+    ));
+    assert!(!normalized_facts_are_current(
+        &probe,
+        &"a".repeat(40),
+        "tags",
+        "mailmap",
+        true,
+    ));
+}
+
+#[test]
 fn exact_as_of_reconstructs_from_nearest_checkpoint_and_ordered_deltas() {
     let root = std::env::temp_dir().join(format!("cv-as-of-{}", uuid::Uuid::new_v4()));
     fs::create_dir_all(root.join("src")).expect("fixture");
@@ -1157,7 +1768,20 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
         .unwrap_or(24)
         .clamp(4, 100);
     let total_started = std::time::Instant::now();
-    let timeline = build_timeline(&root, Some(limit)).expect("timeline");
+    let cancellation = StructuralGraphCancellation::default();
+    let tag_records = read_git_tags(&root).expect("tags");
+    let history_build = build_timeline_bundle_with_tags_cancellable(
+        &root,
+        Some(limit),
+        &tag_records,
+        &cancellation,
+    )
+    .expect("history facts");
+    assert_eq!(
+        history_build.fact_git_process_count, 1,
+        "a full normalized history read must use exactly one batched Git process"
+    );
+    let timeline = history_build.timeline.clone();
     let canonical = root.to_string_lossy().to_string();
     let storage_key = history_storage_key(&canonical);
     let db_path = std::env::temp_dir().join(format!(
@@ -1167,7 +1791,19 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
     let connection = Connection::open(&db_path).expect("benchmark database");
     crate::db::schema::run_migrations(&connection).expect("migrations");
     persist_timeline(&connection, &timeline).expect("timeline persistence");
-    let cancellation = StructuralGraphCancellation::default();
+    let release_revisions_newest_first = timeline
+        .revisions
+        .iter()
+        .rev()
+        .filter(|revision| revision.is_release)
+        .map(|revision| revision.sha.clone())
+        .collect::<Vec<_>>();
+    let automatic_release_checkpoints =
+        automatic_release_checkpoint_revisions(&release_revisions_newest_first);
+    let automatic_release_checkpoint_set = automatic_release_checkpoints
+        .iter()
+        .map(String::as_str)
+        .collect::<HashSet<_>>();
     let mut build_samples = Vec::with_capacity(timeline.revisions.len());
     let build_snapshot = |revision: &HistoryRevision| {
         let started = std::time::Instant::now();
@@ -1211,11 +1847,16 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
     let (mut previous_snapshot, first_build_ms) = build_snapshot(first_revision);
     build_samples.push(first_build_ms);
     persist_benchmark_checkpoint(first_revision, &previous_snapshot);
+    let mut checkpointed_revisions = HashSet::from([first_revision.sha.clone()]);
     let mut checkpoint_count = 1usize;
     let mut delta_samples = Vec::with_capacity(timeline.revisions.len().saturating_sub(1));
     let mut delta_node_changes = 0usize;
     let mut delta_edge_changes = 0usize;
-    for index in 1..timeline.revisions.len() {
+    let mut one_commit_refresh_ms = 0.0;
+    // Qualification mirrors production: one representative append delta proves
+    // the incremental path, while the initial index stores only bounded
+    // checkpoints instead of manufacturing a delta for every old revision.
+    for index in 1..timeline.revisions.len().min(2) {
         let revision = &timeline.revisions[index];
         let path_changes = changed_path_records(&root, &revision.sha).expect("path changes");
         let changed_paths = path_changes
@@ -1248,9 +1889,13 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
         )
         .expect("incremental historical snapshot");
         compact_history_snapshot(&mut after_snapshot);
+        let incremental_snapshot_ms = started.elapsed().as_secs_f64() * 1000.0;
         let build_ms = started.elapsed().as_secs_f64() * 1000.0;
         build_samples.push(build_ms);
-        if index + 1 == timeline.revisions.len() || revision.is_release {
+        if (index + 1 == timeline.revisions.len()
+            || automatic_release_checkpoint_set.contains(revision.sha.as_str()))
+            && checkpointed_revisions.insert(revision.sha.clone())
+        {
             persist_benchmark_checkpoint(revision, &after_snapshot);
             checkpoint_count += 1;
         }
@@ -1271,25 +1916,91 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
         delta_edge_changes += delta.added_edge_ids.len()
             + delta.removed_edge_ids.len()
             + delta.changed_edge_ids.len();
-        delta_samples.push(started.elapsed().as_secs_f64() * 1000.0);
+        let delta_ms = started.elapsed().as_secs_f64() * 1000.0;
+        delta_samples.push(delta_ms);
+        one_commit_refresh_ms = incremental_snapshot_ms + delta_ms;
         previous_snapshot = after_snapshot;
         if index % 4 == 0 {
             release_history_allocator_pressure();
         }
     }
+    for revision in timeline.revisions.iter().filter(|revision| {
+        revision.sha == timeline.head
+            || automatic_release_checkpoint_set.contains(revision.sha.as_str())
+    }) {
+        if !checkpointed_revisions.insert(revision.sha.clone()) {
+            continue;
+        }
+        let (snapshot, build_ms) = build_snapshot(revision);
+        build_samples.push(build_ms);
+        persist_benchmark_checkpoint(revision, &snapshot);
+        checkpoint_count += 1;
+        if revision.sha == timeline.head {
+            previous_snapshot = snapshot;
+        }
+    }
     release_history_allocator_pressure();
+    let tag_fingerprint = release_tag_fingerprint(&tag_records);
+    let published_at = chrono::Utc::now().to_rfc3339();
+    {
+        let publication = connection
+            .unchecked_transaction()
+            .expect("benchmark publication transaction");
+        let fact_index_identity = publish_history_facts(
+            &publication,
+            &history_build,
+            &tag_records,
+            &published_at,
+            &cancellation,
+        )
+        .expect("publish history facts");
+        publish_release_catalog(
+            &publication,
+            &timeline,
+            &tag_records,
+            &tag_fingerprint,
+            timeline.coverage_complete,
+        )
+        .expect("publish release catalog");
+        publish_release_intervals(&publication, &history_build, &tag_records)
+            .expect("publish release intervals");
+        publish_candidate_inflections(
+            &publication,
+            &canonical,
+            &fact_index_identity,
+            timeline.coverage_complete,
+            &published_at,
+            &cancellation,
+        )
+        .expect("publish candidate inflections");
+        publication.commit().expect("commit benchmark publication");
+    }
     let backfill_ms = total_started.elapsed().as_secs_f64() * 1000.0;
-    let target_index = (timeline.revisions.len() * 3 / 4)
+    let uncached_target_index = (timeline.revisions.len() * 3 / 4)
         .min(timeline.revisions.len().saturating_sub(2))
         .max(1);
-    let target_revision = &timeline.revisions[target_index].sha;
+    let uncached_target_revision = &timeline.revisions[uncached_target_index];
+    let mut uncached_snapshot_samples = Vec::with_capacity(20);
+    for _ in 0..20 {
+        let (_, elapsed_ms) = build_snapshot(uncached_target_revision);
+        uncached_snapshot_samples.push(elapsed_ms);
+    }
+    let cached_target_revision = automatic_release_checkpoints
+        .last()
+        .map(String::as_str)
+        .unwrap_or(timeline.head.as_str());
     let mut as_of_samples = Vec::with_capacity(100);
     for _ in 0..100 {
         let started = std::time::Instant::now();
         std::hint::black_box(
-            reconstruct_history_as_of(&connection, &canonical, &storage_key, target_revision)
-                .expect("as-of query")
-                .expect("complete as-of chain"),
+            reconstruct_history_as_of(
+                &connection,
+                &canonical,
+                &storage_key,
+                cached_target_revision,
+            )
+            .expect("as-of query")
+            .expect("automatic checkpoint is readable"),
         );
         as_of_samples.push(started.elapsed().as_secs_f64() * 1000.0);
     }
@@ -1305,8 +2016,33 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
         ));
         no_op_samples.push(started.elapsed().as_secs_f64() * 1000.0);
     }
-    let one_commit_refresh_ms = build_samples.last().copied().unwrap_or_default()
-        + delta_samples.last().copied().unwrap_or_default();
+    let history =
+        HistoryReadService::new_with_current_head(&connection, root.clone(), timeline.head.clone())
+            .expect("history read service");
+    let mut release_query_samples = Vec::with_capacity(100);
+    for _ in 0..100 {
+        let started = std::time::Instant::now();
+        std::hint::black_box(
+            history
+                .release_catalog(Some(100), None)
+                .expect("release catalog query"),
+        );
+        release_query_samples.push(started.elapsed().as_secs_f64() * 1000.0);
+    }
+    let mut contributor_query_samples = Vec::with_capacity(100);
+    let contributor_scope = HistoryContributorScope::ExactInterval {
+        from_exclusive: None,
+        to_inclusive: timeline.head.clone(),
+    };
+    for _ in 0..100 {
+        let started = std::time::Instant::now();
+        std::hint::black_box(
+            history
+                .contributor_summary_page(contributor_scope.clone(), Some(20), None)
+                .expect("contributor summary query"),
+        );
+        contributor_query_samples.push(started.elapsed().as_secs_f64() * 1000.0);
+    }
     let percentile = |samples: &mut Vec<f64>, percentile: usize| {
         samples.sort_by(f64::total_cmp);
         samples[samples.len() * percentile / 100]
@@ -1317,8 +2053,23 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
     let delta_p95 = percentile(&mut delta_samples, 95);
     let as_of_p50 = percentile(&mut as_of_samples, 50);
     let as_of_p95 = percentile(&mut as_of_samples, 95);
+    let as_of_max = as_of_samples.last().copied().unwrap_or_default();
+    let uncached_snapshot_p95 = percentile(&mut uncached_snapshot_samples, 95);
+    let uncached_snapshot_max = uncached_snapshot_samples
+        .last()
+        .copied()
+        .unwrap_or_default();
     let no_op_p50 = percentile(&mut no_op_samples, 50);
     let no_op_p95 = percentile(&mut no_op_samples, 95);
+    let release_query_p50 = percentile(&mut release_query_samples, 50);
+    let release_query_p95 = percentile(&mut release_query_samples, 95);
+    let release_query_max = release_query_samples.last().copied().unwrap_or_default();
+    let contributor_query_p50 = percentile(&mut contributor_query_samples, 50);
+    let contributor_query_p95 = percentile(&mut contributor_query_samples, 95);
+    let contributor_query_max = contributor_query_samples
+        .last()
+        .copied()
+        .unwrap_or_default();
     let database_bytes = fs::metadata(&db_path)
         .map(|metadata| metadata.len())
         .unwrap_or_default();
@@ -1336,6 +2087,20 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
             |row| row.get(0),
         )
         .expect("delta blob bytes");
+    let contributor_fact_count: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM history_graph_contributors WHERE repo_path = ?1",
+            [canonical.as_str()],
+            |row| row.get(0),
+        )
+        .expect("contributor fact count");
+    let landmark_count: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM history_graph_landmarks WHERE repo_path = ?1",
+            [canonical.as_str()],
+            |row| row.get(0),
+        )
+        .expect("landmark count");
     let rss_kib = Command::new("ps")
         .args(["-o", "rss=", "-p", &std::process::id().to_string()])
         .output()
@@ -1356,13 +2121,14 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
     eprintln!("\n=== bench_history_backfill_incremental_and_as_of_real_repo ===");
     eprintln!("repo:                  {}", root.display());
     eprintln!(
-        "history:               {} commits · {} releases · {checkpoint_count} checkpoints",
+        "history:               {} commits · {} releases · {} auto-release checkpoints · {checkpoint_count} total checkpoints",
         timeline.revisions.len(),
-        timeline
-            .revisions
-            .iter()
-            .filter(|revision| revision.is_release)
-            .count()
+        release_revisions_newest_first.len(),
+        automatic_release_checkpoints.len(),
+    );
+    eprintln!(
+        "history Git processes:  {} bounded batched log reader",
+        history_build.fact_git_process_count
     );
     eprintln!(
         "graph:                 {} files · {} nodes · {} edges",
@@ -1379,8 +2145,17 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
         delta_edge_changes as f64 / delta_samples.len().max(1) as f64
     );
     eprintln!("one-commit refresh:     {one_commit_refresh_ms:.2} ms");
-    eprintln!("as-of p50/p95:          {as_of_p50:.3} / {as_of_p95:.3} ms");
+    eprintln!(
+        "uncached old snapshot p95/max: {uncached_snapshot_p95:.2} / {uncached_snapshot_max:.2} ms"
+    );
+    eprintln!("cached as-of p50/p95/max: {as_of_p50:.3} / {as_of_p95:.3} / {as_of_max:.3} ms");
     eprintln!("no-op p50/p95:          {no_op_p50:.6} / {no_op_p95:.6} ms");
+    eprintln!(
+        "release query p50/p95/max: {release_query_p50:.3} / {release_query_p95:.3} / {release_query_max:.3} ms"
+    );
+    eprintln!(
+        "contributor query p50/p95/max: {contributor_query_p50:.3} / {contributor_query_p95:.3} / {contributor_query_max:.3} ms"
+    );
     eprintln!(
         "checkpoint hit ratio:   {:.1}%",
         checkpoint_count as f64 / timeline.revisions.len() as f64 * 100.0
@@ -1389,6 +2164,9 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
         "database:               {:.2} MiB ({:.1} KiB/commit)",
         database_bytes as f64 / 1_048_576.0,
         database_bytes as f64 / 1024.0 / timeline.revisions.len() as f64
+    );
+    eprintln!(
+        "normalized facts:       {contributor_fact_count} contributors · {landmark_count} landmarks"
     );
     eprintln!(
         "compressed payloads:    {:.2} MiB checkpoints · {:.2} MiB deltas",
@@ -1402,6 +2180,71 @@ fn bench_history_backfill_incremental_and_as_of_real_repo() {
     eprintln!("CPU user/system:        {user_cpu:.2} / {system_cpu:.2} s");
     eprintln!("filesystem block ops:   {input_blocks} read · {output_blocks} write\n");
 
+    if let Ok(report_path) = std::env::var("CV_HISTORY_BENCH_REPORT") {
+        let report = serde_json::json!({
+            "schema_version": 1,
+            "repo": root,
+            "history": {
+                "revisions": timeline.revisions.len(),
+                "releases": release_revisions_newest_first.len(),
+                "automatic_release_checkpoints": automatic_release_checkpoints.len(),
+                "total_checkpoints": checkpoint_count,
+                "fact_git_process_count": history_build.fact_git_process_count,
+            },
+            "graph": {
+                "indexed_files": previous_snapshot.coverage.indexed_files,
+                "nodes": previous_snapshot.nodes.len(),
+                "edges": previous_snapshot.edges.len(),
+            },
+            "timing_ms": {
+                "cold_index_total": backfill_ms,
+                "checkpoint_p50": build_p50,
+                "checkpoint_p95": build_p95,
+                "delta_p50": delta_p50,
+                "delta_p95": delta_p95,
+                "one_commit_refresh": one_commit_refresh_ms,
+                "uncached_old_snapshot_p95": uncached_snapshot_p95,
+                "uncached_old_snapshot_max": uncached_snapshot_max,
+                "as_of_p50": as_of_p50,
+                "as_of_p95": as_of_p95,
+                "as_of_max": as_of_max,
+                "no_op_p50": no_op_p50,
+                "no_op_p95": no_op_p95,
+                "release_catalog_p50": release_query_p50,
+                "release_catalog_p95": release_query_p95,
+                "release_catalog_max": release_query_max,
+                "contributor_summary_p50": contributor_query_p50,
+                "contributor_summary_p95": contributor_query_p95,
+                "contributor_summary_max": contributor_query_max,
+            },
+            "storage": {
+                "database_bytes": database_bytes,
+                "database_bytes_per_revision": database_bytes as f64 / timeline.revisions.len() as f64,
+                "contributor_facts": contributor_fact_count,
+                "landmarks": landmark_count,
+                "database_bytes_per_contributor": (contributor_fact_count > 0)
+                    .then(|| database_bytes as f64 / contributor_fact_count as f64),
+                "database_bytes_per_landmark": (landmark_count > 0)
+                    .then(|| database_bytes as f64 / landmark_count as f64),
+                "snapshot_blob_bytes": snapshot_blob_bytes,
+                "delta_blob_bytes": delta_blob_bytes,
+            },
+            "process": {
+                "rss_kib": rss_kib,
+                "cpu_user_seconds": user_cpu,
+                "cpu_system_seconds": system_cpu,
+                "input_blocks": input_blocks,
+                "output_blocks": output_blocks,
+            },
+        });
+        fs::write(
+            &report_path,
+            serde_json::to_vec_pretty(&report).expect("report JSON"),
+        )
+        .expect("write history benchmark report");
+        eprintln!("benchmark report:      {report_path}");
+    }
+
     drop(connection);
     let _ = fs::remove_file(db_path);
 }
@@ -1414,4 +2257,57 @@ fn run_git(root: &Path, arguments: &[&str]) {
         .status()
         .expect("git");
     assert!(status.success(), "git {arguments:?}");
+}
+
+fn run_git_at(root: &Path, arguments: &[&str], timestamp: &str) {
+    let status = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(arguments)
+        .env("GIT_AUTHOR_DATE", timestamp)
+        .env("GIT_COMMITTER_DATE", timestamp)
+        .status()
+        .expect("git");
+    assert!(status.success(), "git {arguments:?} at {timestamp}");
+}
+
+fn release_catalog_state(
+    connection: &Connection,
+    repo_path: &str,
+) -> (String, Vec<(String, String, String)>) {
+    let identity = connection
+        .query_row(
+            "SELECT index_identity FROM history_graph_release_catalogs WHERE repo_path = ?1",
+            [repo_path],
+            |row| row.get(0),
+        )
+        .expect("catalog identity");
+    let mut statement = connection
+        .prepare(
+            "SELECT tag, tag_kind, revision_sha FROM history_graph_release_tags
+             WHERE repo_path = ?1 ORDER BY tag",
+        )
+        .expect("release rows");
+    let rows = statement
+        .query_map([repo_path], |row| {
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+        })
+        .expect("query release rows")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("read release rows");
+    (identity, rows)
+}
+
+fn publish_catalog(
+    connection: &Connection,
+    timeline: &HistoryTimeline,
+    tags: &[GitTagRecord],
+    fingerprint: &str,
+) -> Result<String, String> {
+    let publication = connection
+        .unchecked_transaction()
+        .map_err(|error| error.to_string())?;
+    let identity = publish_release_catalog(&publication, timeline, tags, fingerprint, true)?;
+    publication.commit().map_err(|error| error.to_string())?;
+    Ok(identity)
 }

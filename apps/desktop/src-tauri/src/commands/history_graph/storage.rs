@@ -1,8 +1,15 @@
 use super::*;
 
+const MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES: usize = 256 * 1024 * 1024;
+
 pub(super) fn encode_history_blob<T: Serialize>(value: &T) -> Result<(Vec<u8>, usize), String> {
     let json =
         serde_json::to_vec(value).map_err(|error| format!("Encode history blob: {error}"))?;
+    if json.len() > MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES {
+        return Err(format!(
+            "History blob exceeds the {MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES} byte limit"
+        ));
+    }
     let mut encoder = ZlibEncoder::new(Vec::new(), Compression::fast());
     encoder
         .write_all(&json)
@@ -13,12 +20,29 @@ pub(super) fn encode_history_blob<T: Serialize>(value: &T) -> Result<(Vec<u8>, u
     Ok((compressed, json.len()))
 }
 
-pub(super) fn decode_history_blob<T: DeserializeOwned>(payload: &[u8]) -> Result<T, String> {
-    let mut decoder = ZlibDecoder::new(payload);
+pub(super) fn decode_history_blob<T: DeserializeOwned>(
+    payload: &[u8],
+    declared_uncompressed_bytes: i64,
+) -> Result<T, String> {
+    let expected_bytes = usize::try_from(declared_uncompressed_bytes)
+        .map_err(|_| "History blob has an invalid uncompressed size".to_string())?;
+    if expected_bytes > MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES {
+        return Err(format!(
+            "History blob exceeds the {MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES} byte limit"
+        ));
+    }
+    let read_limit = expected_bytes
+        .checked_add(1)
+        .ok_or_else(|| "History blob size overflowed".to_string())?;
+    let decoder = ZlibDecoder::new(payload);
     let mut json = Vec::new();
     decoder
+        .take(read_limit as u64)
         .read_to_end(&mut json)
         .map_err(|error| format!("Decompress history blob: {error}"))?;
+    if json.len() != expected_bytes {
+        return Err("History blob uncompressed size does not match its declaration".to_string());
+    }
     serde_json::from_slice(&json).map_err(|error| format!("Decode history blob: {error}"))
 }
 
@@ -55,14 +79,17 @@ pub(super) fn load_history_snapshot_blob(
 ) -> Result<Option<StructuralGraphSnapshot>, String> {
     let payload = connection
         .query_row(
-            "SELECT payload FROM history_graph_snapshot_blobs
+            "SELECT payload, uncompressed_bytes FROM history_graph_snapshot_blobs
              WHERE repo_path = ?1 AND snapshot_id = ?2 AND encoding = 'zlib-json-v1'",
             params![repo_path, snapshot_id],
-            |row| row.get::<_, Vec<u8>>(0),
+            |row| Ok((row.get::<_, Vec<u8>>(0)?, row.get::<_, i64>(1)?)),
         )
         .optional()
         .map_err(|error| format!("Load compressed history checkpoint: {error}"))?;
-    payload.as_deref().map(decode_history_blob).transpose()
+    payload
+        .as_ref()
+        .map(|(payload, uncompressed_bytes)| decode_history_blob(payload, *uncompressed_bytes))
+        .transpose()
 }
 
 pub(super) fn persist_history_delta_blob(
@@ -96,16 +123,16 @@ pub(super) fn load_history_structural_delta(
     let event_id = structural_delta_event_id(repo_path, before_revision, after_revision);
     let blob = connection
         .query_row(
-            "SELECT b.payload FROM history_graph_event_blobs b
+            "SELECT b.payload, b.uncompressed_bytes FROM history_graph_event_blobs b
              JOIN history_graph_events e ON e.id = b.event_id
              WHERE b.event_id = ?1 AND e.repo_path = ?2 AND b.encoding = 'zlib-json-v1'",
             params![event_id, repo_path],
-            |row| row.get::<_, Vec<u8>>(0),
+            |row| Ok((row.get::<_, Vec<u8>>(0)?, row.get::<_, i64>(1)?)),
         )
         .optional()
         .map_err(|error| format!("Load compressed structural delta: {error}"))?;
-    if let Some(blob) = blob {
-        return decode_history_blob(&blob).map(Some);
+    if let Some((blob, uncompressed_bytes)) = blob {
+        return decode_history_blob(&blob, uncompressed_bytes).map(Some);
     }
     let payload = connection
         .query_row(
@@ -145,15 +172,20 @@ pub(super) fn load_or_build_history_snapshot(
             .map_err(|_| "History database is unavailable".to_string())?;
         connection
             .query_row(
-                "SELECT snapshot_id FROM history_graph_checkpoints
-                 WHERE repo_path = ?1 AND revision_sha = ?2 AND engine_id = ?3
-                   AND engine_version = ?4 AND schema_version = ?5 AND status = 'ready'",
+                "SELECT checkpoint.snapshot_id FROM history_graph_checkpoints checkpoint
+                 LEFT JOIN structural_graph_snapshots snapshot ON snapshot.id = checkpoint.snapshot_id
+                 WHERE checkpoint.repo_path = ?1 AND checkpoint.revision_sha = ?2
+                   AND checkpoint.engine_id = ?3 AND checkpoint.engine_version = ?4
+                   AND checkpoint.schema_version = ?5 AND checkpoint.status = 'ready'
+                   AND (snapshot.id IS NULL OR snapshot.ignore_fingerprint IS NULL
+                        OR snapshot.ignore_fingerprint = ?6)",
                 params![
                     canonical_repo_path,
                     revision,
                     BUNDLED_ENGINE_ID,
                     BUNDLED_ENGINE_VERSION,
-                    STRUCTURAL_GRAPH_SCHEMA_VERSION
+                    STRUCTURAL_GRAPH_SCHEMA_VERSION,
+                    crate::commands::structural_graph::extract::current_ignore_fingerprint(),
                 ],
                 |row| row.get::<_, String>(0),
             )
@@ -414,4 +446,40 @@ pub(super) fn structural_delta_event_id(
 
 pub(crate) fn history_storage_key(canonical_repo_path: &str) -> String {
     format!("{canonical_repo_path}::codevetter-history")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn history_blob_decode_requires_an_exact_bounded_size() {
+        let value = serde_json::json!({"status": "ready", "items": [1, 2, 3]});
+        let (payload, uncompressed_bytes) = encode_history_blob(&value).expect("encode blob");
+        let decoded: serde_json::Value =
+            decode_history_blob(&payload, uncompressed_bytes as i64).expect("decode blob");
+        assert_eq!(decoded, value);
+
+        assert!(decode_history_blob::<serde_json::Value>(
+            &payload,
+            uncompressed_bytes.saturating_sub(1) as i64
+        )
+        .expect_err("mismatched size")
+        .contains("does not match"));
+    }
+
+    #[test]
+    fn history_blob_decode_rejects_invalid_sizes_before_inflation() {
+        let (payload, _) =
+            encode_history_blob(&serde_json::json!({"status": "ready"})).expect("encode blob");
+        assert!(decode_history_blob::<serde_json::Value>(&payload, -1)
+            .expect_err("negative size")
+            .contains("invalid uncompressed size"));
+        assert!(decode_history_blob::<serde_json::Value>(
+            &payload,
+            MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES as i64 + 1
+        )
+        .expect_err("oversized declaration")
+        .contains("byte limit"));
+    }
 }

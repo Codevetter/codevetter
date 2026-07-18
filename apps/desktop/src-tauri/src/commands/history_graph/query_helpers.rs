@@ -276,12 +276,24 @@ pub(super) fn estimate_eta_ms(
     Some((per_item * (total - completed) as u128).min(u64::MAX as u128) as u64)
 }
 
+#[cfg(test)]
 pub(super) fn reachable_release_revisions(root: &Path) -> Result<Vec<String>, String> {
-    let mut releases = tags_by_commit(root)?
+    reachable_release_revisions_from_tags(root, &read_git_tags(root)?)
+}
+
+#[cfg(test)]
+pub(super) fn reachable_release_revisions_from_tags(
+    root: &Path,
+    tags: &[GitTagRecord],
+) -> Result<Vec<String>, String> {
+    let mut releases = tags
+        .iter()
+        .filter(|tag| is_release_tag(&tag.name))
+        .map(|tag| tag.commit_sha.clone())
+        .collect::<HashSet<_>>()
         .into_iter()
-        .filter(|(_, tags)| tags.iter().any(|tag| is_release_tag(tag)))
-        .filter(|(sha, _)| git_is_ancestor(root, sha, "HEAD"))
-        .map(|(sha, _)| {
+        .filter(|sha| git_is_ancestor(root, sha, "HEAD"))
+        .map(|sha| {
             let committed_at = git_text(root, &["show", "-s", "--format=%cI", &sha])?;
             Ok((committed_at, sha))
         })

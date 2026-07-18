@@ -84,31 +84,6 @@ export function HistoryTimelineControls({
         </span>
         <span>{timeline.revisions.at(-1)?.short_sha}</span>
       </div>
-      <div className="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label="Release spine">
-        {timeline.release_ranges.map((range) => {
-          const active = range.commit_shas.includes(revision.sha);
-          return (
-            <button
-              key={range.id}
-              type="button"
-              aria-pressed={active}
-              className={`shrink-0 rounded-full border px-2.5 py-1 text-[9px] transition-colors ${
-                active
-                  ? 'border-violet-400/50 bg-violet-400/15 text-violet-100'
-                  : 'border-[var(--cv-line)] text-[var(--text-muted)] hover:border-violet-400/30'
-              }`}
-              onClick={() => {
-                const target = timeline.revisions.findIndex(
-                  (item) => item.sha === range.to_inclusive
-                );
-                onScrub(target >= 0 ? target : timeline.revisions.length - 1);
-              }}
-            >
-              {range.label} · {range.commit_shas.length}
-            </button>
-          );
-        })}
-      </div>
     </>
   );
 }

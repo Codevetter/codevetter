@@ -6,8 +6,9 @@
 use super::language::SupportedLanguage;
 use super::types::{
     stable_graph_id, GraphSourceAnchor, GraphTrust, StructuralBoundaryFact, StructuralCloneGroup,
-    StructuralCloneRegion, StructuralCodeMetrics, StructuralControlFlowFact, StructuralGraphEdge,
-    StructuralGraphMetricFact, STRUCTURAL_METRIC_SCHEMA_VERSION,
+    StructuralCloneRegion, StructuralCodeMetrics, StructuralControlFlowFact,
+    StructuralGraphCancellation, StructuralGraphEdge, StructuralGraphMetricFact,
+    STRUCTURAL_METRIC_SCHEMA_VERSION,
 };
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use tree_sitter::Node;
@@ -19,7 +20,8 @@ const MAX_NORMALIZED_TOKENS: usize = 50_000;
 const MIN_CLONE_TOKENS: usize = 20;
 const NORMALIZATION_METHOD: &str = "tree-sitter-leaf-kinds-v1";
 
-pub fn extract_scope_metrics(
+#[cfg(test)]
+fn extract_scope_metrics(
     path: &str,
     language: SupportedLanguage,
     source: &str,
@@ -29,6 +31,32 @@ pub fn extract_scope_metrics(
     public_surface: bool,
     public_surface_reason: Option<String>,
 ) -> StructuralGraphMetricFact {
+    extract_scope_metrics_with_cancellation(
+        path,
+        language,
+        source,
+        scope,
+        node_id,
+        scope_kind,
+        public_surface,
+        public_surface_reason,
+        None,
+    )
+    .expect("uncancelled structural metric extraction")
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn extract_scope_metrics_with_cancellation(
+    path: &str,
+    language: SupportedLanguage,
+    source: &str,
+    scope: Node<'_>,
+    node_id: &str,
+    scope_kind: &str,
+    public_surface: bool,
+    public_surface_reason: Option<String>,
+    cancellation: Option<&StructuralGraphCancellation>,
+) -> Option<StructuralGraphMetricFact> {
     let mut metrics = StructuralCodeMetrics {
         line_count: scope
             .end_position()
@@ -43,7 +71,12 @@ pub fn extract_scope_metrics(
     let mut uses = BTreeSet::new();
     let mut boundaries = Vec::new();
     let mut stack = vec![(scope, 0_usize, None::<String>)];
+    let mut visited = 0_usize;
     while let Some((node, nesting, parent_control_id)) = stack.pop() {
+        visited += 1;
+        if cancellation_due(cancellation, visited) {
+            return None;
+        }
         let is_root = same_node(node, scope);
         if !is_root && is_nested_scope(node.kind()) {
             continue;
@@ -112,9 +145,9 @@ pub fn extract_scope_metrics(
         }
     }
 
-    metrics.cohesion = calculate_cohesion(scope, source);
+    metrics.cohesion = calculate_cohesion(scope, source, cancellation)?;
     let (syntax_fingerprint, normalized_token_count, fingerprint_limited) =
-        syntax_fingerprint(scope, source);
+        syntax_fingerprint(scope, source, cancellation)?;
     let mut limitations = Vec::new();
     let definitions_truncated = definitions.len() > MAX_NAMES_PER_SCOPE;
     let uses_truncated = uses.len() > MAX_NAMES_PER_SCOPE;
@@ -146,7 +179,7 @@ pub fn extract_scope_metrics(
         .collect::<Vec<_>>();
     limitations.sort();
 
-    StructuralGraphMetricFact {
+    Some(StructuralGraphMetricFact {
         schema_version: STRUCTURAL_METRIC_SCHEMA_VERSION,
         id: stable_graph_id("metric", node_id),
         node_id: node_id.to_string(),
@@ -165,7 +198,7 @@ pub fn extract_scope_metrics(
         boundaries,
         sources: vec![source_anchor(path, scope, source)],
         limitations,
-    }
+    })
 }
 
 pub fn detect_clone_groups(facts: &[StructuralGraphMetricFact]) -> Vec<StructuralCloneGroup> {
@@ -277,11 +310,20 @@ fn is_dependency_edge(kind: &str) -> bool {
     )
 }
 
-fn syntax_fingerprint(scope: Node<'_>, source: &str) -> (String, usize, bool) {
+fn syntax_fingerprint(
+    scope: Node<'_>,
+    source: &str,
+    cancellation: Option<&StructuralGraphCancellation>,
+) -> Option<(String, usize, bool)> {
     let mut tokens = Vec::new();
     let mut total = 0_usize;
     let mut stack = vec![scope];
+    let mut visited = 0_usize;
     while let Some(node) = stack.pop() {
+        visited += 1;
+        if cancellation_due(cancellation, visited) {
+            return None;
+        }
         if node.child_count() > 0 {
             let mut cursor = node.walk();
             let mut children = node.children(&mut cursor).collect::<Vec<_>>();
@@ -301,11 +343,11 @@ fn syntax_fingerprint(scope: Node<'_>, source: &str) -> (String, usize, bool) {
             tokens.push(token);
         }
     }
-    (
+    Some((
         stable_graph_id("syntax-fingerprint", &tokens.join("\u{1f}")),
         total,
         total > MAX_NORMALIZED_TOKENS,
-    )
+    ))
 }
 
 fn normalized_token(node: Node<'_>, source: &str) -> String {
@@ -565,17 +607,26 @@ fn classify_boundary(target: &str) -> Option<&'static str> {
     }
 }
 
-fn calculate_cohesion(scope: Node<'_>, source: &str) -> Option<f64> {
+fn calculate_cohesion(
+    scope: Node<'_>,
+    source: &str,
+    cancellation: Option<&StructuralGraphCancellation>,
+) -> Option<Option<f64>> {
     if !matches!(
         scope.kind(),
         "class_declaration" | "class_definition" | "class_specifier" | "struct_item" | "impl_item"
     ) {
-        return None;
+        return Some(None);
     }
     let mut fields = BTreeSet::new();
     let mut methods = Vec::new();
     let mut stack = vec![scope];
+    let mut visited = 0_usize;
     while let Some(node) = stack.pop() {
+        visited += 1;
+        if cancellation_due(cancellation, visited) {
+            return None;
+        }
         if !same_node(node, scope)
             && matches!(
                 node.kind(),
@@ -605,28 +656,38 @@ fn calculate_cohesion(scope: Node<'_>, source: &str) -> Option<f64> {
         stack.extend(node.named_children(&mut cursor));
     }
     if methods.len() < 2 || fields.is_empty() {
-        return None;
+        return Some(None);
     }
-    let field_sets = methods
-        .iter()
-        .map(|method| {
+    let mut field_sets = Vec::with_capacity(methods.len());
+    for (index, method) in methods.iter().enumerate() {
+        if cancellation_due(cancellation, index + 1) {
+            return None;
+        }
+        field_sets.push(
             fields
                 .iter()
                 .filter(|field| contains_identifier(method, field))
-                .collect::<HashSet<_>>()
-        })
-        .collect::<Vec<_>>();
+                .collect::<HashSet<_>>(),
+        );
+    }
     let mut connected = 0_usize;
     let mut pairs = 0_usize;
     for left in 0..field_sets.len() {
         for right in left + 1..field_sets.len() {
             pairs += 1;
+            if cancellation_due(cancellation, pairs) {
+                return None;
+            }
             if !field_sets[left].is_disjoint(&field_sets[right]) {
                 connected += 1;
             }
         }
     }
-    (pairs > 0).then(|| connected as f64 / pairs as f64)
+    Some((pairs > 0).then(|| connected as f64 / pairs as f64))
+}
+
+fn cancellation_due(cancellation: Option<&StructuralGraphCancellation>, visited: usize) -> bool {
+    visited.is_multiple_of(256) && cancellation.is_some_and(|token| token.is_cancelled())
 }
 
 fn contains_identifier(source: &str, identifier: &str) -> bool {

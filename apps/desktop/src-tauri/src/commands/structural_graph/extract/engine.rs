@@ -254,7 +254,7 @@ impl StructuralGraphEngine for BundledTreeSitterEngine {
             created_at: Utc::now().to_rfc3339(),
             engine: self.info(),
             cursor: Some(cursor),
-            ignore_fingerprint: Some(stable_graph_id("ignore", IGNORE_POLICY_VERSION)),
+            ignore_fingerprint: Some(current_ignore_fingerprint()),
             coverage,
             diagnostics,
             communities,

@@ -101,14 +101,22 @@ pub(in crate::commands::history_graph) fn parse_changed_path_records(
 pub(in crate::commands::history_graph) fn tags_by_commit(
     root: &Path,
 ) -> Result<HashMap<String, Vec<String>>, String> {
+    Ok(tags_by_commit_from_records(&read_git_tags(root)?))
+}
+
+pub(in crate::commands::history_graph) fn tags_by_commit_from_records(
+    records: &[GitTagRecord],
+) -> HashMap<String, Vec<String>> {
     let mut tags = HashMap::<String, Vec<String>>::new();
-    for tag in read_git_tags(root)? {
-        tags.entry(tag.commit_sha).or_default().push(tag.name);
+    for tag in records {
+        tags.entry(tag.commit_sha.clone())
+            .or_default()
+            .push(tag.name.clone());
     }
     for values in tags.values_mut() {
         values.sort();
     }
-    Ok(tags)
+    tags
 }
 
 pub(crate) fn resolve_revision(root: &Path, revision: &str) -> Result<String, String> {

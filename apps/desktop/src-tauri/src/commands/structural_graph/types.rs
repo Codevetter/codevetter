@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+#[cfg(test)]
+use std::sync::atomic::AtomicUsize;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -47,6 +49,10 @@ pub enum GraphOrigin {
     Resolution,
     Analysis,
     Metadata,
+    Extracted,
+    Deterministic,
+    ModelSynthesized,
+    HumanConfirmed,
     ImportedNodeLink,
     UserAnnotation,
     #[default]
@@ -60,6 +66,10 @@ impl GraphOrigin {
             Self::Resolution => "resolution",
             Self::Analysis => "analysis",
             Self::Metadata => "metadata",
+            Self::Extracted => "extracted",
+            Self::Deterministic => "deterministic",
+            Self::ModelSynthesized => "model_synthesized",
+            Self::HumanConfirmed => "human_confirmed",
             Self::ImportedNodeLink => "imported_node_link",
             Self::UserAnnotation => "user_annotation",
             Self::LegacyMetadata => "legacy_metadata",
@@ -72,6 +82,10 @@ impl GraphOrigin {
             "resolution" => Self::Resolution,
             "analysis" => Self::Analysis,
             "metadata" => Self::Metadata,
+            "extracted" => Self::Extracted,
+            "deterministic" => Self::Deterministic,
+            "model_synthesized" => Self::ModelSynthesized,
+            "human_confirmed" => Self::HumanConfirmed,
             "imported_node_link" => Self::ImportedNodeLink,
             "user_annotation" => Self::UserAnnotation,
             _ => Self::LegacyMetadata,
@@ -369,6 +383,10 @@ pub struct StructuralGraphProgress {
 #[derive(Debug, Clone, Default)]
 pub struct StructuralGraphCancellation {
     cancelled: Arc<AtomicBool>,
+    #[cfg(test)]
+    cancel_after_checks: Arc<AtomicUsize>,
+    #[cfg(test)]
+    checks: Arc<AtomicUsize>,
 }
 
 impl StructuralGraphCancellation {
@@ -377,7 +395,26 @@ impl StructuralGraphCancellation {
     }
 
     pub fn is_cancelled(&self) -> bool {
+        #[cfg(test)]
+        {
+            let checks = self.checks.fetch_add(1, Ordering::SeqCst) + 1;
+            let threshold = self.cancel_after_checks.load(Ordering::SeqCst);
+            if threshold > 0 && checks >= threshold {
+                self.cancel();
+            }
+        }
         self.cancelled.load(Ordering::SeqCst)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn cancel_after_checks(&self, checks: usize) {
+        self.cancel_after_checks
+            .store(checks.max(1), Ordering::SeqCst);
+    }
+
+    #[cfg(test)]
+    pub(crate) fn check_count(&self) -> usize {
+        self.checks.load(Ordering::SeqCst)
     }
 }
 

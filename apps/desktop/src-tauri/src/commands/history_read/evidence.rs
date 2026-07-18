@@ -157,7 +157,9 @@ impl<'a> HistoryReadService<'a> {
             let mut sources: Vec<GraphSourceAnchor> =
                 serde_json::from_str(&evidence_json).unwrap_or_default();
             sources.truncate(20);
-            let available = sources.iter().all(source_is_available);
+            let available = sources
+                .iter()
+                .all(|source| source_is_available(&self.root, source));
             details.push(HistoryEvidenceDetail {
                 schema_version: 1,
                 id: id.clone(),

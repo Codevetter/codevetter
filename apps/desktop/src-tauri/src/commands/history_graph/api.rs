@@ -1,16 +1,130 @@
 use super::*;
 use crate::commands::history_read::HistoryReadService;
 
+#[derive(Debug, Default)]
+pub(super) struct HistoryFactCatalogProbe {
+    repository_head: Option<String>,
+    repository_tags_fingerprint: Option<String>,
+    repository_status: Option<String>,
+    coverage_json: Option<String>,
+    fact_schema_version: Option<i64>,
+    fact_classification_version: Option<i64>,
+    fact_head: Option<String>,
+    fact_tags_fingerprint: Option<String>,
+    fact_mailmap_fingerprint: Option<String>,
+    fact_status: Option<String>,
+    release_count: usize,
+}
+
+const MAX_AUTOMATIC_RELEASE_CHECKPOINTS: usize = 24;
+
+/// Releases stay fully navigable from normalized facts. Eager structural
+/// snapshots are retained for the newest release history, while older release
+/// states are reconstructed exactly on first selection and then cached.
+pub(super) fn automatic_release_checkpoint_revisions(
+    releases_newest_first: &[String],
+) -> Vec<String> {
+    releases_newest_first
+        .iter()
+        .take(MAX_AUTOMATIC_RELEASE_CHECKPOINTS)
+        .cloned()
+        .collect()
+}
+
+/// Structural deltas are an optional enrichment, never a reason to rebuild
+/// every historical graph during an initial index. Only append facts for a
+/// proven fast-forward are eligible, and both endpoints must be in the loaded
+/// bounded window.
+pub(super) fn fast_forward_delta_pairs(
+    timeline: &HistoryTimeline,
+    introduced_revisions: &HashSet<String>,
+) -> Vec<(String, String)> {
+    let indexed_revisions = timeline
+        .revisions
+        .iter()
+        .map(|revision| revision.sha.as_str())
+        .collect::<HashSet<_>>();
+    timeline
+        .revisions
+        .iter()
+        .filter(|revision| introduced_revisions.contains(&revision.sha))
+        .filter_map(|revision| {
+            revision.parents.first().and_then(|parent| {
+                indexed_revisions
+                    .contains(parent.as_str())
+                    .then(|| (parent.clone(), revision.sha.clone()))
+            })
+        })
+        .collect()
+}
+
+#[cfg(test)]
+impl HistoryFactCatalogProbe {
+    pub(super) fn ready_for_test(head: String, tags: String, mailmap: String) -> Self {
+        Self {
+            repository_head: Some(head.clone()),
+            repository_tags_fingerprint: Some(tags.clone()),
+            repository_status: Some("ready".to_string()),
+            coverage_json: None,
+            fact_schema_version: Some(history_facts::HISTORY_FACTS_SCHEMA_VERSION),
+            fact_classification_version: Some(history_facts::HISTORY_FACT_CLASSIFICATION_VERSION),
+            fact_head: Some(head),
+            fact_tags_fingerprint: Some(tags),
+            fact_mailmap_fingerprint: Some(mailmap),
+            fact_status: Some("ready".to_string()),
+            release_count: 0,
+        }
+    }
+}
+
+pub(super) fn normalized_facts_are_current(
+    probe: &HistoryFactCatalogProbe,
+    current_head: &str,
+    tag_fingerprint: &str,
+    mailmap_fingerprint: &str,
+    engine_incompatible: bool,
+) -> bool {
+    !engine_incompatible
+        && probe.repository_status.as_deref() == Some("ready")
+        && probe.repository_head.as_deref() == Some(current_head)
+        && probe.repository_tags_fingerprint.as_deref() == Some(tag_fingerprint)
+        && probe.fact_status.as_deref() == Some("ready")
+        && probe.fact_schema_version == Some(history_facts::HISTORY_FACTS_SCHEMA_VERSION)
+        && probe.fact_classification_version
+            == Some(history_facts::HISTORY_FACT_CLASSIFICATION_VERSION)
+        && probe.fact_head.as_deref() == Some(current_head)
+        && probe.fact_tags_fingerprint.as_deref() == Some(tag_fingerprint)
+        && probe.fact_mailmap_fingerprint.as_deref() == Some(mailmap_fingerprint)
+}
+
+fn historical_coverage_complete(coverage_json: Option<&str>) -> bool {
+    coverage_json
+        .and_then(|value| serde_json::from_str::<Value>(value).ok())
+        .and_then(|value| value.get("coverage_complete").and_then(Value::as_bool))
+        .unwrap_or(false)
+}
+
 #[tauri::command]
 pub async fn get_history_timeline(
     repo_path: String,
     limit: Option<usize>,
-    _db: State<'_, DbState>,
+    db: State<'_, DbState>,
 ) -> Result<HistoryTimeline, String> {
     let root = canonical_repo_path(&repo_path)?;
-    tokio::task::spawn_blocking(move || build_timeline(&root, limit))
-        .await
-        .map_err(|error| format!("History timeline worker failed: {error}"))?
+    let canonical = root.to_string_lossy().to_string();
+    let database = Arc::clone(&db.0);
+    tokio::task::spawn_blocking(move || {
+        let connection = database
+            .lock()
+            .map_err(|_| "History database is unavailable".to_string())?;
+        if let Some(timeline) = load_indexed_timeline(&connection, &canonical, limit)? {
+            return Ok(timeline);
+        }
+        drop(connection);
+        build_timeline(&root, limit)
+    })
+    .await
+    .map_err(|error| format!("History timeline worker failed: {error}"))?
 }
 
 #[tauri::command]
@@ -39,43 +153,133 @@ pub async fn backfill_history_graph(
         let recent_limit = recent_commit_limit
             .unwrap_or(500)
             .clamp(1, MAX_HISTORY_LIMIT);
-        let timeline = build_timeline(&root, Some(recent_limit))?;
-        let tag_fingerprint = repository_tag_fingerprint(&root)?;
-        let (previous_head, previous_tag_fingerprint) = {
+        let tag_records = read_git_tags(&root)?;
+        let current_head = git_text(&root, &["rev-parse", "HEAD"])?;
+        let tag_fingerprint = release_tag_fingerprint(&tag_records);
+        let mailmap_fingerprint = history_facts::current_mailmap_fingerprint(&root)?;
+        let (probe, engine_incompatible) = {
             let connection = database
                 .lock()
                 .map_err(|_| "History database is unavailable".to_string())?;
-            connection
+            let probe = connection
                 .query_row(
-                    "SELECT indexed_head, indexed_tags_fingerprint
-                     FROM history_graph_repositories WHERE repo_path = ?1",
-                    params![canonical],
+                    "SELECT r.indexed_head, r.indexed_tags_fingerprint, r.status, r.coverage_json,
+                            f.schema_version, f.classification_version, f.indexed_head,
+                            f.tags_fingerprint, f.mailmap_fingerprint, f.status,
+                            (SELECT COUNT(*) FROM history_graph_release_intervals i
+                             WHERE i.repo_path = r.repo_path)
+                     FROM history_graph_repositories r
+                     LEFT JOIN history_graph_fact_catalogs f ON f.repo_path = r.repo_path
+                     WHERE r.repo_path = ?1",
+                    [canonical.as_str()],
                     |row| {
-                        Ok((
-                            row.get::<_, Option<String>>(0)?,
-                            row.get::<_, Option<String>>(1)?,
-                        ))
+                        Ok(HistoryFactCatalogProbe {
+                            repository_head: row.get(0)?,
+                            repository_tags_fingerprint: row.get(1)?,
+                            repository_status: row.get(2)?,
+                            coverage_json: row.get(3)?,
+                            fact_schema_version: row.get(4)?,
+                            fact_classification_version: row.get(5)?,
+                            fact_head: row.get(6)?,
+                            fact_tags_fingerprint: row.get(7)?,
+                            fact_mailmap_fingerprint: row.get(8)?,
+                            fact_status: row.get(9)?,
+                            release_count: row.get(10)?,
+                        })
                     },
                 )
                 .optional()
-                .map_err(|error| format!("Load prior history cursor: {error}"))?
-                .unwrap_or_default()
+                .map_err(|error| format!("Load normalized history fact cursor: {error}"))?
+                .unwrap_or_default();
+            let engine_incompatible =
+                has_incompatible_history_checkpoints(&connection, &canonical)?;
+            (probe, engine_incompatible)
         };
-        let rewritten = previous_head.as_deref().is_some_and(|head| {
-            head != timeline.head && !git_is_ancestor(&root, head, &timeline.head)
-        });
-        let engine_incompatible = {
-            let connection = database
+        {
+            let mut connection = database
                 .lock()
                 .map_err(|_| "History database is unavailable".to_string())?;
-            has_incompatible_history_checkpoints(&connection, &canonical)?
-        };
+            refresh_builtin_adapters(&mut connection, &root)?;
+        }
+        if normalized_facts_are_current(
+            &probe,
+            &current_head,
+            &tag_fingerprint,
+            &mailmap_fingerprint,
+            engine_incompatible,
+        ) {
+            return Ok(HistoryBackfillResult {
+                repo_path: canonical,
+                total: 0,
+                completed: 0,
+                built: 0,
+                cache_hits: 0,
+                cancelled: false,
+                release_checkpoints: probe.release_count,
+                coverage_complete: historical_coverage_complete(probe.coverage_json.as_deref()),
+                refresh_kind: "no_op".to_string(),
+                invalidated: 0,
+            });
+        }
+        let previous_head = probe.repository_head.clone();
+        let previous_tag_fingerprint = probe.repository_tags_fingerprint.clone();
         let tags_changed = previous_tag_fingerprint
             .as_deref()
             .is_some_and(|fingerprint| fingerprint != tag_fingerprint.as_str());
         let fast_forward = previous_head.as_deref().is_some_and(|head| {
-            head != timeline.head && git_is_ancestor(&root, head, &timeline.head)
+            head != current_head && git_is_ancestor(&root, head, &current_head)
         });
+        let facts_match_cursor = probe.fact_status.as_deref() == Some("ready")
+            && probe.fact_schema_version == Some(history_facts::HISTORY_FACTS_SCHEMA_VERSION)
+            && probe.fact_classification_version
+                == Some(history_facts::HISTORY_FACT_CLASSIFICATION_VERSION)
+            && probe.fact_head == previous_head
+            && probe.fact_mailmap_fingerprint.as_deref() == Some(&mailmap_fingerprint);
+        let (history_build, introduced_revisions) = if fast_forward && facts_match_cursor {
+            let previous = previous_head
+                .as_deref()
+                .ok_or_else(|| "Fast-forward history cursor is unavailable".to_string())?;
+            let connection = database
+                .lock()
+                .map_err(|_| "History database is unavailable".to_string())?;
+            let (build, introduced) = build_incremental_timeline_bundle_with_tags_cancellable(
+                &connection,
+                &root,
+                Some(recent_limit),
+                &tag_records,
+                previous,
+                &cancellation,
+            )?;
+            (build, Some(introduced))
+        } else if previous_head.as_deref() == Some(current_head.as_str()) && facts_match_cursor {
+            let connection = database
+                .lock()
+                .map_err(|_| "History database is unavailable".to_string())?;
+            (
+                build_indexed_timeline_bundle_with_tags(
+                    &connection,
+                    &root,
+                    Some(recent_limit),
+                    &tag_records,
+                    &current_head,
+                )?,
+                Some(HashSet::new()),
+            )
+        } else {
+            (
+                build_timeline_bundle_with_tags_cancellable(
+                    &root,
+                    Some(recent_limit),
+                    &tag_records,
+                    &cancellation,
+                )?,
+                None,
+            )
+        };
+        let timeline = &history_build.timeline;
+        let rewritten = previous_head
+            .as_deref()
+            .is_some_and(|head| head != timeline.head && !fast_forward);
         let refresh_kind = classify_history_refresh(
             previous_head.as_deref(),
             rewritten,
@@ -85,20 +289,39 @@ pub async fn backfill_history_graph(
         )
         .to_string();
         let mut invalidated = 0;
-        {
-            let mut connection = database
-                .lock()
-                .map_err(|_| "History database is unavailable".to_string())?;
-            refresh_builtin_adapters(&mut connection, &root)?;
-        }
         let mut targets = Vec::new();
         let mut seen = HashSet::new();
         if refresh_kind != "no_op" && seen.insert(timeline.head.clone()) {
             targets.push(timeline.head.clone());
         }
-        let releases = reachable_release_revisions(&root)?;
-        let release_checkpoints = releases.len();
-        for revision in releases {
+        let tagged_release_revisions = tag_records
+            .iter()
+            .filter(|tag| is_release_tag(&tag.name))
+            .map(|tag| tag.commit_sha.as_str())
+            .collect::<HashSet<_>>();
+        let releases = timeline
+            .reachable_revisions
+            .iter()
+            .rev()
+            .filter(|revision| tagged_release_revisions.contains(revision.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        let release_revision_set = releases.iter().map(String::as_str).collect::<HashSet<_>>();
+        let release_tags = tag_records
+            .iter()
+            .filter(|tag| {
+                is_release_tag(&tag.name) && release_revision_set.contains(tag.commit_sha.as_str())
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        let release_ancestry_complete = !timeline.is_shallow
+            && tag_records
+                .iter()
+                .filter(|tag| is_release_tag(&tag.name))
+                .all(|tag| release_revision_set.contains(tag.commit_sha.as_str()));
+        let automatic_releases = automatic_release_checkpoint_revisions(&releases);
+        let release_checkpoints = automatic_releases.len();
+        for revision in automatic_releases {
             let should_schedule = refresh_kind != "no_op"
                 && (refresh_kind != "tag_metadata" || {
                     let connection = database
@@ -127,21 +350,11 @@ pub async fn backfill_history_graph(
             }
         }
         let checkpoint_total = targets.len();
-        let delta_pairs = if matches!(
-            refresh_kind.as_str(),
-            "initial" | "rewritten_history" | "engine_repair" | "fast_forward"
-        ) {
-            timeline
-                .revisions
-                .iter()
-                .filter_map(|revision| {
-                    revision.parents.first().and_then(|parent| {
-                        indexed_revisions
-                            .contains(parent.as_str())
-                            .then(|| (parent.clone(), revision.sha.clone()))
-                    })
-                })
-                .collect::<Vec<_>>()
+        let delta_pairs = if refresh_kind == "fast_forward" {
+            introduced_revisions
+                .as_ref()
+                .map(|introduced| fast_forward_delta_pairs(timeline, introduced))
+                .unwrap_or_default()
         } else {
             Vec::new()
         };
@@ -243,8 +456,12 @@ pub async fn backfill_history_graph(
                     cache_hits += 1;
                     continue;
                 }
-                let path_changes =
-                    changed_path_records_between(&root, before_revision, after_revision)?;
+                let path_changes = history_build
+                    .path_changes_between(before_revision, after_revision)
+                    .map(Ok)
+                    .unwrap_or_else(|| {
+                        changed_path_records_between(&root, before_revision, after_revision)
+                    })?;
                 let after = if checkpoint_targets.contains(after_revision) {
                     load_or_build_history_snapshot(
                         &root,
@@ -294,12 +511,48 @@ pub async fn backfill_history_graph(
             let connection = database
                 .lock()
                 .map_err(|_| "History database is unavailable".to_string())?;
-            persist_timeline_catalog(&connection, &timeline)?;
+            persist_timeline_catalog_with_fingerprint(&connection, timeline, &tag_fingerprint)?;
             let publication = connection
                 .unchecked_transaction()
                 .map_err(|error| format!("Start history publication transaction: {error}"))?;
-            invalidated += prune_unreachable_history(&publication, &root, &canonical)?;
+            invalidated +=
+                prune_unreachable_history(&publication, &timeline.reachable_revisions, &canonical)?;
             invalidated += prune_incompatible_history_checkpoints(&publication, &canonical)?;
+            let published_at = Utc::now().to_rfc3339();
+            let fact_index_identity = if let Some(introduced) = introduced_revisions.as_ref() {
+                publish_incremental_history_facts(
+                    &publication,
+                    &history_build,
+                    &tag_records,
+                    &published_at,
+                    &cancellation,
+                    introduced,
+                )?
+            } else {
+                publish_history_facts(
+                    &publication,
+                    &history_build,
+                    &tag_records,
+                    &published_at,
+                    &cancellation,
+                )?
+            };
+            publish_release_catalog(
+                &publication,
+                timeline,
+                &release_tags,
+                &tag_fingerprint,
+                release_ancestry_complete,
+            )?;
+            publish_release_intervals(&publication, &history_build, &tag_records)?;
+            publish_candidate_inflections(
+                &publication,
+                &canonical,
+                &fact_index_identity,
+                !timeline.is_shallow,
+                &published_at,
+                &cancellation,
+            )?;
             let cursor_json =
                 history_adapter_cursor_json(&publication, &canonical, &timeline.head)?;
             publication
@@ -327,7 +580,7 @@ pub async fn backfill_history_graph(
                             "invalidated": invalidated,
                         })
                         .to_string(),
-                        Utc::now().to_rfc3339(),
+                        published_at,
                     ],
                 )
                 .map_err(|error| format!("Update history backfill coverage: {error}"))?;
@@ -345,7 +598,7 @@ pub async fn backfill_history_graph(
                 detail: if cancelled {
                     "Backfill stopped after the current checkpoint"
                 } else {
-                    "History checkpoints and structural deltas are ready"
+                    "History checkpoints and available structural deltas are ready"
                 }
                 .to_string(),
                 eta_ms: Some(0),

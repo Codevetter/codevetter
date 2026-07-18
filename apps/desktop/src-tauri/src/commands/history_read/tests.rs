@@ -39,8 +39,24 @@ fn evidence_hydration_returns_only_selected_bounded_fields() {
             [&canonical],
         )
         .expect("event");
+    let evidence_json = serde_json::json!([{
+        "path": "main.rs",
+        "start_line": 1,
+        "start_column": 1,
+        "end_line": 1,
+        "end_column": 10,
+        "excerpt": null
+    }])
+    .to_string();
+    connection
+        .execute(
+            "UPDATE history_graph_events SET evidence_json = ?1 WHERE id = 'event'",
+            [&evidence_json],
+        )
+        .expect("relative source evidence");
     let service = HistoryReadService::new(&connection, &canonical).expect("service");
     let details = service.evidence(&["event".to_string()]).expect("evidence");
+    assert!(details[0].available);
     let encoded = serde_json::to_string(&details).expect("json");
     assert!(encoded.contains("passed"));
     assert!(!encoded.contains("must-not-return"));

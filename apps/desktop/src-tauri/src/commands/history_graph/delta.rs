@@ -326,26 +326,49 @@ pub(super) fn derive_reintroductions(
     added_node_ids: &[String],
     after_revision: &str,
 ) -> Result<Vec<HistoryLineageEdge>, String> {
-    let mut statement = connection
-        .prepare(
-            "SELECT payload_json FROM history_graph_events
-             WHERE repo_path = ?1 AND event_kind = 'entity_lineage'
-               AND entity_id = ?2 AND relation_kind = 'removed_in'
-             ORDER BY recorded_at DESC, id DESC LIMIT 1",
-        )
-        .map_err(|error| format!("Prepare reintroduction query: {error}"))?;
+    const REINTRODUCTION_QUERY_CHUNK: usize = 500;
+    if added_node_ids.is_empty() {
+        return Ok(Vec::new());
+    }
     let added = added_node_ids.iter().collect::<HashSet<_>>();
+    let mut removals = HashMap::new();
+    for node_ids in added_node_ids.chunks(REINTRODUCTION_QUERY_CHUNK) {
+        let placeholders = std::iter::repeat_n("?", node_ids.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let mut statement = connection
+            .prepare(&format!(
+                "SELECT entity_id, payload_json FROM history_graph_events
+                 WHERE repo_path = ? AND event_kind = 'entity_lineage'
+                   AND relation_kind = 'removed_in' AND entity_id IN ({placeholders})
+                 ORDER BY entity_id, recorded_at DESC, id DESC"
+            ))
+            .map_err(|error| format!("Prepare reintroduction query: {error}"))?;
+        let rows = statement
+            .query_map(
+                rusqlite::params_from_iter(
+                    std::iter::once(repo_path).chain(node_ids.iter().map(String::as_str)),
+                ),
+                |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+            )
+            .map_err(|error| format!("Query prior removals: {error}"))?;
+        for row in rows {
+            let (node_id, payload) = row.map_err(|error| format!("Read prior removal: {error}"))?;
+            if removals.contains_key(&node_id) {
+                continue;
+            }
+            removals.insert(
+                node_id,
+                serde_json::from_str::<HistoryLineageEdge>(&payload)
+                    .map_err(|error| format!("Decode prior removal: {error}"))?,
+            );
+        }
+    }
     let mut reintroductions = Vec::new();
     for node in after.nodes.iter().filter(|node| added.contains(&node.id)) {
-        let removed: Option<String> = statement
-            .query_row(params![repo_path, node.id], |row| row.get(0))
-            .optional()
-            .map_err(|error| format!("Query prior removal: {error}"))?;
-        let Some(removed) = removed else {
+        let Some(removal) = removals.get(&node.id) else {
             continue;
         };
-        let removal: HistoryLineageEdge = serde_json::from_str(&removed)
-            .map_err(|error| format!("Decode prior removal: {error}"))?;
         reintroductions.push(HistoryLineageEdge {
             id: stable_graph_id(
                 "lineage",
