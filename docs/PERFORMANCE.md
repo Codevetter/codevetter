@@ -212,28 +212,37 @@ nodes. Snapshot transfer costs 25.51 ms, warm status is 1.5589 ms, persistence i
 maximum sampled process RSS is 436.5 MiB. Candidate ordering, ambiguity, repair,
 and evidence semantics remain deterministic.
 
-The signed-release workflow runs this same gate before the Tauri build. The
-machine-relative envelope deliberately leaves headroom for hosted-runner variance
-while still rejecting material regressions:
+The 2026-07-18 candidate indexes 854 files into 81,307 nodes and 143,860 edges.
+It measured 1,189.64 ms full construction, 842.13 ms one-file refresh, 0.06 ms
+delete repair, 0.08 ms rename repair, 6.654 ms warm status, 3,479.25 ms
+persistence, 665.33 ms cold hydration, and 2.0978/2.4725 ms search p50/p95.
+The normalized database was 242.21 MiB and sampled peak RSS was 1,037.4 MiB.
+
+The signed-release workflow runs this gate before the Tauri build. These are
+fixed ceilings for the current named-machine repository profile, with measured
+headroom over the candidate. They are a regression/resource envelope, not a
+claim about asymptotic scaling. Material corpus growth requires a separately
+recorded multi-size scaling run before any rebaseline:
 
 | operation / resource | release maximum |
 |----------------------|----------------:|
-| cold full build | 1,000 ms |
-| one-file refresh | 700 ms |
+| cold full build | 1,500 ms |
+| one-file refresh | 1,000 ms |
 | delete / rename repair | 100 / 150 ms |
 | warm status/no-op | 10 ms |
-| persist / cold hydrate | 2,000 / 500 ms |
-| search p50 / p95 | 1 / 2 ms |
-| normalized SQLite growth | 160 MiB |
-| sampled peak RSS | 768 MiB |
+| persist | 4,000 ms |
+| cold hydrate | 750 ms |
+| search p50 | 2.5 ms |
+| search p95 | 3.0 ms |
+| normalized SQLite growth | 256 MiB |
+| sampled peak RSS | 1,152 MiB |
 
 The benchmark runner forces one test thread; its previous parallel execution
 introduced CPU/SQLite contention and produced incomparable numbers.
 
-Query relevance is pinned to the MIT-licensed `pinned external reference implementation` `v8`
-default branch at commit `961b78e57a10e9c5bb98421ff3e45b40be73542b`.
-The checked fixture mirrors reference graph implementation's cross-package Rust false-positive case and
-cross-file Swift extension case. Across three expected-answer queries,
+Query relevance uses the checked repository-owned `structural-coverage-v1`
+fixture. It covers a cross-package Rust symbol-isolation case and a cross-file
+Swift extension case. Across three expected-answer queries,
 CodeVetter and the in-memory raw-text baseline both covered 3/3; CodeVetter ran at
 0.0027 ms p50 / 0.0037 ms p95 versus raw search at 0.0005 / 0.0005 ms. On the
 current CodeVetter corpus (roughly 35k graph nodes), both covered 3/3 expected
@@ -365,31 +374,35 @@ pnpm bench:mcp                  # full named-machine qualification
 pnpm bench:mcp --skip-build     # reuse an already-built release sidecar
 ```
 
-Qualification captured 2026-07-15 at commit `3111da7` on an Apple M5 Pro with a
-release sidecar, 3 process warmups, 50 recorded starts, 10 workload warmups, and
-200 recorded rounds. Each round includes the five individual workloads and a
-true four-request concurrent batch.
+Qualification refreshed 2026-07-18 on an Apple M5 Pro with a release sidecar,
+3 process warmups, 50 recorded starts, 10 workload warmups, and 200 recorded
+rounds. The sidecar now exposes 22 schema-validated tools; each round includes
+the six representative read workloads and a true four-request concurrent batch.
 
-| workload | p50 | p95 | max |
-|---|---:|---:|---:|
-| process initialize, disk warm | 6.44 ms | 7.17 ms | 7.47 ms |
-| graph query | 4.75 ms | 5.82 ms | 9.97 ms |
-| release list | 3.99 ms | 5.00 ms | 7.22 ms |
-| broad 10k-event history search | 4.75 ms | 6.45 ms | 27.25 ms |
-| evidence hydration | 3.56 ms | 4.22 ms | 22.41 ms |
-| resource list | 2.43 ms | 3.10 ms | 23.83 ms |
-| mixed concurrency 4 | 10.96 ms | 12.87 ms | 28.77 ms |
+| workload | p50 | p95 |
+|---|---:|---:|
+| process initialize, disk warm | 6.09 ms | 6.33 ms |
+| graph query | 5.10 ms | 8.74 ms |
+| release list | 5.00 ms | 12.02 ms |
+| broad 10k-event history search | 5.73 ms | 11.02 ms |
+| evidence hydration | 4.29 ms | 6.28 ms |
+| resource list | 3.12 ms | 5.19 ms |
+| mixed concurrency 4 | 18.26 ms | 22.58 ms |
 
-The 7.39 MiB sidecar finished at 30.38 MiB RSS. RSS grew 6.92 MiB from the end of
-warmup to completion and 2.81 MiB across the second half of the recorded rounds,
-which distinguishes bounded cache population from continuing growth. The fixture
-database was 14.75 MiB and the process opened no TCP listeners.
+The 8.90 MiB sidecar finished at 33.92 MiB RSS and grew 3.16 MiB across the
+second half of the recorded rounds. The fixture database shape is unchanged and
+the process opened no TCP listeners. Compared with the earlier 13-tool profile,
+the broader 22-tool schema and result surfaces cost latency and binary/RSS
+headroom; the table records that regression rather than carrying forward the
+older measurements.
 
 Absolute gates apply only to the named Apple M5 Pro qualification profile:
-initialize 25 ms p95; simple queries 10 ms p95; broad history 15 ms p95; mixed
-concurrency 30 ms p95; final RSS 32 MiB; second-half growth 8 MiB; binary 10 MiB.
-Other machines still run every correctness and safety check but report timings
-without claiming that these hardware-specific gates passed.
+initialize 25 ms p95; every individual query 8 ms p50; graph query 12 ms p95;
+release list and broad history 15 ms p95; evidence hydration and resource list
+10 ms p95; mixed concurrency 22/30 ms p50/p95; final RSS 36 MiB; second-half
+growth 8 MiB; binary 10 MiB. Other machines still run every correctness and
+safety check but report timings without claiming that these hardware-specific
+gates passed.
 
 ## 5. Warm local browser verification
 

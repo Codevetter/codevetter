@@ -54,7 +54,6 @@ offline runtime contract.
 | --- | --- | --- | --- | --- | --- |
 | Direct `tree-sitter` plus selected grammar crates | In-process Rust | Exact promised matrix; independently pinned grammars | Lowest call overhead and supports per-file parallel parsing | Highest native compile/link maintenance; selected grammars add binary size | Chosen |
 | `ast-grep-language` bundled parser set | In-process Rust | Convenient but its default pack bundles languages outside the initial matrix | Similar parsing core with additional abstraction | Larger/uncontrolled grammar set in the current release | Not chosen for the canonical engine; keep optional `sg` rules |
-| reference graph implementation subprocess | Python process | Upstream-controlled | Process/JSON overhead and runtime discovery on every boundary | Requires external Python/package lifecycle | Interchange/parity adapter only |
 | GitNexus subprocess | Node process | Upstream-controlled | Process/JSON overhead | Requires Node 22 and a separately managed index | Optional secondary adapter only |
 
 Pinned direct dependencies resolve to Tree-sitter 0.26.11 and MIT-licensed
