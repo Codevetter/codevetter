@@ -142,8 +142,10 @@ automatically.
 | Typed IPC client | `apps/desktop/src/lib/tauri-ipc.ts` | Browser-safe wrappers for Tauri commands |
 | Tauri backend | `apps/desktop/src-tauri/src/` | Local Git/process/filesystem operations and SQLite |
 | Warm verifier core | `apps/desktop/src/lib/warm-verification/` | Config, selection, daemon, scenario runtime, observers, evidence, retention |
+| Differential verifier | `apps/desktop/src/lib/warm-verification/differential-*` | Exact target preparation, paired runtime, normalization, comparison, and cleanup |
 | Repository bridge | `apps/desktop/src-tauri/src/commands/warm_verification_bridge.rs` | Safe discovery and invocation of the repository-owned verifier |
 | Warm persistence | `apps/desktop/src-tauri/src/commands/warm_verification.rs` | Strict validation and immutable SQLite insert/list operations |
+| Differential persistence | `apps/desktop/src-tauri/src/commands/differential_verification.rs` | Additive pair summaries that cannot create pass evidence |
 | T-Rex surface | `apps/desktop/src/pages/TRex.tsx` | Owned run control and evidence display |
 | Review qualification | `apps/desktop/src/lib/audience-validation.ts` | Exact-current executable-evidence policy |
 | MCP sidecar | `apps/desktop/src-tauri/src/bin/codevetter-mcp.rs` | Private stdio server bootstrap and bounded protocol lifecycle |

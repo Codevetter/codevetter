@@ -37,9 +37,11 @@ cargo test --manifest-path src-tauri/Cargo.toml warm_verification
 cargo test --manifest-path src-tauri/Cargo.toml warm_verification_bridge
 ```
 
-Rust targets can be several gigabytes. During local qualification, point
-`CARGO_TARGET_DIR` at a temporary directory and remove it after the check so
-parallel worktrees do not retain duplicate builds.
+Rust targets can grow into tens of gigabytes across repeated feature/target
+combinations. During local qualification, point `CARGO_TARGET_DIR` at one
+temporary directory shared by the checks you intend to run, then remove it with
+`cargo clean` (or remove that temporary directory) after the handoff so parallel
+worktrees do not retain duplicate builds.
 
 ## Playwright Chromium tests
 
@@ -90,7 +92,7 @@ parallelism four, 20 measured whole invocations recorded:
 
 This is comfortably below the 30-second full-corpus objective. The machine-
 readable evidence is
-`apps/desktop/tests/fixtures/warm-verification/qualification-2026-07-15.json`.
+`apps/desktop/tests/fixtures/warm-verification/qualification-2026-07-17.json`.
 
 ### Small changed-capability hot path
 
@@ -120,7 +122,10 @@ The stability command then ran 100 additional warm batches:
 
 Raw samples, source hashes, resource gates, command audit, and temporary-root
 cleanup proof are in
-`apps/desktop/tests/fixtures/warm-verification/stability-2026-07-15.json`.
+`apps/desktop/tests/fixtures/warm-verification/stability-2026-07-17.json`.
+The source-bound report used by the current contract gate is maintained at
+`apps/desktop/tests/fixtures/warm-verification/stability-current.json` so reruns
+replace one artifact instead of accumulating date-named copies.
 
 Absolute time gates apply only to one developer, one configured React app, one
 Mac, and one Chromium. Other machines must still pass correctness, isolation,
@@ -137,6 +142,7 @@ CI, cloud, team, mobile, cross-browser, or arbitrary-repository performance.
 | Missing current identity | No |
 | Older warm pass | No |
 | Legacy synthetic-QA pass alone | No |
+| Scenario candidate validation or dry run | No; authoring qualification only |
 
 Review is a read-only consumer. T-Rex owns daemon start/stop, run/cancel, and
 cleanup controls.

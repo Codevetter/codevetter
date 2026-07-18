@@ -9,8 +9,18 @@ use docs only for durable reference, design, research, and runbooks.
 
 - [Local History MCP](./MCP.md) — enable repository-scoped agent access, use the
   read-only graph/history contracts, and troubleshoot freshness or privacy limits.
+- [Local History Explorer](./HISTORY-EXPLORER.md) — release/landmark semantics,
+  contributor participation, coverage caveats, local performance boundaries, and rollback.
 - [Warm Local Verification](./WARM-VERIFICATION.md) — configure the persistent
   browser loop, deterministic MSW state, capability selection, CLI, and retention.
+- [Local Differential Verification](./DIFFERENTIAL-VERIFICATION.md) — compare an
+  immutable reference with the exact candidate without weakening warm evidence.
+- [Scenario Compilation](./SCENARIO-COMPILATION.md) — compile bounded specs into
+  private deterministic candidates, qualify them, and accept selected files safely.
+- [Business-rule archaeology](./BUSINESS_RULE_ARCHAEOLOGY.md) — supported languages, rule
+  semantics, local indexing, synthesis/privacy boundaries, retention, cleanup, and rollback.
+- [Business-rule archaeology qualification](./BUSINESS_RULE_ARCHAEOLOGY_QUALIFICATION.md) —
+  checked policy, reproducible correctness evidence, and cleanup gates.
 
 ## Product PRDs
 
