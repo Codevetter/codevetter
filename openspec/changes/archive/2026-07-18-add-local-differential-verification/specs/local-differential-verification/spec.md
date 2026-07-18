@@ -7,27 +7,35 @@ CodeVetter SHALL resolve the reference to an immutable commit and preserve the e
 - **WHEN** a user requests differential verification against `main`
 - **THEN** CodeVetter records the resolved reference SHA and current worktree material identity and invalidates the result if either drifts
 
+#### Scenario: Compare the exact staged candidate
+- **WHEN** a user requests differential verification for staged changes while unstaged or untracked files also exist
+- **THEN** CodeVetter executes an owner-private exact index export and excludes unstaged and untracked material from the candidate target
+
+#### Scenario: Compare a commit or range candidate
+- **WHEN** a user selects a commit or `base..head` range
+- **THEN** CodeVetter executes the exact resolved commit or range-head archive and records both resolved endpoints used for candidate selection
+
 #### Scenario: Reference or candidate changes during execution
 - **WHEN** the resolved source, config, scenario bundle, state contract, or candidate material changes before the pair completes
 - **THEN** the differential result is `incomparable` with no pass evidence
 
 ### Requirement: Non-mutating bounded reference materialization
-CodeVetter SHALL materialize a reference in an owner-private bounded cache without modifying the user's worktree, index, branches, refs, untracked files, or installed dependencies.
+CodeVetter SHALL materialize a reference in an external owner-private bounded OS cache whose path is application-owned and repository-keyed, without modifying the user's worktree, index, branches, refs, untracked files, or installed dependencies.
 
-#### Scenario: Materialize a supported reference
-- **WHEN** the resolved commit archive contains bounded safe tracked files and compatible dependency identities
-- **THEN** CodeVetter atomically publishes a content-addressed reference cache and leaves repository state byte-for-byte unchanged
+#### Scenario: Materialize supported targets
+- **WHEN** the resolved source material is bounded and safe and exact lockfile, dependency-shaping config, package-manager, Node, platform, and architecture identities match a prepared dependency snapshot
+- **THEN** CodeVetter atomically publishes content-addressed source caches plus an immutable dependency template and separate target-owned writable copy-on-write snapshots, and leaves repository state byte-for-byte unchanged
 
 #### Scenario: Encounter an unsafe or unsupported reference
-- **WHEN** the reference requires unsafe links, special files, missing submodule/LFS content, ignored runtime files, an incompatible lockfile, or a hot-path install
+- **WHEN** either target requires unsafe links, special files, missing submodule/LFS content, ignored runtime files, an incompatible dependency identity, an unavailable copy-on-write snapshot, or a hot-path install or large fallback copy
 - **THEN** CodeVetter refuses execution and reports the pair as `incomparable` with actionable preparation guidance
 
 ### Requirement: Equivalent deterministic paired execution
 The verifier SHALL execute the same pinned selected scenario bundle and deterministic state inputs against independently supervised reference and candidate targets under one compatible Chromium environment contract.
 
 #### Scenario: Run a comparable scenario pair
-- **WHEN** both targets satisfy the same route, auth, state-bridge, request-policy, viewport, locale, timezone, time, flag, and motion identities
-- **THEN** CodeVetter executes the same actions and assertions on fresh isolated contexts and records both complete evidence sets
+- **WHEN** both targets satisfy the same route, auth, state-bridge, request-policy, viewport, locale, timezone, time, flag, and motion identities after deterministic loopback-origin rebasing
+- **THEN** CodeVetter executes the same candidate-owned actions, assertions, state, auth, and baselines on fresh isolated contexts and records both complete evidence sets without writing into reference caches
 
 #### Scenario: Target parity is unavailable
 - **WHEN** either target cannot satisfy the pinned scenario or deterministic environment contract
