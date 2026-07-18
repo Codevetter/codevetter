@@ -29,9 +29,10 @@ fn sanitize_value(key: Option<&str>, value: &mut Value) {
             }
         }
         Value::String(text) => {
-            if (key.is_some_and(is_sensitive_reference_key)
-                && (contains_sensitive_path(text) || is_absolute_local_path(text)))
+            if (key.is_some_and(is_sensitive_reference_key) && contains_sensitive_path(text))
+                || contains_absolute_local_path(text)
                 || looks_like_secret(text)
+                || looks_like_email(text)
             {
                 *text = OMITTED.to_string();
             } else if key.is_some_and(is_excerpt_key) && text.len() > MAX_EXCERPT_BYTES {
@@ -54,7 +55,19 @@ fn truncate_utf8_bytes(value: &str, max_bytes: usize) -> &str {
 }
 
 fn sanitize_map(map: &mut Map<String, Value>) {
-    for key in ["repo_path", "repository_path", "database_path", "command"] {
+    for key in [
+        "repo_path",
+        "repository_path",
+        "database_path",
+        "command",
+        "raw_prompt",
+        "prompt",
+        "email",
+        "author_email",
+        "content_hash",
+        "credential",
+        "credentials",
+    ] {
         map.remove(key);
     }
     for (key, value) in map.iter_mut() {
@@ -70,7 +83,25 @@ fn is_sensitive_reference_key(key: &str) -> bool {
 }
 
 fn is_excerpt_key(key: &str) -> bool {
-    matches!(key, "summary" | "detail" | "excerpt" | "text" | "subject")
+    matches!(
+        key,
+        "summary" | "detail" | "excerpt" | "text" | "subject" | "title" | "label"
+    )
+}
+
+fn looks_like_email(value: &str) -> bool {
+    value.split_whitespace().any(|part| {
+        let part = part.trim_matches(|character: char| {
+            !character.is_ascii_alphanumeric() && !matches!(character, '@' | '.' | '_' | '-' | '+')
+        });
+        let Some((local, domain)) = part.split_once('@') else {
+            return false;
+        };
+        !local.is_empty()
+            && domain.contains('.')
+            && !domain.starts_with('.')
+            && !domain.ends_with('.')
+    })
 }
 
 fn is_absolute_local_path(value: &str) -> bool {
@@ -82,13 +113,36 @@ fn is_absolute_local_path(value: &str) -> bool {
                 .is_some_and(|byte| matches!(byte, b'/' | b'\\'))
 }
 
+fn contains_absolute_local_path(value: &str) -> bool {
+    is_absolute_local_path(value)
+        || value
+            .split(|character: char| {
+                character.is_whitespace()
+                    || matches!(
+                        character,
+                        '`' | '\''
+                            | '"'
+                            | ','
+                            | ';'
+                            | '('
+                            | ')'
+                            | '['
+                            | ']'
+                            | '{'
+                            | '}'
+                            | '<'
+                            | '>'
+                            | '='
+                    )
+            })
+            .filter(|token| !token.is_empty())
+            .any(is_absolute_local_path)
+}
+
 pub fn sanitize_error_message(message: &str, repo_path: &str) -> String {
     if contains_sensitive_path(message)
         || looks_like_secret(message)
-        || message
-            .split_whitespace()
-            .map(|part| part.trim_matches(['(', ')', '[', ']', ',', ';', ':', '\'', '"']))
-            .any(is_absolute_local_path)
+        || contains_absolute_local_path(message)
     {
         return "Requested content is unavailable under CodeVetter redaction policy".to_string();
     }

@@ -2,9 +2,7 @@
 
 ## Purpose
 Define the private read-only MCP surface that exposes an explicitly enabled repository's persisted graph and history to local agents.
-
 ## Requirements
-
 ### Requirement: Repository-scoped local MCP lifecycle
 CodeVetter SHALL provide a packaged local stdio MCP server whose repository access is disabled by default, identified by an opaque repository scope, and revocable live from the desktop application.
 
@@ -103,3 +101,66 @@ CodeVetter SHALL benchmark the packaged MCP path against a deterministic isolate
 #### Scenario: Benchmark runs on unnamed hardware
 - **WHEN** the benchmark runs outside the named qualification machine class
 - **THEN** it reports measured latency, memory, binary size, safety, and correctness without claiming that platform-specific absolute gates passed
+
+### Requirement: Agents can query bounded history landmarks
+The MCP server SHALL expose compact paginated release and candidate-inflection landmark records over the canonical history read model with stable opaque IDs, exact revisions, kinds, labels, observed reasons, trust, coverage, freshness, and continuation metadata.
+
+#### Scenario: Agent lists release and inflection landmarks
+- **WHEN** an enabled repository scope requests valid landmark kinds and a bounded temporal range
+- **THEN** the server returns deterministic non-duplicated landmarks and opaque continuation links without reconstructing historical graphs or invoking Git per result
+
+#### Scenario: Agent requests an inferred landmark as fact
+- **WHEN** a candidate-inflection record is returned or read as a resource
+- **THEN** the envelope identifies its algorithm, score components, qualified trust, evidence gaps, and non-causal status rather than presenting inferred importance as verified intent
+
+### Requirement: Agents can query privacy-safe temporal contributor summaries
+The MCP server SHALL expose bounded contributor summaries for an exact release, revision, or explicit ancestry-aware interval using opaque repository-scoped contributor IDs and MUST exclude raw email, absolute paths, cross-repository identity, and unsupported quality or ownership claims.
+
+#### Scenario: Agent asks who participated in a release
+- **WHEN** an enabled client requests contributors for a valid release tag
+- **THEN** the server resolves exact interval revisions and returns deterministic primary-author, co-author, automation, activity, churn, concentration, coverage, and bounded evidence-link summaries
+
+#### Scenario: Agent requests contributor detail
+- **WHEN** the request includes a valid contributor ID within the same repository scope
+- **THEN** the server returns only bounded temporal participation and opaque evidence links for that contributor without disclosing canonical email or another repository's identity mapping
+
+#### Scenario: Contributor page is truncated
+- **WHEN** the contributor result exceeds row or response-byte limits
+- **THEN** the server returns a stable page, deterministic cursor, applied limits, and an `other` aggregate that preserves reconcilable interval totals
+
+### Requirement: Landmark and contributor MCP reads preserve index identity
+Every landmark and contributor response SHALL include indexed/current revision identity, tag and mailmap freshness, algorithm/schema identity, ancestry and coverage limitations, and applied bounds, and MUST fail closed when the requested temporal reference cannot be resolved safely.
+
+#### Scenario: Tags or mailmap changed after indexing
+- **WHEN** the current tag or `.mailmap` fingerprint differs from the facts used by a landmark or contributor query
+- **THEN** the response is marked stale and does not imply coverage of the changed release or identity mapping
+
+#### Scenario: Temporal reference is ambiguous or out of scope
+- **WHEN** a release, revision, interval, contributor, cursor, or resource belongs outside the enabled repository scope or cannot be resolved exactly
+- **THEN** the server returns a stable redacted error without leaking repository existence, paths, identities, SQL, or query content
+
+### Requirement: Agents can query the canonical business-rule catalog safely
+The local MCP server SHALL expose strict bounded tools and versioned resources for rule listing/search, exact rule explanation, domain summaries, source-span reverse lookup, dependencies/conflicts, release/history comparison, and explicit evidence hydration through the same canonical archaeology read service as the desktop. Requests MUST use opaque repository, rule, source, and evidence identities and MUST fail closed on unknown fields, invalid cursors, stale scope, cross-repository identity, or unavailable coverage.
+
+#### Scenario: Agent searches a large rule catalog
+- **WHEN** an enabled client searches rules by domain, concept, data field, source identity, release, trust, or lifecycle state
+- **THEN** the server returns deterministic paginated compact rows with stable opaque IDs, freshness, coverage, applied limits, continuation, and no model call or repository rescan
+
+#### Scenario: Agent requests exact rule evidence
+- **WHEN** an enabled client requests one valid rule and a bounded set of its evidence IDs
+- **THEN** the server returns atomic clauses, provenance, dependencies, contradictions, redacted source spans, and stable links within the response-byte and evidence-count limits
+
+#### Scenario: Agent crosses repository scope
+- **WHEN** a rule, source, evidence, cursor, or history identity belongs to another repository or cannot be resolved exactly
+- **THEN** the server rejects the request with a redacted error without disclosing whether the foreign identity exists
+
+### Requirement: Rule MCP reads preserve privacy, lifecycle, and qualification limits
+Every rule MCP response SHALL exclude raw prompts, raw email, credentials, absolute paths, protected source, unrestricted excerpts, and unsupported intent/quality claims; SHALL report rule origin trust, lifecycle, parser/synthesis identities, index freshness, temporal and language coverage, and response bounds; and SHALL remain subject to live revocation and metadata-only audit.
+
+#### Scenario: Accepted rule has stale source evidence
+- **WHEN** the enabled repository HEAD or relevant parser/config identity differs from the rule generation
+- **THEN** the response labels the rule and review state stale and does not describe prior acceptance as validation of current code
+
+#### Scenario: Rule response would exceed the byte ceiling
+- **WHEN** dependencies, conflicts, aliases, history, or evidence exceed one MCP response
+- **THEN** the server returns a deterministic bounded subset and opaque continuations rather than truncating JSON or leaking unrestricted content

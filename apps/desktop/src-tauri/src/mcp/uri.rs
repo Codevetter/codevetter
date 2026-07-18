@@ -3,18 +3,27 @@ use std::fmt;
 
 pub const SCHEME: &str = "codevetter-history";
 
-const RESOURCE_KINDS: &[&str] = &[
+pub(crate) const RESOURCE_KINDS: &[&str] = &[
     "repository",
     "graph",
     "snapshot",
     "community",
     "release",
+    "landmark-catalog",
+    "contributor-summary",
     "commit",
     "episode",
     "entity-lineage",
     "causal-thread",
     "annotation",
     "evidence",
+    "archaeology-catalog",
+    "archaeology-rule",
+    "archaeology-domain",
+    "archaeology-source",
+    "archaeology-relations",
+    "archaeology-temporal",
+    "archaeology-evidence",
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -17,6 +17,24 @@ pub(super) fn dispatch_resource(
         PathBuf::from(repo_path),
         current_head.to_string(),
     )?;
+    if is_archaeology_resource(&uri.kind) {
+        let data = dispatch_archaeology_resource(
+            connection,
+            repo_path,
+            current_head,
+            &uri.repo_id,
+            &uri.kind,
+            &uri.id,
+        )?;
+        let history_status = history.status_with_tag_fingerprint(current_tags_fingerprint)?;
+        let graph_status =
+            graph.status_with_current_head(Some(history.current_head().to_string()))?;
+        return Ok(CanonicalResponse {
+            data: json!({"resource": {"kind": uri.kind, "id": uri.id}, "data": data}),
+            graph_status,
+            history_status,
+        });
+    }
     let data = match uri.kind.as_str() {
         "repository" => json!({
             "graph": graph.status()?,
@@ -47,6 +65,19 @@ pub(super) fn dispatch_resource(
             },
             DEFAULT_PAGE_SIZE,
         )?)?,
+        "landmark-catalog" => {
+            if uri.id != "v1" {
+                return Err("Unsupported landmark catalog resource version".to_string());
+            }
+            to_json(history.landmark_catalog(None, Some(DEFAULT_PAGE_SIZE), None)?)?
+        }
+        "contributor-summary" => {
+            let scope: crate::commands::history_read::contributors::HistoryContributorScope =
+                serde_json::from_str(&uri.id).map_err(|_| {
+                    "Contributor summary resource identifier is invalid".to_string()
+                })?;
+            to_json(history.contributor_summary_page(scope, Some(DEFAULT_PAGE_SIZE), None)?)?
+        }
         "episode" => to_json(history.trace(
             HistoryCausalSelector::EpisodeKey {
                 key: uri.id.clone(),

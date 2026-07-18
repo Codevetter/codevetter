@@ -1,5 +1,10 @@
 use crate::{
-    commands::{history_read::HistorySearchKind, structural_graph::query::GraphQueryFilter},
+    commands::{
+        business_rule_archaeology::read::ArchaeologyReadRequest,
+        history_graph::HistoryLandmarkKind,
+        history_read::{contributors::HistoryContributorScope, HistorySearchKind},
+        structural_graph::query::GraphQueryFilter,
+    },
     mcp::{
         contracts::tool_fields,
         limits::{MAX_HOPS, MAX_PAGE_SIZE},
@@ -84,12 +89,17 @@ pub(crate) fn validate_tool_arguments(
     validate_integer(arguments, "limit", 1, MAX_PAGE_SIZE)?;
     validate_integer(arguments, "depth", 1, MAX_HOPS)?;
 
-    if let Some(value) = arguments.get("filter") {
-        validate_object_keys(value, "filter", &["node_kinds", "edge_kinds", "trust"])?;
-        let filter: GraphQueryFilter = serde_json::from_value(value.clone())
-            .map_err(|_| "'filter' has an invalid shape".to_string())?;
-        if filter.node_kinds.len() > 32 || filter.edge_kinds.len() > 32 || filter.trust.len() > 4 {
-            return Err("'filter' exceeds its bounded arrays".to_string());
+    if name.starts_with("graph_") {
+        if let Some(value) = arguments.get("filter") {
+            validate_object_keys(value, "filter", &["node_kinds", "edge_kinds", "trust"])?;
+            let filter: GraphQueryFilter = serde_json::from_value(value.clone())
+                .map_err(|_| "'filter' has an invalid shape".to_string())?;
+            if filter.node_kinds.len() > 32
+                || filter.edge_kinds.len() > 32
+                || filter.trust.len() > 4
+            {
+                return Err("'filter' exceeds its bounded arrays".to_string());
+            }
         }
     }
     if let Some(value) = arguments.get("history_filter") {
@@ -101,8 +111,40 @@ pub(crate) fn validate_tool_arguments(
         }
         filter.validate()?;
     }
+    if let Some(value) = arguments.get("landmark_kind") {
+        serde_json::from_value::<HistoryLandmarkKind>(value.clone())
+            .map_err(|_| "'landmark_kind' is invalid".to_string())?;
+    }
+    if let Some(value) = arguments.get("contributor_scope") {
+        let scope: HistoryContributorScope = serde_json::from_value(value.clone())
+            .map_err(|_| "'contributor_scope' has an invalid shape".to_string())?;
+        match scope {
+            HistoryContributorScope::ReleaseCycleThrough { tag, to_inclusive } => {
+                if tag.trim().is_empty() || tag.len() > 256 {
+                    return Err("'contributor_scope.tag' must be a bounded string".to_string());
+                }
+                validate_optional_full_sha(
+                    to_inclusive.as_deref(),
+                    "contributor_scope.to_inclusive",
+                )?;
+            }
+            HistoryContributorScope::ExactInterval {
+                from_exclusive,
+                to_inclusive,
+            } => {
+                validate_optional_full_sha(
+                    from_exclusive.as_deref(),
+                    "contributor_scope.from_exclusive",
+                )?;
+                validate_optional_full_sha(Some(&to_inclusive), "contributor_scope.to_inclusive")?;
+            }
+        }
+    }
     for field in ["reference", "before", "after"] {
         if let Some(value) = arguments.get(field) {
+            if name == "archaeology_compare_temporal" {
+                continue;
+            }
             validate_tagged_selector(
                 value,
                 field,
@@ -123,7 +165,42 @@ pub(crate) fn validate_tool_arguments(
             ],
         )?;
     }
+    if let Some(evidence) = arguments.get("evidence") {
+        let count = evidence
+            .as_array()
+            .map(Vec::len)
+            .filter(|count| (1..=crate::mcp::limits::MAX_EVIDENCE_IDS).contains(count))
+            .ok_or_else(|| "'evidence' must be a bounded non-empty array".to_string())?;
+        let _ = count;
+    }
+    let _ = archaeology_request(name, arguments, "mcp-validation-scope")?;
     Ok(())
+}
+
+pub(crate) fn archaeology_request(
+    name: &str,
+    arguments: &Map<String, Value>,
+    repository_id: &str,
+) -> Result<Option<ArchaeologyReadRequest>, String> {
+    let operation = match name {
+        "archaeology_list_rules" => "list_rules",
+        "archaeology_list_domains" => "list_domains",
+        "archaeology_get_rule" => "get_rule",
+        "archaeology_reverse_source" => "reverse_source",
+        "archaeology_list_relations" => "list_relations",
+        "archaeology_compare_temporal" => "compare_temporal",
+        "archaeology_hydrate_evidence" => "hydrate_evidence",
+        _ => return Ok(None),
+    };
+    let mut request = arguments.clone();
+    request.insert("operation".into(), Value::String(operation.into()));
+    request.insert(
+        "repository_id".into(),
+        Value::String(repository_id.to_string()),
+    );
+    serde_json::from_value(Value::Object(request))
+        .map(Some)
+        .map_err(|_| format!("Arguments for '{name}' have an invalid shape"))
 }
 
 fn validate_integer(
@@ -141,6 +218,15 @@ fn validate_integer(
         .filter(|value| (*value >= minimum) && (*value <= maximum))
         .ok_or_else(|| format!("'{field}' must be between {minimum} and {maximum}"))?;
     let _ = value;
+    Ok(())
+}
+
+fn validate_optional_full_sha(value: Option<&str>, field: &str) -> Result<(), String> {
+    if value.is_some_and(|value| {
+        !matches!(value.len(), 40 | 64) || !value.bytes().all(|byte| byte.is_ascii_hexdigit())
+    }) {
+        return Err(format!("'{field}' must be a full Git SHA"));
+    }
     Ok(())
 }
 

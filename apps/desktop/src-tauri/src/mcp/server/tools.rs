@@ -20,6 +20,24 @@ pub(super) fn dispatch_tool(
         PathBuf::from(repo_path),
         current_head.to_string(),
     )?;
+    if is_archaeology_tool(name) {
+        let data = dispatch_archaeology_tool(
+            connection,
+            repo_path,
+            current_head,
+            repo_id,
+            name,
+            &arguments,
+        )?;
+        let history_status = history.status_with_tag_fingerprint(current_tags_fingerprint)?;
+        let graph_status =
+            graph.status_with_current_head(Some(history.current_head().to_string()))?;
+        return Ok(CanonicalResponse {
+            data: json!({"operation": name, "data": data}),
+            graph_status,
+            history_status,
+        });
+    }
     let limit = bounded_limit(arguments.get("limit"));
     let filter = optional_field::<GraphQueryFilter>(&arguments, "filter")?.unwrap_or_default();
     let data = match name {
@@ -146,6 +164,20 @@ pub(super) fn dispatch_tool(
                 "nextCursor": next_cursor,
                 "coverage": {"sourceTruncatedAt500": source_truncated}
             }))
+        }
+        "history_list_landmarks" => {
+            let kind = optional_field::<HistoryLandmarkKind>(&arguments, "landmark_kind")?;
+            let cursor = optional_field::<HistoryOpaqueCursor>(&arguments, "cursor")?;
+            serde_json::to_value(history.landmark_catalog(kind, Some(limit), cursor.as_ref())?)
+        }
+        "history_list_contributors" => {
+            let scope: HistoryContributorScope = required_field(&arguments, "contributor_scope")?;
+            let cursor = optional_field::<HistoryOpaqueCursor>(&arguments, "cursor")?;
+            serde_json::to_value(history.contributor_summary_page(
+                scope,
+                Some(limit),
+                cursor.as_ref(),
+            )?)
         }
         "history_search" => {
             let query = required_string(&arguments, "query")?;

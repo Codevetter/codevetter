@@ -1,8 +1,11 @@
 use crate::{
     commands::{
         history_graph::{repository_tag_fingerprint, HistoryTemporalReference},
+        history_graph::{HistoryLandmarkKind, HistoryOpaqueCursor},
         history_query::HistoryCausalSelector,
-        history_read::{HistoryReadService, HistorySearchKind},
+        history_read::{
+            contributors::HistoryContributorScope, HistoryReadService, HistorySearchKind,
+        },
         mcp_access::{record_mcp_audit, require_enabled_scope},
         structural_graph::{
             query::{GraphDirection, GraphQueryFilter},
@@ -31,15 +34,15 @@ use rmcp::{
     service::RequestContext,
     RoleServer, ServerHandler,
 };
-use rusqlite::{Connection, OpenFlags};
+use rusqlite::{Connection, InterruptHandle, OpenFlags};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Map, Value};
 use std::{
     path::PathBuf,
     sync::{Arc, Mutex, OnceLock},
-    time::Instant,
+    time::{Duration, Instant},
 };
-use tokio::sync::Semaphore;
+use tokio::sync::{oneshot, Semaphore};
 use uuid::Uuid;
 
 const MIME_TYPE: &str = "application/json";
@@ -47,10 +50,47 @@ const MAX_CONCURRENT_QUERIES: usize = 4;
 const MAX_LINEAGE_SCAN: usize = 500;
 static QUERY_SEMAPHORE: OnceLock<Arc<Semaphore>> = OnceLock::new();
 
+async fn await_interruptible_query<T: Send + 'static>(
+    mut worker: tokio::task::JoinHandle<Result<T, String>>,
+    interrupt_receiver: oneshot::Receiver<InterruptHandle>,
+    timeout: Duration,
+    worker_name: &str,
+) -> Result<Result<T, String>, String> {
+    let started = Instant::now();
+    let interrupt = match tokio::time::timeout(timeout, interrupt_receiver).await {
+        Ok(Ok(interrupt)) => Some(interrupt),
+        Ok(Err(_)) => None,
+        Err(_) => {
+            let _ = worker.await;
+            return Err(format!(
+                "{worker_name} exceeded the {} ms timeout",
+                timeout.as_millis()
+            ));
+        }
+    };
+    let remaining = timeout.saturating_sub(started.elapsed());
+    match tokio::time::timeout(remaining, &mut worker).await {
+        Ok(Ok(result)) => Ok(result),
+        Ok(Err(error)) => Err(format!("{worker_name} failed: {error}")),
+        Err(_) => {
+            if let Some(interrupt) = interrupt {
+                interrupt.interrupt();
+            }
+            let _ = worker.await;
+            Err(format!(
+                "{worker_name} exceeded the {} ms timeout",
+                timeout.as_millis()
+            ))
+        }
+    }
+}
+
+pub(crate) mod archaeology;
 mod resources;
 mod runtime;
 mod tools;
 
+use archaeology::*;
 use resources::*;
 use runtime::*;
 use tools::*;
@@ -136,10 +176,12 @@ impl CodeVetterMcpServer {
         .await
         {
             Ok(Ok(permit)) => {
+                let (interrupt_sender, interrupt_receiver) = oneshot::channel();
                 let worker = tokio::task::spawn_blocking(move || {
                     let _permit = permit;
                     let freshness = Self::current_freshness(&repo_path, &freshness_cache)?;
                     let connection = open_read_only(&database_path)?;
+                    let _ = interrupt_sender.send(connection.get_interrupt_handle());
                     let scope = require_enabled_scope(&connection, &repo_id)?;
                     let outcome = dispatch_tool(
                         &connection,
@@ -152,13 +194,14 @@ impl CodeVetterMcpServer {
                     )?;
                     build_envelope(&repo_id, outcome)
                 });
-                match tokio::time::timeout(query_timeout_remaining(started), worker).await {
-                    Ok(Ok(result)) => result,
-                    Ok(Err(error)) => Err(format!("MCP query worker failed: {error}")),
-                    Err(_) => Err(format!(
-                        "MCP query exceeded the {QUERY_TIMEOUT_MS} ms timeout"
-                    )),
-                }
+                await_interruptible_query(
+                    worker,
+                    interrupt_receiver,
+                    query_timeout_remaining(started),
+                    "MCP query worker",
+                )
+                .await
+                .and_then(|result| result)
             }
             Ok(Err(_)) => Err("MCP query scheduler is unavailable".to_string()),
             Err(_) => Err(format!(
@@ -222,10 +265,12 @@ impl CodeVetterMcpServer {
         .await
         .map_err(|_| ErrorData::internal_error("CodeVetter resource query timed out", None))?
         .map_err(|_| ErrorData::internal_error("Resource query scheduler is unavailable", None))?;
+        let (interrupt_sender, interrupt_receiver) = oneshot::channel();
         let worker = tokio::task::spawn_blocking(move || {
             let _permit = permit;
             let freshness = Self::current_freshness(&repo_path, &freshness_cache)?;
             let connection = open_read_only(&database_path)?;
+            let _ = interrupt_sender.send(connection.get_interrupt_handle());
             let scope = require_enabled_scope(&connection, &repo_id)?;
             let outcome = dispatch_resource(
                 &connection,
@@ -236,11 +281,15 @@ impl CodeVetterMcpServer {
             )?;
             build_envelope(&repo_id, outcome)
         });
-        let result = tokio::time::timeout(query_timeout_remaining(started), worker)
-            .await
-            .map_err(|_| ErrorData::internal_error("CodeVetter resource query timed out", None))?
-            .map_err(|error| self.internal_error(format!("Resource worker failed: {error}")))?
-            .map_err(|message| self.resource_not_found(message));
+        let result = await_interruptible_query(
+            worker,
+            interrupt_receiver,
+            query_timeout_remaining(started),
+            "Resource worker",
+        )
+        .await
+        .map_err(|error| self.internal_error(error))?
+        .map_err(|message| self.resource_not_found(message));
         let duration_ms = started.elapsed().as_millis().min(u64::MAX as u128) as u64;
         match result {
             Ok(value) => {
@@ -290,6 +339,7 @@ impl CodeVetterMcpServer {
         )?;
         let snapshots = graph.snapshots(MAX_PAGE_SIZE)?;
         let releases = history.list_releases(MAX_PAGE_SIZE)?.revisions;
+        let release_catalog = history.release_catalog(Some(MAX_PAGE_SIZE), None)?;
         let history_status =
             history.status_with_tag_fingerprint(freshness.tags_fingerprint.as_deref())?;
         let graph_modified = snapshots
@@ -312,7 +362,23 @@ impl CodeVetterMcpServer {
                 "Current structural graph overview",
                 graph_modified,
             )?,
+            resource(
+                &self.repo_id,
+                "landmark-catalog",
+                "v1",
+                "Versioned release and candidate-inflection landmark catalog",
+                history_modified,
+            )?,
         ];
+        if archaeology_catalog_available(&connection, &scope.repo_path)? {
+            resources.push(resource(
+                &self.repo_id,
+                "archaeology-catalog",
+                "overview",
+                "Evidence-traced business-rule catalog",
+                history_modified,
+            )?);
+        }
         for snapshot in snapshots {
             resources.push(resource(
                 &self.repo_id,
@@ -330,6 +396,20 @@ impl CodeVetterMcpServer {
                 id,
                 &format!("Release {}", id),
                 Some(&release.committed_at),
+            )?);
+        }
+        for release in release_catalog.releases {
+            let scope = serde_json::to_string(&HistoryContributorScope::ReleaseCycleThrough {
+                tag: release.tag.clone(),
+                to_inclusive: None,
+            })
+            .map_err(|error| format!("Encode contributor summary resource: {error}"))?;
+            resources.push(resource(
+                &self.repo_id,
+                "contributor-summary",
+                &scope,
+                &format!("Contributors through release {}", release.tag),
+                history_modified,
             )?);
         }
         Ok(resources)
@@ -378,7 +458,7 @@ impl ServerHandler for CodeVetterMcpServer {
         .with_server_info(Implementation::new("codevetter-history", env!("CARGO_PKG_VERSION")))
         .with_protocol_version(ProtocolVersion::V_2025_11_25)
         .with_instructions(
-            "Local, repository-scoped, read-only CodeVetter structural graph and release history. Start compact and hydrate cited evidence only when needed.",
+            "Local, repository-scoped, read-only CodeVetter structural graph, release history, and evidence-traced business-rule archaeology. Start compact and hydrate cited evidence only when needed.",
         )
     }
 
@@ -462,12 +542,20 @@ impl ServerHandler for CodeVetterMcpServer {
             "snapshot",
             "community",
             "release",
+            "landmark-catalog",
+            "contributor-summary",
             "commit",
             "episode",
             "entity-lineage",
             "causal-thread",
             "annotation",
             "evidence",
+            "archaeology-rule",
+            "archaeology-domain",
+            "archaeology-source",
+            "archaeology-relations",
+            "archaeology-temporal",
+            "archaeology-evidence",
         ]
         .into_iter()
         .map(|kind| {

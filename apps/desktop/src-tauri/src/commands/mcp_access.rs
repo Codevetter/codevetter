@@ -7,36 +7,6 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-const MCP_RESOURCE_KINDS: &[&str] = &[
-    "repository",
-    "graph",
-    "snapshot",
-    "community",
-    "release",
-    "commit",
-    "episode",
-    "entity-lineage",
-    "causal-thread",
-    "annotation",
-    "evidence",
-];
-
-const MCP_TOOL_NAMES: &[&str] = &[
-    "graph_query",
-    "graph_get_node",
-    "graph_get_neighbors",
-    "graph_path",
-    "graph_impact",
-    "history_list_releases",
-    "history_search",
-    "history_get_state",
-    "history_lineage",
-    "history_explain",
-    "history_trace",
-    "history_compare",
-    "history_get_evidence",
-];
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct McpRepositoryScope {
     pub repo_path: String,
@@ -340,13 +310,13 @@ fn load_mcp_repository_settings(
         current_head,
         server_path,
         client_config: config,
-        resource_kinds: MCP_RESOURCE_KINDS
+        resource_kinds: crate::mcp::uri::RESOURCE_KINDS
             .iter()
             .map(|value| (*value).to_string())
             .collect(),
-        tool_names: MCP_TOOL_NAMES
-            .iter()
-            .map(|value| (*value).to_string())
+        tool_names: crate::mcp::contracts::tool_definitions()
+            .into_iter()
+            .map(|tool| tool.name.to_string())
             .collect(),
         redaction_rules: vec![
             "No raw transcripts, credentials, environment files, or arbitrary file reads"
