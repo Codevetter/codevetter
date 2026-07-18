@@ -38,7 +38,12 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Unit Tests
         working-directory: apps/desktop
-        run: pnpm run test:unit
+        # Process-heavy differential fixtures model one singleton-owned daemon.
+        # Serial file execution avoids multiplying Git/browser processes beyond
+        # that production ownership boundary on constrained hosted runners.
+        run: |
+          pnpm exec node --import tsx --test --test-concurrency=1 "src/**/*.test.ts"
+          pnpm exec node --import tsx --test tests/qualification/warm-verification-live.test.ts
       - name: Prepare MCP sidecar
         working-directory: apps/desktop
         run: pnpm run prepare:mcp-sidecar
