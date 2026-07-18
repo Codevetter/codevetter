@@ -61,6 +61,10 @@ jobs:
 
       - name: Qualify canonical graph and MCP performance
         working-directory: apps/desktop
+        env:
+          # Hosted runner timing is variable. Keep correctness/resource
+          # qualification here; absolute graph ceilings run on the named machine.
+          CV_GRAPH_BUDGET_MODE: report-only
         run: |
           pnpm qualify:graph
           pnpm qualify:graph:browser
