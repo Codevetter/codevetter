@@ -34,7 +34,13 @@ import {
 import { redactEvidenceText, redactVerifyResult } from './redaction';
 import { WarmArtifactRetention } from './retention';
 import { ScenarioRunner, type ScenarioBatchResult } from './runner';
-import { elapsed, raceAbort, safeErrorMessage, throwIfAborted } from './runtime-utils';
+import {
+  createDeadlineSignal,
+  elapsed,
+  raceAbort,
+  safeErrorMessage,
+  throwIfAborted,
+} from './runtime-utils';
 import { publishScenarioManifest, type ScenarioManifest } from './scenario';
 import { selectChangedCapabilities, type ChangedCapabilitySelection } from './selection';
 import type { VerifyDaemonLease } from './singleton';
@@ -324,10 +330,8 @@ export class VerificationDaemon {
   ): Promise<CandidateDryRunReport> {
     const started = this.#monotonicNow();
     const issues: string[] = [];
-    const signal = AbortSignal.any([
-      active.controller.signal,
-      AbortSignal.timeout(this.#startupConfig.config.budgets.batchMs),
-    ]);
+    const deadline = createDeadlineSignal(this.#startupConfig.config.budgets.batchMs);
+    const signal = AbortSignal.any([active.controller.signal, deadline.signal]);
     try {
       const config = await raceAbort(this.#configLoader.load(), signal);
       const acceptedManifest = await raceAbort(this.#manifestLoader.load(config), signal);
@@ -388,6 +392,8 @@ export class VerificationDaemon {
       return candidateDryRunReport(request.run_id, false, elapsed(this.#monotonicNow, started), [
         safeErrorMessage(error),
       ]);
+    } finally {
+      deadline.dispose();
     }
   }
 
@@ -432,14 +438,32 @@ export class VerificationDaemon {
     detailedCapture: boolean,
     active: ActiveRun
   ): Promise<VerifyResult> {
+    const deadline = createDeadlineSignal(
+      Math.min(requestedBatchTimeoutMs, this.#startupConfig.config.budgets.batchMs)
+    );
+    const runSignal = AbortSignal.any([active.controller.signal, deadline.signal]);
+    try {
+      return await this.#verifyChangedWithinDeadline(
+        runId,
+        changeSet,
+        detailedCapture,
+        active,
+        runSignal
+      );
+    } finally {
+      deadline.dispose();
+    }
+  }
+
+  async #verifyChangedWithinDeadline(
+    runId: string,
+    changeSet: VerifyChangeSetIdentity,
+    detailedCapture: boolean,
+    active: ActiveRun,
+    runSignal: AbortSignal
+  ): Promise<VerifyResult> {
     const started = this.#now();
     const invocationStarted = this.#monotonicNow();
-    const runSignal = AbortSignal.any([
-      active.controller.signal,
-      AbortSignal.timeout(
-        Math.min(requestedBatchTimeoutMs, this.#startupConfig.config.budgets.batchMs)
-      ),
-    ]);
     let config = this.#startupConfig;
     let manifest = this.#manifestLoader.current as Readonly<ScenarioManifest>;
     let beforeHash = fallbackHash('before', changeSet.identity, config.hash, manifest.manifestHash);

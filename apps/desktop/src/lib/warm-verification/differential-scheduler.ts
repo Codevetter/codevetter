@@ -17,7 +17,7 @@ import {
   revalidateDifferentialExecutionPlan,
 } from './differential-plan';
 import type { DifferentialSide } from './differential-supervision';
-import { elapsed, raceAbort, throwIfAborted } from './runtime-utils';
+import { createDeadlineSignal, elapsed, raceAbort, throwIfAborted } from './runtime-utils';
 import type { PublishedScenario } from './scenario';
 import { DifferentialResourceError } from './process-resources';
 
@@ -312,10 +312,10 @@ export class DifferentialPairScheduler {
     let lease: DifferentialScenarioPairLease | undefined;
     let browserGeneration: number | null = null;
     let cleanupComplete = true;
-    const pairTimeout = AbortSignal.timeout(plan.differentialConfig.budgets.pairMs);
+    const pairDeadline = createDeadlineSignal(plan.differentialConfig.budgets.pairMs);
     const pairSignal = request.signal
-      ? AbortSignal.any([request.signal, pairTimeout])
-      : pairTimeout;
+      ? AbortSignal.any([request.signal, pairDeadline.signal])
+      : pairDeadline.signal;
     try {
       throwIfAborted(pairSignal);
       const opening = this.#dependencies.openPair({
@@ -354,10 +354,10 @@ export class DifferentialPairScheduler {
       }
       for (const side of sides) {
         if (reasons.size > 0) break;
-        const sideTimeout = AbortSignal.timeout(
+        const sideDeadline = createDeadlineSignal(
           Math.min(scenario.timeouts.scenarioMs, plan.differentialConfig.budgets.scenarioMs)
         );
-        const sideSignal = AbortSignal.any([pairSignal, sideTimeout]);
+        const sideSignal = AbortSignal.any([pairSignal, sideDeadline.signal]);
         const execution = lease.execute(side, sideSignal, sideOrder);
         let value: DifferentialNormalizedEvidence;
         try {
@@ -378,6 +378,8 @@ export class DifferentialPairScheduler {
             }
           }
           throw error;
+        } finally {
+          sideDeadline.dispose();
         }
         const validation = validateDifferentialNormalizedEvidence(value);
         if (
@@ -403,6 +405,7 @@ export class DifferentialPairScheduler {
     } catch (error) {
       reasons.add(reasonFor(error));
     } finally {
+      pairDeadline.dispose();
       if (lease) {
         const cleaned = await settleWithin(
           lease.cleanup().then((owned) => {
@@ -587,10 +590,14 @@ async function bounded<T>(
   signal: AbortSignal | undefined,
   timeoutMs: number
 ): Promise<T> {
-  const timeout = AbortSignal.timeout(timeoutMs);
-  const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
-  throwIfAborted(combined);
-  return raceAbort(operation(combined), combined);
+  const deadline = createDeadlineSignal(timeoutMs);
+  const combined = signal ? AbortSignal.any([signal, deadline.signal]) : deadline.signal;
+  try {
+    throwIfAborted(combined);
+    return await raceAbort(operation(combined), combined);
+  } finally {
+    deadline.dispose();
+  }
 }
 
 async function settleWithin(operation: Promise<unknown>, timeoutMs: number): Promise<boolean> {
