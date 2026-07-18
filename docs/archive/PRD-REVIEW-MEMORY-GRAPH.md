@@ -1,12 +1,12 @@
 # PRD: Review Memory Graph
 
-Status: shipped — repo/review graph artifacts, schema-v2 relationship trust/provenance, explicit external graph tooling preview import, bounded evidence-bearing path traces, prompt/UI/proof integration, Hunk-style notes, and `[`/`]` hunk keyboard navigation in fix diff; full Hunk-like file sidebar remains deferred
+Status: release-qualified locally — schema-v2 trust paths and the original metadata/review graph remain labeled fallbacks; the canonical structural graph, trusted Review/proof context, large-graph workbench, history playback, and reference graph implementation interchange are runtime-verified; signed release publication remains
 Owner: unassigned
-Last updated: 2026-07-13
+Last updated: 2026-07-14
 
 ## Summary
 
-Review Memory Graph adds a local, queryable project graph to CodeVetter's Review and Repo Unpacked workflows without turning CodeVetter into a generic diff viewer or generic code intelligence product.
+Review Memory Graph adds a local, queryable project graph to CodeVetter's Review and Repo workflows. The fast legacy metadata map remains available and explicitly labeled, while the canonical graph uses syntax extraction, stable source locations, cross-file resolution, trust, coverage, communities, incremental repair, indexed queries, snapshots, and history playback. It borrows the useful parts of Hunk and reference graph implementation without turning CodeVetter into a generic diff viewer or generic code intelligence product.
 
 The product outcome is simple: when a user reviews an agent-written diff, CodeVetter should show the changed hunks, nearby code relationships, prior decisions, past command/test evidence, and review findings in one evidence-backed loop.
 
@@ -16,7 +16,7 @@ CodeVetter already has the right wedge: make agent-written code trustworthy by c
 
 Hunk is useful because it makes review flow hunk-first: sidebar, file stream, hunk navigation, inline notes, and watch-mode refresh.
 
-A queryable repo graph connects code, docs, schemas, infrastructure, and "why" comments through local report and JSON artifacts.
+reference graph implementation is useful because it makes a repo queryable: code, docs, schemas, infrastructure, and "why" comments become a local graph with report and JSON artifacts.
 
 CodeVetter should take those product patterns and attach them to the verification loop.
 
@@ -45,7 +45,7 @@ They are not asking for a second IDE. They need to answer:
 ## Non-Goals
 
 - Do not replace CodeVetter's desktop Review UI with Hunk.
-- Do not install external graph tooling or Hunk as mandatory production dependencies in the first slice.
+- Do not install reference graph implementation or Hunk as mandatory production dependencies in the first slice.
 - Do not add always-on assistant hooks to this repo or target repos by default.
 - Do not build a broad IDE/code-search replacement.
 - Do not send code to external graph/LLM providers without an explicit backend choice and user-visible disclosure.
@@ -55,7 +55,7 @@ They are not asking for a second IDE. They need to answer:
 
 ### Review Tab
 
-When a repo and diff range are selected, Review should eventually show:
+When a repo and diff range are selected, Review shows:
 
 - File/hunk navigation for changed files.
 - CodeVetter findings anchored to file path and line/hunk when available.
@@ -89,19 +89,26 @@ Candidate artifact names:
 - `codevetter-graph-report.md`
 - `codevetter-graph.html`
 
-The first implementation can avoid HTML and store only JSON plus a compact Markdown report.
+Canonical artifacts remain in CodeVetter's local SQLite/app-data boundary. Versioned
+JSON and Markdown exports are explicit user actions; target repositories are never
+mutated by graph build or refresh.
 
 ## Implementation Plan
 
-### Phase 0: Spike
+### Phase 0: Pinned Parity Spike
 
-Run external graph tooling manually on CodeVetter or one fleet repo and compare its graph/report against Repo Unpacked output.
+reference graph implementation's `v8` branch is pinned to commit
+`961b78e57a10e9c5bb98421ff3e45b40be73542b`; its fixture and capability matrix
+are kept in-repo for repeatable comparison.
 
 Acceptance:
 
-- Document whether the external format's output catches relationships Repo Unpacked misses.
-- Document install/runtime cost, artifact size, and privacy behavior.
-- Decide whether to integrate by shelling out to an optional CLI, importing concepts only, or building a minimal CodeVetter graph internally.
+- Document where reference graph implementation is stronger and where CodeVetter meets the functional
+  floor. Implemented in `docs/STRUCTURAL-GRAPH-PARITY.md`.
+- Keep reference graph implementation optional and offline-safe. Implemented through explicit node-link
+  import and adapter boundaries; no reference graph implementation runtime dependency was added.
+- Preserve an honest gap: CodeVetter currently supports 15 documented language
+  variants while reference graph implementation exposes a broader grammar family set.
 
 ### Phase 1: CodeVetter-Owned Minimal Graph
 
@@ -174,16 +181,42 @@ Acceptance:
 
 ### Phase 4: Optional Interop
 
-Add optional export/open paths for users who already use Hunk or external graph tooling.
+Add optional export/open paths for users who already use Hunk or reference graph implementation.
 
 Acceptance:
 
 - CodeVetter can export findings as Hunk-style agent-context notes or another documented sidecar format. Implemented through Repo Unpacked `agent_context_markdown` sidecar export with repo graph and history context plus Review's selected-finding "Copy note" action, which includes file/line, evidence status, local history context, focused graph nodes/edges, and next verification actions.
-- CodeVetter can export its local graph as JSON for external graph tooling comparison. Implemented through Repo Unpacked `repo_graph_json` export.
-- CodeVetter can import a graph JSON/report only through an explicit user action. Implemented in Repo Unpacked through an explicit generic node-link JSON file action that accepts bounded `nodes` plus `links`/`edges`, validates endpoints, preserves supported confidence/source/community metadata, and renders a transient preview without mutating the saved report or target repo.
+- CodeVetter can export its local graph as JSON for reference graph implementation comparison. Implemented through Repo Unpacked `repo_graph_json` export.
+- CodeVetter can import a graph JSON/report only through an explicit user action. Implemented in Repo Unpacked through an explicit reference graph implementation JSON file action that accepts bounded `nodes` plus `links`/`edges`, validates endpoints, preserves supported confidence/source/community metadata, and renders a transient preview without mutating the saved report or target repo.
 - CodeVetter can trace a bounded path between decisive native or imported endpoints. Implemented with exact ID/path/label precedence, explicit ambiguity candidates, trust-weighted traversal, stored-direction hop display, source anchors, and traversal-bound reporting. Native schema-v2 paths from changed files to routes, commands, tables, scripts, or tests are capped and included in Review/proof as qualified context; uncertain/imported/legacy hops remain navigation leads and cannot independently create findings or verified claims.
 - Missing optional CLIs produce clear non-fatal UI errors.
-- No production dependency is added unless a prior spike proves the value and tradeoff. Implemented for the export slice; no external graph tooling/Hunk runtime dependency was added.
+- No production dependency is added unless a prior spike proves the value and tradeoff. Implemented for the export slice; no reference graph implementation/Hunk runtime dependency was added.
+
+### Phase 5: Canonical Structural Graph
+
+Replace metadata-map claims with a persistent structural graph while retaining the
+legacy map as an explicitly labeled fallback.
+
+Acceptance:
+
+- Supported languages extract named symbols and source ranges with exact coverage,
+  skipped-file, unsupported-language, and diagnostic reporting.
+- Cross-file imports, calls, inheritance, tests, routes, commands, persistence,
+  docs/config, and analytics relationships carry exact/inferred/ambiguous trust and
+  source provenance.
+- Full and incremental builds repair changed, deleted, renamed, and reverted files
+  transactionally without stale nodes or worktree mutation.
+- Indexed search, explain, neighbors, impact, trust-weighted path, community,
+  hub/bridge, projection, pagination, and snapshot-diff operations stay bounded.
+- The Repo workbench supports large graphs, accessible node/list navigation,
+  visible-versus-total counts, filters, source inspection, path highlighting,
+  community focus, stale refresh, comparison, and history playback.
+- Review and proof receive compact trusted context, but graph topology cannot create
+  findings, severity, or verified-runtime evidence.
+- The current 445-file CodeVetter corpus builds 35,775 nodes / 58,344 edges in
+  369.54 ms release mode; one-file refresh is 235.79 ms, delete/rename repair is
+  0.02/0.05 ms, warm status/no-op is 1.5589 ms, and search is
+  0.1338/0.1481 ms p50/p95.
 
 ## UX Requirements
 
@@ -207,27 +240,31 @@ Acceptance:
 ## Privacy And Safety
 
 - Default to local-only graph building.
-- Do not install external graph tooling always-on hooks as part of CodeVetter.
-- If an optional external graph runtime is explored, prefer an explicit user-installed CLI boundary over vendoring it.
+- Do not install reference graph implementation always-on hooks as part of CodeVetter.
+- If optional reference graph implementation integration is explored, prefer `uvx reference_graphy` or user-installed CLI detection over vendoring it.
 - If an LLM-backed graph extraction mode exists later, require explicit provider/backend choice and show whether code leaves the machine.
 - Do not include secrets, env files, SSH keys, cloud credentials, kube configs, or production configs in graph artifacts.
 
 ## Open Questions
 
-- Should graph artifacts be stored in CodeVetter app data only, or optionally committed to target repos?
-- What is the smallest useful graph schema for React/Tauri/Rust apps?
-- Should graph context be generated before every review or refreshed manually from Repo Unpacked?
+- Which additional language grammars earn their ongoing binary/test cost after the
+  supported 15-language matrix?
 - Should evidence graph nodes include raw transcript excerpts, or only source/event anchors?
-- What graph output size is acceptable before Review becomes slower than the current flow?
+- Should an optional committed sidecar ever be added, or should app-data plus
+  explicit export remain the only persistence boundary?
+- Which profile would justify a Go dashboard/API layer after Rust IPC, packaging,
+  and duplicated-semantics costs are included?
 
 ## Pickup Checklist
 
 - Read `README.md`, `PROJECT_STATUS.md`, `docs/IDEA-DUMP.md`, and this PRD.
 - Inspect `apps/desktop/src-tauri/src/commands/unpack.rs`, `apps/desktop/src-tauri/src/commands/review.rs`, and `apps/desktop/src/pages/QuickReview.tsx`.
-- Start with Phase 0 unless the user explicitly asks to skip the spike.
-- Keep the first code diff small and local-first.
+- Read `docs/STRUCTURAL-GRAPH-PARITY.md`, `docs/PERFORMANCE.md`, and the active structural
+  graph OpenSpec before changing engine or schema behavior.
+- Preserve the canonical-versus-legacy distinction and the graph-trust boundary.
 - Run the smallest relevant check before handoff.
 
 ## References
 
 - Hunk: https://github.com/modem-dev/hunk
+- reference graph implementation: https://github.com/pinned external reference implementation — pinned parity baseline `v8` commit `961b78e57a10e9c5bb98421ff3e45b40be73542b`; CodeVetter imports local node-link JSON only through explicit action and never installs or invokes reference graph implementation implicitly.

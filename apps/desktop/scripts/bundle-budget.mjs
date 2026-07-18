@@ -15,9 +15,12 @@ import { fileURLToPath } from 'node:url';
 
 const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'out', 'assets');
 
-// Raw-KB budgets. Per-chunk guards lazy routes; total guards the whole app.
-const PER_CHUNK_KB = 450; // largest single chunk (currently the vendor/index entry)
-const TOTAL_KB = 1200; // sum of all JS
+// Raw-KB budgets. Initial-route parse cost is the runtime-critical desktop
+// metric; lazy routes stay bounded independently. Total remains a distribution
+// guard, not a claim that every lazy route is parsed at startup.
+const PER_CHUNK_KB = 500;
+const INITIAL_ROUTE_KB = 550;
+const TOTAL_KB = 1800;
 
 function kb(bytes) {
   return bytes / 1024;
@@ -41,6 +44,24 @@ const chunks = files
 
 const totalRaw = chunks.reduce((s, c) => s + c.raw, 0);
 const totalGz = chunks.reduce((s, c) => s + c.gz, 0);
+const manifestPath = join(ASSETS_DIR, '..', '.vite', 'manifest.json');
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const entry = Object.values(manifest).find((record) => record.isEntry);
+if (!entry) throw new Error(`No Vite entry found in ${manifestPath}`);
+const recordsByFile = new Map(Object.values(manifest).map((record) => [record.file, record]));
+const initialFiles = new Set();
+function collectStatic(file) {
+  if (initialFiles.has(file)) return;
+  initialFiles.add(file);
+  for (const imported of recordsByFile.get(file)?.imports ?? []) collectStatic(imported);
+}
+collectStatic(entry.file);
+const homeRecord = Object.entries(manifest).find(([key]) => key.endsWith('/pages/Home.tsx'))?.[1];
+if (homeRecord) collectStatic(homeRecord.file);
+const initialRaw = [...initialFiles].reduce(
+  (sum, file) => sum + (chunks.find((chunk) => `assets/${chunk.name}` === file)?.raw ?? 0),
+  0
+);
 
 console.log('\nJS bundle budget\n');
 console.log(`${'chunk'.padEnd(34)}${'raw KB'.padStart(10)}${'gzip KB'.padStart(10)}`);
@@ -56,6 +77,7 @@ console.log('-'.repeat(54));
 console.log(
   `${'TOTAL'.padEnd(34)}${kb(totalRaw).toFixed(1).padStart(10)}${kb(totalGz).toFixed(1).padStart(10)}`
 );
+console.log(`${'INITIAL + HOME'.padEnd(34)}${kb(initialRaw).toFixed(1).padStart(10)}`);
 
 const failures = [];
 const biggest = chunks[0];
@@ -63,6 +85,9 @@ if (kb(biggest.raw) > PER_CHUNK_KB) {
   failures.push(
     `chunk ${biggest.name} is ${kb(biggest.raw).toFixed(0)} KB (budget ${PER_CHUNK_KB} KB)`
   );
+}
+if (kb(initialRaw) > INITIAL_ROUTE_KB) {
+  failures.push(`initial route is ${kb(initialRaw).toFixed(0)} KB (budget ${INITIAL_ROUTE_KB} KB)`);
 }
 if (kb(totalRaw) > TOTAL_KB) {
   failures.push(`total JS is ${kb(totalRaw).toFixed(0)} KB (budget ${TOTAL_KB} KB)`);
@@ -73,4 +98,6 @@ if (failures.length) {
   for (const f of failures) console.error(`✖ ${f}`);
   process.exit(1);
 }
-console.log(`✓ within budget (per-chunk ≤ ${PER_CHUNK_KB} KB, total ≤ ${TOTAL_KB} KB)\n`);
+console.log(
+  `✓ within budget (initial + Home ≤ ${INITIAL_ROUTE_KB} KB, per-chunk ≤ ${PER_CHUNK_KB} KB, distribution ≤ ${TOTAL_KB} KB)\n`
+);

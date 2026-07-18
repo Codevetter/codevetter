@@ -1,0 +1,47 @@
+# CodeVetter — full agent brief
+
+Desktop-first AI code review workbench for agent-generated code. Local SQLite, Tauri shell, evidence-backed review — your repo never hits a central server.
+
+## Index
+
+# CodeVetter
+
+Desktop-first AI code review for agent-generated code.
+
+## What it is
+
+- Local SQLite storage and Tauri desktop shell
+- Evidence-backed review loops
+- Optional Claude, Codex, or Gemini CLI backends
+- Open source (ISC)
+
+## Who it's for
+
+Engineers shipping AI-generated PRs who want review before merge — without uploading the repo to a central server.
+
+## Agent entrypoints
+
+- https://codevetter.com/llms.txt
+- https://codevetter.com/api/ai
+- https://codevetter.com/index.md
+
+## Product links
+
+- Home: https://codevetter.com/ — Features, pricing, how it works
+- Download: https://codevetter.com/download — macOS release
+- FAQ: https://codevetter.com/faq — Common questions about local-first AI code review
+- Privacy: https://codevetter.com/privacy — Local-first data handling
+
+## Machine surfaces
+
+- https://codevetter.com/llms.txt
+- https://codevetter.com/llms-full.txt
+- https://codevetter.com/api/ai
+- https://codevetter.com/index.md
+- https://codevetter.com/sitemap.xml
+- https://codevetter.com/robots.txt
+
+## Contact / fleet
+
+- Fleet: https://sassmaker.com
+- Agent email for directory verification: sarthakagrawal@agentmail.to

@@ -1,9 +1,16 @@
-import { Activity, GitCommit, Loader2, RefreshCw, Trash2, Users } from 'lucide-react';
+import { Activity, Copy, GitCommit, Loader2, RefreshCw, Trash2, Users } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { SourceLink } from '@/components/unpack-workspace/SourceLink';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   type DoraMetrics,
   deleteRepoIntelReport,
@@ -70,20 +77,110 @@ function SignalCard({
   value,
   detail,
   tone = 'text-slate-100',
+  onClick,
 }: {
   label: string;
   value: string;
   detail: string;
   tone?: string;
+  onClick?: () => void;
 }) {
-  return (
-    <div className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-4">
+  const content = (
+    <>
       <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
         {label}
       </div>
       <div className={cn('mt-2 text-2xl font-semibold tabular-nums', tone)}>{value}</div>
       <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{detail}</div>
-    </div>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-4 text-left transition-colors hover:border-cyan-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-300/25"
+      >
+        {content}
+      </button>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-4">{content}</div>
+  );
+}
+
+type ActivityZoom = {
+  label: string;
+  value: string;
+  detail: string;
+  rows: Array<{ label: string; value: string; detail?: string; source?: string }>;
+};
+
+function ActivityMetricDialog({
+  zoom,
+  repoPath,
+  onOpenChange,
+}: {
+  zoom: ActivityZoom | null;
+  repoPath: string;
+  onOpenChange: (zoom: ActivityZoom | null) => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = useCallback(async () => {
+    if (!zoom) return;
+    const rows = zoom.rows
+      .map((row) => `- ${row.label}: ${row.value}${row.detail ? ` — ${row.detail}` : ''}`)
+      .join('\n');
+    await navigator.clipboard.writeText(
+      `# ${zoom.label}\n\nValue: ${zoom.value}\nEvidence quality: ${zoom.detail}\n\n${rows}`
+    );
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1_200);
+  }, [zoom]);
+
+  return (
+    <Dialog open={Boolean(zoom)} onOpenChange={(open) => !open && onOpenChange(null)}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <div className="flex items-start justify-between gap-3">
+            <DialogTitle>
+              {zoom?.label}: <span className="font-mono text-cyan-200">{zoom?.value}</span>
+            </DialogTitle>
+            <Button type="button" variant="outline" size="sm" onClick={handleCopy}>
+              <Copy size={13} className="mr-1.5" />
+              {copied ? 'Copied' : 'Copy packet'}
+            </Button>
+          </div>
+          <DialogDescription>{zoom?.detail}</DialogDescription>
+        </DialogHeader>
+        <div className="rounded-lg border border-[var(--cv-line)] bg-white/[0.025] p-3 text-xs">
+          <div className="font-medium text-[var(--text-primary)]">Evidence quality</div>
+          <div className="mt-1 text-[var(--text-secondary)]">{zoom?.detail}</div>
+        </div>
+        <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-[var(--cv-line)]">
+          {zoom?.rows.map((row) => (
+            <div
+              key={`${row.label}-${row.value}`}
+              className="border-b border-[var(--cv-line)]/60 px-3 py-2.5 text-xs last:border-0"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="font-medium text-[var(--text-primary)]">{row.label}</div>
+                <div className="font-mono text-cyan-200">{row.value}</div>
+              </div>
+              {row.detail ? (
+                <div className="mt-1 text-[var(--text-secondary)]">{row.detail}</div>
+              ) : null}
+              {row.source ? (
+                <div className="mt-2">
+                  <SourceLink path={row.source} repoPath={repoPath} />
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -103,6 +200,7 @@ export function IntelProjectPanel({
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [zoom, setZoom] = useState<ActivityZoom | null>(null);
   const autoGenerateRepoRef = useRef<string | null>(null);
 
   const loadSnapshot = useCallback(async (id: string) => {
@@ -372,6 +470,26 @@ export function IntelProjectPanel({
                 thirty.human_commits
               )} human-shaped commits in 30d`}
               tone={aiShare > 70 ? 'text-amber-200' : 'text-cyan-100'}
+              onClick={() =>
+                setZoom({
+                  label: 'AI share',
+                  value: `${aiShare.toFixed(1)}%`,
+                  detail:
+                    'Evidence quality is git-derived and attribution is heuristic; inspect source rows before treating authorship as causal.',
+                  rows: [
+                    {
+                      label: '30-day attribution',
+                      value: `${fmtNum(thirty.ai_commits)} AI / ${fmtNum(thirty.human_commits)} human`,
+                    },
+                    ...report.top_files.slice(0, 8).map((file) => ({
+                      label: file.path,
+                      value: `${fmtNum(file.commits)} commits`,
+                      detail: `+${fmtNum(file.additions)} / -${fmtNum(file.deletions)}`,
+                      source: file.path,
+                    })),
+                  ],
+                })
+              }
             />
             <SignalCard
               label="Recent commits"
@@ -387,7 +505,7 @@ export function IntelProjectPanel({
               tone={correctiveRate >= 8 ? 'text-rose-200' : 'text-emerald-200'}
             />
             <SignalCard
-              label="Release health"
+              label="Deploy frequency"
               value={dora ? `${dora.deploys_per_week.toFixed(2)}/wk` : 'unknown'}
               detail={
                 dora
@@ -395,6 +513,20 @@ export function IntelProjectPanel({
                       dora.median_lead_time_hours
                     )} · failure ${dora.change_failure_rate_pct.toFixed(1)}%`
                   : 'No semver release signal found'
+              }
+              onClick={() =>
+                setZoom({
+                  label: 'Deploy frequency',
+                  value: dora ? `${dora.deploys_per_week.toFixed(2)}/wk` : 'unknown',
+                  detail:
+                    'Local DORA is git-derived from semver tags and corrective commits; it does not prove a production deployment.',
+                  rows:
+                    dora?.recent_releases.map((release) => ({
+                      label: release.tag,
+                      value: formatSnapshotTime(release.created_at),
+                      detail: `${release.commits_since_previous} commits · ${shortSha(release.commit_sha)}`,
+                    })) ?? [],
+                })
               }
             />
           </div>
@@ -506,6 +638,7 @@ export function IntelProjectPanel({
           ) : null}
         </>
       ) : null}
+      <ActivityMetricDialog zoom={zoom} repoPath={repoPath} onOpenChange={setZoom} />
     </div>
   );
 }

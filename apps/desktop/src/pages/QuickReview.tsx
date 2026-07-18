@@ -2338,9 +2338,11 @@ export default function QuickReview() {
       evidenceProcedureSteps: result.evidence_procedure_steps,
       reviewMemoryGraph: result.review_memory_graph,
       focusedReviewMemoryGraph,
+      trustedGraphContext: result.trusted_graph_context,
       verificationTimeline: reviewTimeline,
       qaPostFixComparison,
       historyExplanations,
+      temporalHistory: historyContext?.temporal_slice,
       procedureExecutionEvents,
       intentReport,
       historyFindingSummaries,
@@ -2369,6 +2371,7 @@ export default function QuickReview() {
     reviewTimeline,
     historyFindingSummaries,
     historyExplanations,
+    historyContext?.temporal_slice,
     audienceBundle,
   ]);
 

@@ -16,6 +16,8 @@ use std::time::Duration;
 use chrono::{DateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::commands::git_metadata::{is_release_tag, read_git_tags};
+
 const HOTFIX_LOOKAHEAD_DAYS: i64 = 7;
 
 // ─── Public types ───────────────────────────────────────────────────────────
@@ -181,44 +183,15 @@ pub async fn get_dora_metrics(
 // ─── git readers ────────────────────────────────────────────────────────────
 
 fn read_tags(repo_path: &str) -> Result<Vec<Tag>, String> {
-    // `git for-each-ref` lets us pull tag + sha + creation timestamp in one shot.
-    // `%(creatordate:unix)` is the date the tag itself was created (annotated)
-    // or the committer date of the tagged commit (lightweight).
-    let out = Command::new("git")
-        .args([
-            "for-each-ref",
-            "--format=%(refname:short)\t%(objectname)\t%(creatordate:unix)",
-            "refs/tags",
-        ])
-        .current_dir(repo_path)
-        .output()
-        .map_err(|e| format!("git for-each-ref: {e}"))?;
-    if !out.status.success() {
-        return Err(format!(
-            "git for-each-ref failed: {}",
-            String::from_utf8_lossy(&out.stderr).trim()
-        ));
-    }
-    let mut tags = Vec::new();
-    for line in String::from_utf8_lossy(&out.stdout).lines() {
-        let mut parts = line.splitn(3, '\t');
-        let name = parts.next().unwrap_or("").to_string();
-        let sha = parts.next().unwrap_or("").to_string();
-        let ts: i64 = parts.next().unwrap_or("0").parse().unwrap_or(0);
-        if name.is_empty() {
-            continue;
-        }
-        // Skip tags created at unix epoch (broken tags).
-        if ts <= 0 {
-            continue;
-        }
-        tags.push(Tag {
-            name,
-            sha,
-            created_ts: ts,
-        });
-    }
-    Ok(tags)
+    read_git_tags(std::path::Path::new(repo_path)).map(|tags| {
+        tags.into_iter()
+            .map(|tag| Tag {
+                name: tag.name,
+                sha: tag.object_sha,
+                created_ts: tag.created_ts,
+            })
+            .collect()
+    })
 }
 
 fn read_commits(repo_path: &str, since_days: u32) -> Result<Vec<Commit>, String> {
@@ -253,28 +226,6 @@ fn read_commits(repo_path: &str, since_days: u32) -> Result<Vec<Commit>, String>
 }
 
 // ─── classifiers ────────────────────────────────────────────────────────────
-
-/// Matches: v1.2.3, 1.2.3, v1.2.3-rc.1, v2024.04.05, 1.2 etc.
-pub(crate) fn is_release_tag(tag: &str) -> bool {
-    let t = tag.trim_start_matches('v').trim_start_matches('V');
-    if t.is_empty() {
-        return false;
-    }
-    let head = t.split(['-', '+']).next().unwrap_or(t);
-    let bytes = head.as_bytes();
-    let mut digits = 0;
-    let mut dots = 0;
-    for &b in bytes {
-        if b.is_ascii_digit() {
-            digits += 1;
-        } else if b == b'.' {
-            dots += 1;
-        } else {
-            return false;
-        }
-    }
-    digits > 0 && dots >= 1
-}
 
 pub(crate) fn is_hotfix_or_revert(subject: &str) -> bool {
     let s = subject.trim_start().to_ascii_lowercase();
@@ -502,22 +453,32 @@ mod tests {
                 .unwrap();
             assert!(s.success(), "git {args:?} failed");
         };
+        let commit_at = |message: &str, date: &str| {
+            let status = SC::new("git")
+                .args(["commit", "-q", "-m", message])
+                .env("GIT_AUTHOR_DATE", date)
+                .env("GIT_COMMITTER_DATE", date)
+                .current_dir(&tmp)
+                .status()
+                .unwrap();
+            assert!(status.success(), "git commit at {date} failed");
+        };
         run(&["init", "-q"]);
         run(&["config", "user.email", "a@a"]);
         run(&["config", "user.name", "A"]);
 
         std::fs::write(tmp.join("a"), "1\n").unwrap();
         run(&["add", "."]);
-        run(&["commit", "-q", "-m", "feat: initial"]);
+        commit_at("feat: initial", "2026-01-01T00:00:00Z");
         run(&["tag", "v0.1.0"]);
 
         std::fs::write(tmp.join("a"), "2\n").unwrap();
         run(&["add", "."]);
-        run(&["commit", "-q", "-m", "hotfix: prod broken"]);
+        commit_at("hotfix: prod broken", "2026-01-02T00:00:00Z");
 
         std::fs::write(tmp.join("a"), "3\n").unwrap();
         run(&["add", "."]);
-        run(&["commit", "-q", "-m", "feat: ship"]);
+        commit_at("feat: ship", "2026-01-03T00:00:00Z");
         run(&["tag", "v0.1.1"]);
 
         let m = tokio::runtime::Builder::new_current_thread()

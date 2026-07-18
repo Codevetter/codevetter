@@ -555,7 +555,7 @@ fn window_for<'a>(
     }
 
     let mut tool_counts: Vec<ToolCount> = by_tool.into_values().collect();
-    tool_counts.sort_by_key(|tool| std::cmp::Reverse(tool.commits));
+    tool_counts.sort_by_key(|entry| std::cmp::Reverse(entry.commits));
     let (p50, p95, max_sz) = size_percentiles(&mut sizes);
 
     WindowReport {
@@ -705,7 +705,7 @@ fn author_rollup<'a>(classified: &[ClassifiedRef<'a>]) -> Vec<AuthorRow> {
                 .unwrap_or_default()
                 .into_values()
                 .collect();
-            mix.sort_by_key(|tool| std::cmp::Reverse(tool.commits));
+            mix.sort_by_key(|entry| std::cmp::Reverse(entry.commits));
             row.tool_mix = mix;
             row.active_days = days_by_email
                 .remove(&key)
@@ -714,7 +714,7 @@ fn author_rollup<'a>(classified: &[ClassifiedRef<'a>]) -> Vec<AuthorRow> {
             row
         })
         .collect();
-    rows.sort_by_key(|row| std::cmp::Reverse(row.commits));
+    rows.sort_by_key(|entry| std::cmp::Reverse(entry.commits));
     rows.truncate(20);
     rows
 }
@@ -1295,6 +1295,48 @@ pub(crate) fn top_directory(path: &str) -> &str {
     }
 }
 
+// ─── Tool breakdown query ───────────────────────────────────────────────────
+
+#[cfg(test)]
+fn canonicalize_model(raw: &str) -> String {
+    let r = raw.to_ascii_lowercase();
+    if r.is_empty() {
+        return "unknown".into();
+    }
+    if r.contains("opus") {
+        return "opus".into();
+    }
+    if r.contains("sonnet") {
+        return "sonnet".into();
+    }
+    if r.contains("haiku") {
+        return "haiku".into();
+    }
+    if r.contains("gpt-4o") {
+        return "gpt-4o".into();
+    }
+    if r.contains("gpt-4.1") {
+        return "gpt-4.1".into();
+    }
+    if r.contains("o3") || r.contains("o4-mini") {
+        return "o-series".into();
+    }
+    r
+}
+
+#[cfg(test)]
+fn percentiles(values: &mut [f64]) -> (f64, f64) {
+    if values.is_empty() {
+        return (0.0, 0.0);
+    }
+    values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let pick = |q: f64| {
+        let idx = ((values.len() as f64 - 1.0) * q).round() as usize;
+        values[idx.min(values.len() - 1)]
+    };
+    (pick(0.5), pick(0.95))
+}
+
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
@@ -1566,6 +1608,23 @@ Co-Authored-By: Claude <noreply@anthropic.com>
         let (tool, is_ai) = classify_commit(c);
         assert_eq!(tool, TOOL_CURSOR);
         assert!(is_ai);
+    }
+
+    #[test]
+    fn percentiles_basic() {
+        let mut v = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+        let (p50, p95) = percentiles(&mut v);
+        assert!((5.0..=6.0).contains(&p50));
+        assert!((9.0..=10.0).contains(&p95));
+    }
+
+    #[test]
+    fn canonicalize_model_buckets_correctly() {
+        assert_eq!(canonicalize_model("claude-opus-4-7"), "opus");
+        assert_eq!(canonicalize_model("claude-sonnet-4-6"), "sonnet");
+        assert_eq!(canonicalize_model("haiku-4-5"), "haiku");
+        assert_eq!(canonicalize_model("gpt-4o-2024-08-06"), "gpt-4o");
+        assert_eq!(canonicalize_model(""), "unknown");
     }
 
     // ─── v1.1.77 helpers ───────────────────────────────────────────────────
