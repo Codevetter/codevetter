@@ -24,7 +24,7 @@ export default defineConfig({
     format: 'directory',
     inlineStylesheets: 'always',
   },
-  integrations: [sitemap()],
+  integrations: [sitemap({ customPages: ['https://codevetter.com/docs/'] })],
   vite: {
     plugins: [tailwind()],
     css: { transformer: 'lightningcss' },
