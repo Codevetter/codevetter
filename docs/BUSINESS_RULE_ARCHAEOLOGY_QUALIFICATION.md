@@ -1,3 +1,7 @@
+---
+title: Business-rule archaeology qualification policy
+---
+
 # Business-rule archaeology qualification policy
 
 The version-one policy is checked in at
@@ -205,7 +209,7 @@ validation, and repository diff whitespace checks all passed.
 - `apps/desktop/tests/fixtures/warm-verification/qualification-2026-07-17.json`
 - `apps/desktop/tests/fixtures/warm-verification/stability-2026-07-17.json`
 - `apps/desktop/scripts/mcp-benchmark.mjs`
-- `docs/PERFORMANCE.md`
+- `docs/development/performance.md`
 
 Those artifacts justify the initial local envelopes. They do not count as archaeology results.
 

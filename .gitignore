@@ -72,3 +72,10 @@ cache.bin
 
 # codex CLI project dir
 .codex/
+
+# Blume generated docs site (presentation layer only — Markdown under docs/ is the source of truth)
+.blume/
+
+# Local agent logs / scratch
+.agent-logs/
+.devin/
