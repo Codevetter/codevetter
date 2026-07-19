@@ -105,8 +105,15 @@ npm run build
 apps/
   desktop/             Tauri 2 + React 19 + Vite desktop app — the core product
   landing-page-astro/  Astro marketing site (static export, deployed to Cloudflare Pages — codevetter.com)
-  landing-page/        Legacy Next.js marketing site — superseded by landing-page-astro, no longer deployed
+docs/                  Canonical knowledge system — see docs/index.md
+benchmark/             Public catch-rate benchmark cases + harness
+openspec/              Spec-driven workflow (specs + changes/archive)
 ```
+
+> The legacy Next.js `apps/landing-page/` was removed on 2026-07-03. The
+> `packages/`, `workers/`, and `apps/dashboard/` surfaces referenced in older
+> docs were removed in the 2026-07-11 desloppification sweep — see
+> `docs/architecture/overview.md`.
 
 ## Tech Stack
 
