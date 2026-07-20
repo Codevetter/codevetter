@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
 > Short current view. For the deep timeline + feature log, see
 > [`PROJECT_STATUS.md`](./PROJECT_STATUS.md). For the docs index, see
@@ -8,26 +8,28 @@ Last updated: 2026-07-18
 
 ## Current objective
 
-Make CodeVetter the personal verification layer for agent-generated code:
-evidence-backed review, runtime proof, and explainable codebase history — all
-local-first, no server. Near-term wedge is the self-first review → fix →
-re-review → proof loop with benchmarked catch-rate evidence.
+Make CodeVetter the local-first primary workbench for five connected pillars:
+Usage, Repo Unpack, Work, Review, and Testing. Functionality and visual quality
+must ship together; Usage remains the default until the other pillars earn
+repeated real use.
 
 ## Active work
 
+- **Five-pillar desktop redesign** — fixed top rail, native SF Pro typography,
+  shared hierarchy, Work conversation/board, streamlined Review, Testing-first
+  warm verification, and deduplicated Repo overview are implemented and
+  native-qualified locally; release publication remains pending.
 - **External benchmark case curation** — 27 public cases shipped; real
   agent-PR case curation pending before external catch-rate claims.
 - **Repo Unpacked + history workbench** — canonical structural graph and
   release-history slider shipped locally (2026-07-14); signed release
   publication pending.
-- **MCP sidecar** — opt-in read-only local MCP server implemented and
-  packaged; release publication pending.
+- **MCP sidecar** — opt-in read-only local MCP server implemented, packaged,
+  and shipped in v1.2.21.
 - **Documentation consolidation** — this knowledge system (in progress).
 
 ## Blockers
 
-- **Signed release publication** — the 2026-07-14 graph + MCP work is
-  implemented and runtime-qualified but not yet cut as a signed release.
 - **External benchmark claims gated on real agent-PR cases** — the
   head-to-head vs raw Claude is currently an internal-only answer.
 
@@ -42,16 +44,14 @@ re-review → proof loop with benchmarked catch-rate evidence.
 
 ## Next steps
 
-1. Curate real agent-PR benchmark cases; re-run the head-to-head; publish
-   external catch-rate evidence.
-2. Cut the signed release containing the graph + history workbench + MCP
-   sidecar (see [docs/operations/runbooks/cut-a-release.md](./docs/operations/runbooks/cut-a-release.md)).
-3. Connect replay to files, diffs, failures, screenshots, tests, and review
-   findings (currently replay is conversation-only).
+1. Attach running or historical agent sessions to Work items without restarting
+   the provider process.
+2. Run harmless native Codex/Claude launch qualification before release.
+3. Continue Repo Unpack calibration against downstream review and QA outcomes.
 
 ## Recent shipped
 
-- 2026-07-14 — Graphify-grade structural graph, history MCP, runtime
+- 2026-07-14 — release-qualified structural graph, history MCP, runtime
   qualification (local; release pending).
 - 2026-07-13 — Trusted graph paths; release-history graph + time-travel
   workbench.

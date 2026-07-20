@@ -83,7 +83,7 @@ reconstruction, and the optional MCP sidecar.
 - [repo-unpacked.md](./repo-unpacked.md) — evidence-backed repo briefs.
 - [mcp-sidecar.md](./mcp-sidecar.md) — opt-in local MCP server.
 - [history-evidence-import.md](./history-evidence-import.md) — importing provider-side outcomes.
-- Pinned technical decisions: [decisions/mcp-sdk.md](./decisions/mcp-sdk.md), [decisions/oss-integration.md](./decisions/oss-integration.md), [decisions/graphify-parity.md](./decisions/graphify-parity.md).
+- Pinned technical decisions: [decisions/mcp-sdk.md](./decisions/mcp-sdk.md), [decisions/oss-integration.md](./decisions/oss-integration.md), [decisions/structural-graph-contract.md](./decisions/structural-graph-contract.md).
 
 ## What was removed (do not resurrect)
 

@@ -20,7 +20,7 @@ export default function CreatePreviewPanel({ isReviewing }: CreatePreviewPanelPr
             <span className="cv-dot" />
             <span className="cv-dot" />
             <span className="cv-dot" />
-            <span className="cv-label mx-auto">review preview · select a diff</span>
+            <span className="cv-label mx-auto">Review preview · select a diff</span>
             <span className="cv-label">⌘ K</span>
           </div>
           <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[1fr_280px]">

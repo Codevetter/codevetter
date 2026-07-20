@@ -29,7 +29,7 @@ export function UnpackSectionNav({ sections, active, onChange }: Props) {
                   : 'border-transparent text-[var(--text-muted)] hover:border-white/[0.08] hover:bg-white/[0.03] hover:text-[var(--text-secondary)]'
               )}
             >
-              <Icon size={13} className={isActive ? 'text-cyan-200/80' : undefined} />
+              <Icon size={13} className={isActive ? 'text-amber-200/90' : undefined} />
               <span className="hidden sm:inline">{section.label}</span>
               <span className="sm:hidden">{section.short}</span>
             </button>

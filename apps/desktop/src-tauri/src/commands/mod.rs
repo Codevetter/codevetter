@@ -56,3 +56,4 @@ pub mod unpack_snapshot;
 pub mod unpack_types;
 pub mod warm_verification;
 pub mod warm_verification_bridge;
+pub mod work_items;

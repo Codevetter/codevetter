@@ -189,10 +189,10 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
           <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-200">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/25 bg-amber-400/10 text-amber-200">
                   <ClipboardCheck size={20} />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-200">
                   Review standards
                 </p>
               </div>
@@ -230,7 +230,9 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                 <Card
                   key={pack.id}
                   className={`border p-5 ${
-                    active ? 'border-cyan-400/40 bg-cyan-400/10' : 'border-[#1a1a1a] bg-[#0f1117]'
+                    active
+                      ? 'border-amber-400/40 bg-amber-400/10'
+                      : 'border-[var(--cv-line)] bg-[var(--cv-surface-raised)]'
                   }`}
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -262,7 +264,7 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                   <ul className="mt-4 space-y-2 text-sm text-slate-300">
                     {pack.checks.map((check) => (
                       <li key={check} className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-300" />
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300" />
                         <span>{check}</span>
                       </li>
                     ))}
@@ -285,7 +287,7 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                     )}
                   </div>
 
-                  <div className="mt-4 border-t border-[#1a1a1a] pt-3">
+                  <div className="mt-4 border-t border-[var(--cv-line)] pt-3">
                     <button
                       type="button"
                       onClick={() => setExpandedPreview(previewOpen ? null : pack.id)}
@@ -310,7 +312,7 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                             {copiedPreview === pack.id ? 'Copied' : 'Copy'}
                           </Button>
                         </div>
-                        <pre className="mt-1 max-h-72 overflow-auto whitespace-pre-wrap rounded-lg border border-[#1a1a1a] bg-[#08090d] p-3 font-mono text-xs leading-5 text-slate-300">
+                        <pre className="mt-1 max-h-72 overflow-auto whitespace-pre-wrap rounded-lg border border-[var(--cv-line)] bg-[var(--cv-surface)] p-3 font-mono text-xs leading-5 text-slate-300">
                           {previewText}
                         </pre>
                       </div>
@@ -321,9 +323,9 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
             })}
           </section>
 
-          <Card className="h-fit border-[#1a1a1a] bg-[#0f1117] p-5">
+          <Card className="h-fit border-[var(--cv-line)] bg-[var(--cv-surface-raised)] p-5">
             <div className="flex items-center gap-2">
-              <Plus size={18} className="text-cyan-200" />
+              <Plus size={18} className="text-amber-200" />
               <h2 className="text-lg font-semibold text-slate-100">Custom pack</h2>
             </div>
             <div className="mt-5 space-y-4">
@@ -331,19 +333,19 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                 value={draftName}
                 onChange={(event) => setDraftName(event.target.value)}
                 placeholder="Payments review"
-                className="border-[#1a1a1a] bg-[#08090d]"
+                className="border-[var(--cv-line)] bg-[var(--cv-surface)]"
               />
               <Input
                 value={draftFocus}
                 onChange={(event) => setDraftFocus(event.target.value)}
                 placeholder="Billing correctness, retries, and auditability"
-                className="border-[#1a1a1a] bg-[#08090d]"
+                className="border-[var(--cv-line)] bg-[var(--cv-surface)]"
               />
               <textarea
                 value={draftChecks}
                 onChange={(event) => setDraftChecks(event.target.value)}
                 placeholder="One check per line"
-                className="min-h-36 w-full rounded-lg border border-[#1a1a1a] bg-[#08090d] px-3 py-2 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-cyan-400/40"
+                className="min-h-36 w-full rounded-lg border border-[var(--cv-line)] bg-[var(--cv-surface)] px-3 py-2 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-amber-400/40"
               />
               <Button type="button" onClick={addCustomPack} className="w-full">
                 <Save size={16} className="mr-2" />

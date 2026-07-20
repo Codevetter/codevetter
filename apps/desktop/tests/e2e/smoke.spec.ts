@@ -40,14 +40,14 @@ test.describe('Smoke tests', () => {
 
   // ─── Navigation bar tests ──────────────────────────────────────────────
 
-  test('Floating nav bar is visible with all nav items', async ({ page }) => {
+  test('Primary navigation is visible with all product pillars and settings', async ({ page }) => {
     await navigateTo(page, '/');
     await showNavBar(page);
 
     const nav = page.locator('nav');
     await expect(nav).toBeVisible();
 
-    // Nav links: Home, Review, Repo, Agents, T-Rex, Settings.
+    // Product pillars plus the Settings utility.
     const links = nav.locator('a');
     await expect(links).toHaveCount(6);
     await expect(nav.getByText('Roadmap')).toHaveCount(0);
@@ -58,8 +58,11 @@ test.describe('Smoke tests', () => {
     await navigateTo(page, '/settings');
     await showNavBar(page);
 
-    const nav = page.locator('nav');
-    await expect(nav.locator('span.font-medium', { hasText: 'Settings' })).toBeVisible();
+    const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+    await expect(nav.getByRole('link', { name: 'Settings' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 
   // ─── No console errors across all pages ────────────────────────────────

@@ -99,7 +99,7 @@ function SignalCard({
       <button
         type="button"
         onClick={onClick}
-        className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-4 text-left transition-colors hover:border-cyan-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-300/25"
+        className="rounded-xl border border-[var(--cv-line)] bg-white/[0.025] p-4 text-left transition-colors hover:border-amber-300/30 focus:outline-none focus:ring-2 focus:ring-amber-300/25"
       >
         {content}
       </button>
@@ -162,7 +162,7 @@ function ActivityMetricDialog({
           {zoom?.rows.map((row) => (
             <div
               key={`${row.label}-${row.value}`}
-              className="border-b border-[var(--cv-line)]/60 px-3 py-2.5 text-xs last:border-0"
+              className="border-b border-[var(--cv-line)] px-3 py-2.5 text-xs last:border-0"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="font-medium text-[var(--text-primary)]">{row.label}</div>

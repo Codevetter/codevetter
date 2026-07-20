@@ -350,7 +350,7 @@ Tools that auto-generate context files for AI coding agents.
 - **Pricing**: Free (Codex CLI is open-source, requires ChatGPT subscription for model access).
 - **Verdict**: Convenient for Codex users. The scaffold approach is pragmatic.
 
-### Gemini CLI Conductor
+### Gemini CLI planning extension
 - **What it does**: Extension for Gemini CLI that creates formal specs and plans as persistent Markdown files alongside your code.
 - **How it works**: Context-driven development. Creates formal specs and plans before coding. Plans live alongside code in persistent Markdown. Keeps human developer in the driver's seat.
 - **Real experience**: Preview available. Part of Google's agentic coding strategy.
@@ -584,12 +584,12 @@ AI coding assistants with built-in codebase understanding.
 
 ### Gemini CLI
 - **What it does**: Google's open-source AI agent for terminal. 1M token context window. Plan mode for safe codebase analysis.
-- **How it works**: ReAct loop with built-in tools and MCP servers. Plan mode analyzes code in read-only mode. Conductor extension for persistent context-driven development.
+- **How it works**: ReAct loop with built-in tools and MCP servers. Plan mode analyzes code in read-only mode. A planning extension supports persistent context-driven development.
 - **Real experience**: 1M token context handles large projects. Free tier is generous. Open-source.
-- **Praise**: Open-source. Generous free tier. Plan mode is safe. MCP integration. Conductor for persistent context.
-- **Complaints**: Newer tool, less battle-tested. Google's track record on tool longevity. Conductor is still preview.
+- **Praise**: Open-source. Generous free tier. Plan mode is safe. MCP integration. Persistent planning context.
+- **Complaints**: Newer tool, less battle-tested. Google's track record on tool longevity. The planning extension is still preview.
 - **Pricing**: Free tier, paid via Gemini API.
-- **Verdict**: Most promising open-source terminal agent. Conductor's context-driven development is an interesting pattern.
+- **Verdict**: Most promising open-source terminal agent. Context-driven development is an interesting pattern.
 
 ### Tabnine
 - **What it does**: Enterprise AI code assistant with Context Engine combining vector, graph, and agentic retrieval.

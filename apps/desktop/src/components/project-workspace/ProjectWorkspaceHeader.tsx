@@ -13,13 +13,13 @@ export function ProjectWorkspaceHeader({
   if (!selectedRepoPath) return null;
 
   return (
-    <header className="mb-5 rounded-2xl border border-[var(--cv-line)] bg-white/[0.018] px-5 py-4">
+    <header className="cv-spotlight-surface mb-5 rounded-2xl px-5 py-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
           {children ?? (
             <>
-              <span className="cv-label">Repository</span>
-              <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight text-slate-100">
+              <span className="cv-page-kicker">Repository</span>
+              <h1 className="cv-page-title mt-1.5 truncate text-slate-100">
                 {selectedProject?.display_name ?? selectedRepoPath.split('/').pop()}
               </h1>
               <p className="mt-1.5 max-w-3xl truncate font-mono text-xs text-slate-500">

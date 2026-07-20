@@ -13,9 +13,7 @@ export function ProjectWorkspaceShell({
   mainClassName?: string;
 }) {
   return (
-    <div
-      className={cn('box-border flex h-full min-h-0 overflow-hidden bg-[#07090c] pt-20', className)}
-    >
+    <div className={cn('box-border flex h-full min-h-0 overflow-hidden bg-transparent', className)}>
       <ProjectSidebar className="h-full min-h-0" />
       <div
         className={cn('min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden', mainClassName)}
