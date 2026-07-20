@@ -18,8 +18,9 @@ repeated real use.
 - **Five-pillar desktop redesign** — fixed top rail, native SF Pro typography,
   shared hierarchy, Work conversation/board, streamlined Review, Testing-first
   warm verification, deduplicated Repo overview, existing-session attachment,
-  and honest direct provider output are implemented and native-qualified
-  locally; release publication remains pending.
+  authoritative provider/repository attachment checks, bounded live transcript
+  indexing, and honest direct provider output are implemented and
+  native-qualified locally; release publication remains pending.
 - **External benchmark case curation** — 27 public cases shipped; real
   agent-PR case curation pending before external catch-rate claims.
 - **Repo Unpacked + history workbench** — canonical structural graph and
