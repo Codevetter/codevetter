@@ -4,6 +4,11 @@ module.exports = {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--cv-font-sans)'],
+        display: ['var(--cv-font-display)'],
+        mono: ['var(--cv-font-mono)'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

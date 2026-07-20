@@ -38,7 +38,7 @@ is only the presentation and search layer.
 
 - [mcp-sdk.md](./architecture/decisions/mcp-sdk.md) — chose `rmcp` 2.2.0 for the MCP sidecar.
 - [oss-integration.md](./architecture/decisions/oss-integration.md) — OSS integration evaluation.
-- [graphify-parity.md](./architecture/decisions/graphify-parity.md) — Graphify parity contract.
+- [structural-graph-contract.md](./architecture/decisions/structural-graph-contract.md) — first-party code-graph capability and release contract.
 
 ## Development
 

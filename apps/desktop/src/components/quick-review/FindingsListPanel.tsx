@@ -70,7 +70,7 @@ export default function FindingsListPanel({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <span className="cv-label">review comments</span>
+        <span className="cv-label">Review comments</span>
         <span className="cv-label shrink-0">{sortedFindings.length} total</span>
       </div>
       {sortedFindings.length > 0 && (
@@ -82,20 +82,20 @@ export default function FindingsListPanel({
           <span>{dispositionCounts.unreviewed} unreviewed</span>
         </div>
       )}
-      <div className="mb-3 rounded-xl border border-[var(--cv-line)] bg-[#050505] p-3">
+      <div className="mb-3 rounded-xl border border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <ListOrdered size={14} className="text-[var(--cv-accent)]" />
-            <span className="cv-label text-slate-300">patch queue</span>
+            <span className="cv-label text-slate-300">Patch queue</span>
           </div>
           <span className="font-mono text-[11px] text-slate-500">{patchQueue.length} selected</span>
         </div>
         <p className="text-[11px] leading-5 text-slate-500">{queueGuidance(patchQueue)}</p>
         {patchQueue.length > 0 && (
-          <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[#050505] p-2">
+          <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] p-2">
             <div className="flex items-center gap-2">
               <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
-              <span className="cv-label min-w-0 flex-1 truncate text-slate-300">fix packet</span>
+              <span className="cv-label min-w-0 flex-1 truncate text-slate-300">Fix packet</span>
               <Button
                 type="button"
                 size="sm"
@@ -144,7 +144,7 @@ export default function FindingsListPanel({
                     const sortedIdx = sortedFindings.indexOf(finding);
                     if (sortedIdx >= 0) handleFindingClick(sortedIdx);
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg border border-[var(--cv-line)] bg-[#07080a] px-2 py-2 text-left hover:border-[var(--cv-line-strong)]"
+                  className="flex w-full items-center gap-2 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] px-2 py-2 text-left hover:border-[var(--cv-line-strong)]"
                 >
                   <span className="font-mono text-[10px] text-slate-600">{queueIdx + 1}</span>
                   <span className="min-w-0 flex-1 truncate text-[11px] text-slate-300">
@@ -196,9 +196,9 @@ export default function FindingsListPanel({
               className={cn(
                 'w-full cursor-pointer border px-3 py-3 text-left transition-colors',
                 selectedFindingIdx === idx
-                  ? 'border-[rgba(125,211,252,0.42)] bg-cyan-500/10'
-                  : 'border-[var(--cv-line)] bg-[#07080a] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]',
-                selectedFindings.has(idx) && 'shadow-[inset_3px_0_0_rgba(125,211,252,0.82)]',
+                  ? 'border-[rgba(243,173,61,0.42)] bg-amber-500/10'
+                  : 'border-[var(--cv-line)] bg-[var(--cv-canvas)] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]',
+                selectedFindings.has(idx) && 'shadow-[inset_3px_0_0_rgba(243,173,61,0.82)]',
                 isAccepted && 'shadow-[inset_3px_0_0_rgba(52,211,153,0.7)]',
                 isDismissed && 'opacity-55'
               )}
@@ -234,7 +234,7 @@ export default function FindingsListPanel({
                 {finding.discovery_method === 'execution' && (
                   <Badge
                     variant="outline"
-                    className="shrink-0 rounded-full border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-cyan-200"
+                    className="shrink-0 rounded-full border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-amber-200"
                   >
                     via execution
                   </Badge>
@@ -242,7 +242,7 @@ export default function FindingsListPanel({
                 {hasEvidence && (
                   <Badge
                     variant="outline"
-                    className="shrink-0 rounded-full border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-cyan-300"
+                    className="shrink-0 rounded-full border-amber-500/20 bg-amber-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-amber-300"
                   >
                     {evidence.status.replace('_', ' ')}
                   </Badge>
@@ -300,11 +300,11 @@ export default function FindingsListPanel({
                 {finding.summary}
               </p>
               {historySummary && (
-                <div className="mt-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5">
+                <div className="mt-2 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] px-2 py-1.5">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[9px] uppercase text-slate-600">
                     <span>history</span>
                     {historySummary.decisions > 0 && (
-                      <span className="text-cyan-400">{historySummary.decisions} decision</span>
+                      <span className="text-amber-400">{historySummary.decisions} decision</span>
                     )}
                     {historySummary.commits > 0 && <span>{historySummary.commits} commit</span>}
                     {historySummary.recurring > 0 && (

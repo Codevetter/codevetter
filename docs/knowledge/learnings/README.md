@@ -33,7 +33,7 @@ the sources; project behavior lives in `docs/` — these pages only bridge the t
 | Testing stacks | verification-and-judgment: synthetic QA | `docs/development/testing.md` |
 | Release pipeline | new-things: auto-updater, Actions chaining | `.github/workflows/*.yml` comments |
 | T-Rex PR watchers | new-things: PR polling watchers | — |
-| Agents panel (PTY terminals) | new-things: PTY-backed terminals | `openspec/specs/agent-panel/` |
+| Work (conversation over local PTY execution) | new-things: PTY-backed execution | `openspec/specs/agent-panel/` |
 | Landing / discoverability | new-things: GEO | `LANDING_STANDARD.md` (fleet root) |
 
 Update rule: when a change introduces a concept with a non-obvious gotcha,

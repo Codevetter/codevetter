@@ -31,8 +31,8 @@ The market has split into two categories:
 - **Claude Code /review** ($15-25/review) -- built-in multi-agent review, 20-min avg, Teams/Enterprise only.
 
 **Category B -- Agent Orchestrators** (desktop apps):
-- **Conductor** (free, YC-backed) -- Mac app for parallel Claude Code + Codex agents in isolated worktrees. The most direct comparison.
-- **Superset** ($0-20/seat/mo, Apache 2.0) -- open-source, agent-agnostic orchestrator. Built by 3 ex-YC CTOs.
+- A free commercial Mac app for parallel Claude Code + Codex agents in isolated worktrees. The most direct comparison.
+- A $0-20/seat/month open-source, agent-agnostic orchestrator.
 
 ### Where CodeVetter Sits
 
@@ -45,7 +45,7 @@ CodeVetter straddles both categories -- a desktop app (like Category B) that doe
 - Code stays local -- no uploading diffs to a third-party cloud
 - The interactive fix/revert loop requires a real UI, not GitHub comment threads
 
-**The positioning question**: Conductor is free, polished, and YC-backed. Greptile has 82% catch rate. CodeVetter must differentiate on review depth for agent-generated code, the personal quality gate workflow (review before PR, not after), and zero-cost operation on existing subscriptions.
+**The positioning question**: a free, polished orchestrator already covers parallel agent work. Greptile has an 82% claimed catch rate. CodeVetter must differentiate on review depth for agent-generated code, the personal quality gate workflow (review before PR, not after), and zero-cost operation on existing subscriptions.
 
 ---
 
@@ -425,7 +425,7 @@ Phases 1-7 were completed before the current rebuild. They represent the origina
 - **Phase 2 (Local Code Review)**: Review pipeline in webview via review-core + ai-gateway-client, AI provider config in Settings
 - **Phase 3 (Review Feedback Loop)**: Custom rules per repo, auto-send findings back to agent, re-review loop (threshold 80, max 3 attempts), 36 Playwright e2e tests
 - **Phase 4 (PR Review via GitHub PAT)**: PAT config, PR picker, post review as GitHub PR comment with inline findings
-- **Phase 5 (Conductor Polish)**: Concurrency limits, live agent detection, multi-turn sessions, symphony-style orchestrator (plan→code→review)
+- **Phase 5 (Orchestration polish)**: Concurrency limits, live agent detection, multi-turn sessions, symphony-style orchestrator (plan→code→review)
 - **Phase 6 (Semantic Indexing)**: Symbol extraction from diffs, Jaccard similarity duplicate detection, "you added X but Y already exists" findings
 - **Phase 7 (Web App)**: DataProvider abstraction, GitHub App webhook handler, dashboard web app on Vercel, landing page
 

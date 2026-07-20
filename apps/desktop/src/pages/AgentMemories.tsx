@@ -351,7 +351,7 @@ export default function AgentMemories() {
                 <BookOpenText size={20} />
               </div>
               <div>
-                <p className="cv-label text-slate-500">agent context</p>
+                <p className="cv-label text-slate-500">Agent context</p>
                 <h1 className="text-2xl font-semibold tracking-tight">Agent Memories</h1>
               </div>
             </div>

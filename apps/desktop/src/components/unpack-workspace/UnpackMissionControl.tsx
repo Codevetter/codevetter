@@ -1,4 +1,4 @@
-import { Layers, Loader2, ScanSearch } from 'lucide-react';
+import { Loader2, ScanSearch } from 'lucide-react';
 
 import { UnpackRunKindBadge } from '@/components/unpack-workspace/UnpackRunKindBadge';
 import { Badge } from '@/components/ui/badge';
@@ -15,9 +15,6 @@ type Props = {
   lastUpdated?: string | null;
   commitSha?: string | null;
   onUnpack: () => void;
-  qaScore?: number | null;
-  healthScore?: number | null;
-  graphNodes?: number | null;
   progressDetail?: string | null;
 };
 
@@ -60,59 +57,13 @@ function SnapshotFact({
 }) {
   return (
     <div className="min-w-0 rounded-lg border border-[var(--cv-line)] bg-white/[0.02] px-3 py-2.5">
-      <div className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-        {label}
-      </div>
+      <div className="truncate text-[11px] font-medium text-[var(--text-muted)]">{label}</div>
       <div className={cn('mt-1 truncate text-lg font-semibold tabular-nums', tone)}>{value}</div>
       {detail ? (
         <div className="mt-0.5 truncate text-xs text-[var(--text-secondary)]">{detail}</div>
       ) : null}
     </div>
   );
-}
-
-const metricTones = {
-  cyan: {
-    text: 'text-cyan-200',
-    border: 'border-cyan-400/20',
-    bg: 'bg-cyan-400/[0.055]',
-    bar: 'bg-cyan-300',
-  },
-  emerald: {
-    text: 'text-emerald-200',
-    border: 'border-emerald-400/20',
-    bg: 'bg-emerald-400/[0.055]',
-    bar: 'bg-emerald-300',
-  },
-  amber: {
-    text: 'text-amber-200',
-    border: 'border-amber-400/20',
-    bg: 'bg-amber-400/[0.055]',
-    bar: 'bg-amber-300',
-  },
-  violet: {
-    text: 'text-violet-200',
-    border: 'border-violet-400/20',
-    bg: 'bg-violet-400/[0.055]',
-    bar: 'bg-violet-300',
-  },
-  rose: {
-    text: 'text-rose-200',
-    border: 'border-rose-400/20',
-    bg: 'bg-rose-400/[0.055]',
-    bar: 'bg-rose-300',
-  },
-} as const;
-
-function scoreTone(
-  score?: number | null,
-  max = 100
-): (typeof metricTones)[keyof typeof metricTones] {
-  if (score == null) return metricTones.violet;
-  const pct = (score / max) * 100;
-  if (pct >= 80) return metricTones.emerald;
-  if (pct >= 60) return metricTones.amber;
-  return metricTones.rose;
 }
 
 export function UnpackMissionControl({
@@ -122,9 +73,6 @@ export function UnpackMissionControl({
   lastUpdated,
   commitSha,
   onUnpack,
-  qaScore,
-  healthScore,
-  graphNodes,
   progressDetail,
 }: Props) {
   const isBusy = phase === 'scanning' || phase === 'generating' || phase === 'asking';
@@ -135,9 +83,7 @@ export function UnpackMissionControl({
     return (
       <section className="overflow-hidden rounded-xl border border-[var(--cv-line)] bg-[var(--bg-surface)]/70">
         <div className="border-b border-[var(--cv-line)] px-5 py-3">
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-            Snapshot
-          </span>
+          <span className="text-[11px] font-medium text-[var(--text-muted)]">Snapshot</span>
         </div>
         <div className="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
@@ -146,10 +92,7 @@ export function UnpackMissionControl({
                 Generate a local snapshot
               </h2>
               {isBusy ? (
-                <Badge
-                  variant="outline"
-                  className={cn('text-[10px] uppercase tracking-wider', phaseMeta.tone)}
-                >
+                <Badge variant="outline" className={cn('text-[11px] font-medium', phaseMeta.tone)}>
                   <Loader2 size={10} className="mr-1 animate-spin" />
                   {phaseMeta.text}
                 </Badge>
@@ -169,7 +112,7 @@ export function UnpackMissionControl({
           <Button
             type="button"
             variant="outline"
-            className="h-10 shrink-0 rounded-xl border-cyan-300/20 bg-cyan-300/[0.07] px-4 text-cyan-100 hover:border-cyan-200/35 hover:bg-cyan-300/[0.1] hover:text-white"
+            className="h-10 shrink-0 rounded-xl border-amber-300/20 bg-amber-300/[0.07] px-4 text-amber-100 hover:border-amber-200/35 hover:bg-amber-300/[0.1] hover:text-white"
             disabled={isBusy}
             onClick={onUnpack}
           >
@@ -192,28 +135,24 @@ export function UnpackMissionControl({
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex min-w-0 items-center gap-2 text-lg font-semibold text-[var(--text-primary)]">
-                  <Layers size={18} className="text-[var(--cv-accent)]" />
-                  <span className="truncate">{inventory?.repo_name ?? 'Repo unpack'}</span>
+                <div className="text-sm font-semibold text-[var(--text-primary)]">
+                  Latest snapshot
                 </div>
-                <Badge
-                  variant="outline"
-                  className={cn('text-[10px] uppercase tracking-wider', phaseMeta.tone)}
-                >
+                <Badge variant="outline" className={cn('text-[11px] font-medium', phaseMeta.tone)}>
                   {isBusy ? <Loader2 size={10} className="mr-1 animate-spin" /> : null}
                   {phaseMeta.text}
                 </Badge>
                 {hasReport ? (
                   <Badge
                     variant="outline"
-                    className="border-emerald-500/30 bg-emerald-500/10 text-[10px] uppercase tracking-wider text-emerald-200"
+                    className="border-emerald-500/30 bg-emerald-500/10 text-[11px] font-medium text-emerald-200"
                   >
                     Summary ready
                   </Badge>
                 ) : inventory ? (
                   <Badge
                     variant="outline"
-                    className="border-amber-500/30 bg-amber-500/10 text-[10px] uppercase tracking-wider text-amber-200"
+                    className="border-amber-500/30 bg-amber-500/10 text-[11px] font-medium text-amber-200"
                   >
                     Inventory only
                   </Badge>
@@ -258,32 +197,12 @@ export function UnpackMissionControl({
         </div>
       </div>
 
-      <div className="grid gap-2 border-t border-[var(--cv-line)] p-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-2 border-t border-[var(--cv-line)] p-3 sm:grid-cols-2">
         <SnapshotFact
           label="Files"
           value={files.toLocaleString()}
           detail={`${inventory.files_skipped.toLocaleString()} skipped · local scan`}
-          tone="text-cyan-100"
-        />
-        <SnapshotFact
-          label="QA posture"
-          value={qaScore != null ? `${qaScore}/100` : '—'}
-          detail={inventory.qa_readiness?.status ?? 'not scored'}
-          tone={scoreTone(qaScore, 100).text}
-        />
-        <SnapshotFact
-          label="Health"
-          value={healthScore != null ? `${healthScore.toFixed(1)}/10` : '—'}
-          detail={
-            inventory.repo_health ? `${inventory.repo_health.hotspot_count} hotspots` : 'not scored'
-          }
-          tone={scoreTone(healthScore, 10).text}
-        />
-        <SnapshotFact
-          label="Graph"
-          value={graphNodes != null ? graphNodes.toLocaleString() : '—'}
-          detail={inventory.repo_graph ? `${inventory.repo_graph.edges.length} edges` : 'not built'}
-          tone="text-violet-100"
+          tone="text-slate-100"
         />
         <SnapshotFact
           label="Stack"
@@ -293,7 +212,7 @@ export function UnpackMissionControl({
               ? inventory.stack_tags.slice(0, 3).join(' · ')
               : (inventory.branch ?? 'no tags')
           }
-          tone="text-emerald-100"
+          tone="text-slate-100"
         />
       </div>
     </section>

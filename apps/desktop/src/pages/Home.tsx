@@ -207,7 +207,7 @@ function LocalModelBreakdown({
   if (!showModels) return null;
 
   return (
-    <div className="flex flex-col gap-1.5 border-l border-[#1a1a1a] pl-2">
+    <div className="flex flex-col gap-1.5 border-l border-[var(--cv-line)] pl-2">
       {rows.slice(0, 5).map((model) => {
         const total =
           model.week_input_tokens +
@@ -293,7 +293,7 @@ function AccountUsageRow({
   }
 
   return (
-    <div className="group px-3 py-3 border-b border-[#1a1a1a]/50 last:border-b-0 transition-colors hover:bg-[#111111]/50 overflow-hidden">
+    <div className="group px-3 py-3 border-b border-[var(--cv-line)] last:border-b-0 transition-colors hover:bg-[var(--cv-surface-raised)]/50 overflow-hidden">
       {/* Header: name, plan badge, delete, check button */}
       <div className="flex items-center gap-2 mb-2.5 min-w-0">
         <span
@@ -709,7 +709,7 @@ function AccountUsageRow({
               </div>
             )}
             {profileBreakdown.length > 1 && (
-              <div className="flex flex-col gap-1 border-l border-[#1a1a1a] pl-2">
+              <div className="flex flex-col gap-1 border-l border-[var(--cv-line)] pl-2">
                 {profileBreakdown.map((profile) => {
                   const profileTokens = profile.week_input_tokens + profile.week_output_tokens;
                   return (
@@ -858,7 +858,7 @@ function AgentFilterChips({
       className={
         embedded
           ? 'flex flex-wrap items-center gap-1.5'
-          : 'flex flex-wrap items-center gap-1.5 border-b border-[#1a1a1a] px-4 py-2'
+          : 'flex flex-wrap items-center gap-1.5 border-b border-[var(--cv-line)] px-4 py-2'
       }
     >
       <span className="text-[10px] text-slate-600 mr-0.5">agents:</span>
@@ -871,7 +871,7 @@ function AgentFilterChips({
             onClick={() => onToggle(agent)}
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-all ${
               isHidden
-                ? 'bg-[#0b0d12] text-slate-600 ring-1 ring-[#1a1a1a] line-through'
+                ? 'bg-[var(--cv-surface-raised)] text-slate-600 ring-1 ring-[#1a1a1a] line-through'
                 : 'bg-[#13151b] text-slate-300 ring-1 ring-[#2a2a2a] hover:ring-[#3a3a3a]'
             }`}
             title={isHidden ? `Show ${palette.label}` : `Hide ${palette.label}`}
@@ -909,7 +909,7 @@ function TelemetryVisibilityEditor({
 }) {
   if (accounts.length === 0) return null;
   return (
-    <div className="border-b border-[#1a1a1a] bg-[#08090a] px-4 py-2">
+    <div className="border-b border-[var(--cv-line)] bg-[var(--cv-surface)] px-4 py-2">
       <div className="flex flex-wrap items-center gap-1.5">
         {accounts.map((account) => {
           const hiddenRow = hidden.has(account.id);
@@ -1140,7 +1140,7 @@ function TokenUsageChart({
           )}
         </div>
         {!hideGranularityToggle && (
-          <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
+          <div className="inline-flex rounded-md border border-[var(--cv-line)] bg-[var(--cv-surface-raised)] p-0.5">
             {(['daily', 'weekly'] as const).map((m) => (
               <button
                 key={m}
@@ -1362,7 +1362,7 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
         </div>
       </div>
       {/* Stacked bar */}
-      <div className="flex h-2.5 w-full overflow-hidden rounded-sm bg-[#0b0d12] ring-1 ring-[#1a1a1a]">
+      <div className="flex h-2.5 w-full overflow-hidden rounded-sm bg-[var(--cv-surface-raised)] ring-1 ring-[#1a1a1a]">
         {filtered.map((s) => {
           const palette = paletteFor(s.agent);
           const pct = (s.tokens / grandTotal) * 100;
@@ -1831,7 +1831,7 @@ function UsageRhythmStrip({
   };
 
   return (
-    <div className="border-t border-[#1a1a1a] px-4 py-3">
+    <div className="border-t border-[var(--cv-line)] px-4 py-3">
       <div className="mb-2 flex items-end justify-between gap-3">
         <div className="text-[11px] text-slate-500">
           26-week rhythm
@@ -1889,7 +1889,7 @@ function GranularityToggle({
   onChange: (next: 'daily' | 'weekly') => void;
 }) {
   return (
-    <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
+    <div className="inline-flex rounded-md border border-[var(--cv-line)] bg-[var(--cv-surface-raised)] p-0.5">
       {(['daily', 'weekly'] as const).map((m) => (
         <button
           key={m}
@@ -1992,10 +1992,10 @@ function LocalUsagePanel({
     <div className="cv-frame overflow-hidden">
       <div className="cv-terminal-bar h-10 px-4">
         <BarChart3 size={14} className="text-[var(--cv-accent)]" />
-        <span className="cv-label">local usage · indexed spend</span>
+        <span className="cv-label">Local usage · indexed spend</span>
       </div>
 
-      <div className="flex flex-col gap-2 border-b border-[#1a1a1a] px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 border-b border-[var(--cv-line)] px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
         <AgentFilterChips
           agents={agents}
           hidden={hiddenAgents}
@@ -2035,7 +2035,7 @@ function LocalUsagePanel({
       )}
 
       {showBreakdowns && (
-        <div className="grid gap-5 border-t border-[#1a1a1a] p-4 lg:grid-cols-2">
+        <div className="grid gap-5 border-t border-[var(--cv-line)] p-4 lg:grid-cols-2">
           <div>
             {agentByDay.length > 0 ? (
               <WeeklyAgentSplit
@@ -2085,7 +2085,7 @@ function RangeToggle({
   onChange: (next: ModelRangeKey) => void;
 }) {
   return (
-    <div className="inline-flex rounded-md border border-[#1a1a1a] bg-[#0b0d12] p-0.5">
+    <div className="inline-flex rounded-md border border-[var(--cv-line)] bg-[var(--cv-surface-raised)] p-0.5">
       {MODEL_RANGES.map((r) => (
         <button
           key={r.key}
@@ -2260,7 +2260,7 @@ export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScoreca
         {topDimensions.map((dimension) => (
           <div
             key={dimension.id}
-            className="rounded border border-[#1a1a1a] bg-[#050505] px-2.5 py-2"
+            className="rounded border border-[var(--cv-line)] bg-[var(--cv-canvas)] px-2.5 py-2"
           >
             <div className="flex items-center justify-between gap-2">
               <span className="truncate text-[11px] text-slate-300">{dimension.label}</span>
@@ -2282,7 +2282,7 @@ export function SessionScorecardPanel({ scorecard }: { scorecard: SessionScoreca
       </div>
 
       {topRecommendation && (
-        <div className="mt-3 flex items-start gap-2 border-t border-[#1a1a1a] pt-2">
+        <div className="mt-3 flex items-start gap-2 border-t border-[var(--cv-line)] pt-2">
           <Badge variant="outline" className="mt-0.5 rounded-full px-1.5 py-0 text-[9px] uppercase">
             {topRecommendation.severity}
           </Badge>
@@ -2342,10 +2342,10 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
   return (
     <div className="cv-panel overflow-hidden">
       <div className="grid gap-px bg-[#151515] lg:grid-cols-[0.9fr_2.1fr]">
-        <div className="bg-[#08090a] px-4 py-3">
+        <div className="bg-[var(--cv-surface)] px-4 py-3">
           <div className="flex items-center gap-2">
             <Activity size={15} className="text-emerald-300" />
-            <div className="cv-label text-slate-500">source health</div>
+            <div className="cv-label text-slate-500">Source health</div>
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">
             <div>
@@ -2392,7 +2392,7 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
               healthLabel = warningDelta > 0 ? 'watch' : 'warn';
             }
             return (
-              <div key={latest.id} className="min-w-0 bg-[#08090a] px-3 py-3">
+              <div key={latest.id} className="min-w-0 bg-[var(--cv-surface)] px-3 py-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-slate-200">{adapterId}</div>
@@ -2467,7 +2467,7 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
                       return (
                         <div
                           key={run.id}
-                          className="min-w-0 rounded border border-[#171717] bg-[#050505] px-2 py-1.5"
+                          className="min-w-0 rounded border border-[#171717] bg-[var(--cv-canvas)] px-2 py-1.5"
                         >
                           <div className="flex items-center justify-between gap-2 text-[10px]">
                             <span className="truncate text-slate-400">
@@ -2813,13 +2813,13 @@ export default function Home() {
   // ─── Render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden px-5 pb-8 pt-16">
+    <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
-        <section className="cv-frame overflow-hidden bg-[#07090b]">
-          <div className="flex flex-col gap-3 border-b border-[#1c1c1c] px-4 py-3 md:flex-row md:items-center md:justify-between">
+        <section className="cv-spotlight-surface overflow-hidden rounded-2xl">
+          <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <div className="cv-label text-slate-500">usage</div>
-              <h1 className="mt-1 truncate text-lg font-semibold tracking-normal text-slate-100">
+              <div className="cv-label text-amber-300/70">Usage</div>
+              <h1 className="mt-1 truncate text-lg font-semibold tracking-[-0.015em] text-zinc-100">
                 Usage telemetry
               </h1>
             </div>
@@ -2827,7 +2827,7 @@ export default function Home() {
               {liveSessionPolicy && (
                 <Badge
                   variant="outline"
-                  className="h-6 border-emerald-500/25 bg-emerald-500/[0.06] px-2 font-mono text-[9px] uppercase text-emerald-300/80"
+                  className="h-6 border-emerald-500/25 bg-emerald-500/[0.06] px-2 text-[11px] font-medium text-emerald-300/80"
                   title={`Local-only ${liveSessionPolicy.mode}; full/manual recovery every ${Math.round(liveSessionPolicy.full_index_recovery_interval_secs / 3600)}h; event ${liveSessionPolicy.update_event}`}
                 >
                   live archive · {liveSessionPolicy.incremental_interval_secs}s ·{' '}
@@ -2839,7 +2839,7 @@ export default function Home() {
                 size="sm"
                 onClick={handleTriggerIndex}
                 disabled={indexing}
-                className="h-10 shrink-0 justify-center gap-2 border-white/70 bg-white px-5 text-black shadow-[0_0_0_1px_rgba(125,211,252,0.08),0_18px_40px_-30px_rgba(125,211,252,0.85)] transition-all duration-150 hover:border-[var(--cv-accent)] hover:bg-[var(--cv-accent)] hover:text-[#031016] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.32),0_0_28px_rgba(125,211,252,0.24)] focus-visible:ring-1 focus-visible:ring-[var(--cv-accent)] active:translate-y-px disabled:border-white/20 disabled:bg-white/45 disabled:text-black/55 disabled:shadow-none"
+                className="h-10 shrink-0 justify-center gap-2 px-5"
               >
                 <RefreshCw size={15} className={indexing ? 'animate-spin' : ''} />
                 {indexing ? 'Indexing...' : 'Re-index local data'}
@@ -2849,36 +2849,36 @@ export default function Home() {
 
           {/* Token period cards — API-equivalent USD cost (the headline). Token
               counts (generated) live in the hover title. */}
-          <div className="grid grid-cols-2 gap-px bg-[#171717] lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-px bg-white/[0.06] lg:grid-cols-4">
             {[
               {
                 label: 'Today',
                 cost: tokenUsage?.today_cost ?? 0,
                 gen: tokenUsage?.today_generated ?? 0,
-                color: 'text-cyan-400',
+                color: 'text-zinc-100',
               },
               {
                 label: 'This week',
                 cost: tokenUsage?.week_cost ?? 0,
                 gen: tokenUsage?.week_generated ?? 0,
-                color: 'text-emerald-400',
+                color: 'text-zinc-100',
               },
               {
                 label: 'This month',
                 cost: tokenUsage?.month_cost ?? 0,
                 gen: tokenUsage?.month_generated ?? 0,
-                color: 'text-yellow-400',
+                color: 'text-amber-300',
               },
               {
                 label: 'This year',
                 cost: tokenUsage?.year_cost ?? 0,
                 gen: tokenUsage?.year_generated ?? 0,
-                color: 'text-rose-400',
+                color: 'text-zinc-100',
               },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="flex min-h-20 items-center justify-between bg-[#090a0b] px-4 py-4"
+                className="flex min-h-20 items-center justify-between bg-[var(--cv-surface)] px-4 py-4"
                 title={`${formatMoney(stat.cost)} API-equivalent · ${formatTokens(stat.gen)} generated tokens`}
               >
                 <span className="cv-label mr-2 truncate">{stat.label}</span>
@@ -2925,7 +2925,7 @@ export default function Home() {
         <div className="cv-frame overflow-hidden">
           <div className="cv-terminal-bar h-10 px-4">
             <Activity size={14} className="text-[var(--cv-accent)]" />
-            <span className="cv-label">provider telemetry</span>
+            <span className="cv-label">Provider telemetry</span>
             <span className="hidden text-[10px] text-slate-600 md:inline">
               live quota windows + local token history
             </span>

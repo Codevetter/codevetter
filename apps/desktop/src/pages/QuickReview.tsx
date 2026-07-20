@@ -2809,10 +2809,7 @@ export default function QuickReview() {
           )}
 
           {/* Editor + verdict body */}
-          <PanelGroup
-            orientation="horizontal"
-            className="min-h-0 flex-1 cv-frame overflow-hidden bg-[#07080a]"
-          >
+          <PanelGroup orientation="horizontal" className="min-h-0 flex-1 cv-frame overflow-hidden">
             <Panel defaultSize={72} minSize={45}>
               <ReviewEditorPanel
                 fixResult={fixResult}
@@ -2842,7 +2839,7 @@ export default function QuickReview() {
               />
             </Panel>
 
-            <PanelResizeHandle className="w-1.5 cursor-col-resize bg-[var(--cv-line)] transition-colors hover:bg-cyan-500/30" />
+            <PanelResizeHandle className="w-1.5 cursor-col-resize bg-[var(--cv-line)] transition-colors hover:bg-amber-400/30" />
 
             <Panel defaultSize={28} minSize={22}>
               <aside className="flex h-full flex-col bg-white/[0.015]">
@@ -3093,7 +3090,7 @@ export default function QuickReview() {
                   warmExecutionFindings={warmExecutionFindings}
                 />
 
-                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] p-3">
+                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={toggleSelectAll}
