@@ -17,7 +17,9 @@
     "prepare": "husky || true",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "deploy": "node scripts/manual-deploy.mjs deploy-landing.yml ci.yml"
+    "deploy": "node scripts/manual-deploy.mjs deploy-landing.yml ci.yml",
+    "knip": "knip --no-exit-code --reporter symbols",
+    "knip:strict": "knip --reporter symbols"
   },
   "license": "ISC",
   "lint-staged": {
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
     "husky": "^9.1.7",
+    "knip": "^6.6.3",
     "lint-staged": "^16.4.0"
   },
   "optionalDependencies": {
