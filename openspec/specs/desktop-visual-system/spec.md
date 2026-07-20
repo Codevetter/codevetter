@@ -17,7 +17,7 @@ CodeVetter SHALL render Home, Review, Repo, Agents, T-Rex, and Settings through 
 
 ### Requirement: Navigation is consolidated and accessible
 
-The desktop shell SHALL use one compact fixed top rail with Usage, Work, Review, Testing, and Repo Unpack as product pillars and Settings as a separated utility. Resource telemetry SHALL remain in Usage rather than global navigation. Navigation animation MUST NOT resize or reposition the main content, and current keyboard shortcuts and persistent route mounting MUST remain functional.
+The desktop shell SHALL use one compact fixed top rail with Usage, Repo Unpack, Work, Review, and Testing as product pillars and Settings as a separated utility. Resource telemetry SHALL remain in Usage rather than global navigation. Navigation animation MUST NOT resize or reposition the main content, and current keyboard shortcuts and persistent route mounting MUST remain functional.
 
 #### Scenario: User navigates with the keyboard
 
