@@ -1,37 +1,53 @@
-# agent-panel Specification
+# Agent panel Specification
 
 ## Purpose
-TBD - created by archiving change add-agent-panel. Update Purpose after archive.
+
+Define the provider-aware process lifecycle retained beneath Work's focused conversation surface.
+
 ## Requirements
-### Requirement: Codex Agent Terminal Board
 
-The app SHALL provide a top-level Agent Panel page where a user can create Codex agent terminal cards.
+### Requirement: Provider execution remains internal to Work
 
-#### Scenario: Create a terminal card
+The app SHALL retain the supported local-provider process lifecycle needed by Conversation while removing the top-level multi-terminal board from primary Work presentation.
 
-- **WHEN** the user clicks the create-terminal control
-- **THEN** a new terminal card appears in the foreground board
-- **AND** it is included in the active agents sidebar
+#### Scenario: Start an agent run
+
+- **WHEN** the user starts work with a supported provider and repository
+- **THEN** a provider-aware local process starts through the existing lifecycle
+- **AND** Work shows one cohesive goal, status, activity, and follow-up surface rather than a terminal card
+
+#### Scenario: Open Work
+
+- **WHEN** the user opens Work without a saved mode preference
+- **THEN** Conversation is shown instead of the multi-agent board
+- **AND** only Conversation and Board are presented as Work modes
 
 ### Requirement: Terminal Command Execution
 
-Each terminal card SHALL be able to launch a long-lived interactive Codex CLI process from its configured working directory.
+Each agent run SHALL launch a long-lived interactive supported local agent CLI process from its configured working directory and preserve its provider identity.
 
-#### Scenario: Run a command
+#### Scenario: Run a Codex terminal
 
-- **WHEN** the user starts a Codex terminal card
+- **WHEN** the user starts a terminal card configured for Codex
 - **THEN** the app launches Codex through the desktop backend using a pseudo-terminal
 - **AND** user keystrokes are forwarded to the running Codex process
 - **AND** Codex output is streamed back into the terminal pane
 
+#### Scenario: Run a Claude terminal
+
+- **WHEN** the user starts a terminal card configured for Claude
+- **THEN** the app launches Claude through the desktop backend using a pseudo-terminal
+- **AND** user keystrokes are forwarded to the running process
+- **AND** Claude output is streamed back into the terminal pane
+
 #### Scenario: Choose working directory
 
 - **WHEN** the user selects a directory before starting a Codex terminal
-- **THEN** the Codex process starts with that directory as its working root
+- **THEN** the selected provider process starts with that directory as its working root
 
 ### Requirement: Automatic Agent Status
 
-Each terminal card SHALL expose automatic white, green, yellow, and red status states.
+Each agent run SHALL expose automatic white, green, yellow, and red status states without claiming provider-specific structured evidence when only process lifecycle evidence exists.
 
 #### Scenario: Status changes
 
@@ -39,18 +55,17 @@ Each terminal card SHALL expose automatic white, green, yellow, and red status s
 - **THEN** the card status is white
 - **WHEN** Codex is running normally
 - **THEN** the card status is green
-- **WHEN** Codex output appears to request approval or user input
+- **WHEN** supported output or structured evidence requests approval or user input
 - **THEN** the card status is yellow
-- **WHEN** Codex exits unsuccessfully or the terminal backend fails
+- **WHEN** the provider exits unsuccessfully or the terminal backend fails
 - **THEN** the card status is red
 
-### Requirement: Background Lane
+### Requirement: Terminal management is not a primary mode
 
-The app SHALL let a user move terminal cards to a background lane and restore them.
+The app MUST NOT present grid layout, batch launch, broadcast, background-lane, or terminal-inspector controls as a third Work mode.
 
-#### Scenario: Move to background
+#### Scenario: Inspect Work mode choices
 
-- **WHEN** the user backgrounds a terminal
-- **THEN** it leaves the main foreground grid
-- **AND** remains visible in the active agents sidebar
-
+- **WHEN** the user opens the Work surface
+- **THEN** the mode switch contains Conversation and Board only
+- **AND** raw terminal and orchestration controls do not appear in the primary shell
