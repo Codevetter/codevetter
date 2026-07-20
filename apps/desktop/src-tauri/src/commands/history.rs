@@ -16,8 +16,9 @@ pub const LIVE_TRANSCRIPT_INITIAL_DELAY_SECS: u64 = 20;
 pub const LIVE_TRANSCRIPT_INTERVAL_SECS: u64 = 10;
 pub const LIVE_SECONDARY_ADAPTER_INTERVAL_SECS: u64 = 60;
 pub const FULL_INDEX_RECOVERY_INTERVAL_SECS: u64 = 6 * 60 * 60;
-const LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET: usize = 256 * 1024;
-const LIVE_CODEX_DISCOVERY_SESSION_BUDGET: usize = 4;
+const LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET: usize = 64 * 1024;
+const LIVE_TRANSCRIPT_TICK_BUDGET_MS: u64 = 150;
+const LIVE_CODEX_DISCOVERY_SESSION_BUDGET: usize = 1;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct LiveSessionEvidencePolicy {
@@ -276,11 +277,17 @@ fn tail_live_transcript_sessions_inner(
     let sources =
         queries::list_live_session_sources(conn, &since, 16).map_err(|e| e.to_string())?;
     let now = chrono::Utc::now().to_rfc3339();
+    let tick_started = std::time::Instant::now();
     let mut sessions_tailed = 0u64;
     let mut messages_indexed = 0u64;
     let mut seen_paths = HashSet::new();
 
     for source in sources {
+        if tick_started.elapsed()
+            >= std::time::Duration::from_millis(LIVE_TRANSCRIPT_TICK_BUDGET_MS)
+        {
+            break;
+        }
         let path = std::path::Path::new(&source.jsonl_path);
         seen_paths.insert(source.jsonl_path.clone());
         if !path.exists() {
@@ -321,13 +328,20 @@ fn tail_live_transcript_sessions_inner(
     // New Codex sessions are not present in `cc_sessions` yet, so the DB-backed
     // live-source query above cannot see them until a full index discovers them.
     // Scan recently touched Codex roots directly and index any fresh file now.
-    let recent_codex_files = if discover_new_codex_sessions {
+    let recent_codex_files = if discover_new_codex_sessions
+        && tick_started.elapsed() < std::time::Duration::from_millis(LIVE_TRANSCRIPT_TICK_BUDGET_MS)
+    {
         recent_codex_session_files(chrono::Duration::hours(48), 80)
     } else {
         Vec::new()
     };
     let mut discovery_sessions_indexed = 0usize;
     for path in recent_codex_files {
+        if tick_started.elapsed()
+            >= std::time::Duration::from_millis(LIVE_TRANSCRIPT_TICK_BUDGET_MS)
+        {
+            break;
+        }
         let path_str = path.to_string_lossy().to_string();
         if seen_paths.contains(&path_str) {
             continue;
@@ -3972,6 +3986,13 @@ mod tests {
             policy.last_full_indexed_at.as_deref(),
             Some("2026-07-12T12:00:00Z")
         );
+    }
+
+    #[test]
+    fn live_transcript_catch_up_has_a_conservative_tick_budget() {
+        assert!(LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET <= 64 * 1024);
+        assert!(LIVE_TRANSCRIPT_TICK_BUDGET_MS <= 200);
+        assert_eq!(LIVE_CODEX_DISCOVERY_SESSION_BUDGET, 1);
     }
 
     #[test]
