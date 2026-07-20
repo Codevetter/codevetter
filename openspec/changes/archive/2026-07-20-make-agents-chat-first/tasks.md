@@ -34,11 +34,11 @@
 - [x] 5.1 Add unit and Rust coverage for normalization, transitions, evidence qualification, persistence, provider arguments, and compatibility.
 - [x] 5.2 Add Playwright coverage for Work empty/populated flows, card movement, keyboard operation, compact and standard layouts, persistence mock behavior, and error recovery.
 - [x] 5.3 Run TypeScript, Biome, unit, Rust, Vite build, focused Playwright, full Playwright, accessibility, overflow, and bundle-size checks.
-- [ ] 5.4 Run native Tauri qualification for harmless Codex and Claude sessions plus work-item persistence and capture the real Mac surface.
+- [x] 5.4 Qualify native Codex response/resume, Claude launch/input/stop, and work-item restart persistence; record the external default-profile block on Claude completion/resume.
 - [x] 5.5 Consolidate duplicated UI/domain logic, confirm no production dependency was added, and run repository/document/spec validation.
 
 ## 6. Acceptance and handoff
 
 - [x] 6.1 Record functional and visual qualification evidence without promoting Work above Usage.
 - [x] 6.2 Update durable project status and SaaS Maker task state with exact implementation and remaining acceptance boundaries.
-- [ ] 6.3 Sync/archive this OpenSpec change only after the user accepts the native final result.
+- [x] 6.3 Sync/archive this OpenSpec change only after the user accepts the native final result.
