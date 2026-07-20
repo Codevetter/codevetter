@@ -39,7 +39,7 @@ The ambient layer uses two static, low-opacity radial fields plus subtle grain c
 
 ### 3. Consolidate navigation and stabilize its content frame
 
-The shell uses one compact fixed top rail instead of a decorative floating island. It exposes Usage, Work, Review, Testing, and Repo Unpack as product pillars; Settings is a separated utility. Resource telemetry stays inside Usage instead of widening global navigation. Active state and shortcuts remain bounded and MUST NOT move or resize the workbench.
+The shell uses one compact fixed top rail instead of a decorative floating island. It exposes Usage, Repo Unpack, Work, Review, and Testing as product pillars; Settings is a separated utility. Resource telemetry stays inside Usage instead of widening global navigation. Active state and shortcuts remain bounded and MUST NOT move or resize the workbench.
 
 Main content owns `min-width: 0`, clips page-level horizontal overflow, and gives each page a consistent safe edge. Graphs, terminals, tables, and diffs keep explicit internal overflow regions.
 

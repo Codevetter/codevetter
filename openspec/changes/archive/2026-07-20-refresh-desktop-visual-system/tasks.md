@@ -34,4 +34,4 @@
 ## 5. Handoff
 
 - [x] 5.1 Update `PROJECT_STATUS.md` with measured implemented behavior only and mirror the durable task state in SaaS Maker.
-- [ ] 5.2 After user acceptance, sync the delta spec and archive the OpenSpec change.
+- [x] 5.2 After user acceptance, sync the delta spec and archive the OpenSpec change.

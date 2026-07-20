@@ -42,7 +42,7 @@ Each agent run SHALL launch a long-lived interactive supported local agent CLI p
 
 #### Scenario: Choose working directory
 
-- **WHEN** the user selects a directory before starting a Codex terminal
+- **WHEN** the user selects a directory before starting a terminal
 - **THEN** the selected provider process starts with that directory as its working root
 
 ### Requirement: Automatic Agent Status
@@ -51,9 +51,9 @@ Each agent run SHALL expose automatic white, green, yellow, and red status state
 
 #### Scenario: Status changes
 
-- **WHEN** the terminal is created but Codex is not started
+- **WHEN** the terminal is created but its provider is not started
 - **THEN** the card status is white
-- **WHEN** Codex is running normally
+- **WHEN** the provider is running normally
 - **THEN** the card status is green
 - **WHEN** supported output or structured evidence requests approval or user input
 - **THEN** the card status is yellow
