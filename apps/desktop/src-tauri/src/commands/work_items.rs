@@ -71,10 +71,6 @@ pub struct UpdateWorkItemInput {
     #[serde(default)]
     pub assigned_agent: Option<String>,
     #[serde(default)]
-    pub agent_terminal_id: Option<String>,
-    #[serde(default)]
-    pub agent_session_id: Option<String>,
-    #[serde(default)]
     pub change_identity: Option<String>,
     #[serde(default)]
     pub review_id: Option<String>,
@@ -227,6 +223,7 @@ fn update_work_item_in_connection(
     if id.is_empty() {
         return Err(invalid_input("id is required"));
     }
+    let current = get_work_item(conn, id)?.ok_or(rusqlite::Error::QueryReturnedNoRows)?;
     let title = input
         .title
         .as_deref()
@@ -248,6 +245,12 @@ fn update_work_item_in_connection(
     let description = clean_optional(input.description);
     let acceptance_criteria = clean_optional(input.acceptance_criteria);
     let project_path = clean_optional(input.project_path);
+    let repository_changed = project_path_provided
+        && match (current.project_path.as_deref(), project_path.as_deref()) {
+            (Some(current), Some(next)) => !same_project_path(current, next),
+            (None, None) => false,
+            _ => true,
+        };
     let now = chrono::Utc::now().to_rfc3339();
     let changed = conn.execute(
         "UPDATE agent_tasks SET
@@ -257,15 +260,15 @@ fn update_work_item_in_connection(
             project_path = CASE WHEN ?7 THEN ?8 ELSE project_path END,
             preferred_provider = COALESCE(?9, preferred_provider),
             assigned_agent = COALESCE(?10, assigned_agent),
-            agent_terminal_id = COALESCE(?11, agent_terminal_id),
-            agent_session_id = COALESCE(?12, agent_session_id),
-            change_identity = COALESCE(?13, change_identity),
-            review_id = COALESCE(?14, review_id),
-            review_score = COALESCE(?15, review_score),
-            verification_run_id = COALESCE(?16, verification_run_id),
-            verification_status = COALESCE(?17, verification_status),
-            attention = COALESCE(?18, attention),
-            updated_at = ?19
+            agent_terminal_id = CASE WHEN ?17 THEN NULL ELSE agent_terminal_id END,
+            agent_session_id = CASE WHEN ?17 THEN NULL ELSE agent_session_id END,
+            change_identity = COALESCE(?11, change_identity),
+            review_id = COALESCE(?12, review_id),
+            review_score = COALESCE(?13, review_score),
+            verification_run_id = COALESCE(?14, verification_run_id),
+            verification_status = COALESCE(?15, verification_status),
+            attention = COALESCE(?16, attention),
+            updated_at = ?18
          WHERE id = ?1",
         params![
             id,
@@ -278,14 +281,13 @@ fn update_work_item_in_connection(
             project_path,
             provider,
             clean_optional(input.assigned_agent),
-            clean_optional(input.agent_terminal_id),
-            clean_optional(input.agent_session_id),
             clean_optional(input.change_identity),
             clean_optional(input.review_id),
             input.review_score,
             clean_optional(input.verification_run_id),
             verification_status,
             input.attention.map(i64::from),
+            repository_changed,
             now,
         ],
     )?;
@@ -340,18 +342,41 @@ fn attach_work_item_session_in_connection(
     if id.is_empty() {
         return Err(invalid_input("id is required"));
     }
-    let provider = normalize_provider(Some(&input.provider))?;
+    let requested_provider = normalize_provider(Some(&input.provider))?;
     let terminal_id = clean_optional(input.terminal_id);
-    let session_id = clean_optional(input.session_id);
-    if terminal_id.is_none() && session_id.is_none() {
+    let requested_session_id = clean_optional(input.session_id);
+    if terminal_id.is_none() && requested_session_id.is_none() {
         return Err(invalid_input("terminal_id or session_id is required"));
     }
-    let project_path = clean_optional(input.project_path);
-    let current = get_work_item(conn, id)?.ok_or(rusqlite::Error::QueryReturnedNoRows)?;
-    if let (Some(item_path), Some(session_path)) =
-        (current.project_path.as_deref(), project_path.as_deref())
+    let requested_project_path = clean_optional(input.project_path);
+    let identity = resolve_work_session_identity(
+        conn,
+        terminal_id.as_deref(),
+        requested_session_id.as_deref(),
+    )?;
+    if requested_provider != identity.provider {
+        return Err(invalid_input(
+            "The requested provider does not match the authoritative agent run",
+        ));
+    }
+    if let Some(requested_path) = requested_project_path.as_deref() {
+        if !same_project_path(requested_path, &identity.project_path) {
+            return Err(invalid_input(
+                "The requested repository does not match the authoritative agent run",
+            ));
+        }
+    }
+    if terminal_id.is_some()
+        && requested_session_id.is_some()
+        && requested_session_id.as_deref() != identity.session_id.as_deref()
     {
-        if !same_project_path(item_path, session_path) {
+        return Err(invalid_input(
+            "The requested provider session does not match the live agent run",
+        ));
+    }
+    let current = get_work_item(conn, id)?.ok_or(rusqlite::Error::QueryReturnedNoRows)?;
+    if let Some(item_path) = current.project_path.as_deref() {
+        if !same_project_path(item_path, &identity.project_path) {
             return Err(invalid_input(
                 "The agent run belongs to a different repository than this work item",
             ));
@@ -367,12 +392,81 @@ fn attach_work_item_session_in_connection(
             attention = 0,
             updated_at = ?6
          WHERE id = ?1",
-        params![id, provider, terminal_id, session_id, project_path, now],
+        params![
+            id,
+            identity.provider,
+            terminal_id,
+            identity.session_id,
+            identity.project_path,
+            now
+        ],
     )?;
     if changed == 0 {
         return Err(rusqlite::Error::QueryReturnedNoRows);
     }
     get_work_item(conn, id)?.ok_or(rusqlite::Error::QueryReturnedNoRows)
+}
+
+struct ResolvedWorkSessionIdentity {
+    provider: String,
+    session_id: Option<String>,
+    project_path: String,
+}
+
+fn resolve_work_session_identity(
+    conn: &Connection,
+    terminal_id: Option<&str>,
+    session_id: Option<&str>,
+) -> rusqlite::Result<ResolvedWorkSessionIdentity> {
+    if let Some(terminal_id) = terminal_id {
+        let identity =
+            crate::commands::agent_terminal::resolve_live_agent_session_identity(terminal_id)
+                .map_err(|error| invalid_input(&error))?
+                .ok_or_else(|| {
+                    invalid_input("The selected live agent run is no longer available")
+                })?;
+        if identity.project_path.trim().is_empty() {
+            return Err(invalid_input(
+                "The selected live agent run has no authoritative repository",
+            ));
+        }
+        return Ok(ResolvedWorkSessionIdentity {
+            provider: identity.provider,
+            session_id: identity.provider_session_id,
+            project_path: identity.project_path,
+        });
+    }
+
+    let session_id = session_id.ok_or_else(|| invalid_input("session_id is required"))?;
+    let indexed = conn
+        .query_row(
+            "SELECT agent_type, cwd FROM cc_sessions WHERE id = ?1",
+            params![session_id],
+            |row| Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?)),
+        )
+        .optional()?
+        .ok_or_else(|| invalid_input("The selected historical agent run was not found"))?;
+    let provider = indexed_agent_provider(&indexed.0)
+        .ok_or_else(|| invalid_input("The selected historical run uses an unsupported provider"))?;
+    let project_path = clean_optional(indexed.1).ok_or_else(|| {
+        invalid_input("The selected historical agent run has no authoritative repository")
+    })?;
+    Ok(ResolvedWorkSessionIdentity {
+        provider: provider.to_string(),
+        session_id: Some(session_id.to_string()),
+        project_path,
+    })
+}
+
+fn indexed_agent_provider(agent_type: &str) -> Option<&'static str> {
+    let normalized = agent_type.trim().to_ascii_lowercase();
+    if normalized.contains("claude") {
+        Some("claude")
+    } else if normalized.contains("codex") {
+        Some("codex")
+    } else {
+        None
+    }
 }
 
 fn get_work_item(conn: &Connection, id: &str) -> rusqlite::Result<Option<WorkItem>> {
@@ -524,6 +618,21 @@ mod tests {
         .unwrap()
     }
 
+    fn insert_indexed_session(conn: &Connection, id: &str, agent_type: &str, cwd: &str) {
+        conn.execute(
+            "INSERT OR IGNORE INTO cc_projects (id, display_name, dir_path, created_at)
+             VALUES ('project-1', 'Repo', '/tmp/repo', '2026-07-20T00:00:00Z')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO cc_sessions (id, project_id, agent_type, cwd)
+             VALUES (?1, 'project-1', ?2, ?3)",
+            params![id, agent_type, cwd],
+        )
+        .unwrap();
+    }
+
     #[test]
     fn legacy_statuses_normalize_without_rewriting() {
         assert_eq!(normalize_work_status("backlog").unwrap(), "plan");
@@ -544,38 +653,19 @@ mod tests {
             &conn,
             &item.id,
             UpdateWorkItemInput {
-                agent_terminal_id: Some("terminal-1".to_string()),
-                agent_session_id: Some("provider-session-1".to_string()),
                 attention: Some(true),
                 ..Default::default()
             },
         )
         .unwrap();
-        assert_eq!(updated.agent_terminal_id.as_deref(), Some("terminal-1"));
         assert!(updated.attention);
     }
 
     #[test]
-    fn attaches_live_and_historical_sessions_without_creating_process_state() {
+    fn attaches_only_authoritative_historical_sessions() {
         let conn = connection();
         let item = create(&conn);
-
-        let live = attach_work_item_session_in_connection(
-            &conn,
-            &item.id,
-            AttachWorkItemSessionInput {
-                provider: "codex".to_string(),
-                terminal_id: Some("terminal-1".to_string()),
-                session_id: Some("session-1".to_string()),
-                project_path: Some("/tmp/repo/".to_string()),
-            },
-        )
-        .unwrap();
-        assert_eq!(live.preferred_provider, "codex");
-        assert_eq!(live.assigned_agent, None);
-        assert_eq!(live.agent_terminal_id.as_deref(), Some("terminal-1"));
-        assert_eq!(live.agent_session_id.as_deref(), Some("session-1"));
-        assert_eq!(live.project_path.as_deref(), Some("/tmp/repo"));
+        insert_indexed_session(&conn, "historical-1", "claude-code", "/tmp/repo/");
 
         let historical = attach_work_item_session_in_connection(
             &conn,
@@ -591,24 +681,65 @@ mod tests {
         assert_eq!(historical.preferred_provider, "claude");
         assert_eq!(historical.agent_terminal_id, None);
         assert_eq!(historical.agent_session_id.as_deref(), Some("historical-1"));
+
+        let fabricated = attach_work_item_session_in_connection(
+            &conn,
+            &item.id,
+            AttachWorkItemSessionInput {
+                provider: "codex".to_string(),
+                terminal_id: None,
+                session_id: Some("fabricated".to_string()),
+                project_path: Some("/tmp/repo".to_string()),
+            },
+        )
+        .unwrap_err();
+        assert!(fabricated.to_string().contains("was not found"));
     }
 
     #[test]
     fn attachment_rejects_a_session_from_a_different_repository() {
         let conn = connection();
         let item = create(&conn);
+        insert_indexed_session(&conn, "historical-1", "codex", "/tmp/another-repo");
         let error = attach_work_item_session_in_connection(
             &conn,
             &item.id,
             AttachWorkItemSessionInput {
                 provider: "codex".to_string(),
-                terminal_id: Some("terminal-1".to_string()),
-                session_id: None,
+                terminal_id: None,
+                session_id: Some("historical-1".to_string()),
                 project_path: Some("/tmp/another-repo".to_string()),
             },
         )
         .unwrap_err();
         assert!(error.to_string().contains("different repository"));
+    }
+
+    #[test]
+    fn changing_repository_clears_attached_session_identity() {
+        let conn = connection();
+        let item = create(&conn);
+        conn.execute(
+            "UPDATE agent_tasks
+             SET agent_terminal_id = 'terminal-1', agent_session_id = 'session-1'
+             WHERE id = ?1",
+            params![item.id],
+        )
+        .unwrap();
+
+        let updated = update_work_item_in_connection(
+            &conn,
+            &item.id,
+            UpdateWorkItemInput {
+                project_path: Some("/tmp/another-repo".to_string()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        assert_eq!(updated.project_path.as_deref(), Some("/tmp/another-repo"));
+        assert_eq!(updated.agent_terminal_id, None);
+        assert_eq!(updated.agent_session_id, None);
     }
 
     #[test]

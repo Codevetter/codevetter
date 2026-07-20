@@ -39,7 +39,6 @@ import {
   startAgentTerminal,
   stopAgentTerminal,
   transitionWorkItem,
-  updateWorkItem,
   type AgentProvider,
   type AgentTerminalEvent,
   type AgentTerminalCommandResult,
@@ -1094,10 +1093,10 @@ export default function AgentPanel() {
       });
       if (terminal.workItemId) {
         try {
-          await updateWorkItem(terminal.workItemId, {
-            preferred_provider: terminal.provider,
-            agent_terminal_id: id,
-            attention: false,
+          await attachWorkItemSession(terminal.workItemId, {
+            provider: terminal.provider,
+            terminal_id: id,
+            project_path: started.cwd,
           });
           await transitionWorkItem(terminal.workItemId, 'build');
         } catch (error) {
@@ -1533,6 +1532,7 @@ export default function AgentPanel() {
             />
           ) : (
             <WorkSessionView
+              key={selected.id}
               terminal={selected}
               repoStatus={repoStatusByPath[selected.cwd] ?? null}
               onStop={() => void stopTerminal(selected.id)}
