@@ -1162,9 +1162,6 @@ export function UnpackProjectPanel({
         lastUpdated={formatUnpackSnapshotTime(active?.createdAt ?? latestSnapshot?.created_at)}
         commitSha={active?.inventory?.commit_sha}
         onUnpack={handleUnpack}
-        qaScore={active?.inventory?.qa_readiness?.score ?? null}
-        healthScore={active?.inventory?.repo_health?.average_score ?? null}
-        graphNodes={active?.inventory?.repo_graph?.nodes.length ?? null}
         progressDetail={progressDetail}
       />
 
@@ -2046,6 +2043,49 @@ function InventoryReadout({
     },
   ];
 
+  function recommendedActionCard(
+    action: (typeof recommendedActions)[number],
+    index: number,
+    featured = false
+  ) {
+    return (
+      <div
+        key={action.id}
+        className={cn(
+          'rounded-xl border p-3 text-sm leading-6',
+          featured ? action.tone : 'border-[var(--cv-line)] bg-white/[0.018] text-slate-300'
+        )}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-current/80">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current/25 font-mono text-[10px]">
+              {index + 1}
+            </span>
+            {action.badge}
+          </div>
+          <span className="opacity-80">{action.icon}</span>
+        </div>
+        <div className="mt-3 font-semibold text-[var(--text-primary)]">{action.label}</div>
+        <div className="mt-1 text-xs leading-5 opacity-80">{action.detail}</div>
+        {action.command ? (
+          <div className="mt-3 rounded-md border border-current/15 bg-black/20 px-2 py-1.5 font-mono text-xs text-[var(--text-primary)]">
+            {action.command}
+          </div>
+        ) : null}
+        {action.question ? (
+          <div className="mt-3 rounded-md border border-current/15 bg-black/20 px-2 py-1.5 text-xs text-[var(--text-primary)]">
+            {action.question}
+          </div>
+        ) : null}
+        {action.source ? (
+          <div className="mt-3">
+            <SourceLink path={action.source} repoPath={inventory.repo_path} />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-xl border border-[var(--cv-line)] bg-white/[0.018] p-4 sm:p-5">
       <div>
@@ -2058,45 +2098,23 @@ function InventoryReadout({
               Concrete read, verify, risk, graph, and AI leads from this local snapshot.
             </div>
           </div>
-          <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
-            Deterministic · local evidence
-          </div>
+          <div className="text-[11px] text-[var(--text-muted)]">Deterministic · local evidence</div>
         </div>
-        <div className="mt-4 grid gap-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-          {recommendedActions.map((action, index) => (
-            <div
-              key={action.id}
-              className={cn('rounded-xl border p-3 text-sm leading-6', action.tone)}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current/25 font-mono">
-                    {index + 1}
-                  </span>
-                  {action.badge}
-                </div>
-                <span className="opacity-80">{action.icon}</span>
-              </div>
-              <div className="mt-3 font-semibold text-[var(--text-primary)]">{action.label}</div>
-              <div className="mt-1 text-xs leading-5 opacity-80">{action.detail}</div>
-              {action.command ? (
-                <div className="mt-3 rounded-md border border-current/15 bg-black/20 px-2 py-1.5 font-mono text-xs text-[var(--text-primary)]">
-                  {action.command}
-                </div>
-              ) : null}
-              {action.question ? (
-                <div className="mt-3 rounded-md border border-current/15 bg-black/20 px-2 py-1.5 text-xs text-[var(--text-primary)]">
-                  {action.question}
-                </div>
-              ) : null}
-              {action.source ? (
-                <div className="mt-3">
-                  <SourceLink path={action.source} repoPath={inventory.repo_path} />
-                </div>
-              ) : null}
+        {recommendedActions[0] ? (
+          <div className="mt-4">{recommendedActionCard(recommendedActions[0], 0, true)}</div>
+        ) : null}
+        {recommendedActions.length > 1 ? (
+          <details className="mt-3 rounded-xl border border-[var(--cv-line)] bg-white/[0.012] p-3">
+            <summary className="cursor-pointer list-none text-xs font-medium text-slate-400 hover:text-slate-200">
+              {recommendedActions.length - 1} more recommended actions
+            </summary>
+            <div className="mt-3 grid gap-3 border-t border-[var(--cv-line)] pt-3 lg:grid-cols-2">
+              {recommendedActions
+                .slice(1)
+                .map((action, index) => recommendedActionCard(action, index + 1))}
             </div>
-          ))}
-        </div>
+          </details>
+        ) : null}
       </div>
 
       <div className="mt-5">
@@ -2149,12 +2167,12 @@ function ReadoutCard({ metric, onClick }: { metric: ReadoutZoom; onClick: () => 
         metric.tone
       )}
     >
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider opacity-85">
+      <div className="flex items-center gap-2 text-[11px] font-medium opacity-85">
         {metric.icon}
         {metric.label}
       </div>
       <div className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{metric.value}</div>
-      <div className="mt-1 font-mono text-xs uppercase opacity-80">{metric.detail}</div>
+      <div className="mt-1 text-xs opacity-80">{metric.detail}</div>
       <div className="mt-2 text-xs opacity-75">{confidenceLabel(metric.confidence.level)}</div>
     </button>
   );

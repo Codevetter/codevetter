@@ -110,7 +110,7 @@ Desktop Tauri 2 / Rust app that reviews agent-generated code diffs using pluggab
 
 ## PTY-backed agent terminals (portable-pty + xterm.js)
 - What: a pseudo-terminal gives a child process a real TTY (colors, resize, interactive prompts); xterm.js renders the byte stream in the webview.
-- Why here: the Agents panel runs real Codex work streams in-app — Warp-style panes with lifecycle state — instead of mocked cards.
+- Why here: Work runs real Codex streams through local PTY execution while the primary interface presents the goal, lifecycle, evidence, and prompts rather than terminal chrome.
 - Gotcha (from code): agent status is driven by Codex-Warp structured events when present, with conservative terminal-output detection only as fallback; resize must be forwarded to the PTY or full-screen TUIs corrupt. (`commands/agent_terminal.rs`; spec `openspec/specs/agent-panel/`)
 - Source: https://xtermjs.org/
 

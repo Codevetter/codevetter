@@ -30,7 +30,7 @@ export default function AgentStatusTimeline({
   handleTimelineJump,
 }: AgentStatusTimelineProps) {
   return (
-    <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
+    <div className="shrink-0 border-t border-[var(--cv-line)] bg-[var(--cv-canvas)] px-3 py-2">
       <div className="mb-2 flex items-center gap-2">
         <ListOrdered size={12} className="shrink-0 text-[var(--cv-accent)]" />
         <span className="cv-label text-slate-300">Agent status timeline</span>
@@ -45,13 +45,13 @@ export default function AgentStatusTimeline({
           return (
             <div
               key={item.id}
-              className="flex items-start gap-2 rounded-lg border border-[var(--cv-line)] bg-[#050505] px-2 py-1.5"
+              className="flex items-start gap-2 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] px-2 py-1.5"
             >
               <span
                 className={cn(
                   'mt-1 h-1.5 w-1.5 shrink-0 rounded-full',
                   item.status === 'done' && 'bg-emerald-400',
-                  item.status === 'active' && 'bg-cyan-300',
+                  item.status === 'active' && 'bg-amber-300',
                   item.status === 'blocked' && 'bg-red-400',
                   item.status === 'idle' && 'bg-slate-600'
                 )}
@@ -138,7 +138,7 @@ export default function AgentStatusTimeline({
                     {shouldCollapseTimelineAnchors(anchors.length) && (
                       <button
                         type="button"
-                        className="block text-left text-[9px] text-cyan-400/80 hover:text-cyan-300"
+                        className="block text-left text-[9px] text-amber-400/80 hover:text-amber-300"
                         onClick={() =>
                           setExpandedTimelineItems((prev) => {
                             const next = new Set(prev);

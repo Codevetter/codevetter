@@ -45,6 +45,52 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         "ALTER TABLE agent_tasks ADD COLUMN workspace_id TEXT REFERENCES workspaces(id)",
         [],
     );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN schema_version INTEGER NOT NULL DEFAULT 1",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN preferred_provider TEXT NOT NULL DEFAULT 'codex'",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN agent_terminal_id TEXT",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN agent_session_id TEXT",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN change_identity TEXT",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN verification_run_id TEXT",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN verification_status TEXT NOT NULL DEFAULT 'missing'",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN completion_disposition TEXT",
+        [],
+    );
+    let _ = conn.execute(
+        "ALTER TABLE agent_tasks ADD COLUMN attention INTEGER NOT NULL DEFAULT 0",
+        [],
+    );
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_agent_tasks_status_updated
+         ON agent_tasks(status, updated_at DESC)",
+        [],
+    )?;
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_agent_tasks_project_updated
+         ON agent_tasks(project_path, updated_at DESC)",
+        [],
+    )?;
 
     // Incremental session indexing: how far the indexer has consumed each
     // JSONL file. A growing live transcript is re-read only from this offset

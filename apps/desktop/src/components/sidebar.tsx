@@ -1,9 +1,8 @@
-import { Bot, Eye, Home, ScanSearch, Settings, ShieldCheck, Zap } from 'lucide-react';
+import { Activity, Bot, Eye, ScanSearch, Settings, Zap } from 'lucide-react';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-import ResourceChip from '@/components/ResourceChip';
-import { Separator } from '@/components/ui/separator';
+import { BrandMark } from '@/components/brand-mark';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -13,18 +12,31 @@ interface NavItem {
   icon: ReactNode;
   shortcut: string;
   description: string;
-  tone: string;
   match?: string[];
 }
 
-const navItems: NavItem[] = [
+const productNavItems: NavItem[] = [
   {
-    label: 'Home',
+    label: 'Usage',
     href: '/',
-    icon: <Home size={17} />,
+    icon: <Activity size={17} />,
     shortcut: 'H',
-    description: 'Usage and review history',
-    tone: 'border-cyan-300/18 bg-cyan-300/[0.075] text-cyan-100',
+    description: 'AI usage, cost, and activity',
+  },
+  {
+    label: 'Repo Unpack',
+    href: '/unpack',
+    icon: <ScanSearch size={17} />,
+    shortcut: 'P',
+    description: 'Intel, history, graph, and ownership',
+    match: ['/unpack', '/intel'],
+  },
+  {
+    label: 'Work',
+    href: '/agents',
+    icon: <Bot size={17} />,
+    shortcut: 'A',
+    description: 'Build with Codex and Claude',
   },
   {
     label: 'Review',
@@ -32,42 +44,25 @@ const navItems: NavItem[] = [
     icon: <Zap size={17} />,
     shortcut: 'R',
     description: 'Diff review workspace',
-    tone: 'border-amber-300/18 bg-amber-300/[0.075] text-amber-100',
   },
   {
-    label: 'Repo',
-    href: '/unpack',
-    icon: <ScanSearch size={17} />,
-    shortcut: 'P',
-    description: 'Unpack and Intel',
-    tone: 'border-violet-300/18 bg-violet-300/[0.075] text-violet-100',
-    match: ['/unpack', '/intel'],
-  },
-  {
-    label: 'Agents',
-    href: '/agents',
-    icon: <Bot size={17} />,
-    shortcut: 'A',
-    description: 'Agent terminal panel',
-    tone: 'border-lime-300/18 bg-lime-300/[0.075] text-lime-100',
-  },
-  {
-    label: 'T-Rex',
+    label: 'Testing',
     href: '/trex',
     icon: <Eye size={17} />,
     shortcut: 'T',
-    description: 'Runtime watcher',
-    tone: 'border-emerald-300/18 bg-emerald-300/[0.075] text-emerald-100',
-  },
-  {
-    label: 'Settings',
-    href: '/settings',
-    icon: <Settings size={17} />,
-    shortcut: ',',
-    description: 'Providers and preferences',
-    tone: 'border-slate-300/14 bg-white/[0.055] text-slate-100',
+    description: 'Runtime and browser verification',
   },
 ];
+
+const settingsNavItem: NavItem = {
+  label: 'Settings',
+  href: '/settings',
+  icon: <Settings size={17} />,
+  shortcut: ',',
+  description: 'Providers and preferences',
+};
+
+const navItems = [...productNavItems, settingsNavItem];
 
 export default function Sidebar() {
   const { pathname } = useLocation();
@@ -122,23 +117,19 @@ export default function Sidebar() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <nav className="no-drag fixed top-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl border border-white/[0.09] bg-[#07090d]/92 px-3 py-2 shadow-[0_24px_70px_-48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl">
-        <span className="flex items-center gap-2.5 pr-1">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-300/22 bg-cyan-300/[0.08] text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-            <ShieldCheck size={17} />
-          </span>
-          <span className="hidden min-w-24 sm:block">
-            <span className="block text-sm font-semibold leading-4 text-slate-100">CodeVetter</span>
-            <span className="block text-[10px] uppercase tracking-[0.16em] text-slate-400">
-              local
-            </span>
+      <nav
+        aria-label="Primary navigation"
+        className="no-drag fixed inset-x-0 top-0 z-50 flex h-14 items-center border-b border-white/[0.08] bg-[#090a0c]/92 px-4 shadow-[0_12px_40px_-32px_rgba(0,0,0,0.95)] backdrop-blur-2xl"
+      >
+        <span className="flex items-center gap-2.5">
+          <BrandMark />
+          <span className="hidden text-sm font-semibold tracking-[-0.01em] text-zinc-100 sm:block">
+            CodeVetter
           </span>
         </span>
 
-        <Separator orientation="vertical" className="hidden h-9 bg-white/[0.08] sm:block" />
-
-        <div className="flex items-center gap-1 rounded-xl border border-white/[0.06] bg-black/20 p-1">
-          {navItems.map((item) => {
+        <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-0.5 rounded-lg border border-white/[0.055] bg-black/20 p-0.5">
+          {productNavItems.map((item) => {
             const active = isActive(item.href);
             return (
               <Tooltip key={item.href}>
@@ -147,28 +138,34 @@ export default function Sidebar() {
                     to={item.href}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'group relative flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 text-sm transition-all duration-200',
+                      'group relative flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-sm transition-colors duration-150',
                       active
-                        ? `border ${item.tone} shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`
-                        : 'text-slate-400 hover:bg-white/[0.045] hover:text-slate-200'
+                        ? 'text-amber-100'
+                        : 'text-zinc-400 hover:bg-white/[0.045] hover:text-zinc-100'
                     )}
                   >
+                    {active ? (
+                      <span className="absolute inset-0 rounded-md border border-amber-300/20 bg-amber-300/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]" />
+                    ) : null}
                     <span
-                      className={
-                        active ? 'text-current' : 'text-slate-500 group-hover:text-slate-300'
-                      }
+                      className={cn(
+                        'relative z-10 transition-transform duration-150 group-hover:-translate-y-px',
+                        active ? 'text-amber-200' : 'text-zinc-400 group-hover:text-zinc-100'
+                      )}
                     >
                       {item.icon}
                     </span>
-                    <span className={cn('hidden font-medium md:inline', !active && 'lg:inline')}>
+                    <span
+                      className={cn(
+                        'relative z-10 hidden font-medium md:inline',
+                        !active && 'lg:inline'
+                      )}
+                    >
                       {item.label}
                     </span>
-                    {active ? (
-                      <span className="absolute inset-x-2 -bottom-1 h-px rounded-full bg-current/70" />
-                    ) : null}
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-48 text-[10px]">
+                <TooltipContent side="bottom" className="max-w-48 text-[11px]">
                   <div className="font-medium text-slate-200">{item.label}</div>
                   <div className="mt-0.5 text-slate-500">{item.description}</div>
                   <div className="mt-1 font-mono text-slate-500">
@@ -180,10 +177,28 @@ export default function Sidebar() {
           })}
         </div>
 
-        <Separator orientation="vertical" className="hidden h-9 bg-white/[0.08] xl:block" />
-        <div className="hidden xl:block">
-          <ResourceChip />
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              to={settingsNavItem.href}
+              aria-current={isActive(settingsNavItem.href) ? 'page' : undefined}
+              className={cn(
+                'ml-auto flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors duration-150',
+                isActive(settingsNavItem.href)
+                  ? 'border-amber-300/20 bg-amber-300/[0.08] text-amber-100'
+                  : 'border-transparent text-zinc-400 hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-zinc-100'
+              )}
+            >
+              {settingsNavItem.icon}
+              <span className="hidden lg:inline">Settings</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-48 text-[11px]">
+            <div className="font-medium text-slate-200">Settings</div>
+            <div className="mt-0.5 text-slate-500">Providers and preferences</div>
+            <div className="mt-1 font-mono text-slate-500">g ,</div>
+          </TooltipContent>
+        </Tooltip>
       </nav>
     </TooltipProvider>
   );

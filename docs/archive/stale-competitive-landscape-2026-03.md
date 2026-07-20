@@ -18,8 +18,8 @@ description: Archived March 2026 competitor survey plus an April OSS GitHub-App 
 ## Table of Contents
 1. [Greptile](#1-greptile)
 2. [CodeRabbit](#2-coderabbit)
-3. [Superset](#3-superset)
-4. [Conductor](#4-conductor)
+3. [Open-source desktop orchestrator](#3-open-source-desktop-orchestrator)
+4. [Commercial Mac orchestrator](#4-commercial-mac-orchestrator)
 5. [Ellipsis](#5-ellipsis)
 6. [Qodo (formerly CodiumAI)](#6-qodo-formerly-codiumai)
 7. [Sourcery](#7-sourcery)
@@ -120,11 +120,10 @@ Not specifically positioned for agent code, but interactive chat model works wel
 
 ---
 
-## 3. Superset
+## 3. Open-source desktop orchestrator
 
-**Website**: https://superset.sh
 **Category**: Agent Orchestration / Parallel Development
-**Note**: This is NOT a code review tool -- it's an agent orchestrator similar to Conductor.
+**Note**: This is not a code review tool; it is an agent orchestrator.
 
 ### What They Do
 Desktop app for running 10+ CLI-based coding agents in parallel (Claude Code, Codex, OpenCode, Aider), each in its own Git worktree with its own branch. Built-in diff viewer for reviewing agent changes before merging.
@@ -145,19 +144,18 @@ Desktop app for running 10+ CLI-based coding agents in parallel (Claude Code, Co
 You still pay your agent provider (API keys, Claude Max, etc.) separately.
 
 ### Unique Differentiators
-- Open source (Apache 2.0) -- Conductor is NOT open source
+- Open source (Apache 2.0)
 - Agent-agnostic (any CLI tool, not just Claude Code + Codex)
 - Built by 3 ex-YC CTOs
 - 512 upvotes on Product Hunt launch (Mar 2026)
 
 ### Relevance to CodeVetter
-Superset is what CodeVetter's "Workspaces + Agents" direction could look like if taken further. The built-in diff viewer is a code review surface for agent output, which is directly comparable to what CodeVetter does.
+This reference shows what CodeVetter's "Workspaces + Agents" direction could look like if taken further. The built-in diff viewer is a code review surface for agent output, which is directly comparable to what CodeVetter does.
 
 ---
 
-## 4. Conductor
+## 4. Commercial Mac orchestrator
 
-**Website**: https://www.conductor.build
 **Category**: Agent Orchestration / Parallel Development
 **YC Company**
 
@@ -176,16 +174,16 @@ Mac app for orchestrating teams of coding agents (Claude Code and Codex) working
 |------|-------|---------|
 | Free | $0 | The app itself is free |
 
-You pay for your Claude Code / Codex usage separately. Conductor adds no marginal cost.
+You pay for Claude Code / Codex usage separately; the orchestration app adds no marginal cost.
 
 ### Unique Differentiators
 - Completely free
 - Trusted by builders at Linear, Vercel, Notion, Stripe
 - Zero-friction setup -- uses your existing Claude login
-- Purpose-built for Claude Code + Codex (not agent-agnostic like Superset)
+- Purpose-built for Claude Code + Codex rather than agent-agnostic operation
 
 ### Relevance to CodeVetter
-Conductor is the most direct comparison to CodeVetter's original vision. The key question: what does CodeVetter offer that Conductor doesn't? Conductor is free, polished, and YC-backed. CodeVetter needs to differentiate on review depth, rules, or targeting a different workflow.
+This was the most direct comparison to CodeVetter's original vision. The key question was what CodeVetter offers beyond a free, polished orchestrator. CodeVetter needs to differentiate on review depth, rules, or a different workflow.
 
 ---
 
@@ -435,8 +433,7 @@ Not applicable. This is a description/summary tool, not a bug-finding reviewer.
 - Simple setup, solid second-tier tool
 - Less thorough than Qodo or Greptile
 
-### Google Conductor (Gemini CLI extension)
-- Different product from Conductor.build
+### Gemini CLI planning extension
 - Gemini CLI extension for structured planning
 - Added "Automated Reviews" -- checks AI-generated code against project standards
 - Static + logic analysis, checks against specs/plans, style guides, security
@@ -481,8 +478,8 @@ Multi-agent code review system built into Claude Code. Multiple agents analyze t
 |------|---------------------|-----------|----------|--------------|----------|-------------|
 | **Greptile** | $30 | Trial only | GitHub, GitLab | Yes (English/MD) | Yes (from PRs + reactions) | Deepest codebase graph, 82% catch rate |
 | **CodeRabbit** | $24 | Yes (basic) | GH, GL, BB, Azure | Yes (YAML + AST) | Yes (from chat) | Broadest platform, interactive chat |
-| **Superset** | $0-20 | Yes (OSS) | Desktop (agent orchestrator) | N/A | N/A | Open-source agent orchestrator |
-| **Conductor** | Free | Yes | Desktop (Mac only) | N/A | N/A | Free agent orchestrator, YC-backed |
+| **Open-source orchestrator reference** | $0-20 | Yes (OSS) | Desktop (agent orchestrator) | N/A | N/A | Open-source agent orchestrator |
+| **Commercial orchestrator reference** | Free | Yes | Desktop (Mac only) | N/A | N/A | Free agent orchestrator, YC-backed |
 | **Ellipsis** | $20 | Trial only | GitHub, GitLab | Yes (natural language) | Yes (implicit) | Auto-generates fix commits |
 | **Qodo** | $0-45 | Yes (250 credits) | GH + IDE | Yes | Yes (context engine) | Test gen + 15 workflows, Gartner Visionary |
 | **Sourcery** | $12 | Yes (public) | GH, GL + IDE | Yes (rules) | Yes (from feedback) | Cheapest paid, multi-reviewer + static |
@@ -504,18 +501,18 @@ Multi-agent code review system built into Claude Code. Multiple agents analyze t
 - Pricing: $12-30/user/month
 - **Greptile leads on accuracy (82%), CodeRabbit leads on adoption (2M repos)**
 
-**Category B: Agent Orchestrators** (Conductor, Superset, Claude Squad)
+**Category B: Agent Orchestrators** (commercial, open-source, and multi-agent desktop apps)
 - Desktop apps for running multiple AI agents in parallel
 - Built-in diff viewers to review agent output
 - Pricing: Free to $20/month
-- **Conductor is free and YC-backed; Superset is open source**
+- **The category includes both free commercial and open-source products**
 
 ### Where CodeVetter Sits
 CodeVetter straddles both categories -- it's a desktop app (like Category B) that does code review (like Category A). This is both an opportunity and a risk:
 
-**Opportunity**: No one tool does both well. Conductor/Superset have basic diff views but no deep AI review. Greptile/CodeRabbit have deep review but no agent orchestration.
+**Opportunity**: No one tool does both well. Desktop orchestrators have basic diff views but no deep AI review. Greptile/CodeRabbit have deep review but no agent orchestration.
 
-**Risk**: CodeVetter could be seen as "worse than Conductor at orchestration AND worse than Greptile at review."
+**Risk**: CodeVetter could be seen as weaker than dedicated orchestrators at orchestration and weaker than Greptile at review.
 
 ### Critical Questions
 1. **Should CodeVetter be a review bot (GitHub App) instead of / in addition to a desktop app?** Every successful review tool is a GitHub App. Desktop-only limits adoption.
@@ -527,7 +524,7 @@ CodeVetter straddles both categories -- it's a desktop app (like Category B) tha
 - Budget option: Sourcery at $12/user/month
 - Mid-range: Bito $15, Qodo $19, Ellipsis $20, CodeRabbit $24
 - Premium: Greptile $30, Graphite $40, BugBot ~$40
-- Free: Conductor (orchestrator), CodeRabbit (basic), Qodo (250 credits)
+- Free: a desktop orchestrator, CodeRabbit (basic), Qodo (250 credits)
 
 ### Features That Are Now Table Stakes
 1. GitHub/GitLab integration (as a bot, not just CLI)

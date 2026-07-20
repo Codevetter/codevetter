@@ -15,7 +15,7 @@ export function UnpackRunKindBadge({ kind, className }: Props) {
       <Badge
         variant="outline"
         className={cn(
-          'gap-1 border-cyan-500/30 bg-cyan-500/10 text-[10px] font-medium uppercase tracking-wider text-cyan-200',
+          'gap-1 border-cyan-500/30 bg-cyan-500/10 text-[11px] font-medium text-cyan-200',
           className
         )}
       >
@@ -29,7 +29,7 @@ export function UnpackRunKindBadge({ kind, className }: Props) {
     <Badge
       variant="outline"
       className={cn(
-        'gap-1 border-violet-500/30 bg-violet-500/10 text-[10px] font-medium uppercase tracking-wider text-violet-200',
+        'gap-1 border-violet-500/30 bg-violet-500/10 text-[11px] font-medium text-violet-200',
         className
       )}
     >

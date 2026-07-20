@@ -104,7 +104,7 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Err
   }
 }
 
-/** Main shell: floating nav + full-width content area */
+/** Main shell: one fixed navigation rail and one shared content inset. */
 function Shell() {
   const { showOnboarding, setShowOnboarding, ready } = useOnboarding();
   const { isOpen, close } = useCommandPalette();
@@ -121,11 +121,12 @@ function Shell() {
 
   return (
     <ProjectWorkspaceProvider>
-      <div className="flex h-full w-full bg-[var(--bg-main)] text-[var(--text-primary)]">
+      <div className="cv-app flex h-full w-full text-[var(--text-primary)]">
+        <div className="cv-ambient" aria-hidden="true" />
         <UpdateChecker />
         {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
         <Sidebar />
-        <main className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+        <main className="cv-content-frame box-border flex h-full min-h-0 min-w-0 flex-1 flex-col pt-14">
           <RouteErrorBoundary>
             <Outlet />
           </RouteErrorBoundary>

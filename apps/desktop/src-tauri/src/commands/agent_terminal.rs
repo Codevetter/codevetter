@@ -25,7 +25,7 @@ const PTY_OUTPUT_EMIT_CHARS: usize = 128 * 1024;
 // Reattach only needs recent visual context; full Codex history remains in the
 // rollout JSONL and frontend copy buffer. Keep this small enough for 10-12 panes.
 const AGENT_OUTPUT_TAIL_CHARS: usize = 120_000;
-const CODEX_GRACEFUL_EXIT_COMMAND: &[u8] = b"/exit\r";
+const AGENT_GRACEFUL_EXIT_COMMAND: &[u8] = b"/exit\r";
 const CODEX_FORCE_STOP_AFTER_MS: u64 = 3_000;
 const WARP_CLI_AGENT_PROTOCOL_VERSION: &str = "1";
 const CODEVETTER_WARP_COMPAT_VERSION: &str = "codevetter-agent-panel-0.1";
@@ -36,8 +36,32 @@ const CODEX_WARP_MARKETPLACE_SOURCE: &str = "warpdotdev/codex-warp";
 const CODEX_WARP_PLUGIN: &str = "warp@codex-warp";
 const CODEX_WARP_ORCHESTRATION_PLUGIN: &str = "orchestration@codex-warp";
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum AgentProvider {
+    Codex,
+    Claude,
+}
+
+impl AgentProvider {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Codex => "codex",
+            Self::Claude => "claude",
+        }
+    }
+
+    fn display_name(self) -> &'static str {
+        match self {
+            Self::Codex => "Codex",
+            Self::Claude => "Claude",
+        }
+    }
+}
+
 struct RunningCodexAgent {
     tx: Sender<AgentPtyCommand>,
+    provider: AgentProvider,
     pid: Option<u32>,
     cwd: String,
     started_at_ms: u64,
@@ -124,6 +148,7 @@ pub struct AgentTerminalCommandResult {
 #[derive(Serialize, Clone)]
 pub struct CodexAgentTerminalSnapshot {
     pub session_id: String,
+    pub provider: AgentProvider,
     pub cwd: String,
     pub pid: Option<u32>,
     pub started_at_ms: u64,
@@ -246,6 +271,11 @@ pub fn list_codex_agent_terminals() -> Result<Vec<CodexAgentTerminalSnapshot>, S
     Ok(collect_agent_snapshots(&sessions))
 }
 
+#[tauri::command]
+pub fn list_agent_terminals() -> Result<Vec<CodexAgentTerminalSnapshot>, String> {
+    list_codex_agent_terminals()
+}
+
 fn collect_agent_snapshots(
     sessions: &HashMap<String, RunningCodexAgent>,
 ) -> Vec<CodexAgentTerminalSnapshot> {
@@ -253,6 +283,7 @@ fn collect_agent_snapshots(
         .iter()
         .map(|(session_id, session)| CodexAgentTerminalSnapshot {
             session_id: session_id.clone(),
+            provider: session.provider,
             cwd: session.cwd.clone(),
             pid: session.pid,
             started_at_ms: session.started_at_ms,
@@ -300,6 +331,68 @@ pub fn start_codex_agent_terminal(
     cols: Option<u16>,
     rows: Option<u16>,
 ) -> Result<Value, String> {
+    start_agent_terminal_impl(
+        app,
+        AgentProvider::Codex,
+        session_id,
+        cwd,
+        prompt,
+        model,
+        sandbox,
+        approval_policy,
+        resume_session_id,
+        fork_session_id,
+        cols,
+        rows,
+    )
+}
+
+#[tauri::command]
+pub fn start_agent_terminal(
+    app: AppHandle,
+    provider: AgentProvider,
+    session_id: String,
+    cwd: Option<String>,
+    prompt: Option<String>,
+    model: Option<String>,
+    sandbox: Option<String>,
+    approval_policy: Option<String>,
+    resume_session_id: Option<String>,
+    fork_session_id: Option<String>,
+    cols: Option<u16>,
+    rows: Option<u16>,
+) -> Result<Value, String> {
+    start_agent_terminal_impl(
+        app,
+        provider,
+        session_id,
+        cwd,
+        prompt,
+        model,
+        sandbox,
+        approval_policy,
+        resume_session_id,
+        fork_session_id,
+        cols,
+        rows,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn start_agent_terminal_impl(
+    app: AppHandle,
+    provider: AgentProvider,
+    session_id: String,
+    cwd: Option<String>,
+    prompt: Option<String>,
+    model: Option<String>,
+    sandbox: Option<String>,
+    approval_policy: Option<String>,
+    resume_session_id: Option<String>,
+    fork_session_id: Option<String>,
+    cols: Option<u16>,
+    rows: Option<u16>,
+) -> Result<Value, String> {
     let session_id = session_id.trim().to_string();
     if session_id.is_empty() {
         return Err("session_id is required".into());
@@ -309,12 +402,15 @@ pub fn start_codex_agent_terminal(
             .lock()
             .map_err(|e| format!("agent registry lock poisoned: {e}"))?;
         if sessions.contains_key(&session_id) {
-            return Err(format!("Codex agent already running: {session_id}"));
+            return Err(format!(
+                "{} agent already running: {session_id}",
+                provider.display_name()
+            ));
         }
     }
 
     let cwd = resolve_cwd(cwd.as_deref())?;
-    let codex_path = resolve_agent_cli_path("codex");
+    let agent_path = resolve_agent_cli_path(provider.as_str());
     let resume_session_id = resume_session_id
         .as_deref()
         .map(str::trim)
@@ -326,20 +422,29 @@ pub fn start_codex_agent_terminal(
     if resume_session_id.is_some() && fork_session_id.is_some() {
         return Err("resume_session_id and fork_session_id are mutually exclusive".into());
     }
-    let args = codex_agent_command_args(
-        &cwd,
-        sandbox.as_deref(),
-        approval_policy.as_deref(),
-        model.as_deref(),
-        prompt.as_deref(),
-        resume_session_id,
-        fork_session_id,
-    );
-    let mut command = CommandBuilder::new(&codex_path);
+    let args = match provider {
+        AgentProvider::Codex => codex_agent_command_args(
+            &cwd,
+            sandbox.as_deref(),
+            approval_policy.as_deref(),
+            model.as_deref(),
+            prompt.as_deref(),
+            resume_session_id,
+            fork_session_id,
+        ),
+        AgentProvider::Claude => claude_agent_command_args(
+            approval_policy.as_deref(),
+            model.as_deref(),
+            prompt.as_deref(),
+            resume_session_id,
+            fork_session_id,
+        ),
+    };
+    let mut command = CommandBuilder::new(&agent_path);
     for arg in args {
         command.arg(arg);
     }
-    for (key, value) in codex_agent_terminal_env() {
+    for (key, value) in agent_terminal_env(provider) {
         command.env(key, value);
     }
     command.cwd(&cwd);
@@ -352,19 +457,19 @@ pub fn start_codex_agent_terminal(
             pixel_width: 0,
             pixel_height: 0,
         })
-        .map_err(|e| format!("open Codex PTY: {e}"))?;
+        .map_err(|e| format!("open {} PTY: {e}", provider.display_name()))?;
     let mut reader = pair
         .master
         .try_clone_reader()
-        .map_err(|e| format!("clone Codex PTY reader: {e}"))?;
+        .map_err(|e| format!("clone {} PTY reader: {e}", provider.display_name()))?;
     let writer = pair
         .master
         .take_writer()
-        .map_err(|e| format!("open Codex PTY writer: {e}"))?;
+        .map_err(|e| format!("open {} PTY writer: {e}", provider.display_name()))?;
     let mut child = pair
         .slave
         .spawn_command(command)
-        .map_err(|e| format!("spawn Codex PTY ({codex_path}): {e}"))?;
+        .map_err(|e| format!("spawn {} PTY ({agent_path}): {e}", provider.display_name()))?;
     let pid = child.process_id();
     let killer = child.clone_killer();
     drop(pair.slave);
@@ -385,6 +490,7 @@ pub fn start_codex_agent_terminal(
             session_id.clone(),
             RunningCodexAgent {
                 tx: tx.clone(),
+                provider,
                 pid,
                 cwd: cwd.to_string_lossy().to_string(),
                 started_at_ms: current_unix_millis(),
@@ -414,11 +520,15 @@ pub fn start_codex_agent_terminal(
     let control_app = app.clone();
     let control_session = session_id.clone();
     thread::Builder::new()
-        .name(format!("Codex PTY control {session_id}"))
+        .name(format!(
+            "{} PTY control {session_id}",
+            provider.display_name()
+        ))
         .spawn(move || {
             run_agent_pty_control_loop(
                 control_app,
                 control_session,
+                provider,
                 writer,
                 master,
                 killer,
@@ -426,7 +536,7 @@ pub fn start_codex_agent_terminal(
                 pid,
             )
         })
-        .map_err(|e| format!("spawn Codex PTY control loop: {e}"))?;
+        .map_err(|e| format!("spawn {} PTY control loop: {e}", provider.display_name()))?;
 
     let reader_app = app.clone();
     let reader_session = session_id.clone();
@@ -437,7 +547,10 @@ pub fn start_codex_agent_terminal(
     let reader_codex_session_id = Arc::clone(&codex_session_id);
     let reader_transcript_path = Arc::clone(&transcript_path);
     thread::Builder::new()
-        .name(format!("Codex PTY reader {session_id}"))
+        .name(format!(
+            "{} PTY reader {session_id}",
+            provider.display_name()
+        ))
         .spawn(move || {
             let mut buf = vec![0_u8; PTY_READ_BUFFER_BYTES];
             let mut output_seq = 0_u64;
@@ -466,11 +579,15 @@ pub fn start_codex_agent_terminal(
                         }
                         let chunk = String::from_utf8_lossy(&buf[..n]).to_string();
                         append_output_tail(&reader_output_tail, &chunk);
-                        let notifications = extract_codex_agent_notifications(
-                            &mut notification_buffer,
-                            &mut rich_notifications_active,
-                            &chunk,
-                        );
+                        let notifications = if provider == AgentProvider::Codex {
+                            extract_codex_agent_notifications(
+                                &mut notification_buffer,
+                                &mut rich_notifications_active,
+                                &chunk,
+                            )
+                        } else {
+                            Vec::new()
+                        };
                         pending_output.push_str(&chunk);
                         for notification in notifications {
                             agent_event_seq = agent_event_seq.saturating_add(1);
@@ -533,7 +650,10 @@ pub fn start_codex_agent_terminal(
                             &reader_app,
                             &reader_session,
                             "error",
-                            Some(format!("read Codex PTY output: {error}")),
+                            Some(format!(
+                                "read {} PTY output: {error}",
+                                provider.display_name()
+                            )),
                             pid,
                             None,
                             None,
@@ -545,7 +665,7 @@ pub fn start_codex_agent_terminal(
                 }
             }
         })
-        .map_err(|e| format!("spawn Codex PTY reader: {e}"))?;
+        .map_err(|e| format!("spawn {} PTY reader: {e}", provider.display_name()))?;
 
     let wait_app = app.clone();
     let wait_session = session_id.clone();
@@ -562,7 +682,10 @@ pub fn start_codex_agent_terminal(
             Err(error) => (
                 None,
                 Some(false),
-                Some(format!("wait for Codex agent: {error}")),
+                Some(format!(
+                    "wait for {} agent: {error}",
+                    provider.display_name()
+                )),
             ),
         };
         if let Ok(mut sessions) = codex_agents().lock() {
@@ -583,6 +706,7 @@ pub fn start_codex_agent_terminal(
 
     Ok(json!({
         "session_id": session_id,
+        "provider": provider,
         "cwd": cwd.to_string_lossy(),
         "pid": pid,
     }))
@@ -647,6 +771,63 @@ fn codex_agent_command_args(
     args
 }
 
+fn claude_agent_command_args(
+    approval_policy: Option<&str>,
+    model: Option<&str>,
+    prompt: Option<&str>,
+    resume_session_id: Option<&str>,
+    fork_session_id: Option<&str>,
+) -> Vec<OsString> {
+    let mut args = Vec::new();
+    if let Some(model) = model.map(str::trim).filter(|value| !value.is_empty()) {
+        args.push(OsString::from("--model"));
+        args.push(OsString::from(model));
+    }
+    args.push(OsString::from("--permission-mode"));
+    args.push(OsString::from(claude_permission_mode(approval_policy)));
+
+    if let Some(fork_session_id) = fork_session_id
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        args.push(OsString::from("--resume"));
+        args.push(OsString::from(fork_session_id));
+        args.push(OsString::from("--fork-session"));
+    } else if let Some(resume_session_id) = resume_session_id
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        args.push(OsString::from("--resume"));
+        args.push(OsString::from(resume_session_id));
+    }
+    if let Some(prompt) = prompt.map(str::trim).filter(|value| !value.is_empty()) {
+        args.push(OsString::from(prompt));
+    }
+    args
+}
+
+fn claude_permission_mode(approval_policy: Option<&str>) -> &'static str {
+    match approval_policy.map(str::trim) {
+        Some("never") | Some("dontAsk") => "dontAsk",
+        Some("plan") | Some("read-only") => "plan",
+        Some("acceptEdits") => "acceptEdits",
+        Some("auto") => "auto",
+        _ => "default",
+    }
+}
+
+fn agent_terminal_env(provider: AgentProvider) -> Vec<(&'static str, &'static str)> {
+    if provider == AgentProvider::Codex {
+        return codex_agent_terminal_env();
+    }
+    vec![
+        ("TERM", "xterm-256color"),
+        ("COLORTERM", "truecolor"),
+        ("TERM_PROGRAM", CODEVETTER_TERM_PROGRAM),
+        ("CODEVETTER_AGENT_PANEL", "1"),
+    ]
+}
+
 fn codex_agent_terminal_env() -> Vec<(&'static str, &'static str)> {
     vec![
         ("TERM", "xterm-256color"),
@@ -665,6 +846,7 @@ fn codex_agent_terminal_env() -> Vec<(&'static str, &'static str)> {
 fn run_agent_pty_control_loop(
     app: AppHandle,
     session_id: String,
+    provider: AgentProvider,
     mut writer: Box<dyn Write + Send>,
     master: Box<dyn MasterPty + Send>,
     mut killer: Box<dyn ChildKiller + Send + Sync>,
@@ -679,7 +861,7 @@ fn run_agent_pty_control_loop(
                         &app,
                         &session_id,
                         "error",
-                        Some(format!("write Codex input: {error}")),
+                        Some(format!("write {} input: {error}", provider.display_name())),
                         pid,
                         None,
                         None,
@@ -695,7 +877,7 @@ fn run_agent_pty_control_loop(
                         &app,
                         &session_id,
                         "error",
-                        Some(format!("resize Codex PTY: {error}")),
+                        Some(format!("resize {} PTY: {error}", provider.display_name())),
                         pid,
                         None,
                         None,
@@ -706,14 +888,17 @@ fn run_agent_pty_control_loop(
             }
             AgentPtyCommand::Stop => {
                 if let Err(error) = writer
-                    .write_all(CODEX_GRACEFUL_EXIT_COMMAND)
+                    .write_all(AGENT_GRACEFUL_EXIT_COMMAND)
                     .and_then(|_| writer.flush())
                 {
                     emit_agent_event(
                         &app,
                         &session_id,
                         "error",
-                        Some(format!("send Codex /exit: {error}; forcing stop")),
+                        Some(format!(
+                            "send {} /exit: {error}; forcing stop",
+                            provider.display_name()
+                        )),
                         pid,
                         None,
                         None,
@@ -725,7 +910,10 @@ fn run_agent_pty_control_loop(
                             &app,
                             &session_id,
                             "error",
-                            Some(format!("force stop Codex agent: {kill_error}")),
+                            Some(format!(
+                                "force stop {} agent: {kill_error}",
+                                provider.display_name()
+                            )),
                             pid,
                             None,
                             None,
@@ -734,7 +922,13 @@ fn run_agent_pty_control_loop(
                         );
                     }
                 } else {
-                    schedule_force_stop_after_grace(app.clone(), session_id.clone(), killer, pid);
+                    schedule_force_stop_after_grace(
+                        app.clone(),
+                        session_id.clone(),
+                        provider,
+                        killer,
+                        pid,
+                    );
                 }
                 break;
             }
@@ -745,11 +939,15 @@ fn run_agent_pty_control_loop(
 fn schedule_force_stop_after_grace(
     app: AppHandle,
     session_id: String,
+    provider: AgentProvider,
     mut killer: Box<dyn ChildKiller + Send + Sync>,
     pid: Option<u32>,
 ) {
     let _ = thread::Builder::new()
-        .name(format!("Codex PTY force stop {session_id}"))
+        .name(format!(
+            "{} PTY force stop {session_id}",
+            provider.display_name()
+        ))
         .spawn(move || {
             thread::sleep(Duration::from_millis(CODEX_FORCE_STOP_AFTER_MS));
             let still_running = codex_agents()
@@ -764,7 +962,10 @@ fn schedule_force_stop_after_grace(
                     &app,
                     &session_id,
                     "error",
-                    Some(format!("force stop Codex agent after /exit: {error}")),
+                    Some(format!(
+                        "force stop {} agent after /exit: {error}",
+                        provider.display_name()
+                    )),
                     pid,
                     None,
                     None,
@@ -1068,44 +1269,66 @@ fn truncate_command_text(value: &str) -> String {
 
 #[tauri::command]
 pub fn send_codex_agent_terminal_input(session_id: String, data: String) -> Result<(), String> {
-    let tx = {
+    send_agent_terminal_input_impl(session_id, data)
+}
+
+fn send_agent_terminal_input_impl(session_id: String, data: String) -> Result<(), String> {
+    let (tx, provider) = {
         let sessions = codex_agents()
             .lock()
             .map_err(|e| format!("agent registry lock poisoned: {e}"))?;
-        sessions
+        let session = sessions
             .get(session_id.trim())
-            .map(|session| session.tx.clone())
-            .ok_or_else(|| format!("Codex agent is not running: {}", session_id.trim()))?
+            .ok_or_else(|| format!("Agent is not running: {}", session_id.trim()))?;
+        (session.tx.clone(), session.provider)
     };
     tx.send(AgentPtyCommand::Input(data.into_bytes()))
-        .map_err(|e| format!("send Codex input: {e}"))
+        .map_err(|e| format!("send {} input: {e}", provider.display_name()))
+}
+
+#[tauri::command]
+pub fn send_agent_terminal_input(session_id: String, data: String) -> Result<(), String> {
+    send_agent_terminal_input_impl(session_id, data)
 }
 
 #[tauri::command]
 pub fn stop_codex_agent_terminal(session_id: String) -> Result<(), String> {
-    let tx = {
+    stop_agent_terminal_impl(session_id)
+}
+
+fn stop_agent_terminal_impl(session_id: String) -> Result<(), String> {
+    let (tx, provider) = {
         let sessions = codex_agents()
             .lock()
             .map_err(|e| format!("agent registry lock poisoned: {e}"))?;
-        sessions
+        let session = sessions
             .get(session_id.trim())
-            .map(|session| session.tx.clone())
-            .ok_or_else(|| format!("Codex agent is not running: {}", session_id.trim()))?
+            .ok_or_else(|| format!("Agent is not running: {}", session_id.trim()))?;
+        (session.tx.clone(), session.provider)
     };
     tx.send(AgentPtyCommand::Stop)
-        .map_err(|e| format!("send Codex stop: {e}"))
+        .map_err(|e| format!("send {} stop: {e}", provider.display_name()))
+}
+
+#[tauri::command]
+pub fn stop_agent_terminal(session_id: String) -> Result<(), String> {
+    stop_agent_terminal_impl(session_id)
 }
 
 #[tauri::command]
 pub fn resize_codex_agent_terminal(session_id: String, cols: u16, rows: u16) -> Result<(), String> {
-    let tx = {
+    resize_agent_terminal_impl(session_id, cols, rows)
+}
+
+fn resize_agent_terminal_impl(session_id: String, cols: u16, rows: u16) -> Result<(), String> {
+    let (tx, provider) = {
         let sessions = codex_agents()
             .lock()
             .map_err(|e| format!("agent registry lock poisoned: {e}"))?;
-        sessions
+        let session = sessions
             .get(session_id.trim())
-            .map(|session| session.tx.clone())
-            .ok_or_else(|| format!("Codex agent is not running: {}", session_id.trim()))?
+            .ok_or_else(|| format!("Agent is not running: {}", session_id.trim()))?;
+        (session.tx.clone(), session.provider)
     };
     tx.send(AgentPtyCommand::Resize(PtySize {
         rows: rows.max(8),
@@ -1113,7 +1336,12 @@ pub fn resize_codex_agent_terminal(session_id: String, cols: u16, rows: u16) -> 
         pixel_width: 0,
         pixel_height: 0,
     }))
-    .map_err(|e| format!("send Codex resize: {e}"))
+    .map_err(|e| format!("send {} resize: {e}", provider.display_name()))
+}
+
+#[tauri::command]
+pub fn resize_agent_terminal(session_id: String, cols: u16, rows: u16) -> Result<(), String> {
+    resize_agent_terminal_impl(session_id, cols, rows)
 }
 
 fn flush_pending_pty_output_if_due(
@@ -1582,6 +1810,67 @@ mod tests {
     }
 
     #[test]
+    fn claude_agent_command_args_build_safe_start_command() {
+        let args = command_args_as_strings(claude_agent_command_args(
+            Some("on-request"),
+            Some("claude-opus-4-6"),
+            Some("review changes"),
+            None,
+            None,
+        ));
+        assert_eq!(
+            args,
+            vec![
+                "--model",
+                "claude-opus-4-6",
+                "--permission-mode",
+                "default",
+                "review changes",
+            ]
+        );
+        assert!(!args.iter().any(|arg| arg.contains("dangerously")));
+    }
+
+    #[test]
+    fn claude_agent_command_args_build_resume_and_fork_commands() {
+        let resume = command_args_as_strings(claude_agent_command_args(
+            Some("never"),
+            None,
+            None,
+            Some("claude-session-1"),
+            None,
+        ));
+        assert_eq!(
+            resume,
+            vec![
+                "--permission-mode",
+                "dontAsk",
+                "--resume",
+                "claude-session-1"
+            ]
+        );
+
+        let fork = command_args_as_strings(claude_agent_command_args(
+            Some("read-only"),
+            None,
+            Some("continue safely"),
+            None,
+            Some("claude-session-2"),
+        ));
+        assert_eq!(
+            fork,
+            vec![
+                "--permission-mode",
+                "plan",
+                "--resume",
+                "claude-session-2",
+                "--fork-session",
+                "continue safely"
+            ]
+        );
+    }
+
+    #[test]
     fn codex_agent_terminal_env_declares_terminal_capabilities() {
         let env = codex_agent_terminal_env();
         assert!(env.contains(&("TERM", "xterm-256color")));
@@ -1705,6 +1994,7 @@ mod tests {
             "pane-1".to_string(),
             RunningCodexAgent {
                 tx,
+                provider: AgentProvider::Codex,
                 pid: Some(42),
                 cwd: "/tmp/project".to_string(),
                 started_at_ms: 123,
@@ -1721,6 +2011,7 @@ mod tests {
         assert_eq!(snapshots.len(), 1);
         let snapshot = &snapshots[0];
         assert_eq!(snapshot.session_id, "pane-1");
+        assert_eq!(snapshot.provider, AgentProvider::Codex);
         assert_eq!(snapshot.cwd, "/tmp/project");
         assert_eq!(snapshot.pid, Some(42));
         assert_eq!(snapshot.started_at_ms, 123);
@@ -1805,6 +2096,7 @@ mod tests {
     ) -> RunningCodexAgent {
         RunningCodexAgent {
             tx,
+            provider: AgentProvider::Codex,
             pid,
             cwd: "/tmp/project".to_string(),
             started_at_ms: 0,
