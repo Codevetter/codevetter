@@ -351,7 +351,7 @@ export default function TRex() {
     <ProjectWorkspaceShell mainClassName="px-6 pb-24 pt-6">
       {!selectedRepoPath ? (
         <ProjectWorkspaceEmpty
-          title="T-Rex"
+          title="Testing"
           description="Select a project to compile verification scenarios, run changed-capability checks, or watch pull requests."
         />
       ) : (
@@ -365,17 +365,13 @@ export default function TRex() {
             }
           >
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-100">T-Rex</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-100">Testing</h1>
               <p className="mt-1 max-w-3xl text-sm text-[var(--text-secondary)]">
                 Turn product intent into reviewable scenarios, verify local changes in warm
                 Chromium, and watch pull requests for sandbox regressions.
               </p>
             </div>
           </ProjectWorkspaceHeader>
-
-          <ScenarioCompilerPanel repoPath={selectedRepoPath} />
-
-          <DifferentialVerificationPanel key={selectedRepoPath} repoPath={selectedRepoPath} />
 
           <WarmVerificationPanel
             health={warmHealth}
@@ -393,6 +389,10 @@ export default function TRex() {
             onCancel={handleWarmCancel}
             onCleanup={handleWarmCleanup}
           />
+
+          <DifferentialVerificationPanel key={selectedRepoPath} repoPath={selectedRepoPath} />
+
+          <ScenarioCompilerPanel repoPath={selectedRepoPath} />
 
           <Card className="mb-6 border-[var(--cv-line)] bg-[var(--bg-surface)]">
             <CardHeader className="pb-3">

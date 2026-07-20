@@ -68,7 +68,7 @@ function Toggle({ label, description, enabled, onToggle }: ToggleProps) {
       <button
         onClick={onToggle}
         className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${
-          enabled ? 'bg-amber-500' : 'bg-[#111111]'
+          enabled ? 'bg-amber-500' : 'bg-[var(--cv-surface-raised)]'
         }`}
       >
         <span
@@ -89,9 +89,10 @@ function SelectSetting({ label, description, value, options, onChange }: SelectP
         <p className="text-xs text-slate-500 mt-0.5">{description}</p>
       </div>
       <select
+        aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-[#1a1a1a] bg-[#0f1117] px-3 py-1.5 text-sm text-slate-200 outline-none focus:border-amber-500/50"
+        className="rounded-lg border border-[var(--cv-line)] bg-[var(--cv-surface-raised)] px-3 py-1.5 text-sm text-slate-200 outline-none focus:border-amber-500/50"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -121,7 +122,7 @@ function TextInputSetting({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          'mt-1 rounded-lg border-[#1a1a1a] bg-[#0f1117] text-slate-200 placeholder-slate-600 focus-visible:ring-amber-500/50',
+          'mt-1 rounded-lg border-[var(--cv-line)] bg-[var(--cv-surface-raised)] text-slate-200 placeholder-slate-600 focus-visible:ring-amber-500/50',
           mono && 'mono'
         )}
       />
@@ -228,7 +229,7 @@ function GitHubConnectionPanel() {
 
   return (
     <div className="py-3">
-      <Card className="border-[#1a1a1a] bg-[#0f1117] p-4">
+      <Card className="border-[var(--cv-line)] bg-[var(--cv-surface-raised)] p-4">
         {checking ? (
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 animate-pulse rounded-full bg-slate-600" />
@@ -312,7 +313,7 @@ function GitHubConnectionPanel() {
 
         {/* Manual token input (shown on demand or if PAT method) */}
         {(showManualToken || (status?.connected && status?.method === 'pat')) && (
-          <div className="mt-3 pt-3 border-t border-[#1a1a1a]">
+          <div className="mt-3 pt-3 border-t border-[var(--cv-line)]">
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-slate-400">Personal Access Token</label>
               <div className="flex gap-2">
@@ -321,7 +322,7 @@ function GitHubConnectionPanel() {
                   value={manualToken}
                   onChange={(e) => setManualToken(e.target.value)}
                   placeholder="ghp_… (GitHub personal access token)"
-                  className="mono flex-1 rounded-lg border-[#1a1a1a] bg-[#0a0c12] text-slate-200 placeholder-slate-600 focus-visible:ring-amber-500/50"
+                  className="mono flex-1 rounded-lg border-[var(--cv-line)] bg-[#0a0c12] text-slate-200 placeholder-slate-600 focus-visible:ring-amber-500/50"
                 />
                 <Button
                   onClick={handleSaveToken}
@@ -411,7 +412,7 @@ function LinearConnectionPanel() {
 
   return (
     <div className="py-3">
-      <Card className="border-[#1a1a1a] bg-[#0f1117] p-4">
+      <Card className="border-[var(--cv-line)] bg-[var(--cv-surface-raised)] p-4">
         {checking ? (
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 animate-pulse rounded-full bg-slate-600" />
@@ -470,7 +471,7 @@ function LinearConnectionPanel() {
                 value={linearClientId}
                 onChange={(e) => setLinearClientId(e.target.value)}
                 placeholder="your-linear-oauth-client-id"
-                className="mono rounded-lg border-[#1a1a1a] bg-[#0a0c12] text-slate-200 placeholder-slate-600 focus-visible:ring-[#5E6AD2]/50"
+                className="mono rounded-lg border-[var(--cv-line)] bg-[#0a0c12] text-slate-200 placeholder-slate-600 focus-visible:ring-[#5E6AD2]/50"
               />
               <p className="text-[11px] text-slate-600">
                 From your Linear OAuth application settings. Can also be set via{' '}
@@ -682,7 +683,7 @@ export default function Settings() {
         return (
           <div className="flex flex-col">
             <CategoryTitle title="General" description="Review defaults and indexing behavior." />
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <SelectSetting
                 label="Default Review Tone"
                 description="The default tone used when starting a new review."
@@ -698,7 +699,7 @@ export default function Settings() {
 
               <Divider />
 
-              <div className="rounded-lg border border-[#1f1f1f] bg-[#070707] px-4 py-3">
+              <div className="rounded-lg border border-[#1f1f1f] bg-[var(--cv-surface)] px-4 py-3">
                 <p className="text-sm font-medium text-slate-200">Session indexing is manual</p>
                 <p className="mt-1 text-xs leading-5 text-slate-500">
                   Usage tracking stays lightweight on launch. Use the Home page re-index action when
@@ -710,7 +711,7 @@ export default function Settings() {
             <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               AI Provider
             </h3>
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <SelectSetting
                 label="Provider"
                 description="Choose your AI provider for code reviews."
@@ -792,7 +793,7 @@ export default function Settings() {
               title="Appearance"
               description="Visual display and layout preferences."
             />
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <Toggle
                 label="Compact Mode"
                 description="Reduce spacing and card sizes for denser information display."
@@ -831,21 +832,21 @@ export default function Settings() {
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               GitHub
             </h3>
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <GitHubConnectionPanel />
             </div>
 
             <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               SaaS Maker
             </h3>
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <SaasMakerConfigPanel />
             </div>
 
             <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Linear
             </h3>
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <LinearConnectionPanel />
             </div>
           </div>
@@ -858,7 +859,7 @@ export default function Settings() {
               title="Agents"
               description="Default configuration for agent launches and CLI paths."
             />
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <SelectSetting
                 label="Default Adapter"
                 description="Preferred AI agent adapter for new launches."
@@ -905,7 +906,7 @@ export default function Settings() {
             <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               CLI Paths
             </h3>
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <TextInputSetting
                 label="Claude Code CLI"
                 description="Path to the Claude Code CLI binary. Leave empty for auto-detection."
@@ -947,7 +948,7 @@ export default function Settings() {
               title="Notifications"
               description="Control which events trigger desktop notifications."
             />
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <Toggle
                 label="Review Completed"
                 description="Show a notification when a code review finishes."
@@ -1004,7 +1005,7 @@ export default function Settings() {
             <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Menu Bar Tray
             </h3>
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               <SelectSetting
                 label="Refresh Cadence"
                 description="How often the menu-bar tray polls each provider for live usage."
@@ -1048,7 +1049,7 @@ export default function Settings() {
         return (
           <div className="flex flex-col">
             <CategoryTitle title="About" description="Application information and links." />
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
               {/* App identity */}
               <div className="flex items-center gap-4 pb-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
@@ -1199,10 +1200,12 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden bg-transparent">
       {/* Sidebar */}
-      <nav className="flex w-48 shrink-0 flex-col border-r border-[#1a1a1a] bg-[#0f1117] py-6 px-3 overflow-y-auto">
-        <h1 className="mb-6 px-2 text-lg font-bold text-slate-100">Settings</h1>
+      <nav className="flex w-48 shrink-0 flex-col overflow-y-auto border-r border-white/[0.07] bg-[var(--cv-surface-translucent)] px-3 py-6 backdrop-blur-xl">
+        <h1 className="mb-6 px-2 text-lg font-semibold tracking-[-0.02em] text-slate-100">
+          Settings
+        </h1>
         <div className="flex flex-col gap-0.5">
           {categories.map((cat) => {
             const active = activeCategory === cat.key;
@@ -1214,8 +1217,8 @@ export default function Settings() {
                 className={cn(
                   'justify-start gap-2.5 h-auto px-2.5 py-2 text-[13px] font-medium',
                   active
-                    ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/15 hover:text-amber-400'
-                    : 'text-slate-500 hover:bg-[#111111] hover:text-slate-200'
+                    ? 'border border-amber-300/15 bg-amber-300/[0.08] text-amber-200 hover:bg-amber-300/[0.12] hover:text-amber-100'
+                    : 'border border-transparent text-slate-500 hover:bg-white/[0.04] hover:text-slate-200'
                 )}
               >
                 <span className="w-4 text-center text-sm">{cat.icon}</span>
@@ -1235,7 +1238,7 @@ export default function Settings() {
       {activeCategory === 'ops' || activeCategory === 'memories' || activeCategory === 'rubrics' ? (
         <div className="flex-1 min-w-0 overflow-y-auto">{renderContent()}</div>
       ) : (
-        <div className="flex-1 min-w-0 overflow-y-auto p-8">
+        <div className="min-w-0 flex-1 overflow-y-auto p-8">
           <div className="max-w-xl">{renderContent()}</div>
         </div>
       )}

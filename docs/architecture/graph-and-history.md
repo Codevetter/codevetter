@@ -18,10 +18,9 @@ independently create findings, severities, or verified-runtime claims.
   identities; exact / inferred / ambiguous trust; cross-file resolution;
   communities; hubs/bridges; incremental repair; indexed
   query / explain / path / impact operations.
-- **Import**: Graphify `nodes` + `links`/`edges` JSON can be imported into a
-  transient preview with confidence/source/community metadata preserved.
-  Parity is pinned to Graphify `v8` @ `961b78e57a10e9c5bb98421ff3e45b40be73542b`
-  — see [decisions/graphify-parity.md](./decisions/graphify-parity.md).
+- **Import**: bounded `nodes` + `links`/`edges` JSON can be imported into a
+  transient preview with confidence/source/community metadata preserved. See
+  the [structural graph contract](./decisions/structural-graph-contract.md).
 - **Trust-weighted paths**: Review derives at most four native paths from
   changed files to routes, Tauri commands, tables, scripts, or tests.
   Uncertain / imported / legacy hops are **navigation leads**, not evidence.
@@ -67,5 +66,5 @@ with thirteen bounded tools. See [mcp-sidecar.md](./mcp-sidecar.md).
 - `apps/desktop/src-tauri/src/commands/history_query.rs` — causal queries.
 - `apps/desktop/src-tauri/src/commands/graph_trust.rs` — trust-weighted paths for Review.
 - `apps/desktop/src/lib/history-workbench.ts` — webview-side slider + projection.
-- `apps/desktop/src/lib/deep-graph-parse.ts` — Graphify import parsing.
+- `apps/desktop/src/lib/deep-graph-parse.ts` — bounded node-link import parsing.
 - `apps/desktop/src/components/deep-graph-viewer.tsx` — graph surface.

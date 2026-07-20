@@ -31,6 +31,13 @@ import type {
   ArchaeologyReviewMutationResult,
   ArchaeologyZeroModelContinuationInput,
 } from '@/lib/business-rule-archaeology/contracts';
+import type {
+  CreateWorkItemInput,
+  UpdateWorkItemInput,
+  WorkItem,
+  WorkItemCompletionDisposition,
+  WorkItemStatus,
+} from '@/lib/work-items';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -120,6 +127,40 @@ export async function getResourceSnapshot(): Promise<ResourceSnapshot> {
   return safeInvoke('get_resource_snapshot');
 }
 
+export async function listWorkItems(options?: {
+  projectPath?: string | null;
+  limit?: number | null;
+}): Promise<WorkItem[]> {
+  return safeInvoke('list_work_items', {
+    projectPath: options?.projectPath ?? null,
+    limit: options?.limit ?? null,
+  });
+}
+
+export async function createWorkItem(input: CreateWorkItemInput): Promise<WorkItem> {
+  return safeInvoke('create_work_item', { input });
+}
+
+export async function updateWorkItem(id: string, input: UpdateWorkItemInput): Promise<WorkItem> {
+  return safeInvoke('update_work_item', { id, input });
+}
+
+export async function transitionWorkItem(
+  id: string,
+  status: WorkItemStatus,
+  completionDisposition?: Exclude<WorkItemCompletionDisposition, 'legacy'> | null
+): Promise<WorkItem> {
+  return safeInvoke('transition_work_item', {
+    id,
+    status,
+    completionDisposition: completionDisposition ?? null,
+  });
+}
+
+export async function deleteWorkItem(id: string): Promise<void> {
+  return safeInvoke('delete_work_item', { id });
+}
+
 export interface AgentTerminalCommandResult {
   command: string;
   cwd: string;
@@ -136,12 +177,17 @@ export interface AgentTerminalCommandResult {
 
 export interface CodexAgentTerminalStartResult {
   session_id: string;
+  provider?: AgentProvider;
   cwd: string;
   pid?: number | null;
 }
 
+export type AgentProvider = 'codex' | 'claude';
+export type AgentTerminalStartResult = CodexAgentTerminalStartResult & { provider: AgentProvider };
+
 export interface CodexAgentTerminalSnapshot {
   session_id: string;
+  provider?: AgentProvider;
   cwd: string;
   pid?: number | null;
   started_at_ms: number;
@@ -152,6 +198,8 @@ export interface CodexAgentTerminalSnapshot {
   codex_session_id?: string | null;
   transcript_path?: string | null;
 }
+
+export type AgentTerminalSnapshot = CodexAgentTerminalSnapshot & { provider: AgentProvider };
 
 interface AgentStructuredEvent {
   seq: number;
@@ -211,6 +259,34 @@ export async function startCodexAgentTerminal(input: {
   });
 }
 
+export async function startAgentTerminal(input: {
+  provider: AgentProvider;
+  sessionId: string;
+  cwd?: string | null;
+  prompt?: string | null;
+  model?: string | null;
+  sandbox?: string | null;
+  approvalPolicy?: string | null;
+  resumeSessionId?: string | null;
+  forkSessionId?: string | null;
+  cols?: number | null;
+  rows?: number | null;
+}): Promise<AgentTerminalStartResult> {
+  return safeInvoke('start_agent_terminal', {
+    provider: input.provider,
+    sessionId: input.sessionId,
+    cwd: input.cwd ?? null,
+    prompt: input.prompt ?? null,
+    model: input.model ?? null,
+    sandbox: input.sandbox ?? null,
+    approvalPolicy: input.approvalPolicy ?? null,
+    resumeSessionId: input.resumeSessionId ?? null,
+    forkSessionId: input.forkSessionId ?? null,
+    cols: input.cols ?? null,
+    rows: input.rows ?? null,
+  });
+}
+
 export async function sendCodexAgentTerminalInput(sessionId: string, data: string): Promise<void> {
   await safeInvoke('send_codex_agent_terminal_input', { sessionId, data });
 }
@@ -229,6 +305,26 @@ export async function resizeCodexAgentTerminal(
 
 export async function listCodexAgentTerminals(): Promise<CodexAgentTerminalSnapshot[]> {
   return safeInvoke('list_codex_agent_terminals');
+}
+
+export async function sendAgentTerminalInput(sessionId: string, data: string): Promise<void> {
+  await safeInvoke('send_agent_terminal_input', { sessionId, data });
+}
+
+export async function stopAgentTerminal(sessionId: string): Promise<void> {
+  await safeInvoke('stop_agent_terminal', { sessionId });
+}
+
+export async function resizeAgentTerminal(
+  sessionId: string,
+  cols: number,
+  rows: number
+): Promise<void> {
+  await safeInvoke('resize_agent_terminal', { sessionId, cols, rows });
+}
+
+export async function listAgentTerminals(): Promise<AgentTerminalSnapshot[]> {
+  return safeInvoke('list_agent_terminals');
 }
 
 export async function listenToAgentTerminalEvents(

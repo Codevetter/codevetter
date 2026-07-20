@@ -27,12 +27,6 @@ function formatUpdated(value: string | null | undefined): string {
   return `updated ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
 }
 
-function shortPath(path: string): string {
-  const parts = path.split('/').filter(Boolean);
-  if (parts.length <= 3) return path;
-  return `.../${parts.slice(-3).join('/')}`;
-}
-
 function ProjectGitMeta({ repoPath }: { repoPath: string }) {
   const [status, setStatus] = useState<RepoProjectGitStatus | null>(null);
   const [failed, setFailed] = useState(false);
@@ -64,22 +58,15 @@ function ProjectGitMeta({ repoPath }: { repoPath: string }) {
   }
 
   return (
-    <>
-      <span className="max-w-[8rem] truncate rounded-full border border-white/[0.06] bg-white/[0.022] px-2 py-0.5 font-mono text-[10px] text-slate-500">
-        {status.branch ?? 'detached'}
-      </span>
-      <span
-        className={cn(
-          'rounded-full border px-2 py-0.5 text-[10px]',
-          status.clean
-            ? 'border-white/[0.07] bg-white/[0.018] text-slate-500'
-            : 'border-amber-300/14 bg-amber-300/[0.045] text-amber-200/75'
-        )}
-      >
-        {status.clean ? 'clean' : `${status.changed_files} changed`}
-      </span>
-      <span className="text-[10px] text-slate-600">{formatUpdated(status.last_commit_at)}</span>
-    </>
+    <span
+      className={cn('truncate text-[11px]', status.clean ? 'text-slate-500' : 'text-amber-200/75')}
+    >
+      <span className="font-mono">{status.branch ?? 'detached'}</span>
+      <span className="px-1.5 text-slate-700">·</span>
+      {status.clean ? 'clean' : `${status.changed_files} changed`}
+      <span className="px-1.5 text-slate-700">·</span>
+      {formatUpdated(status.last_commit_at).replace('updated ', '')}
+    </span>
   );
 }
 
@@ -106,17 +93,19 @@ function ProjectRow({
       <div
         className={cn(
           'absolute inset-y-2 left-0 w-0.5 rounded-r-full',
-          active ? 'bg-cyan-300/55' : 'bg-transparent'
+          active ? 'bg-amber-300/70 shadow-[0_0_14px_rgba(243,173,61,0.45)]' : 'bg-transparent'
         )}
       />
-      <button type="button" onClick={onSelect} className="w-full px-3.5 py-3 pr-9 text-left">
+      <button
+        type="button"
+        onClick={onSelect}
+        title={project.repo_path}
+        className="w-full px-3 py-2.5 pr-9 text-left"
+      >
         <div className="min-w-0 truncate text-sm font-medium leading-5 text-slate-100">
           {project.display_name}
         </div>
-        <div className="mt-0.5 min-w-0 truncate font-mono text-[10px] text-slate-600">
-          {shortPath(project.repo_path)}
-        </div>
-        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
+        <div className="mt-1 min-w-0 truncate">
           <ProjectGitMeta repoPath={project.repo_path} />
         </div>
       </button>
@@ -156,31 +145,38 @@ export function ProjectSidebar({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        'flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden border-r border-white/[0.06] bg-[#080a0d]',
+        'flex h-full min-h-0 w-72 shrink-0 flex-col overflow-hidden border-r border-white/[0.07] bg-[var(--cv-surface-translucent)] backdrop-blur-xl',
         className
       )}
     >
-      <div className="relative overflow-hidden border-b border-white/[0.06] px-4 py-4">
+      <div className="relative overflow-hidden border-b border-white/[0.07] px-4 py-3.5">
         <div className="relative flex items-center gap-3">
           <div className="min-w-0">
-            <div className="text-sm font-semibold tracking-normal text-slate-50">Workspace</div>
-            <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-slate-500">
-              local repositories
-            </div>
+            <div className="text-sm font-semibold tracking-normal text-slate-50">Projects</div>
           </div>
         </div>
       </div>
 
-      <div className="border-b border-white/[0.06] px-4 py-3">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <span className="cv-label text-slate-400">Projects</span>
+      <div className="border-b border-white/[0.06] px-3 py-2.5">
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search
+              size={14}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+            />
+            <Input
+              name="project-filter"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter projects"
+              className="h-9 rounded-lg !border-white/[0.09] !bg-black/25 pl-9 pr-3 text-sm !text-slate-200 placeholder:!text-slate-600 focus-visible:!border-amber-300/30 focus-visible:!ring-amber-300/15"
+            />
           </div>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 w-8 shrink-0 rounded-lg border-cyan-300/20 bg-cyan-300/8 p-0 text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/15 hover:text-white"
+            className="h-8 w-8 shrink-0 rounded-lg border-amber-300/20 bg-amber-300/[0.08] p-0 text-amber-100 transition hover:border-amber-200/40 hover:bg-amber-300/15 hover:text-white"
             onClick={() => void addProject()}
             disabled={addingProject}
             aria-label="Add project"
@@ -188,24 +184,11 @@ export function ProjectSidebar({ className }: { className?: string }) {
             {addingProject ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
           </Button>
         </div>
-        <div className="relative">
-          <Search
-            size={14}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-          />
-          <Input
-            name="project-filter"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter projects"
-            className="h-9 rounded-xl !border-white/[0.08] !bg-[#05070a] pl-9 pr-3 text-sm !text-slate-200 placeholder:!text-slate-600 focus-visible:!border-cyan-300/30 focus-visible:!ring-cyan-300/15"
-          />
-        </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2.5 py-2.5">
         {loading ? (
           <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-3 text-xs text-slate-500">
-            <Loader2 size={15} className="animate-spin text-cyan-200" />
+            <Loader2 size={15} className="animate-spin text-amber-200" />
             Loading projects...
           </div>
         ) : filtered.length === 0 ? (

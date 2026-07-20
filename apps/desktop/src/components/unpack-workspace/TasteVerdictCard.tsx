@@ -30,6 +30,8 @@ export function TasteVerdictCard({ repoPath }: { repoPath: string }) {
   }, [repoPath]);
 
   if (!verdict) return null;
+  const visibleGaps = verdict.grade === 'unknown' ? verdict.gaps.slice(0, 1) : verdict.gaps;
+  const hiddenGaps = verdict.gaps.slice(visibleGaps.length);
 
   return (
     <div
@@ -48,10 +50,7 @@ export function TasteVerdictCard({ repoPath }: { repoPath: string }) {
         </div>
         <Badge
           variant="outline"
-          className={cn(
-            'shrink-0 border text-[10px] uppercase tracking-wider',
-            GRADE_STYLES[verdict.grade]
-          )}
+          className={cn('shrink-0 border text-[11px] font-medium', GRADE_STYLES[verdict.grade])}
         >
           {verdict.grade}
           {verdict.score != null ? ` · ${Math.round(verdict.score)}/100` : ''} ·{' '}
@@ -69,15 +68,30 @@ export function TasteVerdictCard({ repoPath }: { repoPath: string }) {
         </ul>
       )}
 
-      {verdict.gaps.length > 0 && (
+      {visibleGaps.length > 0 && (
         <ul className="mt-2 space-y-1">
-          {verdict.gaps.map((line) => (
+          {visibleGaps.map((line) => (
             <li key={line} className="flex items-start gap-1.5 text-xs text-yellow-200/90">
               <AlertTriangle size={11} className="mt-0.5 shrink-0" />
               {line}
             </li>
           ))}
         </ul>
+      )}
+      {hiddenGaps.length > 0 && (
+        <details className="mt-2 text-xs text-[var(--text-muted)]">
+          <summary className="cursor-pointer list-none hover:text-[var(--text-secondary)]">
+            {hiddenGaps.length} more evidence gaps
+          </summary>
+          <ul className="mt-2 space-y-1 border-t border-[var(--cv-line)] pt-2">
+            {hiddenGaps.map((line) => (
+              <li key={line} className="flex items-start gap-1.5 text-yellow-200/80">
+                <AlertTriangle size={11} className="mt-0.5 shrink-0" />
+                {line}
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
     </div>
   );

@@ -315,7 +315,7 @@
   "corpus_id": "business-rule-archaeology-hand-labeled-v1",
   "input_identities": {
     "labeled_corpus": "sha256:49359cf4a8872f4e8bae38e46b9d7c6a990790a44c9d63b42980301357a75fe5",
-    "qualification_policy": "sha256:aac211d2ab2316d95bb946fdef68b034654b135ee277450588bf498ea2d31794",
+    "qualification_policy": "sha256:1fdba7dbcc34f492ee923a0ca3bea62f4a671a302491de1b4011f3139e59d54c",
     "source_fixture_bundle": "sha256:7b5b035b9635fc0a2285a1854b77105d9f0226b4fa198da86c9aeac5894743ac"
   },
   "limitations": [
@@ -353,7 +353,7 @@
     "passing_claim": null
   },
   "report_id": "codevetter.business-rule-archaeology.real-pipeline-correctness.v1",
-  "report_payload_sha256": "sha256:643baed6c8e4ccc2b5d93029ff5a01e7aeea6f134b07f860584ce975ff851a7b",
+  "report_payload_sha256": "sha256:08310ab009ef3a12843df306a343742443711cc2341ff7ed1abb8a5ac0d232d7",
   "reviewer_correction_effort": {
     "human_reviewers": 0,
     "measured_edits": null,

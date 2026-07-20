@@ -126,7 +126,7 @@ export default function ReviewEditorPanel({
           <div className="shrink-0 border-b border-[var(--cv-line)] px-6 py-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <div className="cv-label mb-2">selected finding</div>
+                <div className="cv-label mb-2">Selected finding</div>
                 <h2 className="truncate text-sm font-semibold text-slate-100">
                   {activeFinding.title}
                 </h2>
@@ -186,7 +186,7 @@ export default function ReviewEditorPanel({
             <span className="cv-dot" />
             <span className="cv-dot" />
             <span className="cv-dot" />
-            <span className="cv-label mx-auto">review result · select a comment</span>
+            <span className="cv-label mx-auto">Review result · select a comment</span>
             <span className="cv-label">⌘ K</span>
           </div>
           <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-[#030405] text-slate-600">

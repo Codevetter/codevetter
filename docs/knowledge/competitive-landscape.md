@@ -23,7 +23,7 @@ platform breadth. Pricing roughly $12–40/user/month. Greptile leads on catch
 accuracy (~82% claimed, codebase graph); CodeRabbit leads on adoption (2M+
 repos).
 
-**B. Agent orchestrators** — Conductor, Superset, Claude Squad. Desktop apps
+**B. Agent orchestrators** — commercial, open-source, and multi-agent desktop apps
 that run multiple AI agents in parallel with basic built-in diff viewers to
 skim agent output. Free to ~$20/month. No deep AI review.
 
