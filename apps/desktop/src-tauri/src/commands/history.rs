@@ -5,9 +5,9 @@ use crate::db::queries;
 use crate::DbState;
 use serde::Serialize;
 use serde_json::{json, Value};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::io::BufRead;
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 static FULL_INDEX_LOCK: Mutex<()> = Mutex::new(());
@@ -16,6 +16,14 @@ pub const LIVE_TRANSCRIPT_INITIAL_DELAY_SECS: u64 = 20;
 pub const LIVE_TRANSCRIPT_INTERVAL_SECS: u64 = 10;
 pub const LIVE_SECONDARY_ADAPTER_INTERVAL_SECS: u64 = 60;
 pub const FULL_INDEX_RECOVERY_INTERVAL_SECS: u64 = 6 * 60 * 60;
+const LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET: usize = 64 * 1024;
+const LIVE_TRANSCRIPT_DELIMITER_WINDOW_BYTES: usize = 4 * 1024;
+const LIVE_TRANSCRIPT_TICK_BUDGET_MS: u64 = 150;
+const LIVE_CODEX_DISCOVERY_SESSION_BUDGET: usize = 1;
+const LIVE_DEFERRED_JSONL_MAX_ENTRIES: usize = 256;
+
+static LIVE_DEFERRED_JSONL_ROWS: LazyLock<Mutex<HashMap<String, (i64, i64)>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 #[derive(Debug, Clone, Serialize)]
 pub struct LiveSessionEvidencePolicy {
@@ -274,21 +282,39 @@ fn tail_live_transcript_sessions_inner(
     let sources =
         queries::list_live_session_sources(conn, &since, 16).map_err(|e| e.to_string())?;
     let now = chrono::Utc::now().to_rfc3339();
+    let tick_started = std::time::Instant::now();
     let mut sessions_tailed = 0u64;
     let mut messages_indexed = 0u64;
     let mut seen_paths = HashSet::new();
 
     for source in sources {
+        if tick_started.elapsed()
+            >= std::time::Duration::from_millis(LIVE_TRANSCRIPT_TICK_BUDGET_MS)
+        {
+            break;
+        }
         let path = std::path::Path::new(&source.jsonl_path);
         seen_paths.insert(source.jsonl_path.clone());
         if !path.exists() {
             continue;
         }
         let result = match source.agent_type.as_str() {
-            "claude-code" => {
-                index_adapter_session(&ClaudeCodeAdapter, path, conn, &source.project_id, &now)
-            }
-            "codex" => index_adapter_session(&CodexAdapter, path, conn, &source.project_id, &now),
+            "claude-code" => index_adapter_session_bounded(
+                &ClaudeCodeAdapter,
+                path,
+                conn,
+                &source.project_id,
+                &now,
+                LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET,
+            ),
+            "codex" => index_adapter_session_bounded(
+                &CodexAdapter,
+                path,
+                conn,
+                &source.project_id,
+                &now,
+                LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET,
+            ),
             _ => continue,
         };
         match result {
@@ -307,12 +333,20 @@ fn tail_live_transcript_sessions_inner(
     // New Codex sessions are not present in `cc_sessions` yet, so the DB-backed
     // live-source query above cannot see them until a full index discovers them.
     // Scan recently touched Codex roots directly and index any fresh file now.
-    let recent_codex_files = if discover_new_codex_sessions {
+    let recent_codex_files = if discover_new_codex_sessions
+        && tick_started.elapsed() < std::time::Duration::from_millis(LIVE_TRANSCRIPT_TICK_BUDGET_MS)
+    {
         recent_codex_session_files(chrono::Duration::hours(48), 80)
     } else {
         Vec::new()
     };
+    let mut discovery_sessions_indexed = 0usize;
     for path in recent_codex_files {
+        if tick_started.elapsed()
+            >= std::time::Duration::from_millis(LIVE_TRANSCRIPT_TICK_BUDGET_MS)
+        {
+            break;
+        }
         let path_str = path.to_string_lossy().to_string();
         if seen_paths.contains(&path_str) {
             continue;
@@ -332,14 +366,25 @@ fn tail_live_transcript_sessions_inner(
                 continue;
             }
         };
-        match index_adapter_session(&CodexAdapter, &path, conn, &project_id, &now) {
+        match index_adapter_session_bounded(
+            &CodexAdapter,
+            &path,
+            conn,
+            &project_id,
+            &now,
+            LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET,
+        ) {
             Ok(indexed) => {
+                discovery_sessions_indexed += 1;
                 if indexed.messages_indexed > 0 {
                     sessions_tailed += 1;
                     messages_indexed += indexed.messages_indexed;
                 }
             }
             Err(error) => log::debug!("Codex live discovery failed {path_str}: {error}"),
+        }
+        if discovery_sessions_indexed >= LIVE_CODEX_DISCOVERY_SESSION_BUDGET {
+            break;
         }
     }
 
@@ -1940,6 +1985,117 @@ fn complete_lines_prefix(text: &str) -> (&str, i64, i64) {
     }
 }
 
+#[derive(Debug)]
+struct JsonlChunk {
+    text: String,
+    consumed_bytes: i64,
+    line_count: i64,
+    inspected_bytes: usize,
+    deferred_oversized_offset: Option<i64>,
+}
+
+fn live_jsonl_row_is_deferred(path: &str, offset: i64, file_size: i64) -> bool {
+    let Ok(mut deferred) = LIVE_DEFERRED_JSONL_ROWS.lock() else {
+        return false;
+    };
+    match deferred.get(path).copied() {
+        Some((saved_offset, saved_size)) if saved_offset == offset && file_size >= saved_size => {
+            true
+        }
+        Some(_) => {
+            deferred.remove(path);
+            false
+        }
+        None => false,
+    }
+}
+
+fn defer_live_jsonl_row(path: &str, offset: i64, file_size: i64) {
+    if let Ok(mut deferred) = LIVE_DEFERRED_JSONL_ROWS.lock() {
+        insert_bounded_deferred_row(&mut deferred, path.to_string(), (offset, file_size));
+    }
+}
+
+fn insert_bounded_deferred_row(
+    deferred: &mut HashMap<String, (i64, i64)>,
+    path: String,
+    marker: (i64, i64),
+) {
+    if deferred.len() >= LIVE_DEFERRED_JSONL_MAX_ENTRIES && !deferred.contains_key(&path) {
+        if let Some(oldest) = deferred.keys().next().cloned() {
+            deferred.remove(&oldest);
+        }
+    }
+    deferred.insert(path, marker);
+}
+
+fn clear_deferred_live_jsonl_row(path: &str) {
+    if let Ok(mut deferred) = LIVE_DEFERRED_JSONL_ROWS.lock() {
+        deferred.remove(path);
+    }
+}
+
+/// Read complete JSONL rows without reading or allocating an unbounded row.
+/// Rows larger than the budget plus the delimiter window are left for the
+/// unbounded maintenance index and remembered so live ticks do not rescan them.
+fn read_complete_jsonl_chunk(
+    path: &std::path::Path,
+    offset: i64,
+    byte_budget: usize,
+) -> Result<JsonlChunk, String> {
+    use std::io::{Read, Seek, SeekFrom};
+
+    let mut file = std::fs::File::open(path).map_err(|e| e.to_string())?;
+    file.seek(SeekFrom::Start(offset.max(0) as u64))
+        .map_err(|e| e.to_string())?;
+    let mut reader = std::io::BufReader::new(file);
+    let mut chunk = String::new();
+    let mut line_count = 0i64;
+    let budget = byte_budget.max(1);
+    let hard_limit = budget.saturating_add(LIVE_TRANSCRIPT_DELIMITER_WINDOW_BYTES);
+    let mut inspected_bytes = 0usize;
+
+    while chunk.len() < budget {
+        let remaining = hard_limit.saturating_sub(inspected_bytes);
+        if remaining == 0 {
+            break;
+        }
+        let mut line = Vec::new();
+        let bytes_read = std::io::Read::by_ref(&mut reader)
+            .take(remaining as u64)
+            .read_until(b'\n', &mut line)
+            .map_err(|e| e.to_string())?;
+        inspected_bytes += bytes_read;
+        if bytes_read == 0 {
+            break;
+        }
+        if line.last() != Some(&b'\n') {
+            // A short read is just the current EOF (usually a writer between
+            // flushes). Defer only when the hard read limit was exhausted.
+            let deferred_oversized_offset = (chunk.is_empty() && bytes_read == remaining)
+                .then_some(offset + chunk.len() as i64);
+            return Ok(JsonlChunk {
+                consumed_bytes: chunk.len() as i64,
+                text: chunk,
+                line_count,
+                inspected_bytes,
+                deferred_oversized_offset,
+            });
+        }
+        let line = std::str::from_utf8(&line).map_err(|e| e.to_string())?;
+        chunk.push_str(line);
+        line_count += 1;
+    }
+
+    Ok(JsonlChunk {
+        consumed_bytes: chunk.len() as i64,
+        text: chunk,
+        line_count,
+        inspected_bytes,
+        deferred_oversized_offset: None,
+    })
+}
+
 /// Index one agent session file, incrementally when possible.
 ///
 /// If the session was indexed before and the file only grew, seek to the saved
@@ -1953,6 +2109,35 @@ fn index_adapter_session<A: SessionSourceAdapter>(
     conn: &rusqlite::Connection,
     project_id: &str,
     now: &str,
+) -> Result<IndexedAdapterSession, String> {
+    index_adapter_session_with_budget(adapter, jsonl_path, conn, project_id, now, None)
+}
+
+fn index_adapter_session_bounded<A: SessionSourceAdapter>(
+    adapter: &A,
+    jsonl_path: &std::path::Path,
+    conn: &rusqlite::Connection,
+    project_id: &str,
+    now: &str,
+    byte_budget: usize,
+) -> Result<IndexedAdapterSession, String> {
+    index_adapter_session_with_budget(
+        adapter,
+        jsonl_path,
+        conn,
+        project_id,
+        now,
+        Some(byte_budget.max(1)),
+    )
+}
+
+fn index_adapter_session_with_budget<A: SessionSourceAdapter>(
+    adapter: &A,
+    jsonl_path: &std::path::Path,
+    conn: &rusqlite::Connection,
+    project_id: &str,
+    now: &str,
+    byte_budget: Option<usize>,
 ) -> Result<IndexedAdapterSession, String> {
     let path_str = jsonl_path.to_string_lossy().to_string();
     let file_meta = std::fs::metadata(jsonl_path).ok();
@@ -1968,20 +2153,63 @@ fn index_adapter_session<A: SessionSourceAdapter>(
     if let Some(meta) = &existing {
         let (offset, line_count) =
             queries::get_session_index_cursor(conn, &meta.id).map_err(|e| e.to_string())?;
+        if byte_budget.is_some() && live_jsonl_row_is_deferred(&path_str, offset, file_size) {
+            return Ok(IndexedAdapterSession {
+                session_id: meta.id.clone(),
+                source_ref: path_str,
+                messages_indexed: 0,
+                parse_warnings: Vec::new(),
+            });
+        }
         // Incremental only when we have a real cursor and the file didn't shrink.
         if offset > 0 && file_size >= offset {
             return index_session_incremental(
-                adapter, conn, &path_str, meta, offset, line_count, file_size, file_mtime, now,
+                adapter,
+                conn,
+                &path_str,
+                meta,
+                offset,
+                line_count,
+                file_size,
+                file_mtime,
+                now,
+                byte_budget,
             );
         }
         // offset == 0 (never cursored) or file shrank → fall through to full parse.
     }
 
-    // Full parse: read the whole file but only commit complete lines, so the
-    // cursor lands on a newline boundary exactly like the incremental path.
-    let raw = std::fs::read_to_string(jsonl_path).map_err(|e| e.to_string())?;
-    let (prefix, byte_len, line_count) = complete_lines_prefix(&raw);
-    let summary = adapter.parse_raw(&path_str, prefix);
+    // Full maintenance indexing remains unbounded. The live watcher bootstraps
+    // only a small complete-line chunk, persists its cursor, and resumes on a
+    // later tick instead of parsing a multi-hundred-MB transcript in one loop.
+    if byte_budget.is_some() && live_jsonl_row_is_deferred(&path_str, 0, file_size) {
+        return Err("oversized JSONL row deferred to maintenance index".to_string());
+    }
+    let chunk = match byte_budget {
+        Some(limit) => read_complete_jsonl_chunk(jsonl_path, 0, limit)?,
+        None => {
+            let raw = std::fs::read_to_string(jsonl_path).map_err(|e| e.to_string())?;
+            let (prefix, byte_len, line_count) = complete_lines_prefix(&raw);
+            JsonlChunk {
+                text: prefix.to_string(),
+                consumed_bytes: byte_len,
+                line_count,
+                inspected_bytes: raw.len(),
+                deferred_oversized_offset: None,
+            }
+        }
+    };
+    if let Some(offset) = chunk.deferred_oversized_offset {
+        log::debug!(
+            "Deferred oversized live JSONL row at {path_str}:{offset} after inspecting {} bytes",
+            chunk.inspected_bytes
+        );
+        defer_live_jsonl_row(&path_str, offset, file_size);
+    }
+    if chunk.text.is_empty() {
+        return Err("session has no complete JSONL row yet".to_string());
+    }
+    let summary = adapter.parse_raw(&path_str, &chunk.text);
     let last_usage_key = summary.last_usage_key.clone();
     let existing_id = existing.as_ref().map(|m| m.id.as_str());
     let result = upsert_adapter_summary_session(
@@ -1993,10 +2221,18 @@ fn index_adapter_session<A: SessionSourceAdapter>(
         now,
         existing_id,
     )?;
-    queries::set_session_index_cursor(conn, &result.session_id, byte_len, line_count)
-        .map_err(|e| e.to_string())?;
+    queries::set_session_index_cursor(
+        conn,
+        &result.session_id,
+        chunk.consumed_bytes,
+        chunk.line_count,
+    )
+    .map_err(|e| e.to_string())?;
     queries::set_session_last_usage_key(conn, &result.session_id, last_usage_key.as_deref())
         .map_err(|e| e.to_string())?;
+    if byte_budget.is_none() {
+        clear_deferred_live_jsonl_row(&path_str);
+    }
     Ok(result)
 }
 
@@ -2011,21 +2247,51 @@ fn index_session_incremental<A: SessionSourceAdapter>(
     file_size: i64,
     file_mtime: Option<String>,
     now: &str,
+    byte_budget: Option<usize>,
 ) -> Result<IndexedAdapterSession, String> {
     use std::io::{Read, Seek, SeekFrom};
 
-    let mut tail = String::new();
-    if file_size > offset {
-        let mut f = std::fs::File::open(path_str).map_err(|e| e.to_string())?;
-        f.seek(SeekFrom::Start(offset as u64))
-            .map_err(|e| e.to_string())?;
-        f.read_to_string(&mut tail).map_err(|e| e.to_string())?;
+    let chunk = match byte_budget {
+        Some(limit) if file_size > offset => {
+            read_complete_jsonl_chunk(std::path::Path::new(path_str), offset, limit)?
+        }
+        _ => {
+            let mut tail = String::new();
+            if file_size > offset {
+                let mut f = std::fs::File::open(path_str).map_err(|e| e.to_string())?;
+                f.seek(SeekFrom::Start(offset as u64))
+                    .map_err(|e| e.to_string())?;
+                f.read_to_string(&mut tail).map_err(|e| e.to_string())?;
+            }
+            let (prefix, new_bytes, new_lines) = complete_lines_prefix(&tail);
+            JsonlChunk {
+                text: prefix.to_string(),
+                consumed_bytes: new_bytes,
+                line_count: new_lines,
+                inspected_bytes: tail.len(),
+                deferred_oversized_offset: None,
+            }
+        }
+    };
+    if let Some(deferred_offset) = chunk.deferred_oversized_offset {
+        log::debug!(
+            "Deferred oversized live JSONL row at {path_str}:{deferred_offset} after inspecting {} bytes",
+            chunk.inspected_bytes
+        );
+        defer_live_jsonl_row(path_str, deferred_offset, file_size);
     }
-    let (prefix, new_bytes, new_lines) = complete_lines_prefix(&tail);
 
     // No complete new line yet (e.g. a half-flushed event, or only mtime changed).
     // Refresh size/mtime so the mtime-skip works next pass; nothing new to index.
-    if prefix.is_empty() {
+    if chunk.text.is_empty() {
+        if chunk.deferred_oversized_offset.is_some() {
+            return Ok(IndexedAdapterSession {
+                session_id: meta.id.clone(),
+                source_ref: path_str.to_string(),
+                messages_indexed: 0,
+                parse_warnings: Vec::new(),
+            });
+        }
         let _ = queries::apply_session_append_delta(
             conn,
             &zero_delta(meta, offset, line_count, file_size, file_mtime, now),
@@ -2038,7 +2304,8 @@ fn index_session_incremental<A: SessionSourceAdapter>(
         });
     }
 
-    let summary = adapter.parse_raw_with_state(path_str, prefix, meta.last_usage_key.as_deref());
+    let summary =
+        adapter.parse_raw_with_state(path_str, &chunk.text, meta.last_usage_key.as_deref());
 
     // Append archive rows, continuing message_index / source_line past what is stored.
     let start_index = meta.archived_message_count;
@@ -2094,8 +2361,8 @@ fn index_session_incremental<A: SessionSourceAdapter>(
             file_size_bytes: file_size,
             file_mtime,
             indexed_at: now.to_string(),
-            new_byte_offset: offset + new_bytes,
-            new_line_count: line_count + new_lines,
+            new_byte_offset: offset + chunk.consumed_bytes,
+            new_line_count: line_count + chunk.line_count,
             last_usage_key: summary.last_usage_key.clone(),
         },
     )
@@ -2120,6 +2387,10 @@ fn index_session_incremental<A: SessionSourceAdapter>(
         cc,
     );
     queries::set_session_cost(conn, &meta.id, cost).map_err(|e| e.to_string())?;
+
+    if byte_budget.is_none() {
+        clear_deferred_live_jsonl_row(path_str);
+    }
 
     Ok(IndexedAdapterSession {
         session_id: meta.id.clone(),
@@ -2798,11 +3069,11 @@ fn index_devin_sessions_from_path(
         return Ok((0, 0, 0));
     }
 
-    let file_meta = std::fs::metadata(&db_path).ok();
+    let file_meta = std::fs::metadata(db_path).ok();
     let file_size = file_meta.as_ref().map(|m| m.len() as i64).unwrap_or(0);
 
     let dconn =
-        rusqlite::Connection::open_with_flags(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+        rusqlite::Connection::open_with_flags(db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
             .map_err(|e| format!("failed to open devin sessions.db: {e}"))?;
 
     // Read cheap session watermarks first. Devin chat_message values can make
@@ -3596,6 +3867,50 @@ mod tests {
         s
     }
 
+    fn synth_codex_events(n: usize) -> String {
+        let mut rows = vec![json!({
+            "timestamp": "2026-06-12T08:00:00Z",
+            "type": "session_meta",
+            "payload": {
+                "id": "codex-bounded-session",
+                "cwd": "/repo/codevetter",
+                "cli_version": "1.0.0",
+                "model_provider": "openai"
+            }
+        })
+        .to_string()];
+        for i in 0..n {
+            rows.push(
+                json!({
+                    "timestamp": format!("2026-06-12T08:{:02}:00Z", i % 60),
+                    "type": "response_item",
+                    "payload": {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "output_text", "text": "x".repeat(384)}]
+                    }
+                })
+                .to_string(),
+            );
+            rows.push(
+                json!({
+                    "timestamp": format!("2026-06-12T08:{:02}:01Z", i % 60),
+                    "type": "event_msg",
+                    "payload": {
+                        "type": "token_count",
+                        "info": {"total_token_usage": {
+                            "input_tokens": (i + 1) * 100,
+                            "output_tokens": (i + 1) * 20,
+                            "cached_input_tokens": (i + 1) * 10
+                        }}
+                    }
+                })
+                .to_string(),
+            );
+        }
+        rows.join("\n") + "\n"
+    }
+
     type IndexSnapshot = (
         Vec<i64>,
         Vec<(i64, Option<i64>, Option<String>, String, Option<String>)>,
@@ -3712,6 +4027,235 @@ mod tests {
     }
 
     #[test]
+    fn codex_live_bootstrap_is_bounded_and_matches_full_index() {
+        let dir = tempfile::tempdir().expect("session directory");
+        let events = synth_codex_events(24);
+
+        let full_path = dir.path().join("full.jsonl");
+        std::fs::write(&full_path, &events).expect("full fixture");
+        let full_conn = memory_conn_with_project();
+        index_adapter_session(
+            &CodexAdapter,
+            &full_path,
+            &full_conn,
+            "project",
+            "2026-06-12T09:00:00Z",
+        )
+        .expect("full index");
+
+        let bounded_path = dir.path().join("bounded.jsonl");
+        std::fs::write(&bounded_path, &events).expect("bounded fixture");
+        let bounded_conn = memory_conn_with_project();
+        index_adapter_session_bounded(
+            &CodexAdapter,
+            &bounded_path,
+            &bounded_conn,
+            "project",
+            "2026-06-12T09:00:00Z",
+            512,
+        )
+        .expect("first bounded pass");
+
+        let file_size = events.len() as i64;
+        let first_cursor: i64 = bounded_conn
+            .query_row(
+                "SELECT last_indexed_byte_offset FROM cc_sessions WHERE jsonl_path = ?1",
+                params![bounded_path.to_string_lossy().as_ref()],
+                |row| row.get(0),
+            )
+            .expect("first cursor");
+        assert!(first_cursor > 0, "bootstrap must make progress");
+        assert!(
+            first_cursor < file_size,
+            "bootstrap must leave large transcripts for later passes"
+        );
+
+        for pass in 1..=100 {
+            index_adapter_session_bounded(
+                &CodexAdapter,
+                &bounded_path,
+                &bounded_conn,
+                "project",
+                &format!("2026-06-12T09:{:02}:00Z", pass % 60),
+                512,
+            )
+            .expect("bounded continuation");
+            let cursor: i64 = bounded_conn
+                .query_row(
+                    "SELECT last_indexed_byte_offset FROM cc_sessions WHERE jsonl_path = ?1",
+                    params![bounded_path.to_string_lossy().as_ref()],
+                    |row| row.get(0),
+                )
+                .expect("continuation cursor");
+            if cursor == file_size {
+                break;
+            }
+            assert!(pass < 100, "bounded index did not converge");
+        }
+
+        let full = index_snapshot(&full_conn, full_path.to_string_lossy().as_ref());
+        let bounded = index_snapshot(&bounded_conn, bounded_path.to_string_lossy().as_ref());
+        assert_eq!(bounded.0, full.0, "bounded totals/cursor/cost diverged");
+        assert_eq!(bounded.1, full.1, "bounded archive rows diverged");
+        assert_eq!(bounded.2, full.2, "bounded day buckets diverged");
+    }
+
+    #[test]
+    fn oversized_live_row_is_hard_bounded_deferred_and_recovered() {
+        let dir = tempfile::tempdir().expect("session directory");
+        let path = dir.path().join("oversized.jsonl");
+        let meta = json!({
+            "timestamp": "2026-06-12T08:00:00Z",
+            "type": "session_meta",
+            "payload": {
+                "id": "codex-oversized-session",
+                "cwd": "/repo/codevetter",
+                "model_provider": "openai"
+            }
+        })
+        .to_string()
+            + "\n";
+        let oversized = json!({
+            "timestamp": "2026-06-12T08:01:00Z",
+            "type": "response_item",
+            "payload": {
+                "type": "message",
+                "role": "assistant",
+                "content": [{"type": "output_text", "text": "x".repeat(3 * 1024 * 1024)}]
+            }
+        })
+        .to_string()
+            + "\n";
+        let usage = json!({
+            "timestamp": "2026-06-12T08:01:01Z",
+            "type": "event_msg",
+            "payload": {
+                "type": "token_count",
+                "info": {"total_token_usage": {
+                    "input_tokens": 100,
+                    "output_tokens": 20,
+                    "cached_input_tokens": 10
+                }}
+            }
+        })
+        .to_string()
+            + "\n";
+        std::fs::write(&path, format!("{meta}{oversized}{usage}")).expect("fixture");
+        let file_size = std::fs::metadata(&path).expect("metadata").len() as i64;
+
+        let inspected = read_complete_jsonl_chunk(&path, meta.len() as i64, 1024)
+            .expect("bounded oversized read");
+        assert!(inspected.text.is_empty());
+        assert_eq!(inspected.consumed_bytes, 0);
+        assert!(
+            inspected.inspected_bytes <= 1024 + LIVE_TRANSCRIPT_DELIMITER_WINDOW_BYTES,
+            "reader exceeded its hard allocation/read limit"
+        );
+        assert_eq!(inspected.deferred_oversized_offset, Some(meta.len() as i64));
+
+        let conn = memory_conn_with_project();
+        index_adapter_session_bounded(
+            &CodexAdapter,
+            &path,
+            &conn,
+            "project",
+            "2026-06-12T09:00:00Z",
+            1024,
+        )
+        .expect("metadata bootstrap");
+        index_adapter_session_bounded(
+            &CodexAdapter,
+            &path,
+            &conn,
+            "project",
+            "2026-06-12T09:00:10Z",
+            1024,
+        )
+        .expect("oversized deferral");
+        let cursor_after_deferral: i64 = conn
+            .query_row(
+                "SELECT last_indexed_byte_offset FROM cc_sessions WHERE jsonl_path = ?1",
+                params![path.to_string_lossy().as_ref()],
+                |row| row.get(0),
+            )
+            .expect("deferred cursor");
+        assert_eq!(cursor_after_deferral, meta.len() as i64);
+        assert!(live_jsonl_row_is_deferred(
+            path.to_string_lossy().as_ref(),
+            cursor_after_deferral,
+            file_size
+        ));
+
+        // A later live tick returns from the marker without moving the cursor.
+        index_adapter_session_bounded(
+            &CodexAdapter,
+            &path,
+            &conn,
+            "project",
+            "2026-06-12T09:00:20Z",
+            1024,
+        )
+        .expect("remembered deferral");
+        let cursor_after_retry: i64 = conn
+            .query_row(
+                "SELECT last_indexed_byte_offset FROM cc_sessions WHERE jsonl_path = ?1",
+                params![path.to_string_lossy().as_ref()],
+                |row| row.get(0),
+            )
+            .expect("retry cursor");
+        assert_eq!(cursor_after_retry, cursor_after_deferral);
+
+        // Unbounded maintenance ignores the live marker and completes exactly.
+        index_adapter_session(
+            &CodexAdapter,
+            &path,
+            &conn,
+            "project",
+            "2026-06-12T10:00:00Z",
+        )
+        .expect("maintenance recovery");
+        let recovered: (i64, i64, i64) = conn
+            .query_row(
+                "SELECT last_indexed_byte_offset, message_count, total_input_tokens
+                   FROM cc_sessions WHERE jsonl_path = ?1",
+                params![path.to_string_lossy().as_ref()],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .expect("recovered session");
+        assert_eq!(recovered, (file_size, 1, 100));
+        assert!(!live_jsonl_row_is_deferred(
+            path.to_string_lossy().as_ref(),
+            file_size,
+            file_size
+        ));
+    }
+
+    #[test]
+    fn short_partial_live_row_is_not_deferred() {
+        let dir = tempfile::tempdir().expect("session directory");
+        let path = dir.path().join("partial.jsonl");
+        let partial = "{\"type\":\"response_item\"";
+        std::fs::write(&path, partial).expect("partial fixture");
+        let chunk = read_complete_jsonl_chunk(&path, 0, 1024).expect("partial read");
+        assert!(chunk.text.is_empty());
+        assert_eq!(chunk.inspected_bytes, partial.len());
+        assert_eq!(chunk.deferred_oversized_offset, None);
+    }
+
+    #[test]
+    fn deferred_live_row_cache_is_bounded() {
+        let mut deferred = HashMap::new();
+        for index in 0..(LIVE_DEFERRED_JSONL_MAX_ENTRIES + 32) {
+            insert_bounded_deferred_row(
+                &mut deferred,
+                format!("/fixture/session-{index}.jsonl"),
+                (index as i64, index as i64 + 1),
+            );
+        }
+        assert_eq!(deferred.len(), LIVE_DEFERRED_JSONL_MAX_ENTRIES);
+    }
+
+    #[test]
     fn live_policy_is_versioned_local_and_recoverable() {
         let conn = memory_conn_with_project();
         queries::set_preference(&conn, "last_indexed_at", "2026-07-12T12:00:00Z").unwrap();
@@ -3729,6 +4273,13 @@ mod tests {
             policy.last_full_indexed_at.as_deref(),
             Some("2026-07-12T12:00:00Z")
         );
+    }
+
+    #[test]
+    fn live_transcript_catch_up_has_a_conservative_tick_budget() {
+        assert!(LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET <= 64 * 1024);
+        assert!(LIVE_TRANSCRIPT_TICK_BUDGET_MS <= 200);
+        assert_eq!(LIVE_CODEX_DISCOVERY_SESSION_BUDGET, 1);
     }
 
     #[test]

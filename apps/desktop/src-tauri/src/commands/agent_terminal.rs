@@ -75,6 +75,13 @@ struct RunningCodexAgent {
     stop_requested: Arc<AtomicBool>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct LiveAgentSessionIdentity {
+    pub provider: String,
+    pub provider_session_id: Option<String>,
+    pub project_path: String,
+}
+
 enum AgentPtyCommand {
     Input(Vec<u8>),
     Resize(PtySize),
@@ -84,6 +91,34 @@ enum AgentPtyCommand {
 fn codex_agents() -> &'static Mutex<HashMap<String, RunningCodexAgent>> {
     static STORE: OnceLock<Mutex<HashMap<String, RunningCodexAgent>>> = OnceLock::new();
     STORE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+pub(crate) fn resolve_live_agent_session_identity(
+    terminal_id: &str,
+) -> Result<Option<LiveAgentSessionIdentity>, String> {
+    let sessions = codex_agents()
+        .lock()
+        .map_err(|error| format!("agent registry lock poisoned: {error}"))?;
+    resolve_live_agent_session_identity_from_registry(&sessions, terminal_id)
+}
+
+fn resolve_live_agent_session_identity_from_registry(
+    sessions: &HashMap<String, RunningCodexAgent>,
+    terminal_id: &str,
+) -> Result<Option<LiveAgentSessionIdentity>, String> {
+    let Some(session) = sessions.get(terminal_id.trim()) else {
+        return Ok(None);
+    };
+    let provider_session_id = session
+        .codex_session_id
+        .lock()
+        .map_err(|error| format!("agent session identity lock poisoned: {error}"))?
+        .clone();
+    Ok(Some(LiveAgentSessionIdentity {
+        provider: session.provider.as_str().to_string(),
+        provider_session_id,
+        project_path: session.cwd.clone(),
+    }))
 }
 
 fn ensure_agent_heartbeat(app: AppHandle) {
@@ -2109,6 +2144,33 @@ mod tests {
         assert_eq!(snapshot.agent_events[0].seq, 7);
         assert_eq!(snapshot.agent_events[0].at_ms, 456);
         assert!(snapshot.agent_events[0].data.contains("\"event\":\"stop\""));
+    }
+
+    #[test]
+    fn resolves_live_attachment_identity_from_the_runtime_registry() {
+        let (tx, _rx) = mpsc::channel();
+        let mut agent = test_running_agent(tx, Some(42), Instant::now());
+        agent.provider = AgentProvider::Claude;
+        agent.cwd = "/tmp/authoritative-repo".to_string();
+        agent.codex_session_id = Arc::new(Mutex::new(Some("provider-session".to_string())));
+        let mut sessions = HashMap::new();
+        sessions.insert("terminal-1".to_string(), agent);
+
+        let identity = resolve_live_agent_session_identity_from_registry(&sessions, "terminal-1")
+            .expect("resolve identity")
+            .expect("live terminal");
+
+        assert_eq!(identity.provider, "claude");
+        assert_eq!(identity.project_path, "/tmp/authoritative-repo");
+        assert_eq!(
+            identity.provider_session_id.as_deref(),
+            Some("provider-session")
+        );
+        assert!(
+            resolve_live_agent_session_identity_from_registry(&sessions, "missing")
+                .expect("missing lookup")
+                .is_none()
+        );
     }
 
     #[test]

@@ -14,6 +14,12 @@ describe('agent live output', () => {
     assert.equal(cleanAgentLiveOutput(raw), 'Assistant answer\nNext line');
   });
 
+  it('preserves visible output between separate OSC sequences', () => {
+    const raw = '\u001b]0;first\u001b\\Visible answer\u001b]0;second\u001b\\';
+
+    assert.equal(cleanAgentLiveOutput(raw), 'Visible answer');
+  });
+
   it('labels lifecycle-only Claude output honestly', () => {
     const view = buildAgentLiveOutputView({
       provider: 'claude',

@@ -21,7 +21,7 @@ export interface AgentLiveOutputView {
  */
 export function cleanAgentLiveOutput(value: string, limit = DEFAULT_OUTPUT_LIMIT): string {
   // biome-ignore lint/suspicious/noControlCharactersInRegex: PTY sanitization intentionally matches OSC control bytes.
-  const withoutOsc = value.replace(/\u001b\][^\u0007]*(?:\u0007|\u001b\\)/g, '');
+  const withoutOsc = value.replace(/\u001b\][\s\S]*?(?:\u0007|\u001b\\)/g, '');
   // biome-ignore lint/suspicious/noControlCharactersInRegex: PTY sanitization intentionally matches CSI escape bytes.
   const withoutCsi = withoutOsc.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, '');
   const withoutControls = withoutCsi

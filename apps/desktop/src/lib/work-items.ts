@@ -46,8 +46,6 @@ export interface UpdateWorkItemInput {
   project_path?: string;
   preferred_provider?: WorkItemProvider;
   assigned_agent?: string;
-  agent_terminal_id?: string;
-  agent_session_id?: string;
   change_identity?: string;
   review_id?: string;
   review_score?: number;
