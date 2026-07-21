@@ -22,21 +22,6 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
   authoritative provider/repository attachment checks, bounded live transcript
   indexing, and honest direct provider output are implemented and
   native-qualified and shipped in v1.3.0.
-- **Agent attention clarity** — provider-neutral lifecycle handling, confirmed
-  Codex and session-scoped Claude attention signals, global prioritization, and
-  resume-confirmed clearing are implemented locally; release qualification is
-  pending.
-- **Work conversation baseline** — provider-aware model choice, honest thinking
-  state, Enter-to-send / Shift+Enter multiline input, searchable conversations,
-  safe live-session archive, expandable project groups, and visible Working /
-  Needs help / Paused / Failed / Completed / Disconnected states are implemented
-  locally. Indexed Codex and Claude history is prefilled only after a bounded
-  local check confirms that its working directory still exists; live duplicates
-  and missing checkouts are excluded. Release qualification is pending.
-- **Top-level Board** — the persistent Plan/Build/Review/Verify/Done board now
-  has its own `/board` destination after Work. Work is conversation-only, live
-  agent state survives navigation, and specialist handoffs preserve repository
-  context. Implemented and native-qualified locally; not released.
 - **External benchmark case curation** — 27 public cases shipped; real
   agent-PR case curation pending before external catch-rate claims.
 - **Repo Unpacked + history workbench** — canonical structural graph,
@@ -67,6 +52,10 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Recent shipped
 
+- 2026-07-21 — v1.4.0 shipped the conversation-first Work workspace: model
+  selection, lifecycle-derived thinking and attention, explicit review-before-
+  approval, Enter-to-send, safe archive, verified project-grouped history, and
+  a separate persistent Board connected to Review, Testing, and Repo Unpack.
 - 2026-07-20 — Work items can attach live or indexed Codex/Claude sessions
   without launching another process; direct PTY output remains visibly distinct
   from structured lifecycle evidence (shipped in v1.3.0).
