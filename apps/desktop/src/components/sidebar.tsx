@@ -3,6 +3,7 @@ import { type ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { BrandMark } from '@/components/brand-mark';
+import ResourceChip from '@/components/ResourceChip';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -184,28 +185,33 @@ export default function Sidebar() {
           })}
         </div>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to={settingsNavItem.href}
-              aria-current={isActive(settingsNavItem.href) ? 'page' : undefined}
-              className={cn(
-                'ml-auto flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors duration-150',
-                isActive(settingsNavItem.href)
-                  ? 'border-amber-300/20 bg-amber-300/[0.08] text-amber-100'
-                  : 'border-transparent text-zinc-400 hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-zinc-100'
-              )}
-            >
-              {settingsNavItem.icon}
-              <span className="hidden lg:inline">Settings</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="max-w-48 text-[11px]">
-            <div className="font-medium text-slate-200">Settings</div>
-            <div className="mt-0.5 text-slate-500">Providers and preferences</div>
-            <div className="mt-1 font-mono text-slate-500">g ,</div>
-          </TooltipContent>
-        </Tooltip>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="hidden xl:block">
+            <ResourceChip />
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to={settingsNavItem.href}
+                aria-current={isActive(settingsNavItem.href) ? 'page' : undefined}
+                className={cn(
+                  'flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors duration-150',
+                  isActive(settingsNavItem.href)
+                    ? 'border-amber-300/20 bg-amber-300/[0.08] text-amber-100'
+                    : 'border-transparent text-zinc-400 hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-zinc-100'
+                )}
+              >
+                {settingsNavItem.icon}
+                <span className="hidden lg:inline">Settings</span>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-48 text-[11px]">
+              <div className="font-medium text-slate-200">Settings</div>
+              <div className="mt-0.5 text-slate-500">Providers and preferences</div>
+              <div className="mt-1 font-mono text-slate-500">g ,</div>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </nav>
     </TooltipProvider>
   );

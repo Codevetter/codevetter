@@ -1992,7 +1992,7 @@ function LocalUsagePanel({
     <div className="cv-frame overflow-hidden">
       <div className="cv-terminal-bar h-10 px-4">
         <BarChart3 size={14} className="text-[var(--cv-accent)]" />
-        <span className="cv-label">Local usage · indexed spend</span>
+        <span className="cv-label">Local usage · API-equivalent estimate</span>
       </div>
 
       <div className="flex flex-col gap-2 border-b border-[var(--cv-line)] px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">

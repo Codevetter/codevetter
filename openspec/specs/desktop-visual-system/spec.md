@@ -15,7 +15,7 @@ CodeVetter SHALL render Usage, Repo Unpack, Work, Board, Review, Testing, and Se
 
 ### Requirement: Navigation is consolidated and accessible
 
-The desktop shell SHALL use one compact fixed top rail with Usage, Repo Unpack, Work, Board, Review, and Testing as product pillars and Settings as a separated utility. Resource telemetry SHALL remain in Usage rather than global navigation. Navigation animation MUST NOT resize or reposition the main content, and keyboard shortcuts and persistent route mounting MUST remain functional.
+The desktop shell SHALL use one compact fixed top rail with Usage, Repo Unpack, Work, Board, Review, and Testing as product pillars and Settings as a separated utility. On desktop-width windows, the top rail SHALL retain compact CodeVetter CPU and RAM telemetry with expanded process details on demand; background sampling MUST pause while the window is hidden. Navigation animation MUST NOT resize or reposition the main content, and keyboard shortcuts and persistent route mounting MUST remain functional.
 
 #### Scenario: User navigates with the keyboard
 
