@@ -1,4 +1,5 @@
 import {
+  Archive,
   ArrowLeft,
   ArrowRight,
   Bot,
@@ -7,6 +8,8 @@ import {
   GitBranch,
   Loader2,
   Plus,
+  RefreshCw,
+  ShieldCheck,
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -23,13 +26,30 @@ import {
 import { Input } from '@/components/ui/input';
 import {
   createWorkItem,
+  archiveManagedWorkRun,
+  createIntentClosure,
+  createManagedWorkRun,
   deleteWorkItem,
+  getManagedWorkHandoff,
   isTauriAvailable,
+  listIntentClosures,
+  listManagedProviderProfiles,
+  listManagedWorkRuns,
   listWorkItems,
+  reconcileManagedWorkRun,
+  runManagedWorkHook,
   transitionWorkItem,
   updateWorkItem,
+  type IntentClosureReceipt,
+  type ManagedProviderProfile,
+  type ManagedWorkRun,
   type RepoProject,
 } from '@/lib/tauri-ipc';
+import {
+  intentClosureEvidenceLabel,
+  managedRunCanRecover,
+  managedRunStatusLabel,
+} from '@/lib/managed-work';
 import {
   groupWorkItems,
   WORK_ITEM_STATUSES,
@@ -53,6 +73,7 @@ interface WorkBoardProps {
   repoProjects: RepoProject[];
   sessionLinks: WorkSessionLink[];
   onBuild: (item: WorkItem) => void;
+  onManagedBuild: (item: WorkItem, run: ManagedWorkRun) => Promise<void>;
   onAttachSession: (item: WorkItem, session: WorkSessionLink) => Promise<WorkItem>;
 }
 
@@ -78,6 +99,7 @@ export function WorkBoard({
   repoProjects,
   sessionLinks,
   onBuild,
+  onManagedBuild,
   onAttachSession,
 }: WorkBoardProps) {
   const navigate = useNavigate();
@@ -93,6 +115,8 @@ export function WorkBoard({
   const [createStatus, setCreateStatus] = useState<WorkItemStatus>('plan');
   const [focusItemId, setFocusItemId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  const [managedRuns, setManagedRuns] = useState<ManagedWorkRun[]>([]);
+  const [managedItem, setManagedItem] = useState<WorkItem | null>(null);
   const grouped = useMemo(() => groupWorkItems(items), [items]);
 
   const refresh = useCallback(async () => {
@@ -102,7 +126,15 @@ export function WorkBoard({
       return;
     }
     try {
-      setItems(await listWorkItems({ limit: 250 }));
+      const [nextItems, nextRuns] = await Promise.all([
+        listWorkItems({ limit: 250 }),
+        listManagedWorkRuns(),
+      ]);
+      setItems(nextItems);
+      // Older desktop mocks and partially upgraded clients can return no value
+      // for the additive managed-work projection. Keep the existing Board
+      // usable until that optional evidence is available.
+      setManagedRuns(Array.isArray(nextRuns) ? nextRuns : []);
       setError(null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
@@ -329,6 +361,8 @@ export function WorkBoard({
                   item={item}
                   busy={busyId === item.id}
                   onBuild={() => onBuild(item)}
+                  managedRun={managedRuns.find((run) => run.workItemId === item.id) ?? null}
+                  onManage={() => setManagedItem(item)}
                   onEdit={() => openEdit(item)}
                   onMove={(nextStatus) => void move(item, nextStatus)}
                   onReview={() =>
@@ -371,6 +405,23 @@ export function WorkBoard({
         onDelete={editingItem ? () => void remove(editingItem) : undefined}
       />
 
+      <ManagedWorkDialog
+        item={managedItem}
+        runs={managedItem ? managedRuns.filter((run) => run.workItemId === managedItem.id) : []}
+        onOpenChange={(open) => !open && setManagedItem(null)}
+        onRunChange={(run) =>
+          setManagedRuns((current) => [
+            run,
+            ...current.filter((candidate) => candidate.id !== run.id),
+          ])
+        }
+        onLaunch={async (run) => {
+          if (!managedItem) return;
+          await onManagedBuild(managedItem, run);
+          setManagedItem(null);
+        }}
+      />
+
       <Dialog
         open={Boolean(completionItem)}
         onOpenChange={(open) => !open && setCompletionItem(null)}
@@ -407,6 +458,8 @@ function WorkCard({
   item,
   busy,
   onBuild,
+  managedRun,
+  onManage,
   onEdit,
   onMove,
   onReview,
@@ -418,6 +471,8 @@ function WorkCard({
   item: WorkItem;
   busy: boolean;
   onBuild: () => void;
+  managedRun: ManagedWorkRun | null;
+  onManage: () => void;
   onEdit: () => void;
   onMove: (status: WorkItemStatus) => void;
   onReview: () => void;
@@ -523,16 +578,339 @@ function WorkCard({
             <Check size={12} /> Verify
           </button>
         ) : item.status !== 'done' ? (
-          <button
-            type="button"
-            onClick={onBuild}
-            className="flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-cyan-100 hover:bg-cyan-300/[0.07]"
-          >
-            <Bot size={12} /> Open
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onManage}
+              className="flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-amber-100 hover:bg-amber-300/[0.07]"
+            >
+              <ShieldCheck size={12} /> {managedRun ? managedRun.state : 'Managed'}
+            </button>
+            <button
+              type="button"
+              onClick={onBuild}
+              className="flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-cyan-100 hover:bg-cyan-300/[0.07]"
+            >
+              <Bot size={12} /> Open
+            </button>
+          </div>
         ) : null}
       </div>
     </article>
+  );
+}
+
+function ManagedWorkDialog({
+  item,
+  runs,
+  onOpenChange,
+  onRunChange,
+  onLaunch,
+}: {
+  item: WorkItem | null;
+  runs: ManagedWorkRun[];
+  onOpenChange: (open: boolean) => void;
+  onRunChange: (run: ManagedWorkRun) => void;
+  onLaunch: (run: ManagedWorkRun) => Promise<void>;
+}) {
+  const [profiles, setProfiles] = useState<ManagedProviderProfile[]>([]);
+  const [profileId, setProfileId] = useState('');
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [handoff, setHandoff] = useState<Record<string, unknown> | null>(null);
+  const [hookProgram, setHookProgram] = useState('pnpm');
+  const [hookArgs, setHookArgs] = useState('lint');
+  const [hookResult, setHookResult] = useState<string | null>(null);
+  const [closureReason, setClosureReason] = useState('');
+  const [closureDisposition, setClosureDisposition] =
+    useState<IntentClosureReceipt['disposition']>('satisfied');
+  const [closures, setClosures] = useState<IntentClosureReceipt[]>([]);
+  const run = runs[0] ?? null;
+
+  useEffect(() => {
+    if (!item) return;
+    setError(null);
+    setHandoff(null);
+    setHookResult(null);
+    void Promise.all([listManagedProviderProfiles(), listIntentClosures(item.id)])
+      .then(([nextProfiles, nextClosures]) => {
+        const compatible = (Array.isArray(nextProfiles) ? nextProfiles : []).filter(
+          (profile) => profile.provider === item.preferred_provider
+        );
+        setProfiles(compatible);
+        setProfileId((current) =>
+          compatible.some((profile) => profile.id === current)
+            ? current
+            : (compatible.find((profile) => profile.isDefault)?.id ?? compatible[0]?.id ?? '')
+        );
+        setClosures(Array.isArray(nextClosures) ? nextClosures : []);
+      })
+      .catch((caught) => setError(caught instanceof Error ? caught.message : String(caught)));
+  }, [item]);
+
+  async function perform(label: string, action: () => Promise<void>) {
+    setBusy(label);
+    setError(null);
+    try {
+      await action();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function createAndLaunch() {
+    if (!item?.project_path || !profileId) return;
+    await perform('create', async () => {
+      const created = await createManagedWorkRun({
+        workItemId: item.id,
+        provider: item.preferred_provider,
+        profileId,
+        repoPath: item.project_path!,
+      });
+      onRunChange(created);
+      await onLaunch(created);
+    });
+  }
+
+  async function reconcile() {
+    if (!run) return;
+    await perform('reconcile', async () => onRunChange(await reconcileManagedWorkRun(run.id)));
+  }
+
+  async function check() {
+    if (!run) return;
+    const args = hookArgs.trim() ? hookArgs.trim().split(/\s+/) : [];
+    await perform('check', async () => {
+      const result = await runManagedWorkHook({
+        runId: run.id,
+        kind: 'check',
+        program: hookProgram.trim(),
+        args,
+      });
+      setHookResult(
+        `${result.success ? 'Passed' : result.timedOut ? 'Timed out' : 'Failed'} · ${result.durationMs} ms · ${result.changeIdentity.slice(0, 24)}`
+      );
+      onRunChange(await reconcileManagedWorkRun(run.id));
+    });
+  }
+
+  async function inspectHandoff() {
+    if (!run) return;
+    await perform('handoff', async () => setHandoff(await getManagedWorkHandoff(run.id)));
+  }
+
+  async function archive() {
+    if (!run) return;
+    await perform('archive', async () => onRunChange(await archiveManagedWorkRun(run.id)));
+  }
+
+  async function closeIntent() {
+    if (!item || !closureReason.trim()) return;
+    await perform('closure', async () => {
+      const receipt = await createIntentClosure({
+        workItemId: item.id,
+        managedRunId: run?.id ?? null,
+        disposition: closureDisposition,
+        reason: closureReason.trim(),
+      });
+      setClosures((current) => [receipt, ...current]);
+      setClosureReason('');
+    });
+  }
+
+  return (
+    <Dialog open={Boolean(item)} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <div className="max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.1] bg-[#111215] p-6">
+          <DialogHeader>
+            <DialogTitle>Managed work</DialogTitle>
+            <DialogDescription>
+              Isolated worktree, explicit profile, bounded checks, and evidence handoff. Publishing
+              is never automatic.
+            </DialogDescription>
+          </DialogHeader>
+          {error ? (
+            <p
+              role="alert"
+              className="mt-4 rounded-lg bg-rose-300/[0.07] p-3 text-xs text-rose-100"
+            >
+              {error}
+            </p>
+          ) : null}
+          {!run ? (
+            <div className="mt-5 space-y-4">
+              <p className="text-xs leading-5 text-zinc-400">
+                CodeVetter will branch from the repository’s exact current revision into a local
+                temporary worktree. The selected profile changes the launched provider environment;
+                credential contents are not read.
+              </p>
+              <label className="block text-xs text-zinc-400">
+                {item?.preferred_provider === 'claude' ? 'Claude' : 'Codex'} profile
+                <select
+                  value={profileId}
+                  onChange={(event) => setProfileId(event.target.value)}
+                  className="mt-1.5 h-10 w-full rounded-lg border border-white/[0.1] bg-white/[0.035] px-3 text-sm text-zinc-200 outline-none"
+                >
+                  {profiles.length === 0 ? <option value="">No usable profile found</option> : null}
+                  {profiles.map((profile) => (
+                    <option
+                      key={profile.id}
+                      value={profile.id}
+                      disabled={!profile.executableAvailable}
+                    >
+                      {profile.label}
+                      {profile.executableAvailable ? '' : ' · CLI unavailable'}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button
+                type="button"
+                onClick={() => void createAndLaunch()}
+                disabled={!item?.project_path || !profileId || busy !== null}
+                className="gap-2"
+              >
+                {busy === 'create' ? (
+                  <Loader2 className="animate-spin" size={14} />
+                ) : (
+                  <Bot size={14} />
+                )}
+                Create isolated run
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-5 space-y-5">
+              <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3 text-xs">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium capitalize text-zinc-200">
+                    {managedRunStatusLabel(run)}
+                  </span>
+                  <span className="font-mono text-zinc-500">{run.baseRevision.slice(0, 12)}</span>
+                </div>
+                <p className="mt-2 break-all text-zinc-400">{run.worktreePath}</p>
+                {run.disconnectedReason ? (
+                  <p className="mt-2 text-amber-200">{run.disconnectedReason}</p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void reconcile()}
+                  >
+                    <RefreshCw size={13} className="mr-1.5" /> Reconcile
+                  </Button>
+                  {managedRunCanRecover(run) ? (
+                    <Button type="button" size="sm" onClick={() => void onLaunch(run)}>
+                      Recover conversation
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void inspectHandoff()}
+                  >
+                    Inspect handoff
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-medium text-zinc-200">Bounded checkpoint</h3>
+                <div className="mt-2 grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] gap-2">
+                  <Input
+                    aria-label="Check program"
+                    value={hookProgram}
+                    onChange={(event) => setHookProgram(event.target.value)}
+                    placeholder="pnpm"
+                  />
+                  <Input
+                    aria-label="Check arguments"
+                    value={hookArgs}
+                    onChange={(event) => setHookArgs(event.target.value)}
+                    placeholder="test:unit"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void check()}
+                    disabled={!hookProgram.trim() || busy !== null}
+                  >
+                    Check
+                  </Button>
+                </div>
+                <p className="mt-1.5 text-[11px] text-zinc-500">
+                  Exact program and arguments only; shells, publish commands, and destructive git
+                  operations are rejected.
+                </p>
+                {hookResult ? <p className="mt-2 text-xs text-zinc-300">{hookResult}</p> : null}
+              </div>
+
+              {handoff ? (
+                <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded-lg border border-white/[0.07] bg-black/20 p-3 text-[10px] leading-4 text-zinc-400">
+                  {JSON.stringify(handoff, null, 2)}
+                </pre>
+              ) : null}
+
+              <div className="border-t border-white/[0.07] pt-4">
+                <h3 className="text-xs font-medium text-zinc-200">Intent closure</h3>
+                <div className="mt-2 grid grid-cols-[minmax(0,0.8fr)_minmax(0,2fr)_auto] gap-2">
+                  <select
+                    aria-label="Intent disposition"
+                    value={closureDisposition}
+                    onChange={(event) =>
+                      setClosureDisposition(
+                        event.target.value as IntentClosureReceipt['disposition']
+                      )
+                    }
+                    className="h-10 rounded-lg border border-white/[0.1] bg-white/[0.035] px-3 text-xs text-zinc-200 outline-none"
+                  >
+                    <option value="satisfied">Satisfied</option>
+                    <option value="partially_satisfied">Partially satisfied</option>
+                    <option value="not_satisfied">Not satisfied</option>
+                    <option value="waived">Waived</option>
+                  </select>
+                  <Input
+                    aria-label="Intent closure reason"
+                    value={closureReason}
+                    onChange={(event) => setClosureReason(event.target.value)}
+                    placeholder="Evidence-based reason"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void closeIntent()}
+                    disabled={!closureReason.trim() || busy !== null}
+                  >
+                    Record
+                  </Button>
+                </div>
+                {closures[0] ? (
+                  <p className="mt-2 text-[11px] text-zinc-400">
+                    Latest: {intentClosureEvidenceLabel(closures[0])}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="flex justify-end border-t border-white/[0.07] pt-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => void archive()}
+                  disabled={busy !== null}
+                  className="gap-2 text-zinc-400"
+                >
+                  <Archive size={14} /> Archive clean worktree
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

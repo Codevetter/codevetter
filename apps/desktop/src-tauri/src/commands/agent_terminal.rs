@@ -378,6 +378,7 @@ fn collect_agent_snapshots(
 pub fn start_codex_agent_terminal(
     app: AppHandle,
     session_id: String,
+    profile_path: Option<String>,
     cwd: Option<String>,
     prompt: Option<String>,
     model: Option<String>,
@@ -392,6 +393,7 @@ pub fn start_codex_agent_terminal(
         app,
         AgentProvider::Codex,
         session_id,
+        profile_path,
         cwd,
         prompt,
         model,
@@ -409,6 +411,7 @@ pub fn start_agent_terminal(
     app: AppHandle,
     provider: AgentProvider,
     session_id: String,
+    profile_path: Option<String>,
     cwd: Option<String>,
     prompt: Option<String>,
     model: Option<String>,
@@ -423,6 +426,7 @@ pub fn start_agent_terminal(
         app,
         provider,
         session_id,
+        profile_path,
         cwd,
         prompt,
         model,
@@ -440,6 +444,7 @@ fn start_agent_terminal_impl(
     app: AppHandle,
     provider: AgentProvider,
     session_id: String,
+    profile_path: Option<String>,
     cwd: Option<String>,
     prompt: Option<String>,
     model: Option<String>,
@@ -473,6 +478,7 @@ fn start_agent_terminal_impl(
     }
 
     let cwd = resolve_cwd(cwd.as_deref())?;
+    let profile_path = resolve_agent_profile_path(provider, profile_path.as_deref())?;
     let agent_path = resolve_agent_cli_path(provider.as_str());
     let resume_session_id = resume_session_id
         .as_deref()
@@ -500,6 +506,7 @@ fn start_agent_terminal_impl(
             model.as_deref(),
             sandbox.as_deref(),
             approval_policy.as_deref(),
+            profile_path.as_deref(),
         ) {
             Ok(result) => return Ok(result),
             Err(error) => {
@@ -558,6 +565,15 @@ fn start_agent_terminal_impl(
     }
     for (key, value) in agent_terminal_env(provider) {
         command.env(key, value);
+    }
+    if let Some(profile_path) = profile_path.as_deref() {
+        command.env(
+            match provider {
+                AgentProvider::Codex => "CODEX_HOME",
+                AgentProvider::Claude => "CLAUDE_CONFIG_DIR",
+            },
+            profile_path.as_os_str(),
+        );
     }
     if let Some(bridge) = claude_hook_bridge.as_ref() {
         command.env(
@@ -2200,6 +2216,47 @@ fn resolve_cwd(cwd: Option<&str>) -> Result<PathBuf, String> {
     Ok(canonical)
 }
 
+fn resolve_agent_profile_path(
+    provider: AgentProvider,
+    profile_path: Option<&str>,
+) -> Result<Option<PathBuf>, String> {
+    let Some(raw) = profile_path
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    else {
+        return Ok(None);
+    };
+    let home = default_cwd()
+        .canonicalize()
+        .map_err(|error| format!("resolve home directory: {error}"))?;
+    let path = expand_home(PathBuf::from(raw));
+    let canonical = path
+        .canonicalize()
+        .map_err(|error| format!("resolve agent profile {}: {error}", path.display()))?;
+    if !canonical.is_dir() || !canonical.starts_with(&home) {
+        return Err("agent profile must be a directory inside the current home directory".into());
+    }
+    let name = canonical
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| "agent profile directory name is invalid".to_string())?;
+    let allowed = match provider {
+        AgentProvider::Codex => name == ".codex" || name.starts_with(".codex-"),
+        AgentProvider::Claude => name == ".claude" || name.starts_with(".claude-"),
+    };
+    if !allowed {
+        return Err(format!(
+            "{} profiles must use a {} directory name",
+            provider.display_name(),
+            match provider {
+                AgentProvider::Codex => ".codex or .codex-*",
+                AgentProvider::Claude => ".claude or .claude-*",
+            }
+        ));
+    }
+    Ok(Some(canonical))
+}
+
 fn parse_cd_command(command: &str) -> Option<&str> {
     let trimmed = command.trim();
     if trimmed == "cd" {
@@ -2335,6 +2392,32 @@ mod tests {
     fn resolves_empty_cwd_to_existing_directory() {
         let cwd = resolve_cwd(None).expect("cwd");
         assert!(cwd.is_dir());
+    }
+
+    #[test]
+    fn rejects_provider_profile_with_the_wrong_directory_name() {
+        let home = default_cwd();
+        let error =
+            resolve_agent_profile_path(AgentProvider::Codex, Some(home.to_string_lossy().as_ref()))
+                .expect_err("home itself is not a Codex profile");
+        assert!(error.contains(".codex"));
+    }
+
+    #[test]
+    fn accepts_existing_default_profile_when_present() {
+        let candidate = default_cwd().join(".codex");
+        if !candidate.is_dir() {
+            return;
+        }
+        let resolved = resolve_agent_profile_path(
+            AgentProvider::Codex,
+            Some(candidate.to_string_lossy().as_ref()),
+        )
+        .expect("profile");
+        assert_eq!(
+            resolved.as_deref(),
+            candidate.canonicalize().ok().as_deref()
+        );
     }
 
     #[test]

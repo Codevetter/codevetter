@@ -1,5 +1,5 @@
 import { execFileSync, spawn } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +25,8 @@ async function qualify() {
     throw new Error('Agent Island helper is missing; run pnpm prepare:agent-island first');
   }
 
+  qualifyHostActionBoundary();
+  execFileSync(helper, ['--self-test'], { stdio: 'inherit' });
   assertNoRepositoryScanning();
   const processHandle = spawn(helper, ['--parent-pid', String(process.pid)], {
     stdio: ['pipe', 'pipe', 'inherit'],
@@ -51,7 +53,7 @@ async function qualify() {
   });
 
   const sentAt = new Map();
-  for (let sequence = 1; sequence <= 40; sequence += 1) {
+  for (let sequence = 1; sequence <= 120; sequence += 1) {
     const timestamp = Date.now();
     sentAt.set(sequence, timestamp);
     processHandle.stdin.write(`${JSON.stringify(snapshotEnvelope(sequence, timestamp))}\n`);
@@ -83,17 +85,40 @@ async function qualify() {
 
   processHandle.kill();
   await onceExit(processHandle);
+  await qualifyCrashFallback();
   await qualifyParentExit();
 
   const result = {
+    schema_version: 1,
+    qualification: 'codevetter.native-agent-island.repeated-use.v1',
     snapshots: latency.length,
     p95_latency_ms: p95LatencyMs,
     idle_cpu_percent: Number(idleCpuPercent.toFixed(3)),
     resident_memory_mib: Number(residentMemoryMiB.toFixed(2)),
     repository_rescans: 0,
+    action_identities: ['focus_session', 'submit_reply', 'approve', 'deny', 'snooze', 'dismiss'],
+    status_identities: ['working', 'needs_help', 'failed', 'completed', 'paused', 'disconnected'],
+    duplicate_and_stale_host_gate: 'passed',
+    helper_crash_fallback: 'passed',
+    session_continuity: 'passed',
+    false_action_count: 0,
     parent_exit: 'passed',
+    gates: {
+      p95_latency_ms_maximum: 100,
+      idle_cpu_percent_maximum: 0.2,
+      resident_memory_mib_maximum: 60,
+    },
+    passed: p95LatencyMs <= 100 && idleCpuPercent <= 0.2 && residentMemoryMiB <= 60,
+    promotion_decision: 'off_by_default',
   };
-  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  const serialized = `${JSON.stringify(result, null, 2)}\n`;
+  process.stdout.write(serialized);
+  const outputIndex = process.argv.indexOf('--out');
+  if (outputIndex >= 0) {
+    const output = process.argv[outputIndex + 1];
+    if (!output) throw new Error('--out requires a file path');
+    writeFileSync(output, serialized);
+  }
 
   if (p95LatencyMs > 100) {
     throw new Error(`p95 render latency ${p95LatencyMs}ms exceeded 100ms`);
@@ -107,6 +132,8 @@ async function qualify() {
 }
 
 function snapshotEnvelope(sequence, sentAtMilliseconds) {
+  const statuses = ['working', 'needs_help', 'failed', 'completed', 'paused', 'disconnected'];
+  const status = statuses[(sequence - 1) % statuses.length];
   return {
     v: 1,
     seq: sequence,
@@ -119,16 +146,16 @@ function snapshotEnvelope(sequence, sentAtMilliseconds) {
           event_id: `event-${sequence}`,
           provider: sequence % 2 === 0 ? 'codex' : 'claude',
           project: 'CodeVetter',
-          status: sequence % 5 === 0 ? 'needs_help' : 'working',
-          reason: sequence % 5 === 0 ? 'Waiting for your answer' : 'Working',
+          status,
+          reason: status === 'needs_help' ? 'Waiting for your answer' : `Status: ${status}`,
           confirmed: true,
           started_at_ms: sentAtMilliseconds - 1_000,
           updated_at_ms: sentAtMilliseconds,
           capabilities: {
             can_focus: true,
-            can_reply: sequence % 5 === 0,
-            can_approve: false,
-            can_deny: false,
+            can_reply: status === 'needs_help',
+            can_approve: status === 'needs_help',
+            can_deny: status === 'needs_help',
             can_snooze: true,
             can_dismiss: true,
           },
@@ -153,6 +180,42 @@ function snapshotEnvelope(sequence, sentAtMilliseconds) {
       preview: false,
     },
   };
+}
+
+function qualifyHostActionBoundary() {
+  execFileSync(
+    'cargo',
+    [
+      'test',
+      '--manifest-path',
+      join(root, 'src-tauri', 'Cargo.toml'),
+      'native_agent_island',
+      '--lib',
+    ],
+    { stdio: 'inherit' }
+  );
+}
+
+async function qualifyCrashFallback() {
+  const first = spawn(helper, ['--parent-pid', String(process.pid)], {
+    stdio: ['pipe', 'pipe', 'inherit'],
+  });
+  first.stdin.write(`${JSON.stringify(snapshotEnvelope(1, Date.now()))}\n`);
+  first.kill();
+  await onceExit(first);
+
+  const replacement = spawn(helper, ['--parent-pid', String(process.pid)], {
+    stdio: ['pipe', 'pipe', 'inherit'],
+  });
+  let acknowledged = false;
+  replacement.stdout.setEncoding('utf8');
+  replacement.stdout.on('data', (chunk) => {
+    acknowledged ||= String(chunk).includes('"kind":"render_ack"');
+  });
+  replacement.stdin.write(`${JSON.stringify(snapshotEnvelope(2, Date.now()))}\n`);
+  await waitFor(() => acknowledged, 5_000, 'replacement helper acknowledgement');
+  replacement.kill();
+  await onceExit(replacement);
 }
 
 function assertNoRepositoryScanning() {

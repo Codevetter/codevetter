@@ -8,6 +8,7 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
     super::history_graph_schema::run_migration(conn)?;
     super::mcp_schema::run_migration(conn)?;
     super::structural_graph_schema::run_migration(conn)?;
+    super::verification_workbench_schema::run_migration(conn)?;
 
     // History annotations remain append-only, but newer clients attach an explicit
     // correction decision and optional evidence target. Additive columns keep old

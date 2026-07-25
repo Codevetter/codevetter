@@ -673,6 +673,29 @@ test.describe('Work surface', () => {
     ).toEqual([]);
   });
 
+  test('keeps managed work explicit and usable when additive evidence is unavailable', async ({
+    page,
+  }) => {
+    await page.getByRole('link', { name: 'Board' }).click();
+    await page.getByRole('button', { name: 'New work' }).click();
+    await page.getByLabel('Outcome').fill('Qualify an isolated managed run');
+    await page.getByRole('button', { name: 'Create work' }).click();
+    await page.getByRole('button', { name: 'Managed', exact: true }).click();
+
+    await expect(page.getByRole('heading', { name: 'Managed work' })).toBeVisible();
+    await expect(page.getByText('Publishing is never automatic.')).toBeVisible();
+    await expect(page.getByLabel('Codex profile')).toHaveValue('');
+    await expect(page.getByLabel('Codex profile')).toContainText('No usable profile found');
+    await expect(page.getByRole('button', { name: 'Create isolated run' })).toBeDisabled();
+
+    await page.setViewportSize({ width: 800, height: 650 });
+    const layout = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
+  });
+
   test('attaches historical evidence without launching another agent', async ({ page }) => {
     await page.getByRole('link', { name: 'Board' }).click();
     await page.getByRole('button', { name: 'New work' }).click();

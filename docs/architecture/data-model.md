@@ -17,6 +17,9 @@ All product state lives in a single local SQLite database managed by
 The webview never touches SQLite directly. It goes through Tauri commands →
 `queries.rs`.
 
+The additive verification-workbench identity and stale-state map is documented
+in [verification-workbench.md](./verification-workbench.md).
+
 ## Table groups
 
 Schema is created with `CREATE TABLE IF NOT EXISTS` on startup; one-time

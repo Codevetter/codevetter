@@ -1289,6 +1289,54 @@ mod tests {
     }
 
     #[test]
+    fn all_action_identities_are_capability_scoped_and_duplicate_safe() {
+        let _guard = test_guard();
+        let capabilities = NativeAgentCapabilities {
+            can_focus: true,
+            can_reply: true,
+            can_approve: true,
+            can_deny: true,
+            can_snooze: true,
+            can_dismiss: true,
+        };
+        {
+            let mut state = runtime().lock().expect("state");
+            *state = pending(capabilities);
+        }
+        for action in [
+            "focus_session",
+            "submit_reply",
+            "approve",
+            "deny",
+            "snooze",
+            "dismiss",
+        ] {
+            assert!(
+                validate_pending_action(action, "session-1", "event-1").is_ok(),
+                "{action}"
+            );
+        }
+        assert!(validate_pending_action("unknown", "session-1", "event-1").is_err());
+        {
+            let mut state = runtime().lock().expect("state");
+            state.consumed.insert("event-1".to_string());
+        }
+        for action in [
+            "focus_session",
+            "submit_reply",
+            "approve",
+            "deny",
+            "snooze",
+            "dismiss",
+        ] {
+            assert!(
+                validate_pending_action(action, "session-1", "event-1").is_err(),
+                "consumed {action}"
+            );
+        }
+    }
+
+    #[test]
     fn bounds_protocol_content_and_privacy_text() {
         assert!(bounded_required(Some(&"x".repeat(MAX_IDENTIFIER_CHARS + 1)), "id").is_err());
         assert!(bounded_reason(&"word ".repeat(100)).chars().count() <= 161);

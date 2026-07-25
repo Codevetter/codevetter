@@ -16,6 +16,14 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Active work
 
+- **Verification workbench release candidate** — additive local evidence now
+  connects retention, outcome calibration, managed Work runs, intent closure,
+  real-product QA support, safe artifact previews, public graph packages,
+  benchmark readiness, and local performance receipts without replacing
+  Review or Testing authority. Work remains conversation-first; Board shows
+  concise managed-run and closure state; Settings cleanup is dry-run-first.
+  Exact measurements and non-claims live in
+  [`docs/architecture/verification-workbench.md`](./docs/architecture/verification-workbench.md).
 - **v1.5.4 desktop release** — deterministic Review, local Agent PR
   X-Ray export, structured Codex/Claude lifecycle streams, the opt-in native
   Agent Island, and calm read-only Work history are fully implemented and
@@ -31,9 +39,11 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
   authoritative provider/repository attachment checks, bounded live transcript
   indexing, and honest direct provider output are implemented and
   native-qualified and shipped in v1.3.0.
-- **External benchmark case curation** — 27 public cases shipped. Real
-  agent-PR curation and public X-Ray gallery work are parked until an explicit
-  owner decision; no external catch-rate claim is authorized.
+- **External benchmark case curation** — the existing 27 synthetic/public
+  defect cases remain shipped, and a separate 20-case provenance-pinned
+  agent-PR corpus is schema-ready. Authenticated CodeVetter, CodeRabbit, and
+  Claude `/review` captures remain unavailable, so no new external catch-rate
+  claim is authorized.
 - **Repo Unpacked + history workbench** — canonical structural graph,
   release-history slider, and history MCP shipped in v1.2.21; outcome
   calibration remains ongoing.
@@ -43,22 +53,27 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Blockers
 
-- **External benchmark claims remain unauthorized** — the head-to-head vs raw
-  Claude is currently an internal-only answer. Real agent-PR curation and
-  gallery publication are parked rather than active work.
+- **External benchmark claims remain unauthorized** — the 20 real agent-PR
+  cases have exact external capture blockers for the three comparator slots;
+  the production CodeVetter pipeline and adjudication pass has not run over
+  that corpus.
+- **Archaeology scale claim remains unsupported** — the current full-repository
+  run fails closed at the persisted linker input bound. The checked evidence
+  does not qualify 18M lines or 100,000 rules.
 
 ## Unresolved questions
 
-- Should the intent loop close automatically (did the fix resolve the
-  original user goal, and which agent/prompt produced the change)?
-- When does synthetic QA move from fixture-backed to real browser/app
-  automation against the actual product?
+- (none) Intent closure is explicit and evidence-linked rather than automatic.
+  Testing now distinguishes fixture-backed, checked real-product support, and
+  unsupported/manual lanes.
 
 ## Next steps
 
-1. Keep Agent Island off by default while repeated local use confirms stable
-   attention routing and zero false actions.
-2. Continue Repo Unpack calibration against downstream review and QA outcomes.
+1. Capture the three authenticated benchmark outputs and run the production
+   pipeline/adjudication workflow over the pinned 20-case corpus.
+2. Qualify archaeology against the exact target-scale corpus before changing
+   its current bounds or publishing a scale claim.
+3. Keep Agent Island off by default until a separate promotion decision.
 
 ## Recent shipped
 

@@ -33,8 +33,25 @@ export function useHistoryReleaseNavigation({
   const serial = useRef(0);
   const repoRef = useRef(repoPath);
   const timelineRef = useRef(timeline);
+  const loadedTimelineRef = useRef<{ repoPath: string; timeline: HistoryTimeline | null }>({
+    repoPath,
+    timeline,
+  });
   repoRef.current = repoPath;
   timelineRef.current = timeline;
+  if (loadedTimelineRef.current.repoPath !== repoPath) {
+    loadedTimelineRef.current = { repoPath, timeline };
+  } else {
+    const loaded = loadedTimelineRef.current.timeline;
+    if (
+      timeline &&
+      (!loaded ||
+        timeline.head !== loaded.head ||
+        timeline.revisions.length > loaded.revisions.length)
+    ) {
+      loadedTimelineRef.current = { repoPath, timeline };
+    }
+  }
 
   useEffect(() => {
     const request = ++serial.current;
@@ -66,6 +83,13 @@ export function useHistoryReleaseNavigation({
       setError(null);
       if (timelineRef.current?.revisions.some(({ sha }) => sha === release.revision_sha)) {
         setLoading(false);
+        onSelect(release.revision_sha);
+        return;
+      }
+      const loadedTimeline = loadedTimelineRef.current.timeline;
+      if (loadedTimeline?.revisions.some(({ sha }) => sha === release.revision_sha)) {
+        setLoading(false);
+        onTimeline(loadedTimeline);
         onSelect(release.revision_sha);
         return;
       }
@@ -122,6 +146,13 @@ export function useHistoryReleaseNavigation({
       setError(null);
       if (timelineRef.current?.revisions.some(({ sha }) => sha === landmark.revision_sha)) {
         setLoading(false);
+        onSelect(landmark.revision_sha);
+        return;
+      }
+      const loadedTimeline = loadedTimelineRef.current.timeline;
+      if (loadedTimeline?.revisions.some(({ sha }) => sha === landmark.revision_sha)) {
+        setLoading(false);
+        onTimeline(loadedTimeline);
         onSelect(landmark.revision_sha);
         return;
       }

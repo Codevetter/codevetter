@@ -8,6 +8,7 @@ use super::types::{
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
 const MAX_IMPORT_BYTES: usize = 32 * 1024 * 1024;
@@ -30,6 +31,17 @@ pub struct StructuralGraphAdapterDescriptor {
 pub struct StructuralGraphInterchangePreview {
     pub snapshot: StructuralGraphSnapshot,
     pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicGraphPackage {
+    pub schema_version: i64,
+    pub identity: String,
+    pub json: String,
+    pub svg: String,
+    pub markdown: String,
+    pub omissions: Vec<String>,
 }
 
 pub fn adapter_descriptors() -> Vec<StructuralGraphAdapterDescriptor> {
@@ -347,6 +359,236 @@ pub fn export_markdown(snapshot: &StructuralGraphSnapshot) -> String {
     markdown
 }
 
+pub fn export_public_package(
+    snapshot: &StructuralGraphSnapshot,
+) -> Result<PublicGraphPackage, String> {
+    const MAX_NODES: usize = 500;
+    const MAX_EDGES: usize = 1_000;
+    #[derive(Serialize)]
+    struct PublicNode {
+        id: String,
+        kind: String,
+        label: String,
+        path: Option<String>,
+        trust: GraphTrust,
+    }
+    #[derive(Serialize)]
+    struct PublicEdge {
+        id: String,
+        from: String,
+        to: String,
+        kind: String,
+        trust: GraphTrust,
+    }
+    #[derive(Serialize)]
+    struct PublicPayload {
+        format: &'static str,
+        schema_version: i64,
+        snapshot_id: String,
+        repo_head: Option<String>,
+        engine: String,
+        created_at: String,
+        nodes: Vec<PublicNode>,
+        edges: Vec<PublicEdge>,
+        omissions: Vec<String>,
+        publication: &'static str,
+    }
+
+    let mut omissions = Vec::new();
+    let mut source_nodes = snapshot.nodes.iter().collect::<Vec<_>>();
+    source_nodes.sort_by(|left, right| left.id.cmp(&right.id));
+    if source_nodes.len() > MAX_NODES {
+        omissions.push(format!(
+            "{} nodes omitted by the public package bound",
+            source_nodes.len() - MAX_NODES
+        ));
+    }
+    let nodes = source_nodes
+        .into_iter()
+        .take(MAX_NODES)
+        .map(|node| PublicNode {
+            id: node.id.clone(),
+            kind: sanitize_public_text(&node.kind, &snapshot.repo_path, &mut omissions),
+            label: sanitize_public_text(&node.label, &snapshot.repo_path, &mut omissions),
+            path: node
+                .path
+                .as_deref()
+                .map(|path| sanitize_public_text(path, &snapshot.repo_path, &mut omissions)),
+            trust: node.trust,
+        })
+        .collect::<Vec<_>>();
+    let node_ids = nodes
+        .iter()
+        .map(|node| node.id.as_str())
+        .collect::<HashSet<_>>();
+    let mut source_edges = snapshot
+        .edges
+        .iter()
+        .filter(|edge| node_ids.contains(edge.from.as_str()) && node_ids.contains(edge.to.as_str()))
+        .collect::<Vec<_>>();
+    source_edges.sort_by(|left, right| left.id.cmp(&right.id));
+    if source_edges.len() > MAX_EDGES {
+        omissions.push(format!(
+            "{} edges omitted by the public package bound",
+            source_edges.len() - MAX_EDGES
+        ));
+    }
+    let edges = source_edges
+        .into_iter()
+        .take(MAX_EDGES)
+        .map(|edge| PublicEdge {
+            id: edge.id.clone(),
+            from: edge.from.clone(),
+            to: edge.to.clone(),
+            kind: sanitize_public_text(&edge.kind, &snapshot.repo_path, &mut omissions),
+            trust: edge.trust,
+        })
+        .collect::<Vec<_>>();
+    omissions.sort();
+    omissions.dedup();
+    let payload = PublicPayload {
+        format: "codevetter-public-graph-package",
+        schema_version: STRUCTURAL_GRAPH_SCHEMA_VERSION,
+        snapshot_id: snapshot.id.clone(),
+        repo_head: snapshot.repo_head.clone(),
+        engine: format!("{}@{}", snapshot.engine.id, snapshot.engine.version),
+        created_at: snapshot.created_at.clone(),
+        nodes,
+        edges,
+        omissions: omissions.clone(),
+        publication: "local export only; CodeVetter did not upload this package",
+    };
+    let canonical = serde_json::to_string(&payload)
+        .map_err(|error| format!("Could not serialize public graph package: {error}"))?;
+    let identity = format!("sha256:{:x}", Sha256::digest(canonical.as_bytes()));
+    let json = serde_json::to_string_pretty(&serde_json::json!({
+        "identity": identity,
+        "payload": payload,
+    }))
+    .map_err(|error| format!("Could not render public graph JSON: {error}"))?;
+    let decoded: Value = serde_json::from_str(&json)
+        .map_err(|error| format!("Decode public graph JSON: {error}"))?;
+    let public_nodes = decoded
+        .pointer("/payload/nodes")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let public_edges = decoded
+        .pointer("/payload/edges")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let svg = public_graph_svg(&identity, &public_nodes, &public_edges);
+    let markdown = format!(
+        "# CodeVetter public graph snapshot\n\n- Package: `{identity}`\n- Snapshot: `{}`\n- Nodes: {}\n- Edges: {}\n- JSON: [graph.json](./graph.json)\n- Static image: [graph.svg](./graph.svg)\n- Publication: local export only; no upload was attempted.\n\n## Omissions\n{}\n",
+        snapshot.id,
+        public_nodes.len(),
+        public_edges.len(),
+        if omissions.is_empty() {
+            "- None recorded.".to_string()
+        } else {
+            omissions
+                .iter()
+                .map(|omission| format!("- {omission}"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        }
+    );
+    Ok(PublicGraphPackage {
+        schema_version: STRUCTURAL_GRAPH_SCHEMA_VERSION,
+        identity,
+        json,
+        svg,
+        markdown,
+        omissions,
+    })
+}
+
+fn sanitize_public_text(raw: &str, repo_path: &str, omissions: &mut Vec<String>) -> String {
+    let mut value = raw.replace(repo_path, "[repo]");
+    let lower = value.to_ascii_lowercase();
+    if [
+        "authorization:",
+        "api_key",
+        "apikey",
+        "access_token",
+        "refresh_token",
+        "password=",
+        "private key",
+    ]
+    .iter()
+    .any(|marker| lower.contains(marker))
+    {
+        omissions.push("Sensitive-looking graph text was redacted".to_string());
+        return "[redacted]".to_string();
+    }
+    if value.chars().count() > 160 {
+        value = value.chars().take(159).collect::<String>();
+        value.push('…');
+        omissions.push("Long graph labels were truncated".to_string());
+    }
+    value
+}
+
+fn public_graph_svg(identity: &str, nodes: &[Value], edges: &[Value]) -> String {
+    let visible = nodes.iter().take(80).collect::<Vec<_>>();
+    let visible_ids = visible
+        .iter()
+        .filter_map(|node| node.get("id").and_then(Value::as_str))
+        .enumerate()
+        .map(|(index, id)| (id, index))
+        .collect::<HashMap<_, _>>();
+    let width = 1_200;
+    let rows = visible.len().div_ceil(8).max(1);
+    let height = 100 + rows * 100;
+    let mut svg = format!(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width}\" height=\"{height}\" viewBox=\"0 0 {width} {height}\" role=\"img\" aria-label=\"CodeVetter public structural graph\"><rect width=\"100%\" height=\"100%\" fill=\"#0d0e11\"/><text x=\"24\" y=\"32\" fill=\"#d4a039\" font-family=\"system-ui\" font-size=\"14\">{}</text>",
+        xml_escape(identity)
+    );
+    for edge in edges {
+        let Some(from) = edge.get("from").and_then(Value::as_str) else {
+            continue;
+        };
+        let Some(to) = edge.get("to").and_then(Value::as_str) else {
+            continue;
+        };
+        let (Some(&from_index), Some(&to_index)) = (visible_ids.get(from), visible_ids.get(to))
+        else {
+            continue;
+        };
+        let (x1, y1) = graph_point(from_index);
+        let (x2, y2) = graph_point(to_index);
+        svg.push_str(&format!(
+            "<line x1=\"{x1}\" y1=\"{y1}\" x2=\"{x2}\" y2=\"{y2}\" stroke=\"#4b5563\" stroke-width=\"1\"/>"
+        ));
+    }
+    for (index, node) in visible.iter().enumerate() {
+        let (x, y) = graph_point(index);
+        let label = node.get("label").and_then(Value::as_str).unwrap_or("node");
+        let compact = label.chars().take(22).collect::<String>();
+        svg.push_str(&format!(
+            "<circle cx=\"{x}\" cy=\"{y}\" r=\"7\" fill=\"#d4a039\"/><text x=\"{}\" y=\"{}\" fill=\"#e5e7eb\" font-family=\"system-ui\" font-size=\"10\">{}</text>",
+            x + 11,
+            y + 4,
+            xml_escape(&compact)
+        ));
+    }
+    svg.push_str("</svg>");
+    svg
+}
+
+fn graph_point(index: usize) -> (usize, usize) {
+    (40 + (index % 8) * 145, 72 + (index / 8) * 100)
+}
+
+fn xml_escape(raw: &str) -> String {
+    raw.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&apos;")
+}
+
 fn required_string<'a>(
     fields: &'a Map<String, Value>,
     key: &str,
@@ -533,5 +775,23 @@ mod tests {
         assert!(markdown.contains("`src/api.py`:1"));
         let round_trip = import_codevetter_json(&json).expect("round trip");
         assert_eq!(round_trip, preview.snapshot);
+    }
+
+    #[test]
+    fn public_package_is_deterministic_sanitized_static_and_side_effect_free() {
+        let mut preview = import_node_link_json("/repo/private", FIXTURE).expect("import");
+        preview.snapshot.nodes[0].label = "/repo/private Authorization: bearer secret".to_string();
+        let first = export_public_package(&preview.snapshot).expect("package");
+        let second = export_public_package(&preview.snapshot).expect("repeat");
+        assert_eq!(first.identity, second.identity);
+        assert_eq!(first.json, second.json);
+        assert_eq!(first.svg, second.svg);
+        assert!(!first.json.contains("bearer secret"));
+        assert!(!first.json.contains("/repo/private"));
+        assert!(first.svg.starts_with("<svg xmlns="));
+        assert!(!first.svg.contains(" href="));
+        assert!(!first.svg.contains("xlink:href"));
+        assert!(first.markdown.contains("no upload was attempted"));
+        assert!(!first.omissions.is_empty());
     }
 }

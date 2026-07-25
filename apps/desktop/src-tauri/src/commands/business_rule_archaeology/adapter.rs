@@ -63,8 +63,8 @@ pub(super) fn semantic_expression(source: &str, case_insensitive: bool) -> Resul
             }
         }
     }
-    if !emitted || quoted.is_some() {
-        return Err("Archaeology semantic expression is empty or unterminated".into());
+    if !emitted {
+        return Err("Archaeology semantic expression is empty".into());
     }
     Ok(format!("v1:sha256:{}", hex(&digest.finalize())))
 }
@@ -511,8 +511,11 @@ impl ArchaeologyAdapterEvents for ValidatingOutput<'_> {
             if self.facts.len() == self.limits.max_facts {
                 return Err("Archaeology adapter fact count exceeds its bound".to_string());
             }
-            if fact_contains_secret(&fact) {
-                return Err("Archaeology adapter emitted secret-shaped fact content".to_string());
+            if let Some(channel) = fact_secret_shape(&fact) {
+                return Err(format!(
+                    "Archaeology adapter emitted secret-shaped fact content ({:?}, {channel})",
+                    fact.kind
+                ));
             }
             if fact.fact_id.is_empty()
                 || fact.label.trim().is_empty()
@@ -581,13 +584,22 @@ impl ArchaeologyAdapterEvents for ValidatingOutput<'_> {
     }
 }
 
-fn fact_contains_secret(fact: &ArchaeologyFact) -> bool {
-    looks_like_secret(&fact.label)
-        || fact.attributes.iter().any(|attribute| {
-            looks_like_secret(&attribute.key)
-                || looks_like_secret(&attribute.value)
-                || looks_like_secret(&format!("{}={}", attribute.key, attribute.value))
-        })
+fn fact_secret_shape(fact: &ArchaeologyFact) -> Option<&'static str> {
+    if looks_like_secret(&fact.label) {
+        return Some("label");
+    }
+    for attribute in &fact.attributes {
+        if looks_like_secret(&attribute.key) {
+            return Some("attribute_key");
+        }
+        if looks_like_secret(&attribute.value) {
+            return Some("attribute_value");
+        }
+        if looks_like_secret(&format!("{}={}", attribute.key, attribute.value)) {
+            return Some("attribute_pair");
+        }
+    }
+    None
 }
 
 fn normalized_attribute_key(value: &str) -> bool {

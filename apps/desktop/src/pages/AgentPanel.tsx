@@ -43,6 +43,7 @@ import { attentionFromOutput, attentionFromStructuredEvent } from '@/lib/agent-a
 import { presentAgentTerminalExit } from '@/lib/agent-terminal-exit';
 import {
   attachWorkItemSession,
+  attachManagedWorkProcess,
   checkDirectoriesExist,
   getSessionTranscript,
   getRepoProjectGitStatus,
@@ -63,6 +64,7 @@ import {
   type AgentTerminalEvent,
   type AgentTerminalCommandResult,
   type AgentTerminalSnapshot,
+  type ManagedWorkRun,
   type RepoProject,
   type RepoProjectGitStatus,
   type SessionRow,
@@ -157,6 +159,8 @@ interface AgentTerminal {
   codexSessionId: string | null;
   transcriptPath: string | null;
   workItemId: string | null;
+  profilePath: string | null;
+  managedRunId: string | null;
 }
 
 interface ConversationProjectGroup {
@@ -211,6 +215,8 @@ interface SavedAgentTerminal {
   codexSessionId?: string | null;
   transcriptPath?: string | null;
   workItemId?: string | null;
+  profilePath?: string | null;
+  managedRunId?: string | null;
 }
 
 interface SavedAgentWorkspace {
@@ -226,6 +232,8 @@ interface ConversationSeed {
   prompt: string;
   model: string;
   workItemId: string | null;
+  profilePath?: string | null;
+  managedRunId?: string | null;
 }
 
 const AGENT_WORKSPACE_STORAGE_KEY = 'codevetter.agent-panel.workspace.v1';
@@ -922,6 +930,8 @@ export default function AgentPanel() {
         }),
         model: seed.model,
         workItemId: seed.workItemId,
+        profilePath: seed.profilePath ?? null,
+        managedRunId: seed.managedRunId ?? null,
       },
       {
         kind: 'prompt',
@@ -959,6 +969,21 @@ export default function AgentPanel() {
     setPreviewSession(null);
     setSelectedId('');
     navigate('/agents');
+  }
+
+  async function startManagedWorkConversation(item: WorkItem, run: ManagedWorkRun) {
+    const worktree = run.worktreePath;
+    if (!worktree) throw new Error('Managed run did not create an isolated worktree.');
+    navigate('/agents');
+    await startConversation({
+      provider: run.provider,
+      cwd: worktree,
+      prompt: workItemPrompt(item),
+      model: '',
+      workItemId: item.id,
+      profilePath: run.profilePath,
+      managedRunId: run.id,
+    });
   }
 
   async function attachExistingSession(
@@ -1185,6 +1210,7 @@ export default function AgentPanel() {
       const started = await startAgentTerminal({
         provider: terminal.provider,
         sessionId: id,
+        profilePath: terminal.profilePath,
         cwd: terminal.cwd,
         prompt: terminal.prompt,
         model: terminal.model,
@@ -1202,6 +1228,14 @@ export default function AgentPanel() {
         updatedAt: 'running',
         statusReason: launchStatusReason(launchMode, providerName),
       });
+      if (terminal.managedRunId && started.pid != null) {
+        await attachManagedWorkProcess({
+          runId: terminal.managedRunId,
+          terminalId: id,
+          providerSessionId: null,
+          processId: started.pid,
+        });
+      }
       if (terminal.workItemId) {
         try {
           await attachWorkItemSession(terminal.workItemId, {
@@ -1617,6 +1651,7 @@ export default function AgentPanel() {
           repoProjects={repoProjects}
           sessionLinks={sessionLinks}
           onBuild={openWorkItemConversation}
+          onManagedBuild={startManagedWorkConversation}
           onAttachSession={attachExistingSession}
         />
       ) : (
@@ -3181,6 +3216,8 @@ function serializeAgentWorkspace({
       codexSessionId: terminal.codexSessionId,
       transcriptPath: terminal.transcriptPath,
       workItemId: terminal.workItemId,
+      profilePath: terminal.profilePath,
+      managedRunId: terminal.managedRunId,
     })),
   };
   return JSON.stringify(payload);
@@ -3273,6 +3310,8 @@ function createAgentTerminal({
     codexSessionId: null,
     transcriptPath: null,
     workItemId: null,
+    profilePath: null,
+    managedRunId: null,
   };
 }
 
@@ -3313,6 +3352,8 @@ function terminalFromSaved(saved: SavedAgentTerminal): AgentTerminal {
     codexSessionId: saved.codexSessionId ?? null,
     transcriptPath: saved.transcriptPath ?? null,
     workItemId: saved.workItemId ?? null,
+    profilePath: saved.profilePath ?? null,
+    managedRunId: saved.managedRunId ?? null,
   };
 }
 
@@ -3377,6 +3418,8 @@ function terminalFromSnapshot(
       codexSessionId: snapshot.codex_session_id ?? null,
       transcriptPath: snapshot.transcript_path ?? null,
       workItemId: null,
+      profilePath: null,
+      managedRunId: null,
     },
     snapshot
   );
@@ -3763,6 +3806,14 @@ function normalizeSavedAgentTerminal(saved: SavedAgentTerminal): SavedAgentTermi
     workItemId:
       typeof record.workItemId === 'string' || record.workItemId === null
         ? record.workItemId
+        : undefined,
+    profilePath:
+      typeof record.profilePath === 'string' || record.profilePath === null
+        ? record.profilePath
+        : undefined,
+    managedRunId:
+      typeof record.managedRunId === 'string' || record.managedRunId === null
+        ? record.managedRunId
         : undefined,
   };
 }

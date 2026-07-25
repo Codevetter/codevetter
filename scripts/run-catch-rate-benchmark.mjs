@@ -251,6 +251,17 @@ function summarizeReviewer(cases, reviewer) {
       false_positives: falsePositiveCount,
       redundant_matches: redundantMatches,
       missed: expected.filter((issue) => !matched.has(issue.id)).map((issue) => issue.id),
+      source: {
+        repo: testCase.source?.repo ?? null,
+        pr_url: testCase.source?.pr_url ?? null,
+        diff_identity: testCase.source?.immutable_diff ?? null,
+        public: testCase.source?.public ?? null,
+        license: testCase.source?.license ?? null,
+        agent_provenance: testCase.source?.agent_provenance ?? null,
+      },
+      reviewer_artifact: testCase.source?.review_output_artifacts?.[reviewer] ?? null,
+      impact: testCase.impact ?? null,
+      adjudication: testCase.adjudication ?? null,
     });
   }
 
@@ -281,6 +292,32 @@ function summarizeReviewer(cases, reviewer) {
     f1: roundMetric(f1),
     false_positives: falsePositives,
     redundant_matches: redundantMatches,
+    elapsed_ms: rows.reduce(
+      (sum, row) =>
+        sum +
+        (Number.isFinite(row.reviewer_artifact?.elapsed_ms) ? row.reviewer_artifact.elapsed_ms : 0),
+      0
+    ),
+    unverified_fix_count: rows.reduce(
+      (sum, row) =>
+        sum +
+        (Number.isInteger(row.reviewer_artifact?.unverified_fix_count)
+          ? row.reviewer_artifact.unverified_fix_count
+          : 0),
+      0
+    ),
+    reviewer_versions: [
+      ...new Set(
+        rows
+          .map((row) => {
+            const artifact = row.reviewer_artifact;
+            return artifact?.tool
+              ? `${artifact.tool}@${artifact.version ?? 'unreported'} (${artifact.tier ?? 'unreported'})`
+              : null;
+          })
+          .filter(Boolean)
+      ),
+    ],
     by_severity: bySeverity,
     cases: rows,
   };

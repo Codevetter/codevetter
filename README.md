@@ -133,11 +133,13 @@ ISC — see the root `package.json`.
 <!-- ACTIVE-AI-TASK-LOG:START -->
 ## Active AI Task Log
 
-This section is maintained by the SaaS Maker Active-AI product/design loop so future agents do not reopen duplicate UI tasks.
+This historical section records completed Active-AI product/design work so
+future agents do not reopen duplicate UI tasks.
 
 - Business lane: Core/status context
 - Rule: do not create another broad "improve the UI" task unless the acceptance criteria differ materially from the tasks listed here.
-- Source of truth for task status: SaaS Maker task board. README entries are durable context only.
+- Source of truth for new task status: this repository's GitHub issues or
+  OpenSpec changes. README entries are durable historical context only.
 
 | Task ID | Title | Status |
 |---|---|---|

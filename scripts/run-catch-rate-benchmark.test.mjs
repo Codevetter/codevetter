@@ -267,3 +267,80 @@ test('curation report marks complete case evidence as ready', () => {
   assert.equal(report.ready_cases, 1);
   assert.deepEqual(report.rows[0].issues, []);
 });
+
+test('publishable readiness fails closed below 20 fully evidenced cases', () => {
+  const fixture = readSample();
+  const testCase = structuredClone(fixture.cases[0]);
+  testCase.source = {
+    ...testCase.source,
+    public: true,
+    pr_url: 'https://github.com/example/local-fixture/pull/1',
+    diff_range: `${'a'.repeat(40)}...${'b'.repeat(40)}`,
+    immutable_diff: {
+      base_sha: 'a'.repeat(40),
+      head_sha: 'b'.repeat(40),
+      sha256: 'c'.repeat(64),
+    },
+    license: {
+      spdx: 'MIT',
+      url: 'https://github.com/example/local-fixture/blob/main/LICENSE',
+      verified_at: '2026-07-25T00:00:00Z',
+    },
+    agent: 'github-copilot-coding-agent',
+    agent_provenance: {
+      kind: 'pull-request-author',
+      evidence: 'The public PR author is copilot-swe-agent[bot].',
+    },
+    raw_diff_artifact: {
+      url: 'https://github.com/example/local-fixture/compare/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.diff',
+      sha256: 'c'.repeat(64),
+      bytes: 123,
+    },
+    review_output_artifacts: Object.fromEntries(
+      ['codevetter', 'coderabbit_free', 'claude_code_review'].map((reviewer) => [
+        reviewer,
+        {
+          status: 'captured',
+          path: `artifacts/${reviewer}.json`,
+          tool: reviewer,
+          version: '1.0.0',
+          tier: reviewer === 'coderabbit_free' ? 'free' : 'local',
+          capture_method: 'Pinned diff review',
+          captured_at: '2026-07-25T00:00:00Z',
+          elapsed_ms: 100,
+          input_tokens: null,
+          output_tokens: null,
+          cost_usd: null,
+          unverified_fix_count: 0,
+          blocker: null,
+        },
+      ])
+    ),
+  };
+  testCase.impact = {
+    customer_visible: true,
+    area: 'review',
+    severity_basis: 'The regression removes the only primary action.',
+  };
+  testCase.adjudication = {
+    status: 'adjudicated',
+    method: 'Manual diff and evidence review',
+    adjudicators: ['reviewer@example'],
+    decided_at: '2026-07-25T00:00:00Z',
+    notes: 'The pinned diff and follow-up fix confirm the regression.',
+    exclusions: [],
+  };
+  testCase.ground_truth[0].adjudication = 'confirmed';
+  testCase.ground_truth[0].impact = 'Users cannot start a review from the empty state.';
+  testCase.reviews.coderabbit_free = [];
+  testCase.reviews.claude_code_review = [];
+  const { fixturePath } = writeTempFixture(testCase);
+
+  const result = runCuration([fixturePath, '--format=json', '--require-publishable']);
+
+  assert.equal(result.status, 2);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.publishable_ready_cases, 1, report.rows[0].publishable_issues.join('\n'));
+  assert.equal(report.corpus_publishable, false);
+  assert.match(result.stderr, /20-30 are required/);
+});

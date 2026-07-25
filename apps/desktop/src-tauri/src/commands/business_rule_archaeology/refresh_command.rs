@@ -601,7 +601,7 @@ fn parse_refresh_item(
         }
     };
     let mut output = PersistedAdapterOutput::default();
-    run_archaeology_adapter(
+    let parsed = run_archaeology_adapter(
         adapter.as_ref(),
         super::adapter::ArchaeologyAdapterInput {
             unit: &unit,
@@ -610,7 +610,22 @@ fn parse_refresh_item(
         &mut output,
         cancellation,
         ArchaeologyAdapterLimits::default(),
-    )?;
+    );
+    if let Err(error) = parsed {
+        let unavailable_reason = match error.as_str() {
+            "Modern archaeology adapter refused syntax recovery or parse diagnostics" => {
+                Some("syntax_diagnostics")
+            }
+            "Modern archaeology adapter found no source-backed structural facts" => {
+                Some("no_source_backed_facts")
+            }
+            _ => None,
+        };
+        if let Some(reason) = unavailable_reason {
+            return persist_unavailable_unit(transaction, context, &unit, reason);
+        }
+        return Err(error);
+    }
     persist_adapter_output(transaction, context, &unit, output)
 }
 

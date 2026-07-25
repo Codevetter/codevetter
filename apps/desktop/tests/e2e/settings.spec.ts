@@ -111,6 +111,26 @@ test.describe('Settings page', () => {
     await page.locator('button', { hasText: 'General' }).first().click();
     await expect(page.getByRole('heading', { name: 'AI Provider' })).toBeVisible();
   });
+
+  test('Retention controls stay dry-run-first, labeled, and compact-window safe', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 800, height: 640 });
+    await page.getByRole('button', { name: 'Usage' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Session archive retention' })).toBeVisible();
+    await expect(page.getByLabel('Maximum age in days')).toHaveValue('90');
+    await expect(page.getByLabel('Maximum archive size in MiB')).toHaveValue('2048');
+    await expect(page.getByRole('button', { name: 'Preview cleanup' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Apply reviewed plan' })).toBeDisabled();
+    await expect(page.getByText(/Provider transcripts stay untouched/)).toBeVisible();
+
+    const layout = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
+  });
 });
 
 test.describe('Agent MCP settings', () => {

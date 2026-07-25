@@ -374,6 +374,7 @@ export default function TRex() {
           </ProjectWorkspaceHeader>
 
           <WarmVerificationPanel
+            repoPath={selectedRepoPath}
             health={warmHealth}
             runs={warmRuns}
             loading={warmLoading}

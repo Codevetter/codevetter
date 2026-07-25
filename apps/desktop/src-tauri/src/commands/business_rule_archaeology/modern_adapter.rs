@@ -7,6 +7,7 @@ use super::contracts::{
     ArchaeologyAttribute, ArchaeologyConfidence, ArchaeologyFact, ArchaeologyFactKind,
     ArchaeologyParserCapability, ArchaeologySourceSpan, ArchaeologyTrust,
 };
+use crate::commands::secret_policy::looks_like_secret;
 use crate::commands::structural_graph::extract::extract_source_with_cancellation;
 use crate::commands::structural_graph::language::SupportedLanguage;
 use crate::commands::structural_graph::types::{
@@ -83,6 +84,7 @@ impl ArchaeologyLanguageAdapter for ModernLanguageAdapter {
 
         let mut spans = BTreeSet::<String>::new();
         let mut facts = BTreeSet::<String>::new();
+        let mut unsupported = BTreeMap::<String, String>::new();
         let mut dialect_span = None;
         for node in contribution.nodes().iter().filter(|node| {
             node.trust == GraphTrust::Extracted && node.origin == GraphOrigin::Syntax
@@ -105,6 +107,17 @@ impl ArchaeologyLanguageAdapter for ModernLanguageAdapter {
                 semantic_expression(&format!("{} {}", node.kind, node.label), false)?;
             emit_span_once(output, cancellation, &mut spans, span)?;
             dialect_span.get_or_insert_with(|| span_id.clone());
+            if looks_like_secret(&node.label)
+                || node.qualified_name.iter().any(|value| {
+                    looks_like_secret(value)
+                        || looks_like_secret(&format!("qualified_name={value}"))
+                })
+            {
+                unsupported
+                    .entry("secret-shaped structural label was omitted".to_string())
+                    .or_insert(span_id);
+                continue;
+            }
             let fact_id =
                 archaeology_id("fact", &input, &format!("{kind:?}\0{}\0{span_id}", node.id));
             if facts.insert(fact_id.clone()) {
@@ -133,7 +146,6 @@ impl ArchaeologyLanguageAdapter for ModernLanguageAdapter {
             }
         }
 
-        let mut unsupported = BTreeMap::<String, String>::new();
         for metric in contribution.metrics() {
             for flow in &metric.control_flow {
                 let span = span_from_anchor(

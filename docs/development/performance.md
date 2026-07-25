@@ -227,6 +227,16 @@ delete repair, 0.08 ms rename repair, 6.654 ms warm status, 3,479.25 ms
 persistence, 665.33 ms cold hydration, and 2.0978/2.4725 ms search p50/p95.
 The normalized database was 242.21 MiB and sampled peak RSS was 1,037.4 MiB.
 
+The 2026-07-25 workbench rebaseline compared the same current graph engine
+against exact `origin/main` and release-candidate trees. The 844-file baseline
+produced 85,282 nodes, 150,686 edges, a 253.48 MiB database, and 1,109.9 MiB
+sampled peak RSS. The 876-file candidate produced 87,687 nodes and 154,932
+edges; its repeated database measurement was 260.24 MiB and sampled RSS ranged
+from 1,136.1 to 1,194.6 MiB. Full build, incremental refresh, persistence,
+hydrate, and search remained inside their existing ceilings. The resource
+ceilings were therefore rebaselined to 272 MiB and 1,280 MiB for this measured
+source growth; this is not a larger-repository or asymptotic scaling claim.
+
 The signed-release workflow runs this gate before the Tauri build. These are
 fixed ceilings for the current named-machine repository profile, with measured
 headroom over the candidate. They are a regression/resource envelope, not a
@@ -243,8 +253,8 @@ recorded multi-size scaling run before any rebaseline:
 | cold hydrate | 750 ms |
 | search p50 | 2.5 ms |
 | search p95 | 3.0 ms |
-| normalized SQLite growth | 256 MiB |
-| sampled peak RSS | 1,152 MiB |
+| normalized SQLite growth | 272 MiB |
+| sampled peak RSS | 1,280 MiB |
 
 The benchmark runner forces one test thread; its previous parallel execution
 introduced CPU/SQLite contention and produced incomparable numbers. The cold

@@ -9,16 +9,25 @@ import {
   Square,
   Trash2,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DaemonHealth, VerifyOutcome } from '@/lib/warm-verification/contracts';
-import type { StoredWarmVerificationRun } from '@/lib/tauri-ipc';
+import {
+  getQaSupportMatrix,
+  previewWarmVerificationArtifact,
+  type QaArtifactPreview,
+  type QaSupportMatrix,
+  type StoredWarmVerificationRun,
+} from '@/lib/tauri-ipc';
+import { qaArtifactRenderMode } from '@/lib/qa-artifact-preview';
 
 export type WarmVerificationAction = 'start' | 'stop' | 'run' | 'cancel' | 'cleanup' | null;
 
 interface WarmVerificationPanelProps {
+  repoPath: string | null;
   health: DaemonHealth | null;
   runs: StoredWarmVerificationRun[];
   loading: boolean;
@@ -80,6 +89,7 @@ function RuntimeTile({ label, state, detail }: { label: string; state: string; d
 }
 
 export function WarmVerificationPanel({
+  repoPath,
   health,
   runs,
   loading,
@@ -95,6 +105,15 @@ export function WarmVerificationPanel({
   onCancel,
   onCleanup,
 }: WarmVerificationPanelProps) {
+  const [supportMatrix, setSupportMatrix] = useState<QaSupportMatrix | null>(null);
+  const [preview, setPreview] = useState<QaArtifactPreview | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewBusy, setPreviewBusy] = useState<string | null>(null);
+  useEffect(() => {
+    void getQaSupportMatrix(repoPath)
+      .then(setSupportMatrix)
+      .catch(() => setSupportMatrix(null));
+  }, [repoPath]);
   const latest = runs[0]?.result ?? null;
   const activeRunId = ownedRunId
     ? health?.active_run_ids.includes(ownedRunId)
@@ -180,6 +199,50 @@ export function WarmVerificationPanel({
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {supportMatrix ? (
+          <section
+            aria-label="Real product QA support"
+            className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="text-xs font-semibold text-slate-200">Checked app support</h3>
+                <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                  React/Vite in owned Chromium ·{' '}
+                  {supportMatrix.configPath
+                    ? 'selected repository configured'
+                    : 'fixture-backed qualification only'}
+                </p>
+              </div>
+              <Badge variant="outline" className="font-mono text-[10px]">
+                {supportMatrix.lane}
+              </Badge>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              {supportMatrix.capabilities.map((capability) => (
+                <div
+                  key={capability.id}
+                  className="rounded border border-[var(--cv-line)] bg-black/10 px-2 py-2"
+                  title={capability.detail}
+                >
+                  <p className="text-[10px] font-medium text-slate-300">{capability.label}</p>
+                  <p
+                    className={`mt-1 text-[9px] ${
+                      capability.status === 'real_product_supported'
+                        ? 'text-emerald-300'
+                        : 'text-amber-300'
+                    }`}
+                  >
+                    {capability.status.replaceAll('_', ' ')}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[10px] leading-4 text-[var(--text-secondary)]">
+              {supportMatrix.unsupported[0]}
+            </p>
+          </section>
+        ) : null}
         {health ? (
           <div className="grid gap-2 sm:grid-cols-3">
             <RuntimeTile
@@ -401,12 +464,30 @@ export function WarmVerificationPanel({
                       key={artifact.id}
                       className="flex items-center justify-between gap-3 rounded border border-[var(--cv-line)] px-2 py-1.5 text-[10px]"
                     >
-                      <span
-                        className="min-w-0 truncate font-mono text-slate-300"
-                        title={artifact.relative_path}
+                      <button
+                        type="button"
+                        className="min-w-0 truncate text-left font-mono text-slate-300 hover:text-amber-200"
+                        title={`Preview ${artifact.relative_path}`}
+                        disabled={previewBusy !== null}
+                        onClick={() => {
+                          const storedRun = runs[0];
+                          if (!storedRun) return;
+                          setPreviewBusy(artifact.id);
+                          setPreviewError(null);
+                          void previewWarmVerificationArtifact(storedRun.id, artifact.id)
+                            .then(setPreview)
+                            .catch((caught) => {
+                              setPreview(null);
+                              setPreviewError(
+                                caught instanceof Error ? caught.message : String(caught)
+                              );
+                            })
+                            .finally(() => setPreviewBusy(null));
+                        }}
                       >
+                        {previewBusy === artifact.id ? 'Loading… ' : ''}
                         {artifact.relative_path}
-                      </span>
+                      </button>
                       <span className="shrink-0 text-[var(--text-secondary)]">
                         {artifact.kind} · {formatBytes(artifact.bytes)}
                       </span>
@@ -414,6 +495,36 @@ export function WarmVerificationPanel({
                   ))}
                 </ul>
               )}
+              {previewError ? (
+                <p role="alert" className="mt-2 text-[11px] text-red-300">
+                  Preview blocked: {previewError}
+                </p>
+              ) : null}
+              {preview ? (
+                <div className="mt-3 rounded border border-[var(--cv-line)] bg-black/20 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+                    <span className="font-mono text-slate-300">{preview.contentType}</span>
+                    <span className="text-[var(--text-secondary)]">
+                      {formatBytes(preview.bytes)}
+                      {preview.width && preview.height
+                        ? ` · ${preview.width}×${preview.height}`
+                        : ''}{' '}
+                      · redacted evidence
+                    </span>
+                  </div>
+                  {qaArtifactRenderMode(preview) === 'image' ? (
+                    <img
+                      src={preview.dataUrl ?? undefined}
+                      alt={`Verification artifact ${preview.artifactId}`}
+                      className="mt-3 max-h-80 max-w-full rounded border border-[var(--cv-line)] object-contain"
+                    />
+                  ) : qaArtifactRenderMode(preview) === 'text' ? (
+                    <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap break-words text-[10px] leading-4 text-slate-300">
+                      {preview.text}
+                    </pre>
+                  ) : null}
+                </div>
+              ) : null}
             </section>
           </div>
         ) : (
