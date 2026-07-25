@@ -4,8 +4,8 @@
   "policy_version": 1,
   "status": "provisional",
   "evidence_references": [
-    "openspec/changes/archive/2026-07-18-add-evidence-traced-business-rule-archaeology/design.md",
-    "openspec/changes/archive/2026-07-18-add-evidence-traced-business-rule-archaeology/specs/business-rule-archaeology/spec.md",
+    "docs/BUSINESS_RULE_ARCHAEOLOGY_QUALIFICATION.md",
+    "openspec/specs/business-rule-archaeology/spec.md",
     "apps/desktop/tests/fixtures/warm-verification/qualification-2026-07-17.json",
     "apps/desktop/tests/fixtures/warm-verification/stability-2026-07-17.json",
     "apps/desktop/scripts/mcp-benchmark.mjs",
