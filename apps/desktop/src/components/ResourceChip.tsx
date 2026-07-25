@@ -1,10 +1,12 @@
 import { Activity, ArrowDown, Cpu, HardDrive, MemoryStick, Monitor, Wifi } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getResourceSnapshot, isTauriAvailable, type ResourceSnapshot } from '@/lib/tauri-ipc';
+import { useVisibilityInterval } from '@/lib/use-visibility';
 
-const REFRESH_MS = 2000;
+const OPEN_REFRESH_MS = 2_000;
+const COLLAPSED_REFRESH_MS = 10_000;
 
 function bytes(n: number): string {
   if (n >= 1024 * 1024 * 1024) return `${(n / 1024 / 1024 / 1024).toFixed(1)}G`;
@@ -44,26 +46,21 @@ export default function ResourceChip() {
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  useEffect(() => {
-    if (!isTauriAvailable()) return;
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    async function tick() {
-      try {
-        const s = await getResourceSnapshot();
-        if (!cancelled) setSnap(s);
-      } catch {
-        // ignore — the chip simply doesn't update
-      }
-      if (!cancelled) timer = setTimeout(tick, REFRESH_MS);
+  const refresh = useCallback(async () => {
+    try {
+      setSnap(await getResourceSnapshot());
+    } catch {
+      // Ignore transient sampling errors; keep the last successful snapshot.
     }
-    tick();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
   }, []);
+
+  const available = isTauriAvailable();
+  const refreshMs = open ? OPEN_REFRESH_MS : COLLAPSED_REFRESH_MS;
+  useVisibilityInterval(refresh, refreshMs, available);
+
+  useEffect(() => {
+    if (available) void refresh();
+  }, [available, open, refresh]);
 
   // Click-outside-to-close.
   useEffect(() => {
@@ -103,14 +100,16 @@ export default function ResourceChip() {
             <span className={`flex items-center gap-1 ${ramTone(snap.ram_bytes)}`}>
               <MemoryStick size={11} /> {bytes(snap.ram_bytes)}
             </span>
-            <span className="text-slate-700">·</span>
-            <span className={`flex items-center gap-1 ${ioTone(snap.disk_write_per_sec)}`}>
+            <span className="hidden text-slate-700 2xl:inline">·</span>
+            <span
+              className={`hidden items-center gap-1 2xl:flex ${ioTone(snap.disk_write_per_sec)}`}
+            >
               <HardDrive size={11} /> {rate(snap.disk_write_per_sec)}
             </span>
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
-          Live resource usage · click for details
+          CodeVetter CPU/RAM/disk · click for details
         </TooltipContent>
       </Tooltip>
 
@@ -153,7 +152,7 @@ export default function ResourceChip() {
             />
             <Metric
               icon={<Monitor size={12} />}
-              label="GPU"
+              label="System GPU"
               value={snap.gpu_percent == null ? '—' : `${snap.gpu_percent.toFixed(0)}%`}
               tone="text-slate-300"
             />
@@ -199,7 +198,7 @@ export default function ResourceChip() {
 
           <div className="mt-3 flex items-center justify-between border-t border-[var(--cv-line)] pt-2">
             <span className="flex items-center gap-1 font-mono text-[9px] text-slate-600">
-              <Activity size={9} /> refreshed every {REFRESH_MS / 1000}s
+              <Activity size={9} /> 2s open · 10s collapsed · paused when hidden
             </span>
             <span className="font-mono text-[9px] text-slate-600">
               {new Date(snap.sampled_at).toLocaleTimeString()}
