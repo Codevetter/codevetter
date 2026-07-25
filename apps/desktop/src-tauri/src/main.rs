@@ -84,9 +84,9 @@ fn run_usage_maintenance(app_data_dir: std::path::PathBuf) {
             db::schema::purge_message_cruft_once(&conn);
             db::schema::purge_content_text_once(&conn);
             db::schema::purge_messages_to_buckets_once(&conn);
-            // Repair Codex token totals corrupted by the old cumulative-add bug
-            // (one-time), then refresh stored per-session $ cost if the price
-            // table changed.
+            // Repair Codex token totals corrupted by cumulative-add and spawned
+            // session attribution bugs (one-time per revision), then refresh
+            // stored per-session $ cost if the price table changed.
             commands::history::fix_codex_token_totals(&conn);
             // One-time per-model usage backfill (v1.1.100) — must precede the
             // cost recompute so multi-model sessions reprice from their split.

@@ -6,7 +6,7 @@ use crate::DbState;
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
-use std::io::BufRead;
+use std::io::{BufRead, Read};
 use std::sync::{LazyLock, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -645,113 +645,109 @@ fn full_index_impl(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), Strin
     let mut codex_indexed = 0u64;
     let mut codex_messages = 0u64;
 
-    for codex_base in codex_roots.iter().filter(|root| root.exists()) {
-        let codex_files: Vec<_> = walkdir(codex_base, "jsonl");
+    let codex_files = codex_session_files();
+    for jsonl_path in &codex_files {
+        let jsonl_path_str = jsonl_path.to_string_lossy().to_string();
 
-        for jsonl_path in &codex_files {
-            let jsonl_path_str = jsonl_path.to_string_lossy().to_string();
+        // ── Incremental check ────────────────────────────
+        // Skip fully-consumed unchanged files via exact byte offset (see the
+        // Claude phase above for why mtime strings are unreliable).
+        let file_meta = std::fs::metadata(jsonl_path).ok();
+        let file_size = file_meta.as_ref().map(|m| m.len() as i64).unwrap_or(0);
 
-            // ── Incremental check ────────────────────────────
-            // Skip fully-consumed unchanged files via exact byte offset (see the
-            // Claude phase above for why mtime strings are unreliable).
-            let file_meta = std::fs::metadata(jsonl_path).ok();
-            let file_size = file_meta.as_ref().map(|m| m.len() as i64).unwrap_or(0);
+        let existing =
+            queries::get_session_by_jsonl_path(conn, &jsonl_path_str).map_err(|e| e.to_string())?;
 
-            let existing = queries::get_session_by_jsonl_path(conn, &jsonl_path_str)
-                .map_err(|e| e.to_string())?;
-
-            if let Some(ref meta) = existing {
-                if session_fully_indexed(meta, file_size) {
-                    skipped_sessions += 1;
-                    continue;
-                }
-            }
-
-            // Read the first line to get session_meta and determine the project
-            let first_line = match std::fs::File::open(jsonl_path) {
-                Ok(f) => {
-                    let mut rdr = std::io::BufReader::new(f);
-                    let mut buf = String::new();
-                    let _ = rdr.read_line(&mut buf);
-                    buf
-                }
-                Err(error) => {
-                    codex_run.record_warning(&jsonl_path_str, &error.to_string());
-                    continue;
-                }
-            };
-
-            let meta_parsed: Value = match serde_json::from_str(first_line.trim()) {
-                Ok(v) => v,
-                Err(error) => {
-                    codex_run.record_warning(&jsonl_path_str, &error.to_string());
-                    continue;
-                }
-            };
-
-            let meta_type = meta_parsed
-                .get("type")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-            if meta_type != "session_meta" {
-                codex_run.record_warning(&jsonl_path_str, "first JSONL row is not session_meta");
+        if let Some(ref meta) = existing {
+            if session_fully_indexed(meta, file_size) {
+                skipped_sessions += 1;
                 continue;
             }
+        }
 
-            let payload = match meta_parsed.get("payload") {
-                Some(p) => p,
-                None => {
-                    codex_run
-                        .record_warning(&jsonl_path_str, "session_meta row is missing payload");
-                    continue;
-                }
-            };
-
-            let codex_cwd = payload
-                .get("cwd")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .to_string();
-            if codex_cwd.is_empty() {
-                codex_run.record_warning(&jsonl_path_str, "session_meta row is missing cwd");
+        // Read the first line to get session_meta and determine the project
+        let first_line = match std::fs::File::open(jsonl_path) {
+            Ok(f) => {
+                let mut rdr = std::io::BufReader::new(f);
+                let mut buf = String::new();
+                let _ = rdr.read_line(&mut buf);
+                buf
+            }
+            Err(error) => {
+                codex_run.record_warning(&jsonl_path_str, &error.to_string());
                 continue;
             }
+        };
 
-            let now = chrono::Utc::now().to_rfc3339();
+        let meta_parsed: Value = match serde_json::from_str(first_line.trim()) {
+            Ok(v) => v,
+            Err(error) => {
+                codex_run.record_warning(&jsonl_path_str, &error.to_string());
+                continue;
+            }
+        };
 
-            // Resolve or create the project for this Codex session's cwd
-            let project_id = queries::get_project_id_by_dir(conn, &codex_cwd)
-                .map_err(|e| e.to_string())?
-                .unwrap_or_else(|| {
-                    let pid = uuid::Uuid::new_v4().to_string();
-                    let display = std::path::Path::new(&codex_cwd)
-                        .file_name()
-                        .map(|s| s.to_string_lossy().to_string())
-                        .unwrap_or_else(|| codex_cwd.clone());
-                    let _ = queries::upsert_project(
-                        conn,
-                        &queries::ProjectInput {
-                            id: pid.clone(),
-                            display_name: display,
-                            dir_path: codex_cwd.clone(),
-                            session_count: None,
-                            last_activity: Some(now.clone()),
-                            created_at: now.clone(),
-                        },
-                    );
-                    pid
-                });
+        let meta_type = meta_parsed
+            .get("type")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        if meta_type != "session_meta" {
+            codex_run.record_warning(&jsonl_path_str, "first JSONL row is not session_meta");
+            continue;
+        }
 
-            match parse_codex_session(jsonl_path, conn, &project_id, &now) {
-                Ok(session) => {
-                    codex_indexed += 1;
-                    codex_messages += session.messages_indexed;
-                    codex_run.record_session(&session);
-                }
-                Err(error) => {
-                    codex_run.record_warning(&jsonl_path_str, &error);
-                    continue;
-                }
+        let payload = match meta_parsed.get("payload") {
+            Some(p) => p,
+            None => {
+                codex_run.record_warning(&jsonl_path_str, "session_meta row is missing payload");
+                continue;
+            }
+        };
+
+        let codex_cwd = payload
+            .get("cwd")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        if codex_cwd.is_empty() {
+            codex_run.record_warning(&jsonl_path_str, "session_meta row is missing cwd");
+            continue;
+        }
+
+        let now = chrono::Utc::now().to_rfc3339();
+
+        // Resolve or create the project for this Codex session's cwd
+        let project_id = queries::get_project_id_by_dir(conn, &codex_cwd)
+            .map_err(|e| e.to_string())?
+            .unwrap_or_else(|| {
+                let pid = uuid::Uuid::new_v4().to_string();
+                let display = std::path::Path::new(&codex_cwd)
+                    .file_name()
+                    .map(|s| s.to_string_lossy().to_string())
+                    .unwrap_or_else(|| codex_cwd.clone());
+                let _ = queries::upsert_project(
+                    conn,
+                    &queries::ProjectInput {
+                        id: pid.clone(),
+                        display_name: display,
+                        dir_path: codex_cwd.clone(),
+                        session_count: None,
+                        last_activity: Some(now.clone()),
+                        created_at: now.clone(),
+                    },
+                );
+                pid
+            });
+
+        match parse_codex_session(jsonl_path, conn, &project_id, &now) {
+            Ok(session) => {
+                codex_indexed += 1;
+                codex_messages += session.messages_indexed;
+                codex_run.record_session(&session);
+            }
+            Err(error) => {
+                codex_run.record_warning(&jsonl_path_str, &error);
+                continue;
             }
         }
     }
@@ -1491,18 +1487,250 @@ fn scan_claude_model_usage(
     Ok(map)
 }
 
-/// One-time repair of Codex token totals (v1.1.99). Codex reports SESSION-CUMULATIVE
-/// token counts in every `token_count` event; the incremental indexer used to ADD
-/// that running total on each pass, inflating some sessions ~150x — one reached
-/// 61.5B input tokens / $35k versus a true 391M / ~$220. The indexer now SETs
-/// cumulative tokens (see `tokens_absolute`), but rows already stored are still
-/// wrong. Re-read each Codex file, take the correct final cumulative from the
-/// adapter, and overwrite ONLY the token columns + cost — the archive/message
-/// counts were never corrupted, so this skips re-archiving and is far cheaper than
-/// a full re-index. Gated by a preference so it runs exactly once.
+const CODEX_TOKEN_FIX_REV: &str = "3";
+
+struct CodexTokenScan {
+    model_used: Option<String>,
+    total_input: i64,
+    total_output: i64,
+    cache_read: i64,
+    cache_creation: i64,
+    observed: bool,
+    model_usage: Vec<queries::SessionModelUsageDelta>,
+}
+
+fn detect_codex_replay_second(path: &std::path::Path) -> Option<String> {
+    let mut file = std::fs::File::open(path).ok()?;
+    let mut prefix = [0u8; 16 * 1024];
+    let bytes_read = file.read(&mut prefix).ok()?;
+    let prefix = String::from_utf8_lossy(&prefix[..bytes_read]);
+    if !prefix.contains("thread_spawn") && !prefix.contains("forked_from_id") {
+        return None;
+    }
+
+    let file = std::fs::File::open(path).ok()?;
+    let reader = std::io::BufReader::new(file);
+    let mut first_second: Option<String> = None;
+    for line in reader.lines().map_while(Result::ok) {
+        let parsed: Value = match serde_json::from_str(line.trim()) {
+            Ok(parsed) => parsed,
+            Err(_) => continue,
+        };
+        if parsed.get("type").and_then(Value::as_str) != Some("event_msg") {
+            continue;
+        }
+        let Some(payload) = parsed.get("payload") else {
+            continue;
+        };
+        if payload.get("type").and_then(Value::as_str) != Some("token_count") {
+            continue;
+        }
+        let info = payload.get("info");
+        if info
+            .and_then(|value| value.get("last_token_usage"))
+            .is_none()
+            && info
+                .and_then(|value| value.get("total_token_usage"))
+                .is_none()
+        {
+            continue;
+        }
+        let Some(second) = parsed
+            .get("timestamp")
+            .and_then(Value::as_str)
+            .and_then(|timestamp| timestamp.get(..19))
+            .map(str::to_string)
+        else {
+            continue;
+        };
+        match first_second {
+            None => first_second = Some(second),
+            Some(first) if first == second => return Some(first),
+            Some(_) => return None,
+        }
+    }
+    None
+}
+
+/// Stream only Codex model/usage rows so the repair does not materialize large
+/// transcripts or their message archives. Mirrors `CodexAdapter` attribution.
+fn scan_codex_token_usage(path: &std::path::Path) -> Result<CodexTokenScan, String> {
+    let replay_second = detect_codex_replay_second(path);
+    let mut skipping_replay = replay_second.is_some();
+    let file = std::fs::File::open(path).map_err(|error| error.to_string())?;
+    let reader = std::io::BufReader::new(file);
+    let mut model_used: Option<String> = None;
+    let mut total_input = 0;
+    let mut total_output = 0;
+    let mut cache_read = 0;
+    let mut cache_creation = 0;
+    let mut has_last_usage = false;
+    let mut final_cumulative: Option<(i64, i64, i64, i64)> = None;
+    let mut response_input = 0;
+    let mut response_output = 0;
+    let mut model_usage: std::collections::BTreeMap<
+        String,
+        crate::commands::session_adapters::ModelTokenUsage,
+    > = std::collections::BTreeMap::new();
+
+    for line in reader.lines() {
+        let line = match line {
+            Ok(line) => line,
+            Err(_) => break,
+        };
+        let parsed: Value = match serde_json::from_str(line.trim()) {
+            Ok(value) => value,
+            Err(_) => continue,
+        };
+        let msg_type = parsed.get("type").and_then(Value::as_str).unwrap_or("");
+        let payload = parsed.get("payload");
+
+        if msg_type == "session_meta" {
+            model_used = payload
+                .and_then(|value| value.get("model"))
+                .and_then(Value::as_str)
+                .filter(|model| !model.trim().is_empty())
+                .map(str::to_string)
+                .or_else(|| {
+                    payload
+                        .and_then(|value| value.get("model_provider"))
+                        .and_then(Value::as_str)
+                        .map(|provider| {
+                            if provider == "openai" {
+                                "o3".to_string()
+                            } else {
+                                provider.to_string()
+                            }
+                        })
+                });
+            continue;
+        }
+        if msg_type == "turn_context" {
+            if let Some(model) = payload
+                .and_then(|value| value.get("model"))
+                .and_then(Value::as_str)
+                .filter(|model| !model.trim().is_empty())
+            {
+                model_used = Some(model.to_string());
+            }
+            continue;
+        }
+        if msg_type == "event_msg"
+            && payload
+                .and_then(|value| value.get("type"))
+                .and_then(Value::as_str)
+                == Some("token_count")
+        {
+            let info = payload.and_then(|value| value.get("info"));
+
+            if skipping_replay {
+                let event_second = parsed
+                    .get("timestamp")
+                    .and_then(Value::as_str)
+                    .and_then(|timestamp| timestamp.get(..19));
+                if event_second == replay_second.as_deref() {
+                    if let Some(usage) = info.and_then(|value| value.get("total_token_usage")) {
+                        let get = |key: &str| usage.get(key).and_then(Value::as_i64).unwrap_or(0);
+                        final_cumulative = Some((
+                            get("input_tokens"),
+                            get("output_tokens"),
+                            get("cached_input_tokens"),
+                            get("cache_creation_input_tokens"),
+                        ));
+                    }
+                    continue;
+                }
+                skipping_replay = false;
+            }
+
+            if let Some(usage) = info.and_then(|value| value.get("last_token_usage")) {
+                let get = |key: &str| usage.get(key).and_then(Value::as_i64).unwrap_or(0);
+                let input = get("input_tokens");
+                let output = get("output_tokens");
+                let cached = get("cached_input_tokens");
+                let created = get("cache_creation_input_tokens");
+                total_input += input;
+                total_output += output;
+                cache_read += cached;
+                cache_creation += created;
+                has_last_usage = true;
+
+                let entry = model_usage
+                    .entry(model_used.clone().unwrap_or_else(|| "unknown".to_string()))
+                    .or_default();
+                entry.message_count += 1;
+                entry.input_tokens += input;
+                entry.output_tokens += output;
+                entry.cache_read_tokens += cached;
+                entry.cache_creation_tokens += created;
+            }
+            if let Some(usage) = info.and_then(|value| value.get("total_token_usage")) {
+                let get = |key: &str| usage.get(key).and_then(Value::as_i64).unwrap_or(0);
+                final_cumulative = Some((
+                    get("input_tokens"),
+                    get("output_tokens"),
+                    get("cached_input_tokens"),
+                    get("cache_creation_input_tokens"),
+                ));
+            }
+            continue;
+        }
+        if msg_type == "response_item" {
+            if let Some(usage) = payload.and_then(|value| value.get("usage")) {
+                response_input += usage
+                    .get("input_tokens")
+                    .and_then(Value::as_i64)
+                    .unwrap_or(0);
+                response_output += usage
+                    .get("output_tokens")
+                    .and_then(Value::as_i64)
+                    .unwrap_or(0);
+            }
+        }
+    }
+
+    let observed = if has_last_usage {
+        true
+    } else if let Some((input, output, cached, created)) = final_cumulative {
+        total_input = input;
+        total_output = output;
+        cache_read = cached;
+        cache_creation = created;
+        model_usage.clear();
+        true
+    } else {
+        total_input = response_input;
+        total_output = response_output;
+        model_usage.clear();
+        response_input > 0 || response_output > 0
+    };
+
+    Ok(CodexTokenScan {
+        model_used,
+        total_input,
+        total_output,
+        cache_read,
+        cache_creation,
+        observed,
+        model_usage: model_usage_deltas(&model_usage),
+    })
+}
+
+/// One-time repair of Codex token totals.
+///
+/// Rev 1 corrected the incremental indexer adding a running cumulative total
+/// repeatedly. Rev 2 switched current logs to per-call `last_token_usage`.
+/// Rev 3 excludes the copied parent-event prefix in spawned/forked rollouts;
+/// those records also contain `last_token_usage`, but they are replay evidence,
+/// not work performed by the child. Legacy logs without per-call usage retain
+/// final-cumulative SET semantics.
+///
+/// Re-read each Codex file and overwrite only token/model-usage/cost columns;
+/// archive and message rows were not affected. Parsing happens before the write
+/// transaction so a large transcript corpus does not hold a database lock.
 pub fn fix_codex_token_totals(conn: &rusqlite::Connection) {
     if let Ok(Some(rev)) = queries::get_preference(conn, "codex_token_fix_rev") {
-        if rev == "1" {
+        if rev == CODEX_TOKEN_FIX_REV {
             return;
         }
     }
@@ -1533,30 +1761,68 @@ pub fn fix_codex_token_totals(conn: &rusqlite::Connection) {
         }
     };
 
+    struct Repair {
+        id: String,
+        total_input: i64,
+        total_output: i64,
+        cache_read: i64,
+        cache_creation: i64,
+        cost: f64,
+        model_usage: Vec<queries::SessionModelUsageDelta>,
+    }
+
+    let mut repairs = Vec::new();
+    for (id, path, stored_model) in rows {
+        let summary = match scan_codex_token_usage(std::path::Path::new(&path)) {
+            Ok(summary) => summary,
+            Err(_) => continue,
+        };
+        // A truncated/odd file should not zero a possibly-valid stored value.
+        if !summary.observed {
+            continue;
+        }
+        let model = summary.model_used.or(stored_model);
+        let model_usage = summary.model_usage;
+        let cost = if model_usage.is_empty() {
+            estimate_cost(
+                model.as_deref().unwrap_or(""),
+                summary.total_input,
+                summary.total_output,
+                summary.cache_read,
+                summary.cache_creation,
+            )
+        } else {
+            let total: f64 = model_usage
+                .iter()
+                .map(|usage| {
+                    estimate_cost(
+                        &usage.model,
+                        usage.input_tokens,
+                        usage.output_tokens,
+                        usage.cache_read_tokens,
+                        usage.cache_creation_tokens,
+                    )
+                })
+                .sum();
+            (total * 100.0).round() / 100.0
+        };
+        repairs.push(Repair {
+            id,
+            total_input: summary.total_input,
+            total_output: summary.total_output,
+            cache_read: summary.cache_read,
+            cache_creation: summary.cache_creation,
+            cost,
+            model_usage,
+        });
+    }
+
     let tx = match conn.unchecked_transaction() {
         Ok(t) => t,
         Err(_) => return,
     };
     let mut fixed = 0u64;
-    for (id, path, stored_model) in rows {
-        let raw = match std::fs::read_to_string(&path) {
-            Ok(r) => r,
-            Err(_) => continue,
-        };
-        let summary = CodexAdapter.parse_raw(&path, &raw);
-        // Only overwrite when we actually parsed a cumulative token_count; a
-        // truncated/odd file shouldn't zero a possibly-valid stored value.
-        if !summary.tokens_are_cumulative {
-            continue;
-        }
-        let model = summary.model_used.or(stored_model);
-        let cost = estimate_cost(
-            model.as_deref().unwrap_or(""),
-            summary.total_input_tokens,
-            summary.total_output_tokens,
-            summary.cache_read_tokens,
-            summary.cache_creation_tokens,
-        );
+    for repair in repairs {
         let _ = tx.execute(
             "UPDATE cc_sessions SET
                 total_input_tokens = ?2,
@@ -1564,21 +1830,22 @@ pub fn fix_codex_token_totals(conn: &rusqlite::Connection) {
                 cache_read_tokens = ?4,
                 cache_creation_tokens = ?5,
                 estimated_cost_usd = ?6
-             WHERE id = ?1",
+            WHERE id = ?1",
             rusqlite::params![
-                id,
-                summary.total_input_tokens,
-                summary.total_output_tokens,
-                summary.cache_read_tokens,
-                summary.cache_creation_tokens,
-                cost,
+                &repair.id,
+                repair.total_input,
+                repair.total_output,
+                repair.cache_read,
+                repair.cache_creation,
+                repair.cost,
             ],
         );
+        let _ = queries::replace_session_model_usage(&tx, &repair.id, &repair.model_usage);
         fixed += 1;
     }
     if tx.commit().is_ok() {
-        let _ = queries::set_preference(conn, "codex_token_fix_rev", "1");
-        log::info!("Fixed Codex cumulative token totals for {fixed} sessions");
+        let _ = queries::set_preference(conn, "codex_token_fix_rev", CODEX_TOKEN_FIX_REV);
+        log::info!("Fixed Codex per-session token attribution for {fixed} sessions");
     }
 }
 
@@ -2347,9 +2614,9 @@ fn index_session_incremental<A: SessionSourceAdapter>(
             add_cache_read_tokens: summary.cache_read_tokens,
             add_cache_creation_tokens: summary.cache_creation_tokens,
             add_compaction_count: summary.compaction_count,
-            // Codex reports session-cumulative token totals, so SET rather than
-            // add them on each incremental pass (otherwise they compound to
-            // billions). Claude reports per-message deltas → add.
+            // Legacy Codex logs expose only a session-cumulative total and use
+            // SET semantics. Current Codex `last_token_usage` and Claude usage
+            // are per-call deltas and use ADD semantics.
             tokens_absolute: summary.tokens_are_cumulative,
             last_message: summary.last_timestamp.clone(),
             first_message: summary.first_timestamp.clone(),
@@ -2368,8 +2635,8 @@ fn index_session_incremental<A: SessionSourceAdapter>(
     )
     .map_err(|e| e.to_string())?;
 
-    // Claude reports per-message deltas, so per-model tail usage is additive.
-    // Cumulative-total adapters (Codex) leave model_usage empty → no-op.
+    // Per-call model usage is additive for Claude and current Codex logs.
+    // Legacy cumulative-only Codex logs leave model_usage empty → no-op.
     queries::add_session_model_usage(conn, &meta.id, &model_usage_deltas(&summary.model_usage))
         .map_err(|e| e.to_string())?;
 
@@ -2440,6 +2707,11 @@ fn zero_delta(
 // ─────────────────────────────────────────────────────────────────
 
 fn resolve_codex_base_dir() -> std::path::PathBuf {
+    if let Ok(codex_home) = std::env::var("CODEX_HOME") {
+        if !codex_home.trim().is_empty() {
+            return std::path::PathBuf::from(codex_home);
+        }
+    }
     let home = std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
         .unwrap_or_else(|_| ".".to_string());
@@ -2451,12 +2723,42 @@ fn resolve_codex_session_roots() -> Vec<std::path::PathBuf> {
     vec![base.join("sessions"), base.join("archived_sessions")]
 }
 
+fn codex_session_files_from_base(base: &std::path::Path) -> Vec<std::path::PathBuf> {
+    let active_root = base.join("sessions");
+    let archived_root = base.join("archived_sessions");
+    let mut files = Vec::new();
+    let mut active_relative_paths = HashSet::new();
+
+    if active_root.exists() {
+        for path in walkdir(&active_root, "jsonl") {
+            if let Ok(relative) = path.strip_prefix(&active_root) {
+                active_relative_paths.insert(relative.to_path_buf());
+            }
+            files.push(path);
+        }
+    }
+    if archived_root.exists() {
+        for path in walkdir(&archived_root, "jsonl") {
+            let shadowed_by_active = path
+                .strip_prefix(&archived_root)
+                .ok()
+                .is_some_and(|relative| active_relative_paths.contains(relative));
+            if !shadowed_by_active {
+                files.push(path);
+            }
+        }
+    }
+    files
+}
+
+fn codex_session_files() -> Vec<std::path::PathBuf> {
+    codex_session_files_from_base(&resolve_codex_base_dir())
+}
+
 fn recent_codex_session_files(max_age: chrono::Duration, limit: usize) -> Vec<std::path::PathBuf> {
     let cutoff = chrono::Utc::now() - max_age;
-    let mut files: Vec<(std::time::SystemTime, std::path::PathBuf)> = resolve_codex_session_roots()
+    let mut files: Vec<(std::time::SystemTime, std::path::PathBuf)> = codex_session_files()
         .into_iter()
-        .filter(|root| root.exists())
-        .flat_map(|root| walkdir(&root, "jsonl"))
         .filter_map(|path| {
             let modified = std::fs::metadata(&path).ok()?.modified().ok()?;
             let modified_utc = chrono::DateTime::<chrono::Utc>::from(modified);
@@ -3898,11 +4200,18 @@ mod tests {
                     "type": "event_msg",
                     "payload": {
                         "type": "token_count",
-                        "info": {"total_token_usage": {
-                            "input_tokens": (i + 1) * 100,
-                            "output_tokens": (i + 1) * 20,
-                            "cached_input_tokens": (i + 1) * 10
-                        }}
+                        "info": {
+                            "last_token_usage": {
+                                "input_tokens": 100,
+                                "output_tokens": 20,
+                                "cached_input_tokens": 10
+                            },
+                            "total_token_usage": {
+                                "input_tokens": 2_000_000_000usize + (i + 1) * 100,
+                                "output_tokens": 5_000_000usize + (i + 1) * 20,
+                                "cached_input_tokens": 1_900_000_000usize + (i + 1) * 10
+                            }
+                        }
                     }
                 })
                 .to_string(),
@@ -4782,6 +5091,97 @@ mod tests {
         );
         // Non-encoded input is returned unchanged.
         assert_eq!(percent_decode_path("plain-name"), "plain-name");
+    }
+
+    #[test]
+    fn codex_active_session_copy_wins_over_archived_copy() {
+        let dir = tempfile::tempdir().expect("codex home");
+        let active = dir.path().join("sessions/2026/07/rollout.jsonl");
+        let archived = dir.path().join("archived_sessions/2026/07/rollout.jsonl");
+        let archived_only = dir.path().join("archived_sessions/2026/06/older.jsonl");
+        for path in [&active, &archived, &archived_only] {
+            std::fs::create_dir_all(path.parent().expect("parent")).expect("directory");
+            std::fs::write(path, "{}\n").expect("fixture");
+        }
+
+        let files = codex_session_files_from_base(dir.path());
+
+        assert!(files.contains(&active));
+        assert!(!files.contains(&archived));
+        assert!(files.contains(&archived_only));
+        assert_eq!(files.len(), 2);
+    }
+
+    #[test]
+    fn codex_rev3_repair_skips_replayed_parent_events() {
+        let dir = tempfile::tempdir().expect("session directory");
+        let path = dir.path().join("child.jsonl");
+        let raw = concat!(
+            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"session_meta","payload":{"id":"child","cwd":"/repo/codevetter","model_provider":"openai","source":{"subagent":{"thread_spawn":{"parent_thread_id":"parent"}}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"turn_context","payload":{"model":"gpt-5.6-sol","effort":"high"}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:00.100Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":200},"total_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":200}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:00.200Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":500,"cached_input_tokens":400,"output_tokens":100},"total_token_usage":{"input_tokens":1500,"cached_input_tokens":1300,"output_tokens":300}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:04:00.000Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20},"total_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:05:00.000Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":50,"cached_input_tokens":40,"output_tokens":10},"total_token_usage":{"input_tokens":150,"cached_input_tokens":120,"output_tokens":30}}}}"#,
+            "\n",
+        );
+        std::fs::write(&path, raw).expect("fixture");
+
+        let conn = memory_conn_with_project();
+        let path_str = path.to_string_lossy().to_string();
+        let summary = CodexAdapter.parse_raw(&path_str, raw);
+        upsert_adapter_summary_session(
+            &conn,
+            "project",
+            summary,
+            raw.len() as i64,
+            Some("2026-07-20T08:00:00Z".to_string()),
+            "2026-07-20T08:00:00Z",
+            None,
+        )
+        .expect("index fixture");
+        conn.execute(
+            "UPDATE cc_sessions
+             SET total_input_tokens = 2000000260,
+                 total_output_tokens = 5000020,
+                 cache_read_tokens = 1900000210,
+                 estimated_cost_usd = 9999
+             WHERE id = 'child'",
+            [],
+        )
+        .expect("corrupt stored totals");
+        queries::set_preference(&conn, "codex_token_fix_rev", "1").expect("old revision");
+
+        fix_codex_token_totals(&conn);
+
+        let repaired: (i64, i64, i64, f64) = conn
+            .query_row(
+                "SELECT total_input_tokens, total_output_tokens,
+                        cache_read_tokens, estimated_cost_usd
+                 FROM cc_sessions WHERE id = 'child'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+            )
+            .expect("repaired row");
+        assert_eq!(repaired.0, 150);
+        assert_eq!(repaired.1, 30);
+        assert_eq!(repaired.2, 120);
+        assert!(repaired.3 < 1.0);
+        assert_eq!(
+            queries::get_preference(&conn, "codex_token_fix_rev")
+                .expect("revision")
+                .as_deref(),
+            Some(CODEX_TOKEN_FIX_REV)
+        );
+        let model_usage = queries::get_session_model_usage(&conn, "child").expect("model usage");
+        assert_eq!(model_usage.len(), 1);
+        assert_eq!(model_usage[0].model, "gpt-5.6-sol");
+        assert_eq!(model_usage[0].input_tokens, 150);
     }
 
     // Diagnostic (not a CI eval): runs the real indexer against a COPY of the
