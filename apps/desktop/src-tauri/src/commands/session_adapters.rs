@@ -26,11 +26,10 @@ pub struct RawSessionAdapterSummary {
     pub day_counts: BTreeMap<String, i64>,
     pub archive_messages: Vec<RawSessionArchiveMessage>,
     pub parse_warnings: Vec<String>,
-    /// True when the token fields are a SESSION-CUMULATIVE total (Codex reports a
-    /// running `total_token_usage` in every `token_count` event), false when they
-    /// are per-message deltas to be summed (Claude). The incremental indexer must
-    /// SET cumulative tokens, not ADD them — adding the running total every pass
-    /// is what inflated one Codex session to 61.5B tokens / $35k.
+    /// True when the token fields are a SESSION-CUMULATIVE total (legacy Codex
+    /// logs only expose `total_token_usage`), false when they are per-call
+    /// deltas to be summed (Claude and current Codex `last_token_usage`). The
+    /// incremental indexer must SET cumulative totals but ADD deltas.
     #[serde(default)]
     pub tokens_are_cumulative: bool,
     /// Per-model breakdown of the token fields above, keyed by model id.
@@ -92,6 +91,60 @@ pub trait SessionSourceAdapter {
 pub struct ClaudeCodeAdapter;
 pub struct CodexAdapter;
 pub struct CursorAdapter;
+
+/// Forked/subagent Codex rollouts can begin with a replay of the parent's
+/// token-count history. Codex rewrites those copied events to the fork's
+/// creation second; the first real child event advances to a later second.
+///
+/// This is the same observable boundary used by ccusage and CodexBar. Requiring
+/// both an ancestry marker and two usage events in the same second avoids
+/// suppressing ordinary sessions that happen to emit one quick token update.
+fn codex_replay_second(raw: &str) -> Option<String> {
+    if !raw.contains("thread_spawn") && !raw.contains("forked_from_id") {
+        return None;
+    }
+
+    let mut first_second: Option<String> = None;
+    for line in raw.lines() {
+        let parsed: Value = match serde_json::from_str(line.trim()) {
+            Ok(parsed) => parsed,
+            Err(_) => continue,
+        };
+        if parsed.get("type").and_then(Value::as_str) != Some("event_msg") {
+            continue;
+        }
+        let Some(payload) = parsed.get("payload") else {
+            continue;
+        };
+        if payload.get("type").and_then(Value::as_str) != Some("token_count") {
+            continue;
+        }
+        let info = payload.get("info");
+        if info
+            .and_then(|value| value.get("last_token_usage"))
+            .is_none()
+            && info
+                .and_then(|value| value.get("total_token_usage"))
+                .is_none()
+        {
+            continue;
+        }
+        let Some(second) = parsed
+            .get("timestamp")
+            .and_then(Value::as_str)
+            .and_then(|timestamp| timestamp.get(..19))
+            .map(str::to_string)
+        else {
+            continue;
+        };
+        match first_second {
+            None => first_second = Some(second),
+            Some(first) if first == second => return Some(first),
+            Some(_) => return None,
+        }
+    }
+    None
+}
 
 fn empty_summary(adapter_id: &str, agent_type: &str, source_ref: &str) -> RawSessionAdapterSummary {
     RawSessionAdapterSummary {
@@ -554,7 +607,12 @@ impl SessionSourceAdapter for CodexAdapter {
 
     fn parse_raw(&self, source_ref: &str, raw: &str) -> RawSessionAdapterSummary {
         let mut summary = empty_summary(self.adapter_id(), self.agent_type(), source_ref);
-        let mut has_cumulative_token_count = false;
+        let replay_second = codex_replay_second(raw);
+        let mut skipping_replay = replay_second.is_some();
+        let mut has_last_token_usage = false;
+        let mut final_cumulative_usage: Option<(i64, i64, i64, i64)> = None;
+        let mut response_input_tokens = 0;
+        let mut response_output_tokens = 0;
 
         for (idx, line) in raw.lines().enumerate() {
             let line = line.trim();
@@ -575,24 +633,38 @@ impl SessionSourceAdapter for CodexAdapter {
 
             if msg_type == "session_meta" {
                 if let Some(payload) = payload {
-                    summary.stable_id = value_string(Some(payload), "id");
-                    summary.cwd = value_string(Some(payload), "cwd");
-                    summary.cli_version = value_string(Some(payload), "cli_version");
-                    summary.slug = value_string(Some(payload), "title");
-                    summary.git_branch = payload
-                        .get("git")
-                        .and_then(|git| git.get("branch"))
-                        .and_then(|v| v.as_str())
-                        .map(String::from);
-                    summary.model_used = value_string(Some(payload), "model").or_else(|| {
-                        value_string(Some(payload), "model_provider").map(|provider| {
-                            if provider == "openai" {
-                                "o3".to_string()
-                            } else {
-                                provider
-                            }
-                        })
-                    });
+                    // Replayed child logs can contain the parent's session_meta
+                    // after the child's. Keep the first identity from the file.
+                    if summary.stable_id.is_none() {
+                        summary.stable_id = value_string(Some(payload), "id");
+                    }
+                    if summary.cwd.is_none() {
+                        summary.cwd = value_string(Some(payload), "cwd");
+                    }
+                    if summary.cli_version.is_none() {
+                        summary.cli_version = value_string(Some(payload), "cli_version");
+                    }
+                    if summary.slug.is_none() {
+                        summary.slug = value_string(Some(payload), "title");
+                    }
+                    if summary.git_branch.is_none() {
+                        summary.git_branch = payload
+                            .get("git")
+                            .and_then(|git| git.get("branch"))
+                            .and_then(|v| v.as_str())
+                            .map(String::from);
+                    }
+                    if summary.model_used.is_none() {
+                        summary.model_used = value_string(Some(payload), "model").or_else(|| {
+                            value_string(Some(payload), "model_provider").map(|provider| {
+                                if provider == "openai" {
+                                    "o3".to_string()
+                                } else {
+                                    provider
+                                }
+                            })
+                        });
+                    }
                 }
                 continue;
             }
@@ -614,27 +686,96 @@ impl SessionSourceAdapter for CodexAdapter {
                     .and_then(|v| v.as_str())
                     .unwrap_or("");
                 if sub_type == "token_count" {
-                    if let Some(total_usage) = payload
-                        .and_then(|p| p.get("info"))
-                        .and_then(|info| info.get("total_token_usage"))
-                    {
-                        summary.total_input_tokens = total_usage
+                    let info = payload.and_then(|p| p.get("info"));
+
+                    if skipping_replay {
+                        let event_second = parsed
+                            .get("timestamp")
+                            .and_then(Value::as_str)
+                            .and_then(|timestamp| timestamp.get(..19));
+                        if event_second == replay_second.as_deref() {
+                            if let Some(total_usage) =
+                                info.and_then(|info| info.get("total_token_usage"))
+                            {
+                                final_cumulative_usage = Some((
+                                    total_usage
+                                        .get("input_tokens")
+                                        .and_then(|v| v.as_i64())
+                                        .unwrap_or(0),
+                                    total_usage
+                                        .get("output_tokens")
+                                        .and_then(|v| v.as_i64())
+                                        .unwrap_or(0),
+                                    total_usage
+                                        .get("cached_input_tokens")
+                                        .and_then(|v| v.as_i64())
+                                        .unwrap_or(0),
+                                    total_usage
+                                        .get("cache_creation_input_tokens")
+                                        .and_then(|v| v.as_i64())
+                                        .unwrap_or(0),
+                                ));
+                            }
+                            continue;
+                        }
+                        skipping_replay = false;
+                    }
+
+                    if let Some(last_usage) = info.and_then(|info| info.get("last_token_usage")) {
+                        let input = last_usage
                             .get("input_tokens")
                             .and_then(|v| v.as_i64())
                             .unwrap_or(0);
-                        summary.total_output_tokens = total_usage
+                        let output = last_usage
                             .get("output_tokens")
                             .and_then(|v| v.as_i64())
                             .unwrap_or(0);
-                        summary.cache_read_tokens = total_usage
+                        let cache_read = last_usage
                             .get("cached_input_tokens")
                             .and_then(|v| v.as_i64())
                             .unwrap_or(0);
-                        has_cumulative_token_count = true;
-                        // These are running session totals (SET semantics), not
-                        // per-message deltas — the incremental indexer must not
-                        // add them on top of the prior value.
-                        summary.tokens_are_cumulative = true;
+                        let cache_creation = last_usage
+                            .get("cache_creation_input_tokens")
+                            .and_then(|v| v.as_i64())
+                            .unwrap_or(0);
+
+                        summary.total_input_tokens += input;
+                        summary.total_output_tokens += output;
+                        summary.cache_read_tokens += cache_read;
+                        summary.cache_creation_tokens += cache_creation;
+                        has_last_token_usage = true;
+
+                        let model_key = summary.model_used.as_deref().unwrap_or("unknown");
+                        let model_usage = summary
+                            .model_usage
+                            .entry(model_key.to_string())
+                            .or_default();
+                        model_usage.message_count += 1;
+                        model_usage.input_tokens += input;
+                        model_usage.output_tokens += output;
+                        model_usage.cache_read_tokens += cache_read;
+                        model_usage.cache_creation_tokens += cache_creation;
+                    }
+
+                    if let Some(total_usage) = info.and_then(|info| info.get("total_token_usage")) {
+                        final_cumulative_usage = Some((
+                            total_usage
+                                .get("input_tokens")
+                                .and_then(|v| v.as_i64())
+                                .unwrap_or(0),
+                            total_usage
+                                .get("output_tokens")
+                                .and_then(|v| v.as_i64())
+                                .unwrap_or(0),
+                            total_usage
+                                .get("cached_input_tokens")
+                                .and_then(|v| v.as_i64())
+                                .unwrap_or(0),
+                            total_usage
+                                .get("cache_creation_input_tokens")
+                                .and_then(|v| v.as_i64())
+                                .unwrap_or(0),
+                        ));
                     }
                 }
                 continue;
@@ -658,18 +799,33 @@ impl SessionSourceAdapter for CodexAdapter {
                     Some(msg_type.to_string()),
                 );
                 if let Some(usage) = payload.and_then(|p| p.get("usage")) {
-                    if !has_cumulative_token_count {
-                        summary.total_input_tokens += usage
-                            .get("input_tokens")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0);
-                        summary.total_output_tokens += usage
-                            .get("output_tokens")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0);
-                    }
+                    response_input_tokens += usage
+                        .get("input_tokens")
+                        .and_then(|v| v.as_i64())
+                        .unwrap_or(0);
+                    response_output_tokens += usage
+                        .get("output_tokens")
+                        .and_then(|v| v.as_i64())
+                        .unwrap_or(0);
                 }
                 summary.message_count += 1;
+            }
+        }
+
+        if !has_last_token_usage {
+            summary.model_usage.clear();
+            if let Some((input, output, cache_read, cache_creation)) = final_cumulative_usage {
+                // Older Codex logs do not expose per-call `last_token_usage`.
+                // Their final cumulative total is session-scoped, so preserve
+                // SET semantics for incremental indexing of that legacy shape.
+                summary.total_input_tokens = input;
+                summary.total_output_tokens = output;
+                summary.cache_read_tokens = cache_read;
+                summary.cache_creation_tokens = cache_creation;
+                summary.tokens_are_cumulative = true;
+            } else {
+                summary.total_input_tokens = response_input_tokens;
+                summary.total_output_tokens = response_output_tokens;
             }
         }
 
@@ -936,6 +1092,61 @@ mod tests {
     }
 
     #[test]
+    fn codex_attributes_last_usage_instead_of_inherited_cumulative_total() {
+        let raw = concat!(
+            r#"{"type":"session_meta","payload":{"id":"child","cwd":"/repo","model_provider":"openai","source":{"subagent":{"thread_spawn":{"parent_thread_id":"parent"}}}}}"#,
+            "\n",
+            r#"{"type":"turn_context","payload":{"model":"gpt-5.6-sol","effort":"high"}}"#,
+            "\n",
+            r#"{"type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":120,"cached_input_tokens":100,"output_tokens":8},"total_token_usage":{"input_tokens":2000000120,"cached_input_tokens":1900000100,"output_tokens":5000008}}}}"#,
+            "\n",
+            r#"{"type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":140,"cached_input_tokens":110,"output_tokens":12},"total_token_usage":{"input_tokens":2000000260,"cached_input_tokens":1900000210,"output_tokens":5000020}}}}"#,
+        );
+
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-child.jsonl", raw);
+
+        assert_eq!(summary.total_input_tokens, 260);
+        assert_eq!(summary.cache_read_tokens, 210);
+        assert_eq!(summary.total_output_tokens, 20);
+        assert!(!summary.tokens_are_cumulative);
+        let model = summary.model_usage.get("gpt-5.6-sol").expect("model usage");
+        assert_eq!(model.input_tokens, 260);
+        assert_eq!(model.cache_read_tokens, 210);
+        assert_eq!(model.output_tokens, 20);
+    }
+
+    #[test]
+    fn codex_skips_replayed_parent_events_in_spawned_session() {
+        let raw = concat!(
+            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"session_meta","payload":{"id":"child","cwd":"/repo","model_provider":"openai","source":{"subagent":{"thread_spawn":{"parent_thread_id":"parent"}}}}}"#,
+            "\n",
+            // A replayed parent session_meta must not replace the child id.
+            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"session_meta","payload":{"id":"parent"}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"turn_context","payload":{"model":"gpt-5.6-sol","effort":"high"}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:00.100Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":200},"total_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":200}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:00.200Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":500,"cached_input_tokens":400,"output_tokens":100},"total_token_usage":{"input_tokens":1500,"cached_input_tokens":1300,"output_tokens":300}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:04:00.000Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20},"total_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:05:00.000Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":50,"cached_input_tokens":40,"output_tokens":10},"total_token_usage":{"input_tokens":150,"cached_input_tokens":120,"output_tokens":30}}}}"#,
+        );
+
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-child.jsonl", raw);
+
+        assert_eq!(summary.stable_id.as_deref(), Some("child"));
+        assert_eq!(summary.total_input_tokens, 150);
+        assert_eq!(summary.cache_read_tokens, 120);
+        assert_eq!(summary.total_output_tokens, 30);
+        let model = summary.model_usage.get("gpt-5.6-sol").expect("model usage");
+        assert_eq!(model.input_tokens, 150);
+        assert_eq!(model.cache_read_tokens, 120);
+        assert_eq!(model.output_tokens, 30);
+    }
+
+    #[test]
     fn multi_model_claude_session_splits_usage_per_model() {
         // A session that switches models mid-way must NOT book everything to
         // the last model seen (the bug that misattributed opus usage to
@@ -994,6 +1205,7 @@ mod tests {
         assert_eq!(summary.total_input_tokens, 500);
         assert_eq!(summary.total_output_tokens, 150);
         assert_eq!(summary.cache_read_tokens, 100);
+        assert!(summary.tokens_are_cumulative);
         assert_eq!(summary.slug, None);
         assert_eq!(summary.day_counts.get("2026-06-12"), Some(&2));
         assert_eq!(summary.archive_messages.len(), 2);

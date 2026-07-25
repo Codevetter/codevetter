@@ -930,10 +930,9 @@ pub struct SessionAppendDelta {
     pub add_cache_read_tokens: i64,
     pub add_cache_creation_tokens: i64,
     pub add_compaction_count: i64,
-    /// When true the token fields are SET to these values (session-cumulative,
-    /// e.g. Codex's running `total_token_usage`) instead of added. Without this,
-    /// the incremental indexer re-adds the running total every pass and tokens
-    /// explode (one Codex session reached 61.5B tokens / $35k).
+    /// When true the token fields are SET to these values (legacy Codex
+    /// session-cumulative totals) instead of added. Current Codex and Claude
+    /// adapters emit per-call deltas and leave this false.
     pub tokens_absolute: bool,
     pub last_message: Option<String>,
     pub first_message: Option<String>,
@@ -960,9 +959,9 @@ pub fn apply_session_append_delta(
     d: &SessionAppendDelta,
 ) -> Result<(), rusqlite::Error> {
     // ?20 = tokens_absolute. When set, the token columns are replaced by the
-    // supplied values (Codex's session-cumulative totals); otherwise they are
-    // summed (Claude's per-message deltas). message_count always sums — the
-    // parse only ever sees the newly-appended messages.
+    // supplied values (legacy Codex session-cumulative totals); otherwise they
+    // are summed (current Codex/Claude per-call deltas). message_count always
+    // sums — the parse only ever sees the newly-appended messages.
     conn.execute(
         "UPDATE cc_sessions SET
             message_count = message_count + ?2,
