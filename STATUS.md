@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-07-24
+Last updated: 2026-07-25
 
 > Short current view. For the deep timeline + feature log, see
 > [`PROJECT_STATUS.md`](./PROJECT_STATUS.md). For the docs index, see
@@ -31,8 +31,9 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
   authoritative provider/repository attachment checks, bounded live transcript
   indexing, and honest direct provider output are implemented and
   native-qualified and shipped in v1.3.0.
-- **External benchmark case curation** — 27 public cases shipped; real
-  agent-PR case curation pending before external catch-rate claims.
+- **External benchmark case curation** — 27 public cases shipped. Real
+  agent-PR curation and public X-Ray gallery work are parked until an explicit
+  owner decision; no external catch-rate claim is authorized.
 - **Repo Unpacked + history workbench** — canonical structural graph,
   release-history slider, and history MCP shipped in v1.2.21; outcome
   calibration remains ongoing.
@@ -42,11 +43,9 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Blockers
 
-- **External benchmark claims gated on real agent-PR cases** — the
-  head-to-head vs raw Claude is currently an internal-only answer.
-- **X-Ray publication is intentionally gated** — local export and a static
-  gallery build exist, but no public PR corpus has been adjudicated and no
-  gallery deployment is authorized by the desktop release.
+- **External benchmark claims remain unauthorized** — the head-to-head vs raw
+  Claude is currently an internal-only answer. Real agent-PR curation and
+  gallery publication are parked rather than active work.
 
 ## Unresolved questions
 
@@ -57,12 +56,9 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Next steps
 
-1. Dogfood deterministic Review and X-Ray against real public agent PRs.
-2. Publish reviewed examples only after the sanitizer output is manually
-   compared with the public source and CI evidence.
-3. Keep Agent Island off by default while repeated local use confirms stable
+1. Keep Agent Island off by default while repeated local use confirms stable
    attention routing and zero false actions.
-4. Continue Repo Unpack calibration against downstream review and QA outcomes.
+2. Continue Repo Unpack calibration against downstream review and QA outcomes.
 
 ## Recent shipped
 

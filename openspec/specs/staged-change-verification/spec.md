@@ -19,11 +19,16 @@ CodeVetter SHALL represent verification of a code change as an ordered sequence 
 - **THEN** the executable-testing stage remains not verified and identifies the missing or invalid evidence
 
 ### Requirement: Stage provenance and status
-Each stage SHALL have an explicit status, timestamp, provenance, and evidence references. A stage MUST NOT be shown as passed solely because an earlier stage passed. Warm local verification provenance MUST include daemon/result schema, exact target and change-set identities, configuration and scenario-manifest hashes, selected and fallback scenarios, observation policy, warm/cold state, and limitations.
+Each stage SHALL have an explicit status, timestamp, provenance, and evidence references. Persisted stage evidence MUST be structured enough to support a sanitized X-Ray export, and a stage MUST NOT be shown as passed solely because an earlier stage passed. Warm local verification provenance MUST include daemon/result schema, exact target and change-set identities, configuration and scenario-manifest hashes, selected and fallback scenarios, observation policy, warm/cold state, and limitations.
 
 #### Scenario: Review passes but browser QA fails
 - **WHEN** review completes without blocking findings and executable browser QA fails
 - **THEN** the aggregate outcome remains unverified or blocked and identifies the failed QA evidence
+
+#### Scenario: Stage is included in an X-Ray
+- **WHEN** a completed verification is selected for public X-Ray export
+- **THEN** each exported stage retains its status, timestamp, provenance kind, and approved evidence references
+- **AND** missing or non-public evidence is represented as unavailable rather than silently dropped
 
 #### Scenario: Warm verification supplies executable evidence
 - **WHEN** every required scenario for the exact current change set executes and the warm result passes
