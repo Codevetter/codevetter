@@ -172,15 +172,16 @@ Internal (fleet):
 8. Design opt-in public graph publishing as a separate privacy-reviewed track: a live SVG/PNG README snapshot that links to the interactive web graph. GitHub READMEs cannot host the interactive JavaScript surface itself, so the hosted image and linked explorer must share one versioned publication identity.
 9. Bound local session-history storage with measured age/size retention for `session_message_archive` and its FTS index, preserving pinned or evidence-referenced sessions and providing dry-run cleanup plus explicit compaction rather than silent deletion.
 10. Scale the now-qualified evidence-traced business-rule archaeology path beyond the largest available 256-file fixture. An 18M-line/100,000-rule claim remains gated on running that exact corpus through the same correctness, privacy, resource, parity, cancellation, and cleanup thresholds.
-11. Dogfood the locally implemented deterministic review pipeline and Agent PR X-Ray against real public agent-generated PRs, record exclusions and sanitizer failures, and promote only independently adjudicated cases into benchmark-ground-truth.
-12. Publish the prepared static X-Ray examples only after manual public-source comparison, then release the desktop pipeline behind a one-release rollback path with explicit authorization.
-13. Close the managed-harness gap without restoring a terminal cockpit: provider profile/config selection, durable crash-safe process registration, one isolated git worktree and environment per work item, checkpoints, setup/run/archive hooks, port isolation, and integrated diff/check/PR/archive lifecycle.
+11. Close the managed-harness gap without restoring a terminal cockpit: provider profile/config selection, durable crash-safe process registration, one isolated git worktree and environment per work item, checkpoints, setup/run/archive hooks, port isolation, and integrated diff/check/PR/archive lifecycle.
 
 ### Deferred / Parked
 
 - Broad IDE replacement behavior is parked; CodeVetter should stay focused on verification and review.
 - Generic synthetic browser testing for every app type is deferred until the supported local-app matrix is explicit.
 - Marketplace, hosted multi-tenant collaboration, and CI enforcement are deferred behind a stronger local evidence loop.
+- Real agent-PR X-Ray dogfooding, independently adjudicated corpus promotion,
+  public gallery deployment, and external catch-rate claims are parked until an
+  explicit owner decision. The deterministic local export remains shipped.
 
 ### Blocked
 

@@ -1,4 +1,11 @@
-## ADDED Requirements
+# Agent PR X-Ray Specification
+
+## Purpose
+
+Define deterministic, public-safe verification packets exported from completed
+local CodeVetter reviews.
+
+## Requirements
 
 ### Requirement: Review-derived X-Ray generation
 CodeVetter SHALL generate an Agent PR X-Ray only from a completed local review and its persisted verification evidence.
