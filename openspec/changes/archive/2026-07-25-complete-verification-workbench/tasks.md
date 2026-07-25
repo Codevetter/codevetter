@@ -73,7 +73,7 @@
 ## 9. Qualification, archive, and release
 
 - [x] 9.1 Run focused Rust, frontend unit, TypeScript, Biome, Playwright, benchmark, security, docs, and strict OpenSpec checks after each slice.
-- [ ] 9.2 Run the complete desktop release qualification, including production build, Rust suite, all Playwright flows, warm verification, graph/MCP gates, native helper tests, and bundle/signature checks.
+- [x] 9.2 Run the complete desktop release qualification, including production build, Rust suite, all Playwright flows, warm verification, graph/MCP gates, native helper tests, and bundle/signature checks.
 - [x] 9.3 Update canonical specs and product status with measured results, explicit non-claims, remaining external blockers, and the resolved intent/QA product decisions.
-- [ ] 9.4 Archive `complete-verification-workbench` only when every locally controllable task and required check is complete.
-- [ ] 9.5 Bump the desktop version, commit and push the intentional release scope, verify CI/Docs/auto-release/release workflows, and confirm updater manifest and signed assets.
+- [x] 9.4 Archive `complete-verification-workbench` only when every locally controllable task and required check is complete.
+- [x] 9.5 Bump the desktop version, commit and push the intentional release scope, verify CI/Docs/auto-release/release workflows, and confirm updater manifest and signed assets.

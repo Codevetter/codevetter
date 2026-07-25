@@ -29,7 +29,7 @@ Internal (fleet):
 
 ## Timeline
 
-- **2026-07-25 (release candidate) — Verification workbench completion:** added
+- **2026-07-25 (shipped in v1.6.0) — Verification workbench completion:** added
   dry-run-first local session retention, versioned outcome-risk calibration,
   crash-recoverable managed Work runs, explicit intent-closure receipts, an
   honest real-product QA support matrix, evidence-owned inert artifact
@@ -45,7 +45,16 @@ Internal (fleet):
   persisted-linker input bound, so the 18M-line/100,000-rule claim remains
   unsupported. Authenticated CodeVetter, CodeRabbit, and Claude `/review`
   captures are still externally blocked for the new corpus, so all new public
-  comparator claims remain closed. Detailed evidence and boundaries are in
+  comparator claims remain closed. Local qualification passed 881 Rust tests
+  with 24 ignored, 654 frontend tests with one intentional skip, the
+  20-scenario zero-model live gate, all 71 Playwright flows, TypeScript, Biome,
+  production build and bundle budgets, docs, and all 35 strict OpenSpec
+  validations. CI, Docs, auto-release, the release-only graph/MCP gate,
+  universal Agent Island preparation and qualification, nested helper checks,
+  updater signing, and manifest linkage all passed. The published release
+  contains the arm64 DMG, signed updater archive, detached signature, and
+  `latest.json`; the live updater endpoint passed all six linkage checks.
+  Detailed evidence and boundaries are in
   `docs/architecture/verification-workbench.md`.
 
 - **2026-07-24 (shipped in v1.5.4) — Deterministic Review, Agent PR X-Ray, and native Agent Island:** new broad reviews resolve a verified Git target, cover every changed file through bounded fingerprinted units, resume exact checkpoints, terminate owned executor process groups, and qualify repository-contained line and anchor evidence before any candidate reaches coordination, scoring, persistence, proof, or actionable UI. Review renders complete, partial, and legacy coverage; repository-scoped MCP exposes the same redacted paginated manifest; `CODEVETTER_REVIEW_PIPELINE=legacy` retains the aggregate executor as a one-release rollback path. Completed reviews can generate fail-closed JSON, Markdown, and self-contained offline HTML X-Rays with explicit staged omissions and opt-in suggestion excerpts. Codex now prefers its structured app-server for new sessions with PTY compatibility fallback; Claude hooks expose bounded lifecycle and session-scoped permission identities. The opt-in Swift Agent Island stays below the macOS notch, groups live sessions by project, announces bounded status through configured system voices, and permits only capability- and identity-checked replies or decisions; it is off by default and the existing Work/notification path remains the rollback. Local qualification passes strict Clippy, 845 Rust tests with 23 ignored, Biome, TypeScript, 648 frontend unit tests with one skipped, the 20-scenario warm gate, all 69 Playwright flows, desktop and landing production builds, docs, MCP integration, 29 strict OpenSpec validations, Swift self-tests, and native qualification at 97 ms p95, 0.18% idle CPU, 54.5 MiB RSS, and zero repository rescans. Release preflights fixed sidecar ordering, the helper deployment target, the MCP benchmark's 23-tool contract, architecture verification, and nested helper signing. The published v1.5.4 updater was downloaded and passed both universal-architecture checks, strict nested signature verification, extracted-helper self-tests, bundle presence, rollback checks, and all six live manifest-linkage checks. Public X-Ray dogfooding, gallery deployment, and external claims remain evidence-gated.

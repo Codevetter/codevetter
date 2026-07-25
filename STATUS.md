@@ -16,12 +16,13 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Active work
 
-- **Verification workbench release candidate** — additive local evidence now
+- **v1.6.0 verification workbench release** — additive local evidence now
   connects retention, outcome calibration, managed Work runs, intent closure,
   real-product QA support, safe artifact previews, public graph packages,
   benchmark readiness, and local performance receipts without replacing
   Review or Testing authority. Work remains conversation-first; Board shows
   concise managed-run and closure state; Settings cleanup is dry-run-first.
+  The signed macOS release, updater archive, and live manifest are published.
   Exact measurements and non-claims live in
   [`docs/architecture/verification-workbench.md`](./docs/architecture/verification-workbench.md).
 - **v1.5.4 desktop release** — deterministic Review, local Agent PR
@@ -45,8 +46,8 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
   Claude `/review` captures remain unavailable, so no new external catch-rate
   claim is authorized.
 - **Repo Unpacked + history workbench** — canonical structural graph,
-  release-history slider, and history MCP shipped in v1.2.21; outcome
-  calibration remains ongoing.
+  release-history slider, and history MCP shipped in v1.2.21; outcome-risk
+  calibration shipped in v1.6.0.
 - **MCP sidecar** — opt-in read-only local MCP server implemented, packaged,
   and shipped in v1.2.21.
 - **Documentation consolidation** — this knowledge system (in progress).
@@ -77,6 +78,12 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Recent shipped
 
+- 2026-07-25 — v1.6.0 shipped the completed verification workbench with
+  retention, calibration, managed Work runs, intent closure, real-product QA
+  support, safe previews, public graph packages, and measured local
+  qualification receipts. CI, Docs, auto-release, release-side graph/MCP,
+  universal Agent Island, signing, updater linkage, and all six live manifest
+  checks passed.
 - 2026-07-24 — v1.5.4 shipped deterministic Review, local Agent PR X-Ray
   export, structured Codex/Claude lifecycle streams, calm Work history, and the
   opt-in native Agent Island with a signed universal helper and verified updater
