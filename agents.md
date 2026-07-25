@@ -70,14 +70,13 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 ## Fleet Guidance
 
 ### Adding Tasks
-- Add durable work items in SaaS Maker Cockpit Tasks when the task affects product behavior, deployment, user feedback, or fleet maintenance.
-- Include the project slug, a concise title, acceptance criteria, priority/status, and links to relevant code, issues, traces, or dashboards.
-- If task discovery starts locally in an editor or agent session, mirror the durable next step back into SaaS Maker before handoff.
+- Track CodeVetter work in this repository's GitHub issues or OpenSpec changes.
+- Keep cross-project infrastructure work in Fleet Workspace, not SaaS Maker.
 
 ### Using SaaS Maker
-- Treat SaaS Maker as the system of record for project metadata, feedback, tasks, analytics, testimonials, changelog, and fleet visibility.
-- Prefer API-first workflows through `fnd api`, the SDK, or widgets instead of one-off scripts when interacting with SaaS Maker features.
-- Keep this agent file aligned with the project record when operating rules, integrations, or deployment conventions change.
+- Do not use the retired SaaS Maker task queue or API as a system of record.
+- Fleet Workspace owns shared project metadata and infrastructure; CodeVetter
+  remains independently versioned and deployed.
 
 ### Free AI First
 - Prefer free/local AI paths for routine development and analysis: the `free-ai` gateway, local models, provider free tiers, and cached context.
