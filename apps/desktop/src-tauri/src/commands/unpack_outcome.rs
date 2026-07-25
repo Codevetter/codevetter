@@ -102,6 +102,10 @@ pub(crate) fn build_unpack_outcome_evidence(
         &calibration,
         &trend,
     );
+    let (learned_calibrations, calibration_exclusions) =
+        crate::commands::outcome_risk_calibration::build_outcome_risk_calibrations(
+            conn, repo_path,
+        )?;
 
     Ok(UnpackOutcomeEvidence {
         repo_path: repo_path.to_string(),
@@ -119,6 +123,8 @@ pub(crate) fn build_unpack_outcome_evidence(
         summary,
         trend,
         trust_actions,
+        learned_calibrations,
+        calibration_exclusions,
     })
 }
 

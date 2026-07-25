@@ -187,6 +187,139 @@ export async function deleteWorkItem(id: string): Promise<void> {
   return safeInvoke('delete_work_item', { id });
 }
 
+export interface ManagedProviderProfile {
+  id: string;
+  provider: AgentProvider;
+  label: string;
+  configPath: string;
+  isDefault: boolean;
+  executableAvailable: boolean;
+}
+
+export interface ManagedPort {
+  purpose: string;
+  port: number;
+}
+
+export interface ManagedWorkRun {
+  id: string;
+  workItemId: string;
+  provider: AgentProvider;
+  profileId: string;
+  profilePath: string;
+  repoPath: string;
+  baseRevision: string;
+  worktreePath: string | null;
+  worktreeBranch: string | null;
+  ownerToken: string;
+  ports: ManagedPort[];
+  terminalId: string | null;
+  providerSessionId: string | null;
+  processId: number | null;
+  processStartedAt: string | null;
+  state: string;
+  currentCheckpointId: string | null;
+  changeIdentity: string | null;
+  disconnectedReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ManagedHookResult {
+  checkpointId: string;
+  kind: string;
+  success: boolean;
+  exitCode: number | null;
+  timedOut: boolean;
+  durationMs: number;
+  stdout: string;
+  stderr: string;
+  stdoutTruncated: boolean;
+  stderrTruncated: boolean;
+  changeIdentity: string;
+}
+
+export interface IntentClosureReceipt {
+  id: string;
+  workItemId: string;
+  goalVersion: number;
+  goalText: string;
+  acceptanceCriteria: string[];
+  provider: string | null;
+  sessionId: string | null;
+  managedRunId: string | null;
+  changeIdentity: string;
+  reviewId: string | null;
+  verificationRunId: string | null;
+  disposition: 'satisfied' | 'partially_satisfied' | 'not_satisfied' | 'waived';
+  reason: string;
+  stale: boolean;
+  staleReason: string | null;
+  createdAt: string;
+}
+
+export async function listManagedProviderProfiles(): Promise<ManagedProviderProfile[]> {
+  return safeInvoke('list_managed_provider_profiles');
+}
+
+export async function createManagedWorkRun(input: {
+  workItemId: string;
+  provider: AgentProvider;
+  profileId: string;
+  repoPath: string;
+  ports?: Array<{ purpose: string; preferredPort?: number | null }>;
+}): Promise<ManagedWorkRun> {
+  return safeInvoke('create_managed_work_run', { input });
+}
+
+export async function listManagedWorkRuns(workItemId?: string | null): Promise<ManagedWorkRun[]> {
+  return safeInvoke('list_managed_work_runs', { workItemId: workItemId ?? null });
+}
+
+export async function attachManagedWorkProcess(input: {
+  runId: string;
+  terminalId: string;
+  providerSessionId?: string | null;
+  processId: number;
+}): Promise<ManagedWorkRun> {
+  return safeInvoke('attach_managed_work_process', { input });
+}
+
+export async function reconcileManagedWorkRun(runId: string): Promise<ManagedWorkRun> {
+  return safeInvoke('reconcile_managed_work_run', { runId });
+}
+
+export async function runManagedWorkHook(input: {
+  runId: string;
+  kind: 'setup' | 'run' | 'check' | 'archive';
+  program: string;
+  args?: string[];
+  timeoutMs?: number | null;
+}): Promise<ManagedHookResult> {
+  return safeInvoke('run_managed_work_hook', { input });
+}
+
+export async function getManagedWorkHandoff(runId: string): Promise<Record<string, unknown>> {
+  return safeInvoke('get_managed_work_handoff', { runId });
+}
+
+export async function archiveManagedWorkRun(runId: string): Promise<ManagedWorkRun> {
+  return safeInvoke('archive_managed_work_run', { runId });
+}
+
+export async function createIntentClosure(input: {
+  workItemId: string;
+  managedRunId?: string | null;
+  disposition: IntentClosureReceipt['disposition'];
+  reason: string;
+}): Promise<IntentClosureReceipt> {
+  return safeInvoke('create_intent_closure', { input });
+}
+
+export async function listIntentClosures(workItemId: string): Promise<IntentClosureReceipt[]> {
+  return safeInvoke('list_intent_closures', { workItemId });
+}
+
 export interface AgentTerminalCommandResult {
   command: string;
   cwd: string;
@@ -284,6 +417,7 @@ export interface CodexWarpPluginStatus {
 
 export async function startCodexAgentTerminal(input: {
   sessionId: string;
+  profilePath?: string | null;
   cwd?: string | null;
   prompt?: string | null;
   model?: string | null;
@@ -296,6 +430,7 @@ export async function startCodexAgentTerminal(input: {
 }): Promise<CodexAgentTerminalStartResult> {
   return safeInvoke('start_codex_agent_terminal', {
     sessionId: input.sessionId,
+    profilePath: input.profilePath ?? null,
     cwd: input.cwd ?? null,
     prompt: input.prompt ?? null,
     model: input.model ?? null,
@@ -311,6 +446,7 @@ export async function startCodexAgentTerminal(input: {
 export async function startAgentTerminal(input: {
   provider: AgentProvider;
   sessionId: string;
+  profilePath?: string | null;
   cwd?: string | null;
   prompt?: string | null;
   model?: string | null;
@@ -324,6 +460,7 @@ export async function startAgentTerminal(input: {
   return safeInvoke('start_agent_terminal', {
     provider: input.provider,
     sessionId: input.sessionId,
+    profilePath: input.profilePath ?? null,
     cwd: input.cwd ?? null,
     prompt: input.prompt ?? null,
     model: input.model ?? null,
@@ -562,6 +699,35 @@ export interface SessionArchiveUpdatedEvent {
   skipped_sessions: number;
   archive_search_rows_indexed: number;
   indexed_at: string;
+}
+
+export interface SessionRetentionPolicy {
+  maxAgeDays?: number | null;
+  maxArchiveBytes?: number | null;
+}
+
+export interface SessionRetentionEntry {
+  sessionId: string;
+  rows: number;
+  estimatedBytes: number;
+  lastActivity: string;
+  reasons: string[];
+}
+
+export interface SessionRetentionPlan {
+  id: string;
+  planIdentity: string;
+  archiveFingerprint: string;
+  policy: SessionRetentionPolicy;
+  archiveRows: number;
+  archiveBytes: number;
+  candidateRows: number;
+  candidateBytes: number;
+  candidates: SessionRetentionEntry[];
+  protected: SessionRetentionEntry[];
+  projectedRows: number;
+  projectedBytes: number;
+  createdAt: string;
 }
 
 export interface DayBucket {
@@ -2073,6 +2239,21 @@ export async function exportStructuralGraphMarkdown(repoPath: string): Promise<s
   return safeInvoke('export_structural_graph_markdown', { repoPath });
 }
 
+export interface PublicGraphPackage {
+  schemaVersion: number;
+  identity: string;
+  json: string;
+  svg: string;
+  markdown: string;
+  omissions: string[];
+}
+
+export async function exportStructuralGraphPublicPackage(
+  repoPath: string
+): Promise<PublicGraphPackage | null> {
+  return safeInvoke('export_structural_graph_public_package', { repoPath });
+}
+
 export async function getStructuralGraphAnalysis(
   repoPath: string
 ): Promise<StructuralGraphAnalysisSummary | null> {
@@ -3103,6 +3284,20 @@ export async function listenToSessionArchiveUpdates(
   return listen<SessionArchiveUpdatedEvent>('session_archive_updated', (event) => {
     handler(event.payload);
   });
+}
+
+export async function planSessionRetention(
+  policy: SessionRetentionPolicy
+): Promise<SessionRetentionPlan> {
+  return safeInvoke('plan_session_retention', { policy });
+}
+
+export async function applySessionRetention(planId: string): Promise<Record<string, unknown>> {
+  return safeInvoke('apply_session_retention', { planId });
+}
+
+export async function compactSessionArchive(vacuum = false): Promise<Record<string, unknown>> {
+  return safeInvoke('compact_session_archive', { vacuum });
 }
 
 // ─── Session Subagent Commands ───────────────────────────────────────────────
@@ -4269,6 +4464,23 @@ interface UnpackOutcomeTrend {
   summary: string;
 }
 
+export interface UnpackOutcomeRiskCalibration {
+  feature_key: string;
+  state: 'insufficient' | 'descriptive' | 'qualified' | string;
+  direction: 'increases_risk' | 'decreases_risk' | 'mixed' | string;
+  sample_size: number;
+  independent_outcomes: number;
+  failure_rate: number;
+  confidence_low: number;
+  confidence_high: number;
+  window_start?: string | null;
+  window_end?: string | null;
+  source_ids: string[];
+  exclusions: string[];
+  rerun_command: string;
+  summary: string;
+}
+
 export interface UnpackOutcomeEvidence {
   repo_path: string;
   reviews: UnpackOutcomeReviewEvidence[];
@@ -4285,6 +4497,8 @@ export interface UnpackOutcomeEvidence {
   summary: string;
   trend: UnpackOutcomeTrend;
   trust_actions: UnpackOutcomeTrustAction[];
+  learned_calibrations: UnpackOutcomeRiskCalibration[];
+  calibration_exclusions: string[];
 }
 
 export interface GenerateUnpackResult {
@@ -4593,6 +4807,46 @@ export interface StoredWarmVerificationRun {
   repo_path: string;
   result: VerifyResult;
   created_at: string;
+}
+
+export interface QaSupportCapability {
+  id: string;
+  label: string;
+  status: 'fixture_backed' | 'real_product_supported' | 'unsupported_manual';
+  detail: string;
+}
+
+export interface QaSupportMatrix {
+  lane: string;
+  configPath: string | null;
+  capabilities: QaSupportCapability[];
+  unsupported: string[];
+}
+
+export interface QaArtifactPreview {
+  runId: string;
+  artifactId: string;
+  kind: string;
+  canonicalPath: string;
+  contentType: string;
+  bytes: number;
+  width: number | null;
+  height: number | null;
+  redacted: boolean;
+  sha256: string;
+  text: string | null;
+  dataUrl: string | null;
+}
+
+export async function getQaSupportMatrix(repoPath?: string | null): Promise<QaSupportMatrix> {
+  return safeInvoke('get_qa_support_matrix', { repoPath: repoPath ?? null });
+}
+
+export async function previewWarmVerificationArtifact(
+  runId: string,
+  artifactId: string
+): Promise<QaArtifactPreview> {
+  return safeInvoke('preview_warm_verification_artifact', { runId, artifactId });
 }
 
 export type DifferentialCandidateKind = 'worktree' | 'staged' | 'commit' | 'range';

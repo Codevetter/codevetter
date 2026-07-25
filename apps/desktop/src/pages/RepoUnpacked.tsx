@@ -80,6 +80,7 @@ import {
   compareUnpackSnapshotCommits,
   deleteRepoUnpackReport,
   exportRepoUnpackReport,
+  exportStructuralGraphPublicPackage,
   askUnpackReport,
   synthesizeUnpackReport,
   type GenerateUnpackResult,
@@ -118,6 +119,7 @@ type RepoUnpackExportFormat =
   | 'markdown'
   | 'html'
   | 'repo_graph_json'
+  | 'public_graph_package'
   | 'agent_context_markdown'
   | 'repo_memory_markdown';
 
@@ -1041,6 +1043,31 @@ export function UnpackProjectPanel({
     async (format: RepoUnpackExportFormat) => {
       if (!active?.reportId) return;
       try {
+        if (format === 'public_graph_package') {
+          const packageResult = await exportStructuralGraphPublicPackage(
+            active.inventory.repo_path
+          );
+          if (!packageResult) {
+            throw new Error('Build the structural graph before exporting a public package.');
+          }
+          const prefix = `public-graph-${active.inventory.repo_name}-${packageResult.identity.slice(0, 12)}`;
+          for (const [extension, mime, content] of [
+            ['json', 'application/json', packageResult.json],
+            ['svg', 'image/svg+xml', packageResult.svg],
+            ['md', 'text/markdown', packageResult.markdown],
+          ] as const) {
+            const blob = new Blob([content], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${prefix}.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }
+          return;
+        }
         const { content } = await exportRepoUnpackReport(active.reportId, format);
         const ext = format === 'html' ? 'html' : format === 'repo_graph_json' ? 'json' : 'md';
         const mime =
@@ -2301,6 +2328,21 @@ function outcomeTrendTone(direction: string): string {
   return 'border-slate-500/30 bg-slate-500/10 text-slate-300';
 }
 
+function learnedCalibrationTone(state: string, direction: string): string {
+  if (state !== 'qualified') {
+    return state === 'descriptive'
+      ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-200'
+      : 'border-slate-500/30 bg-slate-500/10 text-slate-300';
+  }
+  if (direction === 'increases_risk') {
+    return 'border-red-500/30 bg-red-500/10 text-red-200';
+  }
+  if (direction === 'decreases_risk') {
+    return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
+  }
+  return 'border-yellow-500/30 bg-yellow-500/10 text-yellow-200';
+}
+
 function trendRiskCount(window: UnpackOutcomeEvidence['trend']['recent']): number {
   return window.failure_count + window.finding_count + window.review_failure_count;
 }
@@ -2782,6 +2824,8 @@ function OutcomeCalibrationPanel({
   repoPath: string;
 }) {
   const [zoomMetric, setZoomMetric] = useState<OutcomeMetric | null>(null);
+  const learnedCalibrations = evidence.learned_calibrations ?? [];
+  const calibrationExclusions = evidence.calibration_exclusions ?? [];
   const totals: OutcomeMetric[] = [
     {
       kind: 'reviews',
@@ -2890,6 +2934,70 @@ function OutcomeCalibrationPanel({
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="mt-3 rounded border border-[var(--cv-line)] bg-[var(--bg-surface)]/70 p-2.5">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="cv-label">Learned from local outcomes</div>
+            <div className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-secondary)]">
+              Snapshot movements are compared with later local review, QA, and proof-gate outcomes.
+              Correlation suggests where to inspect; it never creates findings or verification.
+            </div>
+          </div>
+          <Badge
+            variant="outline"
+            className="shrink-0 border border-[var(--cv-line)] bg-[var(--bg-main)]/45 text-[10px] uppercase tracking-wider text-[var(--text-muted)]"
+          >
+            {learnedCalibrations.length} metric
+            {learnedCalibrations.length === 1 ? '' : 's'}
+          </Badge>
+        </div>
+
+        {learnedCalibrations.length === 0 ? (
+          <div className="mt-2 rounded border border-[var(--cv-line)] bg-[var(--bg-main)]/45 p-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+            {calibrationExclusions[0] ||
+              'More comparable snapshots and exact downstream outcomes are required.'}
+          </div>
+        ) : (
+          <div className="mt-3 grid gap-2 lg:grid-cols-2">
+            {learnedCalibrations.slice(0, 6).map((calibration) => (
+              <div
+                key={`${calibration.feature_key}-${calibration.window_end ?? ''}`}
+                className="rounded border border-[var(--cv-line)] bg-[var(--bg-main)]/45 p-2 text-xs"
+              >
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="font-mono text-[11px] text-[var(--text-primary)]">
+                    {calibration.feature_key}
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'shrink-0 border text-[10px] uppercase tracking-wider',
+                      learnedCalibrationTone(calibration.state, calibration.direction)
+                    )}
+                  >
+                    {calibration.state} · {calibration.direction.replaceAll('_', ' ')}
+                  </Badge>
+                </div>
+                <div className="mt-1.5 leading-relaxed text-[var(--text-secondary)]">
+                  {calibration.summary}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[10px] uppercase text-[var(--text-muted)]">
+                  <span>{calibration.independent_outcomes} outcomes</span>
+                  <span>{Math.round(calibration.failure_rate * 100)}% failure</span>
+                  <span>
+                    interval {Math.round(calibration.confidence_low * 100)}-
+                    {Math.round(calibration.confidence_high * 100)}%
+                  </span>
+                </div>
+                <div className="mt-2 rounded border border-[var(--cv-line)] bg-[var(--bg-surface)] px-2 py-1 font-mono text-[10px] text-[var(--cv-accent)]">
+                  {calibration.rerun_command}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {evidence.trust_actions.length > 0 && (
@@ -3831,6 +3939,16 @@ const ReportView = memo(function ReportView({
           >
             <Download size={14} className="mr-1.5" />
             Graph JSON
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={disabled || !inventory.repo_graph?.nodes.length}
+            onClick={() => onExport('public_graph_package')}
+          >
+            <Download size={14} className="mr-1.5" />
+            Public graph package
           </Button>
           <Button
             type="button"

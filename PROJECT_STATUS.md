@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-07-24
+Last updated: 2026-07-25
 
 ## Why / What
 
@@ -21,13 +21,35 @@ External:
 - Playwright — e2e testing, existing synthetic-QA runners, and the repository-owned warm Chromium verifier.
 
 Internal (fleet):
-- SaaS Maker — system of record for durable tasks/feedback; Settings configures the integration and repository workflows auto-link known projects; `fnd` CLI supports API workflows.
+- Fleet Workspace — shared project metadata and cross-project infrastructure;
+  CodeVetter work remains tracked in this repository's GitHub issues or
+  OpenSpec changes. The retained SaaS Maker link is compatibility-only and is
+  not a task system of record.
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
 
+- **2026-07-25 (release candidate) — Verification workbench completion:** added
+  dry-run-first local session retention, versioned outcome-risk calibration,
+  crash-recoverable managed Work runs, explicit intent-closure receipts, an
+  honest real-product QA support matrix, evidence-owned inert artifact
+  previews, deterministic three-file public graph packages, a 20-case
+  provenance-pinned public agent-PR corpus, and redacted local performance and
+  cache receipts. These records link existing repository, session, work-item,
+  review, QA, graph, and change identities without turning orchestration or
+  correlations into proof. The dashboard gate measured 24.073 ms warm p95;
+  cache accounting found no exact duplicate roots to move; the 120-snapshot
+  Native Agent Island gate passed at 82 ms p95, 0.12% idle CPU, 53.75 MiB RSS,
+  and zero false actions while remaining off by default. Full-repository
+  archaeology preserved source identity but failed closed at the existing
+  persisted-linker input bound, so the 18M-line/100,000-rule claim remains
+  unsupported. Authenticated CodeVetter, CodeRabbit, and Claude `/review`
+  captures are still externally blocked for the new corpus, so all new public
+  comparator claims remain closed. Detailed evidence and boundaries are in
+  `docs/architecture/verification-workbench.md`.
+
 - **2026-07-24 (shipped in v1.5.4) — Deterministic Review, Agent PR X-Ray, and native Agent Island:** new broad reviews resolve a verified Git target, cover every changed file through bounded fingerprinted units, resume exact checkpoints, terminate owned executor process groups, and qualify repository-contained line and anchor evidence before any candidate reaches coordination, scoring, persistence, proof, or actionable UI. Review renders complete, partial, and legacy coverage; repository-scoped MCP exposes the same redacted paginated manifest; `CODEVETTER_REVIEW_PIPELINE=legacy` retains the aggregate executor as a one-release rollback path. Completed reviews can generate fail-closed JSON, Markdown, and self-contained offline HTML X-Rays with explicit staged omissions and opt-in suggestion excerpts. Codex now prefers its structured app-server for new sessions with PTY compatibility fallback; Claude hooks expose bounded lifecycle and session-scoped permission identities. The opt-in Swift Agent Island stays below the macOS notch, groups live sessions by project, announces bounded status through configured system voices, and permits only capability- and identity-checked replies or decisions; it is off by default and the existing Work/notification path remains the rollback. Local qualification passes strict Clippy, 845 Rust tests with 23 ignored, Biome, TypeScript, 648 frontend unit tests with one skipped, the 20-scenario warm gate, all 69 Playwright flows, desktop and landing production builds, docs, MCP integration, 29 strict OpenSpec validations, Swift self-tests, and native qualification at 97 ms p95, 0.18% idle CPU, 54.5 MiB RSS, and zero repository rescans. Release preflights fixed sidecar ordering, the helper deployment target, the MCP benchmark's 23-tool contract, architecture verification, and nested helper signing. The published v1.5.4 updater was downloaded and passed both universal-architecture checks, strict nested signature verification, extracted-helper self-tests, bundle presence, rollback checks, and all six live manifest-linkage checks. Public X-Ray dogfooding, gallery deployment, and external claims remain evidence-gated.
-- **2026-07-22 (implemented locally; not released) — Calm Work start state and history preview:** Work now opens with no conversation selected even when saved or reattached live runs exist, leaving every thread visible while the main canvas clearly starts a new conversation. The sidebar labels its project-grouped collection accurately as Projects, exposes a stronger Start new conversation action, and uses distinct dependency-free local marks for Codex and Claude. Selecting a directory-verified Previous thread now opens its real normalized local conversation as a calm read-only preview without launching either CLI; only explicit Resume or Fork actions continue it. The bounded Rust read contract caps rows and message size and redacts secret-like content before it reaches React. Explicit live selection, attention routing, Board drafts, archive behavior, and process ownership remain unchanged. Qualification passes all 14 Work Playwright flows, TypeScript, Biome, production frontend build, 803 Rust tests with 23 ignored, docs, and strict OpenSpec validation. No schema, parser, network, release, or production dependency changed.
+- **2026-07-22 (shipped in v1.5.4) — Calm Work start state and history preview:** Work now opens with no conversation selected even when saved or reattached live runs exist, leaving every thread visible while the main canvas clearly starts a new conversation. The sidebar labels its project-grouped collection accurately as Projects, exposes a stronger Start new conversation action, and uses distinct dependency-free local marks for Codex and Claude. Selecting a directory-verified Previous thread now opens its real normalized local conversation as a calm read-only preview without launching either CLI; only explicit Resume or Fork actions continue it. The bounded Rust read contract caps rows and message size and redacts secret-like content before it reaches React. Explicit live selection, attention routing, Board drafts, archive behavior, and process ownership remain unchanged. Qualification passed all 14 Work Playwright flows, TypeScript, Biome, production frontend build, 803 Rust tests with 23 ignored, docs, and strict OpenSpec validation. No schema, parser, network, release, or production dependency changed.
 - **2026-07-22 — Orchestration cockpit plan retired:** archived the unimplemented `agent-orchestration-trace` change without syncing its graph, completion-inbox, multi-pane, or additive orchestration-schema requirements. Those 35 tasks conflicted with the shipped conversation-first Work direction and would have duplicated lifecycle, attention, transcript, and Board evidence behind a heavier cockpit. Future lineage or overlap work must start from a bounded user-facing evidence gap rather than revive the archived platform wholesale.
 - **2026-07-21 (shipped in v1.4.0) — Conversation-first Work workspace and primary Board:** Work now provides provider-aware Codex/Claude model selection, lifecycle-derived thinking and attention without exposing hidden reasoning, Enter-to-send with multiline/IME safety, searchable and safely archivable conversations, and plain-language operational states. Confirmed questions focus the composer; permission requests open provider evidence and never submit approval implicitly. The left-anchored sidebar groups open and indexed conversations by normalized project identity, exposes expandable status summaries, and includes indexed history only after a bounded local check confirms its directory still exists; missing checkouts fail closed and live sessions supersede duplicates. The persistent Plan/Build/Review/Verify/Done board now has its own `/board` route while sharing one mounted runtime with Work, so live sessions survive navigation and handoffs retain repository context. Qualification passed TypeScript, Biome, 648 frontend unit tests with one skipped, the 20-scenario warm gate, 801 Rust tests with 23 ignored, all 63 Playwright flows, production frontend/bundle budgets, docs and 29 strict OpenSpec validations, two independent release reviews, a production macOS Tauri build opened against real local data, the release-only graph/MCP performance gate, signed bundle/sidecar checks, and live updater-manifest verification. The public v1.4.0 assets are a notarized arm64 DMG, signed updater archive, signature, and `latest.json`.
 - **2026-07-20 (shipped in v1.3.0) — Five-pillar desktop and Work runtime:** consolidated the shell around Usage, Repo Unpack, Work, Review, and Testing with Settings as a labelled utility, one semantic ink/amber system, native macOS typography, accessible focus, and bounded motion. Work now provides a focused Codex/Claude conversation and evidence-aware Plan/Build/Review/Verify/Done board while keeping raw PTY execution behind the interface. Work items can attach authoritative live or indexed sessions without restarting a provider, persist across full app restarts, and connect to Review, Testing, and Repo evidence. Direct output is bounded, ANSI-sanitized, honestly separated from structured lifecycle evidence, and not persisted. Transcript indexing now hard-bounds oversized live rows; MCP scope reads use bounded SQLite busy retry. Native Codex response, intentional stop, and resume passed. Native Claude launch, input, and intentional stop passed; completion and resume were externally blocked by the installed default profile's organization policy. A linked Work item restored after a complete process restart and was deleted cleanly. Final release checks pass TypeScript, Biome, production build and bundle budget, 645 frontend tests (644 passed, one skipped), the 20-scenario zero-model warm gate, 827 Rust tests with 23 ignored, all 55 Playwright flows, docs validation, strict OpenSpec validation, and native accessibility/overflow qualification. No production dependency was added.
@@ -162,17 +184,15 @@ Internal (fleet):
 
 ### Planned Next
 
-1. Push Repo Unpacked and Activity toward the "world-class" quality bar: learn which metric movements actually predicted downstream bug/review/QA risk once enough outcome history exists. Repo Unpacked now has recommended next actions, a graph-first view, run-to-run diff panel with bounded commit-range evidence, inferred verification commands, repo-scoped outcome calibration from actual review/QA/procedure records, bounded recent-vs-prior outcome trends, and outcome-derived trust actions; Activity has bounded commit evidence plus explicit blind-spot warnings for generated/vendor churn, release/dependency noise, bulk changes, and weak AI markers.
-2. Curate 20-30 real public agent-generated PR benchmark cases with hand-labeled ground truth before making external catch-rate claims.
-3. Add benchmark fields for unverified-fix count and time/cost impact once review artifacts capture those values consistently.
-4. Curate real CodeRabbit free-tier and Claude Code `/review` outputs into the named benchmark comparator slots.
-5. Curate larger public benchmark fixtures.
-6. Add richer screenshot/report previews once the local preview security model is explicit; text-like QA artifacts already have bounded inline previews.
-7. After the local verification and history-graph tracks are qualified, profile every dashboard IPC/API hot path plus worktree build/cache growth. Consolidate Cargo, Playwright, and package-manager caches across local worktrees first; consider a Go service only where measurements prove the current TypeScript/Rust boundary is the bottleneck.
-8. Design opt-in public graph publishing as a separate privacy-reviewed track: a live SVG/PNG README snapshot that links to the interactive web graph. GitHub READMEs cannot host the interactive JavaScript surface itself, so the hosted image and linked explorer must share one versioned publication identity.
-9. Bound local session-history storage with measured age/size retention for `session_message_archive` and its FTS index, preserving pinned or evidence-referenced sessions and providing dry-run cleanup plus explicit compaction rather than silent deletion.
-10. Scale the now-qualified evidence-traced business-rule archaeology path beyond the largest available 256-file fixture. An 18M-line/100,000-rule claim remains gated on running that exact corpus through the same correctness, privacy, resource, parity, cancellation, and cleanup thresholds.
-11. Close the managed-harness gap without restoring a terminal cockpit: provider profile/config selection, durable crash-safe process registration, one isolated git worktree and environment per work item, checkpoints, setup/run/archive hooks, port isolation, and integrated diff/check/PR/archive lifecycle.
+1. Continue Repo Unpacked calibration until enough compatible downstream
+   review, QA, procedure, and bug outcomes support qualified guidance.
+2. Capture authenticated CodeVetter, CodeRabbit free-tier, and Claude Code
+   `/review` artifacts, then run production CodeVetter plus adjudication over
+   the pinned 20-case agent-PR corpus.
+3. Run archaeology on the exact target-scale eligible corpus before changing
+   the persisted input bound or authorizing an 18M-line/100,000-rule claim.
+4. Treat hosted public graph publication as a separate privacy-reviewed track;
+   the workbench export remains local and has no upload side effect.
 
 ### Deferred / Parked
 
@@ -185,4 +205,8 @@ Internal (fleet):
 
 ### Blocked
 
-- (none)
+- The public agent-PR comparator and production-pipeline claim is externally
+  blocked on authenticated CodeVetter, CodeRabbit free-tier, and Claude Code
+  `/review` captures.
+- The archaeology scale claim is blocked on an eligible exact target-scale
+  corpus and remains unsupported by the current bounded run.

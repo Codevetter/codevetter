@@ -4,6 +4,7 @@ pub(crate) mod mcp_schema;
 pub mod queries;
 pub mod schema;
 pub(crate) mod structural_graph_schema;
+pub(crate) mod verification_workbench_schema;
 
 use rusqlite::Connection;
 use std::path::PathBuf;

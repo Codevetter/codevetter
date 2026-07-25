@@ -64,6 +64,14 @@ pub async fn export_structural_graph_markdown(
     with_snapshot(repo_path, db, interchange::export_markdown).await
 }
 
+#[tauri::command]
+pub async fn export_structural_graph_public_package(
+    repo_path: String,
+    db: State<'_, DbState>,
+) -> Result<Option<interchange::PublicGraphPackage>, String> {
+    with_snapshot_result(repo_path, db, interchange::export_public_package).await
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct StructuralGraphStatus {
     pub repo_path: String,

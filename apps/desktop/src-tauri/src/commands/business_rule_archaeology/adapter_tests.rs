@@ -34,6 +34,10 @@ fn semantic_expression_is_bounded_private_and_token_boundary_safe() {
         semantic_expression("AMOUNT > 100", true).unwrap()
     );
     assert!(canonical.starts_with("v1:sha256:") && !canonical.contains("AMOUNT"));
+    assert_eq!(
+        semantic_expression("label 'partial", true).unwrap(),
+        semantic_expression("LABEL 'partial", true).unwrap()
+    );
     assert!(semantic_expression("", true).is_err());
     assert!(semantic_expression(&"X".repeat(64 * 1024 + 1), true).is_err());
 }

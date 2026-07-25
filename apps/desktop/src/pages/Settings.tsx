@@ -12,15 +12,23 @@ import {
   type ReviewConfig,
   saveReviewConfig,
 } from '@/lib/review-service';
-import type { GitHubAuthStatus, LinearUser, NativeAgentIslandStatus } from '@/lib/tauri-ipc';
+import type {
+  GitHubAuthStatus,
+  LinearUser,
+  NativeAgentIslandStatus,
+  SessionRetentionPlan,
+} from '@/lib/tauri-ipc';
 import {
+  applySessionRetention,
   checkGitHubAuth,
   checkLinearConnection,
+  compactSessionArchive,
   disconnectLinear,
   getNativeAgentIslandStatus,
   getPreference,
   isTauriAvailable,
   previewNativeAgentIsland,
+  planSessionRetention,
   setPreference,
   startLinearOAuth,
   syncGitHubToken,
@@ -55,6 +63,13 @@ interface TextInputProps {
   placeholder: string;
   mono?: boolean;
   onChange: (value: string) => void;
+}
+
+function formatStorageBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GiB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KiB`;
+  return `${bytes} B`;
 }
 
 // ─── Reusable setting controls ───────────────────────────────────────────────
@@ -664,6 +679,68 @@ export default function Settings() {
     'notify_session_usage_thresholds',
     false
   );
+  const [retentionAgeDays, setRetentionAgeDays] = useState('90');
+  const [retentionMaxMiB, setRetentionMaxMiB] = useState('2048');
+  const [retentionPlan, setRetentionPlan] = useState<SessionRetentionPlan | null>(null);
+  const [retentionBusy, setRetentionBusy] = useState(false);
+  const [retentionMessage, setRetentionMessage] = useState<string | null>(null);
+
+  const createRetentionPlan = useCallback(async () => {
+    setRetentionBusy(true);
+    setRetentionMessage(null);
+    try {
+      const maxAgeDays = Number.parseInt(retentionAgeDays, 10);
+      const maxMiB = Number.parseInt(retentionMaxMiB, 10);
+      const plan = await planSessionRetention({
+        maxAgeDays: Number.isFinite(maxAgeDays) ? maxAgeDays : null,
+        maxArchiveBytes: Number.isFinite(maxMiB) ? maxMiB * 1024 * 1024 : null,
+      });
+      setRetentionPlan(plan);
+      setRetentionMessage('Dry run complete. Review candidates and protected sessions.');
+    } catch (error) {
+      setRetentionPlan(null);
+      setRetentionMessage(error instanceof Error ? error.message : String(error));
+    } finally {
+      setRetentionBusy(false);
+    }
+  }, [retentionAgeDays, retentionMaxMiB]);
+
+  const applyRetentionPlan = useCallback(async () => {
+    if (!retentionPlan) return;
+    const confirmed = window.confirm(
+      `Remove ${retentionPlan.candidateRows.toLocaleString()} archived rows from ${retentionPlan.candidates.length} unprotected sessions? The current dry-run identity will be rechecked before cleanup.`
+    );
+    if (!confirmed) return;
+    setRetentionBusy(true);
+    setRetentionMessage(null);
+    try {
+      await applySessionRetention(retentionPlan.id);
+      setRetentionPlan(null);
+      setRetentionMessage(
+        'Retention applied. Protected and provider-owned source records were kept.'
+      );
+    } catch (error) {
+      setRetentionMessage(error instanceof Error ? error.message : String(error));
+    } finally {
+      setRetentionBusy(false);
+    }
+  }, [retentionPlan]);
+
+  const compactArchive = useCallback(async (vacuum: boolean) => {
+    if (vacuum && !window.confirm('Run a local SQLite VACUUM after checkpointing the archive?')) {
+      return;
+    }
+    setRetentionBusy(true);
+    setRetentionMessage(null);
+    try {
+      await compactSessionArchive(vacuum);
+      setRetentionMessage(vacuum ? 'Archive checkpointed and compacted.' : 'Archive checkpointed.');
+    } catch (error) {
+      setRetentionMessage(error instanceof Error ? error.message : String(error));
+    } finally {
+      setRetentionBusy(false);
+    }
+  }, []);
 
   // Real app version (from tauri.conf.json) — the About panel previously
   // hard-coded "0.1.0" so it never reflected releases.
@@ -1272,6 +1349,112 @@ export default function Settings() {
               description="Token usage and cost breakdown across sessions."
             />
             <p className="text-sm text-slate-500 px-1">Usage data is shown on the Home page.</p>
+
+            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Session archive retention
+            </h3>
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+              <p className="text-sm font-medium text-slate-200">Dry run first</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Plans remove only CodeVetter&apos;s indexed archive and FTS rows. Provider
+                transcripts stay untouched. Pinned sessions and evidence referenced by Work, Board,
+                Review, Testing, X-Ray, intent closure, or history remain protected.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label className="text-xs text-slate-400">
+                  Maximum age in days
+                  <Input
+                    className="mt-1"
+                    inputMode="numeric"
+                    value={retentionAgeDays}
+                    onChange={(event) => {
+                      setRetentionAgeDays(event.target.value);
+                      setRetentionPlan(null);
+                    }}
+                  />
+                </label>
+                <label className="text-xs text-slate-400">
+                  Maximum archive size in MiB
+                  <Input
+                    className="mt-1"
+                    inputMode="numeric"
+                    value={retentionMaxMiB}
+                    onChange={(event) => {
+                      setRetentionMaxMiB(event.target.value);
+                      setRetentionPlan(null);
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={retentionBusy || !isTauriAvailable()}
+                  onClick={() => void createRetentionPlan()}
+                >
+                  {retentionBusy ? 'Working…' : 'Preview cleanup'}
+                </Button>
+                <Button
+                  type="button"
+                  disabled={
+                    retentionBusy || !retentionPlan || retentionPlan.candidates.length === 0
+                  }
+                  onClick={() => void applyRetentionPlan()}
+                >
+                  Apply reviewed plan
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={retentionBusy || !isTauriAvailable()}
+                  onClick={() => void compactArchive(false)}
+                >
+                  Checkpoint archive
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={retentionBusy || !isTauriAvailable()}
+                  onClick={() => void compactArchive(true)}
+                >
+                  Checkpoint + VACUUM
+                </Button>
+              </div>
+              {retentionPlan && (
+                <div className="mt-4 rounded-lg border border-[var(--cv-line)] bg-black/10 p-3 text-xs text-slate-400">
+                  <p aria-live="polite">
+                    {retentionPlan.candidates.length} removable ·{' '}
+                    {retentionPlan.candidateRows.toLocaleString()} rows ·{' '}
+                    {formatStorageBytes(retentionPlan.candidateBytes)}
+                  </p>
+                  <p className="mt-1">
+                    {retentionPlan.protected.length} protected · projected archive{' '}
+                    {formatStorageBytes(retentionPlan.projectedBytes)}
+                  </p>
+                  {retentionPlan.protected.length > 0 && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-slate-300">
+                        Why sessions are protected
+                      </summary>
+                      <ul className="mt-2 space-y-1 pl-4">
+                        {retentionPlan.protected.slice(0, 12).map((entry) => (
+                          <li key={entry.sessionId}>
+                            <span className="font-mono">{entry.sessionId.slice(0, 12)}</span> ·{' '}
+                            {entry.reasons.join(', ')}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </div>
+              )}
+              {retentionMessage && (
+                <p className="mt-3 text-xs text-slate-400" aria-live="polite">
+                  {retentionMessage}
+                </p>
+              )}
+            </div>
           </div>
         );
 

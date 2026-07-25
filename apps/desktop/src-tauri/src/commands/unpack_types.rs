@@ -529,6 +529,24 @@ pub struct UnpackOutcomeTrend {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UnpackOutcomeRiskCalibration {
+    pub feature_key: String,
+    pub state: String,
+    pub direction: String,
+    pub sample_size: usize,
+    pub independent_outcomes: usize,
+    pub failure_rate: f64,
+    pub confidence_low: f64,
+    pub confidence_high: f64,
+    pub window_start: Option<String>,
+    pub window_end: Option<String>,
+    pub source_ids: Vec<String>,
+    pub exclusions: Vec<String>,
+    pub rerun_command: String,
+    pub summary: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UnpackOutcomeEvidence {
     pub repo_path: String,
     pub reviews: Vec<UnpackOutcomeReviewEvidence>,
@@ -545,6 +563,10 @@ pub struct UnpackOutcomeEvidence {
     pub summary: String,
     pub trend: UnpackOutcomeTrend,
     pub trust_actions: Vec<UnpackOutcomeTrustAction>,
+    #[serde(default)]
+    pub learned_calibrations: Vec<UnpackOutcomeRiskCalibration>,
+    #[serde(default)]
+    pub calibration_exclusions: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

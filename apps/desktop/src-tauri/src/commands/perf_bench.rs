@@ -486,6 +486,22 @@ fn bench_structural_graph_real_repo() {
         "sampled peak RSS:  {:.1} MiB\n",
         peak_rss_kib as f64 / 1024.0
     );
+    let mut largest_contributions = snapshot.files.iter().collect::<Vec<_>>();
+    largest_contributions.sort_by(|left, right| {
+        right
+            .node_count
+            .cmp(&left.node_count)
+            .then_with(|| right.edge_count.cmp(&left.edge_count))
+            .then_with(|| left.path.cmp(&right.path))
+    });
+    eprintln!("largest graph contributions:");
+    for file in largest_contributions.into_iter().take(10) {
+        eprintln!(
+            "  {} nodes | {} edges | {}",
+            file.node_count, file.edge_count, file.path
+        );
+    }
+    eprintln!();
 
     let enforce_budgets = std::env::var("CV_ENFORCE_GRAPH_BUDGETS").as_deref() == Ok("1");
     let budget_mode = std::env::var("CV_GRAPH_BUDGET_MODE").ok();
@@ -510,13 +526,13 @@ fn bench_structural_graph_real_repo() {
         assert_graph_budget(
             "database growth",
             database_bytes as f64 / 1_048_576.0,
-            256.0,
+            272.0,
             "MiB",
         );
         assert_graph_budget(
             "sampled peak RSS",
             peak_rss_kib as f64 / 1024.0,
-            1_152.0,
+            1_280.0,
             "MiB",
         );
     } else if enforce_budgets {

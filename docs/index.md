@@ -34,6 +34,7 @@ is only the presentation and search layer.
 - [mcp-sidecar.md](./architecture/mcp-sidecar.md) — opt-in local MCP server.
 - [history-evidence-import.md](./architecture/history-evidence-import.md) — importing provider-side outcomes.
 - [native-agent-island.md](./architecture/native-agent-island.md) — supervised Swift status, speech, and provider-action boundary.
+- [verification-workbench.md](./architecture/verification-workbench.md) — additive evidence identities, retention, managed-run, intent, and performance records.
 
 ### Decisions
 

@@ -195,14 +195,20 @@ pub(crate) fn start(
     model: Option<&str>,
     sandbox: Option<&str>,
     approval_policy: Option<&str>,
+    profile_path: Option<&Path>,
 ) -> Result<Value, String> {
     let codex_path = resolve_agent_cli_path("codex");
-    let mut child = Command::new(&codex_path)
+    let mut command = Command::new(&codex_path);
+    command
         .arg("app-server")
         .current_dir(cwd)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stderr(Stdio::piped());
+    if let Some(profile_path) = profile_path {
+        command.env("CODEX_HOME", profile_path);
+    }
+    let mut child = command
         .spawn()
         .map_err(|error| format!("spawn Codex app-server ({codex_path}): {error}"))?;
     let pid = child.id();

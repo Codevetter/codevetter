@@ -1,0 +1,2490 @@
+{
+  "name": "CodeVetter public Copilot PR curation corpus",
+  "schema_version": 2,
+  "generated_at": "2026-07-25T17:22:20.904Z",
+  "notes": "Source and adjudication evidence are public and immutable. Reviewer arrays remain empty and every comparator artifact records an exact blocker, so benchmark claims are closed.",
+  "cases": [
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47991-3650200676",
+      "title": "Add inline `engine.driver` sources for Copilot SDK workflows: The Java inline path unconditionally invokes mvn, but runtime detection only adds the java runtime, whose setup action",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47991",
+        "public": true,
+        "diff_range": "7e728ffd6fc9b1a4e8e03e8815701f4203e789ad...3142af9683c7e89d4a71c91aa0ec7d41e67ba610",
+        "immutable_diff": {
+          "base_sha": "7e728ffd6fc9b1a4e8e03e8815701f4203e789ad",
+          "head_sha": "3142af9683c7e89d4a71c91aa0ec7d41e67ba610",
+          "sha256": "9bba8140c0d32c463b0065573672275b1f12b9ab32d8d6c83e3ff0d2ca0ed6ae"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/7e728ffd6fc9b1a4e8e03e8815701f4203e789ad/LICENSE",
+          "verified_at": "2026-07-25T17:21:06.252Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/7e728ffd6fc9b1a4e8e03e8815701f4203e789ad...3142af9683c7e89d4a71c91aa0ec7d41e67ba610.diff",
+          "sha256": "9bba8140c0d32c463b0065573672275b1f12b9ab32d8d6c83e3ff0d2ca0ed6ae",
+          "bytes": 219679
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/workflow/copilot_engine_installation.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/workflow/copilot_engine_installation.go:306."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:06.253Z",
+        "notes": "The issue is bounded to the pinned comment commit. The agent's later reply says it was fixed, so the pre-fix behavior is retained as ground truth rather than attributed to the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47991#discussion_r3650200666",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47991#discussion_r3650200687",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47991#discussion_r3650200693",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47991#discussion_r3650204731",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47991#discussion_r3650204733",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47991#discussion_r3650204735",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47991#discussion_r3650204737",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3650200676",
+          "severity": "medium",
+          "filePath": "pkg/workflow/copilot_engine_installation.go",
+          "title": "The Java inline path unconditionally invokes mvn, but runtime detection only adds the java runtime, whose setup action",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47991#discussion_r3650200676 identifies the defect on commit 3142af9683c7e89d4a71c91aa0ec7d41e67ba610; follow-up https://github.com/github/gh-aw/pull/47991#discussion_r3650320085 records the corrective change.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/workflow/copilot_engine_installation.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47990-3650124832",
+      "title": "Refresh update-time container digests and enforce commit-age cooldowns: Returning the branch name does not actually prevent adoption of this too-new commit because the ref is mutable.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47990",
+        "public": true,
+        "diff_range": "0a5504cd47ea81dc6fab14b0e2ae5128a68da922...bcc79be6e06714129e67cde3a427a91db2c948e7",
+        "immutable_diff": {
+          "base_sha": "0a5504cd47ea81dc6fab14b0e2ae5128a68da922",
+          "head_sha": "bcc79be6e06714129e67cde3a427a91db2c948e7",
+          "sha256": "3ff974b5ec598bf8dc6d0cbfbdd0d93edc64d7d7fc8f26a0ffb9581359e6a256"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/0a5504cd47ea81dc6fab14b0e2ae5128a68da922/LICENSE",
+          "verified_at": "2026-07-25T17:21:09.463Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/0a5504cd47ea81dc6fab14b0e2ae5128a68da922...bcc79be6e06714129e67cde3a427a91db2c948e7.diff",
+          "sha256": "3ff974b5ec598bf8dc6d0cbfbdd0d93edc64d7d7fc8f26a0ffb9581359e6a256",
+          "bytes": 35689
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/cli/update_workflows.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/cli/update_workflows.go:305."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:09.463Z",
+        "notes": "The issue is bounded to the pinned comment commit. The agent's later reply says it was fixed, so the pre-fix behavior is retained as ground truth rather than attributed to the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47990#discussion_r3650124836",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47990#discussion_r3650189685",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47990#discussion_r3650189688",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47990#discussion_r3650190003",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47990#discussion_r3650190010",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47990#discussion_r3650190011",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3650124832",
+          "severity": "medium",
+          "filePath": "pkg/cli/update_workflows.go",
+          "title": "Returning the branch name does not actually prevent adoption of this too-new commit because the ref is mutable.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47990#discussion_r3650124832 identifies the defect on commit bcc79be6e06714129e67cde3a427a91db2c948e7; follow-up https://github.com/github/gh-aw/pull/47990#discussion_r3650259039 records the corrective change.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/cli/update_workflows.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47963-3649988933",
+      "title": "Handle chained awaited fetch calls in `require-fetch-try-catch`: Optional member chains still bypass the rule.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47963",
+        "public": true,
+        "diff_range": "ef97a18e1a462b073a5ef2dd4093bd1d06ed536a...c56b08e75c55d8becd03f26a4a2b7476f1af2ed8",
+        "immutable_diff": {
+          "base_sha": "ef97a18e1a462b073a5ef2dd4093bd1d06ed536a",
+          "head_sha": "c56b08e75c55d8becd03f26a4a2b7476f1af2ed8",
+          "sha256": "389d29a564d2826d40dca2cad7941e3860670933e2d96b238eaf7427e1ab3a51"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/ef97a18e1a462b073a5ef2dd4093bd1d06ed536a/LICENSE",
+          "verified_at": "2026-07-25T17:21:14.468Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/ef97a18e1a462b073a5ef2dd4093bd1d06ed536a...c56b08e75c55d8becd03f26a4a2b7476f1af2ed8.diff",
+          "sha256": "389d29a564d2826d40dca2cad7941e3860670933e2d96b238eaf7427e1ab3a51",
+          "bytes": 13028
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "eslint-factory/src/rules/require-fetch-try-catch.ts",
+        "severity_basis": "The public review identified behavior that could affect users or CI at eslint-factory/src/rules/require-fetch-try-catch.ts:44."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:14.468Z",
+        "notes": "The issue is bounded to the pinned comment commit. The agent's later reply says it was fixed, so the pre-fix behavior is retained as ground truth rather than attributed to the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47963#discussion_r3649988939",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649988933",
+          "severity": "medium",
+          "filePath": "eslint-factory/src/rules/require-fetch-try-catch.ts",
+          "title": "Optional member chains still bypass the rule.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47963#discussion_r3649988933 identifies the defect on commit c56b08e75c55d8becd03f26a4a2b7476f1af2ed8; follow-up https://github.com/github/gh-aw/pull/47963#discussion_r3650035765 records the corrective change.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in eslint-factory/src/rules/require-fetch-try-catch.ts."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47959-3649931200",
+      "title": "Add post-update SHA integrity validation for actions-lock entries: Every resolver error is skipped, including a definitive 404 for a nonexistent version.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47959",
+        "public": true,
+        "diff_range": "7f2e404a25de6bc5dd623219ee2a5bfdfd52b864...12c0cf7ce34c8c94b739cc63d38186d3f277f6ee",
+        "immutable_diff": {
+          "base_sha": "7f2e404a25de6bc5dd623219ee2a5bfdfd52b864",
+          "head_sha": "12c0cf7ce34c8c94b739cc63d38186d3f277f6ee",
+          "sha256": "11a15c179505823623118b172dd7b8eacfc88e3a2757a81122dbffa68b038b8d"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/7f2e404a25de6bc5dd623219ee2a5bfdfd52b864/LICENSE",
+          "verified_at": "2026-07-25T17:21:17.997Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/7f2e404a25de6bc5dd623219ee2a5bfdfd52b864...12c0cf7ce34c8c94b739cc63d38186d3f277f6ee.diff",
+          "sha256": "11a15c179505823623118b172dd7b8eacfc88e3a2757a81122dbffa68b038b8d",
+          "bytes": 21897
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/cli/update_validation.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/cli/update_validation.go:149."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:17.997Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 12c0cf7ce34c8c94b739cc63d38186d3f277f6ee before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649931211",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649931221",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649931234",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649934950",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649934955",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649935325",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649935327",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649935330",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47959#discussion_r3649935332",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649931200",
+          "severity": "high",
+          "filePath": "pkg/cli/update_validation.go",
+          "title": "Every resolver error is skipped, including a definitive 404 for a nonexistent version.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47959#discussion_r3649931200 identifies the defect on commit 12c0cf7ce34c8c94b739cc63d38186d3f277f6ee; the PR later advanced to merged head 12c0cf7ce34c8c94b739cc63d38186d3f277f6ee.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/cli/update_validation.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47957-3649905699",
+      "title": "fix: git argument injection via unvalidated ref/path in remote import fallbacks (VULN-001): git checkout -- <value treats <value as a pathspec, not as the commit to check out.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47957",
+        "public": true,
+        "diff_range": "1a21fa4c37c46b0c7fb78e703112521f869512ae...dbbbf72c2a3cb0f0efb6d4dcacc9db12d2cd810c",
+        "immutable_diff": {
+          "base_sha": "1a21fa4c37c46b0c7fb78e703112521f869512ae",
+          "head_sha": "dbbbf72c2a3cb0f0efb6d4dcacc9db12d2cd810c",
+          "sha256": "43a2058fdcc4150ee2fa8d760773f175970f64b8cdac7c944b159d572d922305"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/1a21fa4c37c46b0c7fb78e703112521f869512ae/LICENSE",
+          "verified_at": "2026-07-25T17:21:22.190Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/1a21fa4c37c46b0c7fb78e703112521f869512ae...dbbbf72c2a3cb0f0efb6d4dcacc9db12d2cd810c.diff",
+          "sha256": "43a2058fdcc4150ee2fa8d760773f175970f64b8cdac7c944b159d572d922305",
+          "bytes": 901834
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/parser/remote_download_file.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/parser/remote_download_file.go:423."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:22.190Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 9deff4df3e671f54b9f8164e5ea551099ee8dd98 before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649910217",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649910219",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649913427",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649913429",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649913435",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649913439",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649914221",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649914223",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649914224",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649914226",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47957#discussion_r3649914227",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649905699",
+          "severity": "medium",
+          "filePath": "pkg/parser/remote_download_file.go",
+          "title": "git checkout -- <value treats <value as a pathspec, not as the commit to check out.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47957#discussion_r3649905699 identifies the defect on commit dbbbf72c2a3cb0f0efb6d4dcacc9db12d2cd810c; the PR later advanced to merged head 9deff4df3e671f54b9f8164e5ea551099ee8dd98.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/parser/remote_download_file.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47923-3649829225",
+      "title": "Update GitHub MCP server default to v1.7.0: This default is embedded in the Wasm compiler output, but 13 checked-in golden fixtures under pkg/workflow/testdata/{TestWasmGolden,wasmgolden/Wasm…",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47923",
+        "public": true,
+        "diff_range": "61c33d2a39b51cd30a9ba1c9f7826d4f194fe6ff...4c0d1139daf050942aa89270ff4bd2c9e0000ae6",
+        "immutable_diff": {
+          "base_sha": "61c33d2a39b51cd30a9ba1c9f7826d4f194fe6ff",
+          "head_sha": "4c0d1139daf050942aa89270ff4bd2c9e0000ae6",
+          "sha256": "5bed0e8ec839883366e266f146e81fc41da9e94a81e35ed2279884856387af0e"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/61c33d2a39b51cd30a9ba1c9f7826d4f194fe6ff/LICENSE",
+          "verified_at": "2026-07-25T17:21:27.450Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/61c33d2a39b51cd30a9ba1c9f7826d4f194fe6ff...4c0d1139daf050942aa89270ff4bd2c9e0000ae6.diff",
+          "sha256": "5bed0e8ec839883366e266f146e81fc41da9e94a81e35ed2279884856387af0e",
+          "bytes": 2813073
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/constants/version_constants.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/constants/version_constants.go:63."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:27.450Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 4c0d1139daf050942aa89270ff4bd2c9e0000ae6 before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": []
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649829225",
+          "severity": "medium",
+          "filePath": "pkg/constants/version_constants.go",
+          "title": "This default is embedded in the Wasm compiler output, but 13 checked-in golden fixtures under pkg/workflow/testdata/{TestWasmGolden,wasmgolden/Wasm…",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47923#discussion_r3649829225 identifies the defect on commit 4c0d1139daf050942aa89270ff4bd2c9e0000ae6; the PR later advanced to merged head 4c0d1139daf050942aa89270ff4bd2c9e0000ae6.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/constants/version_constants.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47894-3649311222",
+      "title": "feat(linters): add stringsconcatloop — detect string += concatenation inside loops: This states that the number of allocations is O(n²), but repeated += performs O(n) concatenation allocations whose total",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47894",
+        "public": true,
+        "diff_range": "0268656e1b50910b97b87b4dd942e02d71f47955...abf4517a9d8b885272616173bc157c6182873b09",
+        "immutable_diff": {
+          "base_sha": "0268656e1b50910b97b87b4dd942e02d71f47955",
+          "head_sha": "abf4517a9d8b885272616173bc157c6182873b09",
+          "sha256": "7df83e6e2267a0d66c07a2fc985240c84365f1431948b87092c05245424867de"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/0268656e1b50910b97b87b4dd942e02d71f47955/LICENSE",
+          "verified_at": "2026-07-25T17:21:30.649Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/0268656e1b50910b97b87b4dd942e02d71f47955...abf4517a9d8b885272616173bc157c6182873b09.diff",
+          "sha256": "7df83e6e2267a0d66c07a2fc985240c84365f1431948b87092c05245424867de",
+          "bytes": 27517
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/linters/stringsconcatloop/stringsconcatloop.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/linters/stringsconcatloop/stringsconcatloop.go:72."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:30.649Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 484345480ec161c50f3fface4edc28f0fadd19af before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47894#discussion_r3649347926",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47894#discussion_r3649347930",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47894#discussion_r3649348408",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47894#discussion_r3649348411",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649311222",
+          "severity": "low",
+          "filePath": "pkg/linters/stringsconcatloop/stringsconcatloop.go",
+          "title": "This states that the number of allocations is O(n²), but repeated += performs O(n) concatenation allocations whose total",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47894#discussion_r3649311222 identifies the defect on commit abf4517a9d8b885272616173bc157c6182873b09; the PR later advanced to merged head 484345480ec161c50f3fface4edc28f0fadd19af.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/linters/stringsconcatloop/stringsconcatloop.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47893-3649281864",
+      "title": "fix: create agentic failure issue when engine secret validation fails: This guidance is also emitted when Copilot uses engine.model-provider: openai or anthropic.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47893",
+        "public": true,
+        "diff_range": "0268656e1b50910b97b87b4dd942e02d71f47955...0d8eb5fa1877362e4a6f5ed852d95bd0eef97455",
+        "immutable_diff": {
+          "base_sha": "0268656e1b50910b97b87b4dd942e02d71f47955",
+          "head_sha": "0d8eb5fa1877362e4a6f5ed852d95bd0eef97455",
+          "sha256": "bd7282b1adeafa2958ca9a35f03a79c75924fc5054ade173b9686e04128bd4b9"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/0268656e1b50910b97b87b4dd942e02d71f47955/LICENSE",
+          "verified_at": "2026-07-25T17:21:34.896Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/0268656e1b50910b97b87b4dd942e02d71f47955...0d8eb5fa1877362e4a6f5ed852d95bd0eef97455.diff",
+          "sha256": "bd7282b1adeafa2958ca9a35f03a79c75924fc5054ade173b9686e04128bd4b9",
+          "bytes": 151753
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/workflow/copilot_engine_installation.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/workflow/copilot_engine_installation.go:91."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:34.897Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 0d8eb5fa1877362e4a6f5ed852d95bd0eef97455 before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47893#discussion_r3649281876",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649281864",
+          "severity": "high",
+          "filePath": "pkg/workflow/copilot_engine_installation.go",
+          "title": "This guidance is also emitted when Copilot uses engine.model-provider: openai or anthropic.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47893#discussion_r3649281864 identifies the defect on commit 0d8eb5fa1877362e4a6f5ed852d95bd0eef97455; the PR later advanced to merged head 0d8eb5fa1877362e4a6f5ed852d95bd0eef97455.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/workflow/copilot_engine_installation.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47891-3649261201",
+      "title": "test-quality-sentinel: fix TestMain misclassification, add goleak detection and goroutine-leak guards: This only recognizes newly added declarations.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47891",
+        "public": true,
+        "diff_range": "0268656e1b50910b97b87b4dd942e02d71f47955...6b70b66484297156ad99cc970c39d38990f214fc",
+        "immutable_diff": {
+          "base_sha": "0268656e1b50910b97b87b4dd942e02d71f47955",
+          "head_sha": "6b70b66484297156ad99cc970c39d38990f214fc",
+          "sha256": "a52cf5713020ec75388d2fbe8419e6cd2453207c06f39c068afa093bf0019ca4"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/0268656e1b50910b97b87b4dd942e02d71f47955/LICENSE",
+          "verified_at": "2026-07-25T17:21:38.226Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/0268656e1b50910b97b87b4dd942e02d71f47955...6b70b66484297156ad99cc970c39d38990f214fc.diff",
+          "sha256": "a52cf5713020ec75388d2fbe8419e6cd2453207c06f39c068afa093bf0019ca4",
+          "bytes": 33326
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": ".github/workflows/test-quality-sentinel.md",
+        "severity_basis": "The public review identified behavior that could affect users or CI at .github/workflows/test-quality-sentinel.md:70."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:38.226Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to dd21fea7bd204c196fd990160b54c9869e984f5b before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47891#discussion_r3649261216",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47891#discussion_r3649261228",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47891#discussion_r3649269309",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649261201",
+          "severity": "high",
+          "filePath": ".github/workflows/test-quality-sentinel.md",
+          "title": "This only recognizes newly added declarations.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47891#discussion_r3649261201 identifies the defect on commit 6b70b66484297156ad99cc970c39d38990f214fc; the PR later advanced to merged head dd21fea7bd204c196fd990160b54c9869e984f5b.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in .github/workflows/test-quality-sentinel.md."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47870-3649175622",
+      "title": "Refactor duplicate close-older search flow into a shared helper: [/tdd] Missing test: additionalExcludeNumbers is not exercised inside searchOlderEntitiesByMarker tests, even though closeolderissues.cjs is the on…",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47870",
+        "public": true,
+        "diff_range": "44b56e18b3fe95160e13e3678858853c65c8dff9...e4e8934f2d208e657d95848248b13cdd59838b55",
+        "immutable_diff": {
+          "base_sha": "44b56e18b3fe95160e13e3678858853c65c8dff9",
+          "head_sha": "e4e8934f2d208e657d95848248b13cdd59838b55",
+          "sha256": "2ee6bd84b1f13980904fda804eb88eb8f50017198ac2897faacbdf2aed9e78a9"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/44b56e18b3fe95160e13e3678858853c65c8dff9/LICENSE",
+          "verified_at": "2026-07-25T17:21:41.298Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/44b56e18b3fe95160e13e3678858853c65c8dff9...e4e8934f2d208e657d95848248b13cdd59838b55.diff",
+          "sha256": "2ee6bd84b1f13980904fda804eb88eb8f50017198ac2897faacbdf2aed9e78a9",
+          "bytes": 18273
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "actions/setup/js/close_older_search_helpers.test.cjs",
+        "severity_basis": "The public review identified behavior that could affect users or CI at actions/setup/js/close_older_search_helpers.test.cjs:474."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:41.298Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to e4e8934f2d208e657d95848248b13cdd59838b55 before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47870#discussion_r3649175624",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47870#discussion_r3649175625",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649175622",
+          "severity": "medium",
+          "filePath": "actions/setup/js/close_older_search_helpers.test.cjs",
+          "title": "[/tdd] Missing test: additionalExcludeNumbers is not exercised inside searchOlderEntitiesByMarker tests, even though closeolderissues.cjs is the on…",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47870#discussion_r3649175622 identifies the defect on commit e4e8934f2d208e657d95848248b13cdd59838b55; the PR later advanced to merged head e4e8934f2d208e657d95848248b13cdd59838b55.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in actions/setup/js/close_older_search_helpers.test.cjs."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47866-3649172651",
+      "title": "eslint-factory: resolve write-once command aliases in `no-child-process-interpolated-command`: [/tdd] Multi-hop alias chaining is untested — resolveWriteOnceInitializerChain iterates, but there is no test for a two-level chain",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47866",
+        "public": true,
+        "diff_range": "44b56e18b3fe95160e13e3678858853c65c8dff9...b696d32a95b49524b03e3061237f044d150287a5",
+        "immutable_diff": {
+          "base_sha": "44b56e18b3fe95160e13e3678858853c65c8dff9",
+          "head_sha": "b696d32a95b49524b03e3061237f044d150287a5",
+          "sha256": "fd33c1dff3faf4211b986ac146033365fcb580b247e41fdaf6e580a07b43fe28"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/44b56e18b3fe95160e13e3678858853c65c8dff9/LICENSE",
+          "verified_at": "2026-07-25T17:21:44.506Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/44b56e18b3fe95160e13e3678858853c65c8dff9...b696d32a95b49524b03e3061237f044d150287a5.diff",
+          "sha256": "fd33c1dff3faf4211b986ac146033365fcb580b247e41fdaf6e580a07b43fe28",
+          "bytes": 10131
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "eslint-factory/src/rules/no-child-process-interpolated-command.test.ts",
+        "severity_basis": "The public review identified behavior that could affect users or CI at eslint-factory/src/rules/no-child-process-interpolated-command.test.ts:49."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:44.506Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to b696d32a95b49524b03e3061237f044d150287a5 before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47866#discussion_r3649172652",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47866#discussion_r3649174681",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649172651",
+          "severity": "high",
+          "filePath": "eslint-factory/src/rules/no-child-process-interpolated-command.test.ts",
+          "title": "[/tdd] Multi-hop alias chaining is untested — resolveWriteOnceInitializerChain iterates, but there is no test for a two-level chain",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47866#discussion_r3649172651 identifies the defect on commit b696d32a95b49524b03e3061237f044d150287a5; the PR later advanced to merged head b696d32a95b49524b03e3061237f044d150287a5.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in eslint-factory/src/rules/no-child-process-interpolated-command.test.ts."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47865-3649159858",
+      "title": "Add goleak-based package leak checks for `pkg/cli` and `pkg/console` tests: goleak is imported directly by both test packages, and test imports count as direct module dependencies.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47865",
+        "public": true,
+        "diff_range": "44b56e18b3fe95160e13e3678858853c65c8dff9...1f885050e331e0eb286a241b6d6b7db1eaaa1ee9",
+        "immutable_diff": {
+          "base_sha": "44b56e18b3fe95160e13e3678858853c65c8dff9",
+          "head_sha": "1f885050e331e0eb286a241b6d6b7db1eaaa1ee9",
+          "sha256": "420759bf31e131985458f1b97eb1eb847fc6702e15a53b4289c8a48b4e0704b8"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/44b56e18b3fe95160e13e3678858853c65c8dff9/LICENSE",
+          "verified_at": "2026-07-25T17:21:47.660Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/44b56e18b3fe95160e13e3678858853c65c8dff9...1f885050e331e0eb286a241b6d6b7db1eaaa1ee9.diff",
+          "sha256": "420759bf31e131985458f1b97eb1eb847fc6702e15a53b4289c8a48b4e0704b8",
+          "bytes": 2810
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "go.mod",
+        "severity_basis": "The public review identified behavior that could affect users or CI at go.mod:105."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:47.660Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to b6d901550979906502c35ebc5af80d2755791b0f before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47865#discussion_r3649192744",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47865#discussion_r3649198513",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649159858",
+          "severity": "medium",
+          "filePath": "go.mod",
+          "title": "goleak is imported directly by both test packages, and test imports count as direct module dependencies.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47865#discussion_r3649159858 identifies the defect on commit 1f885050e331e0eb286a241b6d6b7db1eaaa1ee9; the PR later advanced to merged head b6d901550979906502c35ebc5af80d2755791b0f.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in go.mod."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47856-3648135740",
+      "title": "Refactor pre-agent audit error extraction into focused helpers (largefunc backlog slice): A top-level os.ReadDir failure is now returned as (nil, nil), so the caller treats it like an empty",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47856",
+        "public": true,
+        "diff_range": "228021afd146478a893458dd57c26f06af6c1b79...9ea3a4f217df36fa53121ab32122578b3a588cd4",
+        "immutable_diff": {
+          "base_sha": "228021afd146478a893458dd57c26f06af6c1b79",
+          "head_sha": "9ea3a4f217df36fa53121ab32122578b3a588cd4",
+          "sha256": "272afa9de7b43540a8c99b770bd3dad1022a3600c3c8605c1915f4b3361b3971"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/228021afd146478a893458dd57c26f06af6c1b79/LICENSE",
+          "verified_at": "2026-07-25T17:21:51.153Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/228021afd146478a893458dd57c26f06af6c1b79...9ea3a4f217df36fa53121ab32122578b3a588cd4.diff",
+          "sha256": "272afa9de7b43540a8c99b770bd3dad1022a3600c3c8605c1915f4b3361b3971",
+          "bytes": 63643
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/cli/audit_report.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/cli/audit_report.go:731."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:51.153Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 927a10f8c80b92facac8e4c1fbb1a545bfcf371f before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47856#discussion_r3648166612",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47856#discussion_r3648166619",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3648135740",
+          "severity": "medium",
+          "filePath": "pkg/cli/audit_report.go",
+          "title": "A top-level os.ReadDir failure is now returned as (nil, nil), so the caller treats it like an empty",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47856#discussion_r3648135740 identifies the defect on commit 9ea3a4f217df36fa53121ab32122578b3a588cd4; the PR later advanced to merged head 927a10f8c80b92facac8e4c1fbb1a545bfcf371f.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/cli/audit_report.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47855-3649423205",
+      "title": "Pre-bundle `Process Safe Outputs` stdout/stderr in safe-output failure artifacts: These files contain the raw bytes written by handlers before the Actions runner applies console secret masking, but",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47855",
+        "public": true,
+        "diff_range": "228021afd146478a893458dd57c26f06af6c1b79...2509b0b7421a8bcc5e84e9b22183bacd776c79bf",
+        "immutable_diff": {
+          "base_sha": "228021afd146478a893458dd57c26f06af6c1b79",
+          "head_sha": "2509b0b7421a8bcc5e84e9b22183bacd776c79bf",
+          "sha256": "c33ac7113f3ba82dfb3601cce6414fc221e716d95feda840e68bfafdb86085aa"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/228021afd146478a893458dd57c26f06af6c1b79/LICENSE",
+          "verified_at": "2026-07-25T17:21:55.340Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/228021afd146478a893458dd57c26f06af6c1b79...2509b0b7421a8bcc5e84e9b22183bacd776c79bf.diff",
+          "sha256": "c33ac7113f3ba82dfb3601cce6414fc221e716d95feda840e68bfafdb86085aa",
+          "bytes": 298064
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/workflow/compiler_safe_outputs_job.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/workflow/compiler_safe_outputs_job.go:908."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:55.340Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 2509b0b7421a8bcc5e84e9b22183bacd776c79bf before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649423212",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649423218",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649432065",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649434183",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649434184",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649434185",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649434186",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649435357",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47855#discussion_r3649435358",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3649423205",
+          "severity": "high",
+          "filePath": "pkg/workflow/compiler_safe_outputs_job.go",
+          "title": "These files contain the raw bytes written by handlers before the Actions runner applies console secret masking, but",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47855#discussion_r3649423205 identifies the defect on commit 2509b0b7421a8bcc5e84e9b22183bacd776c79bf; the PR later advanced to merged head 2509b0b7421a8bcc5e84e9b22183bacd776c79bf.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/workflow/compiler_safe_outputs_job.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47854-3648153850",
+      "title": "WASM: recover panics in compile goroutine to avoid unresolved browser promises: [/tdd] No regression test for the panic-recovery path — without one, a future refactor could silently drop the",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47854",
+        "public": true,
+        "diff_range": "228021afd146478a893458dd57c26f06af6c1b79...241e1edbbe8d95c54fb0f3ebf767c77f1012e123",
+        "immutable_diff": {
+          "base_sha": "228021afd146478a893458dd57c26f06af6c1b79",
+          "head_sha": "241e1edbbe8d95c54fb0f3ebf767c77f1012e123",
+          "sha256": "34d74698bfcdb66b75d178298e8e528ddb2f95436fd39f4e3483d233869e8e67"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/228021afd146478a893458dd57c26f06af6c1b79/LICENSE",
+          "verified_at": "2026-07-25T17:21:58.873Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/228021afd146478a893458dd57c26f06af6c1b79...241e1edbbe8d95c54fb0f3ebf767c77f1012e123.diff",
+          "sha256": "34d74698bfcdb66b75d178298e8e528ddb2f95436fd39f4e3483d233869e8e67",
+          "bytes": 49107
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "cmd/gh-aw-wasm/main.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at cmd/gh-aw-wasm/main.go:51."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:21:58.873Z",
+        "notes": "The issue is bounded to the pinned comment commit. The agent's later reply says it was fixed, so the pre-fix behavior is retained as ground truth rather than attributed to the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47854#discussion_r3648153854",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3648153850",
+          "severity": "high",
+          "filePath": "cmd/gh-aw-wasm/main.go",
+          "title": "[/tdd] No regression test for the panic-recovery path — without one, a future refactor could silently drop the",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47854#discussion_r3648153850 identifies the defect on commit 241e1edbbe8d95c54fb0f3ebf767c77f1012e123; follow-up https://github.com/github/gh-aw/pull/47854#discussion_r3648311356 records the corrective change.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in cmd/gh-aw-wasm/main.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47832-3647207389",
+      "title": "Fix Codex threat-detection config.toml emitting model_provider under [history]: Hardcoded provider string literal instead of constant: if codexOpenAIProxyProviderID ever changes, strings.Index returns -1 and the test fatals",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47832",
+        "public": true,
+        "diff_range": "355259b60ed432cdd596c57d16f08f6043963a5a...5cd9b79a9399766d346bb0cb8077a20d45c0752b",
+        "immutable_diff": {
+          "base_sha": "355259b60ed432cdd596c57d16f08f6043963a5a",
+          "head_sha": "5cd9b79a9399766d346bb0cb8077a20d45c0752b",
+          "sha256": "50a5736dbf36539887bb76dd368a4b0a01cbb1310c912684329894376b3b7df8"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/355259b60ed432cdd596c57d16f08f6043963a5a/LICENSE",
+          "verified_at": "2026-07-25T17:22:02.357Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/355259b60ed432cdd596c57d16f08f6043963a5a...5cd9b79a9399766d346bb0cb8077a20d45c0752b.diff",
+          "sha256": "50a5736dbf36539887bb76dd368a4b0a01cbb1310c912684329894376b3b7df8",
+          "bytes": 68421
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/workflow/threat_detection_isolation_test.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/workflow/threat_detection_isolation_test.go:417."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:22:02.357Z",
+        "notes": "The issue is bounded to the pinned comment commit. The agent's later reply says it was fixed, so the pre-fix behavior is retained as ground truth rather than attributed to the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47832#discussion_r3647207394",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47832#discussion_r3647207397",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47832#discussion_r3647207403",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3647207389",
+          "severity": "high",
+          "filePath": "pkg/workflow/threat_detection_isolation_test.go",
+          "title": "Hardcoded provider string literal instead of constant: if codexOpenAIProxyProviderID ever changes, strings.Index returns -1 and the test fatals",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47832#discussion_r3647207389 identifies the defect on commit 5cd9b79a9399766d346bb0cb8077a20d45c0752b; follow-up https://github.com/github/gh-aw/pull/47832#discussion_r3647359451 records the corrective change.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/workflow/threat_detection_isolation_test.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47730-3643346957",
+      "title": "feat: fall back to older cooled-down release instead of skipping update: Set now rejects the write silently, but callers cannot tell that it failed.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47730",
+        "public": true,
+        "diff_range": "06f8e4c428ccdbd162bd42b3737f25cfe14d5609...71000af19ef1d43c808b9a9533f2a41788aa86cf",
+        "immutable_diff": {
+          "base_sha": "06f8e4c428ccdbd162bd42b3737f25cfe14d5609",
+          "head_sha": "71000af19ef1d43c808b9a9533f2a41788aa86cf",
+          "sha256": "d559ebce9d421847522e02923037bcd5ab660ca473e14e6b25973568f81ec3bb"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/06f8e4c428ccdbd162bd42b3737f25cfe14d5609/LICENSE",
+          "verified_at": "2026-07-25T17:22:07.532Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/06f8e4c428ccdbd162bd42b3737f25cfe14d5609...71000af19ef1d43c808b9a9533f2a41788aa86cf.diff",
+          "sha256": "d559ebce9d421847522e02923037bcd5ab660ca473e14e6b25973568f81ec3bb",
+          "bytes": 3310784
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/workflow/action_cache.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/workflow/action_cache.go:435."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:22:07.532Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 464405216a6cedb51760e4e647194338d0984f4a before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643346998",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643347018",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643347083",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643347122",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643362809",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643362817",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643362821",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47730#discussion_r3643362825",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3643346957",
+          "severity": "medium",
+          "filePath": "pkg/workflow/action_cache.go",
+          "title": "Set now rejects the write silently, but callers cannot tell that it failed.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47730#discussion_r3643346957 identifies the defect on commit 71000af19ef1d43c808b9a9533f2a41788aa86cf; the PR later advanced to merged head 464405216a6cedb51760e4e647194338d0984f4a.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/workflow/action_cache.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47723-3646349056",
+      "title": "Refactor AI credits pricing to a single shared type and schema ref: The shared definition does not actually restrict strings to numeric strings: values such as \"free\" or \"3oops\" satisfy",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47723",
+        "public": true,
+        "diff_range": "cf86c287b2ac67725891e9c4d94a807837b4a5b7...fb426b20d75581954dc4129be9bc3a5001f5f964",
+        "immutable_diff": {
+          "base_sha": "cf86c287b2ac67725891e9c4d94a807837b4a5b7",
+          "head_sha": "fb426b20d75581954dc4129be9bc3a5001f5f964",
+          "sha256": "da6598b74e89e2e54f48d875273a63e16af31c7a8bfa782cc6d324c49adfcbd8"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/cf86c287b2ac67725891e9c4d94a807837b4a5b7/LICENSE",
+          "verified_at": "2026-07-25T17:22:12.404Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/cf86c287b2ac67725891e9c4d94a807837b4a5b7...fb426b20d75581954dc4129be9bc3a5001f5f964.diff",
+          "sha256": "da6598b74e89e2e54f48d875273a63e16af31c7a8bfa782cc6d324c49adfcbd8",
+          "bytes": 3294333
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/parser/schemas/main_workflow_schema.json",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/parser/schemas/main_workflow_schema.json:13810."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:22:12.404Z",
+        "notes": "The issue is bounded to the pinned comment commit. The agent's later reply says it was fixed, so the pre-fix behavior is retained as ground truth rather than attributed to the merged head.",
+        "exclusions": []
+      },
+      "ground_truth": [
+        {
+          "id": "review-3646349056",
+          "severity": "medium",
+          "filePath": "pkg/parser/schemas/main_workflow_schema.json",
+          "title": "The shared definition does not actually restrict strings to numeric strings: values such as \"free\" or \"3oops\" satisfy",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47723#discussion_r3646349056 identifies the defect on commit fb426b20d75581954dc4129be9bc3a5001f5f964; follow-up https://github.com/github/gh-aw/pull/47723#discussion_r3646992160 records the corrective change.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/parser/schemas/main_workflow_schema.json."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47699-3643034502",
+      "title": "fix: join CheckForUpdatesAsync goroutine and eliminate time.After leak: This finisher has opposite failure modes instead of being a reliable join: with the normal live command context",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47699",
+        "public": true,
+        "diff_range": "1192d44bae278f67575981000f3b8b82ac34274e...cbbd351fea028984cc2c147ec8fd8d2dcd214a01",
+        "immutable_diff": {
+          "base_sha": "1192d44bae278f67575981000f3b8b82ac34274e",
+          "head_sha": "cbbd351fea028984cc2c147ec8fd8d2dcd214a01",
+          "sha256": "602ddff64da6541716a3981fce8ada4eb105452646aaba9aed20ae838a9caa9c"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/1192d44bae278f67575981000f3b8b82ac34274e/LICENSE",
+          "verified_at": "2026-07-25T17:22:17.495Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/1192d44bae278f67575981000f3b8b82ac34274e...cbbd351fea028984cc2c147ec8fd8d2dcd214a01.diff",
+          "sha256": "602ddff64da6541716a3981fce8ada4eb105452646aaba9aed20ae838a9caa9c",
+          "bytes": 6158
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/cli/update_check.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/cli/update_check.go:301."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:22:17.495Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 97101b6b669f02d69f10b48118e3200383da997e before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47699#discussion_r3643034536",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47699#discussion_r3643034557",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47699#discussion_r3643051691",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47699#discussion_r3643051693",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47699#discussion_r3643053703",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47699#discussion_r3643053714",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3643034502",
+          "severity": "medium",
+          "filePath": "pkg/cli/update_check.go",
+          "title": "This finisher has opposite failure modes instead of being a reliable join: with the normal live command context",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47699#discussion_r3643034502 identifies the defect on commit cbbd351fea028984cc2c147ec8fd8d2dcd214a01; the PR later advanced to merged head 97101b6b669f02d69f10b48118e3200383da997e.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/cli/update_check.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    },
+    {
+      "schema_version": 2,
+      "id": "github-gh-aw-pr-47698-3643030734",
+      "title": "Stabilize `CompileWorkflow_WithMCP` benchmark to remove warning-path overhead: This normalizes BenchmarkCompileWorkflowWithMCP, but the regression linked by this PR is measured from BenchmarkCompileMCPWorkflow.",
+      "source": {
+        "repo": "github/gh-aw",
+        "pr_url": "https://github.com/github/gh-aw/pull/47698",
+        "public": true,
+        "diff_range": "1192d44bae278f67575981000f3b8b82ac34274e...9c9e2c3a7ca4cc6dfba052d71d0d86983253073c",
+        "immutable_diff": {
+          "base_sha": "1192d44bae278f67575981000f3b8b82ac34274e",
+          "head_sha": "9c9e2c3a7ca4cc6dfba052d71d0d86983253073c",
+          "sha256": "62f20bcbaa1ba4de8c10c3f481f5d13cb1e1ac0c4e26c7b15bf051df0415961f"
+        },
+        "license": {
+          "spdx": "MIT",
+          "url": "https://github.com/github/gh-aw/blob/1192d44bae278f67575981000f3b8b82ac34274e/LICENSE",
+          "verified_at": "2026-07-25T17:22:20.904Z"
+        },
+        "agent": "Copilot",
+        "agent_provenance": {
+          "kind": "pull-request-author",
+          "evidence": "GitHub reports the public PR author as Copilot with account type Bot."
+        },
+        "raw_diff_artifact": {
+          "url": "https://github.com/github/gh-aw/compare/1192d44bae278f67575981000f3b8b82ac34274e...9c9e2c3a7ca4cc6dfba052d71d0d86983253073c.diff",
+          "sha256": "62f20bcbaa1ba4de8c10c3f481f5d13cb1e1ac0c4e26c7b15bf051df0415961f",
+          "bytes": 1809
+        },
+        "review_output_artifacts": {
+          "codevetter": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeVetter",
+            "version": "1.1.97",
+            "tier": "local",
+            "capture_method": "Production pipeline against the immutable diff",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "The production CodeVetter pipeline has not yet been captured for this pinned public diff; all CodeVetter catch-rate claims remain closed."
+          },
+          "coderabbit_free": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "CodeRabbit",
+            "version": "unavailable",
+            "tier": "free",
+            "capture_method": "Public pull-request review",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No CodeRabbit review exists on the source PR and this workspace has neither the CodeRabbit CLI nor authority to install the GitHub App on github/gh-aw."
+          },
+          "claude_code_review": {
+            "status": "blocked_external",
+            "path": null,
+            "tool": "Claude Code /review",
+            "version": "2.1.211",
+            "tier": "local account",
+            "capture_method": "Pinned checkout /review command",
+            "captured_at": null,
+            "elapsed_ms": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "cost_usd": null,
+            "unverified_fix_count": null,
+            "blocker": "No reproducible non-interactive Claude Code /review artifact was captured; invoking the interactive account-backed command across the corpus could consume paid capacity, so the comparator claim remains closed."
+          }
+        }
+      },
+      "impact": {
+        "customer_visible": true,
+        "area": "pkg/workflow/compiler_benchmark_test.go",
+        "severity_basis": "The public review identified behavior that could affect users or CI at pkg/workflow/compiler_benchmark_test.go:95."
+      },
+      "adjudication": {
+        "status": "adjudicated",
+        "method": "codex-assisted manual review of a public inline issue plus the agent follow-up fix",
+        "adjudicators": ["codex-assisted-manual-triage"],
+        "decided_at": "2026-07-25T17:22:20.904Z",
+        "notes": "The issue is bounded to the pinned public review comment and its exact commit. The PR advanced to 9c9e2c3a7ca4cc6dfba052d71d0d86983253073c before merge; no claim is made that the issue remained in the merged head.",
+        "exclusions": [
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47698#discussion_r3643045139",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47698#discussion_r3643049759",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47698#discussion_r3643049760",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          },
+          {
+            "review_comment": "https://github.com/github/gh-aw/pull/47698#discussion_r3643049762",
+            "reason": "Not selected for the one-independent-finding-per-PR corpus slice; no negative judgment recorded."
+          }
+        ]
+      },
+      "ground_truth": [
+        {
+          "id": "review-3643030734",
+          "severity": "high",
+          "filePath": "pkg/workflow/compiler_benchmark_test.go",
+          "title": "This normalizes BenchmarkCompileWorkflowWithMCP, but the regression linked by this PR is measured from BenchmarkCompileMCPWorkflow.",
+          "evidence": "Public inline review https://github.com/github/gh-aw/pull/47698#discussion_r3643030734 identifies the defect on commit 9c9e2c3a7ca4cc6dfba052d71d0d86983253073c; the PR later advanced to merged head 9c9e2c3a7ca4cc6dfba052d71d0d86983253073c.",
+          "adjudication": "confirmed",
+          "impact": "The pinned implementation exhibits the reviewed failure mode in pkg/workflow/compiler_benchmark_test.go."
+        }
+      ],
+      "reviews": {
+        "codevetter": [],
+        "coderabbit_free": [],
+        "claude_code_review": []
+      }
+    }
+  ]
+}

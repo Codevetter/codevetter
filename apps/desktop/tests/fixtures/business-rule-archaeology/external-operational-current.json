@@ -1,0 +1,46 @@
+{
+  "authorized_claim": null,
+  "captured_at": "2026-07-25T17:53:34.248959+00:00",
+  "command": "CODEVETTER_ARCHAEOLOGY_EXTERNAL_REPO=<canonical-local-git-path> CODEVETTER_ARCHAEOLOGY_EXTERNAL_REPORT=<explicit-report-path> cargo test --release archaeology_external_repository_qualification -- --ignored --nocapture",
+  "contract_id": "codevetter.business-rule-archaeology.external-repository-qualification.v1",
+  "machine": {
+    "arch": "aarch64",
+    "cpu": "Apple M5 Pro",
+    "kernel": "Darwin 27.0.0 Darwin Kernel Version 27.0.0: Tue Jul 14 21:43:15 PDT 2026; root:xnu-13432.0.94.501.4~1/RELEASE_ARM64_T6050 arm64 arm",
+    "logical_cpus": 18,
+    "memory_bytes": 51539607552,
+    "os": "macos",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)"
+  },
+  "operational_gate_passed": false,
+  "qualification": {
+    "operational_gate_passed": false
+  },
+  "release_policy_blockers": [
+    "semantic_correctness_not_labeled_for_this_repository",
+    "strict_latency_storage_and_sample_thresholds_not_evaluated_by_this_gate"
+  ],
+  "release_policy_passed": false,
+  "resources": {
+    "cpu_system_seconds": 9.752,
+    "cpu_user_seconds": 8.333,
+    "elapsed_ms": 27444.685,
+    "peak_rss_bytes": 64487424
+  },
+  "runtime_blocker": "Archaeology linker persisted input bound exceeded",
+  "schema_version": 1,
+  "source": {
+    "dirty_after": true,
+    "dirty_before": true,
+    "immutable": true,
+    "path_retained_in_report": false,
+    "refs_digest_after": "sha256:2f0c92d1c4c28768263d6a3d94cf4d6e38065ef12a37d73a486111362f7e50f5",
+    "refs_digest_before": "sha256:2f0c92d1c4c28768263d6a3d94cf4d6e38065ef12a37d73a486111362f7e50f5",
+    "revision_digest": "sha256:fb640fb96faf743270b91c7066ccb2a06d9f94badf0d7d30b35ff121122704ce",
+    "status_digest_after": "sha256:5d6d6a52a10a0a218d6ff1959c6d71566ae08b2f4a97a5f0a634bd24cf8c4900",
+    "status_digest_before": "sha256:5d6d6a52a10a0a218d6ff1959c6d71566ae08b2f4a97a5f0a634bd24cf8c4900",
+    "tree_digest": "sha256:c61eab97248edc0f54a4df318215351100a91062c3e3e26bcce17f83066c577d",
+    "worktree_digest_after": "sha256:49957c239e691b24bcea5e4f385a46587346e32de357fe9c6ca794cbcf721d89",
+    "worktree_digest_before": "sha256:49957c239e691b24bcea5e4f385a46587346e32de357fe9c6ca794cbcf721d89"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "qualification": "codevetter.native-agent-island.repeated-use.v1",
+  "snapshots": 120,
+  "p95_latency_ms": 82,
+  "idle_cpu_percent": 0.12,
+  "resident_memory_mib": 53.75,
+  "repository_rescans": 0,
+  "action_identities": ["focus_session", "submit_reply", "approve", "deny", "snooze", "dismiss"],
+  "status_identities": ["working", "needs_help", "failed", "completed", "paused", "disconnected"],
+  "duplicate_and_stale_host_gate": "passed",
+  "helper_crash_fallback": "passed",
+  "session_continuity": "passed",
+  "false_action_count": 0,
+  "parent_exit": "passed",
+  "gates": {
+    "p95_latency_ms_maximum": 100,
+    "idle_cpu_percent_maximum": 0.2,
+    "resident_memory_mib_maximum": 60
+  },
+  "passed": true,
+  "promotion_decision": "off_by_default"
+}
