@@ -7,6 +7,8 @@ import {
   GitFork,
   Loader2,
   MessageSquare,
+  PanelLeftClose,
+  PanelLeftOpen,
   Play,
   Plus,
   RotateCcw,
@@ -40,6 +42,7 @@ import {
 } from '@/lib/agent-lifecycle-events';
 import { boundAgentLiveOutput } from '@/lib/agent-live-output';
 import { attentionFromOutput, attentionFromStructuredEvent } from '@/lib/agent-attention';
+import { recommendAgentTeam, type AgentRoleRecommendation } from '@/lib/agent-team-recommendation';
 import { presentAgentTerminalExit } from '@/lib/agent-terminal-exit';
 import {
   attachWorkItemSession,
@@ -126,6 +129,8 @@ interface AgentStructuredEventEntry {
 interface AgentTerminal {
   id: string;
   provider: AgentProvider;
+  roleLabel: string | null;
+  teamId: string | null;
   name: string;
   cwd: string;
   prompt: string;
@@ -189,6 +194,8 @@ const outputSequences = new Map<string, number>();
 interface SavedAgentTerminal {
   id: string;
   provider?: AgentProvider;
+  roleLabel?: string | null;
+  teamId?: string | null;
   name: string;
   cwd: string;
   prompt: string;
@@ -228,6 +235,10 @@ interface SavedAgentWorkspace {
 
 interface ConversationSeed {
   provider: AgentProvider;
+  roleLabel?: string | null;
+  teamId?: string | null;
+  sandbox?: AgentTerminal['sandbox'];
+  launchNow?: boolean;
   cwd: string;
   prompt: string;
   model: string;
@@ -237,6 +248,7 @@ interface ConversationSeed {
 }
 
 const AGENT_WORKSPACE_STORAGE_KEY = 'codevetter.agent-panel.workspace.v1';
+let nextLocalRunIdentity = 0;
 const PROMPT_PRESETS = [
   {
     label: 'Review changes',
@@ -353,9 +365,9 @@ export default function AgentPanel() {
   );
   const orderedTerminals = useMemo(
     () =>
-      terminals
-        .filter((terminal) => terminal.started)
-        .toSorted((left, right) => terminalAttentionRank(left) - terminalAttentionRank(right)),
+      terminals.toSorted(
+        (left, right) => terminalAttentionRank(left) - terminalAttentionRank(right)
+      ),
     [terminals]
   );
   const hasRunningTerminals = runningTerminals.length > 0;
@@ -918,33 +930,55 @@ export default function AgentPanel() {
   }, [terminals]);
 
   async function startConversation(seed: ConversationSeed) {
-    const id = `agent-${Date.now()}`;
-    const terminal = appendBlock(
-      {
-        ...createAgentTerminal({
-          id,
-          index: terminals.length + 1,
-          cwd: seed.cwd || defaultCwd,
-          provider: seed.provider,
-          prompt: seed.prompt,
-        }),
-        model: seed.model,
-        workItemId: seed.workItemId,
-        profilePath: seed.profilePath ?? null,
-        managedRunId: seed.managedRunId ?? null,
-      },
-      {
-        kind: 'prompt',
-        status: 'green',
-        title: 'Prompt',
-        detail: seed.prompt,
-      }
-    );
-    setTerminals((current) => [...current, terminal]);
+    await startConversations([seed]);
+  }
+
+  async function startConversations(seeds: ConversationSeed[]) {
+    if (seeds.length === 0) return;
+    const launchTerminals = seeds.map((seed, index) => {
+      const id = newAgentRunId();
+      const terminal = appendBlock(
+        {
+          ...createAgentTerminal({
+            id,
+            index: terminals.length + index + 1,
+            cwd: seed.cwd || defaultCwd,
+            provider: seed.provider,
+            prompt: seed.prompt,
+            roleLabel: seed.roleLabel,
+            teamId: seed.teamId,
+            name: seed.roleLabel || undefined,
+          }),
+          model: seed.model,
+          sandbox: seed.sandbox ?? 'workspace-write',
+          workItemId: seed.workItemId,
+          profilePath: seed.profilePath ?? null,
+          managedRunId: seed.managedRunId ?? null,
+        },
+        {
+          kind: 'prompt',
+          status: seed.launchNow === false ? 'white' : 'green',
+          title: seed.launchNow === false ? 'Queued instructions' : 'Prompt',
+          detail: seed.prompt,
+        }
+      );
+      return seed.launchNow === false
+        ? {
+            ...terminal,
+            updatedAt: 'queued',
+            statusReason: 'Recommended after implementation; start only when you choose',
+          }
+        : terminal;
+    });
+    setTerminals((current) => [...current, ...launchTerminals]);
     setPreviewSession(null);
-    setSelectedId(id);
+    setSelectedId(launchTerminals[0].id);
     setConversationSeed(null);
-    await startTerminal(id, { terminalOverride: terminal });
+    await Promise.allSettled(
+      launchTerminals
+        .filter((_, index) => seeds[index].launchNow !== false)
+        .map((terminal) => startTerminal(terminal.id, { terminalOverride: terminal }))
+    );
   }
 
   function openWorkItemConversation(item: WorkItem) {
@@ -1210,6 +1244,8 @@ export default function AgentPanel() {
       const started = await startAgentTerminal({
         provider: terminal.provider,
         sessionId: id,
+        roleLabel: terminal.roleLabel,
+        teamId: terminal.teamId,
         profilePath: terminal.profilePath,
         cwd: terminal.cwd,
         prompt: terminal.prompt,
@@ -1573,7 +1609,7 @@ export default function AgentPanel() {
             <p className="text-xs text-zinc-400">
               {isBoardRoute
                 ? 'Move outcomes from plan to proof'
-                : 'Turn an outcome into one focused agent run'}
+                : 'Turn an outcome into a clear, user-confirmed agent team'}
             </p>
           </div>
         </div>
@@ -1606,7 +1642,7 @@ export default function AgentPanel() {
               <span className="sr-only">Active agent run</span>
               <select
                 aria-label="Active agent run"
-                value={selected?.started ? selected.id : ''}
+                value={selected?.id ?? ''}
                 onChange={(event) => {
                   setConversationSeed(null);
                   setPreviewSession(null);
@@ -1628,7 +1664,7 @@ export default function AgentPanel() {
               />
             </label>
           ) : null}
-          {!isBoardRoute && (selected?.started || previewSession) ? (
+          {!isBoardRoute && (selected || previewSession) ? (
             <Button
               type="button"
               variant="outline"
@@ -1663,9 +1699,8 @@ export default function AgentPanel() {
             <WorkConversationSidebar
               terminals={orderedTerminals}
               indexedSessions={availableIndexedSessions}
-              repoProjects={repoProjects}
               isVerifyingIndexedDirectories={isVerifyingSessionDirectories}
-              selectedId={selected?.started ? selected.id : ''}
+              selectedId={selected?.id ?? ''}
               selectedSessionKey={previewSession ? indexedSessionKey(previewSession) : ''}
               onSelect={(id) => {
                 setConversationSeed(null);
@@ -1692,16 +1727,22 @@ export default function AgentPanel() {
                   onResume={() => void launchIndexedSession(previewSession, 'resume')}
                   onFork={() => void launchIndexedSession(previewSession, 'fork')}
                 />
-              ) : !selected?.started ? (
+              ) : !selected ? (
                 <ConversationStart
                   key={`${conversationSeed?.workItemId ?? 'new'}-${conversationSeed?.provider ?? 'codex'}-${conversationSeed?.cwd ?? defaultCwd}`}
                   repoProjects={repoProjects}
-                  defaultCwd={conversationSeed?.cwd ?? selected?.cwd ?? defaultCwd}
-                  defaultProvider={conversationSeed?.provider ?? selected?.provider ?? 'codex'}
-                  defaultPrompt={conversationSeed?.prompt ?? selected?.prompt ?? ''}
-                  workItemId={conversationSeed?.workItemId ?? selected?.workItemId ?? null}
+                  defaultCwd={conversationSeed?.cwd ?? defaultCwd}
+                  defaultProvider={conversationSeed?.provider ?? 'codex'}
+                  defaultPrompt={conversationSeed?.prompt ?? ''}
+                  workItemId={conversationSeed?.workItemId ?? null}
                   recentSessions={availableIndexedSessions}
-                  onStart={(seed) => void startConversation(seed)}
+                  onStart={startConversations}
+                />
+              ) : !selected.started ? (
+                <QueuedAgentStart
+                  terminal={selected}
+                  onStart={() => void startTerminal(selected.id)}
+                  onDiscard={() => void archiveTerminal(selected.id)}
                 />
               ) : (
                 <WorkSessionView
@@ -1725,7 +1766,6 @@ export default function AgentPanel() {
 function WorkConversationSidebar({
   terminals,
   indexedSessions,
-  repoProjects,
   isVerifyingIndexedDirectories,
   selectedId,
   selectedSessionKey,
@@ -1736,7 +1776,6 @@ function WorkConversationSidebar({
 }: {
   terminals: AgentTerminal[];
   indexedSessions: SessionRow[];
-  repoProjects: RepoProject[];
   isVerifyingIndexedDirectories: boolean;
   selectedId: string;
   selectedSessionKey: string;
@@ -1747,10 +1786,11 @@ function WorkConversationSidebar({
 }) {
   const disclosureId = useId();
   const [query, setQuery] = useState('');
-  const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(() => new Set());
+  const [navigatorCollapsed, setNavigatorCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
   const projectGroups = useMemo(
-    () => groupConversationsByProject(terminals, indexedSessions, repoProjects),
-    [indexedSessions, repoProjects, terminals]
+    () => groupConversationsByStatus(terminals, indexedSessions),
+    [indexedSessions, terminals]
   );
   const normalizedQuery = query.trim().toLowerCase();
   const filteredGroups = useMemo(() => {
@@ -1798,19 +1838,51 @@ function WorkConversationSidebar({
     0
   );
 
-  return (
+  const attentionCount =
+    projectGroups.find((group) => group.key === 'needs-attention')?.terminals.length ?? 0;
+
+  return navigatorCollapsed ? (
     <aside
-      aria-label="Conversation sidebar"
-      className="hidden w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-white/[0.075] bg-white/[0.018] p-2.5 shadow-[0_18px_60px_rgba(0,0,0,0.16)] lg:flex"
+      aria-label="Run navigator"
+      className="hidden w-12 shrink-0 flex-col items-center rounded-xl border border-white/[0.075] bg-white/[0.018] py-2.5 lg:flex"
+    >
+      <button
+        type="button"
+        onClick={() => setNavigatorCollapsed(false)}
+        aria-label={`Open run navigator${attentionCount ? `, ${attentionCount} need attention` : ''}`}
+        className="relative flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-100"
+      >
+        <PanelLeftOpen size={15} />
+        {attentionCount ? (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-300 px-1 text-[9px] font-semibold text-zinc-950">
+            {attentionCount}
+          </span>
+        ) : null}
+      </button>
+    </aside>
+  ) : (
+    <aside
+      aria-label="Run navigator"
+      className="hidden w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-white/[0.075] bg-white/[0.018] p-2.5 lg:flex"
     >
       <div className="flex items-center justify-between px-1.5 pb-2 pt-0.5">
         <div>
-          <h2 className="text-[13px] font-semibold text-zinc-200">Conversations</h2>
-          <p className="mt-0.5 text-[10px] text-zinc-400">Your agent workspace</p>
+          <h2 className="text-[13px] font-semibold text-zinc-200">Runs</h2>
+          <p className="mt-0.5 text-[10px] text-zinc-400">Attention first, history last</p>
         </div>
-        <span className="rounded-md bg-white/[0.045] px-1.5 py-0.5 text-[10px] tabular-nums text-zinc-500">
-          {conversationCount}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="rounded-md bg-white/[0.045] px-1.5 py-0.5 text-[10px] tabular-nums text-zinc-500">
+            {conversationCount}
+          </span>
+          <button
+            type="button"
+            onClick={() => setNavigatorCollapsed(true)}
+            aria-label="Collapse run navigator"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200"
+          >
+            <PanelLeftClose size={14} />
+          </button>
+        </div>
       </div>
 
       <button
@@ -1827,18 +1899,18 @@ function WorkConversationSidebar({
         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-white/[0.06]">
           <Plus size={12} />
         </span>
-        <span>Start new conversation</span>
+        <span>New outcome</span>
       </button>
 
       <label className="relative mt-2 block">
-        <span className="sr-only">Search conversations</span>
+        <span className="sr-only">Search runs</span>
         <Search
           aria-hidden="true"
           size={12}
           className="pointer-events-none absolute left-2.5 top-2.5 text-zinc-600"
         />
         <input
-          aria-label="Search conversations"
+          aria-label="Search runs"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search"
@@ -1846,34 +1918,27 @@ function WorkConversationSidebar({
         />
       </label>
 
-      <div className="flex items-center justify-between px-1.5 pb-1.5 pt-4">
-        <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-400">
-          Projects
-        </span>
+      <div className="flex items-center justify-end px-1.5 pb-1.5 pt-3">
         {isVerifyingIndexedDirectories ? (
-          <span className="text-[10px] text-zinc-500">Checking projects…</span>
+          <span className="text-[10px] text-zinc-500">Checking history…</span>
         ) : null}
       </div>
 
-      <nav aria-label="Conversations" className="min-h-0 flex-1 overflow-y-auto pr-0.5">
+      <nav aria-label="Runs" className="min-h-0 flex-1 overflow-y-auto pr-0.5">
         {filteredGroups.length > 0 ? (
           <div className="space-y-2 pb-1">
             {filteredGroups.map((group, index) => {
               const regionId = `${disclosureId}-project-${index}`;
-              const expanded = Boolean(normalizedQuery) || !collapsedProjects.has(group.key);
+              const expanded = Boolean(normalizedQuery) || !collapsedGroups.has(group.key);
               const groupCount = group.terminals.length + group.indexedSessions.length;
               return (
-                <div
-                  key={group.key}
-                  role="group"
-                  aria-label={`${group.label} project conversations`}
-                >
+                <div key={group.key} role="group" aria-label={`${group.label} runs`}>
                   <button
                     type="button"
                     aria-expanded={expanded}
                     aria-controls={regionId}
                     onClick={() =>
-                      setCollapsedProjects((current) => {
+                      setCollapsedGroups((current) => {
                         const next = new Set(current);
                         if (next.has(group.key)) next.delete(group.key);
                         else next.add(group.key);
@@ -1898,7 +1963,7 @@ function WorkConversationSidebar({
                     <div id={regionId} className="mt-0.5 space-y-0.5">
                       {group.terminals.map((terminal) => {
                         const selected = terminal.id === selectedId;
-                        const title = terminal.prompt.trim() || terminal.name;
+                        const title = terminal.roleLabel || terminal.prompt.trim() || terminal.name;
                         const state = conversationStateLabel(terminal);
 
                         return (
@@ -1920,7 +1985,7 @@ function WorkConversationSidebar({
                             <button
                               type="button"
                               onClick={() => onSelect(terminal.id)}
-                              aria-label={`Open ${providerLabel(terminal.provider)} run ${terminal.name}`}
+                              aria-label={`Open ${terminal.roleLabel ? `${terminal.roleLabel} ` : ''}${providerLabel(terminal.provider)} run ${terminal.name}`}
                               aria-current={selected ? 'page' : undefined}
                               title={title}
                               className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 pr-8 text-left outline-none focus-visible:ring-1 focus-visible:ring-amber-300/40"
@@ -1966,6 +2031,9 @@ function WorkConversationSidebar({
                                   >
                                     {state}
                                   </span>
+                                </span>
+                                <span className="mt-0.5 block truncate text-[10px] text-zinc-400">
+                                  {compactPathLabel(terminal.cwd)}
                                 </span>
                               </span>
                             </button>
@@ -2019,6 +2087,9 @@ function WorkConversationSidebar({
                                 <span aria-hidden="true">·</span>
                                 <span>Previous</span>
                               </span>
+                              <span className="mt-0.5 block truncate text-[10px] text-zinc-400">
+                                {compactPathLabel(session.cwd ?? '')}
+                              </span>
                             </span>
                           </button>
                         );
@@ -2032,10 +2103,10 @@ function WorkConversationSidebar({
         ) : (
           <p className="px-2.5 py-2 text-[11px] leading-5 text-zinc-400">
             {isVerifyingIndexedDirectories && !query
-              ? 'Checking local project history…'
+              ? 'Checking local run history…'
               : query
-                ? 'No matching conversations.'
-                : 'Your conversations will appear here.'}
+                ? 'No matching runs.'
+                : 'Your runs will appear here.'}
           </p>
         )}
       </nav>
@@ -2204,6 +2275,51 @@ function TranscriptMessage({
   );
 }
 
+function QueuedAgentStart({
+  terminal,
+  onStart,
+  onDiscard,
+}: {
+  terminal: AgentTerminal;
+  onStart: () => void;
+  onDiscard: () => void;
+}) {
+  const providerName = providerLabel(terminal.provider);
+  return (
+    <section
+      aria-label={`${terminal.roleLabel ?? providerName} queued agent`}
+      className="mx-auto flex h-full max-w-3xl items-center justify-center px-6"
+    >
+      <div className="w-full border-y border-white/[0.08] py-8">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-400">
+          <span className="rounded-md bg-white/[0.05] px-2 py-1">After implementation</span>
+          <span>Read-only</span>
+          <span aria-hidden="true">·</span>
+          <span>{providerName}</span>
+          <span aria-hidden="true">·</span>
+          <span>{compactPathLabel(terminal.cwd)}</span>
+        </div>
+        <h2 className="mt-4 text-xl font-semibold text-zinc-100">
+          {terminal.roleLabel ?? 'Recommended specialist'}
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          This role is saved with the team but has not started. Launch it only after you decide the
+          implementation tree is ready; CodeVetter does not infer readiness from another process
+          ending.
+        </p>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <Button type="button" onClick={onStart} className="gap-2">
+            <Play size={14} /> Start {terminal.roleLabel ?? providerName}
+          </Button>
+          <Button type="button" variant="outline" onClick={onDiscard}>
+            Remove recommendation
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function WorkSessionView({
   terminal,
   repoStatus,
@@ -2315,6 +2431,7 @@ function WorkSessionView({
             <span>{terminal.model.trim() || 'Default model'}</span>
           </div>
           <h2 className="mt-2 text-lg font-semibold tracking-[-0.02em] text-zinc-100">
+            {terminal.roleLabel ? `${terminal.roleLabel} · ` : ''}
             {providerName}{' '}
             <span className="font-normal text-zinc-500">in {compactPathLabel(terminal.cwd)}</span>
           </h2>
@@ -2589,128 +2706,130 @@ function ConversationStart({
   defaultPrompt: string;
   workItemId: string | null;
   recentSessions: SessionRow[];
-  onStart: (seed: ConversationSeed) => void;
+  onStart: (seeds: ConversationSeed[]) => Promise<void>;
 }) {
-  const [provider, setProvider] = useState<AgentProvider>(defaultProvider);
   const [cwd, setCwd] = useState(defaultCwd);
   const [prompt, setPrompt] = useState(defaultPrompt);
-  const [model, setModel] = useState('');
-  const recentModels = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          recentSessions
-            .filter((session) => sessionAgentProvider(session) === provider)
-            .map((session) => session.model_used?.trim())
-            .filter((value): value is string => Boolean(value))
-        )
-      ).slice(0, 8),
-    [provider, recentSessions]
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitInFlightRef = useRef(false);
+  const recommendation = useMemo(() => recommendAgentTeam(prompt), [prompt]);
+  const [roleChoices, setRoleChoices] = useState<
+    Record<string, { included: boolean; provider: AgentProvider; model: string }>
+  >(() => choicesFromRecommendation(recommendAgentTeam(defaultPrompt), defaultProvider));
+  const confirmedRoles = recommendation.filter(
+    (item) => item.required || roleChoices[item.role]?.included
   );
+  const startingRoles = confirmedRoles.filter((item) => item.phase === 'now');
+  const queuedRoles = confirmedRoles.filter((item) => item.phase === 'after-implementation');
+  const selectedRepository = cwd.trim();
+  const hasConcreteTeamRepository =
+    isConcreteRepoPath(selectedRepository) &&
+    (repoProjects.length === 0 ||
+      repoProjects.some((project) => project.repo_path === selectedRepository));
+  const teamNeedsRepository = confirmedRoles.length > 1;
 
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!prompt.trim()) return;
-    onStart({
-      provider,
-      cwd: cwd.trim() || '~',
-      prompt: prompt.trim(),
-      model: model.trim(),
-      workItemId,
+  useEffect(() => {
+    setRoleChoices((current) => {
+      const next = { ...current };
+      for (const item of recommendation) {
+        next[item.role] ??= {
+          included: true,
+          provider: item.role === 'implementation' ? defaultProvider : item.defaultProvider,
+          model: '',
+        };
+      }
+      return next;
     });
+  }, [defaultProvider, recommendation]);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (
+      !prompt.trim() ||
+      submitInFlightRef.current ||
+      confirmedRoles.length === 0 ||
+      (teamNeedsRepository && !hasConcreteTeamRepository)
+    ) {
+      return;
+    }
+    submitInFlightRef.current = true;
+    setIsSubmitting(true);
+    const teamId = confirmedRoles.length > 1 ? newAgentTeamId() : null;
+    try {
+      await onStart(
+        confirmedRoles.map((item, index) => {
+          const choice = roleChoices[item.role];
+          return {
+            provider: choice?.provider ?? item.defaultProvider,
+            roleLabel: item.label,
+            teamId,
+            sandbox: item.sandbox,
+            cwd: cwd.trim() || '~',
+            prompt: item.instructions,
+            model: choice?.model.trim() ?? '',
+            workItemId: index === 0 ? workItemId : null,
+            launchNow: item.phase === 'now',
+          };
+        })
+      );
+    } finally {
+      submitInFlightRef.current = false;
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <div className="mx-auto flex h-full max-w-4xl items-start justify-center">
-      <form onSubmit={submit} className="w-full px-2 pb-6 pt-[clamp(3rem,10vh,7rem)] sm:px-6">
-        <div className="mb-7 max-w-2xl">
+      <form
+        onSubmit={submit}
+        className="w-full overflow-y-auto px-2 pb-8 pt-[clamp(2rem,7vh,5rem)] sm:px-6"
+      >
+        <div className="mb-6 max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-[-0.035em] text-zinc-100">
-            What should we work on?
+            What outcome do you need?
           </h2>
           <p className="mt-2 max-w-xl text-[15px] leading-6 text-zinc-400">
-            Start with the outcome. CodeVetter keeps the agent, repository, work, and evidence
-            together on this Mac.
+            Describe the work first. CodeVetter will recommend a small team; nothing starts until
+            you confirm it.
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0b0c0f] shadow-[0_20px_60px_-42px_rgba(0,0,0,1)] focus-within:border-amber-300/25 focus-within:ring-4 focus-within:ring-amber-300/[0.035]">
+        <div className="overflow-hidden rounded-xl border border-white/[0.1] bg-[#0b0c0f] focus-within:border-amber-300/25 focus-within:ring-4 focus-within:ring-amber-300/[0.035]">
           <textarea
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
-            onKeyDown={submitComposerOnEnter}
-            aria-label="Conversation prompt"
-            placeholder="Describe the change, bug, or question…"
-            className="min-h-44 w-full resize-none bg-transparent px-5 py-5 text-base leading-7 text-zinc-100 outline-none placeholder:text-zinc-500"
+            aria-label="Outcome"
+            placeholder="Describe the result, risk, or question…"
+            className="min-h-32 w-full resize-none bg-transparent px-5 py-5 text-base leading-7 text-zinc-100 outline-none placeholder:text-zinc-400"
           />
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.065] bg-white/[0.018] p-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex rounded-lg border border-white/[0.08] bg-black/25 p-0.5">
-                {(['codex', 'claude'] as const).map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => {
-                      setProvider(option);
-                      setModel('');
-                    }}
-                    className={cn(
-                      'h-8 rounded-md px-3 text-xs capitalize transition',
-                      provider === option
-                        ? 'bg-white/[0.08] text-zinc-100'
-                        : 'text-zinc-400 hover:text-zinc-100'
-                    )}
-                  >
-                    {option}
-                  </button>
+          <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.065] bg-white/[0.018] p-3">
+            {repoProjects.length > 0 ? (
+              <select
+                value={repoProjects.some((project) => project.repo_path === cwd) ? cwd : ''}
+                onChange={(event) => setCwd(event.target.value)}
+                aria-label="Conversation repository"
+                className="h-9 max-w-64 rounded-lg border border-white/[0.08] bg-black/25 px-3 text-xs text-zinc-300 outline-none hover:text-zinc-100"
+              >
+                <option value="">Choose repository</option>
+                {repoProjects.map((project) => (
+                  <option key={project.id} value={project.repo_path}>
+                    {project.display_name}
+                  </option>
                 ))}
-              </div>
-              <label className="relative">
-                <span className="sr-only">Conversation model</span>
-                <input
-                  aria-label="Conversation model"
-                  list={`conversation-models-${provider}`}
-                  value={model}
-                  onChange={(event) => setModel(event.target.value)}
-                  placeholder="Default model"
-                  className="h-9 w-40 rounded-lg border border-white/[0.08] bg-black/25 px-3 text-xs text-zinc-400 outline-none placeholder:text-zinc-500 hover:text-zinc-200 focus:border-amber-300/25"
-                />
-                <datalist id={`conversation-models-${provider}`}>
-                  {recentModels.map((recentModel) => (
-                    <option key={recentModel} value={recentModel} />
-                  ))}
-                </datalist>
-              </label>
-              {repoProjects.length > 0 ? (
-                <select
-                  value={repoProjects.some((project) => project.repo_path === cwd) ? cwd : ''}
-                  onChange={(event) => setCwd(event.target.value)}
-                  aria-label="Conversation repository"
-                  className="h-9 max-w-56 rounded-lg border border-white/[0.08] bg-black/25 px-3 text-xs text-zinc-400 outline-none hover:text-zinc-200"
-                >
-                  <option value="">Choose repository</option>
-                  {repoProjects.map((project) => (
-                    <option key={project.id} value={project.repo_path}>
-                      {project.display_name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  value={cwd}
-                  onChange={(event) => setCwd(event.target.value)}
-                  aria-label="Conversation working directory"
-                  className="h-9 min-w-56 rounded-lg border border-white/[0.08] bg-black/25 px-3 font-mono text-xs text-zinc-400 outline-none"
-                  placeholder="Repository path"
-                />
-              )}
-            </div>
-            <Button type="submit" disabled={!prompt.trim()} className="gap-2">
-              <Play size={14} /> Start {providerLabel(provider)}
-            </Button>
+              </select>
+            ) : (
+              <input
+                value={cwd}
+                onChange={(event) => setCwd(event.target.value)}
+                aria-label="Conversation working directory"
+                className="h-9 min-w-56 rounded-lg border border-white/[0.08] bg-black/25 px-3 font-mono text-xs text-zinc-300 outline-none"
+                placeholder="Repository path"
+              />
+            )}
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 px-1">
+        <div className="mt-3 flex flex-wrap gap-2 px-1">
           {PROMPT_PRESETS.slice(0, 3).map((preset) => (
             <button
               key={preset.label}
@@ -2722,6 +2841,145 @@ function ConversationStart({
             </button>
           ))}
         </div>
+
+        {prompt.trim() ? (
+          <section aria-label="Recommended agent team" className="mt-7">
+            <div className="flex items-end justify-between gap-4 border-b border-white/[0.08] pb-3">
+              <div>
+                <h3 className="text-base font-semibold text-zinc-100">Recommended team</h3>
+                <p className="mt-1 text-xs leading-5 text-zinc-400">
+                  Local task signals only. Edit the team and provider before launch.
+                </p>
+              </div>
+              <span className="text-xs tabular-nums text-zinc-400">
+                {startingRoles.length} starting · {queuedRoles.length} queued
+              </span>
+            </div>
+
+            <div className="divide-y divide-white/[0.07]">
+              {recommendation.map((item) => {
+                const choice = roleChoices[item.role] ?? {
+                  included: true,
+                  provider: item.defaultProvider,
+                  model: '',
+                };
+                const startsNow = item.phase === 'now';
+                const recentModels = modelsForProvider(recentSessions, choice.provider);
+                return (
+                  <div key={item.role} className="flex gap-3 py-4">
+                    <input
+                      type="checkbox"
+                      checked={item.required || choice.included}
+                      disabled={item.required}
+                      onChange={(event) =>
+                        setRoleChoices((current) => ({
+                          ...current,
+                          [item.role]: { ...choice, included: event.target.checked },
+                        }))
+                      }
+                      aria-label={`Include ${item.label}`}
+                      className="mt-1 h-4 w-4 accent-amber-300"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-zinc-100">{item.label}</span>
+                        <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-zinc-400">
+                          {startsNow ? 'Now' : 'After implementation'}
+                        </span>
+                        <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-zinc-400">
+                          {item.sandbox === 'read-only' ? 'Read-only' : 'Can edit'}
+                        </span>
+                      </div>
+                      <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
+                        {item.reason}
+                      </p>
+                      {!startsNow ? (
+                        <p className="mt-1 text-[11px] text-amber-200/70">
+                          Start this role after the implementation tree is ready; launching it now
+                          would verify the wrong revision.
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="flex shrink-0 items-start gap-2">
+                      <select
+                        aria-label={`${item.label} provider`}
+                        value={choice.provider}
+                        onChange={(event) =>
+                          setRoleChoices((current) => ({
+                            ...current,
+                            [item.role]: {
+                              ...choice,
+                              provider: event.target.value as AgentProvider,
+                              model: '',
+                            },
+                          }))
+                        }
+                        className="h-9 rounded-lg border border-white/[0.08] bg-black/25 px-2.5 text-xs text-zinc-300 outline-none"
+                      >
+                        <option value="codex">Codex</option>
+                        <option value="claude">Claude</option>
+                      </select>
+                      <input
+                        aria-label={`${item.label} model`}
+                        list={`team-models-${item.role}-${choice.provider}`}
+                        value={choice.model}
+                        onChange={(event) =>
+                          setRoleChoices((current) => ({
+                            ...current,
+                            [item.role]: { ...choice, model: event.target.value },
+                          }))
+                        }
+                        placeholder="Default model"
+                        className="hidden h-9 w-36 rounded-lg border border-white/[0.08] bg-black/25 px-2.5 text-xs text-zinc-300 outline-none placeholder:text-zinc-400 sm:block"
+                      />
+                      <datalist id={`team-models-${item.role}-${choice.provider}`}>
+                        {recentModels.map((recentModel) => (
+                          <option key={recentModel} value={recentModel} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {queuedRoles.length > 0 ? (
+              <p className="mt-1 text-xs text-zinc-400">
+                {queuedRoles.length} later role{queuedRoles.length === 1 ? '' : 's'} will be saved
+                in the navigator without starting a provider process.
+              </p>
+            ) : null}
+
+            {teamNeedsRepository && !hasConcreteTeamRepository ? (
+              <p role="alert" className="mt-3 text-xs text-amber-200">
+                Choose a known repository before confirming more than one agent.
+              </p>
+            ) : null}
+
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <p className="max-w-lg text-xs leading-5 text-zinc-400">
+                Agents share the selected checkout. This version permits one writer; every
+                specialist starts read-only.
+              </p>
+              <Button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  confirmedRoles.length === 0 ||
+                  (teamNeedsRepository && !hasConcreteTeamRepository)
+                }
+                className="gap-2"
+              >
+                {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+                {startingRoles.length === 1
+                  ? queuedRoles.length > 0
+                    ? `Start 1, queue ${queuedRoles.length}`
+                    : 'Start agent'
+                  : `Start ${startingRoles.length} agents`}
+              </Button>
+            </div>
+          </section>
+        ) : null}
       </form>
     </div>
   );
@@ -2739,6 +2997,7 @@ function terminalStatusLabel(terminal: AgentTerminal): string {
 }
 
 function conversationStateLabel(terminal: AgentTerminal): string {
+  if (!terminal.started && terminal.teamId) return 'Queued';
   switch (agentLifecycleState(terminal)) {
     case 'live':
       return 'Working';
@@ -2757,15 +3016,33 @@ function conversationStateLabel(terminal: AgentTerminal): string {
   }
 }
 
-function groupConversationsByProject(
+function groupConversationsByStatus(
   terminals: readonly AgentTerminal[],
-  indexedSessions: readonly SessionRow[],
-  repoProjects: readonly RepoProject[]
+  indexedSessions: readonly SessionRow[]
 ): ConversationProjectGroup[] {
-  const registeredProjects = new Map(
-    repoProjects.map((project) => [normalizeProjectPath(project.repo_path), project])
-  );
-  const groups = new Map<string, ConversationProjectGroup>();
+  const groups: ConversationProjectGroup[] = [
+    {
+      key: 'needs-attention',
+      label: 'Needs attention',
+      path: null,
+      terminals: [],
+      indexedSessions: [],
+    },
+    {
+      key: 'active',
+      label: 'Active',
+      path: null,
+      terminals: [],
+      indexedSessions: [],
+    },
+    {
+      key: 'recent',
+      label: 'Recent',
+      path: null,
+      terminals: [],
+      indexedSessions: [],
+    },
+  ];
   const representedSessions = new Set(
     terminals.flatMap((terminal) =>
       terminal.codexSessionId ? [`${terminal.provider}:${terminal.codexSessionId.trim()}`] : []
@@ -2773,35 +3050,27 @@ function groupConversationsByProject(
   );
   const indexedKeys = new Set<string>();
 
-  const projectGroup = (normalizedPath: string): ConversationProjectGroup => {
-    const path = normalizedPath || null;
-    const key = path ?? 'other';
-    const existing = groups.get(key);
-    if (existing) return existing;
-    const registered = normalizedPath ? registeredProjects.get(normalizedPath) : undefined;
-    const label = registered?.display_name.trim() || (path ? compactPathLabel(path) : 'Other');
-    const created = { key, label, path, terminals: [], indexedSessions: [] };
-    groups.set(key, created);
-    return created;
-  };
-
   for (const terminal of terminals) {
-    const normalizedPath = normalizeProjectPath(terminal.cwd);
-    projectGroup(normalizedPath).terminals.push(terminal);
+    const lifecycle = agentLifecycleState(terminal);
+    if (lifecycle === 'waiting' || lifecycle === 'failed' || lifecycle === 'detached') {
+      groups[0].terminals.push(terminal);
+    } else if (lifecycle === 'live') {
+      groups[1].terminals.push(terminal);
+    } else {
+      groups[2].terminals.push(terminal);
+    }
   }
 
   for (const session of indexedSessions) {
-    const normalizedPath = normalizeProjectPath(session.cwd ?? '');
-    if (!normalizedPath) continue;
     const identity = `${sessionAgentProvider(session)}:${session.id.trim()}`;
     if (!session.id.trim() || representedSessions.has(identity) || indexedKeys.has(identity)) {
       continue;
     }
     indexedKeys.add(identity);
-    projectGroup(normalizedPath).indexedSessions.push(session);
+    groups[2].indexedSessions.push(session);
   }
 
-  return [...groups.values()];
+  return groups.filter((group) => group.terminals.length + group.indexedSessions.length > 0);
 }
 
 function indexedSessionDirectoryPaths(sessions: readonly SessionRow[]): string[] {
@@ -3067,6 +3336,43 @@ function providerLabel(provider: AgentProvider): 'Codex' | 'Claude' {
   return provider === 'claude' ? 'Claude' : 'Codex';
 }
 
+function choicesFromRecommendation(
+  recommendation: AgentRoleRecommendation[],
+  primaryProvider: AgentProvider
+): Record<string, { included: boolean; provider: AgentProvider; model: string }> {
+  return Object.fromEntries(
+    recommendation.map((item) => [
+      item.role,
+      {
+        included: true,
+        provider: item.role === 'implementation' ? primaryProvider : item.defaultProvider,
+        model: '',
+      },
+    ])
+  );
+}
+
+function modelsForProvider(sessions: SessionRow[], provider: AgentProvider): string[] {
+  return Array.from(
+    new Set(
+      sessions
+        .filter((session) => sessionAgentProvider(session) === provider)
+        .map((session) => session.model_used?.trim())
+        .filter((value): value is string => Boolean(value))
+    )
+  ).slice(0, 8);
+}
+
+function newAgentRunId(): string {
+  nextLocalRunIdentity += 1;
+  return `agent-${Date.now().toString(36)}-${nextLocalRunIdentity.toString(36)}`;
+}
+
+function newAgentTeamId(): string {
+  nextLocalRunIdentity += 1;
+  return `team-${Date.now().toString(36)}-${nextLocalRunIdentity.toString(36)}`;
+}
+
 function sessionAgentProvider(session: SessionRow): AgentProvider {
   return session.agent_type.toLowerCase().includes('claude') ? 'claude' : 'codex';
 }
@@ -3190,6 +3496,8 @@ function serializeAgentWorkspace({
     terminals: terminals.map((terminal) => ({
       id: terminal.id,
       provider: terminal.provider,
+      roleLabel: terminal.roleLabel,
+      teamId: terminal.teamId,
       name: terminal.name,
       cwd: terminal.cwd,
       prompt: terminal.prompt,
@@ -3265,6 +3573,8 @@ function createAgentTerminal({
   prompt = '',
   background = false,
   name,
+  roleLabel = null,
+  teamId = null,
 }: {
   id: string;
   index: number;
@@ -3273,10 +3583,14 @@ function createAgentTerminal({
   prompt?: string;
   background?: boolean;
   name?: string;
+  roleLabel?: string | null;
+  teamId?: string | null;
 }): AgentTerminal {
   return {
     id,
     provider,
+    roleLabel,
+    teamId,
     name: name ?? `${providerLabel(provider)} ${index}`,
     cwd,
     prompt,
@@ -3319,6 +3633,8 @@ function terminalFromSaved(saved: SavedAgentTerminal): AgentTerminal {
   return {
     id: saved.id,
     provider: saved.provider ?? 'codex',
+    roleLabel: saved.roleLabel ?? null,
+    teamId: saved.teamId ?? null,
     name: saved.name,
     cwd: saved.cwd,
     prompt: saved.prompt,
@@ -3366,6 +3682,8 @@ function terminalFromSnapshot(
     {
       id: snapshot.session_id,
       provider: snapshot.provider ?? 'codex',
+      roleLabel: snapshot.role_label ?? null,
+      teamId: snapshot.team_id ?? null,
       name: `${providerLabel(snapshot.provider ?? 'codex')} ${fallbackIndex}`,
       cwd: snapshot.cwd,
       prompt: '',
@@ -3433,6 +3751,8 @@ function mergeTerminalSnapshot(
   const next = {
     ...terminal,
     provider: snapshot.provider ?? terminal.provider,
+    roleLabel: snapshot.role_label ?? terminal.roleLabel,
+    teamId: snapshot.team_id ?? terminal.teamId,
     cwd: snapshot.cwd || terminal.cwd,
     running: snapshot.running,
     started: true,
@@ -3763,6 +4083,11 @@ function normalizeSavedAgentTerminal(saved: SavedAgentTerminal): SavedAgentTermi
   return {
     id: saved.id,
     provider: record.provider === 'claude' ? 'claude' : 'codex',
+    roleLabel:
+      typeof record.roleLabel === 'string' || record.roleLabel === null
+        ? record.roleLabel
+        : undefined,
+    teamId: typeof record.teamId === 'string' || record.teamId === null ? record.teamId : undefined,
     name: saved.name,
     cwd: saved.cwd,
     prompt: saved.prompt,

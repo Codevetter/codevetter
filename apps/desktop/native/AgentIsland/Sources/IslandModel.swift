@@ -1,6 +1,52 @@
 import Combine
 import Foundation
 
+struct AgentSessionGroup: Identifiable, Equatable {
+    let id: String
+    let label: String
+    let sessions: [AgentSession]
+}
+
+func stableSessionGroups(_ sessions: [AgentSession]) -> [AgentSessionGroup] {
+    let projects = Dictionary(grouping: sessions, by: \.project)
+    return projects.keys.sorted().flatMap { project -> [AgentSessionGroup] in
+        let projectSessions = projects[project, default: []]
+        let unteamed = projectSessions.filter { $0.teamID == nil }
+        let teamIDs = Set(projectSessions.compactMap(\.teamID)).sorted()
+        var groups = [AgentSessionGroup]()
+        if !unteamed.isEmpty {
+            groups.append(
+                AgentSessionGroup(
+                    id: "\(project)\u{0000}legacy",
+                    label: project,
+                    sessions: sortedSessions(unteamed)
+                )
+            )
+        }
+        for (index, teamID) in teamIDs.enumerated() {
+            groups.append(
+                AgentSessionGroup(
+                    id: "\(project)\u{0000}\(teamID)",
+                    label: "\(project) · Team \(index + 1)",
+                    sessions: sortedSessions(
+                        projectSessions.filter { $0.teamID == teamID }
+                    )
+                )
+            )
+        }
+        return groups
+    }
+}
+
+private func sortedSessions(_ sessions: [AgentSession]) -> [AgentSession] {
+    sessions.sorted {
+        if $0.status.priority != $1.status.priority {
+            return $0.status.priority < $1.status.priority
+        }
+        return $0.updatedAtMilliseconds > $1.updatedAtMilliseconds
+    }
+}
+
 final class IslandModel: ObservableObject {
     @Published private(set) var sessions: [AgentSession] = []
     @Published private(set) var settings: IslandSettings?
@@ -22,17 +68,12 @@ final class IslandModel: ObservableObject {
         }.first
     }
 
-    var groupedSessions: [(String, [AgentSession])] {
-        let grouped = Dictionary(grouping: sessions, by: \.project)
-        return grouped.keys.sorted().map { project in
-            let values = grouped[project, default: []].sorted {
-                if $0.status.priority != $1.status.priority {
-                    return $0.status.priority < $1.status.priority
-                }
-                return $0.updatedAtMilliseconds > $1.updatedAtMilliseconds
-            }
-            return (project, values)
-        }
+    var groupedSessions: [AgentSessionGroup] {
+        stableSessionGroups(sessions)
+    }
+
+    var projectCount: Int {
+        Set(sessions.map(\.project)).count
     }
 
     func apply(_ snapshot: IslandSnapshot) {

@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-07-25
+Last updated: 2026-07-26
 
 > Short current view. For the deep timeline + feature log, see
 > [`PROJECT_STATUS.md`](./PROJECT_STATUS.md). For the docs index, see
@@ -16,6 +16,15 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Active work
 
+- **Unreleased Work + Agent Island trust pass** — Work now recommends an
+  explainable bounded Codex/Claude team from the stated outcome, enforces one
+  writer plus read-only specialists, queues assurance until explicit later
+  launch, guards repository and duplicate-start boundaries, and replaces the
+  permanent project sidebar with a collapsible operational run navigator. The
+  native Agent Island carries bounded role/team identity and uses a clean-room
+  Vibe Island-informed compact pill plus dense session rows while retaining
+  Rust-owned actions and privacy. Local focused checks are green; real-provider
+  dogfooding, release, and default enablement have not happened.
 - **v1.6.0 verification workbench release** — additive local evidence now
   connects retention, outcome calibration, managed Work runs, intent closure,
   real-product QA support, safe artifact previews, public graph packages,
@@ -70,11 +79,13 @@ workflow, and Repo Unpack remains the deepest intelligence investment.
 
 ## Next steps
 
-1. Capture the three authenticated benchmark outputs and run the production
+1. Dogfood the new Work team recommendation, queued assurance, restore, and
+   Agent Island flows with real Codex and Claude sessions before release.
+2. Capture the three authenticated benchmark outputs and run the production
    pipeline/adjudication workflow over the pinned 20-case corpus.
-2. Qualify archaeology against the exact target-scale corpus before changing
+3. Qualify archaeology against the exact target-scale corpus before changing
    its current bounds or publishing a scale claim.
-3. Keep Agent Island off by default until a separate promotion decision.
+4. Keep Agent Island off by default until a separate promotion decision.
 
 ## Recent shipped
 

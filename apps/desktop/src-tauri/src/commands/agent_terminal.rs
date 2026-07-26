@@ -40,6 +40,8 @@ const CODEX_WARP_PLUGIN: &str = "warp@codex-warp";
 const CODEX_WARP_ORCHESTRATION_PLUGIN: &str = "orchestration@codex-warp";
 const CLAUDE_HOOK_POLL_INTERVAL_MS: u64 = 25;
 const CLAUDE_HOOK_EVENT_LIMIT_CHARS: usize = 8_000;
+const MAX_AGENT_ROLE_LABEL_CHARS: usize = 80;
+const MAX_AGENT_TEAM_ID_CHARS: usize = 128;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -64,11 +66,43 @@ impl AgentProvider {
     }
 }
 
+fn bounded_agent_team_metadata(
+    role_label: Option<&str>,
+    team_id: Option<&str>,
+) -> AgentTeamMetadata {
+    AgentTeamMetadata {
+        role_label: sanitize_optional_metadata(role_label, MAX_AGENT_ROLE_LABEL_CHARS),
+        team_id: sanitize_optional_metadata(team_id, MAX_AGENT_TEAM_ID_CHARS),
+    }
+}
+
+fn sanitize_optional_metadata(value: Option<&str>, max_chars: usize) -> Option<String> {
+    let cleaned = value?
+        .chars()
+        .map(|character| {
+            if character.is_control() {
+                ' '
+            } else {
+                character
+            }
+        })
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    if cleaned.is_empty() {
+        None
+    } else {
+        Some(cleaned.chars().take(max_chars).collect())
+    }
+}
+
 struct RunningCodexAgent {
     tx: Sender<AgentPtyCommand>,
     provider: AgentProvider,
     pid: Option<u32>,
     cwd: String,
+    metadata: AgentTeamMetadata,
     started_at_ms: u64,
     output_tail: Arc<Mutex<String>>,
     last_output_at: Arc<Mutex<Instant>>,
@@ -78,6 +112,12 @@ struct RunningCodexAgent {
     transcript_path: Arc<Mutex<Option<String>>>,
     claude_response_dir: Option<PathBuf>,
     stop_requested: Arc<AtomicBool>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+pub(crate) struct AgentTeamMetadata {
+    pub role_label: Option<String>,
+    pub team_id: Option<String>,
 }
 
 struct ClaudeHookBridge {
@@ -92,6 +132,8 @@ pub(crate) struct LiveAgentSessionIdentity {
     pub provider: String,
     pub provider_session_id: Option<String>,
     pub project_path: String,
+    pub role_label: Option<String>,
+    pub team_id: Option<String>,
 }
 
 enum AgentPtyCommand {
@@ -133,6 +175,8 @@ fn resolve_live_agent_session_identity_from_registry(
         provider: session.provider.as_str().to_string(),
         provider_session_id,
         project_path: session.cwd.clone(),
+        role_label: session.metadata.role_label.clone(),
+        team_id: session.metadata.team_id.clone(),
     }))
 }
 
@@ -203,6 +247,8 @@ pub struct CodexAgentTerminalSnapshot {
     pub provider: AgentProvider,
     pub cwd: String,
     pub pid: Option<u32>,
+    pub role_label: Option<String>,
+    pub team_id: Option<String>,
     pub started_at_ms: u64,
     pub running: bool,
     pub output_tail: String,
@@ -343,6 +389,8 @@ fn collect_agent_snapshots(
             provider: session.provider,
             cwd: session.cwd.clone(),
             pid: session.pid,
+            role_label: session.metadata.role_label.clone(),
+            team_id: session.metadata.team_id.clone(),
             started_at_ms: session.started_at_ms,
             running: true,
             output_tail: session
@@ -386,6 +434,8 @@ pub fn start_codex_agent_terminal(
     approval_policy: Option<String>,
     resume_session_id: Option<String>,
     fork_session_id: Option<String>,
+    role_label: Option<String>,
+    team_id: Option<String>,
     cols: Option<u16>,
     rows: Option<u16>,
 ) -> Result<Value, String> {
@@ -401,6 +451,8 @@ pub fn start_codex_agent_terminal(
         approval_policy,
         resume_session_id,
         fork_session_id,
+        role_label,
+        team_id,
         cols,
         rows,
     )
@@ -419,6 +471,8 @@ pub fn start_agent_terminal(
     approval_policy: Option<String>,
     resume_session_id: Option<String>,
     fork_session_id: Option<String>,
+    role_label: Option<String>,
+    team_id: Option<String>,
     cols: Option<u16>,
     rows: Option<u16>,
 ) -> Result<Value, String> {
@@ -434,6 +488,8 @@ pub fn start_agent_terminal(
         approval_policy,
         resume_session_id,
         fork_session_id,
+        role_label,
+        team_id,
         cols,
         rows,
     )
@@ -452,6 +508,8 @@ fn start_agent_terminal_impl(
     approval_policy: Option<String>,
     resume_session_id: Option<String>,
     fork_session_id: Option<String>,
+    role_label: Option<String>,
+    team_id: Option<String>,
     cols: Option<u16>,
     rows: Option<u16>,
 ) -> Result<Value, String> {
@@ -459,6 +517,7 @@ fn start_agent_terminal_impl(
     if session_id.is_empty() {
         return Err("session_id is required".into());
     }
+    let metadata = bounded_agent_team_metadata(role_label.as_deref(), team_id.as_deref());
     {
         let sessions = codex_agents()
             .lock()
@@ -507,6 +566,7 @@ fn start_agent_terminal_impl(
             sandbox.as_deref(),
             approval_policy.as_deref(),
             profile_path.as_deref(),
+            metadata.clone(),
         ) {
             Ok(result) => return Ok(result),
             Err(error) => {
@@ -626,6 +686,7 @@ fn start_agent_terminal_impl(
                 provider,
                 pid,
                 cwd: cwd.to_string_lossy().to_string(),
+                metadata: metadata.clone(),
                 started_at_ms: current_unix_millis(),
                 output_tail: Arc::clone(&output_tail),
                 last_output_at: Arc::clone(&last_output_at),
@@ -881,6 +942,8 @@ fn start_agent_terminal_impl(
         "provider": provider,
         "cwd": cwd.to_string_lossy(),
         "pid": pid,
+        "role_label": metadata.role_label,
+        "team_id": metadata.team_id,
     }))
 }
 
@@ -2926,6 +2989,10 @@ mod tests {
                 provider: AgentProvider::Codex,
                 pid: Some(42),
                 cwd: "/tmp/project".to_string(),
+                metadata: AgentTeamMetadata {
+                    role_label: Some("Implementation".to_string()),
+                    team_id: Some("team-1".to_string()),
+                },
                 started_at_ms: 123,
                 output_tail,
                 last_output_at: Arc::new(Mutex::new(Instant::now())),
@@ -2945,6 +3012,8 @@ mod tests {
         assert_eq!(snapshot.provider, AgentProvider::Codex);
         assert_eq!(snapshot.cwd, "/tmp/project");
         assert_eq!(snapshot.pid, Some(42));
+        assert_eq!(snapshot.role_label.as_deref(), Some("Implementation"));
+        assert_eq!(snapshot.team_id.as_deref(), Some("team-1"));
         assert_eq!(snapshot.started_at_ms, 123);
         assert!(snapshot.running);
         assert_eq!(snapshot.output_tail, "recent terminal output");
@@ -2969,6 +3038,10 @@ mod tests {
         let mut agent = test_running_agent(tx, Some(42), Instant::now());
         agent.provider = AgentProvider::Claude;
         agent.cwd = "/tmp/authoritative-repo".to_string();
+        agent.metadata = AgentTeamMetadata {
+            role_label: Some("Verification".to_string()),
+            team_id: Some("team-1".to_string()),
+        };
         agent.codex_session_id = Arc::new(Mutex::new(Some("provider-session".to_string())));
         let mut sessions = HashMap::new();
         sessions.insert("terminal-1".to_string(), agent);
@@ -2979,6 +3052,8 @@ mod tests {
 
         assert_eq!(identity.provider, "claude");
         assert_eq!(identity.project_path, "/tmp/authoritative-repo");
+        assert_eq!(identity.role_label.as_deref(), Some("Verification"));
+        assert_eq!(identity.team_id.as_deref(), Some("team-1"));
         assert_eq!(
             identity.provider_session_id.as_deref(),
             Some("provider-session")
@@ -3010,6 +3085,43 @@ mod tests {
         assert_eq!(
             events.last().expect("last").seq,
             AGENT_EVENT_LOG_LIMIT as u64 + 4
+        );
+    }
+
+    #[test]
+    fn agent_team_metadata_is_optional_sanitized_and_bounded() {
+        assert_eq!(
+            bounded_agent_team_metadata(None, None),
+            AgentTeamMetadata::default()
+        );
+        assert_eq!(
+            bounded_agent_team_metadata(
+                Some("  Verification\n\t agent\u{0000} "),
+                Some("  team-\n one  ")
+            ),
+            AgentTeamMetadata {
+                role_label: Some("Verification agent".to_string()),
+                team_id: Some("team- one".to_string()),
+            }
+        );
+        let bounded = bounded_agent_team_metadata(Some(&"r".repeat(100)), Some(&"t".repeat(200)));
+        assert_eq!(
+            bounded
+                .role_label
+                .as_deref()
+                .map(|value| value.chars().count()),
+            Some(MAX_AGENT_ROLE_LABEL_CHARS)
+        );
+        assert_eq!(
+            bounded
+                .team_id
+                .as_deref()
+                .map(|value| value.chars().count()),
+            Some(MAX_AGENT_TEAM_ID_CHARS)
+        );
+        assert_eq!(
+            bounded_agent_team_metadata(Some(" \n "), Some("\u{0000}")),
+            AgentTeamMetadata::default()
         );
     }
 
@@ -3057,6 +3169,7 @@ mod tests {
             provider: AgentProvider::Codex,
             pid,
             cwd: "/tmp/project".to_string(),
+            metadata: AgentTeamMetadata::default(),
             started_at_ms: 0,
             output_tail: Arc::new(Mutex::new(String::new())),
             last_output_at: Arc::new(Mutex::new(last_output_at)),

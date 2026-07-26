@@ -57,6 +57,8 @@ struct AgentSession: Codable, Identifiable, Equatable {
     let eventID: String
     let provider: String
     let project: String
+    let roleLabel: String?
+    let teamID: String?
     let status: AgentStatus
     let reason: String
     let confirmed: Bool
@@ -65,12 +67,20 @@ struct AgentSession: Codable, Identifiable, Equatable {
     let capabilities: AgentCapabilities
 
     var id: String { sessionID }
+    var providerDisplayName: String { provider == "claude" ? "Claude" : "Codex" }
+    var displayName: String { roleLabel ?? providerDisplayName }
+    var teamDisplayName: String? { teamID.map { _ in "Team member" } }
+    var accessibilitySubject: String {
+        roleLabel.map { "\($0) agent using \(providerDisplayName)" } ?? providerDisplayName
+    }
 
     enum CodingKeys: String, CodingKey {
         case sessionID = "session_id"
         case eventID = "event_id"
         case provider
         case project
+        case roleLabel = "role_label"
+        case teamID = "team_id"
         case status
         case reason
         case confirmed
@@ -86,8 +96,11 @@ struct IslandAccessibilitySnapshot: Equatable {
 }
 
 func accessibilitySnapshot(for session: AgentSession, expanded: Bool) -> IslandAccessibilitySnapshot {
-    let provider = session.provider == "claude" ? "Claude" : "Codex"
-    let summary = "\(provider), \(session.project), \(session.status.label), \(session.reason)"
+    let provider = session.providerDisplayName
+    let role = session.roleLabel.map { "\($0) role, " } ?? ""
+    let team = session.teamID.map { _ in ", team member" } ?? ""
+    let summary =
+        "\(role)\(provider), \(session.project)\(team), \(session.status.label), \(session.reason)"
     guard expanded else {
         return IslandAccessibilitySnapshot(
             summary: "\(summary). Expand agent island.",
@@ -97,20 +110,20 @@ func accessibilitySnapshot(for session: AgentSession, expanded: Bool) -> IslandA
 
     var actions = [String]()
     if session.capabilities.canFocus {
-        actions.append("Open \(provider) in \(session.project)")
+        actions.append("Open \(session.accessibilitySubject) in \(session.project)")
     }
     if session.capabilities.canDeny {
-        actions.append("Deny \(provider) request")
+        actions.append("Deny \(session.accessibilitySubject) request")
     }
     if session.capabilities.canApprove {
-        actions.append("Approve \(provider) request once")
+        actions.append("Approve \(session.accessibilitySubject) request once")
     }
     if session.capabilities.canReply {
-        actions.append("Reply to \(provider)")
-        actions.append("Send reply to \(provider)")
+        actions.append("Reply to \(session.accessibilitySubject)")
+        actions.append("Send reply to \(session.accessibilitySubject)")
     }
     if session.capabilities.canDismiss {
-        actions.append("Dismiss \(provider) status")
+        actions.append("Dismiss \(session.accessibilitySubject) status")
     }
     return IslandAccessibilitySnapshot(summary: summary, actions: actions)
 }

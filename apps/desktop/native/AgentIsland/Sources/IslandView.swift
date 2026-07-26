@@ -2,13 +2,13 @@ import AppKit
 import SwiftUI
 
 private enum IslandPalette {
-    static let background = Color(red: 0.035, green: 0.038, blue: 0.042)
-    static let surface = Color(red: 0.07, green: 0.075, blue: 0.082)
+    static let background = Color.black
+    static let surface = Color.white.opacity(0.075)
     static var line: Color {
-        Color.white.opacity(NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast ? 0.28 : 0.1)
+        Color.white.opacity(NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast ? 0.32 : 0.12)
     }
     static let primary = Color.white.opacity(0.94)
-    static let secondary = Color.white.opacity(0.58)
+    static let secondary = Color.white.opacity(0.67)
     static let amber = Color(red: 0.83, green: 0.63, blue: 0.22)
     static let green = Color(red: 0.38, green: 0.83, blue: 0.65)
     static let red = Color(red: 0.93, green: 0.42, blue: 0.43)
@@ -27,12 +27,8 @@ struct IslandView: View {
             }
         }
         .background(IslandPalette.background)
-        .clipShape(RoundedRectangle(cornerRadius: model.expanded ? 22 : 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: model.expanded ? 22 : 16, style: .continuous)
-                .stroke(IslandPalette.line, lineWidth: 1)
-        )
-        .shadow(color: Color.black.opacity(0.45), radius: 24, x: 0, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: model.expanded ? 18 : 14, style: .continuous))
+        .shadow(color: Color.black.opacity(0.55), radius: 8, x: 0, y: 4)
         .transaction { transaction in
             if reduceMotion {
                 transaction.animation = nil
@@ -114,21 +110,22 @@ struct IslandView: View {
                 .frame(height: 1)
 
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
-                    ForEach(model.groupedSessions, id: \.0) { project, sessions in
-                        VStack(alignment: .leading, spacing: 7) {
-                            Text(project.uppercased())
-                                .font(.system(size: 9, weight: .semibold))
-                                .tracking(1.2)
+                LazyVStack(alignment: .leading, spacing: 12) {
+                    ForEach(model.groupedSessions) { group in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(group.label)
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(IslandPalette.secondary)
-                                .padding(.horizontal, 3)
-                            ForEach(sessions) { session in
+                                .padding(.horizontal, 10)
+                                .padding(.bottom, 2)
+                            ForEach(group.sessions) { session in
                                 sessionRow(session)
                             }
                         }
                     }
                 }
-                .padding(12)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 10)
             }
             .frame(maxHeight: 390)
         }
@@ -141,11 +138,14 @@ struct IslandView: View {
 
     private var collapsedTitle: String {
         guard let session = model.primarySession else { return "CodeVetter" }
-        return "\(providerName(session.provider)) · \(session.status.label)"
+        return "\(session.displayName) · \(session.status.label)"
     }
 
     private var collapsedSubtitle: String {
         guard let session = model.primarySession else { return "No active agents" }
+        if session.roleLabel != nil {
+            return "\(session.providerDisplayName) · \(session.project) · \(session.reason)"
+        }
         return "\(session.project) · \(session.reason)"
     }
 
@@ -158,24 +158,8 @@ struct IslandView: View {
         let help = model.sessions.filter { $0.status == .needsHelp }.count
         let working = model.sessions.filter { $0.status == .working }.count
         if help > 0 { return "\(help) need\(help == 1 ? "s" : "") you · \(working) working" }
-        if working > 0 { return "\(working) working across \(model.groupedSessions.count) projects" }
+        if working > 0 { return "\(working) working across \(model.projectCount) projects" }
         return "\(model.sessions.count) recent sessions"
-    }
-
-    private func providerName(_ provider: String) -> String {
-        provider == "claude" ? "Claude" : "Codex"
-    }
-
-    private func providerMark(_ provider: String) -> some View {
-        ZStack {
-            Circle()
-                .fill(Color.white.opacity(0.055))
-                .frame(width: 30, height: 30)
-            Image(systemName: provider == "claude" ? "sparkles" : "chevron.left.forwardslash.chevron.right")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(provider == "claude" ? IslandPalette.amber : IslandPalette.green)
-        }
-        .accessibilityHidden(true)
     }
 
     private func statusDot(_ status: AgentStatus?) -> some View {
@@ -202,33 +186,52 @@ private struct AgentSessionRow: View {
     let session: AgentSession
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 11) {
-                providerMark
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 7) {
-                        Text(providerName)
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(IslandPalette.primary)
-                        Text(session.status.label)
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(statusColor)
-                        Text(ageLabel)
-                            .font(.system(size: 10))
-                            .foregroundColor(IslandPalette.secondary)
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 8) {
+                statusGlyph
+                Text("\(session.project) · \(session.displayName)")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(IslandPalette.primary)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                metadataPill(providerName, color: IslandPalette.secondary)
+                metadataPill(session.status.label, color: statusColor)
+                Text(ageLabel)
+                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .foregroundColor(IslandPalette.secondary)
+                    .monospacedDigit()
+            }
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(session.reason)
+                    .font(.system(size: 11))
+                    .foregroundColor(session.status == .needsHelp ? statusColor : IslandPalette.secondary)
+                    .lineLimit(2)
+                Spacer(minLength: 8)
+                if session.capabilities.canDeny {
+                    Button("Deny") {
+                        model.send(action: "deny", for: session)
                     }
-                    Text(session.reason)
-                        .font(.system(size: 11))
-                        .foregroundColor(IslandPalette.secondary)
-                        .lineLimit(2)
+                    .buttonStyle(IslandActionButtonStyle())
+                    .accessibilityLabel("Deny \(session.accessibilitySubject) request")
                 }
-                Spacer(minLength: 6)
+                if session.capabilities.canApprove {
+                    Button("Approve once") {
+                        model.send(action: "approve", for: session)
+                    }
+                    .buttonStyle(IslandPrimaryButtonStyle())
+                    .accessibilityLabel(
+                        "Approve \(session.accessibilitySubject) request once"
+                    )
+                }
                 if session.capabilities.canFocus {
                     Button("Open") {
                         model.send(action: "focus_session", for: session)
                     }
                     .buttonStyle(IslandActionButtonStyle())
-                    .accessibilityLabel("Open \(providerName) in \(session.project)")
+                    .accessibilityLabel(
+                        "Open \(session.accessibilitySubject) in \(session.project)"
+                    )
                 }
                 if session.capabilities.canDismiss {
                     Button(action: { model.send(action: "dismiss", for: session) }) {
@@ -236,28 +239,8 @@ private struct AgentSessionRow: View {
                             .font(.system(size: 9, weight: .semibold))
                     }
                     .buttonStyle(IslandIconButtonStyle())
-                    .accessibilityLabel("Dismiss \(providerName) status")
+                    .accessibilityLabel("Dismiss \(session.accessibilitySubject) status")
                 }
-            }
-
-            if session.capabilities.canApprove || session.capabilities.canDeny {
-                HStack(spacing: 8) {
-                if session.capabilities.canDeny {
-                    Button("Deny") {
-                        model.send(action: "deny", for: session)
-                    }
-                    .buttonStyle(IslandActionButtonStyle())
-                    .accessibilityLabel("Deny \(providerName) request")
-                }
-                if session.capabilities.canApprove {
-                    Button("Approve once") {
-                        model.send(action: "approve", for: session)
-                    }
-                    .buttonStyle(IslandPrimaryButtonStyle())
-                    .accessibilityLabel("Approve \(providerName) request once")
-                }
-                }
-                .padding(.leading, 41)
             }
 
             if session.capabilities.canReply {
@@ -270,22 +253,23 @@ private struct AgentSessionRow: View {
                         .frame(height: 30)
                         .background(Color.black.opacity(0.28))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        .accessibilityLabel("Reply to \(providerName)")
+                        .accessibilityLabel("Reply to \(session.accessibilitySubject)")
                     Button("Send", action: sendReply)
                         .buttonStyle(IslandPrimaryButtonStyle())
                         .disabled(replyValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        .accessibilityLabel("Send reply to \(providerName)")
+                        .accessibilityLabel("Send reply to \(session.accessibilitySubject)")
                 }
-                .padding(.leading, 41)
+                .padding(.leading, 18)
             }
         }
-        .padding(12)
-        .background(IslandPalette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 13, style: .continuous)
-                .stroke(statusColor.opacity(0.22), lineWidth: 1)
+        .padding(.horizontal, 10)
+        .padding(.vertical, session.status == .needsHelp ? 9 : 7)
+        .background(
+            session.status == .needsHelp
+                ? IslandPalette.amber.opacity(0.075)
+                : Color.clear
         )
+        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibilitySnapshot(for: session, expanded: true).summary)
     }
@@ -309,7 +293,7 @@ private struct AgentSessionRow: View {
     }
 
     private var providerName: String {
-        session.provider == "claude" ? "Claude" : "Codex"
+        session.providerDisplayName
     }
 
     private var ageLabel: String {
@@ -322,20 +306,33 @@ private struct AgentSessionRow: View {
         return "\(seconds / 3_600)h"
     }
 
-    private var providerMark: some View {
-        ZStack {
-            Circle()
-                .fill(Color.white.opacity(0.055))
-                .frame(width: 30, height: 30)
-            Image(
-                systemName: session.provider == "claude"
-                    ? "sparkles"
-                    : "chevron.left.forwardslash.chevron.right"
-            )
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundColor(session.provider == "claude" ? IslandPalette.amber : IslandPalette.green)
+    private var statusGlyph: some View {
+        Image(systemName: statusSymbol)
+            .font(.system(size: 9, weight: .bold))
+            .foregroundColor(statusColor)
+            .frame(width: 12)
+            .accessibilityHidden(true)
+    }
+
+    private var statusSymbol: String {
+        switch session.status {
+        case .needsHelp: return "exclamationmark.circle.fill"
+        case .failed: return "xmark.circle.fill"
+        case .completed: return "checkmark.circle.fill"
+        case .working: return "circle.fill"
+        case .paused: return "pause.circle.fill"
+        case .disconnected: return "wifi.slash"
         }
-        .accessibilityHidden(true)
+    }
+
+    private func metadataPill(_ label: String, color: Color) -> some View {
+        Text(label)
+            .font(.system(size: 9, weight: .medium))
+            .foregroundColor(color)
+            .padding(.horizontal, 6)
+            .frame(height: 18)
+            .background(color.opacity(0.1))
+            .clipShape(Capsule())
     }
 
     private var statusColor: Color {

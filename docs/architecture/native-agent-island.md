@@ -58,9 +58,16 @@ Snapshots contain only bounded presentation state:
 
 - local session and event identifiers;
 - provider and project display name;
+- optional Work-owned team identity and role label;
 - status and short reason;
 - event-specific capabilities;
 - voice preferences.
+
+Role labels are capped at 80 characters and team identifiers at 128 characters.
+Both are whitespace-normalized and stripped of control characters before they
+enter the running-session registry. The 64-session maximum snapshot remains
+inside the existing 64 KiB protocol envelope. Legacy sessions omit both fields
+and render as ordinary unteamed provider sessions.
 
 The helper returns typed intents such as focus, reply, approve, deny, snooze,
 and dismiss. Rust revalidates the current pending event before doing anything.
@@ -90,8 +97,24 @@ Codex approval parity.
 ## Presentation and speech
 
 The helper uses public AppKit and SwiftUI APIs. It presents a compact,
-non-activating top-center panel below the display's notch/menu-bar safe boundary
-and an expanded project-grouped session list.
+non-activating true-black status pill below the display's notch/menu-bar safe
+boundary. Expansion uses dense borderless session rows rather than a dashboard
+card grid: project and Work role lead each row, bounded provider/status/recency
+metadata stays secondary, and the short lifecycle reason never includes prompt
+or terminal content.
+
+Work can launch one confirmed implementation agent plus read-only specialists
+under a shared team identity. Sessions are grouped first by project and then by
+team when multiple teams share one checkout; the helper derives neutral
+`Team 1` / `Team 2` labels without exposing opaque identifiers or outcome text.
+Confirmed questions and permissions receive the strongest inline treatment and
+only their Rust-advertised actions render. Completion remains a calm row with
+an exact Open action.
+
+This interaction hierarchy was informed by the public Vibe Island product, but
+the implementation is clean-room CodeVetter code. No proprietary Vibe Island
+assets or source, and no GPL-licensed Open Island source, are included.
+
 Needs-help, failure, completion, working, paused, and disconnected states have a
 stable priority order. No animation or timer runs merely to keep the panel
 alive.
@@ -152,10 +175,12 @@ cargo test agent_stream --lib
 cargo test claude_hook --lib
 ```
 
-Coverage includes protocol bounds, unsupported/stale/consumed actions, privacy
-fields, deterministic priority, helper crash/disconnect isolation, Claude hook
-identity and response shape, Codex app-server fixtures, Claude stream/hook
-fixtures, and Swift protocol decoding.
+Coverage includes protocol bounds (including the maximum team-labelled
+snapshot), optional metadata sanitization, legacy omission, PTY and Codex
+app-server identity, unsupported/stale/consumed actions, privacy fields,
+deterministic team grouping and priority, helper crash/disconnect isolation,
+Claude hook identity and response shape, Codex app-server fixtures, Claude
+stream/hook fixtures, Swift protocol decoding, and role-aware accessibility.
 
 The following remain qualification gates before default enablement:
 

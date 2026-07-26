@@ -17,6 +17,8 @@ use super::agent_terminal::{resolve_live_agent_session_identity, AgentTerminalEv
 pub const NATIVE_ISLAND_PROTOCOL_VERSION: u16 = 1;
 pub const NATIVE_ISLAND_MAX_MESSAGE_BYTES: usize = 64 * 1024;
 const MAX_IDENTIFIER_CHARS: usize = 256;
+const MAX_ROLE_LABEL_CHARS: usize = 80;
+const MAX_TEAM_ID_CHARS: usize = 128;
 const MAX_SESSIONS: usize = 64;
 const MAX_RECEIPTS: usize = 200;
 const MAX_RECEIPT_STORAGE_BYTES: usize = 256 * 1024;
@@ -49,6 +51,10 @@ pub struct NativeAgentSession {
     pub event_id: String,
     pub provider: String,
     pub project: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub role_label: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_id: Option<String>,
     pub status: NativeAgentStatus,
     pub reason: String,
     pub confirmed: bool,
@@ -343,6 +349,14 @@ pub fn ingest_agent_terminal_event(app: &AppHandle, event: &AgentTerminalEvent) 
                         event_id: event_id.clone(),
                         provider: identity.provider,
                         project: project_label(&identity.project_path),
+                        role_label: identity
+                            .role_label
+                            .as_deref()
+                            .and_then(|value| non_empty_bounded(value, MAX_ROLE_LABEL_CHARS)),
+                        team_id: identity
+                            .team_id
+                            .as_deref()
+                            .and_then(|value| non_empty_bounded(value, MAX_TEAM_ID_CHARS)),
                         status: NativeAgentStatus::Working,
                         reason: "Running".to_string(),
                         confirmed: true,
@@ -937,6 +951,8 @@ fn send_snapshot_locked(state: &mut NativeIslandRuntime, preview: bool) -> Resul
             event_id: "preview:ready".to_string(),
             provider: "codex".to_string(),
             project: "CodeVetter".to_string(),
+            role_label: None,
+            team_id: None,
             status: NativeAgentStatus::Completed,
             reason: "Native Agent Island is ready".to_string(),
             confirmed: true,
@@ -1380,6 +1396,8 @@ mod tests {
                 event_id: "session-1:permission_request:req:part:3".to_string(),
                 provider: "claude".to_string(),
                 project: "CodeVetter".to_string(),
+                role_label: Some("Verification".to_string()),
+                team_id: Some("team-1".to_string()),
                 status: NativeAgentStatus::NeedsHelp,
                 reason: "Needs approval".to_string(),
                 confirmed: true,
@@ -1403,6 +1421,134 @@ mod tests {
     }
 
     #[test]
+    fn native_session_metadata_is_additive_and_legacy_safe() {
+        let legacy = serde_json::json!({
+            "session_id": "session-legacy",
+            "event_id": "event-legacy",
+            "provider": "codex",
+            "project": "CodeVetter",
+            "status": "working",
+            "reason": "Running",
+            "confirmed": true,
+            "started_at_ms": 1,
+            "updated_at_ms": 2,
+            "capabilities": NativeAgentCapabilities::default(),
+        });
+        let legacy_session: NativeAgentSession =
+            serde_json::from_value(legacy).expect("legacy native session");
+        assert_eq!(legacy_session.role_label, None);
+        assert_eq!(legacy_session.team_id, None);
+        let legacy_encoded = serde_json::to_value(&legacy_session).expect("legacy snapshot");
+        assert!(legacy_encoded.get("role_label").is_none());
+        assert!(legacy_encoded.get("team_id").is_none());
+
+        let session = NativeAgentSession {
+            role_label: Some("r".repeat(MAX_ROLE_LABEL_CHARS)),
+            team_id: Some("t".repeat(MAX_TEAM_ID_CHARS)),
+            ..legacy_session
+        };
+        let encoded = serde_json::to_value(&session).expect("team snapshot");
+        assert_eq!(
+            encoded["role_label"]
+                .as_str()
+                .map(|value| value.chars().count()),
+            Some(MAX_ROLE_LABEL_CHARS)
+        );
+        assert_eq!(
+            encoded["team_id"]
+                .as_str()
+                .map(|value| value.chars().count()),
+            Some(MAX_TEAM_ID_CHARS)
+        );
+        let decoded: NativeAgentSession =
+            serde_json::from_value(encoded).expect("current native session");
+        assert_eq!(decoded.capabilities, session.capabilities);
+        assert_eq!(decoded.session_id, session.session_id);
+        assert_eq!(decoded.event_id, session.event_id);
+    }
+
+    #[test]
+    fn maximum_team_metadata_snapshot_fits_protocol_limit() {
+        let sessions = (0..MAX_SESSIONS)
+            .map(|index| NativeAgentSession {
+                session_id: format!("session-{index}"),
+                event_id: format!("session-{index}:started:0"),
+                provider: if index % 2 == 0 {
+                    "codex".to_string()
+                } else {
+                    "claude".to_string()
+                },
+                project: "CodeVetter".to_string(),
+                role_label: Some("r".repeat(MAX_ROLE_LABEL_CHARS)),
+                team_id: Some("t".repeat(MAX_TEAM_ID_CHARS)),
+                status: NativeAgentStatus::Working,
+                reason: "Running".to_string(),
+                confirmed: true,
+                started_at_ms: 1,
+                updated_at_ms: 2,
+                capabilities: default_capabilities(),
+                request_id: None,
+            })
+            .collect();
+        let envelope = NativeOutboundEnvelope {
+            v: NATIVE_ISLAND_PROTOCOL_VERSION,
+            seq: 1,
+            sent_at_ms: 1,
+            kind: "snapshot".to_string(),
+            payload: serde_json::to_value(NativeIslandSnapshot {
+                sessions,
+                settings: NativeIslandSettings::default(),
+                preview: false,
+            })
+            .expect("snapshot payload"),
+        };
+        let encoded = serde_json::to_vec(&envelope).expect("snapshot envelope");
+        assert!(
+            encoded.len() <= NATIVE_ISLAND_MAX_MESSAGE_BYTES,
+            "{} bytes exceeds protocol limit",
+            encoded.len()
+        );
+    }
+
+    #[test]
+    fn same_team_sessions_keep_exact_focus_identity() {
+        let _guard = test_guard();
+        let mut state = NativeIslandRuntime::default();
+        for (session_id, event_id) in [
+            ("implementation-session", "implementation-event"),
+            ("verification-session", "verification-event"),
+        ] {
+            state.pending.insert(
+                event_id.to_string(),
+                PendingNativeAction {
+                    session_id: session_id.to_string(),
+                    event_id: event_id.to_string(),
+                    provider: "codex".to_string(),
+                    request_id: None,
+                    capabilities: NativeAgentCapabilities {
+                        can_focus: true,
+                        ..NativeAgentCapabilities::default()
+                    },
+                },
+            );
+        }
+        *runtime().lock().expect("state") = state;
+
+        assert!(validate_pending_action(
+            "focus_session",
+            "implementation-session",
+            "implementation-event"
+        )
+        .is_ok());
+        assert!(validate_pending_action(
+            "focus_session",
+            "verification-session",
+            "implementation-event"
+        )
+        .is_err());
+    }
+
+    #[test]
     fn helper_failure_is_isolated_from_owned_agent_sessions() {
         let now = current_unix_millis();
         let session = NativeAgentSession {
@@ -1410,6 +1556,8 @@ mod tests {
             event_id: "event-1".to_string(),
             provider: "codex".to_string(),
             project: "CodeVetter".to_string(),
+            role_label: None,
+            team_id: None,
             status: NativeAgentStatus::Working,
             reason: "Running".to_string(),
             confirmed: true,
