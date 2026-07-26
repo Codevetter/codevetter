@@ -4,11 +4,20 @@ Last updated: 2026-07-26
 
 ## Why / What
 
-CodeVetter is a local-first desktop workbench for checking agent-generated code. The active product direction is evidence-backed software quality review: code review, bug finding, synthetic user QA, replay, and debugging surfaces that help a human decide whether agent-written work is actually shippable.
+CodeVetter is an execution-backed verification and evaluation system for coding
+agents. It determines whether an agent completed a software task correctly
+using reproducible execution evidence, not another LLM opinion.
 
-Product direction has been consolidated around agent-written code verification, evidence levels, timelines, and explainable codebase history.
+The core loop is **task → agent change → executable verification → evidence →
+measurable verdict**. The durable assets are the benchmark corpus, evaluation
+harness, deterministic and calibrated graders, failure taxonomy, and historical
+regression system. CLI/MCP and a machine-readable verification bundle are the
+primary product surfaces; the desktop application is a local viewer.
 
-In scope: code review, bug finding, agent-written code verification, debugging/replay, synthetic user QA, AI step-through debugging, codebase history explanation. Out of scope: broad IDE replacement, generic "code intelligence" surfaces (see section 6 for parked items).
+Core scope starts with TypeScript/Node web applications and browser/API
+behavior. **Core Mode** protects that roadmap. **Side Quest Mode** permits
+explicitly requested non-core work, but it must stay bounded and must not
+silently redefine or displace the core.
 
 ## Dependencies
 
@@ -29,6 +38,11 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-26 — Product direction lock:** pivoted active development from a
+  broad AI code-review workbench to empirical verification infrastructure for
+  coding agents. New work must strengthen executable outcome verification,
+  evaluation quality, reproducibility, or measured reliability; shipped
+  workbench features remain available but are not active investment areas.
 - **2026-07-26 (shipped in v1.7.0) — Event-driven Agent Island presentation:** adapted the strongest public Vibe Island/Open Island notification lifecycle into CodeVetter's existing supervised helper without importing their independent discovery stack or moving provider authority out of Rust. New confirmed attention, failure, and completion event identities can present the island automatically without activating CodeVetter or stealing keyboard focus; user-opened expansion remains authoritative; actionable attention stays visible until resolution; informational presentation auto-collapses after a pointer-safe ten-second delay. The collapsed pill now shows up to three priority-ordered role/provider markers plus a bounded overflow count with complete non-colour accessibility context. Swift self-tests cover novelty, priority, preview suppression, manual ownership, resolution, focus policy, pointer-safe collapse, and rail ordering. The release preflight's 120-snapshot qualification passes 10 Rust tests and Swift self-tests at 79 ms p95, 0.04% measured idle CPU, 54.47 MiB RSS, zero rescans, zero false actions, crash fallback, and session continuity. The harness discards one post-burst `ps` warm-up observation after both the old and new helpers showed the first sample included render-tail activity. Agent Island remains off by default in v1.7.0.
 - **2026-07-26 (shipped in v1.7.0) — Work agent-team recommendations and Agent Island augmentation:** Work now turns a bounded outcome into an explainable deterministic team of at most three Codex/Claude roles without a model, network call, or repository scan. One implementation agent may write; investigation and Product UX specialists are read-only; post-implementation Assurance remains visibly queued until a separate explicit launch. Multi-agent launch requires a known concrete repository, ignores duplicate confirmation, gives only the primary session Board attachment authority, preserves queued roles through local workspace restore, and uses a collapsible Needs attention / Active / Recent run navigator instead of permanent project nesting. Optional bounded role/team metadata survives both Codex transports and the Claude/PTy path into Agent Island. The native helper remains presentation-only but now uses a clean-room Vibe Island-informed compact black pill and dense team/session rows with dominant confirmed actions, calm completion, stable same-project team grouping, and exact jump-back. Local qualification passes four recommendation tests, TypeScript, Biome, all 18 Work Playwright journeys, 13 focused Rust tests, the Swift self-test, strict OpenSpec validation, and diff checks. No production dependency, database migration, or provider authority changed.
 - **2026-07-25 (shipped in v1.6.0) — Verification workbench completion:** added
@@ -195,27 +209,40 @@ Internal (fleet):
 
 ### Planned Next
 
-1. Dogfood the new Work recommendation, staged-specialist, restore, and native
-   Agent Island flows against real Codex and Claude sessions before any release
-   or default-enablement decision.
-2. Continue Repo Unpacked calibration until enough compatible downstream
-   review, QA, procedure, and bug outcomes support qualified guidance.
-3. Capture authenticated CodeVetter, CodeRabbit free-tier, and Claude Code
-   `/review` artifacts, then run production CodeVetter plus adjudication over
-   the pinned 20-case agent-PR corpus.
-4. Run archaeology on the exact target-scale eligible corpus before changing
-   the persisted input bound or authorizing an 18M-line/100,000-rule claim.
-5. Treat hosted public graph publication as a separate privacy-reviewed track;
-   the workbench export remains local and has no upload side effect.
+1. Make CLI/MCP the primary workflow, keep desktop as a viewer, and remove
+   unsupported comparative or "offline" claims from public positioning.
+2. Build 30–50 realistic, reproducible TypeScript/Node agent tasks with hidden
+   acceptance checks, known-good solutions, and classified failure modes.
+3. Run repeated trials across at least three agent configurations and compare
+   against at least two existing review/verification workflows. Measure task
+   success, regressions, catch rate, precision, setup success, runtime, cost,
+   and consistency.
+4. Put the system in the hands of ten active coding-agent users, then publish
+   the dataset, methodology, failure taxonomy, reproducibility instructions,
+   and results.
 
 ### Deferred / Parked
 
-- Broad IDE replacement behavior is parked; CodeVetter should stay focused on verification and review.
+- Agent Island, general agent conversations, multi-agent mission control, usage
+  dashboards, audience simulation, generic history explanation, provider-picker
+  polish, new visual surfaces, and generic static-review improvements are
+  frozen as active investment areas.
+- Broad IDE replacement behavior is parked; CodeVetter should stay focused on
+  execution-backed verification and evaluation.
 - Generic synthetic browser testing for every app type is deferred until the supported local-app matrix is explicit.
 - Marketplace, hosted multi-tenant collaboration, and CI enforcement are deferred behind a stronger local evidence loop.
-- Real agent-PR X-Ray dogfooding, independently adjudicated corpus promotion,
-  public gallery deployment, and external catch-rate claims are parked until an
-  explicit owner decision. The deterministic local export remains shipped.
+- Hosted public graph publication and target-scale archaeology remain separate
+  tracks and must not displace corpus and harness work.
+
+### Decision Gate
+
+By **2026-09-06**, continue treating CodeVetter as a product only if evidence
+includes meaningful signals such as repeat use by ten developers, three team
+pilots, five real would-have-shipped bugs caught, material improvement over
+existing workflows and current precision, external benchmark contributions, or
+hiring/customer conversations caused by the published work. Otherwise preserve
+the corpus and harness as a portfolio/research project and stop adding product
+features.
 
 ### Blocked
 
