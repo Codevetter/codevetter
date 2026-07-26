@@ -5,7 +5,31 @@
 Also read and follow the shared fleet-level agent standard at `../AGENTS.md`. Treat this repository as owned product code: protect production stability, keep changes scoped, verify work, and record durable follow-up tasks when something remains incomplete or blocked.
 
 ## Purpose
-AI desktop code review tool for agent-generated code — runs offline as a Tauri binary, reviews diffs with pluggable LLM providers.
+CodeVetter is an execution-backed verification and evaluation system for coding
+agents. It determines whether an agent completed a software task correctly
+using reproducible runtime evidence, not another LLM opinion. CLI/MCP and the
+machine-readable verification bundle are the primary product surfaces; the
+desktop app is a local viewer.
+
+## Product focus
+
+- The core loop is: **task → agent change → executable verification → evidence
+  → measurable verdict**.
+- Enter **Core Mode** when the owner says `core`, `focus`, `verification`,
+  `evals`, or asks for the next core priority. In Core Mode, only advance the
+  benchmark corpus, evaluation harness, deterministic graders, sandbox/runtime
+  evidence, failure taxonomy, regression comparisons, or reliability/cost/
+  latency measurement.
+- In Core Mode, actively redirect feature accumulation: no Agent Island,
+  general agent chat/mission control, usage dashboards, audience simulation,
+  generic history explanation, model-picker polish, new visual surfaces, or
+  generic static-review work unless it is required by the verification loop.
+- Enter **Side Quest Mode** when the owner explicitly says `side quest` or asks
+  for non-core work. Side quests are allowed: keep them bounded, label them as
+  side work, and do not let them silently change the core roadmap. Return to
+  Core Mode only when the owner signals it.
+- Prefer depth in TypeScript/Node web tasks with browser and API behavior before
+  adding languages or domains.
 
 ## Stack
 - Framework: Tauri 2 (Rust backend) + React 19 + Vite (desktop frontend)
