@@ -111,9 +111,25 @@ Confirmed questions and permissions receive the strongest inline treatment and
 only their Rust-advertised actions render. Completion remains a calm row with
 an exact Open action.
 
-This interaction hierarchy was informed by the public Vibe Island product, but
-the implementation is clean-room CodeVetter code. No proprietary Vibe Island
-assets or source, and no GPL-licensed Open Island source, are included.
+The collapsed pill exposes up to three role/provider markers in trusted
+attention/recency order and one bounded overflow count. Marker accessibility
+retains the full role or provider, project, and lifecycle state without
+exposing prompts, output, commands, paths, model responses, outcome text, or
+opaque team identifiers.
+
+New confirmed attention, failure, and completion events can present the
+expanded island automatically without activating CodeVetter or moving keyboard
+focus. User-owned expansion is separate and cannot be replaced by lifecycle
+updates. Confirmed attention remains open until its exact event resolves or the
+user collapses it. Informational failure and completion presentation collapses
+after ten seconds; pointer entry cancels the pending dismissal and pointer exit
+starts a fresh bounded delay.
+
+This hierarchy was informed by the public Vibe Island product and by Open
+Island's public GPLv3 notification-surface lifecycle. The behavior is adapted
+inside CodeVetter's existing supervised helper rather than importing Open
+Island source files, independent discovery/runtime architecture, assets,
+branding, or product strings.
 
 Needs-help, failure, completion, working, paused, and disconnected states have a
 stable priority order. No animation or timer runs merely to keep the panel
@@ -180,7 +196,14 @@ snapshot), optional metadata sanitization, legacy omission, PTY and Codex
 app-server identity, unsupported/stale/consumed actions, privacy fields,
 deterministic team grouping and priority, helper crash/disconnect isolation,
 Claude hook identity and response shape, Codex app-server fixtures, Claude
-stream/hook fixtures, Swift protocol decoding, and role-aware accessibility.
+stream/hook fixtures, Swift protocol decoding, role-aware accessibility,
+automatic event novelty and resolution, manual presentation ownership, preview
+suppression, pointer-safe informational collapse, and team-rail ordering.
+
+The local repeated-use harness takes one untallied macOS `ps` observation after
+the render burst before recording idle CPU. This prevents the first sampler
+observation from treating the tail of the 120-snapshot render workload as
+steady idle usage.
 
 The following remain qualification gates before default enablement:
 

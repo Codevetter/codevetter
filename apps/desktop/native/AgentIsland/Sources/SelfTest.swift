@@ -135,6 +135,207 @@ func runSelfTests() -> Int32 {
             "legacy project grouping"
         )
 
+        let silentSettings = IslandSettings(
+            enabled: true,
+            speech: SpeechSettings(
+                muted: true,
+                completionEnabled: true,
+                attentionEnabled: true,
+                failureEnabled: true,
+                codexVoice: nil,
+                claudeVoice: nil,
+                rate: 0.48,
+                volume: 0.8,
+                quietHoursStart: nil,
+                quietHoursEnd: nil,
+                cooldownSeconds: 30
+            )
+        )
+        let attentionSession = testSession(
+            id: "attention",
+            eventID: "attention-1",
+            status: .needsHelp,
+            roleLabel: "Assurance"
+        )
+        let failedSession = testSession(
+            id: "failed",
+            eventID: "failed-1",
+            status: .failed,
+            roleLabel: "Investigator"
+        )
+        let completedSession = testSession(
+            id: "completed",
+            eventID: "completed-1",
+            status: .completed,
+            roleLabel: "Implementation"
+        )
+        let workingSession = testSession(
+            id: "working",
+            eventID: "working-1",
+            status: .working,
+            roleLabel: "Product UX"
+        )
+
+        let attentionCandidate = automaticPresentationCandidate(
+            previous: [],
+            current: [completedSession, attentionSession],
+            preview: false
+        )
+        try require(
+            attentionCandidate
+                == AutomaticPresentation(
+                    sessionID: "attention",
+                    eventID: "attention-1",
+                    kind: .attention
+                ),
+            "new confirmed attention presentation"
+        )
+        try require(
+            automaticPresentationCandidate(
+                previous: [attentionSession],
+                current: [attentionSession],
+                preview: false
+            ) == nil,
+            "repeated event presentation suppression"
+        )
+        try require(
+            automaticPresentationCandidate(
+                previous: [],
+                current: [attentionSession],
+                preview: true
+            ) == nil,
+            "preview presentation suppression"
+        )
+        try require(
+            automaticPresentationCandidate(
+                previous: [],
+                current: [completedSession, failedSession],
+                preview: false
+            )?.sessionID == "failed",
+            "informational presentation priority"
+        )
+
+        let teamSummary = collapsedTeamSummary(
+            [workingSession, completedSession, failedSession, attentionSession]
+        )
+        try require(
+            teamSummary.markers.map(\.sessionID)
+                == ["attention", "failed", "completed"],
+            "team rail priority"
+        )
+        try require(
+            teamSummary.markers.map(\.label) == ["A", "I", "I"],
+            "team rail role markers"
+        )
+        try require(teamSummary.remainingCount == 1, "team rail overflow")
+        try require(
+            teamSummary.accessibilityLabel.contains("Assurance using Codex"),
+            "team rail accessibility"
+        )
+
+        let manualModel = IslandModel(automaticCollapseDelay: 0.01)
+        manualModel.toggleExpanded()
+        manualModel.apply(
+            IslandSnapshot(
+                sessions: [attentionSession],
+                settings: silentSettings,
+                preview: false
+            )
+        )
+        try require(
+            manualModel.presentation == .userExpanded,
+            "manual presentation ownership"
+        )
+        try require(
+            manualModel.presentation.requiresKeyboardActivation,
+            "manual presentation keyboard activation"
+        )
+
+        let attentionModel = IslandModel(automaticCollapseDelay: 0.01)
+        attentionModel.apply(
+            IslandSnapshot(
+                sessions: [attentionSession],
+                settings: silentSettings,
+                preview: false
+            )
+        )
+        try require(
+            attentionModel.presentation
+                == .automatic(
+                    AutomaticPresentation(
+                        sessionID: "attention",
+                        eventID: "attention-1",
+                        kind: .attention
+                    )
+                ),
+            "automatic attention ownership"
+        )
+        try require(
+            !attentionModel.presentation.requiresKeyboardActivation,
+            "automatic presentation does not activate keyboard"
+        )
+        attentionModel.apply(
+            IslandSnapshot(
+                sessions: [
+                    testSession(
+                        id: "attention",
+                        eventID: "attention-2",
+                        status: .working,
+                        roleLabel: "Assurance"
+                    ),
+                ],
+                settings: silentSettings,
+                preview: false
+            )
+        )
+        try require(
+            attentionModel.presentation == .collapsed,
+            "resolved attention collapses"
+        )
+
+        let previewModel = IslandModel(automaticCollapseDelay: 0.01)
+        previewModel.apply(
+            IslandSnapshot(
+                sessions: [attentionSession],
+                settings: silentSettings,
+                preview: true
+            )
+        )
+        try require(
+            previewModel.presentation == .collapsed,
+            "preview remains collapsed"
+        )
+
+        let informationalModel = IslandModel(automaticCollapseDelay: 0.02)
+        informationalModel.apply(
+            IslandSnapshot(
+                sessions: [completedSession],
+                settings: silentSettings,
+                preview: false
+            )
+        )
+        try require(
+            informationalModel.hasPendingAutomaticCollapse,
+            "informational collapse scheduled"
+        )
+        informationalModel.setPointerInside(true)
+        try require(
+            !informationalModel.hasPendingAutomaticCollapse,
+            "pointer pauses informational collapse"
+        )
+        RunLoop.current.run(until: Date().addingTimeInterval(0.04))
+        try require(informationalModel.expanded, "pointer preserves presentation")
+        informationalModel.setPointerInside(false)
+        try require(
+            informationalModel.hasPendingAutomaticCollapse,
+            "pointer exit reschedules collapse"
+        )
+        RunLoop.current.run(until: Date().addingTimeInterval(0.04))
+        try require(
+            informationalModel.presentation == .collapsed,
+            "informational presentation auto collapses"
+        )
+
         do {
             _ = try ProtocolParser.decode(
                 Data(repeating: 0x41, count: maximumMessageBytes + 1)
@@ -246,4 +447,34 @@ private enum SelfTestError: Error, CustomStringConvertible {
         case let .failed(label): return label
         }
     }
+}
+
+private func testSession(
+    id: String,
+    eventID: String,
+    status: AgentStatus,
+    roleLabel: String? = nil,
+    confirmed: Bool = true
+) -> AgentSession {
+    AgentSession(
+        sessionID: id,
+        eventID: eventID,
+        provider: "codex",
+        project: "CodeVetter",
+        roleLabel: roleLabel,
+        teamID: "test-team",
+        status: status,
+        reason: status.label,
+        confirmed: confirmed,
+        startedAtMilliseconds: 1,
+        updatedAtMilliseconds: 2,
+        capabilities: AgentCapabilities(
+            canFocus: true,
+            canReply: false,
+            canApprove: false,
+            canDeny: false,
+            canSnooze: true,
+            canDismiss: true
+        )
+    )
 }

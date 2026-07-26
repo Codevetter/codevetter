@@ -68,15 +68,14 @@ async function qualify() {
   const p95LatencyMs = latency[Math.ceil(latency.length * 0.95) - 1];
 
   await delay(1_000);
+  // The first macOS `ps` observation still includes the tail of the render
+  // burst in its sampled %CPU value. Warm the sampler once so the measured
+  // series represents the helper's steady idle state.
+  readResourceSample(processHandle.pid);
+  await delay(250);
   const resourceSamples = [];
   for (let sample = 0; sample < 5; sample += 1) {
-    const output = execFileSync(
-      'ps',
-      ['-o', '%cpu=', '-o', 'rss=', '-p', String(processHandle.pid)],
-      { encoding: 'utf8' }
-    ).trim();
-    const [cpu, rssKiB] = output.split(/\s+/).map(Number);
-    resourceSamples.push({ cpu, rssMiB: rssKiB / 1024 });
+    resourceSamples.push(readResourceSample(processHandle.pid));
     await delay(250);
   }
   const idleCpuPercent =
@@ -276,4 +275,12 @@ async function waitFor(predicate, timeoutMilliseconds, label) {
 
 function delay(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function readResourceSample(pid) {
+  const output = execFileSync('ps', ['-o', '%cpu=', '-o', 'rss=', '-p', String(pid)], {
+    encoding: 'utf8',
+  }).trim();
+  const [cpu, rssKiB] = output.split(/\s+/).map(Number);
+  return { cpu, rssMiB: rssKiB / 1024 };
 }

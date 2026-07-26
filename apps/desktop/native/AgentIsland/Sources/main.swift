@@ -59,27 +59,34 @@ final class IslandApplicationController: NSObject, NSApplicationDelegate {
         self.panel = panel
 
         model.$sessions
-            .combineLatest(model.$expanded)
+            .combineLatest(model.$presentation)
             .receive(on: RunLoop.main)
-            .sink { [weak self] sessions, expanded in
-                self?.updatePanel(sessions: sessions, expanded: expanded)
+            .sink { [weak self] sessions, presentation in
+                self?.updatePanel(sessions: sessions, presentation: presentation)
             }
             .store(in: &cancellables)
 
-        model.$expanded
+        model.$presentation
             .removeDuplicates()
             .dropFirst()
             .receive(on: RunLoop.main)
-            .sink { [weak self] expanded in
-                guard expanded, let panel = self?.panel else { return }
-                panel.makeKeyAndOrderFront(nil)
-                panel.recalculateKeyViewLoop()
-                panel.selectNextKeyView(nil)
+            .sink { [weak self] presentation in
+                guard let panel = self?.panel else { return }
+                if presentation.requiresKeyboardActivation {
+                    panel.makeKeyAndOrderFront(nil)
+                    panel.recalculateKeyViewLoop()
+                    panel.selectNextKeyView(nil)
+                } else if panel.isKeyWindow {
+                    panel.resignKey()
+                }
             }
             .store(in: &cancellables)
     }
 
-    private func updatePanel(sessions: [AgentSession], expanded: Bool) {
+    private func updatePanel(
+        sessions: [AgentSession],
+        presentation: IslandPresentation
+    ) {
         guard let panel else { return }
         guard !sessions.isEmpty else {
             panel.orderOut(nil)
@@ -92,7 +99,7 @@ final class IslandApplicationController: NSObject, NSApplicationDelegate {
                 + ((session.capabilities.canApprove || session.capabilities.canDeny) ? 38 : 0)
                 + (session.capabilities.canReply ? 40 : 0)
         }
-        let target = expanded
+        let target = presentation.expanded
             ? NSSize(width: 420, height: min(540, 86 + baseRowsHeight + actionRowsHeight))
             : NSSize(width: 320, height: 48)
         panel.setContentSize(target)
