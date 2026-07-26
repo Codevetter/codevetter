@@ -22,18 +22,25 @@ struct IslandView: View {
         Group {
             if model.expanded {
                 expandedBody
+                    .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
             } else {
                 collapsedBody
+                    .transition(.opacity)
             }
         }
         .background(IslandPalette.background)
         .clipShape(RoundedRectangle(cornerRadius: model.expanded ? 18 : 14, style: .continuous))
         .shadow(color: Color.black.opacity(0.55), radius: 8, x: 0, y: 4)
+        .animation(
+            reduceMotion ? nil : .easeOut(duration: 0.18),
+            value: model.presentation
+        )
         .transaction { transaction in
             if reduceMotion {
                 transaction.animation = nil
             }
         }
+        .onHover(perform: model.setPointerInside)
         .onExitCommand {
             if model.expanded {
                 model.toggleExpanded()
@@ -55,16 +62,8 @@ struct IslandView: View {
                         .foregroundColor(IslandPalette.secondary)
                         .lineLimit(1)
                 }
-                Spacer(minLength: 8)
-                if model.sessions.count > 1 {
-                    Text("\(model.sessions.count)")
-                        .font(.system(size: 10, weight: .semibold, design: .rounded))
-                        .foregroundColor(IslandPalette.secondary)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 4)
-                        .background(IslandPalette.surface)
-                        .clipShape(Capsule())
-                }
+                Spacer(minLength: 5)
+                CollapsedTeamRail(summary: model.teamSummary)
                 Image(systemName: "chevron.down")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(IslandPalette.secondary)
@@ -151,7 +150,8 @@ struct IslandView: View {
 
     private var collapsedAccessibilityLabel: String {
         guard let session = model.primarySession else { return "CodeVetter, no active agents" }
-        return accessibilitySnapshot(for: session, expanded: false).summary
+        let primary = accessibilitySnapshot(for: session, expanded: false).summary
+        return "\(primary) Current team: \(model.teamSummary.accessibilityLabel)."
     }
 
     private var summaryText: String {
@@ -176,6 +176,51 @@ struct IslandView: View {
         case .failed: return IslandPalette.red
         case .completed: return IslandPalette.green
         case .working: return IslandPalette.green
+        case .paused, .disconnected: return IslandPalette.secondary
+        }
+    }
+}
+
+private struct CollapsedTeamRail: View {
+    let summary: CollapsedTeamSummary
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(summary.markers) { marker in
+                ZStack(alignment: .bottomTrailing) {
+                    Text(marker.label)
+                        .font(.system(size: 8, weight: .bold, design: .rounded))
+                        .foregroundColor(IslandPalette.primary)
+                        .frame(width: 20, height: 20)
+                        .background(IslandPalette.surface)
+                        .clipShape(Circle())
+                    Circle()
+                        .fill(statusColor(marker.status))
+                        .frame(width: 6, height: 6)
+                        .overlay(
+                            Circle()
+                                .stroke(IslandPalette.background, lineWidth: 1.5)
+                        )
+                }
+            }
+            if summary.remainingCount > 0 {
+                Text("+\(summary.remainingCount)")
+                    .font(.system(size: 8, weight: .semibold, design: .rounded))
+                    .foregroundColor(IslandPalette.secondary)
+                    .padding(.horizontal, 5)
+                    .frame(height: 20)
+                    .background(IslandPalette.surface)
+                    .clipShape(Capsule())
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func statusColor(_ status: AgentStatus) -> Color {
+        switch status {
+        case .needsHelp: return IslandPalette.amber
+        case .failed: return IslandPalette.red
+        case .completed, .working: return IslandPalette.green
         case .paused, .disconnected: return IslandPalette.secondary
         }
     }
