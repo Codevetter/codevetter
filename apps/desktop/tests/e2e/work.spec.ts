@@ -35,6 +35,7 @@ async function installWorkMock(page: Page, withLiveSessions = false) {
         startRequests: Array<Record<string, unknown>>;
         inputRequests: Array<Record<string, unknown>>;
         stopRequests: Array<Record<string, unknown>>;
+        attachRequests: Array<Record<string, unknown>>;
         directoryRequests: string[][];
         transcriptRequests: string[];
         emitTerminalEvent: (payload: Record<string, unknown>) => void;
@@ -49,6 +50,7 @@ async function installWorkMock(page: Page, withLiveSessions = false) {
       startRequests: [],
       inputRequests: [],
       stopRequests: [],
+      attachRequests: [],
       directoryRequests: [],
       transcriptRequests: [],
       emitTerminalEvent: (payload) => {
@@ -338,6 +340,7 @@ async function installWorkMock(page: Page, withLiveSessions = false) {
           return items.find((item) => item.id === id);
         }
         if (cmd === 'attach_work_item_session') {
+          controlled.__WORK_TEST__.attachRequests.push({ ...args });
           const id = String(args.id);
           const input = args.input as Record<string, unknown>;
           items = items.map((item) =>
@@ -389,7 +392,7 @@ test.describe('Work surface', () => {
       page,
       testInfo.title.includes('focuses live runs') ||
         testInfo.title.includes('opens with existing conversations') ||
-        testInfo.title.includes('groups conversations') ||
+        testInfo.title.includes('groups runs') ||
         testInfo.title.includes('pre-fills verified history') ||
         testInfo.title.includes('reviews confirmed approval') ||
         testInfo.title.includes('surfaces confirmed') ||
@@ -400,26 +403,35 @@ test.describe('Work surface', () => {
 
   test.afterEach(() => consoleErrors.assertNoErrors());
 
-  test('anchors the conversation sidebar to the left edge on wide windows', async ({ page }) => {
+  test('anchors the run navigator to the left edge and lets the user collapse it', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
 
-    const sidebar = page.getByLabel('Conversation sidebar');
+    const sidebar = page.getByRole('complementary', { name: 'Run navigator' });
     await expect(sidebar).toBeVisible();
     const bounds = await sidebar.boundingBox();
 
     expect(bounds).not.toBeNull();
     expect(bounds?.x).toBeLessThanOrEqual(32);
     expect(bounds?.width).toBe(252);
+
+    await sidebar.getByRole('button', { name: 'Collapse run navigator' }).click();
+    await expect(page.getByRole('button', { name: 'Open run navigator' })).toBeVisible();
+    const collapsedBounds = await page
+      .getByRole('complementary', { name: 'Run navigator' })
+      .boundingBox();
+    expect(collapsedBounds?.width).toBe(42);
   });
 
   test('opens with existing conversations unselected and makes starting explicit', async ({
     page,
   }) => {
-    const sidebar = page.getByLabel('Conversation sidebar');
+    const sidebar = page.getByRole('complementary', { name: 'Run navigator' });
 
-    await expect(page.getByRole('heading', { name: 'What should we work on?' })).toBeVisible();
-    await expect(sidebar.getByText('Projects', { exact: true })).toBeVisible();
-    await expect(sidebar.getByText('Recent', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'What outcome do you need?' })).toBeVisible();
+    await expect(sidebar.getByText('Active', { exact: true })).toBeVisible();
+    await expect(sidebar.getByText('Recent', { exact: true })).toBeVisible();
     await expect(sidebar.getByText('Previous', { exact: true }).first()).toBeVisible();
     await expect(sidebar.locator('[data-agent-provider-mark="codex"]').first()).toBeVisible();
     await expect(sidebar.locator('[data-agent-provider-mark="claude"]').first()).toBeVisible();
@@ -427,13 +439,11 @@ test.describe('Work surface', () => {
     await sidebar.getByRole('button', { name: /Open Codex run/ }).click();
     await expect(page.getByLabel('Codex work session')).toBeVisible();
 
-    await sidebar.getByRole('button', { name: 'Start new conversation' }).click();
-    await expect(page.getByRole('heading', { name: 'What should we work on?' })).toBeVisible();
-    await page.getByRole('button', { name: 'claude', exact: true }).click();
-    await page
-      .getByPlaceholder('Describe the change, bug, or question…')
-      .fill('Start a clean Claude conversation');
-    await page.getByRole('button', { name: 'Start Claude', exact: true }).click();
+    await sidebar.getByRole('button', { name: 'New outcome' }).click();
+    await expect(page.getByRole('heading', { name: 'What outcome do you need?' })).toBeVisible();
+    await page.getByLabel('Outcome').fill('Start a clean Claude conversation');
+    await page.getByLabel('Implementation provider').selectOption('claude');
+    await page.getByRole('button', { name: 'Start agent', exact: true }).click();
 
     await expect(page.getByLabel('Claude work session')).toBeVisible();
     const startRequests = await page.evaluate(
@@ -447,32 +457,117 @@ test.describe('Work surface', () => {
     expect(startRequests).toHaveLength(1);
     expect(startRequests[0]).toMatchObject({
       provider: 'claude',
-      prompt: 'Start a clean Claude conversation',
+      roleLabel: 'Implementation',
+      sandbox: 'workspace-write',
+    });
+    expect(String(startRequests[0].prompt)).toContain(
+      'Shared outcome: Start a clean Claude conversation'
+    );
+  });
+
+  test('confirms one writer, launches actionable specialists once, and saves later assurance', async ({
+    page,
+  }) => {
+    await page
+      .getByLabel('Outcome')
+      .fill('Redesign the Work sidebar UI and prove browser release safety');
+
+    const team = page.getByLabel('Recommended agent team');
+    await expect(team).toContainText('Implementation');
+    await expect(team).toContainText('Product UX');
+    await expect(team).toContainText('Assurance');
+    await expect(team.getByText('Can edit', { exact: true })).toHaveCount(1);
+    await expect(team.getByText('Read-only', { exact: true })).toHaveCount(2);
+    await expect(page.getByLabel('Include Assurance')).toBeChecked();
+    await page.getByLabel('Product UX provider').selectOption('claude');
+
+    const confirm = page.getByRole('button', { name: 'Start 2 agents', exact: true });
+    await expect(confirm).toBeEnabled();
+    await confirm.evaluate((button) => {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await expect(page.getByLabel('Implementation queued agent')).toHaveCount(0);
+    const requests = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __WORK_TEST__: { startRequests: Array<Record<string, unknown>> };
+          }
+        ).__WORK_TEST__.startRequests
+    );
+    expect(requests).toHaveLength(2);
+    expect(new Set(requests.map((request) => request.sessionId)).size).toBe(2);
+    expect(requests.map((request) => request.roleLabel)).toEqual(['Implementation', 'Product UX']);
+    expect(requests.map((request) => request.sandbox)).toEqual(['workspace-write', 'read-only']);
+    expect(requests[0].teamId).toBeTruthy();
+    expect(requests[1].teamId).toBe(requests[0].teamId);
+
+    const navigator = page.getByRole('complementary', { name: 'Run navigator' });
+    const recent = navigator.getByRole('group', { name: 'Recent runs' });
+    await expect(recent).toContainText('Assurance');
+    await expect(recent).toContainText('Queued');
+    await recent.getByRole('button', { name: /Open Assurance Codex run/ }).click();
+    const queued = page.getByLabel('Assurance queued agent');
+    await expect(queued).toContainText('has not started');
+
+    await page.reload();
+    await expect(page.getByRole('complementary', { name: 'Run navigator' })).toContainText(
+      'Assurance'
+    );
+    await page
+      .getByRole('complementary', { name: 'Run navigator' })
+      .getByRole('button', { name: /Open Assurance Codex run/ })
+      .click();
+    await page.getByRole('button', { name: 'Start Assurance', exact: true }).click();
+
+    const afterLaterStart = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __WORK_TEST__: { startRequests: Array<Record<string, unknown>> };
+          }
+        ).__WORK_TEST__.startRequests
+    );
+    expect(afterLaterStart).toHaveLength(1);
+    expect(afterLaterStart[0]).toMatchObject({
+      roleLabel: 'Assurance',
+      sandbox: 'read-only',
+      teamId: requests[0].teamId,
     });
   });
 
-  test('groups conversations by project and shows searchable operational states', async ({
-    page,
-  }) => {
-    const sidebar = page.getByLabel('Conversation sidebar');
-    const codevetter = sidebar.getByRole('group', {
-      name: 'codevetter project conversations',
-    });
-    const knowledgeBase = sidebar.getByRole('group', {
-      name: 'Knowledge Base project conversations',
-    });
+  test('requires a known repository before confirming more than one role', async ({ page }) => {
+    await page.getByLabel('Outcome').fill('Redesign this UI and audit release safety');
+    await page.getByLabel('Conversation repository').selectOption('');
 
-    await expect(codevetter).toContainText('Codex');
-    await expect(codevetter).toContainText('Working');
-    await expect(knowledgeBase).toContainText('Claude');
-    await expect(knowledgeBase).toContainText('Working');
+    await expect(
+      page.getByText('Choose a known repository before confirming more than one agent.')
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start 2 agents', exact: true })).toBeDisabled();
 
-    await page.getByLabel('Search conversations').fill('Knowledge Base');
-    await expect(knowledgeBase).toBeVisible();
-    await expect(codevetter).toHaveCount(0);
-    await page.getByLabel('Search conversations').fill('');
+    await page.getByLabel('Include Assurance').uncheck();
+    await page.getByLabel('Include Product UX').uncheck();
+    await expect(page.getByRole('button', { name: 'Start agent', exact: true })).toBeEnabled();
+  });
 
-    await knowledgeBase.getByRole('button', { name: /Open Claude run/ }).click();
+  test('groups runs by operational state and prioritizes attention', async ({ page }) => {
+    const sidebar = page.getByRole('complementary', { name: 'Run navigator' });
+    const active = sidebar.getByRole('group', { name: 'Active runs' });
+
+    await expect(active).toContainText('Codex');
+    await expect(active).toContainText('Claude');
+    await expect(active).toContainText('Working');
+    await expect(active).toContainText('codevetter');
+    await expect(active).toContainText('knowledge-base');
+
+    await page.getByLabel('Search runs').fill('knowledge-base');
+    await expect(active).toContainText('Claude');
+    await expect(active).not.toContainText('Codex');
+    await page.getByLabel('Search runs').fill('');
+
+    await active.getByRole('button', { name: /Open Claude run/ }).click();
     await page.waitForFunction(() =>
       (
         window as unknown as {
@@ -497,17 +592,19 @@ test.describe('Work surface', () => {
       });
     });
 
-    await expect(knowledgeBase).toContainText('Needs help');
-    await page.getByLabel('Search conversations').fill('Needs help');
-    await expect(knowledgeBase).toBeVisible();
-    await expect(codevetter).toHaveCount(0);
-    await page.getByLabel('Search conversations').fill('');
+    const attention = sidebar.getByRole('group', { name: 'Needs attention runs' });
+    await expect(attention).toContainText('Claude');
+    await expect(attention).toContainText('Needs help');
+    await page.getByLabel('Search runs').fill('Needs help');
+    await expect(attention).toBeVisible();
+    await expect(sidebar.getByRole('group', { name: 'Active runs' })).toHaveCount(0);
+    await page.getByLabel('Search runs').fill('');
 
     await page.getByRole('button', { name: 'Stop', exact: true }).click();
-    await expect(knowledgeBase).toContainText('Paused');
+    await expect(sidebar.getByRole('group', { name: 'Recent runs' })).toContainText('Paused');
 
     const results = await new AxeBuilder({ page })
-      .include('[aria-label="Conversation sidebar"]')
+      .include('[aria-label="Run navigator"]')
       .analyze();
     expect(
       results.violations.filter(
@@ -517,22 +614,15 @@ test.describe('Work surface', () => {
   });
 
   test('previews verified history before an explicit resume', async ({ page }) => {
-    const sidebar = page.getByLabel('Conversation sidebar');
-    const codevetter = sidebar.getByRole('group', {
-      name: 'codevetter project conversations',
-    });
-    const knowledgeBase = sidebar.getByRole('group', {
-      name: 'Knowledge Base project conversations',
-    });
-    const knowledgeDisclosure = knowledgeBase.getByRole('button', {
-      name: /Knowledge Base/,
-    });
-    const claudeHistory = knowledgeBase.getByRole('button', {
+    const sidebar = page.getByRole('complementary', { name: 'Run navigator' });
+    const recent = sidebar.getByRole('group', { name: 'Recent runs' });
+    const recentDisclosure = recent.getByRole('button', { name: /Recent/ });
+    const claudeHistory = recent.getByRole('button', {
       name: 'Open Claude previous conversation Explain repo history',
     });
 
     await expect(
-      codevetter.getByRole('button', {
+      recent.getByRole('button', {
         name: 'Open Codex previous conversation Fix the Work attachment regression',
       })
     ).toBeVisible();
@@ -559,19 +649,19 @@ test.describe('Work surface', () => {
     ]);
     expect(initialState.startRequests).toEqual([]);
 
-    await expect(knowledgeDisclosure).toHaveAttribute('aria-expanded', 'true');
-    await knowledgeDisclosure.click();
-    await expect(knowledgeDisclosure).toHaveAttribute('aria-expanded', 'false');
+    await expect(recentDisclosure).toHaveAttribute('aria-expanded', 'true');
+    await recentDisclosure.click();
+    await expect(recentDisclosure).toHaveAttribute('aria-expanded', 'false');
     await expect(claudeHistory).toHaveCount(0);
 
-    await page.getByLabel('Search conversations').fill('Explain repo history');
-    await expect(knowledgeDisclosure).toHaveAttribute('aria-expanded', 'true');
+    await page.getByLabel('Search runs').fill('Explain repo history');
+    await expect(recentDisclosure).toHaveAttribute('aria-expanded', 'true');
     await expect(claudeHistory).toBeVisible();
-    await page.getByLabel('Search conversations').fill('');
-    await expect(knowledgeDisclosure).toHaveAttribute('aria-expanded', 'false');
+    await page.getByLabel('Search runs').fill('');
+    await expect(recentDisclosure).toHaveAttribute('aria-expanded', 'false');
     await expect(claudeHistory).toHaveCount(0);
 
-    await knowledgeDisclosure.click();
+    await recentDisclosure.click();
     await claudeHistory.click();
     await expect(page.getByLabel('Previous conversation preview')).toBeVisible();
     await expect(
@@ -610,10 +700,12 @@ test.describe('Work surface', () => {
       provider: 'claude',
       cwd: '/tmp/knowledge-base',
       resumeSessionId: 'historical-session-2',
+      roleLabel: null,
+      teamId: null,
     });
 
     const results = await new AxeBuilder({ page })
-      .include('[aria-label="Conversation sidebar"]')
+      .include('[aria-label="Run navigator"]')
       .analyze();
     expect(
       results.violations.filter(
@@ -625,7 +717,7 @@ test.describe('Work surface', () => {
   test('starts calm, creates local work, and moves it with an accessible action', async ({
     page,
   }) => {
-    await expect(page.getByRole('heading', { name: 'What should we work on?' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What outcome do you need?' })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Board' })).toHaveCount(0);
     await page.getByRole('link', { name: 'Board' }).click();
     await expect(page).toHaveURL(/\/board$/);
@@ -738,9 +830,7 @@ test.describe('Work surface', () => {
     await page.getByRole('button', { name: 'Move Qualify the shared handoffs right' }).click();
     await page.getByRole('button', { name: 'Open', exact: true }).click();
     await expect(page).toHaveURL(/\/agents$/);
-    await expect(page.getByLabel('Conversation prompt')).toHaveValue(
-      /Work item: Qualify the shared handoffs/
-    );
+    await expect(page.getByLabel('Outcome')).toHaveValue(/Work item: Qualify the shared handoffs/);
 
     await page.getByRole('link', { name: 'Board' }).click();
     await page.getByRole('button', { name: 'Move Qualify the shared handoffs right' }).click();
@@ -753,14 +843,60 @@ test.describe('Work surface', () => {
     await expect(page).toHaveURL(/\/trex\?project=%2Ftmp%2Fcodevetter$/);
   });
 
+  test('links a Board item only to the primary writer in a confirmed team', async ({ page }) => {
+    await page.getByRole('link', { name: 'Board' }).click();
+    await page.getByRole('button', { name: 'New work' }).click();
+    await page
+      .getByLabel('Outcome')
+      .fill('Redesign the Work sidebar UI and prove browser release safety');
+    await page.getByRole('button', { name: 'Create work' }).click();
+    await page
+      .getByRole('button', {
+        name: 'Move Redesign the Work sidebar UI and prove browser release safety right',
+      })
+      .click();
+    await page.getByRole('button', { name: 'Open', exact: true }).click();
+
+    await expect(page.getByLabel('Recommended agent team')).toContainText('Product UX');
+    await page.getByRole('button', { name: 'Start 2 agents', exact: true }).click();
+
+    const implementation = page.getByLabel('Codex work session');
+    await expect(implementation).toContainText('Codex CLI is unavailable');
+    await implementation.getByRole('button', { name: 'Restart Codex agent', exact: true }).click();
+
+    const navigator = page.getByRole('complementary', { name: 'Run navigator' });
+    await navigator.getByRole('button', { name: /Open Product UX Claude run/ }).click();
+    const productUx = page.getByLabel('Claude work session');
+    await expect(productUx).toContainText('Claude CLI is unavailable');
+    await productUx.getByRole('button', { name: 'Restart Claude agent', exact: true }).click();
+
+    const state = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __WORK_TEST__: {
+              attachRequests: Array<Record<string, unknown>>;
+              startRequests: Array<Record<string, unknown>>;
+            };
+          }
+        ).__WORK_TEST__
+    );
+    expect(state.startRequests).toHaveLength(4);
+    expect(state.attachRequests).toHaveLength(1);
+    expect(state.attachRequests[0].input).toMatchObject({
+      provider: 'codex',
+      terminal_id: state.startRequests[0].sessionId,
+    });
+  });
+
   test('focuses live runs and attaches one without restarting it', async ({ page }) => {
-    const conversations = page.getByRole('navigation', { name: 'Conversations' });
+    const conversations = page.getByRole('navigation', { name: 'Runs' });
     const claudeRun = conversations.getByRole('button', { name: /Open Claude run/ });
     await expect(conversations).toBeVisible();
-    await page.getByLabel('Search conversations').fill('Claude');
+    await page.getByLabel('Search runs').fill('Claude');
     await expect(claudeRun).toBeVisible();
     await expect(conversations.getByRole('button', { name: /Open Codex run/ })).toHaveCount(0);
-    await page.getByLabel('Search conversations').fill('');
+    await page.getByLabel('Search runs').fill('');
     await claudeRun.click();
     await expect(page.getByLabel('Claude work session')).toBeVisible();
 
@@ -795,12 +931,12 @@ test.describe('Work surface', () => {
 
     await conversations.getByRole('button', { name: /Archive Claude run/ }).click();
     await expect(claudeRun).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: 'What should we work on?' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What outcome do you need?' })).toBeVisible();
     await expect(page.getByLabel('Codex work session')).toHaveCount(0);
   });
 
   test('archives a live run only after stopping its owned process', async ({ page }) => {
-    const conversations = page.getByRole('navigation', { name: 'Conversations' });
+    const conversations = page.getByRole('navigation', { name: 'Runs' });
     await conversations.getByRole('button', { name: /Open Codex run/ }).click();
     await conversations.getByRole('button', { name: /Archive Codex run/ }).click();
 
@@ -818,7 +954,7 @@ test.describe('Work surface', () => {
 
   test('reviews confirmed approval evidence without approving it', async ({ page }) => {
     await page
-      .getByRole('navigation', { name: 'Conversations' })
+      .getByRole('navigation', { name: 'Runs' })
       .getByRole('button', { name: /Open Codex run/ })
       .click();
     await page.waitForFunction(() =>
@@ -867,7 +1003,7 @@ test.describe('Work surface', () => {
       page,
     }) => {
       await page
-        .getByRole('navigation', { name: 'Conversations' })
+        .getByRole('navigation', { name: 'Runs' })
         .getByRole('button', { name: new RegExp(`Open ${label} run`) })
         .click();
       await expect(page.getByText(`Attached to running ${label} process`)).toBeVisible();
@@ -934,17 +1070,10 @@ test.describe('Work surface', () => {
     test(`${label} selection keeps launch, failure, and recovery provider-specific`, async ({
       page,
     }) => {
-      await page.getByRole('button', { name: provider, exact: true }).click();
-      await expect(page.getByRole('button', { name: `Start ${label}`, exact: true })).toBeVisible();
-      await expect(
-        page.getByRole('button', { name: `Start ${otherLabel}`, exact: true })
-      ).toHaveCount(0);
-
-      await page
-        .getByPlaceholder('Describe the change, bug, or question…')
-        .fill(`Verify the ${label} launch path`);
-      await page.getByLabel('Conversation model').fill(`test-${provider}-model`);
-      await page.getByLabel('Conversation prompt').press('Enter');
+      await page.getByLabel('Outcome').fill(`Implement the ${label} provider launch path`);
+      await page.getByLabel('Implementation provider').selectOption(provider);
+      await page.getByLabel('Implementation model').fill(`test-${provider}-model`);
+      await page.getByRole('button', { name: 'Start agent', exact: true }).click();
 
       const session = page.getByLabel(`${label} work session`);
       await expect(session).toBeVisible();
@@ -977,9 +1106,13 @@ test.describe('Work surface', () => {
         `test-${provider}-model`,
         `test-${provider}-model`,
       ]);
-      expect(startRequests.map((request) => request.prompt)).toEqual([
-        `Verify the ${label} launch path`,
-        `Verify the ${label} launch path`,
+      expect(startRequests.map((request) => String(request.prompt))).toEqual([
+        expect.stringContaining(`Shared outcome: Implement the ${label} provider launch path`),
+        expect.stringContaining(`Shared outcome: Implement the ${label} provider launch path`),
+      ]);
+      expect(startRequests.map((request) => request.sandbox)).toEqual([
+        'workspace-write',
+        'workspace-write',
       ]);
     });
   }

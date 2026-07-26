@@ -339,6 +339,8 @@ export interface CodexAgentTerminalStartResult {
   provider?: AgentProvider;
   cwd: string;
   pid?: number | null;
+  role_label?: string | null;
+  team_id?: string | null;
 }
 
 export type AgentProvider = 'codex' | 'claude';
@@ -349,6 +351,8 @@ export interface CodexAgentTerminalSnapshot {
   provider?: AgentProvider;
   cwd: string;
   pid?: number | null;
+  role_label?: string | null;
+  team_id?: string | null;
   started_at_ms: number;
   running: boolean;
   output_tail?: string;
@@ -425,6 +429,8 @@ export async function startCodexAgentTerminal(input: {
   approvalPolicy?: string | null;
   resumeSessionId?: string | null;
   forkSessionId?: string | null;
+  roleLabel?: string | null;
+  teamId?: string | null;
   cols?: number | null;
   rows?: number | null;
 }): Promise<CodexAgentTerminalStartResult> {
@@ -438,6 +444,8 @@ export async function startCodexAgentTerminal(input: {
     approvalPolicy: input.approvalPolicy ?? null,
     resumeSessionId: input.resumeSessionId ?? null,
     forkSessionId: input.forkSessionId ?? null,
+    roleLabel: input.roleLabel ?? null,
+    teamId: input.teamId ?? null,
     cols: input.cols ?? null,
     rows: input.rows ?? null,
   });
@@ -454,6 +462,8 @@ export async function startAgentTerminal(input: {
   approvalPolicy?: string | null;
   resumeSessionId?: string | null;
   forkSessionId?: string | null;
+  roleLabel?: string | null;
+  teamId?: string | null;
   cols?: number | null;
   rows?: number | null;
 }): Promise<AgentTerminalStartResult> {
@@ -468,6 +478,8 @@ export async function startAgentTerminal(input: {
     approvalPolicy: input.approvalPolicy ?? null,
     resumeSessionId: input.resumeSessionId ?? null,
     forkSessionId: input.forkSessionId ?? null,
+    roleLabel: input.roleLabel ?? null,
+    teamId: input.teamId ?? null,
     cols: input.cols ?? null,
     rows: input.rows ?? null,
   });

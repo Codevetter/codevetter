@@ -15,7 +15,7 @@ use tauri::AppHandle;
 use super::agent_stream::normalize_codex_app_server_message;
 use super::agent_terminal::{
     emit_agent_event, emit_agent_exit_event, AgentProvider, AgentStructuredEvent,
-    CodexAgentTerminalSnapshot, LiveAgentSessionIdentity,
+    AgentTeamMetadata, CodexAgentTerminalSnapshot, LiveAgentSessionIdentity,
 };
 use super::review::resolve_agent_cli_path;
 
@@ -89,6 +89,7 @@ struct SharedSession {
     app: AppHandle,
     local_session_id: String,
     cwd: String,
+    metadata: AgentTeamMetadata,
     pid: Option<u32>,
     started_at_ms: u64,
     stdin: Mutex<ChildStdin>,
@@ -142,6 +143,8 @@ pub(crate) fn identity(local_session_id: &str) -> Result<Option<LiveAgentSession
         provider: "codex".to_string(),
         provider_session_id,
         project_path,
+        role_label: session.shared.metadata.role_label.clone(),
+        team_id: session.shared.metadata.team_id.clone(),
     }))
 }
 
@@ -158,6 +161,8 @@ pub(crate) fn snapshots() -> Result<Vec<CodexAgentTerminalSnapshot>, String> {
                 provider: AgentProvider::Codex,
                 cwd: shared.cwd.clone(),
                 pid: shared.pid,
+                role_label: shared.metadata.role_label.clone(),
+                team_id: shared.metadata.team_id.clone(),
                 started_at_ms: shared.started_at_ms,
                 running: true,
                 output_tail: shared
@@ -196,6 +201,7 @@ pub(crate) fn start(
     sandbox: Option<&str>,
     approval_policy: Option<&str>,
     profile_path: Option<&Path>,
+    metadata: AgentTeamMetadata,
 ) -> Result<Value, String> {
     let codex_path = resolve_agent_cli_path("codex");
     let mut command = Command::new(&codex_path);
@@ -225,6 +231,7 @@ pub(crate) fn start(
         app: app.clone(),
         local_session_id: local_session_id.to_string(),
         cwd: cwd.to_string_lossy().to_string(),
+        metadata: metadata.clone(),
         pid: Some(pid),
         started_at_ms: current_unix_millis(),
         stdin: Mutex::new(stdin),
@@ -346,6 +353,8 @@ pub(crate) fn start(
         "pid": pid,
         "transport": "app-server",
         "provider_session_id": thread_id,
+        "role_label": metadata.role_label,
+        "team_id": metadata.team_id,
     }))
 }
 

@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-07-25
+Last updated: 2026-07-26
 
 ## Why / What
 
@@ -29,6 +29,7 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-26 (implemented locally; unreleased) — Work agent-team recommendations and Agent Island augmentation:** Work now turns a bounded outcome into an explainable deterministic team of at most three Codex/Claude roles without a model, network call, or repository scan. One implementation agent may write; investigation and Product UX specialists are read-only; post-implementation Assurance remains visibly queued until a separate explicit launch. Multi-agent launch requires a known concrete repository, ignores duplicate confirmation, gives only the primary session Board attachment authority, preserves queued roles through local workspace restore, and uses a collapsible Needs attention / Active / Recent run navigator instead of permanent project nesting. Optional bounded role/team metadata survives both Codex transports and the Claude/PTy path into Agent Island. The native helper remains presentation-only but now uses a clean-room Vibe Island-informed compact black pill and dense team/session rows with dominant confirmed actions, calm completion, stable same-project team grouping, and exact jump-back. Local qualification passes four recommendation tests, TypeScript, Biome, all 18 Work Playwright journeys, 13 focused Rust tests, the Swift self-test, strict OpenSpec validation, and diff checks. Agent Island remains off by default; no production dependency, database migration, provider authority, release, or deployment changed.
 - **2026-07-25 (shipped in v1.6.0) — Verification workbench completion:** added
   dry-run-first local session retention, versioned outcome-risk calibration,
   crash-recoverable managed Work runs, explicit intent-closure receipts, an
@@ -193,14 +194,17 @@ Internal (fleet):
 
 ### Planned Next
 
-1. Continue Repo Unpacked calibration until enough compatible downstream
+1. Dogfood the new Work recommendation, staged-specialist, restore, and native
+   Agent Island flows against real Codex and Claude sessions before any release
+   or default-enablement decision.
+2. Continue Repo Unpacked calibration until enough compatible downstream
    review, QA, procedure, and bug outcomes support qualified guidance.
-2. Capture authenticated CodeVetter, CodeRabbit free-tier, and Claude Code
+3. Capture authenticated CodeVetter, CodeRabbit free-tier, and Claude Code
    `/review` artifacts, then run production CodeVetter plus adjudication over
    the pinned 20-case agent-PR corpus.
-3. Run archaeology on the exact target-scale eligible corpus before changing
+4. Run archaeology on the exact target-scale eligible corpus before changing
    the persisted input bound or authorizing an 18M-line/100,000-rule claim.
-4. Treat hosted public graph publication as a separate privacy-reviewed track;
+5. Treat hosted public graph publication as a separate privacy-reviewed track;
    the workbench export remains local and has no upload side effect.
 
 ### Deferred / Parked
