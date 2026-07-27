@@ -1,0 +1,449 @@
+{
+  "schema_version": 1,
+  "experiment": {
+    "id": "synthetic-structural-context-contract",
+    "title": "Synthetic structural-context agent evaluation",
+    "evidence_kind": "synthetic",
+    "qualification_policy": {
+      "minimum_complete_pairs": 2,
+      "minimum_distinct_tasks": 2,
+      "minimum_aa_pairs": 2,
+      "minimum_success_rate_delta": 0.2,
+      "maximum_regression_delta": 0,
+      "maximum_aa_discordance_rate": 0
+    },
+    "limitations": [
+      "Synthetic receipts prove the scorer contract only.",
+      "No coding agent or hidden acceptance runner was invoked.",
+      "Activity diagnostic fields are illustrative and not product measurements."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "checkout-cache-invalidation",
+      "title": "Invalidate stale checkout cache entries",
+      "repository_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "task_packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "acceptance_contract_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "required_checks": [
+        {
+          "id": "stale-cache-cleared",
+          "label": "Stale checkout cache is cleared"
+        },
+        {
+          "id": "unchanged-cache-reused",
+          "label": "Unchanged checkout cache is reused"
+        }
+      ],
+      "expected_verification": ["pnpm test checkout-cache"]
+    },
+    {
+      "id": "route-auth-guard",
+      "title": "Preserve authenticated route access",
+      "repository_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "task_packet_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "acceptance_contract_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "required_checks": [
+        {
+          "id": "unauthorized-rejected",
+          "label": "Unauthenticated requests are rejected"
+        },
+        {
+          "id": "authorized-allowed",
+          "label": "Authenticated requests remain allowed"
+        }
+      ],
+      "expected_verification": ["pnpm test route-auth"]
+    }
+  ],
+  "runs": [
+    {
+      "pair_id": "ab-cache-1",
+      "comparison": "ab",
+      "arm": "control",
+      "task_id": "checkout-cache-invalidation",
+      "trial_index": 1,
+      "execution_order": 1,
+      "identities": {
+        "repository_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "acceptance_contract_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": false,
+        "policy_identity": "no-graph-v1",
+        "graph": null,
+        "allowed_graph_tools": []
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "stale-cache-cleared",
+            "status": "fail"
+          },
+          {
+            "id": "unchanged-cache-reused",
+            "status": "pass"
+          }
+        ]
+      },
+      "diagnostics": {
+        "input_tokens": 2200,
+        "output_tokens": 620,
+        "elapsed_ms": 78000,
+        "cost_usd": 0.021,
+        "verification_selected": ["pnpm test checkout-cache"],
+        "files_inspected": ["src/cache.ts", "src/checkout.ts", "src/routes.ts"],
+        "files_modified": ["src/checkout.ts"],
+        "tool_calls": ["read_file", "search"]
+      }
+    },
+    {
+      "pair_id": "ab-cache-1",
+      "comparison": "ab",
+      "arm": "treatment",
+      "task_id": "checkout-cache-invalidation",
+      "trial_index": 1,
+      "execution_order": 2,
+      "identities": {
+        "repository_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "acceptance_contract_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": true,
+        "policy_identity": "codevetter-graph-mcp-v1",
+        "graph": {
+          "engine_id": "codevetter-tree-sitter",
+          "engine_version": "1",
+          "snapshot_id": "synthetic-cache-graph",
+          "indexed_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "allowed_graph_tools": ["graph_query", "graph_path"]
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "stale-cache-cleared",
+            "status": "pass"
+          },
+          {
+            "id": "unchanged-cache-reused",
+            "status": "pass"
+          }
+        ]
+      },
+      "diagnostics": {
+        "input_tokens": 1900,
+        "output_tokens": 510,
+        "elapsed_ms": 64000,
+        "cost_usd": 0.018,
+        "verification_selected": ["pnpm test checkout-cache"],
+        "files_inspected": ["src/cache.ts", "src/checkout.ts"],
+        "files_modified": ["src/cache.ts"],
+        "tool_calls": ["graph_query", "graph_path", "read_file"],
+        "decision_trace": [
+          {
+            "tool": "graph_query",
+            "query": "symbol:invalidateCheckoutCache",
+            "summary": "Located the cache invalidator and its checkout caller.",
+            "source_paths": ["src/cache.ts", "src/checkout.ts"]
+          },
+          {
+            "tool": "graph_path",
+            "query": "checkout route to cache invalidator",
+            "summary": "Confirmed the missing invalidation edge on the write path.",
+            "source_paths": ["src/routes.ts", "src/checkout.ts", "src/cache.ts"]
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "ab-auth-1",
+      "comparison": "ab",
+      "arm": "control",
+      "task_id": "route-auth-guard",
+      "trial_index": 1,
+      "execution_order": 2,
+      "identities": {
+        "repository_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "task_packet_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "acceptance_contract_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": false,
+        "policy_identity": "no-graph-v1",
+        "graph": null,
+        "allowed_graph_tools": []
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "unauthorized-rejected",
+            "status": "pass"
+          },
+          {
+            "id": "authorized-allowed",
+            "status": "pass"
+          }
+        ]
+      },
+      "diagnostics": {
+        "input_tokens": 1700,
+        "output_tokens": 420,
+        "elapsed_ms": 51000,
+        "cost_usd": 0.015,
+        "verification_selected": ["pnpm test route-auth"],
+        "files_inspected": ["src/auth.ts", "src/routes.ts"],
+        "files_modified": ["src/routes.ts"],
+        "tool_calls": ["read_file", "search"]
+      }
+    },
+    {
+      "pair_id": "ab-auth-1",
+      "comparison": "ab",
+      "arm": "treatment",
+      "task_id": "route-auth-guard",
+      "trial_index": 1,
+      "execution_order": 1,
+      "identities": {
+        "repository_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "task_packet_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "acceptance_contract_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": true,
+        "policy_identity": "codevetter-graph-mcp-v1",
+        "graph": {
+          "engine_id": "codevetter-tree-sitter",
+          "engine_version": "1",
+          "snapshot_id": "synthetic-auth-graph",
+          "indexed_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "allowed_graph_tools": ["graph_query", "graph_path"]
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "unauthorized-rejected",
+            "status": "pass"
+          },
+          {
+            "id": "authorized-allowed",
+            "status": "pass"
+          }
+        ]
+      },
+      "diagnostics": {
+        "input_tokens": 1500,
+        "output_tokens": 390,
+        "elapsed_ms": 47000,
+        "cost_usd": 0.014,
+        "verification_selected": ["pnpm test route-auth"],
+        "files_inspected": ["src/auth.ts", "src/routes.ts"],
+        "files_modified": ["src/routes.ts"],
+        "tool_calls": ["graph_query", "read_file"],
+        "decision_trace": [
+          {
+            "tool": "graph_query",
+            "query": "callers:requireAuthenticatedUser",
+            "summary": "Confirmed the guard is shared by both protected route branches.",
+            "source_paths": ["src/auth.ts", "src/routes.ts"]
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "aa-cache-1",
+      "comparison": "aa",
+      "arm": "a",
+      "task_id": "checkout-cache-invalidation",
+      "trial_index": 2,
+      "execution_order": 1,
+      "identities": {
+        "repository_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "acceptance_contract_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": true,
+        "policy_identity": "codevetter-graph-mcp-v1",
+        "graph": {
+          "engine_id": "codevetter-tree-sitter",
+          "engine_version": "1",
+          "snapshot_id": "synthetic-cache-graph",
+          "indexed_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "allowed_graph_tools": ["graph_query", "graph_path"]
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "stale-cache-cleared",
+            "status": "pass"
+          },
+          {
+            "id": "unchanged-cache-reused",
+            "status": "pass"
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "aa-cache-1",
+      "comparison": "aa",
+      "arm": "b",
+      "task_id": "checkout-cache-invalidation",
+      "trial_index": 2,
+      "execution_order": 2,
+      "identities": {
+        "repository_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "task_packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "acceptance_contract_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": true,
+        "policy_identity": "codevetter-graph-mcp-v1",
+        "graph": {
+          "engine_id": "codevetter-tree-sitter",
+          "engine_version": "1",
+          "snapshot_id": "synthetic-cache-graph",
+          "indexed_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "allowed_graph_tools": ["graph_query", "graph_path"]
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "stale-cache-cleared",
+            "status": "pass"
+          },
+          {
+            "id": "unchanged-cache-reused",
+            "status": "pass"
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "aa-auth-1",
+      "comparison": "aa",
+      "arm": "a",
+      "task_id": "route-auth-guard",
+      "trial_index": 2,
+      "execution_order": 2,
+      "identities": {
+        "repository_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "task_packet_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "acceptance_contract_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": true,
+        "policy_identity": "codevetter-graph-mcp-v1",
+        "graph": {
+          "engine_id": "codevetter-tree-sitter",
+          "engine_version": "1",
+          "snapshot_id": "synthetic-auth-graph",
+          "indexed_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "allowed_graph_tools": ["graph_query", "graph_path"]
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "unauthorized-rejected",
+            "status": "pass"
+          },
+          {
+            "id": "authorized-allowed",
+            "status": "pass"
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "aa-auth-1",
+      "comparison": "aa",
+      "arm": "b",
+      "task_id": "route-auth-guard",
+      "trial_index": 2,
+      "execution_order": 1,
+      "identities": {
+        "repository_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "task_packet_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "acceptance_contract_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "agent": "codex",
+        "model": "synthetic-codex",
+        "configuration_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "environment_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "context": {
+        "structural_context_enabled": true,
+        "policy_identity": "codevetter-graph-mcp-v1",
+        "graph": {
+          "engine_id": "codevetter-tree-sitter",
+          "engine_version": "1",
+          "snapshot_id": "synthetic-auth-graph",
+          "indexed_revision": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "allowed_graph_tools": ["graph_query", "graph_path"]
+      },
+      "outcome": {
+        "status": "completed",
+        "regression_count": 0,
+        "checks": [
+          {
+            "id": "unauthorized-rejected",
+            "status": "pass"
+          },
+          {
+            "id": "authorized-allowed",
+            "status": "pass"
+          }
+        ]
+      }
+    }
+  ]
+}
