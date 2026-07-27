@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-07-26
+Last updated: 2026-07-27
 
 ## Why / What
 
@@ -43,6 +43,19 @@ Internal (fleet):
   user-visible outcomes. Public navigation now exposes the page, routes
   Roadmap to GitHub Issues, and keeps Source on the canonical repository; no
   desktop runtime, verification, data, or deployment behavior changed.
+- **2026-07-27 — Structural-context outcome evaluator:** added a local,
+  provider-neutral paired-receipt scorer to test whether CodeVetter's existing
+  structural graph improves executable coding-agent outcomes. Exact A/B and
+  A/A identity and graph-tool isolation fail closed; hidden acceptance checks
+  and regressions remain authoritative; optional activity diagnostics never
+  substitute for success. One normalized scorecard emits terminal, JSON,
+  Markdown, and self-contained responsive HTML with qualification-first claims,
+  task check deltas, graph decision traces, A/A noise, and limitations. The
+  committed synthetic fixture proves the contract only and remains explicitly
+  unqualified for real product value. Focused benchmark tests, touched-file
+  Biome, docs, strict OpenSpec validation, responsive visual QA, and independent
+  finish review pass. Real value still requires repeated receipts from the
+  planned realistic TypeScript/Node task corpus.
 - **2026-07-26 — Product direction lock:** pivoted active development from a
   broad AI code-review workbench to empirical verification infrastructure for
   coding agents. New work must strengthen executable outcome verification,
