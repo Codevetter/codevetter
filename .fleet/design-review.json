@@ -1,0 +1,63 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "structural-context evaluation HTML report",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "apps/desktop/src/globals.css"
+  },
+  "direction": {
+    "references": [],
+    "probes": [],
+    "selected": "existing-design",
+    "approval": "not-required",
+    "before": "apps/desktop/tests/screenshots/home-full.png"
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/design/after-390.png"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/design/after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/design/after-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm test:benchmark; biome check touched files; node scripts/check-docs.mjs; openspec validate evaluate-structural-context-agent-outcomes --strict; git diff --check",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 33,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "CLI detector: 0 findings.",
+        "Rendered detector before polish: 2 line-length, 3 undersized-ui-text, 3 tiny-text, and 7 intentional cyan graph-provenance false positives.",
+        "Polish raised evidence text, made summaries 44px, constrained copy, and retained cyan as the CodeVetter graph-provenance accent."
+      ]
+    }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "Owner delegated final judgment after confirming local HTML visual QA was appropriate for improving the Mac app's generated viewing artifact."
+  }
+}
