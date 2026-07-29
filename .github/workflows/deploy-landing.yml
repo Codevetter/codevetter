@@ -81,7 +81,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/landing-page-astro
-          command: deploy --config wrangler.worker.jsonc
+          command: deploy --config wrangler.worker.jsonc --tag ${{ github.sha }}
 
       - name: Purge codevetter.com edge cache
         if: steps.cloudflare.outputs.deploy_enabled == 'true'
