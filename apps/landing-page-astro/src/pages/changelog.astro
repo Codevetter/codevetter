@@ -1,0 +1,101 @@
+---
+import Footer from '@/components/Footer.astro';
+import Nav from '@/components/Nav.astro';
+import Layout from '@/layouts/Layout.astro';
+
+const entries = [
+  {
+    date: '2026-07-26',
+    title: 'CodeVetter focused on executable verification',
+    outcomes: [
+      'The product now centers on proving whether coding agents completed a task correctly with reproducible runtime evidence.',
+      'CLI, MCP, and machine-readable verification bundles are the primary surfaces; the desktop app remains a local viewer.',
+    ],
+  },
+  {
+    date: '2026-07-25',
+    title: 'The verification workbench reached a complete local loop',
+    outcomes: [
+      'Reviews can retain local sessions, recover managed runs, record intent closure, and produce evidence-owned artifact previews.',
+      'A public agent-PR corpus and redacted performance receipts make regression and reliability comparisons reproducible.',
+    ],
+  },
+  {
+    date: '2026-07-24',
+    title: 'Deterministic Review and Agent PR X-Ray shipped',
+    outcomes: [
+      'Broad reviews now cover every changed file through bounded, checkpointed verification units.',
+      'Completed reviews can export fail-closed JSON, Markdown, and self-contained offline HTML evidence.',
+    ],
+  },
+  {
+    date: '2026-07-21',
+    title: 'Work became conversation-first',
+    outcomes: [
+      'Codex and Claude sessions gained provider-aware controls, clear attention states, searchable history, and safe archiving.',
+      'A persistent Plan, Build, Review, Verify, Done board keeps live sessions attached to repository context.',
+    ],
+  },
+];
+---
+
+<Layout
+  title="Changelog — CodeVetter"
+  description="Verified CodeVetter product updates, written as concise user-visible outcomes."
+  path="/changelog"
+>
+  <Nav />
+  <main class="min-h-screen px-6 pb-24 pt-36 md:pt-44">
+    <div class="mx-auto max-w-4xl">
+      <p class="label-mono mb-5 text-[--color-accent]">Product history</p>
+      <h1 class="max-w-3xl text-4xl font-semibold tracking-[-0.04em] text-white md:text-6xl">
+        What changed, and what it means.
+      </h1>
+      <p class="mt-6 max-w-2xl text-base leading-7 text-[--color-text-dim] md:text-lg">
+        A curated record of shipped CodeVetter outcomes. Roadmap work stays in GitHub Issues;
+        this page records what users can rely on today.
+      </p>
+
+      <div class="mt-10 flex flex-wrap gap-3 text-xs font-medium">
+        <a
+          href="https://github.com/Codevetter/codevetter/issues"
+          class="border border-[--color-line-2] px-4 py-2.5 text-[--color-text-dim] transition-colors hover:border-[--color-accent] hover:text-white"
+        >
+          Roadmap ↗
+        </a>
+        <a
+          href="https://github.com/Codevetter/codevetter"
+          class="border border-[--color-line-2] px-4 py-2.5 text-[--color-text-dim] transition-colors hover:border-[--color-accent] hover:text-white"
+        >
+          Source ↗
+        </a>
+      </div>
+
+      <ol class="mt-20 border-t border-[--color-line]">
+        {
+          entries.map((entry) => (
+            <li class="grid gap-5 border-b border-[--color-line] py-10 md:grid-cols-[9rem_1fr] md:gap-10">
+              <time class="font-mono text-xs tracking-[0.1em] text-[--color-text-mute]" datetime={entry.date}>
+                {entry.date}
+              </time>
+              <article>
+                <h2 class="text-xl font-medium tracking-[-0.02em] text-white md:text-2xl">
+                  {entry.title}
+                </h2>
+                <ul class="mt-5 space-y-3 text-sm leading-6 text-[--color-text-dim] md:text-base">
+                  {entry.outcomes.map((outcome) => (
+                    <li class="flex gap-3">
+                      <span class="mt-2 h-1 w-1 shrink-0 bg-[--color-accent]" aria-hidden="true" />
+                      <span>{outcome}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </main>
+  <Footer />
+</Layout>

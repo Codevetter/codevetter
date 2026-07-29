@@ -38,6 +38,11 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-29 — Owned product changelog:** added a same-origin
+  `/changelog` that turns verified shipped milestones into concise,
+  user-visible outcomes. Public navigation now exposes the page, routes
+  Roadmap to GitHub Issues, and keeps Source on the canonical repository; no
+  desktop runtime, verification, data, or deployment behavior changed.
 - **2026-07-26 — Product direction lock:** pivoted active development from a
   broad AI code-review workbench to empirical verification infrastructure for
   coding agents. New work must strengthen executable outcome verification,
