@@ -205,49 +205,8 @@ Internal (fleet):
 - `weekly.yml` now records source revision and emits a `canary-evidence.json` artifact (90-day retention) with bounds, timeout, declared cron, freshness window, and conclusion; job summary table exposes the same.
 - CI runs `pnpm run test:automation` (hermetic receipt sanitize tests) on every push and PR.
 
-## Todo / Planned / Deferred / Blocked
+## Work queue
 
-### Planned Next
-
-1. Make CLI/MCP the primary workflow, keep desktop as a viewer, and remove
-   unsupported comparative or "offline" claims from public positioning.
-2. Build 30–50 realistic, reproducible TypeScript/Node agent tasks with hidden
-   acceptance checks, known-good solutions, and classified failure modes.
-3. Run repeated trials across at least three agent configurations and compare
-   against at least two existing review/verification workflows. Measure task
-   success, regressions, catch rate, precision, setup success, runtime, cost,
-   and consistency.
-4. Put the system in the hands of ten active coding-agent users, then publish
-   the dataset, methodology, failure taxonomy, reproducibility instructions,
-   and results.
-
-### Deferred / Parked
-
-- Agent Island, general agent conversations, multi-agent mission control, usage
-  dashboards, audience simulation, generic history explanation, provider-picker
-  polish, new visual surfaces, and generic static-review improvements are
-  frozen as active investment areas.
-- Broad IDE replacement behavior is parked; CodeVetter should stay focused on
-  execution-backed verification and evaluation.
-- Generic synthetic browser testing for every app type is deferred until the supported local-app matrix is explicit.
-- Marketplace, hosted multi-tenant collaboration, and CI enforcement are deferred behind a stronger local evidence loop.
-- Hosted public graph publication and target-scale archaeology remain separate
-  tracks and must not displace corpus and harness work.
-
-### Decision Gate
-
-By **2026-09-06**, continue treating CodeVetter as a product only if evidence
-includes meaningful signals such as repeat use by ten developers, three team
-pilots, five real would-have-shipped bugs caught, material improvement over
-existing workflows and current precision, external benchmark contributions, or
-hiring/customer conversations caused by the published work. Otherwise preserve
-the corpus and harness as a portfolio/research project and stop adding product
-features.
-
-### Blocked
-
-- The public agent-PR comparator and production-pipeline claim is externally
-  blocked on authenticated CodeVetter, CodeRabbit free-tier, and Claude Code
-  `/review` captures.
-- The archaeology scale claim is blocked on an eligible exact target-scale
-  corpus and remains unsupported by the current bounded run.
+Open work is tracked only in [GitHub Issues](https://github.com/Codevetter/codevetter/issues).
+An open issue is a to-do, a linked pull request is in progress, and merge plus
+issue closure makes the work done.

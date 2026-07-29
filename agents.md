@@ -58,8 +58,8 @@ scripts/                # Benchmark + deploy + doc-validation scripts
 openspec/               # Spec-driven workflow (specs + changes/archive)
 .github/workflows/      # ci, auto-release, release, deploy-landing, weekly, docs
 blume.config.ts         # Blume presentation layer for docs/ (NOT the source of truth)
-STATUS.md               # Short current view
-PROJECT_STATUS.md       # Deep timeline + feature log (fleet source of truth)
+STATUS.md               # Compatibility pointer
+PROJECT_STATUS.md       # Current/shipped product truth (fleet source of truth)
 ```
 
 ## Key commands
@@ -117,7 +117,8 @@ failed approaches. Blume (`blume.config.ts`) is only the presentation/search
 layer — generated output (`.blume/`) is gitignored.
 
 - **Navigation hub**: `docs/index.md`
-- **Short current view**: `STATUS.md` · **Deep timeline**: `PROJECT_STATUS.md`
+- **Current/shipped product truth**: `PROJECT_STATUS.md`
+- **Open work**: GitHub Issues
 - **Working on docs**: `docs/development/docs.md` (rules, validation, Blume rendering)
 
 ### Documentation maintenance rules
@@ -125,7 +126,7 @@ layer — generated output (`.blume/`) is gitignored.
 1. **One canonical home per fact.** Don't re-explain what a doc already covers — link to it.
 2. **Markdown is the source of truth.** Code/config stays authoritative for implementation details and schedules.
 3. **Don't duplicate code-discoverable facts.** Link to the file or command.
-4. **Mark unresolved questions explicitly** in `STATUS.md` — do not invent information.
+4. **Mark unresolved work explicitly** in GitHub Issues — do not invent information.
 5. **Prefer `docs/archive/<name>.md` over deletion** (with a `stale-` prefix and a one-line supersession note) so git rename history survives.
 6. **Keep pages 150–300 lines.** Split catch-all pages.
 7. **Validate before commit**: `node scripts/check-docs.mjs` (CI runs it via `.github/workflows/docs.yml`).
