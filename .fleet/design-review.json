@@ -2,41 +2,41 @@
   "$schema": "fleet.design-review.v1",
   "version": 1,
   "project": "codevetter",
-  "target": "/changelog owned product history",
+  "target": "T-Rex change and preview verification",
   "mode": "preserve",
   "register": "product",
   "context": {
-    "product": "PROJECT_STATUS.md",
-    "design": "apps/landing-page-astro/src/styles/globals.css"
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
   },
   "direction": {
     "references": [],
     "probes": [],
     "selected": "existing-design",
     "approval": "not-required",
-    "before": ".fleet/evidence/changelog/before-1440.png"
+    "before": "artifacts/design/trex-before-1440.png"
   },
   "evidence": {
     "screenshots": [
       {
         "width": 390,
-        "path": ".fleet/evidence/changelog/after-390.png"
+        "path": "artifacts/design/trex-after-390.png"
       },
       {
         "width": 768,
-        "path": ".fleet/evidence/changelog/after-768.png"
+        "path": "artifacts/design/trex-after-768.png"
       },
       {
         "width": 1440,
-        "path": ".fleet/evidence/changelog/after-1440.png"
+        "path": "artifacts/design/trex-after-1440.png"
       }
     ],
     "projectCheck": {
-      "command": "pnpm --filter @code-reviewer/landing-page-astro build",
+      "command": "cd apps/desktop && pnpm exec tsc --noEmit",
       "status": "pass"
     },
     "critique": {
-      "score": 36,
+      "score": 37,
       "maximum": 40
     },
     "audit": {
@@ -54,6 +54,6 @@
   },
   "ownerFeedback": {
     "decision": "delegated",
-    "note": "The owner delegated the cross-project changelog implementation while preserving each product's established visual system."
+    "note": "Owner authorized the bounded preserve-lane implementation with 'go for it'; the incumbent CodeVetter workbench language remains authoritative."
   }
 }

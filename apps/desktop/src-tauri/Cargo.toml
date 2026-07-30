@@ -13,6 +13,11 @@ path = "src/main.rs"
 name = "codevetter-mcp"
 path = "src/bin/codevetter-mcp.rs"
 
+[[bin]]
+name = "codevetter"
+path = "src/bin/codevetter.rs"
+required-features = ["browser-agent"]
+
 [dependencies]
 tauri = { version = "2", features = ["devtools", "tray-icon", "image-png"] }
 tauri-plugin-dialog = "2"

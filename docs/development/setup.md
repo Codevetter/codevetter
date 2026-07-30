@@ -47,8 +47,9 @@ cd apps/desktop
 pnpm tauri:build    # production Tauri app + DMG + updater archive
 ```
 
-`tauri.conf.json`'s `beforeBuildCommand` runs `prepare:mcp-sidecar:release`
-then `vite build`, so the MCP sidecar binary is bundled beside the app.
+`tauri.conf.json`'s `beforeBuildCommand` runs
+`prepare:mcp-sidecar:release` and `prepare:cli-sidecar:release`, then the
+frontend build, so both packaged executables are bundled beside the app.
 
 ## Run the landing page
 
@@ -91,9 +92,17 @@ pnpm test:unit            # node --test over src/**/*.test.ts
 pnpm lint                 # biome check .
 pnpm build                # vite build
 pnpm prepare:mcp-sidecar  # build MCP sidecar binary
+pnpm prepare:cli-sidecar  # build browser-enabled codevetter CLI sidecar
 pnpm bench                # build + bundle budget + Rust benches
 pnpm qualify:graph        # enforced graph + UI data-path budgets
 ```
+
+The CLI preparation enables the existing `browser-agent` Cargo feature. It
+uses the user's installed Chrome and adds no browser or production package
+dependency. Installed macOS app launches register the bundled binary at
+`~/.local/bin/codevetter`; `pnpm tauri:dev` launches never modify the user's
+command path. CLI qualification can set `CODEVETTER_APP_DATA_DIR` to a temporary
+directory so smoke-test receipts never enter the user's real app database.
 
 See [testing.md](./testing.md), [performance.md](./performance.md), and
 [benchmark.md](./benchmark.md) for the test/perf surfaces.

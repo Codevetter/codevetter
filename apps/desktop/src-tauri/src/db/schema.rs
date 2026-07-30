@@ -257,6 +257,29 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
             ON trex_pr_runs(repo_path, pr_number, ran_at DESC)",
         [],
     );
+    let _ = conn.execute(
+        "CREATE TABLE IF NOT EXISTS trex_preview_runs (
+            id                  TEXT PRIMARY KEY,
+            repo_path           TEXT NOT NULL,
+            source_kind         TEXT NOT NULL,
+            source_input        TEXT NOT NULL,
+            base_sha            TEXT NOT NULL,
+            head_sha            TEXT NOT NULL,
+            preview_url         TEXT NOT NULL,
+            preview_identity    TEXT NOT NULL,
+            verdict             TEXT NOT NULL,
+            summary             TEXT NOT NULL,
+            receipt_json        TEXT NOT NULL,
+            duration_ms         INTEGER NOT NULL DEFAULT 0,
+            ran_at              TEXT NOT NULL
+        )",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_trex_preview_runs_repo_time
+            ON trex_preview_runs(repo_path, ran_at DESC)",
+        [],
+    );
 
     // v1.1.97+: Repo workspace — sidebar project list + Intel snapshot history.
     let _ = conn.execute(
@@ -1749,6 +1772,38 @@ mod tests {
                 .iter()
                 .any(|column| column.contains(forbidden)));
         }
+    }
+
+    #[test]
+    fn trex_preview_runs_preserve_receipt_and_identity_columns() {
+        let conn = test_conn();
+        assert_eq!(
+            table_columns(&conn, "trex_preview_runs"),
+            vec![
+                "id",
+                "repo_path",
+                "source_kind",
+                "source_input",
+                "base_sha",
+                "head_sha",
+                "preview_url",
+                "preview_identity",
+                "verdict",
+                "summary",
+                "receipt_json",
+                "duration_ms",
+                "ran_at",
+            ]
+        );
+        let index_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master
+                 WHERE type = 'index' AND name = 'idx_trex_preview_runs_repo_time'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("T-Rex preview index count");
+        assert_eq!(index_count, 1);
     }
 
     fn table_columns(conn: &Connection, table: &str) -> Vec<String> {
