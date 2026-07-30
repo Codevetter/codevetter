@@ -1,35 +1,41 @@
 # CodeVetter — full agent brief
 
-Desktop-first AI code review workbench for agent-generated code. Local SQLite, Tauri shell, evidence-backed review — your repo never hits a central server.
+Execution-backed verification and evaluation for coding agents. CodeVetter turns an agent change into reproducible runtime evidence and a measurable verdict without uploading the repository to a CodeVetter server.
 
 ## Index
 
 # CodeVetter
 
-Desktop-first AI code review for agent-generated code.
+Execution-backed verification for coding-agent changes.
 
 ## What it is
 
-- Local SQLite storage and Tauri desktop shell
-- Evidence-backed review loops
-- Optional Claude, Codex, or Gemini CLI backends
+- Reproducible runtime evidence for agent changes
+- Deterministic and calibrated graders
+- CLI, MCP, and machine-readable verification bundles
+- Local SQLite storage and a Tauri desktop viewer
 - Open source (ISC)
 
 ## Who it's for
 
-Engineers shipping AI-generated PRs who want review before merge — without uploading the repo to a central server.
+Engineers evaluating or shipping coding-agent changes who need executable evidence before accepting a result — without uploading the repository to a CodeVetter server.
 
 ## Agent entrypoints
 
 - https://codevetter.com/llms.txt
 - https://codevetter.com/api/ai
 - https://codevetter.com/index.md
+- https://codevetter.com/docs.md
+- https://codevetter.com/benchmark.md
 
 ## Product links
 
 - Home: https://codevetter.com/ — Features, pricing, how it works
+- Public benchmark: https://codevetter.com/benchmark — Reproducible cases, results, scorer, and limitations
+- Documentation: https://codevetter.com/docs/ — Product and engineering knowledge system
 - Download: https://codevetter.com/download — macOS release
-- FAQ: https://codevetter.com/faq — Common questions about local-first AI code review
+- FAQ: https://codevetter.com/faq — Common questions about local verification and provider boundaries
+- Changelog: https://codevetter.com/changelog — Verified shipped outcomes
 - Privacy: https://codevetter.com/privacy — Local-first data handling
 
 ## Machine surfaces
@@ -38,10 +44,19 @@ Engineers shipping AI-generated PRs who want review before merge — without upl
 - https://codevetter.com/llms-full.txt
 - https://codevetter.com/api/ai
 - https://codevetter.com/index.md
+- https://codevetter.com/benchmark.md
+- https://codevetter.com/changelog.md
+- https://codevetter.com/docs.md
+- https://codevetter.com/download.md
+- https://codevetter.com/faq.md
+- https://codevetter.com/privacy.md
+- https://codevetter.com/terms.md
+- https://codevetter.com/xray.md
 - https://codevetter.com/sitemap.xml
+- https://codevetter.com/sitemap-index.xml
 - https://codevetter.com/robots.txt
 
-## Contact / fleet
+## Contact
 
-- Fleet: https://sassmaker.com
+- Owner: https://sarthakagrawal.dev
 - Agent email for directory verification: sarthakagrawal@agentmail.to

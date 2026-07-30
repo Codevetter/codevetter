@@ -14,11 +14,11 @@ const { example } = Astro.props;
 <Layout
   title={`${example.title} — Agent PR X-Ray`}
   description={example.finding.summary}
-  path={`/xray/${example.id}/`}
+  path={`/xray/${example.id}`}
 >
   <Nav />
   <main class="report">
-    <a class="back" href="/xray/">← All X-Rays</a>
+    <a class="back" href="/xray">← All X-Rays</a>
     <header>
       <div class="eyebrow">CodeVetter · local evidence export</div>
       <h1>{example.title}</h1>
@@ -48,7 +48,7 @@ const { example } = Astro.props;
     <aside>
       This is an adjudicated synthetic benchmark example, not a claim about an uploaded repository.
       CodeVetter runs locally and exports the same portable evidence shape from your completed review.
-      <a href="/download/">Download the desktop app.</a>
+      <a href="/download">Download the desktop app.</a>
     </aside>
   </main>
   <Footer />

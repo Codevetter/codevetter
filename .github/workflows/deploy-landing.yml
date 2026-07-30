@@ -52,6 +52,7 @@ jobs:
           test -f apps/landing-page-astro/dist/sitemap-index.xml
           test -f apps/landing-page-astro/dist/robots.txt
           test -f apps/landing-page-astro/dist/docs/index.html
+          node apps/landing-page-astro/scripts/verify-agent-surfaces.mjs
 
       - name: Check Cloudflare deploy secrets
         id: cloudflare

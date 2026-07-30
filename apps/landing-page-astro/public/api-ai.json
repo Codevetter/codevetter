@@ -4,11 +4,11 @@
   "url": "https://codevetter.com",
   "llms": "https://codevetter.com/llms.txt",
   "llmsFull": "https://codevetter.com/llms-full.txt",
-  "sitemap": "https://codevetter.com/sitemap.xml",
+  "sitemap": "https://codevetter.com/sitemap-index.xml",
   "robots": "https://codevetter.com/robots.txt",
   "markdown": {
     "suffix": ".md",
-    "negotiation": true
+    "negotiation": false
   },
   "surfaces": [
     {
@@ -21,23 +21,79 @@
     {
       "id": "download",
       "url": "https://codevetter.com/download",
-      "md": null,
+      "md": "https://codevetter.com/download.md",
       "kind": "static",
       "description": "macOS release"
     },
     {
-      "id": "faq",
-      "url": "https://codevetter.com/faq",
-      "md": null,
-      "kind": "static",
-      "description": "Common questions about local-first AI code review"
-    },
-    {
       "id": "privacy",
       "url": "https://codevetter.com/privacy",
-      "md": null,
+      "md": "https://codevetter.com/privacy.md",
       "kind": "static",
       "description": "Local-first data handling"
+    },
+    {
+      "id": "faq",
+      "url": "https://codevetter.com/faq",
+      "md": "https://codevetter.com/faq.md",
+      "kind": "static",
+      "description": "Common questions about local verification and provider boundaries"
+    },
+    {
+      "id": "benchmark",
+      "url": "https://codevetter.com/benchmark",
+      "md": "https://codevetter.com/benchmark.md",
+      "kind": "static",
+      "description": "Reproducible public review benchmark"
+    },
+    {
+      "id": "changelog",
+      "url": "https://codevetter.com/changelog",
+      "md": "https://codevetter.com/changelog.md",
+      "kind": "static",
+      "description": "Verified shipped product outcomes"
+    },
+    {
+      "id": "terms",
+      "url": "https://codevetter.com/terms",
+      "md": "https://codevetter.com/terms.md",
+      "kind": "static",
+      "description": "Terms for the open-source desktop software"
+    },
+    {
+      "id": "docs",
+      "url": "https://codevetter.com/docs/",
+      "md": "https://codevetter.com/docs.md",
+      "kind": "static",
+      "description": "Canonical product and engineering documentation"
+    },
+    {
+      "id": "xray",
+      "url": "https://codevetter.com/xray/",
+      "md": "https://codevetter.com/xray.md",
+      "kind": "static",
+      "description": "Public evidence-export examples"
+    },
+    {
+      "id": "xray-ts-sql-injection",
+      "url": "https://codevetter.com/xray/ts-sql-injection",
+      "md": "https://codevetter.com/xray/ts-sql-injection.md",
+      "kind": "static",
+      "description": "Adjudicated TypeScript SQL-injection example"
+    },
+    {
+      "id": "xray-go-race-condition",
+      "url": "https://codevetter.com/xray/go-race-condition",
+      "md": "https://codevetter.com/xray/go-race-condition.md",
+      "kind": "static",
+      "description": "Adjudicated Go data-race example"
+    },
+    {
+      "id": "xray-py-path-traversal",
+      "url": "https://codevetter.com/xray/py-path-traversal",
+      "md": "https://codevetter.com/xray/py-path-traversal.md",
+      "kind": "static",
+      "description": "Adjudicated Python path-traversal example"
     }
   ],
   "auth": {
