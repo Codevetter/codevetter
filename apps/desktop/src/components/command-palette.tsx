@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -21,6 +21,7 @@ interface CommandItem {
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
+  onCloseAutoFocus: (event: Event) => void;
 }
 
 // ─── Fuzzy matching ─────────────────────────────────────────────────────────
@@ -56,7 +57,7 @@ function filterAndSort(items: CommandItem[], query: string): CommandItem[] {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: CommandPaletteProps) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -224,7 +225,9 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
         hideClose
         className="max-w-lg mx-4 p-0 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden top-[30%] translate-y-0"
         onKeyDown={handleKeyDown}
+        onCloseAutoFocus={onCloseAutoFocus}
       >
+        <DialogTitle className="sr-only">Search commands</DialogTitle>
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[#1a1a1a]">
           <span className="text-slate-500 text-sm">{'\u2315'}</span>
