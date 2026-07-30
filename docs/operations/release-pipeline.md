@@ -27,7 +27,8 @@ auto-release.yml  (on push to main, paths: tauri.conf.json)
 release.yml  (on release.created OR workflow_dispatch with tag)
    ├─ checkout the tag (not main head)
    ├─ pnpm install --frozen-lockfile
-   ├─ prepare:mcp-sidecar:release + universal Agent Island helper + vite build
+   ├─ prepare:mcp-sidecar:release + prepare:cli-sidecar:release
+   │  + universal Agent Island helper + vite build
    ├─ tauri build (macos-latest) → DMG + signed updater archive
    ├─ upload assets to the release
    └─ upload latest.json manifest (consumed by the updater)
@@ -69,6 +70,8 @@ graph + MCP budget qualification runs before the build (see
 The optional [Native Agent Island](../architecture/native-agent-island.md) is
 bundled as a nested universal sidecar. Release verification checks arm64 and
 x86_64 slices plus its nested code signature before assets are uploaded.
+The same release verifies executable `codevetter` and `codevetter-mcp`
+sidecars inside the final app bundle.
 
 ## Auto-updater
 

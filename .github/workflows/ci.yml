@@ -52,6 +52,9 @@ jobs:
       - name: Prepare MCP sidecar
         working-directory: apps/desktop
         run: pnpm run prepare:mcp-sidecar
+      - name: Prepare CLI sidecar
+        working-directory: apps/desktop
+        run: pnpm run prepare:cli-sidecar
       - name: Desktop build
         working-directory: apps/desktop
         run: pnpm run build
@@ -61,6 +64,9 @@ jobs:
           cargo test --manifest-path src-tauri/Cargo.toml --lib mcp
           cargo test --manifest-path src-tauri/Cargo.toml --bin codevetter-mcp
           cargo test --manifest-path src-tauri/Cargo.toml --test mcp_stdio
+      - name: T-Rex CLI contract tests
+        working-directory: apps/desktop
+        run: cargo test --manifest-path src-tauri/Cargo.toml --features browser-agent --bin codevetter
       - name: MCP and history browser tests
         working-directory: apps/desktop
         run: pnpm exec playwright test tests/e2e/mcp-settings.spec.ts tests/e2e/repo-unpacked.spec.ts

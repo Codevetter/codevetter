@@ -17,6 +17,7 @@ import { ProjectWorkspaceHeader } from '@/components/project-workspace/ProjectWo
 import { ProjectWorkspaceShell } from '@/components/project-workspace/ProjectWorkspaceShell';
 import { DifferentialVerificationPanel } from '@/components/trex/DifferentialVerificationPanel';
 import { ScenarioCompilerPanel } from '@/components/trex/ScenarioCompilerPanel';
+import { TrexPreviewRunPanel } from '@/components/trex/TrexPreviewRunPanel';
 import {
   type WarmVerificationAction,
   WarmVerificationPanel,
@@ -367,11 +368,13 @@ export default function TRex() {
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-100">Testing</h1>
               <p className="mt-1 max-w-3xl text-sm text-[var(--text-secondary)]">
-                Turn product intent into reviewable scenarios, verify local changes in warm
-                Chromium, and watch pull requests for sandbox regressions.
+                Test an exact change against its deployed preview, then inspect or extend the
+                underlying verification evidence.
               </p>
             </div>
           </ProjectWorkspaceHeader>
+
+          <TrexPreviewRunPanel repoPath={selectedRepoPath} />
 
           <WarmVerificationPanel
             repoPath={selectedRepoPath}

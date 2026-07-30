@@ -1,4 +1,12 @@
-import { Component, type ErrorInfo, type ReactNode, useCallback, useEffect, useState } from 'react';
+import {
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 
 import CommandPalette from '@/components/command-palette';
@@ -23,20 +31,40 @@ function RedirectIntelToRepo() {
 /** Hook: open/close command palette via Cmd+K */
 function useCommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+
+  const rememberFocus = useCallback(() => {
+    returnFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
+        setIsOpen((prev) => {
+          if (!prev) rememberFocus();
+          return !prev;
+        });
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [rememberFocus]);
 
+  const open = useCallback(() => {
+    rememberFocus();
+    setIsOpen(true);
+  }, [rememberFocus]);
   const close = useCallback(() => setIsOpen(false), []);
-  return { isOpen, close };
+  const restoreFocus = useCallback((event: Event) => {
+    const target = returnFocusRef.current;
+    returnFocusRef.current = null;
+    if (!target?.isConnected) return;
+    event.preventDefault();
+    target.focus();
+  }, []);
+  return { isOpen, open, close, restoreFocus };
 }
 
 function useOnboarding() {
@@ -107,7 +135,7 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Err
 /** Main shell: one fixed navigation rail and one shared content inset. */
 function Shell() {
   const { showOnboarding, setShowOnboarding, ready } = useOnboarding();
-  const { isOpen, close } = useCommandPalette();
+  const { isOpen, open, close, restoreFocus } = useCommandPalette();
   // Freeze CSS animations when the window is hidden/minimized (battery).
   useWindowVisibilityClass();
 
@@ -125,13 +153,13 @@ function Shell() {
         <div className="cv-ambient" aria-hidden="true" />
         <UpdateChecker />
         {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
-        <Sidebar />
-        <main className="cv-content-frame box-border flex h-full min-h-0 min-w-0 flex-1 flex-col pt-14">
+        <Sidebar onSearch={open} />
+        <main className="cv-content-frame box-border flex h-full min-h-0 min-w-0 flex-1 flex-col">
           <RouteErrorBoundary>
             <Outlet />
           </RouteErrorBoundary>
         </main>
-        <CommandPalette isOpen={isOpen} onClose={close} />
+        <CommandPalette isOpen={isOpen} onClose={close} onCloseAutoFocus={restoreFocus} />
         <KeyboardShortcuts />
       </div>
     </ProjectWorkspaceProvider>

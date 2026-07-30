@@ -23,7 +23,7 @@ Source: `navItems` in `apps/desktop/src/components/sidebar.tsx`.
 | Work | `/agents` | `apps/desktop/src/pages/AgentPanel.tsx` | Outcome-first Codex/Claude conversations in expandable repository-project groups with visible operational state. Indexed history appears only when its local working directory still exists, and resumes only through an explicit action. PTY execution stays behind the conversation and activity interface. |
 | Board | `/board` | `apps/desktop/src/pages/AgentPanel.tsx` | Persistent Plan/Build/Review/Verify/Done orchestration with handoffs to Work, Review, Testing, and Repo Unpack. Shares one mounted workspace instance with Work so live provider state survives navigation. |
 | Review | `/review` | `apps/desktop/src/pages/QuickReview.tsx` | Deterministic changed-file review with source-qualified findings, explicit coverage/limitations, cancellation, fix + verification proof, and local Agent PR X-Ray export. Editor-primary layout with verdict sidebar. |
-| Testing | `/trex` | `apps/desktop/src/pages/TRex.tsx` | Changed-capability verification and PR watchers with retry + per-PR base-branch inference. |
+| Testing | `/trex` | `apps/desktop/src/pages/TRex.tsx` | Direct PR or commit-range verification against an existing preview, plus changed-capability verification and PR watchers. See [trex-change-preview.md](./trex-change-preview.md). |
 
 Settings (`/settings`) is a labelled utility at the right of the same top rail,
 not a seventh product surface. It hosts preferences, Ops, Memories, Rubrics, Agent

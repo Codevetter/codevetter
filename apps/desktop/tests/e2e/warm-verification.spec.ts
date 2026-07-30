@@ -6,10 +6,15 @@ const REPO_PATH = '/tmp/warm-verification-app';
 
 async function installWarmVerificationMock(
   page: Page,
-  options: { offline?: boolean; activeRun?: boolean; holdRunUntilCancelled?: boolean } = {}
+  options: {
+    offline?: boolean;
+    activeRun?: boolean;
+    holdRunUntilCancelled?: boolean;
+    previewVerdict?: 'passed_with_limits' | 'failed' | 'no_confidence';
+  } = {}
 ) {
   await page.addInitScript(
-    ({ repoPath, offline, activeRun, holdRunUntilCancelled }) => {
+    ({ repoPath, offline, activeRun, holdRunUntilCancelled, previewVerdict }) => {
       const result = {
         schema_version: 1,
         protocol_version: 1,
@@ -225,6 +230,97 @@ async function installWarmVerificationMock(
         model_call_count: 0,
       };
       let differentialRun: unknown = null;
+      const previewReceipt = {
+        schema_version: 1,
+        run_id: 'trex-preview-mocked-1',
+        repo_path: repoPath,
+        source: {
+          kind: 'pull_request',
+          input: 'https://github.com/acme/widget/pull/42',
+          base_sha: '1'.repeat(40),
+          head_sha: '2'.repeat(40),
+          commits: ['2'.repeat(40)],
+          changed_paths: ['src/pages/settings/profile.tsx'],
+        },
+        preview: {
+          status: previewVerdict === 'no_confidence' ? 'mismatch' : 'claimed',
+          requested_url: 'https://preview.example.com',
+          final_url: 'https://preview.example.com',
+          revision: previewVerdict === 'no_confidence' ? '3'.repeat(40) : null,
+          evidence:
+            previewVerdict === 'no_confidence'
+              ? `x-commit-sha: ${'3'.repeat(40)}`
+              : 'No supported revision header was returned.',
+        },
+        routes: [
+          { route: '/', reason: 'Required root smoke' },
+          {
+            route: '/settings/profile',
+            reason: 'Derived from src/pages/settings/profile.tsx',
+          },
+        ],
+        journeys:
+          previewVerdict === 'no_confidence'
+            ? []
+            : [
+                {
+                  loop_id: 'generic-page-smoke',
+                  route: '/',
+                  goal: 'smoke',
+                  pass: previewVerdict !== 'failed',
+                  notes:
+                    previewVerdict === 'failed'
+                      ? 'Unexpected console error: checkout failed.'
+                      : 'Page rendered with visible content.',
+                  screenshot_path:
+                    previewVerdict === 'failed' ? '/tmp/trex-preview-mocked-1/failure.png' : null,
+                  artifacts:
+                    previewVerdict === 'failed' ? ['/tmp/trex-preview-mocked-1/failure.png'] : [],
+                  duration_ms: 420,
+                  trace: {
+                    final_url: 'https://preview.example.com/',
+                    page_title: 'Preview',
+                    console_errors: previewVerdict === 'failed' ? ['checkout failed'] : [],
+                    stage_timings_ms: { navigation: 210 },
+                    runner_rss_bytes: 80_000_000,
+                  },
+                  error: null,
+                  runner_type: 'playwright_builtin',
+                },
+                {
+                  loop_id: 'generic-page-smoke',
+                  route: '/settings/profile',
+                  goal: 'smoke',
+                  pass: true,
+                  notes: 'Page rendered with visible content.',
+                  screenshot_path: null,
+                  artifacts: [],
+                  duration_ms: 380,
+                  trace: {
+                    final_url: 'https://preview.example.com/settings/profile',
+                    page_title: 'Profile',
+                    console_errors: [],
+                    stage_timings_ms: { navigation: 180 },
+                    runner_rss_bytes: 80_000_000,
+                  },
+                  error: null,
+                  runner_type: 'playwright_builtin',
+                },
+              ],
+        verdict: previewVerdict ?? 'passed_with_limits',
+        summary:
+          previewVerdict === 'failed'
+            ? '1 of 2 preview route(s) failed executable smoke checks.'
+            : previewVerdict === 'no_confidence'
+              ? 'T-Rex could not produce complete change-preview evidence; preview identity is mismatched.'
+              : '2 preview route(s) passed; preview identity is claimed and coverage remains bounded.',
+        limitations:
+          previewVerdict === 'no_confidence'
+            ? ['The preview revision does not match the resolved change head.']
+            : ['The preview exposed no supported revision header.'],
+        duration_ms: 860,
+        ran_at: '2026-07-29T08:00:00.000Z',
+      };
 
       const browserWindow = window as unknown as {
         __warmCommands: Array<{ cmd: string; args: unknown }>;
@@ -271,7 +367,13 @@ async function installWarmVerificationMock(
               },
             ];
           }
-          if (cmd === 'list_trex_watchers' || cmd === 'list_trex_pr_runs') return [];
+          if (
+            cmd === 'list_trex_watchers' ||
+            cmd === 'list_trex_pr_runs' ||
+            cmd === 'list_trex_preview_runs'
+          )
+            return [];
+          if (cmd === 'run_trex_preview_verification') return previewReceipt;
           if (cmd === 'run_scenario_compiler_action') {
             const action = args?.action as { kind?: string } | undefined;
             if (action?.kind === 'cleanup') {
@@ -404,6 +506,7 @@ async function installWarmVerificationMock(
       offline: options.offline ?? false,
       activeRun: options.activeRun ?? false,
       holdRunUntilCancelled: options.holdRunUntilCancelled ?? false,
+      previewVerdict: options.previewVerdict ?? 'passed_with_limits',
     }
   );
 }
@@ -417,6 +520,79 @@ test.describe('T-Rex warm verification', () => {
   });
 
   test.afterEach(() => consoleErrors.assertNoErrors());
+
+  test('runs a PR and preview as one direct T-Rex request with explicit limits', async ({
+    page,
+  }) => {
+    await installWarmVerificationMock(page);
+    await navigateTo(page, '/trex');
+    await waitForNoSpinners(page);
+
+    const panel = page.getByTestId('trex-preview-run-panel');
+    await expect(panel.getByText('Test change in preview')).toBeVisible();
+    const action = panel.getByRole('button', { name: 'Test change' });
+    await expect(action).toBeDisabled();
+
+    await panel.getByLabel('Pull request URL').fill('https://github.com/acme/widget/pull/42');
+    await panel.getByLabel('Preview URL').fill('https://preview.example.com');
+    await expect(action).toBeEnabled();
+    await action.click();
+
+    await expect(panel.getByText('Passed with limits')).toBeVisible();
+    await expect(panel.getByText('Preview claimed')).toBeVisible();
+    await expect(panel.getByText('/settings/profile', { exact: true })).toBeVisible();
+    await expect(panel.getByText(/No supported revision header/)).toBeVisible();
+    await expect(page.getByTestId('warm-verification-panel')).toBeVisible();
+
+    const command = await page.evaluate(() => {
+      const browserWindow = window as unknown as {
+        __warmCommands: Array<{ cmd: string; args: Record<string, unknown> }>;
+      };
+      return browserWindow.__warmCommands.find(
+        ({ cmd }) => cmd === 'run_trex_preview_verification'
+      );
+    });
+    expect(command?.args).toEqual({
+      input: {
+        repo_path: REPO_PATH,
+        change_kind: 'pull_request',
+        change: 'https://github.com/acme/widget/pull/42',
+        preview_url: 'https://preview.example.com',
+      },
+    });
+  });
+
+  test('accepts a commit range and preserves executable failure evidence', async ({ page }) => {
+    await installWarmVerificationMock(page, { previewVerdict: 'failed' });
+    await navigateTo(page, '/trex');
+    await waitForNoSpinners(page);
+
+    const panel = page.getByTestId('trex-preview-run-panel');
+    await panel.getByLabel('Change source').selectOption('range');
+    await panel.getByLabel('Commit range').fill('main..HEAD');
+    await panel.getByLabel('Preview URL').fill('https://preview.example.com');
+    await panel.getByRole('button', { name: 'Test change' }).click();
+
+    await expect(panel.getByText('Failed', { exact: true })).toBeVisible();
+    await expect(panel.getByText(/checkout failed/)).toBeVisible();
+    await expect(panel.getByText(/failure\.png/)).toBeVisible();
+  });
+
+  test('keeps a mismatched preview no-confidence and skips browser proof', async ({ page }) => {
+    await installWarmVerificationMock(page, { previewVerdict: 'no_confidence' });
+    await navigateTo(page, '/trex');
+    await waitForNoSpinners(page);
+
+    const panel = page.getByTestId('trex-preview-run-panel');
+    await panel.getByLabel('Pull request URL').fill('https://github.com/acme/widget/pull/42');
+    await panel.getByLabel('Preview URL').fill('https://preview.example.com');
+    await panel.getByRole('button', { name: 'Test change' }).click();
+
+    await expect(panel.getByText('No confidence')).toBeVisible();
+    await expect(panel.getByText('Preview mismatch')).toBeVisible();
+    await expect(panel.getByText('No browser journey completed.')).toBeVisible();
+    await expect(panel.getByText(/does not match the resolved change head/)).toBeVisible();
+  });
 
   test('shows exact health, selection, timing, failure, artifact, and cleanup evidence', async ({
     page,

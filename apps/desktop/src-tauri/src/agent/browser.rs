@@ -9,16 +9,34 @@ use base64::{engine::general_purpose, Engine as _};
 use chromiumoxide::cdp::browser_protocol::page::{
     CaptureScreenshotFormat, CaptureScreenshotParams,
 };
+use chromiumoxide::cdp::js_protocol::runtime::{
+    ConsoleApiCalledType, EventConsoleApiCalled, EventExceptionThrown, RemoteObject,
+};
 use chromiumoxide::{Browser as Cdp, BrowserConfig, Page};
 use futures::StreamExt;
+use serde::Deserialize;
 use tokio::task::JoinHandle;
 
 pub const DEFAULT_MAX_ELEMENTS: usize = 80;
+const MAX_CONSOLE_ERRORS: usize = 20;
+const MAX_CONSOLE_ERROR_CHARS: usize = 1_000;
+const IGNORED_CONSOLE_ERRORS: [&str; 9] = [
+    "TAURI_NOT_AVAILABLE",
+    "__TAURI__",
+    "ipc://localhost",
+    "tauri://localhost",
+    "[vite]",
+    "Failed to fetch",
+    "NetworkError",
+    "net::ERR_",
+    "ResizeObserver loop",
+];
 
 pub struct Browser {
     inner: Cdp,
     page: Page,
     handler: JoinHandle<()>,
+    profile_dir: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -53,6 +71,24 @@ pub struct PageState {
     /// screenshot was captured so the frontend can render it inline without
     /// configuring the asset:// protocol scope. JPEG q80 keeps payload small.
     pub screenshot_data_url: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct GenericPageSmoke {
+    pub final_url: String,
+    pub title: String,
+    pub body_text_present: bool,
+    pub body_visible: bool,
+    pub response_status: Option<u16>,
+    pub console_errors: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct GenericPageProbe {
+    body_text_present: bool,
+    body_visible: bool,
+    response_status: Option<u16>,
 }
 
 /// Builds the element-extraction JS with a cap inlined as `MAX`. Capping in
@@ -117,12 +153,17 @@ impl Browser {
             .build()
             .map_err(|e| format!("BrowserConfig build failed: {e}"))?;
 
-        let (inner, mut handler) = Cdp::launch(config).await.map_err(|e| {
-            format!(
-                "Failed to launch Chrome: {e}. CodeVetter relies on the Chrome \
-                 you already have installed — install it from chrome.com if missing."
-            )
-        })?;
+        let (inner, mut handler) = match Cdp::launch(config).await {
+            Ok(launched) => launched,
+            Err(error) => {
+                let _ = std::fs::remove_dir_all(&profile_dir);
+                return Err(format!(
+                    "Failed to launch Chrome: {e}. CodeVetter relies on the Chrome \
+                 you already have installed — install it from chrome.com if missing.",
+                    e = error
+                ));
+            }
+        };
 
         let handler_task = tokio::spawn(async move { while handler.next().await.is_some() {} });
 
@@ -135,6 +176,7 @@ impl Browser {
             inner,
             page,
             handler: handler_task,
+            profile_dir,
         })
     }
 
@@ -209,6 +251,104 @@ impl Browser {
         })
     }
 
+    pub async fn generic_page_smoke(&self, url: &str) -> Result<GenericPageSmoke, String> {
+        let mut console_events = self
+            .page
+            .event_listener::<EventConsoleApiCalled>()
+            .await
+            .map_err(|error| format!("listen for console events: {error}"))?;
+        let mut exception_events = self
+            .page
+            .event_listener::<EventExceptionThrown>()
+            .await
+            .map_err(|error| format!("listen for page exceptions: {error}"))?;
+
+        self.page
+            .goto(url)
+            .await
+            .map_err(|error| format!("goto({url}) failed: {error}"))?;
+        let probe_value = self
+            .page
+            .evaluate(
+                r#"
+JSON.stringify((() => {
+  const body = document.body;
+  const navigation = performance.getEntriesByType('navigation')[0];
+  return {
+    bodyTextPresent: Boolean(body && body.innerText && body.innerText.trim()),
+    bodyVisible: Boolean(body && body.getClientRects().length && getComputedStyle(body).visibility !== 'hidden'),
+    responseStatus: Number.isFinite(navigation?.responseStatus) && navigation.responseStatus > 0
+      ? navigation.responseStatus
+      : null,
+  };
+})())
+"#,
+            )
+            .await
+            .map_err(|error| format!("generic page probe failed: {error}"))?;
+        let probe_json: String = probe_value
+            .into_value()
+            .map_err(|error| format!("generic page probe returned invalid data: {error}"))?;
+        let probe: GenericPageProbe = serde_json::from_str(&probe_json)
+            .map_err(|error| format!("generic page probe returned invalid JSON: {error}"))?;
+
+        // Give late microtasks a bounded window to surface console failures,
+        // then drain only currently available events.
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        let mut console_errors = Vec::new();
+        while console_errors.len() < MAX_CONSOLE_ERRORS {
+            let event = tokio::time::timeout(Duration::from_millis(5), console_events.next()).await;
+            let Ok(Some(event)) = event else {
+                break;
+            };
+            if event.r#type != ConsoleApiCalledType::Error {
+                continue;
+            }
+            let message = format_console_arguments(&event.args);
+            if !ignored_console_error(&message) {
+                console_errors.push(message);
+            }
+        }
+        while console_errors.len() < MAX_CONSOLE_ERRORS {
+            let event =
+                tokio::time::timeout(Duration::from_millis(5), exception_events.next()).await;
+            let Ok(Some(event)) = event else {
+                break;
+            };
+            let message = event
+                .exception_details
+                .exception
+                .as_ref()
+                .and_then(|exception| exception.description.clone())
+                .unwrap_or_else(|| event.exception_details.text.clone());
+            let message = bounded_text(message);
+            if !ignored_console_error(&message) && !console_errors.contains(&message) {
+                console_errors.push(message);
+            }
+        }
+
+        let final_url = self
+            .page
+            .url()
+            .await
+            .map_err(|error| format!("page.url() failed: {error}"))?
+            .unwrap_or_else(|| url.to_string());
+        let title = self
+            .page
+            .get_title()
+            .await
+            .map_err(|error| format!("page.get_title() failed: {error}"))?
+            .unwrap_or_default();
+        Ok(GenericPageSmoke {
+            final_url,
+            title,
+            body_text_present: probe.body_text_present,
+            body_visible: probe.body_visible,
+            response_status: probe.response_status,
+            console_errors,
+        })
+    }
+
     pub async fn click(&self, selector: &str) -> Result<(), String> {
         let el = self
             .page
@@ -258,10 +398,50 @@ impl Browser {
     }
 
     pub async fn close(mut self) -> Result<(), String> {
-        let _ = self.inner.close().await;
+        let close_result = self
+            .inner
+            .close()
+            .await
+            .map(|_| ())
+            .map_err(|error| format!("close Chrome: {error}"));
         self.handler.abort();
-        Ok(())
+        let _ = tokio::fs::remove_dir_all(&self.profile_dir).await;
+        close_result
     }
+}
+
+fn format_console_arguments(arguments: &[RemoteObject]) -> String {
+    let mut message = arguments
+        .iter()
+        .take(8)
+        .filter_map(|argument| {
+            argument
+                .value
+                .as_ref()
+                .map(ToString::to_string)
+                .or_else(|| argument.description.clone())
+        })
+        .collect::<Vec<_>>()
+        .join(" ");
+    if message.is_empty() {
+        message = "Console error without serializable arguments.".into();
+    }
+    bounded_text(message)
+}
+
+fn bounded_text(mut value: String) -> String {
+    if value.chars().count() <= MAX_CONSOLE_ERROR_CHARS {
+        return value;
+    }
+    value = value.chars().take(MAX_CONSOLE_ERROR_CHARS).collect();
+    value.push('…');
+    value
+}
+
+fn ignored_console_error(value: &str) -> bool {
+    IGNORED_CONSOLE_ERRORS
+        .iter()
+        .any(|pattern| value.contains(pattern))
 }
 
 /// Format the element list emitted by the injected JS into a compact
@@ -307,7 +487,10 @@ fn format_element_list(json_str: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{format_element_list, Browser, SnapshotOpts};
+    use super::{
+        bounded_text, format_element_list, ignored_console_error, Browser, SnapshotOpts,
+        MAX_CONSOLE_ERROR_CHARS,
+    };
 
     #[test]
     fn format_element_list_renders_compact_lines() {
@@ -340,6 +523,18 @@ mod tests {
     fn format_element_list_handles_empty_list() {
         let out = format_element_list("[]");
         assert_eq!(out, "(no interactable elements visible)");
+    }
+
+    #[test]
+    fn console_diagnostics_are_bounded_and_known_noise_is_ignored() {
+        let bounded = bounded_text("x".repeat(MAX_CONSOLE_ERROR_CHARS + 100));
+        assert_eq!(bounded.chars().count(), MAX_CONSOLE_ERROR_CHARS + 1);
+        assert!(bounded.ends_with('…'));
+        assert!(ignored_console_error("[vite] hot update failed"));
+        assert!(ignored_console_error("ResizeObserver loop limit exceeded"));
+        assert!(!ignored_console_error(
+            "Uncaught TypeError: checkout is undefined"
+        ));
     }
 
     #[test]
@@ -379,6 +574,23 @@ mod tests {
             "expected link text in element list",
         );
         browser.click("#b1").await.expect("click button");
+        browser.close().await.expect("close");
+    }
+
+    #[tokio::test]
+    #[ignore]
+    async fn e2e_generic_smoke_captures_visible_content() {
+        let browser = Browser::launch().await.expect("launch chrome");
+        let result = browser
+            .generic_page_smoke(
+                "data:text/html;charset=utf-8,%3Ctitle%3ESmoke%3C%2Ftitle%3E%3Cbody%3EReady%3C%2Fbody%3E",
+            )
+            .await
+            .expect("generic smoke");
+        assert_eq!(result.title, "Smoke");
+        assert!(result.body_visible);
+        assert!(result.body_text_present);
+        assert!(result.console_errors.is_empty());
         browser.close().await.expect("close");
     }
 }

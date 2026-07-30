@@ -122,6 +122,27 @@ fn main() {
             // `gh`/`git`, which broke GitHub auth detection. Repair it before
             // anything shells out.
             repair_path_for_gui();
+            match commands::cli_install::ensure_bundled_cli_link() {
+                commands::cli_install::CliInstallStatus::Installed(path) => {
+                    log::info!("Installed CodeVetter CLI launcher at {}", path.display());
+                }
+                commands::cli_install::CliInstallStatus::Current(path) => {
+                    log::debug!("CodeVetter CLI launcher is current at {}", path.display());
+                }
+                commands::cli_install::CliInstallStatus::SkippedDevelopment => {}
+                commands::cli_install::CliInstallStatus::BundledCliMissing(path) => {
+                    log::warn!("Bundled CodeVetter CLI is missing at {}", path.display());
+                }
+                commands::cli_install::CliInstallStatus::Collision(path) => {
+                    log::warn!(
+                        "CodeVetter CLI launcher collision at {}; existing entry was preserved",
+                        path.display()
+                    );
+                }
+                commands::cli_install::CliInstallStatus::Unavailable(error) => {
+                    log::warn!("CodeVetter CLI registration unavailable: {error}");
+                }
+            }
 
             let app_data_dir = app
                 .path()
@@ -469,6 +490,9 @@ fn main() {
             commands::trex_watcher::list_trex_watchers,
             commands::trex_watcher::list_trex_pr_runs,
             commands::trex_watcher::force_poll_trex_watcher,
+            // T-Rex direct change + preview verification
+            commands::trex_preview::run_trex_preview_verification,
+            commands::trex_preview::list_trex_preview_runs,
             // Git
             commands::git::list_git_branches,
             commands::git::list_pull_requests,

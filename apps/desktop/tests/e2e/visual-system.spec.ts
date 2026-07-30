@@ -89,6 +89,29 @@ test.describe('desktop visual system', () => {
     expect(transitionDurationMs).toBeLessThanOrEqual(0.001);
   });
 
+  test('opens command search from the sidebar and restores focus on close', async ({ page }) => {
+    await navigateTo(page, '/');
+
+    const search = page.getByRole('button', { name: 'Search commands' });
+    const usage = page.getByRole('link', { name: 'Usage' });
+    await expect(search).toBeVisible();
+    await expect
+      .poll(async () => Math.round((await search.boundingBox())?.height ?? 0))
+      .toBeGreaterThanOrEqual(40);
+    await expect
+      .poll(async () => Math.round((await usage.boundingBox())?.height ?? 0))
+      .toBeGreaterThanOrEqual(40);
+
+    await search.focus();
+    await search.click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByPlaceholder('Search commands...')).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(search).toBeFocused();
+  });
+
   test('has no serious accessibility violations on primary routes', async ({ page }) => {
     test.setTimeout(60_000);
     for (const [label, path] of routes) {
