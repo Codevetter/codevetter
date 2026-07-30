@@ -8,7 +8,7 @@ import Layout from '@/layouts/Layout.astro';
 <Layout
   title="Agent PR X-Ray examples — CodeVetter"
   description="Static, evidence-traced examples exported locally from CodeVetter reviews."
-  path="/xray/"
+  path="/xray"
 >
   <Nav />
   <main class="xray-shell">
@@ -32,7 +32,7 @@ import Layout from '@/layouts/Layout.astro';
       </div>
       <div class="grid">
         {examples.map((example) => (
-          <a class="card" href={`/xray/${example.id}/`}>
+          <a class="card" href={`/xray/${example.id}`}>
             <div class="meta"><span>{example.language}</span><span>{example.category}</span></div>
             <h3>{example.title}</h3>
             <p>{example.finding.summary}</p>

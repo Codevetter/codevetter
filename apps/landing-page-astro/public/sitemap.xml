@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://codevetter.com/</loc></url>
-  <url><loc>https://codevetter.com/index.md</loc></url>
-  <url><loc>https://codevetter.com/llms.txt</loc></url>
-  <url><loc>https://codevetter.com/api/ai</loc></url>
+  <url><loc>https://codevetter.com/benchmark</loc></url>
+  <url><loc>https://codevetter.com/changelog</loc></url>
   <url><loc>https://codevetter.com/download</loc></url>
   <url><loc>https://codevetter.com/faq</loc></url>
   <url><loc>https://codevetter.com/privacy</loc></url>
+  <url><loc>https://codevetter.com/terms</loc></url>
+  <url><loc>https://codevetter.com/docs/</loc></url>
+  <url><loc>https://codevetter.com/xray/</loc></url>
+  <url><loc>https://codevetter.com/xray/ts-sql-injection</loc></url>
+  <url><loc>https://codevetter.com/xray/go-race-condition</loc></url>
+  <url><loc>https://codevetter.com/xray/py-path-traversal</loc></url>
 </urlset>

@@ -1,20 +1,23 @@
 # CodeVetter
 
-Desktop-first AI code review for agent-generated code.
+Execution-backed verification and evaluation for coding agents.
 
 ## What it is
 
-- Local SQLite storage and Tauri desktop shell
-- Evidence-backed review loops
-- Optional Claude, Codex, or Gemini CLI backends
+- Reproducible runtime evidence for agent changes
+- Deterministic and calibrated graders
+- Machine-readable verification bundles through CLI and MCP
+- Local SQLite storage and a Tauri desktop viewer
 - Open source (ISC)
 
 ## Who it's for
 
-Engineers shipping AI-generated PRs who want review before merge — without uploading the repo to a central server.
+Engineers evaluating or shipping coding-agent changes who need executable evidence before accepting a result — without uploading the repository to a CodeVetter server.
 
 ## Agent entrypoints
 
 - https://codevetter.com/llms.txt
 - https://codevetter.com/api/ai
 - https://codevetter.com/index.md
+- https://codevetter.com/docs.md
+- https://codevetter.com/benchmark.md
