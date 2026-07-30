@@ -65,6 +65,12 @@ jobs:
           TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
         run: pnpm run prepare:mcp-sidecar:release
 
+      - name: Prepare release CLI sidecar
+        working-directory: apps/desktop
+        env:
+          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
+        run: pnpm run prepare:cli-sidecar:release
+
       # Tauri merges tauri.macos.conf.json before every Cargo build, including
       # the release-only graph benchmark below. Prepare the declared native
       # helper before that first build rather than waiting for tauri-action.
@@ -111,8 +117,10 @@ jobs:
           includeUpdaterJson: true
           updaterJsonPreferNsis: false
 
-      - name: Verify MCP sidecar in app bundle
-        run: test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter-mcp
+      - name: Verify CLI and MCP sidecars in app bundle
+        run: |
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter-mcp
 
       - name: Qualify Agent Island app and updater payload
         working-directory: apps/desktop

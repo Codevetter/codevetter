@@ -1,5 +1,9 @@
 {
   "bundle": {
-    "externalBin": ["binaries/codevetter-mcp", "binaries/codevetter-agent-island"]
+    "externalBin": [
+      "binaries/codevetter-mcp",
+      "binaries/codevetter",
+      "binaries/codevetter-agent-island"
+    ]
   }
 }

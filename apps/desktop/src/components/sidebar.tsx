@@ -1,4 +1,14 @@
-import { Activity, Bot, Columns3, Eye, ScanSearch, Settings, Zap } from 'lucide-react';
+import {
+  Activity,
+  Bot,
+  Columns3,
+  Command,
+  Eye,
+  ScanSearch,
+  Search,
+  Settings,
+  Zap,
+} from 'lucide-react';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -16,7 +26,11 @@ interface NavItem {
   match?: string[];
 }
 
-const productNavItems: NavItem[] = [
+interface SidebarProps {
+  onSearch: () => void;
+}
+
+const contextNavItems: NavItem[] = [
   {
     label: 'Usage',
     href: '/',
@@ -32,6 +46,9 @@ const productNavItems: NavItem[] = [
     description: 'Intel, history, graph, and ownership',
     match: ['/unpack', '/intel'],
   },
+];
+
+const workflowNavItems: NavItem[] = [
   {
     label: 'Work',
     href: '/agents',
@@ -70,9 +87,10 @@ const settingsNavItem: NavItem = {
   description: 'Providers and preferences',
 };
 
+const productNavItems = [...contextNavItems, ...workflowNavItems];
 const navItems = [...productNavItems, settingsNavItem];
 
-export default function Sidebar() {
+export default function Sidebar({ onSearch }: SidebarProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const pendingG = useRef(false);
@@ -123,96 +141,122 @@ export default function Sidebar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [navigate]);
 
+  function renderNavItem(item: NavItem) {
+    const active = isActive(item.href);
+    return (
+      <Tooltip key={item.href}>
+        <TooltipTrigger asChild>
+          <Link
+            to={item.href}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              'group relative flex min-h-[40px] items-center gap-3 rounded-lg px-3 text-[14px] transition-[background-color,color,box-shadow] duration-150',
+              active
+                ? 'bg-amber-300/[0.1] text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]'
+                : 'text-zinc-400 hover:bg-white/[0.045] hover:text-zinc-100'
+            )}
+          >
+            <span
+              className={cn(
+                'flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors duration-150',
+                active
+                  ? 'bg-amber-300/[0.1] text-amber-200'
+                  : 'text-zinc-500 group-hover:text-zinc-200'
+              )}
+            >
+              {item.icon}
+            </span>
+            <span className="min-w-0 flex-1 truncate font-medium">{item.label}</span>
+            <span
+              className={cn(
+                'font-mono text-[10px] tracking-tight transition-colors duration-150',
+                active ? 'text-amber-200/65' : 'text-zinc-400/75 group-hover:text-zinc-300/80'
+              )}
+              aria-hidden="true"
+            >
+              G {item.shortcut.toUpperCase()}
+            </span>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="max-w-52 text-[11px]">
+          {item.description}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
   return (
-    <TooltipProvider delayDuration={200}>
+    <TooltipProvider delayDuration={250}>
       <nav
         aria-label="Primary navigation"
-        className="no-drag fixed inset-x-0 top-0 z-50 flex h-14 items-center border-b border-white/[0.08] bg-[#090a0c]/92 px-4 shadow-[0_12px_40px_-32px_rgba(0,0,0,0.95)] backdrop-blur-2xl"
+        className="no-drag relative z-40 flex h-full w-64 shrink-0 flex-col overflow-hidden border-r border-white/[0.075] bg-[#0a0b0d]/96 shadow-[16px_0_48px_-42px_rgba(0,0,0,0.95)] backdrop-blur-2xl"
       >
-        <span className="flex items-center gap-2.5">
-          <BrandMark />
-          <span className="hidden text-sm font-semibold tracking-[-0.01em] text-zinc-100 sm:block">
-            CodeVetter
-          </span>
-        </span>
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_20%_0%,rgba(243,173,61,0.11),transparent_62%)]"
+          aria-hidden="true"
+        />
 
-        <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-0.5 rounded-lg border border-white/[0.055] bg-black/20 p-0.5">
-          {productNavItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Tooltip key={item.href}>
-                <TooltipTrigger asChild>
-                  <Link
-                    to={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    className={cn(
-                      'group relative flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-sm transition-colors duration-150',
-                      active
-                        ? 'text-amber-100'
-                        : 'text-zinc-400 hover:bg-white/[0.045] hover:text-zinc-100'
-                    )}
-                  >
-                    {active ? (
-                      <span className="absolute inset-0 rounded-md border border-amber-300/20 bg-amber-300/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]" />
-                    ) : null}
-                    <span
-                      className={cn(
-                        'relative z-10 transition-transform duration-150 group-hover:-translate-y-px',
-                        active ? 'text-amber-200' : 'text-zinc-400 group-hover:text-zinc-100'
-                      )}
-                    >
-                      {item.icon}
-                    </span>
-                    <span
-                      className={cn(
-                        'relative z-10 hidden font-medium md:inline',
-                        !active && 'lg:inline'
-                      )}
-                    >
-                      {item.label}
-                    </span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-48 text-[11px]">
-                  <div className="font-medium text-slate-200">{item.label}</div>
-                  <div className="mt-0.5 text-slate-500">{item.description}</div>
-                  <div className="mt-1 font-mono text-slate-500">
-                    g {item.shortcut.toLowerCase()}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
+        <div className="relative flex min-h-0 flex-1 flex-col px-3 pb-3 pt-4">
+          <div className="flex h-11 items-center gap-2.5 px-2">
+            <BrandMark className="h-8 w-8 shadow-[0_8px_24px_-14px_rgba(243,173,61,0.85)]" />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[14px] font-semibold tracking-[-0.015em] text-zinc-100">
+                CodeVetter
+              </div>
+              <div className="text-[11px] text-zinc-400/75">Evidence workbench</div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onSearch}
+            className="mt-3 flex h-[40px] w-full items-center gap-2.5 rounded-xl border border-white/[0.075] bg-white/[0.035] px-3 text-left text-[13px] text-zinc-400/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-[border-color,background-color,color] duration-150 hover:border-white/[0.13] hover:bg-white/[0.055] hover:text-zinc-200"
+            aria-label="Search commands"
+          >
+            <Search size={16} className="shrink-0" />
+            <span className="min-w-0 flex-1 truncate">Search commands</span>
+            <kbd className="flex items-center gap-0.5 rounded-md border border-white/[0.07] bg-black/20 px-1.5 py-0.5 font-sans text-[10px] text-zinc-400/75">
+              <Command size={10} aria-hidden="true" /> K
+            </kbd>
+          </button>
+
+          <div className="mt-6 min-h-0 overflow-y-auto">
+            <NavGroup label="Context">{contextNavItems.map(renderNavItem)}</NavGroup>
+            <NavGroup label="Verification" className="mt-5">
+              {workflowNavItems.map(renderNavItem)}
+            </NavGroup>
+          </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          <div className="hidden xl:block">
-            <ResourceChip />
+        <div className="relative border-t border-white/[0.065] px-3 py-3">
+          <div className="mb-2 px-1">
+            <ResourceChip placement="sidebar" />
           </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                to={settingsNavItem.href}
-                aria-current={isActive(settingsNavItem.href) ? 'page' : undefined}
-                className={cn(
-                  'flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors duration-150',
-                  isActive(settingsNavItem.href)
-                    ? 'border-amber-300/20 bg-amber-300/[0.08] text-amber-100'
-                    : 'border-transparent text-zinc-400 hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-zinc-100'
-                )}
-              >
-                {settingsNavItem.icon}
-                <span className="hidden lg:inline">Settings</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-48 text-[11px]">
-              <div className="font-medium text-slate-200">Settings</div>
-              <div className="mt-0.5 text-slate-500">Providers and preferences</div>
-              <div className="mt-1 font-mono text-slate-500">g ,</div>
-            </TooltipContent>
-          </Tooltip>
+          {renderNavItem(settingsNavItem)}
         </div>
       </nav>
     </TooltipProvider>
+  );
+}
+
+function NavGroup({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={className} aria-labelledby={`sidebar-${label.toLowerCase()}`}>
+      <h2
+        id={`sidebar-${label.toLowerCase()}`}
+        className="mb-1.5 px-3 text-[11px] font-medium text-zinc-400/75"
+      >
+        {label}
+      </h2>
+      <div className="space-y-0.5">{children}</div>
+    </section>
   );
 }
