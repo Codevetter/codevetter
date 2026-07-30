@@ -40,7 +40,11 @@ function ioTone(b: number): string {
   return 'text-slate-300';
 }
 
-export default function ResourceChip() {
+export default function ResourceChip({
+  placement = 'header',
+}: {
+  placement?: 'header' | 'sidebar';
+}) {
   const [snap, setSnap] = useState<ResourceSnapshot | null>(null);
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement | null>(null);
@@ -91,7 +95,11 @@ export default function ResourceChip() {
           <button
             ref={buttonRef}
             onClick={() => setOpen((o) => !o)}
-            className="flex items-center gap-2 rounded-full bg-white/[0.03] px-2.5 py-1 font-mono text-[10px] text-slate-400 hover:bg-white/[0.07]"
+            className={
+              placement === 'sidebar'
+                ? 'flex h-8 w-full items-center justify-center gap-2 rounded-lg bg-white/[0.025] px-2.5 font-mono text-[10px] text-slate-500 hover:bg-white/[0.055] hover:text-slate-300'
+                : 'flex items-center gap-2 rounded-full bg-white/[0.03] px-2.5 py-1 font-mono text-[10px] text-slate-400 hover:bg-white/[0.07]'
+            }
           >
             <span className={`flex items-center gap-1 ${cpuTone(snap.cpu_percent)}`}>
               <Cpu size={11} /> {snap.cpu_percent.toFixed(0)}%
@@ -116,7 +124,11 @@ export default function ResourceChip() {
       {open && (
         <div
           ref={popoverRef}
-          className="absolute top-[calc(100%+8px)] right-0 z-[60] w-[360px] cv-frame bg-[#07080a]/95 p-4 shadow-2xl backdrop-blur-md"
+          className={`absolute z-[60] w-[360px] cv-frame bg-[#07080a]/95 p-4 shadow-2xl backdrop-blur-md ${
+            placement === 'sidebar'
+              ? 'bottom-0 left-[calc(100%+12px)]'
+              : 'top-[calc(100%+8px)] right-0'
+          }`}
         >
           <div className="mb-3 flex items-center justify-between">
             <span className="cv-label text-slate-300">CodeVetter resources</span>

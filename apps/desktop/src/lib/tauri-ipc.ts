@@ -5556,6 +5556,94 @@ export async function forcePollTrexWatcher(repoPath: string): Promise<number> {
   return (await safeInvoke<number>('force_poll_trex_watcher', { repoPath })) ?? 0;
 }
 
+// ─── T-Rex direct change + preview verification ───────────────────────────
+
+export type TrexPreviewChangeKind = 'pull_request' | 'range';
+export type TrexPreviewIdentityStatus = 'verified' | 'claimed' | 'mismatch';
+export type TrexPreviewVerdict = 'passed_with_limits' | 'failed' | 'no_confidence';
+
+export interface TrexPreviewRunInput {
+  repo_path: string;
+  change_kind: TrexPreviewChangeKind;
+  change: string;
+  preview_url: string;
+}
+
+export interface TrexPreviewSourceReceipt {
+  kind: TrexPreviewChangeKind;
+  input: string;
+  base_sha: string;
+  head_sha: string;
+  commits: string[];
+  changed_paths: string[];
+}
+
+export interface TrexPreviewIdentity {
+  status: TrexPreviewIdentityStatus;
+  requested_url: string;
+  final_url: string;
+  revision: string | null;
+  evidence: string;
+}
+
+export interface TrexPreviewRoute {
+  route: string;
+  reason: string;
+}
+
+export interface TrexPreviewJourney {
+  loop_id: string;
+  route: string;
+  goal: string;
+  pass: boolean;
+  notes: string;
+  screenshot_path: string | null;
+  artifacts: string[];
+  duration_ms: number;
+  trace: {
+    final_url: string;
+    page_title: string;
+    console_errors: string[];
+    stage_timings_ms: Record<string, number>;
+    runner_rss_bytes: number | null;
+  };
+  error: string | null;
+  runner_type: string | null;
+}
+
+export interface TrexPreviewReceipt {
+  schema_version: 1;
+  run_id: string;
+  repo_path: string;
+  source: TrexPreviewSourceReceipt;
+  preview: TrexPreviewIdentity;
+  routes: TrexPreviewRoute[];
+  journeys: TrexPreviewJourney[];
+  verdict: TrexPreviewVerdict;
+  summary: string;
+  limitations: string[];
+  duration_ms: number;
+  ran_at: string;
+}
+
+export async function runTrexPreviewVerification(
+  input: TrexPreviewRunInput
+): Promise<TrexPreviewReceipt> {
+  return safeInvoke<TrexPreviewReceipt>('run_trex_preview_verification', { input });
+}
+
+export async function listTrexPreviewRuns(
+  repoPath?: string,
+  limit?: number
+): Promise<TrexPreviewReceipt[]> {
+  return (
+    (await safeInvoke<TrexPreviewReceipt[]>('list_trex_preview_runs', {
+      repoPath,
+      limit,
+    })) ?? []
+  );
+}
+
 // ─── Local MCP history exposure ────────────────────────────────────────────
 
 export interface McpAuditEntry {

@@ -25,9 +25,11 @@ Steps, in order (a failure stops the job):
    (hermetic Foundry receipt sanitize tests; the live manifest verifier runs
    in `release.yml` as a post-upload check, not here)
 10. **MCP sidecar build smoke** — `pnpm run prepare:mcp-sidecar`
-11. **Desktop build** — `pnpm run build` (Vite production build)
-12. **MCP protocol and safety tests** — `cargo test --manifest-path src-tauri/Cargo.toml mcp::`
-13. **MCP release-mode stdio lifecycle** — `cargo test --release --manifest-path src-tauri/Cargo.toml --test mcp_stdio`
+11. **CLI sidecar build smoke** — `pnpm run prepare:cli-sidecar`
+12. **Desktop build** — `pnpm run build` (Vite production build)
+13. **MCP protocol and safety tests** — Rust library, binary, and stdio integration tests
+14. **T-Rex CLI contract tests** — browser-feature parser, output, and exit-code tests
+15. **MCP and history browser tests** — Settings and Repo Unpack Playwright coverage
 
 ## Other workflows
 
