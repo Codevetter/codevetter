@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "preserve-retry-after-header",
+  "title": "Preserve an upstream retry-after header",
+  "lane": "api",
+  "runtime": "node",
+  "category": "api-contract",
+  "failure_mode": "response-header-loss",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "c0ef8553f51e2b929cff130c4b706929ad4421e785a12c0f798a097a7acdc47a"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "2be1fcc8cb5fa39a6d73ba09faba600f8e33d472ccc103c5d742dc98538640d8"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "fc21db5307561b6369de63ddc2b50f0fd817f17be977200ba9c6677453e67923"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "f48a32b5069e3fab90d7b9179577b8f22516c9d068fcad4532197b11eae869f4"
+    }
+  },
+  "required_checks": ["retry-after-preserved"],
+  "regression_checks": ["response-body-preserved", "status-and-content-type-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

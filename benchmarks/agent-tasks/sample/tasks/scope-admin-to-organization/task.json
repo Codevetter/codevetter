@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "scope-admin-to-organization",
+  "title": "Scope administrator access to an organization",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "authorization",
+  "failure_mode": "global-admin-bypass",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "8772bfc6018cedad33dae792b7e47e4bd469c3e8ac86b3ff5727a918fbe93691"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "125952aa1a134ffa99f28c6e1c2d92fb9f85255183079bb974f9f01c98f3d239"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "156c9c38766c6435f23883f37f41ca103f85ab8cd728ded737bf964b0631457a"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "67fd1bb4845c89d82b749efc8691a7b059a736168690a75bde7fe5e50b64e3bf"
+    }
+  },
+  "required_checks": ["cross-organization-admin-denied"],
+  "regression_checks": ["member-remains-denied", "same-organization-admin-allowed"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

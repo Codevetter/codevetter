@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "keep-zero-pagination-limit",
+  "files": [
+    {
+      "path": "pagination-options.ts",
+      "before_sha256": "ae17aac7bb2bdd2d5a86245640bcc3139a44270b2f0a2bf4e1c5851695426185",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIG5vcm1hbGl6ZWRMaW1pdCgKICByZXF1ZXN0ZWQ6IG51bWJlciB8IG51bGwsCiAgZmFsbGJhY2s6IG51bWJlcgopOiBudW1iZXIgewogIHJldHVybiByZXF1ZXN0ZWQgPz8gZmFsbGJhY2s7Cn0K",
+      "after_sha256": "623ed50b9f861a4fd54c65e9c1026b9bd71c5f101ec92d0cb8a3bf02fcb71644"
+    }
+  ]
+}

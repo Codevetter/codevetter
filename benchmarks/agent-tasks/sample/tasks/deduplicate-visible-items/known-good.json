@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "deduplicate-visible-items",
+  "files": [
+    {
+      "path": "visible-items.mjs",
+      "before_sha256": "d791b656b864f7a5a896b8fc9358789cda2dc610189cc2ac8811979877701c62",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIHVuaXF1ZVZpc2libGVJdGVtcyhpdGVtcykgewogIGNvbnN0IHNlZW4gPSBuZXcgU2V0KCk7CiAgcmV0dXJuIGl0ZW1zLmZpbHRlcigoaXRlbSkgPT4gewogICAgaWYgKHNlZW4uaGFzKGl0ZW0uaWQpKSByZXR1cm4gZmFsc2U7CiAgICBzZWVuLmFkZChpdGVtLmlkKTsKICAgIHJldHVybiB0cnVlOwogIH0pOwp9Cg==",
+      "after_sha256": "4e5fb0436e54d4a16b0f1539eb1d9674ab04a43287a559f3705ea60370f8650b"
+    }
+  ]
+}

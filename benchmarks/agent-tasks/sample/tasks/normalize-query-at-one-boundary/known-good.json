@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "normalize-query-at-one-boundary",
+  "files": [
+    {
+      "path": "query-caller.mjs",
+      "before_sha256": "39a2c8c38860e384d656c09678c497d059987716de14e7fe79ec068474f7516a",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIGxvYWRRdWVyeShhZGFwdGVyLCBxdWVyeSkgewogIHJldHVybiBhZGFwdGVyLmZldGNoKHF1ZXJ5LnRyaW0oKSk7Cn0K",
+      "after_sha256": "f950153ac00cdbb53134517c2f957aba250833a7dc9779985829c885a0390a58"
+    }
+  ]
+}

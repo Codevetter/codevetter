@@ -1,0 +1,46 @@
+{
+  "schema_version": "codevetter.agent-task-qualification.v2",
+  "task_id": "keep-zero-pagination-limit",
+  "manifest_sha256": "20266168d91738834547858dd0d95cc9e36375192a2e8f173affb3f63eaeabae",
+  "fixture_sha256": "0c87583841de15a41e275028894edf3aaccac6643a1759e7acfc1ca9ee5f697a",
+  "acceptance_contract_sha256": "bf72420e58ac1470b8ea7b71e07a14b4186116dd8b1e3d9516837075f695d9d3",
+  "known_good_sha256": "83de72637c2c9defe60db1a1a5e65a74409fc1adcde89520492b0b4642178420",
+  "workspace_policy": "public_fixture_and_task_packet_v1",
+  "qualified": true,
+  "baseline": {
+    "status": "intended_failure",
+    "attempts": [
+      {
+        "attempt": 1,
+        "outcome": "intended_failure",
+        "result_sha256": "9e1f290057de20e00c728a0273ddc6b6bfabb5ebad8cb087cca8a4a205d484a5"
+      },
+      {
+        "attempt": 2,
+        "outcome": "intended_failure",
+        "result_sha256": "9e1f290057de20e00c728a0273ddc6b6bfabb5ebad8cb087cca8a4a205d484a5"
+      }
+    ]
+  },
+  "known_good": {
+    "status": "pass",
+    "attempts": [
+      {
+        "attempt": 1,
+        "outcome": "pass",
+        "result_sha256": "0d15f42fce15868ccbc1089f603975202739ec6ff17369f02b982f9f0b74608a"
+      },
+      {
+        "attempt": 2,
+        "outcome": "pass",
+        "result_sha256": "0d15f42fce15868ccbc1089f603975202739ec6ff17369f02b982f9f0b74608a"
+      }
+    ]
+  },
+  "cleanup": {
+    "status": "complete"
+  },
+  "limitations": [
+    "Qualification executes trusted corpus check code without an operating-system sandbox."
+  ]
+}

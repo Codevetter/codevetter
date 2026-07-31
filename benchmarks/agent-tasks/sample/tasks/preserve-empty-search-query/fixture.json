@@ -1,0 +1,10 @@
+{
+  "schema_version": "codevetter.agent-task-fixture.v1",
+  "files": [
+    {
+      "path": "search-state.mjs",
+      "content_base64": "ZXhwb3J0IGZ1bmN0aW9uIG5leHRRdWVyeShxdWVyeSwgcHJldmlvdXNRdWVyeSkgewogIHJldHVybiBxdWVyeSB8fCBwcmV2aW91c1F1ZXJ5Owp9Cg==",
+      "sha256": "f34a12ebc34144f30791ed6050aa60a5169e60f48aa659cc3968f50c9648c7ba"
+    }
+  ]
+}

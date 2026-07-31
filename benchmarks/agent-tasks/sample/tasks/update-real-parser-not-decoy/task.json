@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "update-real-parser-not-decoy",
+  "title": "Update the real parser without changing its decoy",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "regression",
+  "failure_mode": "lookalike-unnecessary-change",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "5322dac5e93a1d9943d24b79cf024a83495872b54304fe0a1980b19e531a8315"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "fa438f0f507a05ca556def2da01278a5069a2382449132047a670f8c55238e6e"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "5488c34a8bf25d929a98c06c0c32c23f5b1b9e77bc7464fd8e543a15cc8935e5"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "94cfdefd6dd6c7354e173fcc880545e31f246d3708b35959f58154ab619b41f4"
+    }
+  },
+  "required_checks": ["zero-config-value-preserved"],
+  "regression_checks": ["lookalike-decoy-unchanged", "parser-fallback-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

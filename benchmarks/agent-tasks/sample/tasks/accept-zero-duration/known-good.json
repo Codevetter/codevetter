@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "accept-zero-duration",
+  "files": [
+    {
+      "path": "duration.ts",
+      "before_sha256": "5cef520750b82620c34c921918b1ebff5c435f2f0549a8a960f22fc28f0c5d64",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIGlzRHVyYXRpb24odmFsdWU6IHVua25vd24pOiB2YWx1ZSBpcyBudW1iZXIgewogIHJldHVybiB0eXBlb2YgdmFsdWUgPT09ICdudW1iZXInICYmIE51bWJlci5pc0Zpbml0ZSh2YWx1ZSkgJiYgdmFsdWUgPj0gMDsKfQo=",
+      "after_sha256": "2b30bb8d75d060ed4bd3112f2ee3ac7de7a937a5597ef1034aa31b9fe1703f5e"
+    }
+  ]
+}

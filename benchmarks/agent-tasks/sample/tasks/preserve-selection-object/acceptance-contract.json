@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "preserve-selection-object",
+  "task_defining_failures": ["selection-identity-preserved"],
+  "required_checks": [
+    {
+      "id": "selection-identity-preserved",
+      "label": "The selected object is not cloned"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "null-selection-preserved",
+      "label": "A null selection remains null"
+    },
+    {
+      "id": "selection-fields-preserved",
+      "label": "Selection fields remain unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "cf61884671a10505679fdee7010e708b20c8c62ae36d3434533be55f23fcdd9c",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

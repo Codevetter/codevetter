@@ -1,8 +1,52 @@
 {
   "schema_version": "codevetter.agent-task-corpus.v1",
   "corpus_id": "codevetter-agent-task-contract-sample",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "tasks": [
+    {
+      "task_id": "accept-zero-duration",
+      "manifest": {
+        "path": "tasks/accept-zero-duration/task.json",
+        "sha256": "dfc212aba38b530c55b28d3f5fef11403b8f753d853f311f66e8797ec5f12a27"
+      },
+      "qualification": {
+        "path": "qualifications/accept-zero-duration.json",
+        "sha256": "411f3e43b66ff9cee20256940a20fd53e12ae076bd71f8090901abf642701eec"
+      }
+    },
+    {
+      "task_id": "await-transaction-commit",
+      "manifest": {
+        "path": "tasks/await-transaction-commit/task.json",
+        "sha256": "52054adb14f8e18189de6516a288f6dfc751b54f7d7b87d180c8cebcfc371aed"
+      },
+      "qualification": {
+        "path": "qualifications/await-transaction-commit.json",
+        "sha256": "c761f776b569fb2fccaf6ccd0d4a6fec85e2fd7251ddeccc1e04fb3fd42e123e"
+      }
+    },
+    {
+      "task_id": "clear-inflight-request-after-rejection",
+      "manifest": {
+        "path": "tasks/clear-inflight-request-after-rejection/task.json",
+        "sha256": "36d391111819823e0384609c5d1e0e0955f22e839ec60e471ae5a33c6437a646"
+      },
+      "qualification": {
+        "path": "qualifications/clear-inflight-request-after-rejection.json",
+        "sha256": "3d2859ef0c19e9cf72e1ccb99ade2cdead69f10aeb16f3dc789e6d88c1045566"
+      }
+    },
+    {
+      "task_id": "deduplicate-visible-items",
+      "manifest": {
+        "path": "tasks/deduplicate-visible-items/task.json",
+        "sha256": "ce90f407cb7546cce2d559efff8a2e53f07355f754516da26a212946b86a5f52"
+      },
+      "qualification": {
+        "path": "qualifications/deduplicate-visible-items.json",
+        "sha256": "c6d0e8010817297e3adb519aec1b741438ff39b2cfc48f8aea089c52ea334724"
+      }
+    },
     {
       "task_id": "enforce-tenant-resource-access",
       "manifest": {
@@ -26,6 +70,94 @@
       }
     },
     {
+      "task_id": "forward-pagination-cursor",
+      "manifest": {
+        "path": "tasks/forward-pagination-cursor/task.json",
+        "sha256": "4616c591f8655d24d97748e90fb5b6dae9b15fd3bb0b236343cb82fea2521bed"
+      },
+      "qualification": {
+        "path": "qualifications/forward-pagination-cursor.json",
+        "sha256": "f6e428b81b59c64a8d10daa8fa2de0bb846533f888148f0eb8e8112e504ae066"
+      }
+    },
+    {
+      "task_id": "forward-request-timeout",
+      "manifest": {
+        "path": "tasks/forward-request-timeout/task.json",
+        "sha256": "bc921ecf084be8ba40428d127ef229e1fe0897bd931beccba87d7e1a0a5a5b0c"
+      },
+      "qualification": {
+        "path": "qualifications/forward-request-timeout.json",
+        "sha256": "7c7faf98d9c54503e29b4ac15ebdd233c70fcf6da777c69035dd604354993cdd"
+      }
+    },
+    {
+      "task_id": "ignore-stale-search-response",
+      "manifest": {
+        "path": "tasks/ignore-stale-search-response/task.json",
+        "sha256": "64e300cfb46489761b783df3af1efa0f07b112dbd22d9b0f2a64a6fa507a72db"
+      },
+      "qualification": {
+        "path": "qualifications/ignore-stale-search-response.json",
+        "sha256": "e2de40a127dcfdfe9efa61fa4e28d665c3c1b355176184c91c614af23982f194"
+      }
+    },
+    {
+      "task_id": "keep-zero-page-index",
+      "manifest": {
+        "path": "tasks/keep-zero-page-index/task.json",
+        "sha256": "09817d7545971bf75e9f7c19ca901eb3bc03168a7032a01fdae55f932a449ea9"
+      },
+      "qualification": {
+        "path": "qualifications/keep-zero-page-index.json",
+        "sha256": "1f27af2ba89181da113eb00643ec342e48e4d7472747268b430b2a24cecf2a5c"
+      }
+    },
+    {
+      "task_id": "keep-zero-pagination-limit",
+      "manifest": {
+        "path": "tasks/keep-zero-pagination-limit/task.json",
+        "sha256": "20266168d91738834547858dd0d95cc9e36375192a2e8f173affb3f63eaeabae"
+      },
+      "qualification": {
+        "path": "qualifications/keep-zero-pagination-limit.json",
+        "sha256": "6670dfc03a46f0f3ea9a59cf8a1874854165b2e9e4169f3e4efef74bf24a490d"
+      }
+    },
+    {
+      "task_id": "merge-route-state-without-dropping",
+      "manifest": {
+        "path": "tasks/merge-route-state-without-dropping/task.json",
+        "sha256": "23a0c8d9f346a8194fd8edc9fef8b17e68b7b517ba077975c7cc686e44e77f2a"
+      },
+      "qualification": {
+        "path": "qualifications/merge-route-state-without-dropping.json",
+        "sha256": "3799745c641aff85f6022daf54c50a0e92f37d9f127293991495328ebc5a1839"
+      }
+    },
+    {
+      "task_id": "normalize-query-at-one-boundary",
+      "manifest": {
+        "path": "tasks/normalize-query-at-one-boundary/task.json",
+        "sha256": "a6c1e2e7bd0daddbd3d7bdcdf37f9c7ce1c631d958395776486eaa36a073e21e"
+      },
+      "qualification": {
+        "path": "qualifications/normalize-query-at-one-boundary.json",
+        "sha256": "75cf40f89c70878ccd86fea48db94153150c60d02207c522c1faa50a67ae6665"
+      }
+    },
+    {
+      "task_id": "preserve-empty-search-query",
+      "manifest": {
+        "path": "tasks/preserve-empty-search-query/task.json",
+        "sha256": "7fd3c1f0e83312d1191971dd66c3d924824c5968270f18b5f998a026a6c8effb"
+      },
+      "qualification": {
+        "path": "qualifications/preserve-empty-search-query.json",
+        "sha256": "b8d15b91dfe6a8e8329f4a499758b13f200236de12cc0c6fcf4d5fc2aecf04d3"
+      }
+    },
+    {
       "task_id": "preserve-explicit-false",
       "manifest": {
         "path": "tasks/preserve-explicit-false/task.json",
@@ -34,6 +166,39 @@
       "qualification": {
         "path": "qualification.json",
         "sha256": "c17aca7559dd26c238c301180ceb05d86247347667e1746c8e0665019043c07b"
+      }
+    },
+    {
+      "task_id": "preserve-null-response-body",
+      "manifest": {
+        "path": "tasks/preserve-null-response-body/task.json",
+        "sha256": "e970218b5d33bb3d082d6a6a082acd3df6cb24344ae4eeee32642f9ecf7cf619"
+      },
+      "qualification": {
+        "path": "qualifications/preserve-null-response-body.json",
+        "sha256": "3c4bcda34f0b81d35d10d78c8a07bda54e36b56ac4577403ac50633e5f2f6588"
+      }
+    },
+    {
+      "task_id": "preserve-retry-after-header",
+      "manifest": {
+        "path": "tasks/preserve-retry-after-header/task.json",
+        "sha256": "cfb951eb75d797bccfce6f696bb0761587ddab4b395c543f9b133168ad678c4f"
+      },
+      "qualification": {
+        "path": "qualifications/preserve-retry-after-header.json",
+        "sha256": "53ea8e69b495ecd2fb7f8e85a96998e2a23609dab2332edfa04b2023d0d9004b"
+      }
+    },
+    {
+      "task_id": "preserve-selection-object",
+      "manifest": {
+        "path": "tasks/preserve-selection-object/task.json",
+        "sha256": "6c7cf602e7957ec1e187e15b225e26234f93356ef79137864bbb7e08a0c75ed9"
+      },
+      "qualification": {
+        "path": "qualifications/preserve-selection-object.json",
+        "sha256": "b546312333927a88e903d17f5125bf54656701106ab07b50c97b8cfbf1ee4971"
       }
     },
     {
@@ -48,6 +213,39 @@
       }
     },
     {
+      "task_id": "reject-cross-workspace-shared-id",
+      "manifest": {
+        "path": "tasks/reject-cross-workspace-shared-id/task.json",
+        "sha256": "e829a091de63b0ab6c1baf74a9ca9576066214e4f65a077db94d3932e2478dae"
+      },
+      "qualification": {
+        "path": "qualifications/reject-cross-workspace-shared-id.json",
+        "sha256": "b7584fe6c2f5a7e45976b1cdfcbd5ea672f4b8d8e5ff95dc87600fc9e0d1484a"
+      }
+    },
+    {
+      "task_id": "reject-deleted-resource-owner",
+      "manifest": {
+        "path": "tasks/reject-deleted-resource-owner/task.json",
+        "sha256": "10530cdd87e386552f8cdca1e6fc585a6cf5365e657871d6728854d48104076e"
+      },
+      "qualification": {
+        "path": "qualifications/reject-deleted-resource-owner.json",
+        "sha256": "0dc000922d79392b1576428e6c4d986cafd78e82abb6dbf5e9a5e3345777afb3"
+      }
+    },
+    {
+      "task_id": "reject-nan-retry-count",
+      "manifest": {
+        "path": "tasks/reject-nan-retry-count/task.json",
+        "sha256": "2d5f14740e95620a8e831ca9563461446077c67c5c85265d1bd51bf1db114919"
+      },
+      "qualification": {
+        "path": "qualifications/reject-nan-retry-count.json",
+        "sha256": "d2287c49ac19dde13f392c6939f223a5423ec9d2c0286f08191bbb257676fcdc"
+      }
+    },
+    {
       "task_id": "restore-zero-scroll-position",
       "manifest": {
         "path": "tasks/restore-zero-scroll-position/task.json",
@@ -59,6 +257,28 @@
       }
     },
     {
+      "task_id": "retain-latest-autocomplete-result",
+      "manifest": {
+        "path": "tasks/retain-latest-autocomplete-result/task.json",
+        "sha256": "fd0773cfc6a25d4a91a8d0ec3b5d4d073c33b92e29149bc5793998c77bb09bd5"
+      },
+      "qualification": {
+        "path": "qualifications/retain-latest-autocomplete-result.json",
+        "sha256": "e021e1746d13293b527bb4332d480cca9d1ac42e338c122bbfd82aa573e2e026"
+      }
+    },
+    {
+      "task_id": "rollback-failed-settings-update",
+      "manifest": {
+        "path": "tasks/rollback-failed-settings-update/task.json",
+        "sha256": "665f61aaddf7a6646fb54f1094a33f3cc67649e856c6489627d952c697e6513b"
+      },
+      "qualification": {
+        "path": "qualifications/rollback-failed-settings-update.json",
+        "sha256": "0363d66cc2e807a03605c5d7204402d52f68d93f75c74379f2ea03345e21b2d9"
+      }
+    },
+    {
       "task_id": "save-settings-after-durable-write",
       "manifest": {
         "path": "tasks/save-settings-after-durable-write/task.json",
@@ -67,6 +287,17 @@
       "qualification": {
         "path": "qualifications/save-settings-after-durable-write.json",
         "sha256": "06289f216a8bac41efcfe8d8d218c53b715d74b71a07232fe8ca13341e1f2f03"
+      }
+    },
+    {
+      "task_id": "scope-admin-to-organization",
+      "manifest": {
+        "path": "tasks/scope-admin-to-organization/task.json",
+        "sha256": "10467142b2d03c063a185b4d4666677c66eba073dea53c9e5cb1bae30fe32679"
+      },
+      "qualification": {
+        "path": "qualifications/scope-admin-to-organization.json",
+        "sha256": "d05fd1754690304c1322e0ce8146b6cf11a99c198f75fcf4cbf9720c6f408107"
       }
     },
     {
@@ -89,6 +320,17 @@
       "qualification": {
         "path": "qualifications/sort-suggestions-without-mutation.json",
         "sha256": "1ed111f4675fe68ae4bda91dd8798d4388ff40f373371b5e4078322672883992"
+      }
+    },
+    {
+      "task_id": "update-real-parser-not-decoy",
+      "manifest": {
+        "path": "tasks/update-real-parser-not-decoy/task.json",
+        "sha256": "a4e8a48a157dd95589d684b4f4ab4388e7339e7e73d3b6fb97dc349439394ab1"
+      },
+      "qualification": {
+        "path": "qualifications/update-real-parser-not-decoy.json",
+        "sha256": "d3e4c3d28e08156682d3a450629a2925c900793f582cf824e86b1eed1a07dcd0"
       }
     }
   ]

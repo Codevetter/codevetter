@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "accept-zero-duration",
+  "title": "Accept an explicit zero duration",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "validation",
+  "failure_mode": "falsy-valid-number",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "1e282709e1f71ed2663dc0696bcfa5f9ce1041137bf3a101210398d99bb0a316"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "90a90cc68244ce76bdb4e973ce3b2f0ccb22148a29a2bf876420d30465ddaf49"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "cf12c92bb8eddc73752603362bc10f23bbdaf91bed72eafecd2b4260047834ca"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "14ea33d0b545b93dd9f7992ce205297b5da4b8976a51a92c81a7f32bb85f98da"
+    }
+  },
+  "required_checks": ["zero-duration-accepted"],
+  "regression_checks": ["invalid-durations-rejected", "positive-duration-accepted"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

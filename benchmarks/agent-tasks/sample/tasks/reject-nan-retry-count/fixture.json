@@ -1,0 +1,10 @@
+{
+  "schema_version": "codevetter.agent-task-fixture.v1",
+  "files": [
+    {
+      "path": "retry-count.mjs",
+      "content_base64": "ZXhwb3J0IGZ1bmN0aW9uIGlzUmV0cnlDb3VudCh2YWx1ZSkgewogIHJldHVybiB0eXBlb2YgdmFsdWUgPT09ICdudW1iZXInOwp9Cg==",
+      "sha256": "f6b91a18028499db4f32fd7a9d4b35801d3ce5940073ba7d03761b126de33105"
+    }
+  ]
+}

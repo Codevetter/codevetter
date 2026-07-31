@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "clear-inflight-request-after-rejection",
+  "title": "Clear a rejected in-flight request",
+  "lane": "api",
+  "runtime": "node",
+  "category": "concurrency",
+  "failure_mode": "rejected-cache-retention",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "bf2508379e8833db7f87c29af1fe4273823d06f8c829d5e972bb756a4da9c82c"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "10241bcfb7407e98c18a5dbc0f8bce9b9556050238fd91ecf4a49dac3f06d08c"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "c5172305c1f21aaf7b8fd6b6a4ae5947029c84de37538bd3d4eab24692deda96"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "ea00eb7fb109e68382fc2de16ef71d3e1521bef76900cc423a4ee349d66fc4b4"
+    }
+  },
+  "required_checks": ["rejected-request-cleared"],
+  "regression_checks": ["original-failure-preserved", "pending-request-shared"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

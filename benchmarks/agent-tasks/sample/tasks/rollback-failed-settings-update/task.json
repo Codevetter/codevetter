@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "rollback-failed-settings-update",
+  "title": "Roll back a failed settings update",
+  "lane": "api",
+  "runtime": "node",
+  "category": "persistence",
+  "failure_mode": "missing-rollback",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "4cf14de8ccd1e5a6756fe330c3237973a389721a2350a8d2f9480a42191b9930"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "a7a820ca4684505cf73bf8ab1910590b3b354f63c7a0c66a7e3026030417d442"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "851c19794ab6ad427b86bd6015a116d5c4578a7aeaa2a29b7d85fa7fbc0308d3"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "c2e8b766ce28566d2cfe81d86c33f38eb36781683f06bc4cbf9a03fbc2c56b4d"
+    }
+  },
+  "required_checks": ["failed-commit-rolled-back"],
+  "regression_checks": ["original-failure-preserved", "successful-update-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

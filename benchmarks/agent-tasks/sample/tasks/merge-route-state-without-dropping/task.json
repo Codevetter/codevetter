@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "merge-route-state-without-dropping",
+  "title": "Merge route state without dropping fields",
+  "lane": "browser",
+  "runtime": "node",
+  "category": "browser-state",
+  "failure_mode": "partial-state-replacement",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "ef0b49184099f33576d26c631c416451ab6d829b9c88a60e593fd7ab0f6442de"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "51b027118f94ab7f5fe5db76aecf299f98489b89c8bf59c71a2a7f6bc2b7758d"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "c83f17e6a8d57001a536fd3bf8a183ca0f3ad58a9c81826c0fefec07ec817c8b"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "5a66e75feed26154edd5ae12f9b529a613a1071429c4d7529224bd1f653f5b0c"
+    }
+  },
+  "required_checks": ["route-fields-preserved"],
+  "regression_checks": ["new-query-applied", "route-state-remains-plain"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

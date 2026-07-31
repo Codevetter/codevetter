@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "reject-cross-workspace-shared-id",
+  "title": "Reject a shared identifier from another workspace",
+  "lane": "api",
+  "runtime": "node",
+  "category": "authorization",
+  "failure_mode": "shared-id-scope-bypass",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "c8524d1e5dcba90eae04e69c27118170b92b4e3b3565486f176544efad1f64a5"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "ab21ef5f6222deffc723e11121ea4a5a069a6892556f3f7e1a6862af2d3fc550"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "79b5f61805463c81f289c5d8fe25be7d6dbb46a8e43005890bd84e2e8a095f7d"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "09702da54728149f75234f0ef1226627576914b755cbdc740037f18608d19d40"
+    }
+  },
+  "required_checks": ["cross-workspace-share-denied"],
+  "regression_checks": ["same-workspace-share-allowed", "unknown-share-denied"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}
