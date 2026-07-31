@@ -38,6 +38,16 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-31 — Provider-neutral agent-task runner foundation:** added
+  deterministic non-executing plans with public-input size, conservative token
+  and cost bounds, environment-name availability, exact task/adapter identity,
+  and one-attempt approval. Approved adapters run without a shell in fresh
+  public-input-only workspaces with immutable executable artifacts, minimal
+  declared environment, bounded redacted output, process-group
+  timeout/cancellation, terminal-before-check ordering, and v2 lifecycle
+  receipts. A repository-owned synthetic adapter passes the qualified sample;
+  no real provider, model, paid run, network, evaluator projection, deploy, or
+  production path ran in this slice.
 - **2026-07-31 — Agent-task corpus qualification foundation:** added closed,
   versioned fixture, acceptance, exact known-good, check-result, qualification,
   adapter, and runner contracts plus deterministic dependency-free validation.
@@ -200,11 +210,11 @@ Internal (fleet):
 
 ### Benchmarks
 - Catch-rate benchmark harness (`benchmarks/agent-prs`): per-case or combined fixtures, `bench:new-case` starter, `bench:curation` readiness report, strict fixture validation, named CodeVetter / CodeRabbit free-tier / Claude Code comparator slots, false-positive and redundant-match counts, precision/F1, baseline deltas, severity-specific gates, JSON/Markdown report output.
-- Agent-task corpus foundation (`benchmarks/agent-tasks`): ten closed JSON
-  schemas, two-level SHA-256 task identity, fail-closed local validation,
-  deterministic repeated baseline/known-good qualification, distinct
-  validate/qualify/readiness commands, and one qualified owned sample that
-  remains explicitly non-publishable for issue #53.
+- Agent-task corpus foundation (`benchmarks/agent-tasks`): thirteen closed
+  versioned machine contracts, two-level SHA-256 task identity, fail-closed
+  validation, repeated baseline/known-good qualification, deterministic
+  dry-run planning, explicitly approved disposable adapter execution, and one
+  qualified synthetic sample that remains non-publishable for issue #53.
 - `--evidence-comparison=with:without` mode compares stored outputs with and without deterministic evidence search.
 - 27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7 languages and 15+ vulnerability types; `pnpm bench:public` scores catch-rate/precision/F1.
 

@@ -1,0 +1,24 @@
+{
+  "schema_version": "codevetter.agent-task-adapter.v2",
+  "adapter_id": "synthetic-false-fix",
+  "agent": "Repository-owned synthetic fixture adapter",
+  "model": "none",
+  "configuration": "offline-exact-replacement",
+  "command": ["{node}", "{adapter_root}/synthetic-false-fix.mjs", "{workspace}"],
+  "artifacts": [
+    {
+      "path": "synthetic-false-fix.mjs",
+      "sha256": "49493d89b1e5e8c5e5870a2ae1d1d4f775edda90368f6a13fe1f58ccafe76de0"
+    }
+  ],
+  "environment_names": ["FIXTURE_TOKEN"],
+  "timeout_ms": 5000,
+  "cost_posture": "free",
+  "planning": {
+    "prompt_overhead_tokens": 64,
+    "reserved_output_tokens": 128,
+    "input_usd_per_million": 0,
+    "output_usd_per_million": 0,
+    "max_cost_usd": 0
+  }
+}

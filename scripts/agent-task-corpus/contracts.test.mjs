@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
   CONTRACT_SCHEMA_VERSIONS,
   canonicalJson,
+  deriveRunPlanId,
   sha256Bytes,
   validateContract,
 } from './contracts.mjs';
@@ -23,6 +24,7 @@ test('all public contract schemas are closed and parseable', async () => {
   const names = [
     'acceptance-contract',
     'agent-adapter',
+    'agent-adapter-v2',
     'check-result',
     'corpus-index',
     'fixture-bundle',
@@ -30,6 +32,8 @@ test('all public contract schemas are closed and parseable', async () => {
     'qualification-receipt',
     'qualification-receipt-v2',
     'run-receipt',
+    'run-plan',
+    'run-receipt-v2',
     'task-manifest',
   ];
   for (const name of names) {
@@ -41,6 +45,27 @@ test('all public contract schemas are closed and parseable', async () => {
 });
 
 test('accepts representative documents for all qualification and runner contracts', () => {
+  const runPlanDraft = {
+    schema_version: CONTRACT_SCHEMA_VERSIONS['run-plan'],
+    task_id: 'preserve-explicit-false',
+    manifest_sha256: DIGEST,
+    fixture_sha256: DIGEST,
+    acceptance_contract_sha256: DIGEST,
+    adapter_sha256: DIGEST,
+    workspace_policy: 'public_fixture_and_task_packet_v1',
+    environment: [{ name: 'FIXTURE_TOKEN', available: true }],
+    filtered_input_bytes: 400,
+    estimated_input_tokens: 164,
+    reserved_output_tokens: 128,
+    estimated_max_cost_usd: 0,
+    max_cost_usd: 0,
+    cost_posture: 'free',
+    within_cost_limit: true,
+    command: ['{node}', '{adapter_root}/fixture-agent.mjs', '{workspace}'],
+    approval: { launch_required: true, paid_required: false },
+    blocked_reasons: [],
+    limitations: [],
+  };
   const documents = {
     'acceptance-contract': {
       schema_version: CONTRACT_SCHEMA_VERSIONS['acceptance-contract'],
@@ -61,6 +86,25 @@ test('accepts representative documents for all qualification and runner contract
       environment_names: [],
       timeout_ms: 30_000,
       cost_posture: 'free',
+    },
+    'agent-adapter-v2': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['agent-adapter-v2'],
+      adapter_id: 'fixture-agent',
+      agent: 'Fixture Agent',
+      model: 'none',
+      configuration: 'offline',
+      command: ['{node}', '{adapter_root}/fixture-agent.mjs', '{workspace}'],
+      artifacts: [{ path: 'fixture-agent.mjs', sha256: DIGEST }],
+      environment_names: ['FIXTURE_TOKEN'],
+      timeout_ms: 30_000,
+      cost_posture: 'free',
+      planning: {
+        prompt_overhead_tokens: 64,
+        reserved_output_tokens: 128,
+        input_usd_per_million: 0,
+        output_usd_per_million: 0,
+        max_cost_usd: 0,
+      },
     },
     'check-result': {
       schema_version: CONTRACT_SCHEMA_VERSIONS['check-result'],
@@ -151,6 +195,44 @@ test('accepts representative documents for all qualification and runner contract
       cleanup: { status: 'complete' },
       limitations: [],
     },
+    'run-plan': {
+      ...runPlanDraft,
+      plan_id: deriveRunPlanId(runPlanDraft),
+    },
+    'run-receipt-v2': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['run-receipt-v2'],
+      run_id: 'fixture-run-v2',
+      plan_id: 'plan-fixture',
+      task_id: 'preserve-explicit-false',
+      manifest_sha256: DIGEST,
+      fixture_sha256: DIGEST,
+      acceptance_contract_sha256: DIGEST,
+      adapter_sha256: DIGEST,
+      environment_sha256: DIGEST,
+      workspace_policy: 'public_fixture_and_task_packet_v1',
+      terminal_status: 'success',
+      lifecycle: [
+        'workspace_prepared',
+        'agent_started',
+        'agent_terminated',
+        'checks_started',
+        'checks_finished',
+        'cleanup_complete',
+      ],
+      agent: {
+        status: 'exited',
+        exit_code: 0,
+        stdout_sha256: DIGEST,
+        stderr_sha256: DIGEST,
+        stdout_bytes: 10,
+        stderr_bytes: 0,
+        output_truncated: false,
+      },
+      checks: [{ id: 'explicit-false-preserved', status: 'pass' }],
+      regression_count: 0,
+      cleanup: { status: 'complete' },
+      limitations: [],
+    },
     'task-manifest': {
       schema_version: CONTRACT_SCHEMA_VERSIONS['task-manifest'],
       task_id: 'preserve-explicit-false',
@@ -177,7 +259,12 @@ test('accepts representative documents for all qualification and runner contract
   };
 
   for (const [name, document] of Object.entries(documents)) {
-    const kind = name === 'qualification-receipt-v2' ? 'qualification-receipt' : name;
+    const kind =
+      {
+        'agent-adapter-v2': 'agent-adapter',
+        'qualification-receipt-v2': 'qualification-receipt',
+        'run-receipt-v2': 'run-receipt',
+      }[name] ?? name;
     assert.deepEqual(validateContract(kind, document), [], name);
   }
 });
@@ -200,6 +287,30 @@ test('rejects unknown fields, unsafe paths, bounds, duplicates, and false qualif
     '$.secret_value: unknown field',
     '$.timeout_ms: expected an integer from 1000 to 3600000',
   ]);
+
+  const unsafeV2Adapter = {
+    schema_version: CONTRACT_SCHEMA_VERSIONS['agent-adapter-v2'],
+    adapter_id: 'fixture-agent',
+    agent: 'Fixture Agent',
+    model: 'none',
+    configuration: 'offline',
+    command: ['{node}', '{adapter_root}/fixture-agent.mjs', '{workspace}/../hidden'],
+    artifacts: [{ path: 'fixture-agent.mjs', sha256: DIGEST }],
+    environment_names: [],
+    timeout_ms: 30_000,
+    cost_posture: 'free',
+    planning: {
+      prompt_overhead_tokens: 0,
+      reserved_output_tokens: 1,
+      input_usd_per_million: 0,
+      output_usd_per_million: 0,
+      max_cost_usd: 0,
+    },
+  };
+  assert.match(
+    validateContract('agent-adapter', unsafeV2Adapter).join('\n'),
+    /safe POSIX relative path/
+  );
 
   const qualification = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['qualification-receipt'],

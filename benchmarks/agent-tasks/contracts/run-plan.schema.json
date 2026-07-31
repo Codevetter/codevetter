@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/run-plan-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "task_id",
+    "manifest_sha256",
+    "fixture_sha256",
+    "acceptance_contract_sha256",
+    "adapter_sha256",
+    "workspace_policy",
+    "environment",
+    "filtered_input_bytes",
+    "estimated_input_tokens",
+    "reserved_output_tokens",
+    "estimated_max_cost_usd",
+    "max_cost_usd",
+    "cost_posture",
+    "within_cost_limit",
+    "command",
+    "approval",
+    "blocked_reasons",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task-plan.v1" },
+    "plan_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "task_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "manifest_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "fixture_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "acceptance_contract_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "adapter_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "workspace_policy": { "const": "public_fixture_and_task_packet_v1" },
+    "environment": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "available"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,79}$" },
+          "available": { "type": "boolean" }
+        }
+      }
+    },
+    "filtered_input_bytes": { "type": "integer", "minimum": 1, "maximum": 104857600 },
+    "estimated_input_tokens": { "type": "integer", "minimum": 1, "maximum": 100000000 },
+    "reserved_output_tokens": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+    "estimated_max_cost_usd": { "type": "number", "minimum": 0, "maximum": 100000 },
+    "max_cost_usd": { "type": "number", "minimum": 0, "maximum": 100000 },
+    "cost_posture": { "enum": ["free", "paid", "unknown"] },
+    "within_cost_limit": { "type": "boolean" },
+    "command": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["launch_required", "paid_required"],
+      "properties": {
+        "launch_required": { "const": true },
+        "paid_required": { "type": "boolean" }
+      }
+    },
+    "blocked_reasons": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  }
+}
