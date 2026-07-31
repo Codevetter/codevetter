@@ -55,6 +55,11 @@ jobs:
       - name: Prepare CLI sidecar
         working-directory: apps/desktop
         run: pnpm run prepare:cli-sidecar
+      - name: Qualify CLI artifact
+        working-directory: apps/desktop
+        run: |
+          pnpm run test:cli-qualification
+          pnpm run qualify:cli
       - name: Desktop build
         working-directory: apps/desktop
         run: pnpm run build

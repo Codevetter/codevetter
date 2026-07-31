@@ -30,6 +30,7 @@ release.yml  (on release.created OR workflow_dispatch with tag)
    ├─ prepare:mcp-sidecar:release + prepare:cli-sidecar:release
    │  + universal Agent Island helper + vite build
    ├─ tauri build (macos-latest) → DMG + signed updater archive
+   ├─ execute the final bundled CLI qualification
    ├─ upload assets to the release
    └─ upload latest.json manifest (consumed by the updater)
         │
@@ -70,8 +71,9 @@ graph + MCP budget qualification runs before the build (see
 The optional [Native Agent Island](../architecture/native-agent-island.md) is
 bundled as a nested universal sidecar. Release verification checks arm64 and
 x86_64 slices plus its nested code signature before assets are uploaded.
-The same release verifies executable `codevetter` and `codevetter-mcp`
-sidecars inside the final app bundle.
+The same release executes the final bundled `codevetter` binary to verify its
+version/help contract and confirms executable `codevetter-mcp` remains in the
+app bundle.
 
 ## Auto-updater
 
@@ -86,6 +88,7 @@ sidecars inside the final app bundle.
 - `apps/desktop/src-tauri/tauri.conf.json` (version + updater config)
 - `apps/desktop/src-tauri/tauri.macos.conf.json` (macOS-only Agent Island sidecar)
 - `apps/desktop/scripts/prepare-mcp-sidecar.mjs` (sidecar bundling)
+- `apps/desktop/scripts/verify-cli-release.mjs` (prepared/final CLI contract)
 - `apps/desktop/scripts/prepare-agent-island.mjs` (universal native helper)
 - `scripts/verify-release-manifest.mjs` (post-upload manifest linkage check;
   see [automation-contract.md](./automation-contract.md#updater-manifest-validation))

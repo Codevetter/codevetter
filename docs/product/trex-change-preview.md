@@ -166,9 +166,13 @@ The following remain deferred:
 - dependency installation and application boot orchestration;
 - authenticated or state-mutating browser journeys;
 - base-preview versus head-preview comparison;
-- MCP entrypoints for the direct-run workflow;
 - model-authored or richer autonomous journeys;
 - observability and Sentry-log correlation.
 
 Those capabilities can build on the same source, preview-identity, journey, and
 receipt contracts after the direct path proves reliable.
+
+An MCP execution projection is designed but not implemented. It deliberately
+uses a future, separately enabled process because the existing history MCP must
+remain strictly read-only. See
+[T-Rex MCP projection](../architecture/trex-mcp-projection.md).

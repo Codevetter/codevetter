@@ -11,6 +11,8 @@
     "prepare:mcp-sidecar:release": "node scripts/prepare-mcp-sidecar.mjs --release",
     "prepare:cli-sidecar": "node scripts/prepare-cli-sidecar.mjs",
     "prepare:cli-sidecar:release": "node scripts/prepare-cli-sidecar.mjs --release",
+    "qualify:cli": "node scripts/verify-cli-release.mjs",
+    "test:cli-qualification": "node --test scripts/verify-cli-release.test.mjs",
     "prepare:agent-island": "node scripts/prepare-agent-island.mjs",
     "prepare:agent-island:release": "node scripts/prepare-agent-island.mjs --release",
     "test:agent-island": "swift run --package-path native/AgentIsland codevetter-agent-island --self-test",
