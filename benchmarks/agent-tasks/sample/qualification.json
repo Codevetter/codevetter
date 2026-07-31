@@ -1,7 +1,7 @@
 {
   "schema_version": "codevetter.agent-task-qualification.v2",
   "task_id": "preserve-explicit-false",
-  "manifest_sha256": "650229cec888569d5a0d6823b7dc1619f7f214bde8b66d4f9695d5fcb6844b08",
+  "manifest_sha256": "9dc4ab47e44f70c03cfadf3f18b8650b5381918d0dcd96a16107ec9402adc413",
   "fixture_sha256": "7573b5ca83bdc7286cf35693f070d12c6b6bddd99f1f7ef0659986f91d13fa0a",
   "acceptance_contract_sha256": "ad86ac07ef32973d4df25a25b45721b3b32d717466fe5d61f7fe43396da51b81",
   "known_good_sha256": "27a1390fa4048248c610afa469dbf0871c9dd80730116fd5ab9ec8679e2d8b62",

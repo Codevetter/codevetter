@@ -38,6 +38,16 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-31 — Eight-category qualified agent-task seeds:** expanded the
+  owned corpus from one to eight deterministic tasks covering browser state,
+  authorization, API contracts, validation, concurrency, persistence,
+  integration, and regression behavior across browser/API lanes and
+  Node/TypeScript runtimes. Every task now has repeated intended baseline
+  failure, repeated regression-free known-good success, immutable receipt
+  linkage, and cleanup proof. Validation reports 8/8 qualified with lane,
+  runtime, and category gates green; publication remains correctly closed on
+  the 30-task minimum. These are compact synthetic seeds, not real-agent or
+  product-value evidence.
 - **2026-07-31 — Immutable receipt-to-evaluator composition:** added a closed
   local evaluation bundle that binds corpus, task revision, adapter, raw v2
   receipt, pair/order, and structural-context identities. A dependency-free

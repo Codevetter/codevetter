@@ -33,16 +33,27 @@ test('the owned sample is valid, deterministic, and explicitly not publishable',
   assert.deepEqual(second, first);
   assert.equal(first.valid, true);
   assert.equal(first.publishable, false);
-  assert.deepEqual(first.counts, { categories: 1, qualified_tasks: 1, tasks: 1 });
-  assert.deepEqual(first.coverage.lanes, ['api']);
+  assert.deepEqual(first.counts, { categories: 8, qualified_tasks: 8, tasks: 8 });
+  assert.deepEqual(first.coverage.categories, [
+    'api-contract',
+    'authorization',
+    'browser-state',
+    'concurrency',
+    'integration',
+    'persistence',
+    'regression',
+    'validation',
+  ]);
+  assert.deepEqual(first.coverage.lanes, ['api', 'browser']);
+  assert.deepEqual(first.coverage.runtimes, ['node', 'typescript']);
   assert.deepEqual(
     first.gates.map((gate) => [gate.id, gate.passed]),
     [
       ['task-count', false],
       ['qualification-count', true],
-      ['lane-coverage', false],
-      ['runtime-coverage', false],
-      ['failure-category-count', false],
+      ['lane-coverage', true],
+      ['runtime-coverage', true],
+      ['failure-category-count', true],
     ]
   );
 });

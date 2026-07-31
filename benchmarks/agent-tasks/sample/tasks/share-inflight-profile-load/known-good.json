@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "share-inflight-profile-load",
+  "files": [
+    {
+      "path": "profiles.ts",
+      "before_sha256": "8ca5731e8c972b90ce6dbec66bc78a871c08b2832d4d13523970ad6f1fddba9e",
+      "after_base64": "Y29uc3QgaW5GbGlnaHQgPSBuZXcgTWFwPHN0cmluZywgUHJvbWlzZTx1bmtub3duPj4oKTsKCmV4cG9ydCBmdW5jdGlvbiBsb2FkUHJvZmlsZSgKICBpZDogc3RyaW5nLAogIGZldGNoUHJvZmlsZTogKGlkOiBzdHJpbmcpID0+IFByb21pc2U8dW5rbm93bj4KKTogUHJvbWlzZTx1bmtub3duPiB7CiAgY29uc3QgZXhpc3RpbmcgPSBpbkZsaWdodC5nZXQoaWQpOwogIGlmIChleGlzdGluZykgcmV0dXJuIGV4aXN0aW5nOwogIGNvbnN0IHJlcXVlc3QgPSBmZXRjaFByb2ZpbGUoaWQpOwogIGluRmxpZ2h0LnNldChpZCwgcmVxdWVzdCk7CiAgcmVxdWVzdC5maW5hbGx5KCgpID0+IGluRmxpZ2h0LmRlbGV0ZShpZCkpOwogIHJldHVybiByZXF1ZXN0Owp9Cg==",
+      "after_sha256": "0532cd1e5c6f6104fa8c95430a406ca62aea72782e158cc8d908b8020323259f"
+    }
+  ]
+}

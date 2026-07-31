@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "forward-integration-abort-signal",
+  "title": "Forward cancellation to an integration client",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "integration",
+  "failure_mode": "dropped-cancellation",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "29f4ef386a1ee6137315d2a4b05babe43dd62d72f53e52ed407f9570e1a7ff97"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "8aabc325ec2ec158e21e2c95397c332868b2356898b93a1909f175c4b4161e79"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "ea773f83d55be7c9398a66e106d974b23fb1ecd66b84e28b08ec877be24a4811"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "d94e6e074c3c985154927561f80caa94acbe721cc2dc48dda6d8e3514f4c6178"
+    }
+  },
+  "required_checks": ["abort-signal-forwarded"],
+  "regression_checks": ["issue-path-preserved", "response-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "f7ad9c396883466b50c8123c06823ceb12223d5e"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic seed fixture; repository license applies."
+  }
+}

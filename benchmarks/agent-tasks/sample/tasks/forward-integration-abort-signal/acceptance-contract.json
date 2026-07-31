@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "forward-integration-abort-signal",
+  "task_defining_failures": ["abort-signal-forwarded"],
+  "required_checks": [
+    {
+      "id": "abort-signal-forwarded",
+      "label": "The exact caller abort signal reaches the client"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "issue-path-preserved",
+      "label": "The issue request path remains unchanged"
+    },
+    {
+      "id": "response-preserved",
+      "label": "The client response is returned unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "6697376a93e90e1173f744e07896a3d15d8128cf3eca7cf41b0ceac6afd0fdf4",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

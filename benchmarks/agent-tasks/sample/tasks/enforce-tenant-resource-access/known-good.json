@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "enforce-tenant-resource-access",
+  "files": [
+    {
+      "path": "access.ts",
+      "before_sha256": "4c2615bab1a4150bfb80e8ada9db7d7a5b940224bea03f69fa7073d2da2689bc",
+      "after_base64": "ZXhwb3J0IGludGVyZmFjZSBVc2VyIHsKICBpZDogc3RyaW5nOwogIHRlbmFudElkOiBzdHJpbmc7CiAgcm9sZTogJ2FkbWluJyB8ICdtZW1iZXInOwp9CgpleHBvcnQgaW50ZXJmYWNlIFJlc291cmNlIHsKICBvd25lcklkOiBzdHJpbmc7CiAgdGVuYW50SWQ6IHN0cmluZzsKfQoKZXhwb3J0IGZ1bmN0aW9uIGNhbkFjY2Vzcyh1c2VyOiBVc2VyLCByZXNvdXJjZTogUmVzb3VyY2UpOiBib29sZWFuIHsKICByZXR1cm4gKAogICAgdXNlci50ZW5hbnRJZCA9PT0gcmVzb3VyY2UudGVuYW50SWQgJiYKICAgICh1c2VyLnJvbGUgPT09ICdhZG1pbicgfHwgcmVzb3VyY2Uub3duZXJJZCA9PT0gdXNlci5pZCkKICApOwp9Cg==",
+      "after_sha256": "3b973ca26e41247631d5ca9ca6d61744fd878e7ac92bcd825b61631fe7b6db94"
+    }
+  ]
+}

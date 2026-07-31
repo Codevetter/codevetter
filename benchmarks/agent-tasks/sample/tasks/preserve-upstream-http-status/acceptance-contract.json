@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "preserve-upstream-http-status",
+  "task_defining_failures": ["error-status-preserved"],
+  "required_checks": [
+    {
+      "id": "error-status-preserved",
+      "label": "A non-success upstream status remains unchanged"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "body-preserved",
+      "label": "The response body remains unchanged"
+    },
+    {
+      "id": "headers-preserved",
+      "label": "The response headers remain unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "b8609ab31d98e25320960dd109dfa50054136e542ea28aa14bb5d5d8f1a532bf",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

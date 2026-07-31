@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "save-settings-after-durable-write",
+  "files": [
+    {
+      "path": "settings.mjs",
+      "before_sha256": "4cc3c271f83dc428f2e1902f89b572574b528f37546e4a351ae339b89963a958",
+      "after_base64": "ZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIHNhdmVTZXR0aW5ncyhzdG9yZSwga2V5LCB2YWx1ZSkgewogIGF3YWl0IHN0b3JlLnNldChrZXksIHZhbHVlKTsKICByZXR1cm4geyBzYXZlZDogdHJ1ZSB9Owp9Cg==",
+      "after_sha256": "890b2d906864f0ee28767e8b85440356cb1b0cd5a506baa93a99a13ae24aedba"
+    }
+  ]
+}

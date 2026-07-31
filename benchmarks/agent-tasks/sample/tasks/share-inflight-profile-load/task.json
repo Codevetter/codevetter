@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "share-inflight-profile-load",
+  "title": "Share concurrent in-flight profile loads",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "concurrency",
+  "failure_mode": "inflight-deduplication",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "05a4f2d4c0b19e26a61116b58002f257081e4ed709697b4c05a60e02a5b262ac"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "61251c13485c001aa83823b44a7b05d12cd68c3108bfa26196d2e1dcc41f47cd"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "f98c7518d45ec395bfec971dfde79b974d9201317da18f782690dd6014554949"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "336e6496f35992846a8b97f20f334b208ee3923f72fbaa30bf5000705b417e44"
+    }
+  },
+  "required_checks": ["concurrent-load-shared"],
+  "regression_checks": ["profile-value-preserved", "settled-load-restarts"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "f7ad9c396883466b50c8123c06823ceb12223d5e"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic seed fixture; repository license applies."
+  }
+}

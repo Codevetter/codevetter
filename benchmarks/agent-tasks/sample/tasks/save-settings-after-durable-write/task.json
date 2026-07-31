@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "save-settings-after-durable-write",
+  "title": "Wait for a durable settings write",
+  "lane": "api",
+  "runtime": "node",
+  "category": "persistence",
+  "failure_mode": "missing-await",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "03cfaf623121af3e824df7559f225781a187630b50a23aa2f4d9953961d55bc4"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "35b9150ab4a7f22f9c78c445a85ff5fc0d8e99249bf80a55c52c0be46fd5f7b6"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "9bde1c4b3ec6176664cc08589404e3dddbfef22a44aaaa5f49afc09f4b8a58ad"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "ecf9d0a654b8cb57f616ee3f7976b5869a7df73504b7b120bbfa41258a945dd1"
+    }
+  },
+  "required_checks": ["write-completes-before-return"],
+  "regression_checks": ["storage-arguments-preserved", "success-result-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "f7ad9c396883466b50c8123c06823ceb12223d5e"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic seed fixture; repository license applies."
+  }
+}

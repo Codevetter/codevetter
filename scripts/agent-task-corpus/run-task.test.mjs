@@ -52,8 +52,8 @@ test('creates a deterministic non-executing plan with conservative bounds', asyn
 
   assert.deepEqual(second, first);
   assert.match(first.plan_id, /^plan-[a-f0-9]{32}$/);
-  assert.equal(first.filtered_input_bytes, 434);
-  assert.equal(first.estimated_input_tokens, 173);
+  assert.equal(first.filtered_input_bytes, 327);
+  assert.equal(first.estimated_input_tokens, 146);
   assert.equal(first.estimated_max_cost_usd, 0);
   assert.equal(first.approval.launch_required, true);
   assert.equal(first.approval.paid_required, false);

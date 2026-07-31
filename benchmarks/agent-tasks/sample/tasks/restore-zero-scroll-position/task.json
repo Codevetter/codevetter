@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "restore-zero-scroll-position",
+  "title": "Restore an explicit zero scroll position",
+  "lane": "browser",
+  "runtime": "typescript",
+  "category": "browser-state",
+  "failure_mode": "falsy-state-restore",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "40df56eacc4edaed3ac0361557bd7e6381d25669091c328303497e4e771f0d85"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "2cd20f6425b170dd380a73090e2dbd17d452f94b30c0f06bab71f953cef184b9"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "ae760bcd3629a2e9d8105e440f0327b8809239e6475b8e44f1dd1e44d6247038"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "69086544f528a9d9e1240e3844373c6405caf6a36edd4c1d5637a09b0b474c82"
+    }
+  },
+  "required_checks": ["zero-position-restored"],
+  "regression_checks": ["missing-position-falls-back", "positive-position-restored"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "f7ad9c396883466b50c8123c06823ceb12223d5e"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic seed fixture; repository license applies."
+  }
+}

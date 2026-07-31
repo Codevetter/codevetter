@@ -1,0 +1,46 @@
+{
+  "schema_version": "codevetter.agent-task-qualification.v2",
+  "task_id": "enforce-tenant-resource-access",
+  "manifest_sha256": "a597d5021ec163d8a18721f1abd949c5b8e100cc47d2cdffc01bc40174e73762",
+  "fixture_sha256": "20d489cb7aa8e973097b2b7d0910ab41c6adc083df1f9cf620f3e1f5a23d4ff1",
+  "acceptance_contract_sha256": "1e72d44fbb481e1ddc0e168376d5f32de00f51cb639efab41cd2cb294ac3abe1",
+  "known_good_sha256": "a8782e1629480a170819639872e393af3b8b1aa010cde51f5b9e8c702618d00c",
+  "workspace_policy": "public_fixture_and_task_packet_v1",
+  "qualified": true,
+  "baseline": {
+    "status": "intended_failure",
+    "attempts": [
+      {
+        "attempt": 1,
+        "outcome": "intended_failure",
+        "result_sha256": "3e6d2935c48aa3006b221bd1d33f426bb7515eebfef5d1dc59cc983b768299e5"
+      },
+      {
+        "attempt": 2,
+        "outcome": "intended_failure",
+        "result_sha256": "3e6d2935c48aa3006b221bd1d33f426bb7515eebfef5d1dc59cc983b768299e5"
+      }
+    ]
+  },
+  "known_good": {
+    "status": "pass",
+    "attempts": [
+      {
+        "attempt": 1,
+        "outcome": "pass",
+        "result_sha256": "04219730155d6893e6f3e57bf109f80bbf468bb0c36ed0530eef68fcf5019ac8"
+      },
+      {
+        "attempt": 2,
+        "outcome": "pass",
+        "result_sha256": "04219730155d6893e6f3e57bf109f80bbf468bb0c36ed0530eef68fcf5019ac8"
+      }
+    ]
+  },
+  "cleanup": {
+    "status": "complete"
+  },
+  "limitations": [
+    "Qualification executes trusted corpus check code without an operating-system sandbox."
+  ]
+}

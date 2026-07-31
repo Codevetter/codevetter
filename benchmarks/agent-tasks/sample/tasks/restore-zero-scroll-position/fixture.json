@@ -1,0 +1,10 @@
+{
+  "schema_version": "codevetter.agent-task-fixture.v1",
+  "files": [
+    {
+      "path": "scroll-state.ts",
+      "content_base64": "ZXhwb3J0IGludGVyZmFjZSBTY3JvbGxTbmFwc2hvdCB7CiAgeTogbnVtYmVyIHwgbnVsbDsKfQoKZXhwb3J0IGZ1bmN0aW9uIHJlc3RvcmVkU2Nyb2xsWShzbmFwc2hvdDogU2Nyb2xsU25hcHNob3QsIGN1cnJlbnRZOiBudW1iZXIpOiBudW1iZXIgewogIHJldHVybiBzbmFwc2hvdC55IHx8IGN1cnJlbnRZOwp9Cg==",
+      "sha256": "83be3efd06f74ebfb92ad8a29dd51f746dae261e2c605c1f499b60877fe823c2"
+    }
+  ]
+}

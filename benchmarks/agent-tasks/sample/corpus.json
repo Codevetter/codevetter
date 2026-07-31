@@ -1,17 +1,94 @@
 {
   "schema_version": "codevetter.agent-task-corpus.v1",
   "corpus_id": "codevetter-agent-task-contract-sample",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "tasks": [
+    {
+      "task_id": "enforce-tenant-resource-access",
+      "manifest": {
+        "path": "tasks/enforce-tenant-resource-access/task.json",
+        "sha256": "a597d5021ec163d8a18721f1abd949c5b8e100cc47d2cdffc01bc40174e73762"
+      },
+      "qualification": {
+        "path": "qualifications/enforce-tenant-resource-access.json",
+        "sha256": "9a3396a6c4eb0b59638772d50b2bb08c9f7782f1cade7b5aa38c0afd66a49c0b"
+      }
+    },
+    {
+      "task_id": "forward-integration-abort-signal",
+      "manifest": {
+        "path": "tasks/forward-integration-abort-signal/task.json",
+        "sha256": "7a6cf7e15bace9648be2401294431fa5bcbe3332f297410f76fcaf4cef62a32b"
+      },
+      "qualification": {
+        "path": "qualifications/forward-integration-abort-signal.json",
+        "sha256": "39731d1495b9d7ac3245579c07e7395324b87f9b3d83332228df7bef388bcd36"
+      }
+    },
     {
       "task_id": "preserve-explicit-false",
       "manifest": {
         "path": "tasks/preserve-explicit-false/task.json",
-        "sha256": "650229cec888569d5a0d6823b7dc1619f7f214bde8b66d4f9695d5fcb6844b08"
+        "sha256": "9dc4ab47e44f70c03cfadf3f18b8650b5381918d0dcd96a16107ec9402adc413"
       },
       "qualification": {
         "path": "qualification.json",
-        "sha256": "80c12293033d3e24023c885e164a7df4b24d5c4dd3604ded98cabe091a1b2ac2"
+        "sha256": "c17aca7559dd26c238c301180ceb05d86247347667e1746c8e0665019043c07b"
+      }
+    },
+    {
+      "task_id": "preserve-upstream-http-status",
+      "manifest": {
+        "path": "tasks/preserve-upstream-http-status/task.json",
+        "sha256": "923c207c42065b733ae00e770164731e601156a34b56181a812faf22e0a8f71b"
+      },
+      "qualification": {
+        "path": "qualifications/preserve-upstream-http-status.json",
+        "sha256": "315ae797bc6fcff231241751836e1648567a9b2fdfa5a76b2776aaac13fd7bba"
+      }
+    },
+    {
+      "task_id": "restore-zero-scroll-position",
+      "manifest": {
+        "path": "tasks/restore-zero-scroll-position/task.json",
+        "sha256": "71d5f01cf41e1ae651004c882d2b0e50695b8a1cfaf02aacbdd202e8b72ba35e"
+      },
+      "qualification": {
+        "path": "qualifications/restore-zero-scroll-position.json",
+        "sha256": "6c8f97d4ca1f39ce03b9219b8ada1c393fbb0c834758f397c7d09cc1eba0a3c2"
+      }
+    },
+    {
+      "task_id": "save-settings-after-durable-write",
+      "manifest": {
+        "path": "tasks/save-settings-after-durable-write/task.json",
+        "sha256": "0673b84beccd53fca31cb86f499b84ad0a5bc59ed17a0a4d42d20795ab197638"
+      },
+      "qualification": {
+        "path": "qualifications/save-settings-after-durable-write.json",
+        "sha256": "06289f216a8bac41efcfe8d8d218c53b715d74b71a07232fe8ca13341e1f2f03"
+      }
+    },
+    {
+      "task_id": "share-inflight-profile-load",
+      "manifest": {
+        "path": "tasks/share-inflight-profile-load/task.json",
+        "sha256": "b03c11b278469300fccf40971bf6041f2843b794bd47159540b83205ebbc8542"
+      },
+      "qualification": {
+        "path": "qualifications/share-inflight-profile-load.json",
+        "sha256": "5926322248e066d34961356083e0a9f635e44861a15184c366ed02a0a9ae42ba"
+      }
+    },
+    {
+      "task_id": "sort-suggestions-without-mutation",
+      "manifest": {
+        "path": "tasks/sort-suggestions-without-mutation/task.json",
+        "sha256": "e5812168d8c9443c6630a154d7532d895cdf45a6141cee923447b0dfb430bd09"
+      },
+      "qualification": {
+        "path": "qualifications/sort-suggestions-without-mutation.json",
+        "sha256": "1ed111f4675fe68ae4bda91dd8798d4388ff40f373371b5e4078322672883992"
       }
     }
   ]
