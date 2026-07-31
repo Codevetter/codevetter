@@ -7,13 +7,14 @@ sidebar:
 
 # Agent-task corpus contracts
 
-This is the contract foundation for
+This is the contract and qualification foundation for
 [GitHub issue #53](https://github.com/Codevetter/codevetter/issues/53). It makes
-task packages inspectable and immutable before CodeVetter gains authority to
-qualify tasks or launch an agent.
+task packages inspectable and immutable, then proves their baseline failure and
+known-good success without launching an agent.
 
-The current sample is deliberately small and unqualified. It proves structural
-validation only; it is not benchmark evidence.
+The current owned sample is qualified through the real local path. It proves
+the machinery, not product value: one synthetic task remains far below corpus
+readiness.
 
 ## Commands
 
@@ -23,6 +24,9 @@ Run from the repository root:
 pnpm corpus:validate
 pnpm corpus:validate --json
 pnpm corpus:validate --root benchmarks/agent-tasks/sample --json
+pnpm corpus:qualify --task preserve-explicit-false
+pnpm corpus:qualify --task preserve-explicit-false --json
+pnpm corpus:qualify --task preserve-explicit-false --out /tmp/qualification.json
 pnpm corpus:readiness
 pnpm corpus:readiness --json
 pnpm test:corpus-contracts
@@ -43,6 +47,13 @@ strict gates pass:
 Both commands support deterministic human and JSON output. Invalid input always
 exits non-zero.
 
+`corpus:qualify` creates two fresh baseline workspaces and two fresh known-good
+workspaces by default, runs the immutable task check driver without a shell,
+and emits a deterministic v2 receipt. It exits `0` only when the task-defining
+failure repeats at baseline, every check repeats successfully after the
+known-good replacement, and every workspace is removed. `--out` writes the
+receipt atomically.
+
 ## Layout
 
 ```text
@@ -51,23 +62,30 @@ benchmarks/agent-tasks/
 │   ├── common.schema.json
 │   ├── corpus-index.schema.json
 │   ├── task-manifest.schema.json
+│   ├── fixture-bundle.schema.json
+│   ├── acceptance-contract.schema.json
+│   ├── known-good-change.schema.json
 │   ├── check-result.schema.json
 │   ├── qualification-receipt.schema.json
+│   ├── qualification-receipt-v2.schema.json
 │   ├── agent-adapter.schema.json
 │   └── run-receipt.schema.json
 └── sample/
     ├── corpus.json
+    ├── qualification.json
     └── tasks/<task-id>/
         ├── task.json
         ├── fixture.json
         ├── task.md
         ├── acceptance-contract.json
-        └── known-good.patch
+        ├── checks.mjs
+        └── known-good.json
 ```
 
-The sample uses small regular files for contract proof. Later realistic tasks
-may use bounded owned fixture archives, but the manifest still treats each
-archive as one immutable artifact.
+The fixture is a closed, bounded bundle of sorted base64 files. The known-good
+change is a sorted list of exact file replacements with before/after SHA-256
+identities. Qualification does not invoke `tar`, `patch`, a package manager, or
+the network.
 
 ## Identity chain
 
@@ -92,6 +110,24 @@ task definition. Strict readiness counts a task only when the receipt:
 - records repeated known-good success; and
 - derives `qualified: true` from those exact states.
 
+V1 receipts remain readable. V2 additionally binds the fixture, acceptance
+contract, known-good change, public-input workspace policy, ordered attempt
+outcomes/result identities, and cleanup result.
+
+## Qualification boundary
+
+Every attempt starts from a new temporary directory containing only decoded
+fixture files and `TASK.md`. The acceptance contract, known-good data, and
+check driver stay outside that workspace. Known-good qualification performs
+only declared exact replacements after checking the before hash.
+
+The driver runs under Node with `shell: false`, a declared timeout, bounded
+stdout/stderr, and a minimal environment. Its stdout must be one closed
+check-result document with the exact required and regression inventory.
+Qualification distinguishes wrong baseline failure, incomplete checks,
+timeouts, check errors, flakiness, patch drift, regression, and cleanup failure.
+Receipts omit temporary paths, timing, environment values, and raw output.
+
 ## Authoring rules
 
 - Keep task IDs, category IDs, failure modes, and check IDs lowercase
@@ -113,17 +149,17 @@ shortfalls with sorted path-specific errors.
 
 ## Current authority boundary
 
-Validation and readiness only read local files and compute hashes. They do not:
+Validation and readiness only read local files and compute hashes.
+Qualification may create bounded temporary workspaces and execute the trusted
+repository-owned check driver. These paths do not:
 
-- execute fixture setup or task checks;
-- apply the known-good patch;
-- create a qualification receipt;
 - launch an agent or subprocess adapter;
 - read credentials or environment values;
 - make network requests;
 - project receipts into the structural-context evaluator; or
 - mutate corpus content.
 
-Those capabilities remain later, separately reviewed slices on issue #53.
-Until qualification exists, the sample must continue to report `0 qualified`
-and `publishable: false`.
+Agent execution and evaluator projection remain later, separately reviewed
+slices on issue #53. The sample reports `1 qualified` and
+`publishable: false`; task count, browser-lane, TypeScript-runtime, and category
+breadth gates remain closed.

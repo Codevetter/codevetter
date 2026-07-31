@@ -9,7 +9,7 @@
   "artifacts": {
     "fixture": {
       "path": "fixture.json",
-      "sha256": "0cdbb8dfcf729ee3bc0b0e8123521a1f37edacdac42e87e729f1fc6dcd33a785"
+      "sha256": "7573b5ca83bdc7286cf35693f070d12c6b6bddd99f1f7ef0659986f91d13fa0a"
     },
     "task_packet": {
       "path": "task.md",
@@ -17,15 +17,15 @@
     },
     "acceptance_contract": {
       "path": "acceptance-contract.json",
-      "sha256": "b1f3c7157677f0b87406aca4aa814cfe6e1d080763bd6ebafd212cf717765dd9"
+      "sha256": "ad86ac07ef32973d4df25a25b45721b3b32d717466fe5d61f7fe43396da51b81"
     },
     "known_good_patch": {
-      "path": "known-good.patch",
-      "sha256": "cabe7b1fed6be3a29089ac4377b64583574004d7cce07152af351386fe6c6563"
+      "path": "known-good.json",
+      "sha256": "27a1390fa4048248c610afa469dbf0871c9dd80730116fd5ab9ec8679e2d8b62"
     }
   },
   "required_checks": ["explicit-false-preserved"],
-  "regression_checks": ["label-preserved"],
+  "regression_checks": ["label-preserved", "public-inputs-only"],
   "provenance": {
     "kind": "owned",
     "repository": "Codevetter/codevetter",

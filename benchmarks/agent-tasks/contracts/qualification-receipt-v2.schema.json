@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/qualification-receipt-v2.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "manifest_sha256",
+    "fixture_sha256",
+    "acceptance_contract_sha256",
+    "known_good_sha256",
+    "workspace_policy",
+    "qualified",
+    "baseline",
+    "known_good",
+    "cleanup",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task-qualification.v2" },
+    "task_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "manifest_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "fixture_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "acceptance_contract_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "known_good_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "workspace_policy": { "const": "public_fixture_and_task_packet_v1" },
+    "qualified": { "type": "boolean" },
+    "baseline": { "$ref": "#/$defs/phase" },
+    "known_good": { "$ref": "#/$defs/phase" },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": { "status": { "enum": ["complete", "failed"] } }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  },
+  "$defs": {
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "attempts"],
+      "properties": {
+        "status": {
+          "enum": [
+            "intended_failure",
+            "wrong_failure",
+            "pass",
+            "patch_failure",
+            "check_failure",
+            "regression",
+            "setup_failure",
+            "timeout",
+            "incomplete_checks",
+            "check_error",
+            "flaky",
+            "cleanup_failure"
+          ]
+        },
+        "attempts": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["attempt", "outcome", "result_sha256"],
+            "properties": {
+              "attempt": { "type": "integer", "minimum": 1, "maximum": 5 },
+              "outcome": {
+                "enum": [
+                  "intended_failure",
+                  "wrong_failure",
+                  "pass",
+                  "patch_failure",
+                  "check_failure",
+                  "regression",
+                  "setup_failure",
+                  "timeout",
+                  "incomplete_checks",
+                  "check_error",
+                  "cleanup_failure"
+                ]
+              },
+              "result_sha256": {
+                "anyOf": [{ "$ref": "./common.schema.json#/$defs/sha256" }, { "type": "null" }]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

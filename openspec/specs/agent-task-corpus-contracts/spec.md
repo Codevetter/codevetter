@@ -7,10 +7,10 @@ build a reproducible coding-agent task corpus without launching an agent.
 ### Requirement: Corpus documents use closed versioned contracts
 
 The system SHALL define closed versioned contracts for corpus indexes, task
-manifests, check results, qualification receipts, agent adapters, and run
-receipts. Every contract MUST reject unknown fields, missing required fields,
-invalid enum values, duplicate identifiers, and values outside declared
-bounds.
+manifests, fixture bundles, acceptance contracts, known-good changes, check
+results, qualification receipts, agent adapters, and run receipts. Every
+contract MUST reject unknown fields, missing required fields, invalid enum
+values, duplicate identifiers, and values outside declared bounds.
 
 #### Scenario: A contract document is valid
 

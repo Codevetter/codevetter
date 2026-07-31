@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/known-good-change-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "files"],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task-known-good.v1" },
+    "task_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "before_sha256", "after_base64", "after_sha256"],
+        "properties": {
+          "path": { "$ref": "./common.schema.json#/$defs/relativePath" },
+          "before_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+          "after_base64": { "type": "string", "minLength": 4, "maxLength": 1398104 },
+          "after_sha256": { "$ref": "./common.schema.json#/$defs/sha256" }
+        }
+      }
+    }
+  }
+}

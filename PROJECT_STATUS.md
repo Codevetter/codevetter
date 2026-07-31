@@ -38,13 +38,16 @@ Internal (fleet):
 
 ## Timeline
 
-- **2026-07-31 — Agent-task corpus contract foundation:** added six closed,
-  versioned machine contracts plus deterministic, dependency-free validation
-  for task/index identities, safe bounded artifacts, provenance, licenses,
-  qualification evidence, and strict corpus breadth. The owned one-task sample
-  is structurally valid but intentionally reports zero qualified tasks and
-  fails publishable readiness; no task checks, agents, model calls, or scorer
-  projections run in this slice.
+- **2026-07-31 — Agent-task corpus qualification foundation:** added closed,
+  versioned fixture, acceptance, exact known-good, check-result, qualification,
+  adapter, and runner contracts plus deterministic dependency-free validation.
+  Qualification now creates fresh public-input-only workspaces, applies exact
+  known-good replacements without a shell, executes immutable timeout-bounded
+  checks, preserves explicit failure/cleanup taxonomy, and emits v2 receipts.
+  The owned one-task sample repeats its intended baseline failure and
+  known-good success, so it reports one qualified task while strict readiness
+  remains closed on count and breadth. No agent, model, network, scorer, or
+  production path runs in this slice.
 - **2026-07-31 — T-Rex MCP and CLI artifact qualification:** fixed the future
   agent-triggered verification boundary as a separate, explicitly enabled MCP
   process so the existing history MCP remains read-only. Pull-request CI now
@@ -197,10 +200,11 @@ Internal (fleet):
 
 ### Benchmarks
 - Catch-rate benchmark harness (`benchmarks/agent-prs`): per-case or combined fixtures, `bench:new-case` starter, `bench:curation` readiness report, strict fixture validation, named CodeVetter / CodeRabbit free-tier / Claude Code comparator slots, false-positive and redundant-match counts, precision/F1, baseline deltas, severity-specific gates, JSON/Markdown report output.
-- Agent-task corpus foundation (`benchmarks/agent-tasks`): six closed JSON
-  contracts, two-level SHA-256 task identity, fail-closed local validation,
-  distinct non-strict/readiness commands, and an explicitly unqualified sample
-  for issue #53.
+- Agent-task corpus foundation (`benchmarks/agent-tasks`): ten closed JSON
+  schemas, two-level SHA-256 task identity, fail-closed local validation,
+  deterministic repeated baseline/known-good qualification, distinct
+  validate/qualify/readiness commands, and one qualified owned sample that
+  remains explicitly non-publishable for issue #53.
 - `--evidence-comparison=with:without` mode compares stored outputs with and without deterministic evidence search.
 - 27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7 languages and 15+ vulnerability types; `pnpm bench:public` scores catch-rate/precision/F1.
 
