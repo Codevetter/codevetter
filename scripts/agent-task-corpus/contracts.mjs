@@ -7,6 +7,8 @@ export const CONTRACT_SCHEMA_VERSIONS = Object.freeze({
   'agent-adapter-v2': 'codevetter.agent-task-adapter.v2',
   'check-result': 'codevetter.agent-task-check-result.v1',
   'corpus-index': 'codevetter.agent-task-corpus.v1',
+  'evaluation-bundle': 'codevetter.agent-task-evaluation-bundle.v1',
+  'evaluation-score': 'codevetter.agent-task-evaluation-score.v1',
   'fixture-bundle': 'codevetter.agent-task-fixture.v1',
   'known-good-change': 'codevetter.agent-task-known-good.v1',
   'qualification-receipt': 'codevetter.agent-task-qualification.v1',
@@ -845,6 +847,254 @@ function validateRunReceiptV2(value, path, errors) {
   }
 }
 
+function validateEvaluationBundle(value, path, errors) {
+  const fields = ['schema_version', 'experiment', 'corpus', 'tasks', 'runs'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['evaluation-bundle'],
+    `${path}.schema_version`,
+    errors
+  );
+  validateEvaluationExperiment(value.experiment, `${path}.experiment`, errors);
+  artifact(value.corpus, `${path}.corpus`, errors);
+
+  array(value.tasks, `${path}.tasks`, errors, { min: 1, max: CORPUS_LIMITS.maxTasks });
+  const taskIds = [];
+  for (const [index, task] of (Array.isArray(value.tasks) ? value.tasks : []).entries()) {
+    const taskPath = `${path}.tasks[${index}]`;
+    if (
+      !closedObject(
+        task,
+        taskPath,
+        ['task_id', 'repository_revision'],
+        ['task_id', 'repository_revision'],
+        errors
+      )
+    ) {
+      continue;
+    }
+    id(task.task_id, `${taskPath}.task_id`, errors);
+    revision(task.repository_revision, `${taskPath}.repository_revision`, errors);
+    if (typeof task.task_id === 'string') taskIds.push(task.task_id);
+  }
+  unique(taskIds, `${path}.tasks task_id`, errors);
+
+  array(value.runs, `${path}.runs`, errors, { min: 2, max: 5_000 });
+  const runKeys = [];
+  const receiptPaths = [];
+  const receiptHashes = [];
+  for (const [index, run] of (Array.isArray(value.runs) ? value.runs : []).entries()) {
+    const runPath = `${path}.runs[${index}]`;
+    const runFields = [
+      'pair_id',
+      'comparison',
+      'arm',
+      'task_id',
+      'trial_index',
+      'execution_order',
+      'receipt',
+      'adapter',
+      'context',
+    ];
+    if (!closedObject(run, runPath, runFields, runFields, errors)) continue;
+    id(run.pair_id, `${runPath}.pair_id`, errors);
+    oneOf(run.comparison, ['aa', 'ab'], `${runPath}.comparison`, errors);
+    const allowedArms = run.comparison === 'aa' ? ['a', 'b'] : ['control', 'treatment'];
+    oneOf(run.arm, allowedArms, `${runPath}.arm`, errors);
+    id(run.task_id, `${runPath}.task_id`, errors);
+    if (typeof run.task_id === 'string' && !taskIds.includes(run.task_id)) {
+      errors.push(`${runPath}.task_id: does not reference a declared task`);
+    }
+    integer(run.trial_index, `${runPath}.trial_index`, errors, 1, 10_000);
+    integer(run.execution_order, `${runPath}.execution_order`, errors, 1, 2);
+    artifact(run.receipt, `${runPath}.receipt`, errors);
+    artifact(run.adapter, `${runPath}.adapter`, errors);
+    validateEvaluationContext(run.context, `${runPath}.context`, errors);
+    if (
+      typeof run.comparison === 'string' &&
+      typeof run.pair_id === 'string' &&
+      typeof run.arm === 'string'
+    ) {
+      runKeys.push(`${run.comparison}:${run.pair_id}:${run.arm}`);
+    }
+    if (typeof run.receipt?.path === 'string') receiptPaths.push(run.receipt.path);
+    if (typeof run.receipt?.sha256 === 'string') receiptHashes.push(run.receipt.sha256);
+  }
+  unique(runKeys, `${path}.runs pair arm`, errors);
+  unique(receiptPaths, `${path}.runs receipt path`, errors);
+  unique(receiptHashes, `${path}.runs receipt sha256`, errors);
+}
+
+function validateEvaluationExperiment(value, path, errors) {
+  const fields = ['id', 'title', 'evidence_kind', 'qualification_policy', 'limitations'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  id(value.id, `${path}.id`, errors);
+  boundedString(value.title, `${path}.title`, errors, 1, 160);
+  oneOf(value.evidence_kind, ['real', 'synthetic'], `${path}.evidence_kind`, errors);
+  const policyFields = [
+    'minimum_complete_pairs',
+    'minimum_distinct_tasks',
+    'minimum_aa_pairs',
+    'minimum_success_rate_delta',
+    'maximum_regression_delta',
+    'maximum_aa_discordance_rate',
+  ];
+  if (
+    closedObject(
+      value.qualification_policy,
+      `${path}.qualification_policy`,
+      policyFields,
+      policyFields,
+      errors
+    )
+  ) {
+    const policy = value.qualification_policy;
+    integer(
+      policy.minimum_complete_pairs,
+      `${path}.qualification_policy.minimum_complete_pairs`,
+      errors,
+      1,
+      5_000
+    );
+    integer(
+      policy.minimum_distinct_tasks,
+      `${path}.qualification_policy.minimum_distinct_tasks`,
+      errors,
+      1,
+      CORPUS_LIMITS.maxTasks
+    );
+    integer(
+      policy.minimum_aa_pairs,
+      `${path}.qualification_policy.minimum_aa_pairs`,
+      errors,
+      1,
+      5_000
+    );
+    finiteNumber(
+      policy.minimum_success_rate_delta,
+      `${path}.qualification_policy.minimum_success_rate_delta`,
+      errors,
+      0,
+      1
+    );
+    integer(
+      policy.maximum_regression_delta,
+      `${path}.qualification_policy.maximum_regression_delta`,
+      errors,
+      0,
+      CORPUS_LIMITS.maxChecks * 5_000
+    );
+    finiteNumber(
+      policy.maximum_aa_discordance_rate,
+      `${path}.qualification_policy.maximum_aa_discordance_rate`,
+      errors,
+      0,
+      1
+    );
+  }
+  stringArray(value.limitations, `${path}.limitations`, errors, { max: 50, itemMax: 500 });
+}
+
+function validateEvaluationContext(value, path, errors) {
+  const fields = ['structural_context_enabled', 'policy_identity', 'graph', 'allowed_graph_tools'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  boolean(value.structural_context_enabled, `${path}.structural_context_enabled`, errors);
+  id(value.policy_identity, `${path}.policy_identity`, errors);
+  stringArray(value.allowed_graph_tools, `${path}.allowed_graph_tools`, errors, {
+    max: 100,
+    itemMax: 200,
+  });
+  if (Array.isArray(value.allowed_graph_tools)) {
+    unique(value.allowed_graph_tools, `${path}.allowed_graph_tools`, errors);
+    sorted(value.allowed_graph_tools, `${path}.allowed_graph_tools`, errors);
+  }
+  if (value.graph === null) return;
+  const graphFields = ['engine_id', 'engine_version', 'snapshot_id', 'indexed_revision'];
+  if (!closedObject(value.graph, `${path}.graph`, graphFields, graphFields, errors)) return;
+  id(value.graph.engine_id, `${path}.graph.engine_id`, errors);
+  boundedString(value.graph.engine_version, `${path}.graph.engine_version`, errors, 1, 80);
+  id(value.graph.snapshot_id, `${path}.graph.snapshot_id`, errors);
+  revision(value.graph.indexed_revision, `${path}.graph.indexed_revision`, errors);
+}
+
+function validateEvaluationScore(value, path, errors) {
+  const fields = ['schema_version', 'score_id', 'scorer', 'evidence', 'scorecard'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['evaluation-score'],
+    `${path}.schema_version`,
+    errors
+  );
+  id(value.score_id, `${path}.score_id`, errors);
+  if (
+    closedObject(
+      value.scorer,
+      `${path}.scorer`,
+      ['version', 'sha256'],
+      ['version', 'sha256'],
+      errors
+    )
+  ) {
+    boundedString(value.scorer.version, `${path}.scorer.version`, errors, 1, 80);
+    sha256(value.scorer.sha256, `${path}.scorer.sha256`, errors);
+  }
+  const evidenceFields = [
+    'bundle_sha256',
+    'corpus_sha256',
+    'ground_truth_sha256',
+    'projected_manifest_sha256',
+    'receipts',
+  ];
+  if (closedObject(value.evidence, `${path}.evidence`, evidenceFields, evidenceFields, errors)) {
+    for (const field of evidenceFields.slice(0, -1)) {
+      sha256(value.evidence[field], `${path}.evidence.${field}`, errors);
+    }
+    array(value.evidence.receipts, `${path}.evidence.receipts`, errors, { min: 2, max: 5_000 });
+    const receiptPaths = [];
+    const receiptHashes = [];
+    const runIds = [];
+    for (const [index, receipt] of (Array.isArray(value.evidence.receipts)
+      ? value.evidence.receipts
+      : []
+    ).entries()) {
+      const receiptPath = `${path}.evidence.receipts[${index}]`;
+      if (
+        !closedObject(
+          receipt,
+          receiptPath,
+          ['path', 'sha256', 'run_id'],
+          ['path', 'sha256', 'run_id'],
+          errors
+        )
+      ) {
+        continue;
+      }
+      relativePath(receipt.path, `${receiptPath}.path`, errors);
+      sha256(receipt.sha256, `${receiptPath}.sha256`, errors);
+      id(receipt.run_id, `${receiptPath}.run_id`, errors);
+      receiptPaths.push(receipt.path);
+      receiptHashes.push(receipt.sha256);
+      runIds.push(receipt.run_id);
+    }
+    unique(receiptPaths, `${path}.evidence.receipts path`, errors);
+    unique(receiptHashes, `${path}.evidence.receipts sha256`, errors);
+    unique(runIds, `${path}.evidence.receipts run_id`, errors);
+    sorted(receiptPaths, `${path}.evidence.receipts`, errors);
+  }
+  if (!value.scorecard || typeof value.scorecard !== 'object' || Array.isArray(value.scorecard)) {
+    errors.push(`${path}.scorecard: expected an object`);
+  }
+  if (typeof value.score_id === 'string') {
+    const { score_id: _scoreId, ...identity } = value;
+    const expected = `score-${sha256Bytes(Buffer.from(canonicalJson(identity))).slice(0, 32)}`;
+    if (value.score_id !== expected) {
+      errors.push(`${path}.score_id: does not match the canonical score identity`);
+    }
+  }
+}
+
 function validateDiagnostics(value, path, errors) {
   if (value === undefined) return;
   const fields = [
@@ -1251,6 +1501,10 @@ function sha256(value, path, errors) {
   stringPattern(value, SHA256_PATTERN, path, errors, 64);
 }
 
+function revision(value, path, errors) {
+  stringPattern(value, REVISION_PATTERN, path, errors, 64);
+}
+
 function httpsUrl(value, path, errors) {
   boundedString(value, path, errors, 1, 500);
   if (typeof value !== 'string') return;
@@ -1351,6 +1605,8 @@ const validators = Object.freeze({
   'agent-adapter': validateAgentAdapter,
   'check-result': validateCheckResult,
   'corpus-index': validateCorpusIndex,
+  'evaluation-bundle': validateEvaluationBundle,
+  'evaluation-score': validateEvaluationScore,
   'fixture-bundle': validateFixtureBundle,
   'known-good-change': validateKnownGoodChange,
   'qualification-receipt': validateQualificationReceipt,

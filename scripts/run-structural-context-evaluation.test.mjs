@@ -223,7 +223,21 @@ test('manifest validation rejects malformed immutable identities and policies', 
 
   const errors = validateManifest(data);
   assert.ok(
-    errors.some((error) => error.includes('repository_revision must be a lowercase sha256'))
+    errors.some((error) =>
+      error.includes('repository_revision must be a lowercase git or sha256 revision')
+    )
   );
   assert.ok(errors.some((error) => error.includes('minimum_complete_pairs must be at least 1')));
+});
+
+test('manifest validation accepts immutable 40-character git revisions', () => {
+  const data = fixture();
+  const revision = 'a'.repeat(40);
+  data.tasks[0].repository_revision = revision;
+  for (const run of data.runs.filter((entry) => entry.task_id === data.tasks[0].id)) {
+    run.identities.repository_revision = revision;
+    if (run.context.graph) run.context.graph.indexed_revision = revision;
+  }
+
+  assert.deepEqual(validateManifest(data), []);
 });

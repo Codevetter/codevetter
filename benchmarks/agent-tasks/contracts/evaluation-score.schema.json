@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/evaluation-score.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "score_id", "scorer", "evidence", "scorecard"],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task-evaluation-score.v1" },
+    "score_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "scorer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "sha256"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "sha256": { "$ref": "./common.schema.json#/$defs/sha256" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_sha256",
+        "corpus_sha256",
+        "ground_truth_sha256",
+        "projected_manifest_sha256",
+        "receipts"
+      ],
+      "properties": {
+        "bundle_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+        "corpus_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+        "ground_truth_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+        "projected_manifest_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+        "receipts": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256", "run_id"],
+            "properties": {
+              "path": { "$ref": "./common.schema.json#/$defs/relativePath" },
+              "sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+              "run_id": { "$ref": "./common.schema.json#/$defs/id" }
+            }
+          }
+        }
+      }
+    },
+    "scorecard": { "type": "object" }
+  }
+}

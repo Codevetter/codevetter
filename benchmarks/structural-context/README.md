@@ -7,6 +7,12 @@ improve executable task outcomes?
 It scores already-produced receipts. It does not launch agents, call model
 providers, infer missing evidence, or replace the public catch-rate benchmark.
 
+New provider-neutral runner evidence should use `pnpm corpus:evaluate` with a
+closed evaluation bundle. That command validates and projects immutable v2
+receipts into this evaluator, then writes a separate score stamped with the
+exact scorer, corpus, ground-truth, projection, and receipt identities. Direct
+manifests remain supported for the original synthetic contract fixture.
+
 ## Run the synthetic contract fixture
 
 ```bash
@@ -74,6 +80,10 @@ means rather than treated as zero.
 7. Score the manifest and inspect invalid-pair reasons before interpreting
    descriptive outcomes.
 8. Treat a positive claim as qualified only when every predeclared gate passes.
+
+The receipt-composition path rejects invalid evidence before score export and
+can rescore the same raw receipts deterministically after a declared
+ground-truth update. It never edits or reruns those receipts.
 
 The HTML report is a local, self-contained reading surface. It uses no external
 assets, network requests, or required JavaScript, and adds no desktop route.

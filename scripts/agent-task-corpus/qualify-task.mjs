@@ -122,6 +122,7 @@ export async function loadTaskPackage(root, taskId) {
   return {
     taskId,
     taskRoot,
+    manifest,
     fixture: fixture.value,
     acceptance: acceptance.value,
     knownGood: knownGood.value,
@@ -132,6 +133,7 @@ export async function loadTaskPackage(root, taskId) {
       fixture: fixture.sha256,
       acceptance: acceptance.sha256,
       knownGood: knownGood.sha256,
+      taskPacket: manifest.artifacts.task_packet.sha256,
     },
   };
 }

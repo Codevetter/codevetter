@@ -38,6 +38,16 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-31 — Immutable receipt-to-evaluator composition:** added a closed
+  local evaluation bundle that binds corpus, task revision, adapter, raw v2
+  receipt, pair/order, and structural-context identities. A dependency-free
+  composer now derives evaluator manifests from those artifacts, rejects
+  incomplete or contaminated evidence before export, preserves the existing
+  structural-context scorer as sole outcome/qualification authority, and emits
+  a separate deterministic score stamped with scorer, bundle, corpus,
+  ground-truth, projection, and receipt hashes. Synthetic tests prove
+  byte-stable rescoring and raw-receipt immutability; no real provider, model,
+  paid run, network, publish, deploy, or production path ran.
 - **2026-07-31 — Provider-neutral agent-task runner foundation:** added
   deterministic non-executing plans with public-input size, conservative token
   and cost bounds, environment-name availability, exact task/adapter identity,
@@ -46,8 +56,8 @@ Internal (fleet):
   declared environment, bounded redacted output, process-group
   timeout/cancellation, terminal-before-check ordering, and v2 lifecycle
   receipts. A repository-owned synthetic adapter passes the qualified sample;
-  no real provider, model, paid run, network, evaluator projection, deploy, or
-  production path ran in this slice.
+  no real provider, model, paid run, network, deploy, or production path ran in
+  this slice.
 - **2026-07-31 — Agent-task corpus qualification foundation:** added closed,
   versioned fixture, acceptance, exact known-good, check-result, qualification,
   adapter, and runner contracts plus deterministic dependency-free validation.

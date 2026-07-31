@@ -2,9 +2,7 @@
 
 ## Purpose
 Evaluate whether repository structural context improves coding-agent outcomes through local, deterministic paired evidence and an inspectable report.
-
 ## Requirements
-
 ### Requirement: Experiments use immutable paired identities
 The system SHALL compare structural-context treatment and control runs only
 when both arms share the same task identity, repository revision, task packet
@@ -86,7 +84,10 @@ regression, identity, and A/A noise requirements
 The system SHALL read only explicitly supplied local manifests and receipts,
 produce deterministically ordered machine-readable JSON and Markdown from the
 same scorecard, and perform no model calls, network requests, repository
-mutation, checkout, hidden-test execution, or agent launch.
+mutation, checkout, hidden-test execution, or agent launch. When supplied
+projected provider-neutral runner evidence, it MUST derive outcomes only from
+validated receipts and MUST preserve the existing structural-context scorer as
+the sole outcome and qualification authority.
 
 #### Scenario: Synthetic fixture is scored
 - **WHEN** the checked-in hermetic fixture is passed to the evaluator
@@ -95,6 +96,10 @@ mutation, checkout, hidden-test execution, or agent launch.
 #### Scenario: User has not supplied agent receipts
 - **WHEN** no real paired run receipts are present
 - **THEN** the evaluator performs no agent work and makes no claim that structural context improves outcomes
+
+#### Scenario: Runner receipts are projected
+- **WHEN** a validated receipt bundle is composed into an evaluator manifest
+- **THEN** the existing scorer applies the same pairing, outcome, isolation, and qualification rules used for a directly supplied manifest
 
 ### Requirement: Users can inspect a bounded visual evaluation report
 The system SHALL optionally render a self-contained local HTML report from the
