@@ -66,8 +66,8 @@ const datasetJsonLd = {
 ---
 
 <Layout
-  title="Public Benchmark — CodeVetter"
-  description="27 hand-labeled cases, 29 expected findings. CodeVetter catches 29/29 (100%); raw Claude catches 27/29 (93.1%). Download the dataset and rerun the scorer yourself."
+  title="AI Code Review Benchmark for Agent-Written Code — CodeVetter"
+  description="Inspect a reproducible AI code-review benchmark with 27 cases, 29 labeled findings, published outputs, false-positive scoring, and explicit limitations."
   path="/benchmark"
 >
   <main class="min-h-screen bg-[--color-bg] text-[--color-text]">
@@ -75,12 +75,14 @@ const datasetJsonLd = {
     <article class="mx-auto max-w-3xl px-6 py-20 pt-32 leading-7">
       <a href="/" class="text-xs text-[--color-text-mute] hover:text-[--color-accent]">← CodeVetter</a>
       <p class="mt-4 text-xs font-mono uppercase tracking-[0.16em] text-[--color-text-mute]">Public Benchmark v1 · {dataset.released}</p>
-      <h1 class="mt-2 text-4xl font-bold tracking-tight text-white">A hand-labeled benchmark for AI code review</h1>
+      <h1 class="mt-2 text-4xl font-bold tracking-tight text-white">AI code review benchmark for agent-written bugs</h1>
       <p class="mt-5 text-[--color-text-dim]">
-        Generic “our AI catches bugs” claims are noise. So we built a public, hand-labeled set of
-        {dataset.case_count} self-contained code snippets with {totalFindings} expected findings,
-        scored any reviewer against it, and published everything — cases, ground truth, reviewer
-        outputs, and the scorer. You can rerun the numbers yourself in under a minute.
+        An AI code-review benchmark is useful only when you can inspect what was tested, what
+        counted as a correct finding, how false positives were scored, and what the result does not
+        prove. CodeVetter's public v1 is a reproducible recognition benchmark: {dataset.case_count}
+        synthetic cases, {totalFindings} hand-labeled findings, published reviewer outputs, and a
+        scorer you can run locally. It is not evidence that a reviewer will perform the same way on
+        a large production pull request.
       </p>
 
       <section class="mt-10 grid grid-cols-2 gap-4">
@@ -106,6 +108,49 @@ const datasetJsonLd = {
         harness, no rubric, no diff context. CodeVetter wraps that model in its review pipeline
         (rubric, diff framing, finding normalization). The point of the baseline is to isolate
         what the harness adds, not to dunk on the model.
+      </p>
+
+      <h2 class="mt-14 text-xl font-semibold text-white">Which benchmark design answers your question?</h2>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-left text-[--color-text-mute] border-b border-[--color-line]">
+              <th class="py-2 pr-3 font-medium">Benchmark design</th>
+              <th class="py-2 px-2 font-medium">Good for</th>
+              <th class="py-2 pl-2 font-medium">Cannot establish alone</th>
+            </tr>
+          </thead>
+          <tbody class="text-[--color-text-dim]">
+            <tr class="border-b border-[--color-line]/60"><td class="py-3 pr-3 text-white">Isolated, hand-labeled cases</td><td class="py-3 px-2">Reproducibility, issue-type coverage, and precise false-positive accounting</td><td class="py-3 pl-2">Performance inside a large repository or noisy pull request</td></tr>
+            <tr class="border-b border-[--color-line]/60"><td class="py-3 pr-3 text-white">Replayed real bug-fix pull requests</td><td class="py-3 px-2">Reviewing realistic diffs with repository context</td><td class="py-3 pl-2">A universal ranking when judges, tools, or repositories change</td></tr>
+            <tr class="border-b border-[--color-line]/60"><td class="py-3 pr-3 text-white">Human-review-derived executable tasks</td><td class="py-3 px-2">Testing issues human reviewers found and tests can encode</td><td class="py-3 pl-2">Coverage beyond the sampled reviews and generated tests</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-4 text-sm text-[--color-text-dim]">
+        Research datasets such as c-CRAB derive executable tasks from human reviews. Published
+        replay benchmarks such as Tenki's use real bug-introducing pull-request diffs and model
+        judges. Those methodologies answer different questions from CodeVetter's small synthetic
+        corpus, so their headline percentages are not directly comparable.
+      </p>
+
+      <h2 class="mt-12 text-xl font-semibold text-white">How to read any AI code-review score</h2>
+      <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-[--color-text-dim] marker:text-[--color-accent]">
+        <li><strong class="text-white">Inspect the corpus.</strong> Count repositories, languages, issue classes, and whether cases are synthetic or production-derived.</li>
+        <li><strong class="text-white">Inspect the ground truth.</strong> Human labels, regression tests, and model judges encode different evidence and failure modes.</li>
+        <li><strong class="text-white">Read recall with precision.</strong> More caught bugs do not help if false positives make the review unusable.</li>
+        <li><strong class="text-white">Check the unit of scoring.</strong> Per-finding, per-pull-request, and per-task scores are not interchangeable.</li>
+        <li><strong class="text-white">Look for artifacts.</strong> Cases, outputs, scoring rules, and limitations should be exposed closely enough to reproduce or challenge the result.</li>
+      </ol>
+
+      <h2 class="mt-12 text-xl font-semibold text-white">Where CodeVetter v1 fits</h2>
+      <p class="mt-3 text-sm text-[--color-text-dim]">
+        CodeVetter v1 optimizes for transparency: every case is self-contained, every expected
+        finding is published, and false positives and redundant matches count against precision.
+        That makes it fast to rerun and easy to audit. The tradeoff is a small, synthetic corpus,
+        mostly one finding per case, labeled by one person, with no latency or cost measurement.
+        Use it as an inspectable recognition check; use the separate real-agent-PR evaluation work
+        for repository-scale outcome claims.
       </p>
 
       <h2 class="mt-14 text-xl font-semibold text-white">What's in the dataset</h2>
