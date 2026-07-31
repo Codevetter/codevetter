@@ -23,6 +23,7 @@ const AFTER_SHA256 = sha256Bytes(AFTER_BYTES);
 test('all public contract schemas are closed and parseable', async () => {
   const names = [
     'acceptance-contract',
+    'adapter-diagnostics',
     'agent-adapter',
     'agent-adapter-v2',
     'check-result',
@@ -75,6 +76,15 @@ test('accepts representative documents for all qualification and runner contract
       regression_checks: [{ id: 'label-preserved', label: 'Label is preserved' }],
       driver: { path: 'checks.mjs', sha256: DIGEST, timeout_ms: 5_000 },
       repetitions: 2,
+    },
+    'adapter-diagnostics': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['adapter-diagnostics'],
+      input_tokens: 120,
+      output_tokens: 40,
+      cost_usd: 0.002,
+      tool_calls: ['apply_patch', 'read_file'],
+      files_inspected: ['TASK.md', 'transformer.mjs'],
+      files_modified: ['transformer.mjs'],
     },
     'agent-adapter': {
       schema_version: CONTRACT_SCHEMA_VERSIONS['agent-adapter'],
@@ -270,6 +280,25 @@ test('accepts representative documents for all qualification and runner contract
 });
 
 test('rejects unknown fields, unsafe paths, bounds, duplicates, and false qualification', () => {
+  const diagnostics = {
+    schema_version: CONTRACT_SCHEMA_VERSIONS['adapter-diagnostics'],
+    tool_calls: ['read_file', 'read_file'],
+    files_inspected: ['z.txt', '../secret'],
+    unexpected: true,
+  };
+  assert.deepEqual(validateContract('adapter-diagnostics', diagnostics), [
+    '$.files_inspected: values must be sorted',
+    '$.files_inspected[1]: expected a safe POSIX relative path',
+    '$.tool_calls: duplicate value "read_file"',
+    '$.unexpected: unknown field',
+  ]);
+  assert.deepEqual(
+    validateContract('adapter-diagnostics', {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['adapter-diagnostics'],
+    }),
+    ['$: at least one diagnostics observation is required']
+  );
+
   const adapter = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['agent-adapter'],
     adapter_id: 'fixture-agent',

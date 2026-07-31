@@ -25,6 +25,7 @@ const RUN_LIMITATIONS = Object.freeze([
   'The runner executes an immutable adapter without an operating-system sandbox.',
   'Captured operator output is bounded and redacted before it leaves the runner.',
 ]);
+const DIAGNOSTICS_FAILURE_LIMITATION = 'Declared adapter diagnostics were unavailable or invalid.';
 
 export async function planAgentTask({
   root = DEFAULT_CORPUS_ROOT,
@@ -150,6 +151,8 @@ export async function executeAgentTask({
   let regressionCount = 0;
   let agentResult = emptyAgentResult();
   let operatorOutput = { stdout: '', stderr: '' };
+  let diagnostics;
+  let diagnosticsFailed = false;
 
   try {
     workspace = await materializeWorkspace(task.fixture, task.taskPacket, temporaryRoot);
@@ -167,12 +170,28 @@ export async function executeAgentTask({
     agentResult = normalized.agent;
     operatorOutput = normalized.output;
     if (agentResult.status !== 'not_started') lifecycle.push('agent_terminated');
+    if (
+      adapter.value.diagnostics_path !== undefined &&
+      ['exited', 'failed'].includes(agentResult.status)
+    ) {
+      try {
+        diagnostics = await loadAdapterDiagnostics({
+          workspace,
+          path: adapter.value.diagnostics_path,
+          secretValues: Object.values(declaredEnvironment),
+        });
+      } catch {
+        diagnosticsFailed = true;
+      }
+    }
 
     if (agentResult.status === 'timeout') {
       terminalStatus = 'timeout';
     } else if (agentResult.status === 'cancelled') {
       terminalStatus = 'cancelled';
     } else if (agentResult.status !== 'exited' || agentResult.exit_code !== 0) {
+      terminalStatus = 'agent_failure';
+    } else if (diagnosticsFailed) {
       terminalStatus = 'agent_failure';
     } else {
       lifecycle.push('checks_started');
@@ -236,7 +255,11 @@ export async function executeAgentTask({
     checks,
     regression_count: regressionCount,
     cleanup: { status: lifecycle.includes('cleanup_failed') ? 'failed' : 'complete' },
-    limitations: [...RUN_LIMITATIONS],
+    ...(diagnostics === undefined ? {} : { diagnostics }),
+    limitations: [
+      ...RUN_LIMITATIONS,
+      ...(diagnosticsFailed ? [DIAGNOSTICS_FAILURE_LIMITATION] : []),
+    ],
   };
   const errors = validateContract('run-receipt', receipt);
   if (errors.length > 0)
@@ -278,6 +301,42 @@ export async function loadAgentAdapter(adapterPath) {
     }
   }
   return { value, path, root, sha256: sha256Bytes(bytes) };
+}
+
+export async function loadAdapterDiagnostics({ workspace, path, secretValues = [] } = {}) {
+  const diagnosticsPath = resolveArtifact(workspace, path, CORPUS_LIMITS.maxDocumentBytes);
+  const bytes = await readFile(diagnosticsPath);
+  const text = bytes.toString('utf8');
+  for (const secret of secretValues.filter(
+    (value) => typeof value === 'string' && value.length > 0
+  )) {
+    if (text.includes(secret)) {
+      throw new Error('adapter diagnostics contain a declared environment value');
+    }
+  }
+  let document;
+  try {
+    document = JSON.parse(text);
+  } catch {
+    throw new Error('adapter diagnostics are not valid JSON');
+  }
+  const errors = validateContract('adapter-diagnostics', document);
+  if (errors.length > 0) {
+    throw new Error(`invalid adapter diagnostics:\n${errors.join('\n')}`);
+  }
+  const diagnostics = {};
+  for (const field of ['input_tokens', 'output_tokens', 'cost_usd']) {
+    if (document[field] !== undefined) diagnostics[field] = document[field];
+  }
+  if (document.tool_calls !== undefined) {
+    diagnostics.tool_calls = [
+      ...new Set(document.tool_calls.map((value) => redactText(value, []))),
+    ].sort();
+  }
+  for (const field of ['files_inspected', 'files_modified']) {
+    if (document[field] !== undefined) diagnostics[field] = [...document[field]];
+  }
+  return diagnostics;
 }
 
 export async function runAdapterProcess({

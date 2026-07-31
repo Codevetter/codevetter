@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/adapter-diagnostics-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "minProperties": 2,
+  "required": ["schema_version"],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task-diagnostics.v1" },
+    "input_tokens": { "type": "integer", "minimum": 0 },
+    "output_tokens": { "type": "integer", "minimum": 0 },
+    "cost_usd": { "type": "number", "minimum": 0 },
+    "tool_calls": {
+      "type": "array",
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+    },
+    "files_inspected": {
+      "type": "array",
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "items": { "$ref": "./common.schema.json#/$defs/relativePath" }
+    },
+    "files_modified": {
+      "type": "array",
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "items": { "$ref": "./common.schema.json#/$defs/relativePath" }
+    }
+  }
+}

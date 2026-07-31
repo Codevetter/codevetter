@@ -88,6 +88,7 @@ benchmarks/agent-tasks/
 │   ├── check-result.schema.json
 │   ├── qualification-receipt.schema.json
 │   ├── qualification-receipt-v2.schema.json
+│   ├── adapter-diagnostics.schema.json
 │   ├── agent-adapter.schema.json
 │   ├── agent-adapter-v2.schema.json
 │   ├── run-plan.schema.json
@@ -195,8 +196,13 @@ plan ID and invalidates the old approval. Free adapters declare zero pricing.
 The run receipt binds the plan, task, fixture, acceptance contract, adapter,
 hashed environment identity, lifecycle ordering, agent termination, redacted
 output identities, exact checks, regression count, and cleanup. Optional
-provider diagnostics remain absent unless the adapter actually supplies them;
-the runner does not fabricate token, cost, tool, or file counts.
+provider diagnostics remain absent unless the adapter declares a
+workspace-relative `diagnostics_path` and writes a bounded closed
+`codevetter.agent-task-diagnostics.v1` document after execution. The runner
+loads it after termination and before hidden checks, rejects missing, unsafe,
+malformed, secret-bearing, unknown, empty, or out-of-bounds declared evidence,
+and never fabricates token, cost, tool, or file counts. Diagnostics are
+activity metadata only; executable checks remain authoritative.
 
 ## Receipt evaluation boundary
 
