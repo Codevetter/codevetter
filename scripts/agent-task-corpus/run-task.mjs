@@ -175,7 +175,7 @@ export async function executeAgentTask({
       ['exited', 'failed'].includes(agentResult.status)
     ) {
       try {
-        diagnostics = await loadAdapterDiagnostics({
+        diagnostics = await consumeAdapterDiagnostics({
           workspace,
           path: adapter.value.diagnostics_path,
           secretValues: Object.values(declaredEnvironment),
@@ -336,6 +336,17 @@ export async function loadAdapterDiagnostics({ workspace, path, secretValues = [
   for (const field of ['files_inspected', 'files_modified']) {
     if (document[field] !== undefined) diagnostics[field] = [...document[field]];
   }
+  return diagnostics;
+}
+
+async function consumeAdapterDiagnostics(options) {
+  const diagnostics = await loadAdapterDiagnostics(options);
+  const diagnosticsPath = resolveArtifact(
+    options.workspace,
+    options.path,
+    CORPUS_LIMITS.maxDocumentBytes
+  );
+  await rm(diagnosticsPath);
   return diagnostics;
 }
 
