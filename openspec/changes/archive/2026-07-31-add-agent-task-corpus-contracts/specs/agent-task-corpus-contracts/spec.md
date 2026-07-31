@@ -1,0 +1,101 @@
+## Purpose
+
+Defines the bounded machine contracts and fail-closed validation required to
+build a reproducible coding-agent task corpus without launching an agent.
+
+## ADDED Requirements
+
+### Requirement: Corpus documents use closed versioned contracts
+
+The system SHALL define closed versioned contracts for corpus indexes, task
+manifests, check results, qualification receipts, agent adapters, and run
+receipts. Every contract MUST reject unknown fields, missing required fields,
+invalid enum values, duplicate identifiers, and values outside declared
+bounds.
+
+#### Scenario: A contract document is valid
+
+- **WHEN** a document contains exactly the required and optional fields for its
+  declared schema version and every value is within bounds
+- **THEN** contract validation accepts it without adding inferred values
+
+#### Scenario: An unknown field appears
+
+- **WHEN** any contract object contains a field not declared by its schema
+- **THEN** validation rejects the document and identifies the exact field path
+
+### Requirement: Task artifacts have immutable safe identities
+
+Each corpus index entry and task manifest SHALL bind semantic files to
+lowercase SHA-256 identities. Artifact paths MUST remain relative to their
+owning root, MUST NOT traverse directories or use platform-specific absolute
+forms, and MUST resolve to bounded regular files. Task provenance and license
+metadata MUST identify an owned source or an immutable external revision.
+
+#### Scenario: Declared artifacts match
+
+- **WHEN** every task artifact exists beneath its task directory and its bytes
+  match the declared SHA-256 identity
+- **THEN** structural validation accepts the artifact identities
+
+#### Scenario: An artifact drifts
+
+- **WHEN** a declared task manifest, fixture archive, task packet, acceptance
+  contract, or known-good patch no longer matches its recorded SHA-256
+- **THEN** validation fails and names the mismatched artifact
+
+#### Scenario: A path escapes its root
+
+- **WHEN** a document declares an absolute path, parent traversal, backslash
+  traversal, symbolic link, directory, or other non-regular artifact
+- **THEN** validation rejects it before reading outside the owning root
+
+### Requirement: Structural validation is distinct from publishable readiness
+
+The non-strict command SHALL accept a structurally valid in-progress corpus and
+report its exact task, lane, category, and qualification counts. The strict
+readiness command MUST fail unless 30–50 structurally valid qualified
+TypeScript/Node tasks cover both browser and API lanes and at least six failure
+categories.
+
+#### Scenario: A small sample corpus is structurally valid
+
+- **WHEN** all documents and identities are valid but fewer than 30 qualified
+  tasks exist
+- **THEN** non-strict validation exits successfully and reports
+  `publishable: false` with the missing readiness gates
+
+#### Scenario: Strict breadth is incomplete
+
+- **WHEN** strict readiness is requested and task count, qualification count,
+  lane coverage, or failure-category breadth is below the declared gate
+- **THEN** the command exits non-zero with deterministic unmet-gate evidence
+
+### Requirement: Validation output is deterministic and inspectable
+
+Both validation modes SHALL support human-readable and JSON output derived from
+one canonical result. Task identities, counts, errors, warnings, and readiness
+gates MUST have deterministic ordering, and invalid input MUST return a
+non-zero exit code without suppressing the result.
+
+#### Scenario: The same corpus is validated twice
+
+- **WHEN** unchanged corpus bytes are validated repeatedly
+- **THEN** the semantic JSON result and human ordering are identical
+
+#### Scenario: Invalid JSON is encountered
+
+- **WHEN** an index, manifest, or referenced machine document cannot be parsed
+- **THEN** validation returns a bounded path-specific error and exits non-zero
+
+### Requirement: Validation has no execution authority
+
+Corpus validation and readiness SHALL only read local corpus files and compute
+identities. They MUST NOT launch agents, execute task checks, apply patches,
+make network requests, create qualification receipts, or mutate task content.
+
+#### Scenario: An operator validates a corpus
+
+- **WHEN** non-strict validation or strict readiness runs
+- **THEN** no model call, subprocess-backed task check, network request, or
+  corpus mutation occurs

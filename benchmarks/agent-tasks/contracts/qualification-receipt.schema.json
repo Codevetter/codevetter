@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/qualification-receipt-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "manifest_sha256",
+    "qualified",
+    "baseline",
+    "known_good",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task-qualification.v1" },
+    "task_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "manifest_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "qualified": { "type": "boolean" },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runs", "result_sha256", "status"],
+      "properties": {
+        "runs": { "type": "integer", "minimum": 2, "maximum": 10 },
+        "result_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+        "status": { "enum": ["intended_failure", "wrong_failure", "error", "flaky"] }
+      }
+    },
+    "known_good": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runs", "result_sha256", "status"],
+      "properties": {
+        "runs": { "type": "integer", "minimum": 2, "maximum": 10 },
+        "result_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+        "status": { "enum": ["pass", "check_failure", "regression", "error", "flaky"] }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  }
+}

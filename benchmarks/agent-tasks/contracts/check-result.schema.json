@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/check-result-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "acceptance_contract_sha256", "results"],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task-check-result.v1" },
+    "task_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "acceptance_contract_sha256": { "$ref": "./common.schema.json#/$defs/sha256" },
+    "results": {
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "./common.schema.json#/$defs/check" }
+    }
+  }
+}

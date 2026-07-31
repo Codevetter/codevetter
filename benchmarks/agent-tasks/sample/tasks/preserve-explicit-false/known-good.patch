@@ -1,0 +1,5 @@
+--- a/transformer.mjs
++++ b/transformer.mjs
+@@
+-  enabled: input.enabled || true,
++  enabled: input.enabled ?? true,

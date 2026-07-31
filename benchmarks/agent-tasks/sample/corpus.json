@@ -1,0 +1,14 @@
+{
+  "schema_version": "codevetter.agent-task-corpus.v1",
+  "corpus_id": "codevetter-agent-task-contract-sample",
+  "version": "0.1.0",
+  "tasks": [
+    {
+      "task_id": "preserve-explicit-false",
+      "manifest": {
+        "path": "tasks/preserve-explicit-false/task.json",
+        "sha256": "c00c443a2a58383497d8adb4bbd21989c412892f561273debe7a34d4b6a76c6f"
+      }
+    }
+  ]
+}
