@@ -121,6 +121,8 @@ jobs:
         run: |
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter-mcp
+          pnpm --dir apps/desktop run qualify:cli --binary \
+            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
 
       - name: Qualify Agent Island app and updater payload
         working-directory: apps/desktop
