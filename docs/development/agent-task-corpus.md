@@ -201,8 +201,9 @@ workspace-relative `diagnostics_path` and writes a bounded closed
 `codevetter.agent-task-diagnostics.v1` document after execution. The runner
 loads it after termination and before hidden checks, rejects missing, unsafe,
 malformed, secret-bearing, unknown, empty, or out-of-bounds declared evidence,
-and never fabricates token, cost, tool, or file counts. Diagnostics are
-activity metadata only; executable checks remain authoritative.
+consumes the sidecar before hidden checks inspect the workspace, and never
+fabricates token, cost, tool, or file counts. Diagnostics are activity metadata
+only; executable checks remain authoritative.
 
 ## Receipt evaluation boundary
 

@@ -220,8 +220,11 @@ test('captures declared bounded diagnostics before hidden checks', async (t) => 
         truncated: false,
       };
     },
-    executeDriver: async ({ acceptanceSha256 }) => {
+    executeDriver: async ({ acceptanceSha256, workspace }) => {
       checksStarted = true;
+      await assert.rejects(readFile(join(workspace, 'adapter-diagnostics.json')), {
+        code: 'ENOENT',
+      });
       return passingChecks(acceptanceSha256);
     },
     runIdFactory: () => 'run-with-diagnostics',
