@@ -15,6 +15,7 @@
     "bench:curate-public": "node scripts/curate-public-agent-prs.mjs",
     "corpus:validate": "node scripts/agent-task-corpus/cli.mjs",
     "corpus:readiness": "node scripts/agent-task-corpus/cli.mjs --strict",
+    "corpus:qualify": "node scripts/agent-task-corpus/qualify-cli.mjs",
     "test:benchmark": "node --test scripts/run-catch-rate-benchmark.test.mjs scripts/run-structural-context-evaluation.test.mjs",
     "test:graph-context": "node --test scripts/run-structural-context-evaluation.test.mjs",
     "test:corpus-contracts": "node --test scripts/agent-task-corpus/*.test.mjs",

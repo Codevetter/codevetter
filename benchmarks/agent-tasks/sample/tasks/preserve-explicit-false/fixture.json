@@ -1,10 +1,10 @@
 {
-  "input": {
-    "enabled": false,
-    "label": "Keep the explicit false value"
-  },
-  "current_output": {
-    "enabled": true,
-    "label": "Keep the explicit false value"
-  }
+  "schema_version": "codevetter.agent-task-fixture.v1",
+  "files": [
+    {
+      "path": "transformer.mjs",
+      "content_base64": "ZXhwb3J0IGZ1bmN0aW9uIHRyYW5zZm9ybShpbnB1dCkgewogIHJldHVybiB7CiAgICBlbmFibGVkOiBpbnB1dC5lbmFibGVkIHx8IHRydWUsCiAgICBsYWJlbDogaW5wdXQubGFiZWwgPz8gJ0RlZmF1bHQnLAogIH07Cn0K",
+      "sha256": "a735f90ea072eb1402af13969aeeff834018b30e0a49c4c43b6a3a36a6a022d5"
+    }
+  ]
 }

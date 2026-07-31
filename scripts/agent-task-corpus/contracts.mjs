@@ -2,10 +2,14 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 export const CONTRACT_SCHEMA_VERSIONS = Object.freeze({
+  'acceptance-contract': 'codevetter.agent-task-acceptance.v1',
   'agent-adapter': 'codevetter.agent-task-adapter.v1',
   'check-result': 'codevetter.agent-task-check-result.v1',
   'corpus-index': 'codevetter.agent-task-corpus.v1',
+  'fixture-bundle': 'codevetter.agent-task-fixture.v1',
+  'known-good-change': 'codevetter.agent-task-known-good.v1',
   'qualification-receipt': 'codevetter.agent-task-qualification.v1',
+  'qualification-receipt-v2': 'codevetter.agent-task-qualification.v2',
   'run-receipt': 'codevetter.agent-task-run.v1',
   'task-manifest': 'codevetter.agent-task.v1',
 });
@@ -196,6 +200,14 @@ function validateCheckResult(value, path, errors) {
 }
 
 function validateQualificationReceipt(value, path, errors) {
+  if (value?.schema_version === CONTRACT_SCHEMA_VERSIONS['qualification-receipt-v2']) {
+    validateQualificationReceiptV2(value, path, errors);
+    return;
+  }
+  validateQualificationReceiptV1(value, path, errors);
+}
+
+function validateQualificationReceiptV1(value, path, errors) {
   const fields = [
     'schema_version',
     'task_id',
@@ -234,6 +246,182 @@ function validateQualificationReceipt(value, path, errors) {
       value.baseline?.status === 'intended_failure' && value.known_good?.status === 'pass';
     if (value.qualified !== derived) {
       errors.push(`${path}.qualified: must equal the baseline and known-good qualification result`);
+    }
+  }
+}
+
+function validateFixtureBundle(value, path, errors) {
+  if (
+    !closedObject(value, path, ['schema_version', 'files'], ['schema_version', 'files'], errors)
+  ) {
+    return;
+  }
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['fixture-bundle'],
+    `${path}.schema_version`,
+    errors
+  );
+  fileBundle(value.files, `${path}.files`, 'content_base64', errors);
+  if (value.files?.some((file) => file?.path === 'TASK.md')) {
+    errors.push(`${path}.files: TASK.md is reserved for the public task packet`);
+  }
+}
+
+function validateAcceptanceContract(value, path, errors) {
+  const fields = [
+    'schema_version',
+    'task_id',
+    'task_defining_failures',
+    'required_checks',
+    'regression_checks',
+    'driver',
+    'repetitions',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['acceptance-contract'],
+    `${path}.schema_version`,
+    errors
+  );
+  id(value.task_id, `${path}.task_id`, errors);
+  checkIdArray(value.task_defining_failures, `${path}.task_defining_failures`, errors, {
+    min: 1,
+  });
+  const required = describedCheckArray(value.required_checks, `${path}.required_checks`, errors, 1);
+  const regression = describedCheckArray(
+    value.regression_checks,
+    `${path}.regression_checks`,
+    errors,
+    0
+  );
+  const requiredIds = new Set(required);
+  for (const checkId of value.task_defining_failures ?? []) {
+    if (!requiredIds.has(checkId)) {
+      errors.push(`${path}.task_defining_failures: check "${checkId}" is not required`);
+    }
+  }
+  for (const checkId of regression) {
+    if (requiredIds.has(checkId)) {
+      errors.push(`${path}.regression_checks: check "${checkId}" is also required`);
+    }
+  }
+  if (
+    closedObject(
+      value.driver,
+      `${path}.driver`,
+      ['path', 'sha256', 'timeout_ms'],
+      ['path', 'sha256', 'timeout_ms'],
+      errors
+    )
+  ) {
+    relativePath(value.driver.path, `${path}.driver.path`, errors);
+    sha256(value.driver.sha256, `${path}.driver.sha256`, errors);
+    integer(value.driver.timeout_ms, `${path}.driver.timeout_ms`, errors, 10, 60_000);
+  }
+  integer(value.repetitions, `${path}.repetitions`, errors, 2, 5);
+}
+
+function validateKnownGoodChange(value, path, errors) {
+  if (
+    !closedObject(
+      value,
+      path,
+      ['schema_version', 'task_id', 'files'],
+      ['schema_version', 'task_id', 'files'],
+      errors
+    )
+  ) {
+    return;
+  }
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['known-good-change'],
+    `${path}.schema_version`,
+    errors
+  );
+  id(value.task_id, `${path}.task_id`, errors);
+  array(value.files, `${path}.files`, errors, { min: 1, max: 100 });
+  if (!Array.isArray(value.files)) return;
+  const paths = [];
+  for (const [index, file] of value.files.entries()) {
+    const filePath = `${path}.files[${index}]`;
+    if (
+      !closedObject(
+        file,
+        filePath,
+        ['path', 'before_sha256', 'after_base64', 'after_sha256'],
+        ['path', 'before_sha256', 'after_base64', 'after_sha256'],
+        errors
+      )
+    ) {
+      continue;
+    }
+    relativePath(file.path, `${filePath}.path`, errors);
+    sha256(file.before_sha256, `${filePath}.before_sha256`, errors);
+    validateBase64(file.after_base64, file.after_sha256, `${filePath}.after_base64`, errors);
+    sha256(file.after_sha256, `${filePath}.after_sha256`, errors);
+    if (file.before_sha256 === file.after_sha256) {
+      errors.push(`${filePath}: before and after SHA-256 must differ`);
+    }
+    if (typeof file.path === 'string') paths.push(file.path);
+  }
+  unique(paths, `${path}.files path`, errors);
+  sorted(paths, `${path}.files`, errors);
+}
+
+function validateQualificationReceiptV2(value, path, errors) {
+  const fields = [
+    'schema_version',
+    'task_id',
+    'manifest_sha256',
+    'fixture_sha256',
+    'acceptance_contract_sha256',
+    'known_good_sha256',
+    'workspace_policy',
+    'qualified',
+    'baseline',
+    'known_good',
+    'cleanup',
+    'limitations',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['qualification-receipt-v2'],
+    `${path}.schema_version`,
+    errors
+  );
+  id(value.task_id, `${path}.task_id`, errors);
+  for (const field of [
+    'manifest_sha256',
+    'fixture_sha256',
+    'acceptance_contract_sha256',
+    'known_good_sha256',
+  ]) {
+    sha256(value[field], `${path}.${field}`, errors);
+  }
+  exact(
+    value.workspace_policy,
+    'public_fixture_and_task_packet_v1',
+    `${path}.workspace_policy`,
+    errors
+  );
+  boolean(value.qualified, `${path}.qualified`, errors);
+  qualificationPhaseV2(value.baseline, `${path}.baseline`, 'baseline', errors);
+  qualificationPhaseV2(value.known_good, `${path}.known_good`, 'known_good', errors);
+  if (closedObject(value.cleanup, `${path}.cleanup`, ['status'], ['status'], errors)) {
+    oneOf(value.cleanup.status, ['complete', 'failed'], `${path}.cleanup.status`, errors);
+  }
+  stringArray(value.limitations, `${path}.limitations`, errors, { max: 50, itemMax: 500 });
+  if (typeof value.qualified === 'boolean') {
+    const derived =
+      value.baseline?.status === 'intended_failure' &&
+      value.known_good?.status === 'pass' &&
+      value.cleanup?.status === 'complete';
+    if (value.qualified !== derived) {
+      errors.push(`${path}.qualified: must equal the v2 qualification result`);
     }
   }
 }
@@ -424,6 +612,129 @@ function qualificationPhase(value, path, statuses, errors) {
   oneOf(value.status, statuses, `${path}.status`, errors);
 }
 
+function qualificationPhaseV2(value, path, phase, errors) {
+  const baselineStatuses = [
+    'intended_failure',
+    'wrong_failure',
+    'setup_failure',
+    'timeout',
+    'incomplete_checks',
+    'check_error',
+    'flaky',
+    'cleanup_failure',
+  ];
+  const knownGoodStatuses = [
+    'pass',
+    'patch_failure',
+    'check_failure',
+    'regression',
+    'setup_failure',
+    'timeout',
+    'incomplete_checks',
+    'check_error',
+    'flaky',
+    'cleanup_failure',
+  ];
+  const statuses = phase === 'baseline' ? baselineStatuses : knownGoodStatuses;
+  if (!closedObject(value, path, ['status', 'attempts'], ['status', 'attempts'], errors)) return;
+  oneOf(value.status, statuses, `${path}.status`, errors);
+  array(value.attempts, `${path}.attempts`, errors, { min: 2, max: 5 });
+  if (!Array.isArray(value.attempts)) return;
+  const outcomes = [];
+  const identities = [];
+  for (const [index, attempt] of value.attempts.entries()) {
+    const attemptPath = `${path}.attempts[${index}]`;
+    if (
+      !closedObject(
+        attempt,
+        attemptPath,
+        ['attempt', 'outcome', 'result_sha256'],
+        ['attempt', 'outcome', 'result_sha256'],
+        errors
+      )
+    ) {
+      continue;
+    }
+    integer(attempt.attempt, `${attemptPath}.attempt`, errors, 1, 5);
+    if (attempt.attempt !== index + 1) {
+      errors.push(`${attemptPath}.attempt: attempts must be ordered from 1`);
+    }
+    oneOf(
+      attempt.outcome,
+      statuses.filter((status) => status !== 'flaky'),
+      `${attemptPath}.outcome`,
+      errors
+    );
+    if (attempt.result_sha256 !== null) {
+      sha256(attempt.result_sha256, `${attemptPath}.result_sha256`, errors);
+    }
+    if (typeof attempt.outcome === 'string') outcomes.push(attempt.outcome);
+    identities.push(attempt.result_sha256);
+  }
+  const stable =
+    new Set(outcomes).size <= 1 &&
+    new Set(identities.map((identity) => String(identity))).size <= 1;
+  if (value.status === 'flaky' && stable) {
+    errors.push(`${path}.status: flaky requires differing repeated outcomes or results`);
+  }
+  if (value.status !== 'flaky' && outcomes.some((outcome) => outcome !== value.status)) {
+    errors.push(`${path}.status: must match every stable attempt outcome`);
+  }
+}
+
+function fileBundle(value, path, contentField, errors) {
+  array(value, path, errors, { min: 1, max: 100 });
+  if (!Array.isArray(value)) return;
+  const paths = [];
+  for (const [index, file] of value.entries()) {
+    const filePath = `${path}[${index}]`;
+    const allowed = ['path', contentField, 'sha256'];
+    if (!closedObject(file, filePath, allowed, allowed, errors)) continue;
+    relativePath(file.path, `${filePath}.path`, errors);
+    validateBase64(file[contentField], file.sha256, `${filePath}.${contentField}`, errors);
+    sha256(file.sha256, `${filePath}.sha256`, errors);
+    if (typeof file.path === 'string') paths.push(file.path);
+  }
+  unique(paths, `${path} path`, errors);
+  sorted(paths, path, errors);
+}
+
+function validateBase64(value, expectedSha256, path, errors) {
+  boundedString(value, path, errors, 4, 1_398_104);
+  if (typeof value !== 'string') return;
+  if (
+    value.length % 4 !== 0 ||
+    !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)
+  ) {
+    errors.push(`${path}: expected canonical base64`);
+    return;
+  }
+  const bytes = Buffer.from(value, 'base64');
+  if (bytes.length === 0 || bytes.length > CORPUS_LIMITS.maxArtifactBytes) {
+    errors.push(`${path}: decoded content must be 1-${CORPUS_LIMITS.maxArtifactBytes} bytes`);
+    return;
+  }
+  if (SHA256_PATTERN.test(String(expectedSha256)) && sha256Bytes(bytes) !== expectedSha256) {
+    errors.push(`${path}: decoded SHA-256 does not match`);
+  }
+}
+
+function describedCheckArray(value, path, errors, min) {
+  array(value, path, errors, { min, max: CORPUS_LIMITS.maxChecks });
+  if (!Array.isArray(value)) return [];
+  const ids = [];
+  for (const [index, check] of value.entries()) {
+    const checkPath = `${path}[${index}]`;
+    if (!closedObject(check, checkPath, ['id', 'label'], ['id', 'label'], errors)) continue;
+    id(check.id, `${checkPath}.id`, errors);
+    boundedString(check.label, `${checkPath}.label`, errors, 1, 160);
+    if (typeof check.id === 'string') ids.push(check.id);
+  }
+  unique(ids, `${path} id`, errors);
+  sorted(ids, path, errors);
+  return ids;
+}
+
 function checkArray(value, path, errors) {
   array(value, path, errors, { max: 200 });
   if (!Array.isArray(value)) return;
@@ -582,9 +893,12 @@ function sortJson(value) {
 }
 
 const validators = Object.freeze({
+  'acceptance-contract': validateAcceptanceContract,
   'agent-adapter': validateAgentAdapter,
   'check-result': validateCheckResult,
   'corpus-index': validateCorpusIndex,
+  'fixture-bundle': validateFixtureBundle,
+  'known-good-change': validateKnownGoodChange,
   'qualification-receipt': validateQualificationReceipt,
   'run-receipt': validateRunReceipt,
   'task-manifest': validateTaskManifest,

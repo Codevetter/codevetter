@@ -3,17 +3,32 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import test from 'node:test';
 
-import { CONTRACT_SCHEMA_VERSIONS, canonicalJson, validateContract } from './contracts.mjs';
+import {
+  CONTRACT_SCHEMA_VERSIONS,
+  canonicalJson,
+  sha256Bytes,
+  validateContract,
+} from './contracts.mjs';
 
 const DIGEST = 'a'.repeat(64);
 const REVISION = 'b'.repeat(40);
+const FIXTURE_BYTES = Buffer.from('fixture\n');
+const FIXTURE_BASE64 = FIXTURE_BYTES.toString('base64');
+const FIXTURE_SHA256 = sha256Bytes(FIXTURE_BYTES);
+const AFTER_BYTES = Buffer.from('fixed\n');
+const AFTER_BASE64 = AFTER_BYTES.toString('base64');
+const AFTER_SHA256 = sha256Bytes(AFTER_BYTES);
 
 test('all public contract schemas are closed and parseable', async () => {
   const names = [
+    'acceptance-contract',
     'agent-adapter',
     'check-result',
     'corpus-index',
+    'fixture-bundle',
+    'known-good-change',
     'qualification-receipt',
+    'qualification-receipt-v2',
     'run-receipt',
     'task-manifest',
   ];
@@ -25,8 +40,17 @@ test('all public contract schemas are closed and parseable', async () => {
   }
 });
 
-test('accepts representative documents for all six contracts', () => {
+test('accepts representative documents for all qualification and runner contracts', () => {
   const documents = {
+    'acceptance-contract': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['acceptance-contract'],
+      task_id: 'preserve-explicit-false',
+      task_defining_failures: ['explicit-false-preserved'],
+      required_checks: [{ id: 'explicit-false-preserved', label: 'Explicit false is preserved' }],
+      regression_checks: [{ id: 'label-preserved', label: 'Label is preserved' }],
+      driver: { path: 'checks.mjs', sha256: DIGEST, timeout_ms: 5_000 },
+      repetitions: 2,
+    },
     'agent-adapter': {
       schema_version: CONTRACT_SCHEMA_VERSIONS['agent-adapter'],
       adapter_id: 'fixture-agent',
@@ -55,6 +79,28 @@ test('accepts representative documents for all six contracts', () => {
         },
       ],
     },
+    'fixture-bundle': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['fixture-bundle'],
+      files: [
+        {
+          path: 'fixture.txt',
+          content_base64: FIXTURE_BASE64,
+          sha256: FIXTURE_SHA256,
+        },
+      ],
+    },
+    'known-good-change': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['known-good-change'],
+      task_id: 'preserve-explicit-false',
+      files: [
+        {
+          path: 'fixture.txt',
+          before_sha256: FIXTURE_SHA256,
+          after_base64: AFTER_BASE64,
+          after_sha256: AFTER_SHA256,
+        },
+      ],
+    },
     'qualification-receipt': {
       schema_version: CONTRACT_SCHEMA_VERSIONS['qualification-receipt'],
       task_id: 'preserve-explicit-false',
@@ -62,6 +108,32 @@ test('accepts representative documents for all six contracts', () => {
       qualified: true,
       baseline: { runs: 2, result_sha256: DIGEST, status: 'intended_failure' },
       known_good: { runs: 2, result_sha256: DIGEST, status: 'pass' },
+      limitations: [],
+    },
+    'qualification-receipt-v2': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['qualification-receipt-v2'],
+      task_id: 'preserve-explicit-false',
+      manifest_sha256: DIGEST,
+      fixture_sha256: DIGEST,
+      acceptance_contract_sha256: DIGEST,
+      known_good_sha256: DIGEST,
+      workspace_policy: 'public_fixture_and_task_packet_v1',
+      qualified: true,
+      baseline: {
+        status: 'intended_failure',
+        attempts: [
+          { attempt: 1, outcome: 'intended_failure', result_sha256: DIGEST },
+          { attempt: 2, outcome: 'intended_failure', result_sha256: DIGEST },
+        ],
+      },
+      known_good: {
+        status: 'pass',
+        attempts: [
+          { attempt: 1, outcome: 'pass', result_sha256: DIGEST },
+          { attempt: 2, outcome: 'pass', result_sha256: DIGEST },
+        ],
+      },
+      cleanup: { status: 'complete' },
       limitations: [],
     },
     'run-receipt': {
@@ -104,8 +176,9 @@ test('accepts representative documents for all six contracts', () => {
     },
   };
 
-  for (const [kind, document] of Object.entries(documents)) {
-    assert.deepEqual(validateContract(kind, document), [], kind);
+  for (const [name, document] of Object.entries(documents)) {
+    const kind = name === 'qualification-receipt-v2' ? 'qualification-receipt' : name;
+    assert.deepEqual(validateContract(kind, document), [], name);
   }
 });
 

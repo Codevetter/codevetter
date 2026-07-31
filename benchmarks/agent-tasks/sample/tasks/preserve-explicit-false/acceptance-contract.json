@@ -1,6 +1,27 @@
 {
   "schema_version": "codevetter.agent-task-acceptance.v1",
   "task_id": "preserve-explicit-false",
-  "required_checks": ["explicit-false-preserved"],
-  "regression_checks": ["label-preserved"]
+  "task_defining_failures": ["explicit-false-preserved"],
+  "required_checks": [
+    {
+      "id": "explicit-false-preserved",
+      "label": "An explicit false value is preserved"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "label-preserved",
+      "label": "The caller-provided label is preserved"
+    },
+    {
+      "id": "public-inputs-only",
+      "label": "The workspace contains only fixture files and the public task packet"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "87a15682466972ddcabf040b32bc7a51d27ae25fb026b5dc6982decb8c59151b",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
 }
