@@ -73,7 +73,7 @@ export async function writeQualificationReceipt(path, receipt) {
   await rename(temporary, destination);
 }
 
-async function loadTaskPackage(root, taskId) {
+export async function loadTaskPackage(root, taskId) {
   const corpusRoot = resolve(root);
   const validation = validateCorpus({ root: corpusRoot, ignoreQualification: true });
   if (!validation.valid) {

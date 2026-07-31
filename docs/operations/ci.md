@@ -23,7 +23,8 @@ Steps, in order (a failure stops the job):
 8. **Unit tests** — `pnpm run test:unit` in `apps/desktop`
 9. **Automation readiness tests** — `pnpm run test:automation` and
    `pnpm run test:corpus-contracts` at root (hermetic Foundry receipt
-   sanitization plus agent-task contract, qualification, timeout, cleanup, and
+   sanitization plus agent-task contract, qualification, dry-run/approval,
+   disposable runner, timeout/cancellation, output-redaction, cleanup, and
    readiness tests; the live manifest verifier runs in `release.yml` as a
    post-upload check, not here)
 10. **MCP sidecar build smoke** — `pnpm run prepare:mcp-sidecar`
