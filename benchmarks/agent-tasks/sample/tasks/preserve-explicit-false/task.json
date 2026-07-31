@@ -13,7 +13,7 @@
     },
     "task_packet": {
       "path": "task.md",
-      "sha256": "59380e44067ef35db2862f5c3fae945ff218cc596d14a0371235743d7b869b2b"
+      "sha256": "b5ab5a3a5527fc5136bca5699c6c6021fc95693bac13b3908eb6d91e9743cc0d"
     },
     "acceptance_contract": {
       "path": "acceptance-contract.json",

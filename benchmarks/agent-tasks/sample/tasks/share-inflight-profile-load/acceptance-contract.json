@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "share-inflight-profile-load",
+  "task_defining_failures": ["concurrent-load-shared"],
+  "required_checks": [
+    {
+      "id": "concurrent-load-shared",
+      "label": "Concurrent same-profile requests use one operation"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "profile-value-preserved",
+      "label": "The fetched profile value is returned unchanged"
+    },
+    {
+      "id": "settled-load-restarts",
+      "label": "A request after settlement starts a new operation"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "c7803e8dc67cd1cae75575c2fe19560be0413f909f5076bd5b994afbbe15a772",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

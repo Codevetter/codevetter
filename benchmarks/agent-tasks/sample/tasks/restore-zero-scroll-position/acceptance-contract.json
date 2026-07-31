@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "restore-zero-scroll-position",
+  "task_defining_failures": ["zero-position-restored"],
+  "required_checks": [
+    {
+      "id": "zero-position-restored",
+      "label": "A saved zero position restores to the page top"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "missing-position-falls-back",
+      "label": "A missing position keeps the current scroll value"
+    },
+    {
+      "id": "positive-position-restored",
+      "label": "A positive saved position is restored"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "1a164d3db20808ae995ca901f0be12c06c8b5ff7c3bebfbc74dd10bf0d5720bd",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "sort-suggestions-without-mutation",
+  "title": "Sort suggestions without mutating caller state",
+  "lane": "browser",
+  "runtime": "node",
+  "category": "regression",
+  "failure_mode": "input-mutation",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "4270850fb15d9365847020cf2f26e2e70330a81eb16fb209493dd177e8b9ccb0"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "e15f70cb9d7039547c8f8b7effcc0ba6bea1678c22fa51374fd9421b2f036e3b"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "9fb7898e7d5b6fce6c07af72c95829df3220b6ee1f1d3382eea200821342e2ea"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "d29cb7d94b30057dcc5764bc4640f2e202a2cd19132715e17047fd1e9a7d2638"
+    }
+  },
+  "required_checks": ["input-order-preserved"],
+  "regression_checks": ["descending-order-preserved", "suggestion-identity-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "f7ad9c396883466b50c8123c06823ceb12223d5e"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic seed fixture; repository license applies."
+  }
+}

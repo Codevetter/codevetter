@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "sort-suggestions-without-mutation",
+  "task_defining_failures": ["input-order-preserved"],
+  "required_checks": [
+    {
+      "id": "input-order-preserved",
+      "label": "The caller-owned input order remains unchanged"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "descending-order-preserved",
+      "label": "The returned suggestions remain score-sorted"
+    },
+    {
+      "id": "suggestion-identity-preserved",
+      "label": "The original suggestion objects are returned"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "7055f5309c86db64ac7af000bbad0a748156836a3f7e234265189aa7aa4dca36",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

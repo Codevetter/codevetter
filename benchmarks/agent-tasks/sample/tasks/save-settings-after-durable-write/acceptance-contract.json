@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "save-settings-after-durable-write",
+  "task_defining_failures": ["write-completes-before-return"],
+  "required_checks": [
+    {
+      "id": "write-completes-before-return",
+      "label": "Save does not resolve before persistence"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "storage-arguments-preserved",
+      "label": "The original storage key and value are forwarded"
+    },
+    {
+      "id": "success-result-preserved",
+      "label": "The success result remains unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "a43cff54e5ea9dbbc01feaf658e4997141b966a7dc90116f68591e6015788e9c",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}
