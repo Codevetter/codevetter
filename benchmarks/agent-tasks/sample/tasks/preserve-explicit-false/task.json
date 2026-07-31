@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "preserve-explicit-false",
+  "title": "Preserve an explicit false value",
+  "lane": "api",
+  "runtime": "node",
+  "category": "validation",
+  "failure_mode": "falsy-defaulting",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "0cdbb8dfcf729ee3bc0b0e8123521a1f37edacdac42e87e729f1fc6dcd33a785"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "59380e44067ef35db2862f5c3fae945ff218cc596d14a0371235743d7b869b2b"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "b1f3c7157677f0b87406aca4aa814cfe6e1d080763bd6ebafd212cf717765dd9"
+    },
+    "known_good_patch": {
+      "path": "known-good.patch",
+      "sha256": "cabe7b1fed6be3a29089ac4377b64583574004d7cce07152af351386fe6c6563"
+    }
+  },
+  "required_checks": ["explicit-false-preserved"],
+  "regression_checks": ["label-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "8b2c3a978ad98d642d4bb4b1df49eb6c23278124"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic contract fixture; repository license applies."
+  }
+}

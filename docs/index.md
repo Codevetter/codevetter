@@ -51,6 +51,8 @@ is only the presentation and search layer.
 - [testing.md](./development/testing.md) — the four test surfaces.
 - [performance.md](./development/performance.md) — perf harness and baselines.
 - [benchmark.md](./development/benchmark.md) — catch-rate benchmark.
+- [agent-task-corpus.md](./development/agent-task-corpus.md) — immutable
+  coding-agent task packages and fail-closed readiness.
 - [configuration.md](./development/configuration.md) — runtime config and CSP.
 - [docs.md](./development/docs.md) — how to write, validate, and render docs.
 

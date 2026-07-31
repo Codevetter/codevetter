@@ -1,0 +1,6 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "preserve-explicit-false",
+  "required_checks": ["explicit-false-preserved"],
+  "regression_checks": ["label-preserved"]
+}
