@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "forward-pagination-cursor",
+  "title": "Forward an integration pagination cursor",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "integration",
+  "failure_mode": "dropped-pagination-cursor",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "214d2af9798386e267841388eb1a2536c4d2786e9e5941fb8628c70c9cf47616"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "a1f0885c5632758db34eef0b3ba1365b1576206a38e05f25a373443f2420dea0"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "2182b00424ccb55c43d293b12d903b06454c9081a9f5ef41417978171ff00f5d"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "33ac6e5d201c8eaf1b56fa812f1f37e94aa259be569b0f20f2534a34a4f7e088"
+    }
+  },
+  "required_checks": ["pagination-cursor-forwarded"],
+  "regression_checks": ["list-response-preserved", "pagination-limit-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

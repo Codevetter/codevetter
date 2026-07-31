@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "deduplicate-visible-items",
+  "title": "Deduplicate visible items by identifier",
+  "lane": "browser",
+  "runtime": "node",
+  "category": "regression",
+  "failure_mode": "reference-only-deduplication",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "e5e53e72734c3ce5d65933566eae3b67a24ed2f4b7cb032bb8a7364c33ea47aa"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "ddc0a02181c30f7c2fafa451a90ac99b92e0b07ce79873c9fa76dd51320a407b"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "809db57bba328c8b412eae48a77197cdf0f477bbe0b8295905a138cf5bf7d73b"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "f3222fb045300b4e396307fc3ef6be2a82d1b3f32f4c4da3a29b16b0daa1f18c"
+    }
+  },
+  "required_checks": ["duplicate-identifiers-removed"],
+  "regression_checks": ["first-record-preserved", "original-item-identity-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

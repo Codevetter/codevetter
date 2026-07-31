@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "reject-cross-workspace-shared-id",
+  "files": [
+    {
+      "path": "workspace-access.mjs",
+      "before_sha256": "3bc12aa53b6fdf2c22228a22dbdf6828892388239d4c4dcb835f48301a57ca14",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIGNhblJlYWQoYWN0b3IsIGRvY3VtZW50KSB7CiAgcmV0dXJuICgKICAgIGFjdG9yLndvcmtzcGFjZUlkID09PSBkb2N1bWVudC53b3Jrc3BhY2VJZCAmJgogICAgYWN0b3Iuc2hhcmVkSWRzLmluY2x1ZGVzKGRvY3VtZW50LnNoYXJlZElkKQogICk7Cn0K",
+      "after_sha256": "ef51b1694b028cef2664d44eff6083aeafb9ad771eb8268361065a8252c2a0cd"
+    }
+  ]
+}

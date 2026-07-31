@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "reject-nan-retry-count",
+  "title": "Reject a non-finite retry count",
+  "lane": "api",
+  "runtime": "node",
+  "category": "validation",
+  "failure_mode": "non-finite-number",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "38e8dffe72af0c89aee68591988135c2f1f14226020fdbd7e788ed53e7ef2da7"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "895e45cf18a84c70dc230c7eb41f095fb4052ff9cedc657c0ecd254fa0cbdbec"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "1ec9c904636145be13e828e530c0f602a0226d2313bc32a4d0777ebc6d9c536d"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "6a809f91398c6437a102e9c389fa202a47106c0a861b44d9e0a71e7b202c4353"
+    }
+  },
+  "required_checks": ["nan-rejected"],
+  "regression_checks": ["integer-counts-accepted", "text-count-rejected"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

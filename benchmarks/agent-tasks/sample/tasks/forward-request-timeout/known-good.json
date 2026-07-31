@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "forward-request-timeout",
+  "files": [
+    {
+      "path": "request-client.mjs",
+      "before_sha256": "8e128be68ccd236a07c457897dab19c0fc0e6a4286a5d7046180179bc273a3fe",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIGZldGNoUmVwb3J0KGNsaWVudCwgcmVwb3J0SWQsIHRpbWVvdXRNcykgewogIHJldHVybiBjbGllbnQuZ2V0KGAvcmVwb3J0cy8ke3JlcG9ydElkfWAsIHsgdGltZW91dE1zIH0pOwp9Cg==",
+      "after_sha256": "481851aaa299b33c6f05c873ab4bd73723cbad17ea6fba68b29be2b75317b7b1"
+    }
+  ]
+}

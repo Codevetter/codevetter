@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "preserve-retry-after-header",
+  "task_defining_failures": ["retry-after-preserved"],
+  "required_checks": [
+    {
+      "id": "retry-after-preserved",
+      "label": "The upstream retry-after header is forwarded"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "response-body-preserved",
+      "label": "The response body remains unchanged"
+    },
+    {
+      "id": "status-and-content-type-preserved",
+      "label": "Status and content type remain unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "e1bdecb6dad625afca8c4433b30a9529f1a1b50868caf76b20fa5cef6cbe0949",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "preserve-retry-after-header",
+  "files": [
+    {
+      "path": "proxy-response.mjs",
+      "before_sha256": "8180d331eb45b82f8eb1b240c0ee5437e435714110825457a3d9ae06b40d9081",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIHByb3h5UmVzcG9uc2UocmVzcG9uc2UpIHsKICByZXR1cm4gewogICAgc3RhdHVzOiByZXNwb25zZS5zdGF0dXMsCiAgICBoZWFkZXJzOiB7IC4uLnJlc3BvbnNlLmhlYWRlcnMgfSwKICAgIGJvZHk6IHJlc3BvbnNlLmJvZHksCiAgfTsKfQo=",
+      "after_sha256": "ab71fcdaf9ac214ea847cd7ac8bbeab44764c3fd961953e4e252bff8ccc39dbd"
+    }
+  ]
+}

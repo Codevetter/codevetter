@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "forward-request-timeout",
+  "task_defining_failures": ["request-timeout-forwarded"],
+  "required_checks": [
+    {
+      "id": "request-timeout-forwarded",
+      "label": "The caller timeout reaches the integration"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "report-path-preserved",
+      "label": "The report path remains unchanged"
+    },
+    {
+      "id": "report-response-preserved",
+      "label": "The integration response remains unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "19482d70922a348129e3e0f4aba023689c4caf473148c6b57f1259c0dfd3f943",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

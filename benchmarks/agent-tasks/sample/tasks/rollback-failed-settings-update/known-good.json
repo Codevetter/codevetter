@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "rollback-failed-settings-update",
+  "files": [
+    {
+      "path": "settings-transaction.mjs",
+      "before_sha256": "1e5997bcdfb52ebcecbd2638c10d48a0093f02ba5a6d7efd6cef24ac6512afe5",
+      "after_base64": "ZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIHVwZGF0ZVNldHRpbmdzKHRyYW5zYWN0aW9uLCB2YWx1ZSkgewogIHRyeSB7CiAgICBhd2FpdCB0cmFuc2FjdGlvbi53cml0ZSh2YWx1ZSk7CiAgICBhd2FpdCB0cmFuc2FjdGlvbi5jb21taXQoKTsKICAgIHJldHVybiB7IHNhdmVkOiB0cnVlIH07CiAgfSBjYXRjaCAoZXJyb3IpIHsKICAgIGF3YWl0IHRyYW5zYWN0aW9uLnJvbGxiYWNrKCk7CiAgICB0aHJvdyBlcnJvcjsKICB9Cn0K",
+      "after_sha256": "2fd3485c02cb62eaa05e682e586d8fac53e695fc2a8687ae0ccb60728b342798"
+    }
+  ]
+}

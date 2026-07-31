@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "reject-deleted-resource-owner",
+  "task_defining_failures": ["deleted-owner-denied"],
+  "required_checks": [
+    {
+      "id": "deleted-owner-denied",
+      "label": "A deleted resource cannot be edited by its owner"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "active-owner-allowed",
+      "label": "An active resource remains editable by its owner"
+    },
+    {
+      "id": "non-owner-denied",
+      "label": "A non-owner remains denied"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "c8f23e3d7c7fd451022b6286122dfbfdba828165f75f42443a5b9fe7211c8324",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

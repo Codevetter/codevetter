@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "keep-zero-page-index",
+  "task_defining_failures": ["zero-page-preserved"],
+  "required_checks": [
+    {
+      "id": "zero-page-preserved",
+      "label": "The first page remains index zero"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "missing-page-falls-back",
+      "label": "A missing page index uses current state"
+    },
+    {
+      "id": "positive-page-preserved",
+      "label": "A positive page index remains unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "d6846ac2c28325fd5d779e36c88bbcd3b5d5715a6ab3a9cedfb332583c1e6a49",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

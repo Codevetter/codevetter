@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "clear-inflight-request-after-rejection",
+  "files": [
+    {
+      "path": "request-cache.mjs",
+      "before_sha256": "75e22705a727ac68b7acace7b232d236208a8bc1b0875294e1008d47b8badba7",
+      "after_base64": "Y29uc3QgaW5GbGlnaHQgPSBuZXcgTWFwKCk7CgpleHBvcnQgZnVuY3Rpb24gbG9hZE9uY2Uoa2V5LCBsb2FkZXIpIHsKICBjb25zdCBleGlzdGluZyA9IGluRmxpZ2h0LmdldChrZXkpOwogIGlmIChleGlzdGluZykgcmV0dXJuIGV4aXN0aW5nOwogIGNvbnN0IHJlcXVlc3QgPSBsb2FkZXIoKTsKICBjb25zdCB0cmFja2VkID0gcmVxdWVzdC5maW5hbGx5KCgpID0+IGluRmxpZ2h0LmRlbGV0ZShrZXkpKTsKICBpbkZsaWdodC5zZXQoa2V5LCB0cmFja2VkKTsKICByZXR1cm4gdHJhY2tlZDsKfQo=",
+      "after_sha256": "654f4035adb06973d0c08c7db779d43a022c78de8659d649e8ab979d8ec513bd"
+    }
+  ]
+}

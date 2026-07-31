@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "retain-latest-autocomplete-result",
+  "files": [
+    {
+      "path": "autocomplete.mjs",
+      "before_sha256": "de76bfe7defe2e18b966bac087c1c2d2aa664cda7111b258804ba487f93e947d",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIGNyZWF0ZUF1dG9jb21wbGV0ZSgpIHsKICBsZXQgc3VnZ2VzdGlvbnMgPSBbXTsKICBsZXQgZ2VuZXJhdGlvbiA9IDA7CiAgcmV0dXJuIHsKICAgIGFzeW5jIHNlYXJjaChxdWVyeSwgZmV0Y2hTdWdnZXN0aW9ucykgewogICAgICBjb25zdCByZXF1ZXN0R2VuZXJhdGlvbiA9ICsrZ2VuZXJhdGlvbjsKICAgICAgY29uc3QgcmVzdWx0ID0gYXdhaXQgZmV0Y2hTdWdnZXN0aW9ucyhxdWVyeSk7CiAgICAgIGlmIChyZXF1ZXN0R2VuZXJhdGlvbiA9PT0gZ2VuZXJhdGlvbikgc3VnZ2VzdGlvbnMgPSByZXN1bHQ7CiAgICAgIHJldHVybiByZXN1bHQ7CiAgICB9LAogICAgY3VycmVudCgpIHsKICAgICAgcmV0dXJuIHN1Z2dlc3Rpb25zOwogICAgfSwKICB9Owp9Cg==",
+      "after_sha256": "160881d6e023db26f56685d90c6bafe36372165eeae23a0595d8c34526434d1a"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "ignore-stale-search-response",
+  "files": [
+    {
+      "path": "search-results.ts",
+      "before_sha256": "e48bc71f8c1693828c1c5ac74e130b2897ca6e6f568ccb724002102df02c2aa0",
+      "after_base64": "ZXhwb3J0IGludGVyZmFjZSBTZWFyY2hTdGF0ZSB7CiAgcmVxdWVzdElkOiBudW1iZXI7CiAgcXVlcnk6IHN0cmluZzsKICBpdGVtczogc3RyaW5nW107Cn0KCmV4cG9ydCBmdW5jdGlvbiBhcHBseVNlYXJjaFJlc3BvbnNlKAogIHN0YXRlOiBTZWFyY2hTdGF0ZSwKICByZXNwb25zZTogeyByZXF1ZXN0SWQ6IG51bWJlcjsgaXRlbXM6IHN0cmluZ1tdIH0KKTogU2VhcmNoU3RhdGUgewogIGlmIChyZXNwb25zZS5yZXF1ZXN0SWQgIT09IHN0YXRlLnJlcXVlc3RJZCkgcmV0dXJuIHN0YXRlOwogIHJldHVybiB7IC4uLnN0YXRlLCBpdGVtczogcmVzcG9uc2UuaXRlbXMgfTsKfQo=",
+      "after_sha256": "c045d5456d189767f589545408da5566b862cc48e73c22613e6a570fb6c616a3"
+    }
+  ]
+}

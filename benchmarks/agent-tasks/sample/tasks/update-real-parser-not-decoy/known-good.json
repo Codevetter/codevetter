@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "update-real-parser-not-decoy",
+  "files": [
+    {
+      "path": "config-parser.ts",
+      "before_sha256": "87964145d749fa652624619589fe1ff3b221689c80ae7e0d87835300b502ca83",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIHBhcnNlTGltaXQodmFsdWU6IHN0cmluZywgZmFsbGJhY2s6IG51bWJlcik6IG51bWJlciB7CiAgY29uc3QgcGFyc2VkID0gTnVtYmVyKHZhbHVlKTsKICByZXR1cm4gTnVtYmVyLmlzTmFOKHBhcnNlZCkgPyBmYWxsYmFjayA6IHBhcnNlZDsKfQo=",
+      "after_sha256": "39158518192fc426bcbf10f42173475dc88152a762125a5d651469651bfb8bb0"
+    }
+  ]
+}

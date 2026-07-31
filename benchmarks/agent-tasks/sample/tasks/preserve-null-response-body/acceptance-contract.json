@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "preserve-null-response-body",
+  "task_defining_failures": ["null-body-preserved"],
+  "required_checks": [
+    {
+      "id": "null-body-preserved",
+      "label": "An explicit null body remains null"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "object-identity-preserved",
+      "label": "An object body remains the same object"
+    },
+    {
+      "id": "undefined-body-defaulted",
+      "label": "An undefined body still receives the default"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "312084160fa847eaa16164bee7563a55eab9afe65416c3d394d6b15e990cfcf4",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

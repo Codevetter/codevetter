@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "forward-request-timeout",
+  "title": "Forward an integration request timeout",
+  "lane": "api",
+  "runtime": "node",
+  "category": "integration",
+  "failure_mode": "dropped-timeout",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "e7885e2fa1c0d49b3d57c97b1f8482e4880c9d920d11b44e96f7aab8e3d109fb"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "5444e1d194b975429e6f0a96d89fda01ab56953cf6960ba9152cc27f33c48412"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "ef9fed3d56aa71f734717df3c0ad2d6915ec5601297f3d60325977b6e0284a43"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "0a8fed3e6c253cb51bd74988317036c80b5e5740d868e85f4dacdede26635e96"
+    }
+  },
+  "required_checks": ["request-timeout-forwarded"],
+  "regression_checks": ["report-path-preserved", "report-response-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "reject-nan-retry-count",
+  "files": [
+    {
+      "path": "retry-count.mjs",
+      "before_sha256": "f6b91a18028499db4f32fd7a9d4b35801d3ce5940073ba7d03761b126de33105",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIGlzUmV0cnlDb3VudCh2YWx1ZSkgewogIHJldHVybiBOdW1iZXIuaXNJbnRlZ2VyKHZhbHVlKSAmJiB2YWx1ZSA+PSAwOwp9Cg==",
+      "after_sha256": "6482ca321e783d17dff19da861894a52db2b1d00be0c18873d7d9964c0c94f7d"
+    }
+  ]
+}
