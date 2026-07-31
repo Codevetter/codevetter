@@ -40,6 +40,19 @@ function passingChecks(acceptanceSha256) {
   };
 }
 
+function adapterDiagnostics(overrides = {}) {
+  return {
+    schema_version: 'codevetter.agent-task-diagnostics.v1',
+    input_tokens: 120,
+    output_tokens: 40,
+    cost_usd: 0.002,
+    tool_calls: ['apply_patch', 'read_file'],
+    files_inspected: ['TASK.md', 'transformer.mjs'],
+    files_modified: ['transformer.mjs'],
+    ...overrides,
+  };
+}
+
 test('creates a deterministic non-executing plan with conservative bounds', async () => {
   const options = {
     root: SAMPLE_ROOT,
@@ -174,6 +187,145 @@ test('runs the immutable synthetic adapter before hidden checks and redacts outp
   assert.match(result.output.stdout, /FIXTURE_TOKEN=\[REDACTED\]/);
   assert.doesNotMatch(result.output.stdout, /synthetic-secret/);
   assert.doesNotMatch(JSON.stringify(result.receipt), /synthetic-secret|codevetter-agent-task-/);
+});
+
+test('captures declared bounded diagnostics before hidden checks', async (t) => {
+  const adapterPath = await copyAdapter(t, (adapter) => {
+    adapter.diagnostics_path = 'adapter-diagnostics.json';
+  });
+  const plan = await planAgentTask({
+    root: SAMPLE_ROOT,
+    taskId: TASK_ID,
+    adapterPath,
+    availableEnvironmentNames: ['FIXTURE_TOKEN'],
+  });
+  let checksStarted = false;
+  const result = await executeAgentTask({
+    root: SAMPLE_ROOT,
+    taskId: TASK_ID,
+    adapterPath,
+    environment: ENVIRONMENT,
+    approvePlanId: plan.plan_id,
+    runAdapter: async ({ cwd, onStarted }) => {
+      onStarted();
+      await writeFile(
+        join(cwd, 'adapter-diagnostics.json'),
+        `${JSON.stringify(adapterDiagnostics())}\n`
+      );
+      return {
+        status: 'exited',
+        exitCode: 0,
+        stdout: '',
+        stderr: '',
+        truncated: false,
+      };
+    },
+    executeDriver: async ({ acceptanceSha256 }) => {
+      checksStarted = true;
+      return passingChecks(acceptanceSha256);
+    },
+    runIdFactory: () => 'run-with-diagnostics',
+  });
+
+  assert.equal(result.receipt.terminal_status, 'success');
+  assert.equal(checksStarted, true);
+  assert.deepEqual(result.receipt.diagnostics, {
+    input_tokens: 120,
+    output_tokens: 40,
+    cost_usd: 0.002,
+    tool_calls: ['apply_patch', 'read_file'],
+    files_inspected: ['TASK.md', 'transformer.mjs'],
+    files_modified: ['transformer.mjs'],
+  });
+  assert.doesNotMatch(JSON.stringify(result.receipt), /adapter-diagnostics\.json/);
+});
+
+test('fails closed before checks when declared diagnostics are invalid', async (t) => {
+  for (const [name, document] of [
+    ['missing', null],
+    ['unknown-field', adapterDiagnostics({ raw_response: 'forbidden' })],
+    ['declared-secret', adapterDiagnostics({ tool_calls: ['synthetic-secret'] })],
+  ]) {
+    const adapterPath = await copyAdapter(t, (adapter) => {
+      adapter.diagnostics_path = 'adapter-diagnostics.json';
+    });
+    const plan = await planAgentTask({
+      root: SAMPLE_ROOT,
+      taskId: TASK_ID,
+      adapterPath,
+      availableEnvironmentNames: ['FIXTURE_TOKEN'],
+    });
+    let checksStarted = false;
+    const result = await executeAgentTask({
+      root: SAMPLE_ROOT,
+      taskId: TASK_ID,
+      adapterPath,
+      environment: ENVIRONMENT,
+      approvePlanId: plan.plan_id,
+      runAdapter: async ({ cwd, onStarted }) => {
+        onStarted();
+        if (document !== null) {
+          await writeFile(join(cwd, 'adapter-diagnostics.json'), `${JSON.stringify(document)}\n`);
+        }
+        return {
+          status: 'exited',
+          exitCode: 0,
+          stdout: '',
+          stderr: '',
+          truncated: false,
+        };
+      },
+      executeDriver: async ({ acceptanceSha256 }) => {
+        checksStarted = true;
+        return passingChecks(acceptanceSha256);
+      },
+      runIdFactory: () => `run-invalid-diagnostics-${name}`,
+    });
+    assert.equal(result.receipt.terminal_status, 'agent_failure');
+    assert.equal(result.receipt.diagnostics, undefined);
+    assert.equal(checksStarted, false);
+    assert.equal(result.receipt.lifecycle.includes('checks_started'), false);
+    assert.match(result.receipt.limitations.at(-1), /diagnostics were unavailable or invalid/);
+    assert.doesNotMatch(JSON.stringify(result.receipt), /synthetic-secret/);
+  }
+});
+
+test('retains valid diagnostics from a failed adapter exit', async (t) => {
+  const adapterPath = await copyAdapter(t, (adapter) => {
+    adapter.diagnostics_path = 'adapter-diagnostics.json';
+  });
+  const plan = await planAgentTask({
+    root: SAMPLE_ROOT,
+    taskId: TASK_ID,
+    adapterPath,
+    availableEnvironmentNames: ['FIXTURE_TOKEN'],
+  });
+  const result = await executeAgentTask({
+    root: SAMPLE_ROOT,
+    taskId: TASK_ID,
+    adapterPath,
+    environment: ENVIRONMENT,
+    approvePlanId: plan.plan_id,
+    runAdapter: async ({ cwd, onStarted }) => {
+      onStarted();
+      await writeFile(
+        join(cwd, 'adapter-diagnostics.json'),
+        `${JSON.stringify(adapterDiagnostics({ output_tokens: 12 }))}\n`
+      );
+      return {
+        status: 'failed',
+        exitCode: 2,
+        stdout: '',
+        stderr: 'provider failed',
+        truncated: false,
+      };
+    },
+    runIdFactory: () => 'run-failed-with-diagnostics',
+  });
+
+  assert.equal(result.receipt.terminal_status, 'agent_failure');
+  assert.equal(result.receipt.diagnostics.output_tokens, 12);
+  assert.equal(result.receipt.lifecycle.includes('checks_started'), false);
 });
 
 test('skips hidden checks after failure or timeout and preserves cleanup', async () => {

@@ -65,9 +65,12 @@ Internal (fleet):
   public-input-only workspaces with immutable executable artifacts, minimal
   declared environment, bounded redacted output, process-group
   timeout/cancellation, terminal-before-check ordering, and v2 lifecycle
-  receipts. A repository-owned synthetic adapter passes the qualified sample;
-  no real provider, model, paid run, network, deploy, or production path ran in
-  this slice.
+  receipts. Declared adapter diagnostics now load from a bounded closed
+  workspace document after termination, preserve only available token, cost,
+  tool-name, and file observations, and fail closed before hidden checks when
+  a clean exit breaks that evidence contract. A repository-owned synthetic
+  adapter passes the qualified sample; no real provider, model, paid run,
+  network, deploy, or production path ran in this implementation slice.
 - **2026-07-31 — Agent-task corpus qualification foundation:** added closed,
   versioned fixture, acceptance, exact known-good, check-result, qualification,
   adapter, and runner contracts plus deterministic dependency-free validation.

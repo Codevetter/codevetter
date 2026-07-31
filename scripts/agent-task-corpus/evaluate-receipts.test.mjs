@@ -227,6 +227,38 @@ test('projects immutable receipts and rescoring is byte-deterministic', async (t
   assert.equal(first.manifest.runs[0].diagnostics, undefined);
 });
 
+test('projects available adapter diagnostics without changing outcome authority', async (t) => {
+  const context = await fixture(t);
+  await mutateReceipt(context, 'ab-treatment', (value) => {
+    value.diagnostics = {
+      input_tokens: 120,
+      output_tokens: 40,
+      cost_usd: 0.002,
+      tool_calls: ['apply_patch', 'read_file'],
+      files_inspected: ['TASK.md', 'transformer.mjs'],
+      files_modified: ['transformer.mjs'],
+    };
+  });
+  const result = await evaluateReceiptBundle({
+    bundlePath: context.bundlePath,
+    root: context.root,
+  });
+  const treatment = result.manifest.runs.find(
+    (run) => run.pair_id === 'ab-pair' && run.arm === 'treatment'
+  );
+
+  assert.deepEqual(treatment.diagnostics, {
+    input_tokens: 120,
+    output_tokens: 40,
+    cost_usd: 0.002,
+    tool_calls: ['apply_patch', 'read_file'],
+    files_inspected: ['TASK.md', 'transformer.mjs'],
+    files_modified: ['transformer.mjs'],
+  });
+  assert.equal(treatment.outcome.status, 'completed');
+  assert.ok(treatment.outcome.checks.every((check) => check.status === 'pass'));
+});
+
 test('rejects receipt hash drift and immutable identity drift', async (t) => {
   const context = await fixture(t);
   const path = join(context.root, context.receipts['ab-control'].path);

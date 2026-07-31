@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 export const CONTRACT_SCHEMA_VERSIONS = Object.freeze({
   'acceptance-contract': 'codevetter.agent-task-acceptance.v1',
+  'adapter-diagnostics': 'codevetter.agent-task-diagnostics.v1',
   'agent-adapter': 'codevetter.agent-task-adapter.v1',
   'agent-adapter-v2': 'codevetter.agent-task-adapter.v2',
   'check-result': 'codevetter.agent-task-check-result.v1',
@@ -1132,6 +1133,39 @@ function validateDiagnostics(value, path, errors) {
   }
 }
 
+function validateAdapterDiagnostics(value, path, errors) {
+  const fields = [
+    'schema_version',
+    'input_tokens',
+    'output_tokens',
+    'cost_usd',
+    'tool_calls',
+    'files_inspected',
+    'files_modified',
+  ];
+  if (!closedObject(value, path, fields, ['schema_version'], errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['adapter-diagnostics'],
+    `${path}.schema_version`,
+    errors
+  );
+  const diagnostics = Object.fromEntries(
+    fields
+      .filter((field) => field !== 'schema_version' && value[field] !== undefined)
+      .map((field) => [field, value[field]])
+  );
+  if (Object.keys(diagnostics).length === 0) {
+    errors.push(`${path}: at least one diagnostics observation is required`);
+  }
+  validateDiagnostics(diagnostics, path, errors);
+  for (const field of ['tool_calls', 'files_inspected', 'files_modified']) {
+    if (!Array.isArray(value[field])) continue;
+    unique(value[field], `${path}.${field}`, errors);
+    sorted(value[field], `${path}.${field}`, errors);
+  }
+}
+
 function validateAdapterCommand(value, path, errors) {
   if (!Array.isArray(value)) return;
   const allowed = new Set(['{node}', '{adapter_root}', '{workspace}', '{task_packet}']);
@@ -1602,6 +1636,7 @@ function sortJson(value) {
 
 const validators = Object.freeze({
   'acceptance-contract': validateAcceptanceContract,
+  'adapter-diagnostics': validateAdapterDiagnostics,
   'agent-adapter': validateAgentAdapter,
   'check-result': validateCheckResult,
   'corpus-index': validateCorpusIndex,
