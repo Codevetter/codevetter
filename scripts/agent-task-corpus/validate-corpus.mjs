@@ -10,7 +10,7 @@ import {
 
 export const DEFAULT_CORPUS_ROOT = 'benchmarks/agent-tasks/sample';
 
-export function validateCorpus({ root = DEFAULT_CORPUS_ROOT } = {}) {
+export function validateCorpus({ root = DEFAULT_CORPUS_ROOT, ignoreQualification = false } = {}) {
   const corpusRoot = resolve(root);
   const indexPath = resolve(corpusRoot, 'corpus.json');
   const errors = [];
@@ -34,7 +34,7 @@ export function validateCorpus({ root = DEFAULT_CORPUS_ROOT } = {}) {
 
   const entries = Array.isArray(index?.tasks) ? index.tasks : [];
   for (const entry of entries) {
-    taskRows.push(validateTaskEntry(corpusRoot, entry, errors));
+    taskRows.push(validateTaskEntry(corpusRoot, entry, errors, ignoreQualification));
   }
   taskRows.sort((left, right) => left.task_id.localeCompare(right.task_id));
 
@@ -106,7 +106,7 @@ export function validateCorpus({ root = DEFAULT_CORPUS_ROOT } = {}) {
   };
 }
 
-function validateTaskEntry(corpusRoot, entry, errors) {
+function validateTaskEntry(corpusRoot, entry, errors, ignoreQualification) {
   const taskId = typeof entry?.task_id === 'string' ? entry.task_id : '(invalid-task-id)';
   const row = {
     task_id: taskId,
@@ -120,6 +120,7 @@ function validateTaskEntry(corpusRoot, entry, errors) {
   const entryErrors = [];
   let manifestDocument;
   let manifestPath;
+  let contractEvidence = null;
 
   try {
     manifestPath = resolveArtifact(
@@ -152,14 +153,16 @@ function validateTaskEntry(corpusRoot, entry, errors) {
     for (const [name, artifact] of Object.entries(manifestDocument.artifacts ?? {}).sort()) {
       validateArtifact(taskRoot, artifact, `artifact ${name}`, entryErrors);
     }
+    contractEvidence = validateNestedTaskContracts(taskRoot, manifestDocument, taskId, entryErrors);
   }
 
-  if (entry?.qualification !== undefined) {
+  if (entry?.qualification !== undefined && !ignoreQualification) {
     validateQualification(
       corpusRoot,
       entry.qualification,
       taskId,
       row.manifest_sha256,
+      contractEvidence,
       entryErrors
     );
     row.qualified = !entryErrors.some((error) => error.startsWith('qualification:'));
@@ -173,7 +176,14 @@ function validateTaskEntry(corpusRoot, entry, errors) {
   return row;
 }
 
-function validateQualification(corpusRoot, artifact, taskId, manifestSha256, errors) {
+function validateQualification(
+  corpusRoot,
+  artifact,
+  taskId,
+  manifestSha256,
+  contractEvidence,
+  errors
+) {
   let receipt;
   try {
     const path = resolveArtifact(corpusRoot, artifact?.path, CORPUS_LIMITS.maxDocumentBytes);
@@ -190,13 +200,107 @@ function validateQualification(corpusRoot, artifact, taskId, manifestSha256, err
   for (const error of validateContract('qualification-receipt', receipt)) {
     errors.push(`qualification: ${error}`);
   }
-  if (receipt?.schema_version !== CONTRACT_SCHEMA_VERSIONS['qualification-receipt']) return;
+  const knownVersion =
+    receipt?.schema_version === CONTRACT_SCHEMA_VERSIONS['qualification-receipt'] ||
+    receipt?.schema_version === CONTRACT_SCHEMA_VERSIONS['qualification-receipt-v2'];
+  if (!knownVersion) return;
   if (receipt.task_id !== taskId) errors.push(`qualification: $.task_id must equal "${taskId}"`);
   if (receipt.manifest_sha256 !== manifestSha256) {
     errors.push('qualification: $.manifest_sha256 does not match the task manifest');
   }
   if (receipt.qualified !== true)
     errors.push('qualification: $.qualified must be true for readiness');
+  if (receipt.schema_version === CONTRACT_SCHEMA_VERSIONS['qualification-receipt-v2']) {
+    for (const [field, expected] of Object.entries({
+      fixture_sha256: contractEvidence?.fixture_sha256,
+      acceptance_contract_sha256: contractEvidence?.acceptance_contract_sha256,
+      known_good_sha256: contractEvidence?.known_good_sha256,
+    })) {
+      if (receipt[field] !== expected) {
+        errors.push(`qualification: $.${field} does not match the task manifest`);
+      }
+    }
+    if (receipt.workspace_policy !== 'public_fixture_and_task_packet_v1') {
+      errors.push('qualification: $.workspace_policy is not the public-input policy');
+    }
+  }
+}
+
+function validateNestedTaskContracts(taskRoot, manifest, taskId, errors) {
+  const fixture = readContractArtifact(
+    taskRoot,
+    manifest.artifacts?.fixture,
+    'fixture-bundle',
+    'fixture contract',
+    errors
+  );
+  const acceptance = readContractArtifact(
+    taskRoot,
+    manifest.artifacts?.acceptance_contract,
+    'acceptance-contract',
+    'acceptance contract',
+    errors
+  );
+  const knownGood = readContractArtifact(
+    taskRoot,
+    manifest.artifacts?.known_good_patch,
+    'known-good-change',
+    'known-good change',
+    errors
+  );
+
+  if (acceptance?.value?.task_id !== taskId) {
+    errors.push(`acceptance contract: $.task_id must equal "${taskId}"`);
+  }
+  if (knownGood?.value?.task_id !== taskId) {
+    errors.push(`known-good change: $.task_id must equal "${taskId}"`);
+  }
+  const fixturePaths = new Set((fixture?.value?.files ?? []).map((file) => file?.path));
+  for (const file of knownGood?.value?.files ?? []) {
+    if (!fixturePaths.has(file?.path)) {
+      errors.push(`known-good change: target is not a declared fixture file: ${file?.path}`);
+    }
+  }
+  if (fixturePaths.has(acceptance?.value?.driver?.path)) {
+    errors.push('acceptance contract: driver must remain outside the public fixture bundle');
+  }
+
+  const acceptanceRequired = (acceptance?.value?.required_checks ?? []).map((check) => check?.id);
+  const acceptanceRegression = (acceptance?.value?.regression_checks ?? []).map(
+    (check) => check?.id
+  );
+  if (JSON.stringify(acceptanceRequired) !== JSON.stringify(manifest.required_checks)) {
+    errors.push('acceptance contract: required check inventory does not match the manifest');
+  }
+  if (JSON.stringify(acceptanceRegression) !== JSON.stringify(manifest.regression_checks)) {
+    errors.push('acceptance contract: regression check inventory does not match the manifest');
+  }
+
+  if (acceptance?.value?.driver) {
+    validateArtifact(taskRoot, acceptance.value.driver, 'acceptance contract driver', errors);
+  }
+
+  return {
+    fixture_sha256: fixture?.sha256 ?? null,
+    acceptance_contract_sha256: acceptance?.sha256 ?? null,
+    known_good_sha256: knownGood?.sha256 ?? null,
+  };
+}
+
+function readContractArtifact(taskRoot, artifact, kind, label, errors) {
+  try {
+    const path = resolveArtifact(taskRoot, artifact?.path, CORPUS_LIMITS.maxDocumentBytes);
+    const bytes = readFileSync(path);
+    const sha256 = sha256Bytes(bytes);
+    const value = parseJson(bytes, artifact?.path ?? label);
+    for (const error of validateContract(kind, value)) {
+      errors.push(`${label}: ${error}`);
+    }
+    return { path, bytes, sha256, value };
+  } catch (error) {
+    errors.push(`${label}: ${message(error)}`);
+    return null;
+  }
 }
 
 function validateArtifact(taskRoot, artifact, label, errors) {
@@ -212,7 +316,7 @@ function validateArtifact(taskRoot, artifact, label, errors) {
   }
 }
 
-function resolveArtifact(root, declaredPath, maxBytes) {
+export function resolveArtifact(root, declaredPath, maxBytes) {
   if (typeof declaredPath !== 'string' || !safeRelativePath(declaredPath)) {
     throw new Error(`unsafe relative path "${String(declaredPath)}"`);
   }

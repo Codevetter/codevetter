@@ -33,13 +33,13 @@ test('the owned sample is valid, deterministic, and explicitly not publishable',
   assert.deepEqual(second, first);
   assert.equal(first.valid, true);
   assert.equal(first.publishable, false);
-  assert.deepEqual(first.counts, { categories: 1, qualified_tasks: 0, tasks: 1 });
+  assert.deepEqual(first.counts, { categories: 1, qualified_tasks: 1, tasks: 1 });
   assert.deepEqual(first.coverage.lanes, ['api']);
   assert.deepEqual(
     first.gates.map((gate) => [gate.id, gate.passed]),
     [
       ['task-count', false],
-      ['qualification-count', false],
+      ['qualification-count', true],
       ['lane-coverage', false],
       ['runtime-coverage', false],
       ['failure-category-count', false],

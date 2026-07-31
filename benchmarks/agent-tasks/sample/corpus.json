@@ -7,7 +7,11 @@
       "task_id": "preserve-explicit-false",
       "manifest": {
         "path": "tasks/preserve-explicit-false/task.json",
-        "sha256": "c00c443a2a58383497d8adb4bbd21989c412892f561273debe7a34d4b6a76c6f"
+        "sha256": "650229cec888569d5a0d6823b7dc1619f7f214bde8b66d4f9695d5fcb6844b08"
+      },
+      "qualification": {
+        "path": "qualification.json",
+        "sha256": "80c12293033d3e24023c885e164a7df4b24d5c4dd3604ded98cabe091a1b2ac2"
       }
     }
   ]
