@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "ignore-stale-search-response",
+  "task_defining_failures": ["stale-response-ignored"],
+  "required_checks": [
+    {
+      "id": "stale-response-ignored",
+      "label": "An older response cannot replace current results"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "active-query-preserved",
+      "label": "Applying results preserves the active query"
+    },
+    {
+      "id": "current-response-applied",
+      "label": "The active request response still updates results"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "7f8f17d986fcac5365b45473b714ec106b5018ad76b9d657274c5d4446014de5",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

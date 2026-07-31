@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "rollback-failed-settings-update",
+  "task_defining_failures": ["failed-commit-rolled-back"],
+  "required_checks": [
+    {
+      "id": "failed-commit-rolled-back",
+      "label": "A failed commit triggers rollback"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "original-failure-preserved",
+      "label": "The original commit failure remains the rejection"
+    },
+    {
+      "id": "successful-update-preserved",
+      "label": "A successful update does not roll back"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "8440e397b2848c0720c6c477ce2590c5bdd69938ba5266fcc06ad1638c241c75",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

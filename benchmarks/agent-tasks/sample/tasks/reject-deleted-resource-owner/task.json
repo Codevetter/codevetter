@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "reject-deleted-resource-owner",
+  "title": "Reject edits to a deleted owned resource",
+  "lane": "api",
+  "runtime": "node",
+  "category": "authorization",
+  "failure_mode": "deleted-resource-bypass",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "c02194c5402e66f25217ddaeb12a7bad7b6201da1a23b3eabd19bd8118873352"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "0dd464a9e3d61113af4d19ad8eda3af3c9e20acec9f5a89f1b054d71c98efca6"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "9c3ba0b539e8310c44cae0ef7ba879d235156aaeaba6f5523301ca52bfbf2001"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "f904cb9ac324152602dba96860f7f156ab96248af8a2ab75532f246a8d5fd438"
+    }
+  },
+  "required_checks": ["deleted-owner-denied"],
+  "regression_checks": ["active-owner-allowed", "non-owner-denied"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

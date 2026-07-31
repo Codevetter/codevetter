@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "keep-zero-page-index",
+  "files": [
+    {
+      "path": "pagination.ts",
+      "before_sha256": "1ff5b259c45527436ea762992d69755f6aa03e0d9e714f2c63cfdf102b480dc0",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIHJlc29sdmVkUGFnZSgKICByZXF1ZXN0ZWQ6IG51bWJlciB8IG51bGwsCiAgY3VycmVudDogbnVtYmVyCik6IG51bWJlciB7CiAgcmV0dXJuIHJlcXVlc3RlZCA/PyBjdXJyZW50Owp9Cg==",
+      "after_sha256": "fa431574900094e34e7450c1aa187f15f3245164d2c0ea761bfe671bf1ee8f8e"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "accept-zero-duration",
+  "task_defining_failures": ["zero-duration-accepted"],
+  "required_checks": [
+    {
+      "id": "zero-duration-accepted",
+      "label": "Zero is accepted as a valid duration"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "invalid-durations-rejected",
+      "label": "Negative and non-number durations remain invalid"
+    },
+    {
+      "id": "positive-duration-accepted",
+      "label": "A positive duration remains valid"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "ad55117649ce28bfb6cda7fc5922afe258d68c6bb7a6740e235e3f623e0a6d1b",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

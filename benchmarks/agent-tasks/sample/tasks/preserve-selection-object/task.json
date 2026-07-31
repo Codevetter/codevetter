@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "preserve-selection-object",
+  "title": "Preserve browser selection identity",
+  "lane": "browser",
+  "runtime": "typescript",
+  "category": "regression",
+  "failure_mode": "selection-identity-loss",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "cd2b326f5801baee21ffffa22e9bba39c5e25e5fb6fd0ef4b7b929e2c4d09d13"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "afedfa9750e343fe96055af678e342c10f82dabbb5f3080c969b9104d425f6b0"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "974f364768058bee59ad0e719a6909ecce69e431fd685f510521fd57d438d5a6"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "7bd14c3e2eb842fb37a3e8ed42522acf98c056cfedabe300bd5e1c8c1ba08c1f"
+    }
+  },
+  "required_checks": ["selection-identity-preserved"],
+  "regression_checks": ["null-selection-preserved", "selection-fields-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

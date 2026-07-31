@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "clear-inflight-request-after-rejection",
+  "task_defining_failures": ["rejected-request-cleared"],
+  "required_checks": [
+    {
+      "id": "rejected-request-cleared",
+      "label": "A rejected cached request can be retried"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "original-failure-preserved",
+      "label": "The original request failure remains unchanged"
+    },
+    {
+      "id": "pending-request-shared",
+      "label": "Concurrent callers still share one pending request"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "a6e92ffdd238ab32d826fabbfda3e75b66a188bb4e54880773ab857b277ca9c2",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

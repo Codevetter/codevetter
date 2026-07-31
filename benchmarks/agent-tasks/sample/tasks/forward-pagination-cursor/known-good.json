@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "forward-pagination-cursor",
+  "files": [
+    {
+      "path": "list-client.ts",
+      "before_sha256": "0393aae9564c9b2a19b1c68eaac77a11b07425c63283e4ac471d0bd21a756785",
+      "after_base64": "ZXhwb3J0IGludGVyZmFjZSBMaXN0Q2xpZW50IHsKICBsaXN0KG9wdGlvbnM6IHsgbGltaXQ6IG51bWJlcjsgY3Vyc29yPzogc3RyaW5nIH0pOiBQcm9taXNlPHVua25vd24+Owp9CgpleHBvcnQgZnVuY3Rpb24gbGlzdE5leHQoCiAgY2xpZW50OiBMaXN0Q2xpZW50LAogIGxpbWl0OiBudW1iZXIsCiAgY3Vyc29yOiBzdHJpbmcKKTogUHJvbWlzZTx1bmtub3duPiB7CiAgcmV0dXJuIGNsaWVudC5saXN0KHsgbGltaXQsIGN1cnNvciB9KTsKfQo=",
+      "after_sha256": "6481236b79796855afb2b471266bb0e68d6002599956df8e8c86a1fecc398b96"
+    }
+  ]
+}

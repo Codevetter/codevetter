@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "scope-admin-to-organization",
+  "files": [
+    {
+      "path": "organization-access.ts",
+      "before_sha256": "3ac81e14de661d3617c5d1f2d0b790028393925a729da85c1b188f10b0214d8a",
+      "after_base64": "ZXhwb3J0IGludGVyZmFjZSBBY3RvciB7CiAgb3JnYW5pemF0aW9uSWQ6IHN0cmluZzsKICByb2xlOiAnYWRtaW4nIHwgJ21lbWJlcic7Cn0KCmV4cG9ydCBpbnRlcmZhY2UgUHJvamVjdCB7CiAgb3JnYW5pemF0aW9uSWQ6IHN0cmluZzsKfQoKZXhwb3J0IGZ1bmN0aW9uIGNhbk1hbmFnZShhY3RvcjogQWN0b3IsIHByb2plY3Q6IFByb2plY3QpOiBib29sZWFuIHsKICByZXR1cm4gKAogICAgYWN0b3Iucm9sZSA9PT0gJ2FkbWluJyAmJgogICAgYWN0b3Iub3JnYW5pemF0aW9uSWQgPT09IHByb2plY3Qub3JnYW5pemF0aW9uSWQKICApOwp9Cg==",
+      "after_sha256": "55edf45e455372a4bb5e162b69fcd1b956de7571e08514753632ce3b9a0db1eb"
+    }
+  ]
+}

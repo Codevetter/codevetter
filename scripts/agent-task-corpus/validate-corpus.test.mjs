@@ -26,14 +26,14 @@ async function writeJson(path, value) {
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-test('the owned sample is valid, deterministic, and explicitly not publishable', () => {
+test('the owned sample is valid, deterministic, and publishable at 30 tasks', () => {
   const first = validateCorpus({ root: SAMPLE_ROOT });
   const second = validateCorpus({ root: SAMPLE_ROOT });
 
   assert.deepEqual(second, first);
   assert.equal(first.valid, true);
-  assert.equal(first.publishable, false);
-  assert.deepEqual(first.counts, { categories: 8, qualified_tasks: 8, tasks: 8 });
+  assert.equal(first.publishable, true);
+  assert.deepEqual(first.counts, { categories: 8, qualified_tasks: 30, tasks: 30 });
   assert.deepEqual(first.coverage.categories, [
     'api-contract',
     'authorization',
@@ -49,7 +49,7 @@ test('the owned sample is valid, deterministic, and explicitly not publishable',
   assert.deepEqual(
     first.gates.map((gate) => [gate.id, gate.passed]),
     [
-      ['task-count', false],
+      ['task-count', true],
       ['qualification-count', true],
       ['lane-coverage', true],
       ['runtime-coverage', true],
@@ -58,14 +58,41 @@ test('the owned sample is valid, deterministic, and explicitly not publishable',
   );
 });
 
-test('non-strict CLI passes the sample while strict readiness fails with the same result', () => {
+test('non-strict and strict CLI both pass the ready sample with the same result', () => {
   const nonStrict = runCli(['--root', SAMPLE_ROOT, '--json']);
   const strict = runCli(['--root', SAMPLE_ROOT, '--strict', '--json']);
 
   assert.equal(nonStrict.exitCode, 0);
-  assert.equal(strict.exitCode, 1);
+  assert.equal(strict.exitCode, 0);
   assert.deepEqual(strict.result, nonStrict.result);
   assert.equal(strict.output, nonStrict.output);
+});
+
+test('models alternate locations as one outcome and keeps the decoy unchanged', async () => {
+  const alternateRoot = join(SAMPLE_ROOT, 'tasks/normalize-query-at-one-boundary');
+  const alternateAcceptance = await readJson(join(alternateRoot, 'acceptance-contract.json'));
+  const alternateFixture = await readJson(join(alternateRoot, 'fixture.json'));
+  assert.deepEqual(alternateAcceptance.task_defining_failures, ['query-normalized-once']);
+  assert.deepEqual(
+    alternateFixture.files.map((file) => file.path),
+    ['query-adapter.mjs', 'query-caller.mjs']
+  );
+
+  const decoyRoot = join(SAMPLE_ROOT, 'tasks/update-real-parser-not-decoy');
+  const decoyFixture = await readJson(join(decoyRoot, 'fixture.json'));
+  const decoyKnownGood = await readJson(join(decoyRoot, 'known-good.json'));
+  const decoyAcceptance = await readJson(join(decoyRoot, 'acceptance-contract.json'));
+  assert.deepEqual(
+    decoyFixture.files.map((file) => file.path),
+    ['config-parser.ts', 'config-preview.ts']
+  );
+  assert.deepEqual(
+    decoyKnownGood.files.map((file) => file.path),
+    ['config-parser.ts']
+  );
+  assert.ok(
+    decoyAcceptance.regression_checks.some((check) => check.id === 'lookalike-decoy-unchanged')
+  );
 });
 
 test('fails closed on hash drift and produces sorted deterministic errors', async (t) => {

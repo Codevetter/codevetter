@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "await-transaction-commit",
+  "task_defining_failures": ["commit-completes-before-success"],
+  "required_checks": [
+    {
+      "id": "commit-completes-before-success",
+      "label": "Success waits for transaction commit"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "commit-result-preserved",
+      "label": "The success result remains unchanged"
+    },
+    {
+      "id": "write-order-preserved",
+      "label": "The value is written before commit"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "91d0a56873326e9d466065616fa2407ed8469ba2ead7e52f4f22a28bc689cbb8",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

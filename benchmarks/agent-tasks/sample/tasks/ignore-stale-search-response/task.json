@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "ignore-stale-search-response",
+  "title": "Ignore a stale search response",
+  "lane": "browser",
+  "runtime": "typescript",
+  "category": "concurrency",
+  "failure_mode": "stale-response-commit",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "222332005de577e469d2bda16cbfc8b2aab96540f392ddd15b6b99b1b600cddf"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "174c4b15db3503253c2fbd1533734854692dbf4eabba43dd6d142b9ad6c2b6a5"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "90a10f039574729af7cfa6f2093ad1929c2abad41abc821d9c721eec537f80b1"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "5485d683b7f7104760a4e4f619f9df7cd7aa9921c416fa9057e07b50c8ca8272"
+    }
+  },
+  "required_checks": ["stale-response-ignored"],
+  "regression_checks": ["active-query-preserved", "current-response-applied"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

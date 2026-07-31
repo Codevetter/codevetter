@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "preserve-empty-search-query",
+  "title": "Preserve an explicitly cleared search query",
+  "lane": "browser",
+  "runtime": "node",
+  "category": "browser-state",
+  "failure_mode": "falsy-state-merge",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "40a351279679c47fb889322ba9615042ab77a5ca3ef1dba0dfcdfc042b1a8270"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "3256b838520b1b788780a55c33064c0dcd0848f28556ead2db8a55b0f44d7b48"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "b0a6bd18353cb8bc6955e4911e531fe0c9bab09e5c8348ca3797754c4badefd0"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "f2507c40f1cd6f051e64ec384bbb2f391e00ba7fa1e0660e9b0924e9640b1cc0"
+    }
+  },
+  "required_checks": ["empty-query-preserved"],
+  "regression_checks": ["entered-query-preserved", "missing-query-falls-back"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

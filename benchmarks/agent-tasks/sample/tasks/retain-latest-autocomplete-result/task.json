@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "retain-latest-autocomplete-result",
+  "title": "Retain the latest autocomplete result",
+  "lane": "browser",
+  "runtime": "node",
+  "category": "concurrency",
+  "failure_mode": "completion-order-overwrite",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "a00cc4724c0d2d99a834b9fbe36954def846e0847cbae1c2c61cd2e5a07fb718"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "7add93c42e1175f49d7c42c9d7c6d91cdbea788ab8e8731c5544da54dcd5492c"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "b64fe50ccc67f284312806ac0e4c8e27db05f2c1a355b44e5a919202ebcec982"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "291a32fe884a2ff61d5cd6499cca39b4b191040ed10949b01fe7d47ed30efc86"
+    }
+  },
+  "required_checks": ["latest-result-retained"],
+  "regression_checks": ["caller-results-preserved", "current-state-readable"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

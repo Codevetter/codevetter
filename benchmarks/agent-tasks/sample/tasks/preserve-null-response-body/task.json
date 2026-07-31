@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "preserve-null-response-body",
+  "title": "Preserve an explicit null response body",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "api-contract",
+  "failure_mode": "null-body-normalization",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "540c68c22aae99210af81d24ab482ffc840353970b33fbcce545e04809f080ac"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "4ab2da9035a8d8b73a5dae004a4217c9bccc39c8791289c9a92dfd20898310b2"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "352433b86d13c814e367c0732369327dd521ee0059af9312a7a9304ba122aee6"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "58ececfed4f2d6191124016ade98cb6464e14be8fdc911500acece0a9d96ecf5"
+    }
+  },
+  "required_checks": ["null-body-preserved"],
+  "regression_checks": ["object-identity-preserved", "undefined-body-defaulted"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

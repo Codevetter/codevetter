@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "normalize-query-at-one-boundary",
+  "title": "Normalize a query at one integration boundary",
+  "lane": "api",
+  "runtime": "node",
+  "category": "integration",
+  "failure_mode": "unnormalized-boundary-input",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "45b72b722e92faa55cc82603219cbed8ce29859f6b9d1cdca45681b149dc425b"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "24ef11832da5f105972d359d62865aecda6ad93190b7013801d4a680c7aa238b"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "9151bfc126d5ae53ee7e86f173acb6478afce322049b3428d4963f4f1ace8ab9"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "696697edaa3ceacac42444b77dac541c354e513e7640bb9945730775ec42e6b4"
+    }
+  },
+  "required_checks": ["query-normalized-once"],
+  "regression_checks": ["normalized-query-preserved", "search-path-and-response-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "keep-zero-pagination-limit",
+  "title": "Keep an explicit zero pagination limit",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "validation",
+  "failure_mode": "falsy-numeric-default",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "0c87583841de15a41e275028894edf3aaccac6643a1759e7acfc1ca9ee5f697a"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "b658ddd356ebba74bf48f3916077aaed8c9085b06a4bbe87e2c235c014e10f23"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "bf72420e58ac1470b8ea7b71e07a14b4186116dd8b1e3d9516837075f695d9d3"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "83de72637c2c9defe60db1a1a5e65a74409fc1adcde89520492b0b4642178420"
+    }
+  },
+  "required_checks": ["zero-limit-preserved"],
+  "regression_checks": ["null-limit-falls-back", "positive-limit-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

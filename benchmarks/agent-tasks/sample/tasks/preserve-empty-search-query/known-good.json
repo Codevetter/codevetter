@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "preserve-empty-search-query",
+  "files": [
+    {
+      "path": "search-state.mjs",
+      "before_sha256": "f34a12ebc34144f30791ed6050aa60a5169e60f48aa659cc3968f50c9648c7ba",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIG5leHRRdWVyeShxdWVyeSwgcHJldmlvdXNRdWVyeSkgewogIHJldHVybiBxdWVyeSA/PyBwcmV2aW91c1F1ZXJ5Owp9Cg==",
+      "after_sha256": "0afb179f3f7d41153bb0021fd633134a69f325b1e677edc40fc8c14984e9975e"
+    }
+  ]
+}

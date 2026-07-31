@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "merge-route-state-without-dropping",
+  "files": [
+    {
+      "path": "route-state.mjs",
+      "before_sha256": "577be5c3319ed1eac2536b9d0d9b136e8240117c1c3491be7c4162274dc26e12",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIHdpdGhRdWVyeShzdGF0ZSwgcXVlcnkpIHsKICByZXR1cm4geyAuLi5zdGF0ZSwgcXVlcnkgfTsKfQo=",
+      "after_sha256": "2587b041c6cc4f6dc8be51cfd63df1d28f7a5f909cf1fc66978b13acf4385661"
+    }
+  ]
+}

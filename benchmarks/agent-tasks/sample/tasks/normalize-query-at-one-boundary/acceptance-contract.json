@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "normalize-query-at-one-boundary",
+  "task_defining_failures": ["query-normalized-once"],
+  "required_checks": [
+    {
+      "id": "query-normalized-once",
+      "label": "The external client receives a trimmed query"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "normalized-query-preserved",
+      "label": "An already-normalized query remains unchanged"
+    },
+    {
+      "id": "search-path-and-response-preserved",
+      "label": "Path and response behavior remain unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "b920fa2476a2a6cee4c3dd760532f0b3aa148864276312d6e1bab5ee10f88a09",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}
