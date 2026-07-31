@@ -38,6 +38,13 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-07-31 — T-Rex MCP and CLI artifact qualification:** fixed the future
+  agent-triggered verification boundary as a separate, explicitly enabled MCP
+  process so the existing history MCP remains read-only. Pull-request CI now
+  executes the prepared CLI's version/help/bundle contract, and the release
+  workflow repeats that check against the final binary inside the macOS app.
+  No verification MCP binary, live preview smoke, version bump, or release was
+  performed.
 - **2026-07-31 — Search-intent benchmark interpretation:** clarified the
   public benchmark title, summary, benchmark-design tradeoffs, score-reading
   guidance, and machine-readable page while preserving the published dataset,
@@ -223,6 +230,10 @@ Internal (fleet):
 
 ### Automation readiness
 - Privacy-safe product, release, reliability, and Foundry evidence contracts documented in `docs/operations/automation-contract.md` (surface inventory, funnel, N/A decisions, release + canary + Foundry contracts, baseline evidence).
+- The prepared and final bundled T-Rex CLI artifacts are executable
+  qualification targets for exact version/help and Tauri bundle contracts; a
+  future verification MCP has a separate fixed-scope authorization design and
+  is not exposed by the read-only history sidecar.
 - `scripts/verify-release-manifest.mjs` validates the live `latest.json` updater manifest references a resolvable asset with a present signature, without publishing a release; wired as a post-upload step in `release.yml`.
 - `scripts/emit-foundry-receipt.mjs` emits a closed-schema sanitized aggregate Foundry receipt (project slug, git revision, desktop version, CI/canary/release/landing/manifest status); `scripts/emit-foundry-receipt.test.mjs` proves sensitive payloads (code, repo, prompt, finding, path, key, email) cannot enter the receipt.
 - `weekly.yml` now records source revision and emits a `canary-evidence.json` artifact (90-day retention) with bounds, timeout, declared cron, freshness window, and conclusion; job summary table exposes the same.

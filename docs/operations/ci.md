@@ -26,10 +26,13 @@ Steps, in order (a failure stops the job):
    in `release.yml` as a post-upload check, not here)
 10. **MCP sidecar build smoke** — `pnpm run prepare:mcp-sidecar`
 11. **CLI sidecar build smoke** — `pnpm run prepare:cli-sidecar`
-12. **Desktop build** — `pnpm run build` (Vite production build)
-13. **MCP protocol and safety tests** — Rust library, binary, and stdio integration tests
-14. **T-Rex CLI contract tests** — browser-feature parser, output, and exit-code tests
-15. **MCP and history browser tests** — Settings and Repo Unpack Playwright coverage
+12. **CLI artifact qualification** — focused script tests plus
+    `pnpm run qualify:cli` execute the prepared binary and verify its exact
+    version/help surface and both Tauri bundle declarations
+13. **Desktop build** — `pnpm run build` (Vite production build)
+14. **MCP protocol and safety tests** — Rust library, binary, and stdio integration tests
+15. **T-Rex CLI contract tests** — browser-feature parser, output, and exit-code tests
+16. **MCP and history browser tests** — Settings and Repo Unpack Playwright coverage
 
 ## Other workflows
 
