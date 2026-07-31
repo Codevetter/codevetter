@@ -66,9 +66,19 @@ Findings can retain source anchors, command or test evidence, verification state
 Yes. The public synthetic benchmark contains ${benchmark.case_count} hand-labeled cases and ${benchmark.expected_findings_total} expected findings. Its cases, labels, reviewer outputs, and scorer are published so the result can be reproduced.`
   ),
   benchmark: page(
-    'CodeVetter public benchmark',
+    'AI code review benchmark for agent-written code',
     '/benchmark',
-    `CodeVetter publishes a reproducible synthetic benchmark for AI code review and security analysis.
+    `CodeVetter publishes a reproducible recognition benchmark for AI code review and security analysis. Its 27 synthetic cases are designed for transparent issue-type coverage and precise false-positive accounting, not as proof of performance on a large production pull request.
+
+## How to interpret the score
+
+- Inspect whether the corpus is synthetic or production-derived and what languages and issue classes it includes.
+- Inspect whether ground truth comes from human labels, regression tests, or model judges.
+- Read catch rate together with precision and false positives.
+- Do not compare per-finding, per-pull-request, and per-task scores as if they were interchangeable.
+- Prefer benchmarks that publish cases, outputs, scoring rules, and limitations.
+
+CodeVetter v1 optimizes for reproducibility: every case and expected finding is published, and false positives and redundant matches count against precision. The corpus is small, mostly one finding per case, synthetic, labeled by one person, and does not measure latency or cost.
 
 ## Dataset
 
@@ -84,7 +94,7 @@ Yes. The public synthetic benchmark contains ${benchmark.case_count} hand-labele
 - CodeVetter: ${benchmarkResults.totalCaught}/${benchmarkResults.totalExpected} findings caught (${(benchmarkResults.catchRate * 100).toFixed(1)}% catch rate), precision ${benchmarkResults.precision.toFixed(3)}, F1 ${benchmarkResults.f1.toFixed(3)}
 - Raw Claude baseline: ${baselineResults.totalCaught}/${baselineResults.totalExpected} findings caught (${(baselineResults.catchRate * 100).toFixed(1)}% catch rate), precision ${baselineResults.precision.toFixed(3)}, F1 ${baselineResults.f1.toFixed(3)}
 
-The corpus is synthetic and small. It tests recognition of known issues in isolated snippets, not performance on a large production pull request. The published page reports false positives and limitations alongside catch rate.
+Use this result as an inspectable check of known-issue recognition. Use the separate real-agent-PR evaluation work for repository-scale claims.
 
 [Download the benchmark dataset](${SITE_URL}/benchmark/codevetter-benchmark-v1.json).`
   ),

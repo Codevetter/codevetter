@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-07-27
+Last updated: 2026-07-31
 
 ## Why / What
 
@@ -37,6 +37,11 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-07-31 — Search-intent benchmark interpretation:** clarified the
+  public benchmark title, summary, benchmark-design tradeoffs, score-reading
+  guidance, and machine-readable page while preserving the published dataset,
+  results, methodology, limitations, downloads, and reproduction commands.
 
 - **2026-07-29 — Owned product changelog:** added a same-origin
   `/changelog` that turns verified shipped milestones into concise,
