@@ -14,6 +14,11 @@ tasks before strict readiness reports `publishable: true`.
 - **WHEN** all documents and identities are valid but fewer than 30 qualified tasks exist
 - **THEN** non-strict validation exits successfully and reports `publishable: false` with the missing readiness gates
 
+#### Scenario: Strict breadth is incomplete
+
+- **WHEN** strict readiness is requested and task count, qualification count, lane coverage, or failure-category breadth is below the declared gate
+- **THEN** the command exits non-zero with deterministic unmet-gate evidence
+
 #### Scenario: Strict breadth reaches the minimum
 
 - **WHEN** 30 structurally valid tasks have matching qualification evidence and satisfy lane, runtime, and category gates
@@ -29,10 +34,15 @@ regression-free known-good pass before the task counts as qualified. Distinct
 acceptable implementation locations for one observable outcome MUST remain one
 task-defining check rather than being counted as multiple outcomes.
 
-#### Scenario: An owned task qualifies
+#### Scenario: An owned seed qualifies
 
 - **WHEN** its baseline repeatedly fails only the task-defining behavior and its exact known-good change repeatedly passes all checks
 - **THEN** the corpus records an immutable qualified receipt for that task
+
+#### Scenario: A seed passes by weakening another behavior
+
+- **WHEN** the task-defining check passes but any declared regression check fails
+- **THEN** qualification classifies a regression and the seed does not count as qualified
 
 #### Scenario: One outcome has multiple valid implementation locations
 
