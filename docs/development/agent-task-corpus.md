@@ -167,6 +167,35 @@ output identities, exact checks, regression count, and cleanup. Optional
 provider diagnostics remain absent unless the adapter actually supplies them;
 the runner does not fabricate token, cost, tool, or file counts.
 
+## Receipt evaluation boundary
+
+`corpus:evaluate` composes already-produced v2 receipts into the existing
+structural-context scorer:
+
+```bash
+pnpm corpus:evaluate -- \
+  --bundle benchmarks/agent-tasks/evaluations/<experiment>/bundle.json \
+  --out artifacts/agent-task-score.json
+```
+
+The closed bundle identifies the corpus index, task revisions, adapter
+descriptors, raw receipts, pair arms/order, and graph-context policy with safe
+paths and exact SHA-256 values. The composer derives task titles, task-packet
+identity, acceptance inventory, agent/model labels, run outcomes, and available
+diagnostics from those immutable artifacts. It rejects hash drift, duplicate or
+incomplete pairs, common-identity drift, invalid order, missing checks after
+check execution, stale treatment graphs, control contamination, and mismatched
+A/A context before writing output.
+
+Raw receipts are never rewritten. The separate derived score names the scorer
+version and source hash, bundle hash, corpus hash, combined ground-truth hash,
+projected-manifest hash, and sorted raw receipt identities. Re-running the
+command with the same inputs produces the same score without launching an
+agent, executing hidden checks, calling a provider, or making a network
+request. Diagnostics absent from raw receipts remain absent. Pre-check
+setup/agent/timeout/cancellation failures project the immutable acceptance
+inventory as `skipped`, never as fabricated passes or failures.
+
 ## Authoring rules
 
 - Keep task IDs, category IDs, failure modes, and check IDs lowercase
@@ -197,11 +226,12 @@ not:
 - automatically launch an adapter from planning or validation;
 - read undeclared credentials or retain declared values in output/receipts;
 - make network requests;
-- project receipts into the structural-context evaluator; or
 - mutate corpus content.
 
-The repository-owned synthetic adapter proves lifecycle mechanics only; no real
-provider/model or paid adapter was run. Real provider proof and evaluator
-projection remain later slices on issue #53. The sample reports `1 qualified` and
-`publishable: false`; task count, browser-lane, TypeScript-runtime, and category
-breadth gates remain closed.
+Receipt evaluation is a separate read-only command and preserves the existing
+structural-context scorer as the only outcome and qualification authority. The
+repository-owned synthetic adapter and composition tests prove lifecycle and
+projection mechanics only; no real provider/model or paid adapter was run.
+Real provider evidence remains a later slice on issue #53. The sample reports
+`1 qualified` and `publishable: false`; task count, browser-lane,
+TypeScript-runtime, and category breadth gates remain closed.

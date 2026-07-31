@@ -18,6 +18,7 @@
     "corpus:qualify": "node scripts/agent-task-corpus/qualify-cli.mjs",
     "corpus:plan": "node scripts/agent-task-corpus/run-cli.mjs",
     "corpus:run": "node scripts/agent-task-corpus/run-cli.mjs --execute",
+    "corpus:evaluate": "node scripts/agent-task-corpus/evaluate-cli.mjs",
     "test:benchmark": "node --test scripts/run-catch-rate-benchmark.test.mjs scripts/run-structural-context-evaluation.test.mjs",
     "test:graph-context": "node --test scripts/run-structural-context-evaluation.test.mjs",
     "test:corpus-contracts": "node --test scripts/agent-task-corpus/*.test.mjs",

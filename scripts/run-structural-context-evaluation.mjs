@@ -10,9 +10,20 @@ const MAX_RUNS = 5_000;
 const MAX_ITEMS = 1_000;
 const MAX_TEXT = 2_000;
 const HASH = /^[0-9a-f]{64}$/;
-const RUN_STATUSES = new Set(['completed', 'setup_failed', 'agent_failed', 'timed_out']);
+const REVISION = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
+const RUN_STATUSES = new Set([
+  'completed',
+  'setup_failed',
+  'agent_failed',
+  'timed_out',
+  'cancelled',
+  'check_error',
+  'cleanup_failure',
+]);
 const CHECK_STATUSES = new Set(['pass', 'fail', 'error', 'skipped']);
 const GRAPH_TOOL_PREFIXES = ['graph_', 'structural_graph_'];
+
+export const STRUCTURAL_CONTEXT_SCORER_VERSION = 'codevetter.structural-context.v1';
 
 function parseArgs(argv) {
   const positional = argv.find((argument) => !argument.startsWith('--'));
@@ -43,11 +54,14 @@ function add(errors, condition, message) {
   if (!condition) errors.push(message);
 }
 
-function stringValue(errors, value, label, { hash = false } = {}) {
+function stringValue(errors, value, label, { hash = false, revision = false } = {}) {
   add(errors, typeof value === 'string' && value.trim().length > 0, `${label} is required`);
   if (typeof value === 'string') {
     add(errors, value.length <= MAX_TEXT, `${label} exceeds ${MAX_TEXT} characters`);
     if (hash) add(errors, HASH.test(value), `${label} must be a lowercase sha256`);
+    if (revision) {
+      add(errors, REVISION.test(value), `${label} must be a lowercase git or sha256 revision`);
+    }
   }
 }
 
@@ -135,7 +149,9 @@ function validateTask(errors, task, index, taskIds) {
   }
   stringValue(errors, task.id, `${label}.id`);
   stringValue(errors, task.title, `${label}.title`);
-  stringValue(errors, task.repository_revision, `${label}.repository_revision`, { hash: true });
+  stringValue(errors, task.repository_revision, `${label}.repository_revision`, {
+    revision: true,
+  });
   stringValue(errors, task.task_packet_sha256, `${label}.task_packet_sha256`, { hash: true });
   stringValue(errors, task.acceptance_contract_sha256, `${label}.acceptance_contract_sha256`, {
     hash: true,
@@ -201,7 +217,7 @@ function validateRun(errors, run, index, tasks) {
       errors,
       run.identities.repository_revision,
       `${label}.identities.repository_revision`,
-      { hash: true }
+      { revision: true }
     );
     stringValue(
       errors,
@@ -277,7 +293,7 @@ function validateRun(errors, run, index, tasks) {
           errors,
           run.context.graph.indexed_revision,
           `${label}.context.graph.indexed_revision`,
-          { hash: true }
+          { revision: true }
         );
       }
     }
