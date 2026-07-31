@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "preserve-upstream-http-status",
+  "files": [
+    {
+      "path": "response.mjs",
+      "before_sha256": "fa2de9c942c3eb7c7c5d69ddd37d18b3b6ccce4e132d34ec5dac3863c3542059",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIG5vcm1hbGl6ZVJlc3BvbnNlKHJlc3BvbnNlKSB7CiAgcmV0dXJuIHsKICAgIHN0YXR1czogcmVzcG9uc2Uuc3RhdHVzLAogICAgaGVhZGVyczogcmVzcG9uc2UuaGVhZGVycywKICAgIGJvZHk6IHJlc3BvbnNlLmJvZHksCiAgfTsKfQo=",
+      "after_sha256": "3e489270827c8d99c9b866c8cb0537f67761a31b313a2aab54aba34b4a6910b4"
+    }
+  ]
+}

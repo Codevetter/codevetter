@@ -57,6 +57,18 @@ test('qualifies the owned sample deterministically through isolated public input
   assert.equal(first.cleanup.status, 'complete');
 });
 
+test('reproduces every checked-in seed qualification receipt', async () => {
+  const index = JSON.parse(await readFile(resolve(SAMPLE_ROOT, 'corpus.json'), 'utf8'));
+  for (const entry of index.tasks) {
+    const actual = await qualifyTask({ root: SAMPLE_ROOT, taskId: entry.task_id });
+    const expected = JSON.parse(
+      await readFile(resolve(SAMPLE_ROOT, entry.qualification.path), 'utf8')
+    );
+    assert.equal(actual.qualified, true, entry.task_id);
+    assert.deepEqual(actual, expected, entry.task_id);
+  }
+});
+
 test('requalifies a valid task package when its prior receipt is stale', async (t) => {
   const directory = await mkdtemp(join(tmpdir(), 'codevetter-stale-qualification-'));
   t.after(() => rm(directory, { force: true, recursive: true }));

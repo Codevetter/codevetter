@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "preserve-upstream-http-status",
+  "title": "Preserve upstream HTTP response status",
+  "lane": "api",
+  "runtime": "node",
+  "category": "api-contract",
+  "failure_mode": "status-normalization",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "4f3383cc7b3e96907a3ce47b12e35a529f8e14ed4c63ef86ed65d273e666c46c"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "d65273c858f1118dae2a1c5e4530f87c18b09aa6d9ad94fe044f6fbc325d47f5"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "f406bae46d7e18dbff5a83db9ee0625468da4683f7882b05b3f4ef6f8ac141a7"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "896de0d1db769e114997a2001927c4200200628c276a5a10acf3b675ba946800"
+    }
+  },
+  "required_checks": ["error-status-preserved"],
+  "regression_checks": ["body-preserved", "headers-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "f7ad9c396883466b50c8123c06823ceb12223d5e"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic seed fixture; repository license applies."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "enforce-tenant-resource-access",
+  "title": "Enforce tenant boundaries for owned resources",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "authorization",
+  "failure_mode": "cross-tenant-ownership",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "20d489cb7aa8e973097b2b7d0910ab41c6adc083df1f9cf620f3e1f5a23d4ff1"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "480ee7466d16975dc162198ede9f7c8bbef7d66906638e7f1d39c46b265a0416"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "1e72d44fbb481e1ddc0e168376d5f32de00f51cb639efab41cd2cb294ac3abe1"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "a8782e1629480a170819639872e393af3b8b1aa010cde51f5b9e8c702618d00c"
+    }
+  },
+  "required_checks": ["cross-tenant-owner-denied"],
+  "regression_checks": ["same-tenant-admin-allowed", "same-tenant-owner-allowed"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "f7ad9c396883466b50c8123c06823ceb12223d5e"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic seed fixture; repository license applies."
+  }
+}

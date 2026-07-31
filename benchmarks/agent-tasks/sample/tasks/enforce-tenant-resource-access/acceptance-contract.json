@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "enforce-tenant-resource-access",
+  "task_defining_failures": ["cross-tenant-owner-denied"],
+  "required_checks": [
+    {
+      "id": "cross-tenant-owner-denied",
+      "label": "A matching owner ID from another tenant is denied"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "same-tenant-admin-allowed",
+      "label": "A same-tenant administrator remains allowed"
+    },
+    {
+      "id": "same-tenant-owner-allowed",
+      "label": "A same-tenant owner remains allowed"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "2c47f00dc82350b04b8e4ea9917e1d808d96d26aaedeba5c34567f17a58b4eab",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

@@ -13,9 +13,10 @@ task packages inspectable and immutable, proves their baseline failure and
 known-good success, and gates one disposable adapter attempt behind a
 deterministic plan and explicit approval.
 
-The current owned sample is qualified through the real local path. It proves
-the machinery, not product value: one synthetic task remains far below corpus
-readiness.
+The current owned seed cohort is qualified through the real local path. It
+proves the machinery across eight failure categories, both lanes, and both
+runtimes, not product value: eight compact synthetic tasks remain below the
+30-task publication gate.
 
 ## Commands
 
@@ -98,6 +99,7 @@ benchmarks/agent-tasks/
     │   └── synthetic-false-fix.mjs
     ├── corpus.json
     ├── qualification.json
+    ├── qualifications/<task-id>.json
     └── tasks/<task-id>/
         ├── task.json
         ├── fixture.json
@@ -138,6 +140,44 @@ task definition. Strict readiness counts a task only when the receipt:
 V1 receipts remain readable. V2 additionally binds the fixture, acceptance
 contract, known-good change, public-input workspace policy, ordered attempt
 outcomes/result identities, and cleanup result.
+
+## Current owned seed snapshot
+
+Corpus version `0.2.0` has index identity
+`0b8466bfd8b2fce67e1e824dabaf5f89c9cf631f4a4eeaf4be131d2294e9bc95`.
+It contains eight structurally valid and qualified tasks:
+
+| Task | Category | Lane | Runtime |
+|---|---|---|---|
+| `enforce-tenant-resource-access` | authorization | API | TypeScript |
+| `forward-integration-abort-signal` | integration | API | TypeScript |
+| `preserve-explicit-false` | validation | API | Node |
+| `preserve-upstream-http-status` | API contract | API | Node |
+| `restore-zero-scroll-position` | browser state | browser | TypeScript |
+| `save-settings-after-durable-write` | persistence | API | Node |
+| `share-inflight-profile-load` | async/concurrency | API | TypeScript |
+| `sort-suggestions-without-mutation` | regression behavior | browser | Node |
+
+Every checked-in receipt can be reproduced from the exact task bytes:
+
+```bash
+for task in \
+  enforce-tenant-resource-access \
+  forward-integration-abort-signal \
+  preserve-explicit-false \
+  preserve-upstream-http-status \
+  restore-zero-scroll-position \
+  save-settings-after-durable-write \
+  share-inflight-profile-load \
+  sort-suggestions-without-mutation
+do
+  pnpm corpus:qualify --task "$task" --json
+done
+```
+
+The qualification, lane, runtime, and category gates pass. The task-count gate
+reports `8/30`, so `corpus:readiness` remains non-zero and
+`publishable: false`.
 
 ## Qualification boundary
 
@@ -209,6 +249,12 @@ inventory as `skipped`, never as fabricated passes or failures.
 - Include SPDX and human-readable license/notice metadata.
 - Keep externally observable acceptance behavior in the task packet; do not
   use style-only findings as task outcomes.
+- Give each seed at least one task-defining required check and one separate
+  preserved-behavior regression check.
+- Run qualification after any task-owned byte changes, then update the receipt
+  path/hash in `corpus.json`; never hand-author `qualified: true`.
+- Keep owned seeds small and hermetic. Broader repository-derived tasks need
+  immutable provenance, license review, and the same exact qualification proof.
 
 The validator enforces document and artifact size bounds before parsing or
 hashing. It rejects duplicate identities, unsafe paths, non-regular files,
@@ -232,6 +278,10 @@ Receipt evaluation is a separate read-only command and preserves the existing
 structural-context scorer as the only outcome and qualification authority. The
 repository-owned synthetic adapter and composition tests prove lifecycle and
 projection mechanics only; no real provider/model or paid adapter was run.
-Real provider evidence remains a later slice on issue #53. The sample reports
-`1 qualified` and `publishable: false`; task count, browser-lane,
-TypeScript-runtime, and category breadth gates remain closed.
+Real provider evidence remains a later slice on issue #53.
+
+The owned seeds are intentionally compact single-file behavior fixtures. The
+browser lane is DOM-independent and does not prove Chromium integration; the
+cohort does not measure task difficulty, agent success, framework setup, or
+statistical confidence. It reports `8 qualified` and `publishable: false`; only
+the 30–50 task-count gate remains closed.

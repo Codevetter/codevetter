@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "restore-zero-scroll-position",
+  "files": [
+    {
+      "path": "scroll-state.ts",
+      "before_sha256": "83be3efd06f74ebfb92ad8a29dd51f746dae261e2c605c1f499b60877fe823c2",
+      "after_base64": "ZXhwb3J0IGludGVyZmFjZSBTY3JvbGxTbmFwc2hvdCB7CiAgeTogbnVtYmVyIHwgbnVsbDsKfQoKZXhwb3J0IGZ1bmN0aW9uIHJlc3RvcmVkU2Nyb2xsWShzbmFwc2hvdDogU2Nyb2xsU25hcHNob3QsIGN1cnJlbnRZOiBudW1iZXIpOiBudW1iZXIgewogIHJldHVybiBzbmFwc2hvdC55ID8/IGN1cnJlbnRZOwp9Cg==",
+      "after_sha256": "54f5ab5a187100503ef5a9eb1afbb2676b26d681b8f40e4366adb00805afd2bd"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "sort-suggestions-without-mutation",
+  "files": [
+    {
+      "path": "suggestions.mjs",
+      "before_sha256": "f14fa59f7227736f424d83eb174701804783b80a2f2c56b798ce18dcc1eef5df",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIHNvcnRTdWdnZXN0aW9ucyhzdWdnZXN0aW9ucykgewogIHJldHVybiBbLi4uc3VnZ2VzdGlvbnNdLnNvcnQoKGxlZnQsIHJpZ2h0KSA9PiByaWdodC5zY29yZSAtIGxlZnQuc2NvcmUpOwp9Cg==",
+      "after_sha256": "7953f06a95d0140f07830fa190cf8af7a8a28ac4bb477e1368ae1e7fa362ec6f"
+    }
+  ]
+}
