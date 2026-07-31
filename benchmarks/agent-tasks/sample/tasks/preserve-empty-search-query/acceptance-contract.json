@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "preserve-empty-search-query",
+  "task_defining_failures": ["empty-query-preserved"],
+  "required_checks": [
+    {
+      "id": "empty-query-preserved",
+      "label": "An explicitly empty search query remains empty"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "entered-query-preserved",
+      "label": "A non-empty query remains unchanged"
+    },
+    {
+      "id": "missing-query-falls-back",
+      "label": "A missing query retains the previous value"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "e68260d1394d82a66fd7784e6121990c3592048b7c7f134f8d4f8e7d9da28a88",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

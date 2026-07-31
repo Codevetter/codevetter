@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "scope-admin-to-organization",
+  "task_defining_failures": ["cross-organization-admin-denied"],
+  "required_checks": [
+    {
+      "id": "cross-organization-admin-denied",
+      "label": "An administrator cannot manage another organization"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "member-remains-denied",
+      "label": "A member remains unable to manage projects"
+    },
+    {
+      "id": "same-organization-admin-allowed",
+      "label": "An administrator can manage its own organization"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "f117fd514419d20dc994b325380d8bc00faf9faa60d5fa8db4b1e40eb4be635d",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "retain-latest-autocomplete-result",
+  "task_defining_failures": ["latest-result-retained"],
+  "required_checks": [
+    {
+      "id": "latest-result-retained",
+      "label": "The newest request remains current"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "caller-results-preserved",
+      "label": "Each search returns its own response"
+    },
+    {
+      "id": "current-state-readable",
+      "label": "Current autocomplete state remains readable"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "e128a5c1ac5c4a764e8b22b91c4e9bc75940336440b33f25363248f9a39f23b9",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

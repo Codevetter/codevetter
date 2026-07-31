@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "preserve-null-response-body",
+  "files": [
+    {
+      "path": "response-body.ts",
+      "before_sha256": "9b15ee57fecfb11478e78a27e5e7a9597483d8d684487ab044eb15687244bb84",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIHJlc3BvbnNlQm9keShib2R5OiB1bmtub3duKTogdW5rbm93biB7CiAgcmV0dXJuIGJvZHkgPT09IHVuZGVmaW5lZCA/IHt9IDogYm9keTsKfQo=",
+      "after_sha256": "dc2d82ef42985fa385495c2fb295c21c30669d2cca9f2c0a3ca8b878e68ddfad"
+    }
+  ]
+}

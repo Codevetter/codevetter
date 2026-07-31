@@ -1,0 +1,38 @@
+{
+  "schema_version": "codevetter.agent-task.v1",
+  "task_id": "await-transaction-commit",
+  "title": "Wait for a transaction commit",
+  "lane": "api",
+  "runtime": "typescript",
+  "category": "persistence",
+  "failure_mode": "early-transaction-success",
+  "artifacts": {
+    "fixture": {
+      "path": "fixture.json",
+      "sha256": "32947bf9422aa91c938a5aa5a6ebe78ffdec2aae84b5de4d766c6dd863a88922"
+    },
+    "task_packet": {
+      "path": "task.md",
+      "sha256": "85c1d638422e6178461cf2914c7daa1b0543f3843bc371e076a040e046cadff4"
+    },
+    "acceptance_contract": {
+      "path": "acceptance-contract.json",
+      "sha256": "0170bf89627049751919312563a81e54b92e1e101a72e4824ebc3f42e3e037e9"
+    },
+    "known_good_patch": {
+      "path": "known-good.json",
+      "sha256": "0e0d767b89a06b6c3bbdae8533094b2d7f3ffc0876fc814ec5cbc9f71881615a"
+    }
+  },
+  "required_checks": ["commit-completes-before-success"],
+  "regression_checks": ["commit-result-preserved", "write-order-preserved"],
+  "provenance": {
+    "kind": "owned",
+    "repository": "Codevetter/codevetter",
+    "revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3"
+  },
+  "license": {
+    "spdx": "ISC",
+    "notice": "Owned synthetic corpus fixture; repository license applies."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "codevetter.agent-task-known-good.v1",
+  "task_id": "reject-deleted-resource-owner",
+  "files": [
+    {
+      "path": "edit-access.mjs",
+      "before_sha256": "d929d3bc3dfe877a8f58e22cc9a98b64755bbb618d4cb8fbc3e3d871e6392c0d",
+      "after_base64": "ZXhwb3J0IGZ1bmN0aW9uIGNhbkVkaXQodXNlcklkLCByZXNvdXJjZSkgewogIHJldHVybiByZXNvdXJjZS5kZWxldGVkICE9PSB0cnVlICYmIHJlc291cmNlLm93bmVySWQgPT09IHVzZXJJZDsKfQo=",
+      "after_sha256": "c28bb480417c7e28626de6b5634f2bb574690fde50e831bc8c2f5c73a3d8cd6b"
+    }
+  ]
+}

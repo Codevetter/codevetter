@@ -1,0 +1,15 @@
+{
+  "schema_version": "codevetter.agent-task-fixture.v1",
+  "files": [
+    {
+      "path": "query-adapter.mjs",
+      "content_base64": "ZXhwb3J0IGZ1bmN0aW9uIGNyZWF0ZUFkYXB0ZXIoY2xpZW50KSB7CiAgcmV0dXJuIHsKICAgIGZldGNoKHF1ZXJ5KSB7CiAgICAgIHJldHVybiBjbGllbnQuZ2V0KCcvc2VhcmNoJywgeyBxdWVyeSB9KTsKICAgIH0sCiAgfTsKfQo=",
+      "sha256": "57ec2b914d08641cc41c1db9dc41f5601ebaf95e224826df863329aa3187f95a"
+    },
+    {
+      "path": "query-caller.mjs",
+      "content_base64": "ZXhwb3J0IGZ1bmN0aW9uIGxvYWRRdWVyeShhZGFwdGVyLCBxdWVyeSkgewogIHJldHVybiBhZGFwdGVyLmZldGNoKHF1ZXJ5KTsKfQo=",
+      "sha256": "39a2c8c38860e384d656c09678c497d059987716de14e7fe79ec068474f7516a"
+    }
+  ]
+}

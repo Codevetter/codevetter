@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "merge-route-state-without-dropping",
+  "task_defining_failures": ["route-fields-preserved"],
+  "required_checks": [
+    {
+      "id": "route-fields-preserved",
+      "label": "Changing query preserves page and filter"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "new-query-applied",
+      "label": "The requested query change is applied"
+    },
+    {
+      "id": "route-state-remains-plain",
+      "label": "The result remains a plain state object"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "fc16437810d0c944182bd94dcd03b81dacdd8f3cb8fbfa7f5394294fdb1899e8",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

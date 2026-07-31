@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "forward-pagination-cursor",
+  "task_defining_failures": ["pagination-cursor-forwarded"],
+  "required_checks": [
+    {
+      "id": "pagination-cursor-forwarded",
+      "label": "The caller cursor reaches the integration"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "list-response-preserved",
+      "label": "The integration response remains unchanged"
+    },
+    {
+      "id": "pagination-limit-preserved",
+      "label": "The requested page size remains unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "eecd4dc845232b60369ec9cd60e6314ef196838ab20d30d9910821d84a1969d2",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

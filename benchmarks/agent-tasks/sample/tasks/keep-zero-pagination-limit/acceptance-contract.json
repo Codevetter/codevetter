@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "keep-zero-pagination-limit",
+  "task_defining_failures": ["zero-limit-preserved"],
+  "required_checks": [
+    {
+      "id": "zero-limit-preserved",
+      "label": "An explicit zero limit remains zero"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "null-limit-falls-back",
+      "label": "A null limit uses the fallback"
+    },
+    {
+      "id": "positive-limit-preserved",
+      "label": "A positive limit remains unchanged"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "310701963c92052ff9ce7b02c616ee258525ed8b79fda8ac409044f20836a122",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

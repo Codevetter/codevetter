@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "reject-cross-workspace-shared-id",
+  "task_defining_failures": ["cross-workspace-share-denied"],
+  "required_checks": [
+    {
+      "id": "cross-workspace-share-denied",
+      "label": "A shared ID cannot cross workspaces"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "same-workspace-share-allowed",
+      "label": "A same-workspace shared ID remains allowed"
+    },
+    {
+      "id": "unknown-share-denied",
+      "label": "An unknown shared ID remains denied"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "d7f637859cdccb4b4bda7a7bb0d89399cdbe1b098184938a74f96e4a60d71e82",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

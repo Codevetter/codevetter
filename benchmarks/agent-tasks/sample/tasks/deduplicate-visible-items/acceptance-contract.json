@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "deduplicate-visible-items",
+  "task_defining_failures": ["duplicate-identifiers-removed"],
+  "required_checks": [
+    {
+      "id": "duplicate-identifiers-removed",
+      "label": "Repeated item identifiers appear once"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "first-record-preserved",
+      "label": "The first record remains first"
+    },
+    {
+      "id": "original-item-identity-preserved",
+      "label": "Returned items retain object identity"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "12819c1200e2ecfda608ac59f3d3feabe9937ff6052bfd9844c72d8a03964f22",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}

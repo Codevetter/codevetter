@@ -1,0 +1,27 @@
+{
+  "schema_version": "codevetter.agent-task-acceptance.v1",
+  "task_id": "reject-nan-retry-count",
+  "task_defining_failures": ["nan-rejected"],
+  "required_checks": [
+    {
+      "id": "nan-rejected",
+      "label": "NaN is rejected as a retry count"
+    }
+  ],
+  "regression_checks": [
+    {
+      "id": "integer-counts-accepted",
+      "label": "Zero and positive integer counts remain valid"
+    },
+    {
+      "id": "text-count-rejected",
+      "label": "A string count remains invalid"
+    }
+  ],
+  "driver": {
+    "path": "checks.mjs",
+    "sha256": "6095c9869303171f691e9387c05bcb32d93b695371a0ab6486cc5176e4dc568d",
+    "timeout_ms": 5000
+  },
+  "repetitions": 2
+}
