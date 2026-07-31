@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/task-manifest-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "title",
+    "lane",
+    "runtime",
+    "category",
+    "failure_mode",
+    "artifacts",
+    "required_checks",
+    "regression_checks",
+    "provenance",
+    "license"
+  ],
+  "properties": {
+    "schema_version": { "const": "codevetter.agent-task.v1" },
+    "task_id": { "$ref": "./common.schema.json#/$defs/id" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "lane": { "enum": ["browser", "api"] },
+    "runtime": { "enum": ["typescript", "node"] },
+    "category": { "$ref": "./common.schema.json#/$defs/id" },
+    "failure_mode": { "$ref": "./common.schema.json#/$defs/id" },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixture", "task_packet", "acceptance_contract", "known_good_patch"],
+      "properties": {
+        "fixture": { "$ref": "./common.schema.json#/$defs/artifact" },
+        "task_packet": { "$ref": "./common.schema.json#/$defs/artifact" },
+        "acceptance_contract": { "$ref": "./common.schema.json#/$defs/artifact" },
+        "known_good_patch": { "$ref": "./common.schema.json#/$defs/artifact" }
+      }
+    },
+    "required_checks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": { "$ref": "./common.schema.json#/$defs/id" }
+    },
+    "regression_checks": {
+      "type": "array",
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": { "$ref": "./common.schema.json#/$defs/id" }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "repository", "revision"],
+      "properties": {
+        "kind": { "enum": ["owned", "external"] },
+        "repository": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+          "maxLength": 160
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
+        },
+        "source_url": {
+          "type": "string",
+          "pattern": "^https://",
+          "maxLength": 500
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "notice"],
+      "properties": {
+        "spdx": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "notice": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    }
+  }
+}

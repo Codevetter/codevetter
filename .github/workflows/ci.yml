@@ -45,10 +45,11 @@ jobs:
           pnpm exec node --import tsx --test --test-concurrency=1 "src/**/*.test.ts"
           pnpm exec node --import tsx --test tests/qualification/warm-verification-live.test.ts
       - name: Automation readiness tests
-        # Hermetic receipt sanitize tests — proves sensitive payloads cannot
-        # enter Foundry receipts. The live manifest verifier runs in
-        # release.yml as a post-upload check, not here (it needs network).
-        run: pnpm run test:automation
+        # Hermetic receipt/corpus contract tests. The live manifest verifier
+        # runs in release.yml as a post-upload check because it needs network.
+        run: |
+          pnpm run test:automation
+          pnpm run test:corpus-contracts
       - name: Prepare MCP sidecar
         working-directory: apps/desktop
         run: pnpm run prepare:mcp-sidecar

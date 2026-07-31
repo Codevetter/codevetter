@@ -1,0 +1,10 @@
+{
+  "input": {
+    "enabled": false,
+    "label": "Keep the explicit false value"
+  },
+  "current_output": {
+    "enabled": true,
+    "label": "Keep the explicit false value"
+  }
+}
