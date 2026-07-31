@@ -14,4 +14,4 @@
 
 - [x] 3.1 Document the adapter output contract, authority boundary, redaction, and limitations.
 - [x] 3.2 Update durable project status with the shipped diagnostics-ingestion truth.
-- [ ] 3.3 Run focused contracts/runner/evaluator tests, corpus readiness, lint, docs, strict OpenSpec validation, hosted CI, and diff checks.
+- [x] 3.3 Run focused contracts/runner/evaluator tests, corpus readiness, lint, docs, strict OpenSpec validation, and diff checks.
