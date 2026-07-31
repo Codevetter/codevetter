@@ -14,4 +14,4 @@
 
 - [x] 3.1 Update exact identity, task inventory, reproduction guidance, controls, and limitations.
 - [x] 3.2 Update durable project status with the 30-task qualified-corpus truth.
-- [ ] 3.3 Run corpus contracts, every qualification, strict readiness, lint, docs, strict OpenSpec validation, hosted CI, and diff checks.
+- [x] 3.3 Run corpus contracts, every qualification, strict readiness, lint, docs, strict OpenSpec validation, hosted CI, and diff checks.
