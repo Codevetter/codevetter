@@ -384,7 +384,7 @@ mod tests {
 
     #[test]
     fn output_and_exit_codes_preserve_receipt_meaning() {
-        assert_eq!(app_version(), "1.7.0");
+        assert_eq!(app_version(), "1.7.1");
         let passed = fixture_receipt(TrexPreviewVerdict::PassedWithLimits);
         let failed = fixture_receipt(TrexPreviewVerdict::Failed);
         let uncertain = fixture_receipt(TrexPreviewVerdict::NoConfidence);
