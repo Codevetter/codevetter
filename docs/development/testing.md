@@ -41,6 +41,29 @@ npx playwright test -g "App loads without crashing"
 - Base URL: `http://localhost:1420` (the Vite dev server)
 - Tests live in `apps/desktop/tests/`
 
+## Native Tauri UI qualification (manual)
+
+Manual native qualification must not reuse the normal CodeVetter database.
+Start Vite in one terminal, then point the Tauri process at a fresh, explicit
+application-data directory in another:
+
+```bash
+cd apps/desktop
+pnpm exec vite --port 1420 --strictPort
+
+cv_qualification_dir="$(mktemp -d /tmp/codevetter-native-qualification.XXXXXX)"
+CODEVETTER_NATIVE_QUALIFICATION=1 \
+  CODEVETTER_APP_DATA_DIR="$cv_qualification_dir" \
+  pnpm exec tauri dev --no-watch \
+  --config '{"build":{"beforeDevCommand":"true","devUrl":"http://localhost:1420/review"}}'
+```
+
+The qualification flag disables transcript indexing and background watchers;
+`CODEVETTER_APP_DATA_DIR` isolates SQLite migrations and any explicit fixture
+writes. Neither replaces `HOME` nor isolates provider discovery, so keep
+screenshots scoped to the route under qualification and inspect them for local
+account metadata before retaining them.
+
 ## 3. Rust tests (`cargo test`)
 
 ```bash

@@ -357,6 +357,11 @@ test('Review presents deterministic coverage and rejected candidate counts', asy
   await openPastReview(page);
   await expect(page.getByTestId('review-coverage')).toContainText('Complete coverage');
   await expect(page.getByTestId('review-coverage')).toContainText('2 rejected');
+  const decision = page.getByTestId('verification-decision-summary');
+  await expect(decision).toBeVisible();
+  await expect(decision).toContainText(/Hold|No confidence/);
+  await expect(decision).toContainText(/unchecked|runtime evidence/i);
+  await expect(decision.getByRole('link', { name: 'Runtime evidence' })).toBeVisible();
 });
 
 test('Review labels legacy aggregate coverage as unknown', async ({ page }) => {
@@ -443,7 +448,7 @@ for (const evidence of [
     ).toHaveCount(0);
     await expect(page.getByText('Warm verification history').first()).toBeVisible();
     if (!evidence.stale) {
-      await page.getByRole('button').filter({ hasText: 'Verification' }).click();
+      await page.getByRole('button').filter({ hasText: 'Evidence details' }).click();
       const executionFindings = page.getByTestId('warm-execution-findings');
       await expect(executionFindings).toContainText('Recent read-only execution findings');
       await expect(executionFindings).toContainText('older-regression');

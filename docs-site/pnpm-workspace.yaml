@@ -1,0 +1,14 @@
+# docs-site is deliberately its own pnpm root, outside the codevetter workspace:
+# it only depends on `blume` and shares nothing with apps/.
+# An empty `packages` list stops pnpm walking up to ../pnpm-workspace.yaml.
+packages: []
+
+# blume emits .blume/astro.config.mjs, which imports `astro/config` directly even
+# though `astro` is only a transitive dependency of blume. npm's flat node_modules
+# hoisted it; pnpm's default isolated layout does not. The hoisted linker restores
+# that resolution while still sharing every file with the global pnpm store.
+nodeLinker: hoisted
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp

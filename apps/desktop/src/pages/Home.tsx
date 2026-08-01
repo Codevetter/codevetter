@@ -1,6 +1,6 @@
-import { Activity, BarChart3, RefreshCw, Terminal } from 'lucide-react';
+import { Activity, ArrowRight, BarChart3, RefreshCw, ShieldCheck, Terminal } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ import {
 import { computeUsagePaceLabel, resolveUsageWindowTotalSecs } from '@/lib/usage-pace';
 import { isWindowHidden, useVisibilityInterval } from '@/lib/use-visibility';
 import { cn } from '@/lib/utils';
+import { VERIFICATION_COPY } from '@/lib/verification-presentation';
 
 // ─── Usage helpers ──────────────────────────────────────────────────────────
 
@@ -2815,6 +2816,44 @@ export default function Home() {
   return (
     <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
+        <section
+          className="cv-spotlight-surface overflow-hidden rounded-2xl"
+          data-testid="verification-spotlight"
+          aria-labelledby="verification-spotlight-title"
+        >
+          <div className="flex flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-300/[0.1] text-amber-200 shadow-[0_8px_24px_-18px_rgba(243,173,61,0.9)]">
+                <ShieldCheck size={21} aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <div className="cv-label text-amber-300/80">Shipping decision</div>
+                <h1
+                  id="verification-spotlight-title"
+                  className="mt-1 text-xl font-semibold tracking-[-0.02em] text-zinc-100"
+                >
+                  Check an agent-authored change
+                </h1>
+                <p className="mt-1.5 max-w-2xl text-sm leading-6 text-zinc-400">
+                  {VERIFICATION_COPY.workflow} Findings are leads; missing checks stay visible as
+                  limitations.
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2 pl-[60px] lg:pl-0">
+              <Button asChild className="h-10 gap-2 px-4">
+                <Link to="/review">
+                  {VERIFICATION_COPY.action}
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-10 px-4">
+                <Link to="/trex">Open runtime evidence</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
         <section className="cv-spotlight-surface overflow-hidden rounded-2xl">
           <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">

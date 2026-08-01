@@ -182,7 +182,7 @@ Open a report → Export Markdown → confirm the new section headings (`## Data
 ## 8. Known limitations / follow-ups
 
 - **No auto-regen across history yet.** The Timeline footer button is a stub. Next iteration: pick commits or dates, git-checkout each, regen briefs. Heavy (one agent call per snapshot) and pays per snapshot.
-- **No brief-vs-brief diff.** You can load two unpacks back-to-back from the timeline, but the UI doesn't compare them. A side-by-side or section-delta view would be the obvious next step.
+- **No generated-prose section diff.** The run-to-run comparison already shows deterministic score, graph, file, stack, commit, QA, verification-lead, and outcome deltas. It does not place two model-generated brief sections side by side or claim that prose changes are semantic repository changes.
 - **Two new `react-hooks/set-state-in-effect` lint warnings** in `RepoUnpacked.tsx` from the loading-flag pattern (`setHistoryLoading(true)` / `setTimelineLoading(true)`). CI passes (`--quiet`). Same pattern exists in `Home.tsx` and `QuickReview.tsx`. Refactor target if it becomes annoying.
 - **Brief depth depends on the CLI agent's tools.** The prompt instructs the agent to read files. Gemini CLI's tool surface differs from Claude Code's; brief quality may vary across agents until we tune per-agent.
 - **No CLAUDE.md update.** The active-context block in `agents.md` still says "scanner in `src-tauri/src/commands/unpack.rs`, page in `apps/desktop/src/pages/RepoUnpacked.tsx`" — accurate, but doesn't mention the new sections or timeline. Update next time the file is touched.

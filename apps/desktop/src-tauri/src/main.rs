@@ -106,18 +106,157 @@ fn run_usage_maintenance(app_data_dir: std::path::PathBuf) {
     }
 }
 
+fn resolve_app_data_dir(app: &tauri::App) -> std::path::PathBuf {
+    let default_dir = app
+        .path()
+        .app_data_dir()
+        .expect("failed to resolve app data dir");
+    let resolved = app_data_dir_with_override(
+        default_dir.clone(),
+        std::env::var_os("CODEVETTER_APP_DATA_DIR"),
+    );
+    if resolved != default_dir {
+        log::info!(
+            "Using CODEVETTER_APP_DATA_DIR override at {}",
+            resolved.display()
+        );
+    }
+    resolved
+}
+
+fn app_data_dir_with_override(
+    default_dir: std::path::PathBuf,
+    override_dir: Option<std::ffi::OsString>,
+) -> std::path::PathBuf {
+    override_dir
+        .map(std::path::PathBuf::from)
+        .filter(|path| !path.as_os_str().is_empty())
+        .unwrap_or(default_dir)
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct NativeVerificationRequest {
+    protocol_version: u32,
+    run_id: String,
+    scenario_id: String,
+    state_name: String,
+    frozen_time: String,
+    flags: serde_json::Map<String, serde_json::Value>,
+}
+
+const NATIVE_REVIEW_QUALIFICATION_STATES: [&str; 4] = [
+    "review-partial-ready",
+    "review-completed-ready",
+    "review-keyboard-focused",
+    "review-reduced-motion",
+];
+
+fn stable_verification_id(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 128
+        && value
+            .chars()
+            .enumerate()
+            .all(|(index, ch)| ch.is_ascii_alphanumeric() || (index > 0 && "._:-".contains(ch)))
+}
+
+fn build_verification_request_initialization_script(
+    app_data_override: Option<std::ffi::OsString>,
+    raw_request: Option<String>,
+) -> Result<Option<String>, String> {
+    let Some(raw_request) = raw_request else {
+        return Ok(None);
+    };
+    if app_data_override
+        .as_ref()
+        .is_none_or(|value| value.is_empty())
+    {
+        return Err(
+            "CODEVETTER_VERIFY_REQUEST requires an isolated CODEVETTER_APP_DATA_DIR".to_string(),
+        );
+    }
+
+    let request: NativeVerificationRequest = serde_json::from_str(&raw_request)
+        .map_err(|error| format!("Invalid CODEVETTER_VERIFY_REQUEST: {error}"))?;
+    if request.protocol_version != 1
+        || !stable_verification_id(&request.run_id)
+        || !stable_verification_id(&request.scenario_id)
+        || !NATIVE_REVIEW_QUALIFICATION_STATES.contains(&request.state_name.as_str())
+        || chrono::DateTime::parse_from_rfc3339(&request.frozen_time).is_err()
+    {
+        return Err("CODEVETTER_VERIFY_REQUEST failed qualification validation".to_string());
+    }
+    let review_id = request
+        .flags
+        .get("reviewId")
+        .and_then(serde_json::Value::as_str)
+        .filter(|value| stable_verification_id(value))
+        .ok_or_else(|| "CODEVETTER_VERIFY_REQUEST requires a stable reviewId flag".to_string())?;
+    if review_id.len() > 128 {
+        return Err("CODEVETTER_VERIFY_REQUEST reviewId is too long".to_string());
+    }
+
+    let payload = serde_json::to_string(&request)
+        .map_err(|error| format!("Could not encode CODEVETTER_VERIFY_REQUEST: {error}"))?;
+    let mut script = String::from("window.__CODEVETTER_VERIFY__ = ");
+    script.push_str(&payload);
+    script.push_str(
+        ";window.__CODEVETTER_VERIFY_RUNTIME_ERRORS__=[];\
+         window.addEventListener('error',()=>window.__CODEVETTER_VERIFY_RUNTIME_ERRORS__.push('error'));\
+         window.addEventListener('unhandledrejection',()=>window.__CODEVETTER_VERIFY_RUNTIME_ERRORS__.push('unhandledrejection'));",
+    );
+    Ok(Some(script))
+}
+
+#[cfg(debug_assertions)]
+fn verification_request_initialization_script() -> Result<Option<String>, String> {
+    build_verification_request_initialization_script(
+        std::env::var_os("CODEVETTER_APP_DATA_DIR"),
+        std::env::var("CODEVETTER_VERIFY_REQUEST").ok(),
+    )
+}
+
+#[cfg(not(debug_assertions))]
+fn verification_request_initialization_script() -> Result<Option<String>, String> {
+    Ok(None)
+}
+
+#[cfg(debug_assertions)]
+fn native_qualification_mode() -> bool {
+    std::env::var("CODEVETTER_NATIVE_QUALIFICATION").as_deref() == Ok("1")
+        && std::env::var_os("CODEVETTER_APP_DATA_DIR").is_some_and(|value| !value.is_empty())
+}
+
+#[cfg(not(debug_assertions))]
+fn native_qualification_mode() -> bool {
+    false
+}
+
 fn main() {
     if commands::agent_terminal::maybe_run_claude_hook_bridge() {
         return;
     }
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+    let mut native_verification_mode = native_qualification_mode();
+    match verification_request_initialization_script() {
+        Ok(Some(script)) => {
+            log::info!("Installing isolated native verification request");
+            builder = builder.append_invoke_initialization_script(script);
+            native_verification_mode = true;
+        }
+        Ok(None) => {}
+        Err(error) => log::warn!("Native verification request ignored: {error}"),
+    }
+
+    builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .setup(|app| {
+        .setup(move |app| {
             // v1.1.85: GUI launches inherit a bare PATH that hides Homebrew's
             // `gh`/`git`, which broke GitHub auth detection. Repair it before
             // anything shells out.
@@ -144,10 +283,7 @@ fn main() {
                 }
             }
 
-            let app_data_dir = app
-                .path()
-                .app_data_dir()
-                .expect("failed to resolve app data dir");
+            let app_data_dir = resolve_app_data_dir(app);
 
             let conn = db::init_db(app_data_dir.clone()).expect("failed to initialize database");
             let native_island_preferences = [
@@ -182,18 +318,25 @@ fn main() {
 
             // v1.1.83: resume any T-Rex watchers that were enabled before the
             // last shutdown. Each enabled row spawns its own Tokio polling task.
-            commands::trex_watcher::resume_enabled_watchers(app.handle());
+            if native_verification_mode {
+                log::info!("Native verification mode: background indexing is disabled");
+            } else {
+                commands::trex_watcher::resume_enabled_watchers(app.handle());
+            }
 
             // ── Trigger initial index on startup ─────────────────
             // Storage cleanup (one-time purge of cruft message rows) runs at
             // the end of this thread so it never races with the indexer for
             // the DB write lock. VACUUM is intentionally omitted here — it
             // takes minutes and holds an exclusive lock, freezing the UI.
-            let bg_data_dir = app_data_dir;
+            let bg_data_dir = app_data_dir.clone();
             let bg_handle = app.handle().clone();
             std::thread::Builder::new()
                 .name("initial-index".into())
                 .spawn(move || {
+                    if native_verification_mode {
+                        return;
+                    }
                     set_thread_background_qos();
                     log::info!("Starting quick index on startup...");
                     match run_initial_index(bg_data_dir.clone()) {
@@ -229,15 +372,15 @@ fn main() {
             // The startup thread does the first full index after the initial
             // UI window. Periodic passes are best-effort and must not queue
             // behind another index while foreground commands need SQLite.
-            let periodic_data_dir = app
-                .path()
-                .app_data_dir()
-                .expect("failed to resolve app data dir");
+            let periodic_data_dir = app_data_dir.clone();
             let periodic_handle = app.handle().clone();
 
             std::thread::Builder::new()
                 .name("periodic-index".into())
                 .spawn(move || {
+                    if native_verification_mode {
+                        return;
+                    }
                     set_thread_background_qos();
                     std::thread::sleep(std::time::Duration::from_secs(
                         PERIODIC_INDEX_INITIAL_DELAY_SECS,
@@ -284,14 +427,14 @@ fn main() {
             // Re-index recently active Claude/Codex JSONL files incrementally so
             // open sessions show up in archive search without waiting for the
             // 5-minute full index pass.
-            let tail_data_dir = app
-                .path()
-                .app_data_dir()
-                .expect("failed to resolve app data dir");
+            let tail_data_dir = app_data_dir;
             let tail_handle = app.handle().clone();
             std::thread::Builder::new()
                 .name("transcript-tail".into())
                 .spawn(move || {
+                    if native_verification_mode {
+                        return;
+                    }
                     set_thread_background_qos();
                     std::thread::sleep(std::time::Duration::from_secs(
                         commands::history::LIVE_TRANSCRIPT_INITIAL_DELAY_SECS,
@@ -922,4 +1065,68 @@ fn walkdir(dir: &std::path::Path, ext: &str) -> Vec<std::path::PathBuf> {
         }
     }
     results
+}
+
+#[cfg(test)]
+mod app_data_dir_tests {
+    use super::{app_data_dir_with_override, build_verification_request_initialization_script};
+    use std::{ffi::OsString, path::PathBuf};
+
+    #[test]
+    fn qualification_override_replaces_the_default_app_data_directory() {
+        let default = PathBuf::from("/default/codevetter");
+        let isolated = OsString::from("/tmp/codevetter-native-qualification");
+
+        assert_eq!(
+            app_data_dir_with_override(default, Some(isolated)),
+            PathBuf::from("/tmp/codevetter-native-qualification")
+        );
+    }
+
+    #[test]
+    fn empty_override_keeps_the_default_app_data_directory() {
+        let default = PathBuf::from("/default/codevetter");
+
+        assert_eq!(
+            app_data_dir_with_override(default.clone(), Some(OsString::new())),
+            default
+        );
+    }
+
+    #[test]
+    fn native_verification_request_requires_isolated_storage() {
+        let raw = r#"{"protocolVersion":1,"runId":"run-1","scenarioId":"review-ui","stateName":"review-partial-ready","frozenTime":"2026-08-02T00:00:00Z","flags":{"reviewId":"partial-1"}}"#;
+
+        let error = build_verification_request_initialization_script(None, Some(raw.to_string()))
+            .expect_err("request without isolated storage must fail");
+
+        assert!(error.contains("CODEVETTER_APP_DATA_DIR"));
+    }
+
+    #[test]
+    fn native_verification_request_is_validated_and_json_encoded() {
+        let raw = r#"{"protocolVersion":1,"runId":"run-1","scenarioId":"review-ui","stateName":"review-completed-ready","frozenTime":"2026-08-02T00:00:00Z","flags":{"reviewId":"completed-1"}}"#;
+
+        let script = build_verification_request_initialization_script(
+            Some(OsString::from("/tmp/codevetter-native-qualification")),
+            Some(raw.to_string()),
+        )
+        .expect("valid request")
+        .expect("initialization script");
+
+        assert!(script.starts_with("window.__CODEVETTER_VERIFY__ = {"));
+        assert!(script.contains("\"stateName\":\"review-completed-ready\""));
+        assert!(script.ends_with(";"));
+    }
+
+    #[test]
+    fn native_verification_request_rejects_unknown_states() {
+        let raw = r#"{"protocolVersion":1,"runId":"run-1","scenarioId":"review-ui","stateName":"arbitrary-state","frozenTime":"2026-08-02T00:00:00Z","flags":{"reviewId":"review-1"}}"#;
+
+        assert!(build_verification_request_initialization_script(
+            Some(OsString::from("/tmp/codevetter-native-qualification")),
+            Some(raw.to_string()),
+        )
+        .is_err());
+    }
 }

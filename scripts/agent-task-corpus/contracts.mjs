@@ -7,6 +7,9 @@ export const CONTRACT_SCHEMA_VERSIONS = Object.freeze({
   'agent-adapter': 'codevetter.agent-task-adapter.v1',
   'agent-adapter-v2': 'codevetter.agent-task-adapter.v2',
   'check-result': 'codevetter.agent-task-check-result.v1',
+  'context-provider-comparison': 'codevetter.context-provider-comparison.v1',
+  'context-provider-plan': 'codevetter.context-provider-plan.v1',
+  'context-provider-probe': 'codevetter.context-provider-probe.v1',
   'corpus-index': 'codevetter.agent-task-corpus.v1',
   'evaluation-bundle': 'codevetter.agent-task-evaluation-bundle.v1',
   'evaluation-score': 'codevetter.agent-task-evaluation-score.v1',
@@ -44,6 +47,18 @@ export function deriveRunPlanId(value) {
   return `plan-${sha256Bytes(Buffer.from(canonicalJson(identity))).slice(0, 32)}`;
 }
 
+export function deriveContextProviderPlanId(value) {
+  const { plan_id: _planId, approvals, ...identity } = value;
+  const approvalsWithoutIdentity = approvals ? { ...approvals, approval_id: undefined } : approvals;
+  return `plan-${sha256Bytes(
+    Buffer.from(canonicalJson({ ...identity, approvals: approvalsWithoutIdentity }))
+  ).slice(0, 32)}`;
+}
+
+export function deriveContextProviderApprovalId(planId) {
+  return `approval-${sha256Bytes(Buffer.from(planId)).slice(0, 32)}`;
+}
+
 export function sha256Bytes(value) {
   return createHash('sha256').update(value).digest('hex');
 }
@@ -57,6 +72,9 @@ export function validateContract(kind, value) {
   const validator = validators[kind];
   if (!validator) {
     return [`$: unsupported contract kind "${kind}"`];
+  }
+  if (kind.startsWith('context-provider-')) {
+    validatePrivacySafeDocument(value, '$', errors);
   }
   validator(value, '$', errors);
   return [...new Set(errors)].sort();
@@ -1344,6 +1362,670 @@ function qualificationPhase(value, path, statuses, errors) {
   oneOf(value.status, statuses, `${path}.status`, errors);
 }
 
+function validateContextProviderProbe(value, path, errors) {
+  const fields = [
+    'schema_version',
+    'provider_id',
+    'provider_name',
+    'provider_version',
+    'configuration_sha256',
+    'context_kind',
+    'interface_kind',
+    'operating_mode',
+    'indexing',
+    'tools',
+    'data_egress',
+    'authentication',
+    'environment_names',
+    'cost',
+    'setup',
+    'publication',
+    'limitations',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['context-provider-probe'],
+    `${path}.schema_version`,
+    errors
+  );
+  id(value.provider_id, `${path}.provider_id`, errors);
+  boundedString(value.provider_name, `${path}.provider_name`, errors, 1, 120);
+  boundedString(value.provider_version, `${path}.provider_version`, errors, 1, 120);
+  sha256(value.configuration_sha256, `${path}.configuration_sha256`, errors);
+  oneOf(
+    value.context_kind,
+    ['baseline', 'graph', 'search', 'wiki-rag', 'hybrid'],
+    `${path}.context_kind`,
+    errors
+  );
+  oneOf(value.interface_kind, ['none', 'cli', 'mcp', 'api'], `${path}.interface_kind`, errors);
+  oneOf(value.operating_mode, ['local', 'hosted', 'enterprise'], `${path}.operating_mode`, errors);
+  if (
+    closedObject(
+      value.indexing,
+      `${path}.indexing`,
+      ['mode', 'exact_revision_supported', 'snapshot_identity_supported', 'freshness_check'],
+      ['mode', 'exact_revision_supported', 'snapshot_identity_supported', 'freshness_check'],
+      errors
+    )
+  ) {
+    oneOf(
+      value.indexing.mode,
+      ['none', 'on-demand', 'prebuilt', 'continuous'],
+      `${path}.indexing.mode`,
+      errors
+    );
+    boolean(
+      value.indexing.exact_revision_supported,
+      `${path}.indexing.exact_revision_supported`,
+      errors
+    );
+    boolean(
+      value.indexing.snapshot_identity_supported,
+      `${path}.indexing.snapshot_identity_supported`,
+      errors
+    );
+    oneOf(
+      value.indexing.freshness_check,
+      ['none', 'revision-match', 'provider-status', 'unknown'],
+      `${path}.indexing.freshness_check`,
+      errors
+    );
+  }
+  if (
+    closedObject(
+      value.tools,
+      `${path}.tools`,
+      ['observable', 'allowed'],
+      ['observable', 'allowed'],
+      errors
+    )
+  ) {
+    boolean(value.tools.observable, `${path}.tools.observable`, errors);
+    stringArray(value.tools.allowed, `${path}.tools.allowed`, errors, { max: 100, itemMax: 80 });
+    if (Array.isArray(value.tools.allowed)) {
+      unique(value.tools.allowed, `${path}.tools.allowed`, errors);
+      sorted(value.tools.allowed, `${path}.tools.allowed`, errors);
+      for (const [index, tool] of value.tools.allowed.entries()) {
+        stringPattern(
+          tool,
+          /^[a-z][a-z0-9_-]{0,79}$/,
+          `${path}.tools.allowed[${index}]`,
+          errors,
+          80
+        );
+      }
+    }
+  }
+  oneOf(
+    value.data_egress,
+    ['none', 'metadata', 'source-content', 'unknown'],
+    `${path}.data_egress`,
+    errors
+  );
+  oneOf(
+    value.authentication,
+    ['none', 'credential-name', 'unknown'],
+    `${path}.authentication`,
+    errors
+  );
+  validateEnvironmentNames(value.environment_names, `${path}.environment_names`, errors);
+  if (
+    closedObject(
+      value.cost,
+      `${path}.cost`,
+      ['posture', 'max_usd_per_attempt'],
+      ['posture', 'max_usd_per_attempt'],
+      errors
+    )
+  ) {
+    oneOf(value.cost.posture, ['free', 'paid', 'unknown'], `${path}.cost.posture`, errors);
+    finiteNumber(
+      value.cost.max_usd_per_attempt,
+      `${path}.cost.max_usd_per_attempt`,
+      errors,
+      0,
+      100_000
+    );
+    if (value.cost.posture === 'free' && value.cost.max_usd_per_attempt !== 0) {
+      errors.push(`${path}.cost.max_usd_per_attempt: free providers require zero cost`);
+    }
+  }
+  if (
+    closedObject(
+      value.setup,
+      `${path}.setup`,
+      ['status', 'duration_ms', 'evidence', 'exclusion_reasons'],
+      ['status', 'duration_ms', 'evidence', 'exclusion_reasons'],
+      errors
+    )
+  ) {
+    oneOf(value.setup.status, ['eligible', 'excluded', 'blocked'], `${path}.setup.status`, errors);
+    if (value.setup.duration_ms !== null) {
+      integer(value.setup.duration_ms, `${path}.setup.duration_ms`, errors, 0, 3_600_000);
+    }
+    stringArray(value.setup.evidence, `${path}.setup.evidence`, errors, { max: 30, itemMax: 240 });
+    stringArray(value.setup.exclusion_reasons, `${path}.setup.exclusion_reasons`, errors, {
+      max: 30,
+      itemMax: 240,
+    });
+    for (const field of ['evidence', 'exclusion_reasons']) {
+      unique(value.setup[field], `${path}.setup.${field}`, errors);
+      sorted(value.setup[field], `${path}.setup.${field}`, errors);
+    }
+    if (value.setup.status === 'eligible' && value.setup.exclusion_reasons?.length !== 0) {
+      errors.push(`${path}.setup.exclusion_reasons: eligible providers cannot have exclusions`);
+    }
+    if (value.setup.status !== 'eligible' && value.setup.exclusion_reasons?.length === 0) {
+      errors.push(
+        `${path}.setup.exclusion_reasons: excluded or blocked providers require a reason`
+      );
+    }
+  }
+  oneOf(value.publication, ['allowed', 'restricted', 'unknown'], `${path}.publication`, errors);
+  stringArray(value.limitations, `${path}.limitations`, errors, { max: 50, itemMax: 500 });
+
+  if (value.authentication === 'none' && value.environment_names?.length !== 0) {
+    errors.push(`${path}.environment_names: unauthenticated providers cannot require credentials`);
+  }
+  if (value.authentication === 'credential-name' && value.environment_names?.length === 0) {
+    errors.push(`${path}.environment_names: credential-name authentication requires a name`);
+  }
+  if (value.context_kind === 'baseline') {
+    if (value.provider_id !== 'plain-repository-tools') {
+      errors.push(`${path}.provider_id: baseline identity must be plain-repository-tools`);
+    }
+    if (value.interface_kind !== 'none' || value.indexing?.mode !== 'none') {
+      errors.push(`${path}: baseline cannot declare a provider interface or index`);
+    }
+    if (value.tools?.allowed?.length !== 0 || value.data_egress !== 'none') {
+      errors.push(`${path}: baseline cannot declare provider tools or data egress`);
+    }
+  } else if (value.setup?.status === 'eligible') {
+    if (value.interface_kind === 'none')
+      errors.push(`${path}.interface_kind: treatment requires a machine interface`);
+    if (!value.indexing?.exact_revision_supported) {
+      errors.push(
+        `${path}.indexing.exact_revision_supported: eligible treatment must pin revisions`
+      );
+    }
+    if (!value.indexing?.snapshot_identity_supported) {
+      errors.push(
+        `${path}.indexing.snapshot_identity_supported: eligible treatment must identify snapshots`
+      );
+    }
+    if (!['revision-match', 'provider-status'].includes(value.indexing?.freshness_check)) {
+      errors.push(
+        `${path}.indexing.freshness_check: eligible treatment requires a freshness check`
+      );
+    }
+    if (!value.tools?.observable || value.tools?.allowed?.length === 0) {
+      errors.push(`${path}.tools: eligible treatment requires observable declared tools`);
+    }
+  }
+}
+
+function validateContextProviderPlan(value, path, errors) {
+  const fields = [
+    'schema_version',
+    'plan_id',
+    'experiment_id',
+    'stage',
+    'corpus',
+    'corpus_id',
+    'corpus_version',
+    'agent_profile',
+    'provider_probes',
+    'providers',
+    'tasks',
+    'repetitions',
+    'schedule',
+    'counts',
+    'cost',
+    'environment',
+    'approvals',
+    'blocked_reasons',
+    'diagnostics',
+    'limitations',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['context-provider-plan'],
+    `${path}.schema_version`,
+    errors
+  );
+  id(value.plan_id, `${path}.plan_id`, errors);
+  id(value.experiment_id, `${path}.experiment_id`, errors);
+  oneOf(value.stage, ['probe', 'feasibility', 'full'], `${path}.stage`, errors);
+  artifact(value.corpus, `${path}.corpus`, errors);
+  id(value.corpus_id, `${path}.corpus_id`, errors);
+  stringPattern(value.corpus_version, /^\d+\.\d+\.\d+$/, `${path}.corpus_version`, errors, 40);
+  validateContextAgentProfile(value.agent_profile, `${path}.agent_profile`, errors);
+  artifactArray(value.provider_probes, `${path}.provider_probes`, errors);
+  array(value.providers, `${path}.providers`, errors, { min: 1, max: 4 });
+  const providerIds = [];
+  for (const [index, provider] of (Array.isArray(value.providers)
+    ? value.providers
+    : []
+  ).entries()) {
+    const providerPath = `${path}.providers[${index}]`;
+    const providerFields = [
+      'provider_id',
+      'probe_sha256',
+      'role',
+      'context_kind',
+      'interface_kind',
+      'operating_mode',
+      'data_egress',
+      'cost_posture',
+      'max_usd_per_attempt',
+      'environment_names',
+      'snapshot',
+    ];
+    if (!closedObject(provider, providerPath, providerFields, providerFields, errors)) continue;
+    id(provider.provider_id, `${providerPath}.provider_id`, errors);
+    sha256(provider.probe_sha256, `${providerPath}.probe_sha256`, errors);
+    oneOf(provider.role, ['baseline', 'treatment'], `${providerPath}.role`, errors);
+    oneOf(
+      provider.context_kind,
+      ['baseline', 'graph', 'search', 'wiki-rag', 'hybrid'],
+      `${providerPath}.context_kind`,
+      errors
+    );
+    oneOf(
+      provider.interface_kind,
+      ['none', 'cli', 'mcp', 'api'],
+      `${providerPath}.interface_kind`,
+      errors
+    );
+    oneOf(
+      provider.operating_mode,
+      ['local', 'hosted', 'enterprise'],
+      `${providerPath}.operating_mode`,
+      errors
+    );
+    oneOf(
+      provider.data_egress,
+      ['none', 'metadata', 'source-content', 'unknown'],
+      `${providerPath}.data_egress`,
+      errors
+    );
+    oneOf(
+      provider.cost_posture,
+      ['free', 'paid', 'unknown'],
+      `${providerPath}.cost_posture`,
+      errors
+    );
+    finiteNumber(
+      provider.max_usd_per_attempt,
+      `${providerPath}.max_usd_per_attempt`,
+      errors,
+      0,
+      100_000
+    );
+    validateEnvironmentNames(
+      provider.environment_names,
+      `${providerPath}.environment_names`,
+      errors
+    );
+    validateContextSnapshot(provider.snapshot, `${providerPath}.snapshot`, errors);
+    if (
+      provider.role === 'baseline' &&
+      (provider.context_kind !== 'baseline' || provider.interface_kind !== 'none')
+    ) {
+      errors.push(`${providerPath}: baseline role cannot expose a provider interface`);
+    }
+    if (provider.role === 'treatment' && provider.context_kind === 'baseline') {
+      errors.push(`${providerPath}.context_kind: treatment cannot use baseline context`);
+    }
+    if (typeof provider.provider_id === 'string') providerIds.push(provider.provider_id);
+  }
+  unique(providerIds, `${path}.providers provider_id`, errors);
+  sorted(providerIds, `${path}.providers`, errors);
+  const probeHashes = (value.provider_probes ?? []).map((probe) => probe?.sha256).sort();
+  const providerProbeHashes = (value.providers ?? [])
+    .map((provider) => provider?.probe_sha256)
+    .sort();
+  unique(probeHashes, `${path}.provider_probes sha256`, errors);
+  if (JSON.stringify(probeHashes) !== JSON.stringify(providerProbeHashes)) {
+    errors.push(`${path}.provider_probes: hashes must match the declared providers`);
+  }
+  if ((value.providers ?? []).filter((provider) => provider?.role === 'baseline').length !== 1) {
+    errors.push(`${path}.providers: exactly one baseline is required`);
+  }
+  array(value.tasks, `${path}.tasks`, errors, { max: CORPUS_LIMITS.maxTasks });
+  const taskIds = [];
+  for (const [index, task] of (Array.isArray(value.tasks) ? value.tasks : []).entries()) {
+    const taskPath = `${path}.tasks[${index}]`;
+    const taskFields = [
+      'task_id',
+      'manifest_sha256',
+      'repository_revision',
+      'lane',
+      'runtime',
+      'category',
+    ];
+    if (!closedObject(task, taskPath, taskFields, taskFields, errors)) continue;
+    id(task.task_id, `${taskPath}.task_id`, errors);
+    sha256(task.manifest_sha256, `${taskPath}.manifest_sha256`, errors);
+    revision(task.repository_revision, `${taskPath}.repository_revision`, errors);
+    oneOf(task.lane, ['api', 'browser'], `${taskPath}.lane`, errors);
+    oneOf(task.runtime, ['node', 'typescript'], `${taskPath}.runtime`, errors);
+    id(task.category, `${taskPath}.category`, errors);
+    if (typeof task.task_id === 'string') taskIds.push(task.task_id);
+  }
+  unique(taskIds, `${path}.tasks task_id`, errors);
+  sorted(taskIds, `${path}.tasks`, errors);
+  integer(value.repetitions, `${path}.repetitions`, errors, 0, 5);
+  validateContextSchedule(
+    value.schedule,
+    `${path}.schedule`,
+    providerIds,
+    taskIds,
+    value.repetitions,
+    errors
+  );
+  validateContextCounts(value.counts, `${path}.counts`, value, errors);
+  validateContextCost(value.cost, `${path}.cost`, errors);
+  validateContextCostDerivation(value, path, errors);
+  validateEnvironmentAvailability(value.environment, `${path}.environment`, errors);
+  validateContextApprovals(value.approvals, `${path}.approvals`, value, errors);
+  for (const field of ['blocked_reasons', 'diagnostics']) {
+    stringArray(value[field], `${path}.${field}`, errors, {
+      max: field === 'diagnostics' ? 20 : 50,
+      itemMax: 200,
+    });
+    unique(value[field], `${path}.${field}`, errors);
+    sorted(value[field], `${path}.${field}`, errors);
+  }
+  stringArray(value.limitations, `${path}.limitations`, errors, { max: 50, itemMax: 500 });
+  const expected =
+    value.stage === 'probe' ? [0, 0] : value.stage === 'feasibility' ? [4, 2] : [30, 3];
+  if (value.tasks?.length !== expected[0] || value.repetitions !== expected[1]) {
+    errors.push(
+      `${path}: ${value.stage} stage requires ${expected[0]} tasks and ${expected[1]} repetitions`
+    );
+  }
+  if (typeof value.plan_id === 'string' && value.plan_id !== deriveContextProviderPlanId(value)) {
+    errors.push(`${path}.plan_id: does not match the canonical context plan identity`);
+  }
+  if (
+    typeof value.plan_id === 'string' &&
+    value.approvals?.approval_id !== deriveContextProviderApprovalId(value.plan_id)
+  ) {
+    errors.push(`${path}.approvals.approval_id: does not match the plan identity`);
+  }
+}
+
+function validateContextAgentProfile(value, path, errors) {
+  const fields = [
+    'status',
+    'agent',
+    'model',
+    'adapter',
+    'configuration_sha256',
+    'environment_sha256',
+    'cost_posture',
+    'max_usd_per_attempt',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  oneOf(value.status, ['unselected', 'selected'], `${path}.status`, errors);
+  for (const field of ['agent', 'model']) {
+    if (value[field] !== null)
+      boundedString(value[field], `${path}.${field}`, errors, 1, field === 'agent' ? 120 : 160);
+  }
+  if (value.adapter !== null) artifact(value.adapter, `${path}.adapter`, errors);
+  for (const field of ['configuration_sha256', 'environment_sha256']) {
+    if (value[field] !== null) sha256(value[field], `${path}.${field}`, errors);
+  }
+  oneOf(value.cost_posture, ['free', 'paid', 'unknown'], `${path}.cost_posture`, errors);
+  if (value.max_usd_per_attempt !== null)
+    finiteNumber(value.max_usd_per_attempt, `${path}.max_usd_per_attempt`, errors, 0, 100_000);
+  const nullable = [
+    'agent',
+    'model',
+    'adapter',
+    'configuration_sha256',
+    'environment_sha256',
+    'max_usd_per_attempt',
+  ];
+  if (value.status === 'unselected' && nullable.some((field) => value[field] !== null)) {
+    errors.push(`${path}: unselected agent profile fields must be null`);
+  }
+  if (value.status === 'selected' && nullable.some((field) => value[field] === null)) {
+    errors.push(`${path}: selected agent profile fields must be pinned`);
+  }
+}
+
+function validateContextSnapshot(value, path, errors) {
+  const fields = ['status', 'snapshot_id', 'indexed_revision'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  oneOf(value.status, ['not-required', 'pending', 'ready', 'stale'], `${path}.status`, errors);
+  if (value.snapshot_id !== null) id(value.snapshot_id, `${path}.snapshot_id`, errors);
+  if (value.indexed_revision !== null)
+    revision(value.indexed_revision, `${path}.indexed_revision`, errors);
+  if (value.status === 'ready' && (value.snapshot_id === null || value.indexed_revision === null)) {
+    errors.push(`${path}: ready snapshots require identity and indexed revision`);
+  }
+  if (value.status !== 'ready' && (value.snapshot_id !== null || value.indexed_revision !== null)) {
+    errors.push(`${path}: non-ready snapshots cannot claim identity or revision`);
+  }
+}
+
+function validateContextSchedule(value, path, providerIds, taskIds, repetitions, errors) {
+  array(value, path, errors, { max: 1000 });
+  if (!Array.isArray(value)) return;
+  const keys = [];
+  const ordersByTrial = new Map();
+  for (const [index, entry] of value.entries()) {
+    const entryPath = `${path}[${index}]`;
+    const fields = ['sequence', 'task_id', 'trial_index', 'provider_id', 'order'];
+    if (!closedObject(entry, entryPath, fields, fields, errors)) continue;
+    integer(entry.sequence, `${entryPath}.sequence`, errors, 1, 1000);
+    if (entry.sequence !== index + 1)
+      errors.push(`${entryPath}.sequence: schedule must be contiguous`);
+    id(entry.task_id, `${entryPath}.task_id`, errors);
+    integer(entry.trial_index, `${entryPath}.trial_index`, errors, 1, 5);
+    id(entry.provider_id, `${entryPath}.provider_id`, errors);
+    integer(entry.order, `${entryPath}.order`, errors, 1, 4);
+    if (!taskIds.includes(entry.task_id)) errors.push(`${entryPath}.task_id: task is not declared`);
+    if (!providerIds.includes(entry.provider_id))
+      errors.push(`${entryPath}.provider_id: provider is not declared`);
+    keys.push(`${entry.task_id}:${entry.trial_index}:${entry.provider_id}`);
+    const trialKey = `${entry.task_id}:${entry.trial_index}`;
+    const orders = ordersByTrial.get(trialKey) ?? [];
+    orders.push(entry.order);
+    ordersByTrial.set(trialKey, orders);
+  }
+  unique(keys, `${path} task trial provider`, errors);
+  const expected = taskIds.length * repetitions * providerIds.length;
+  if (value.length !== expected) errors.push(`${path}: expected ${expected} scheduled attempts`);
+  const expectedOrders = Array.from({ length: providerIds.length }, (_, index) => index + 1);
+  for (const [trialKey, orders] of ordersByTrial) {
+    if (JSON.stringify([...orders].sort()) !== JSON.stringify(expectedOrders)) {
+      errors.push(`${path}: ${trialKey} must use each arm order exactly once`);
+    }
+  }
+}
+
+function validateContextCounts(value, path, plan, errors) {
+  const fields = ['providers', 'tasks', 'repetitions', 'attempts'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  const expected = {
+    providers: plan.providers?.length,
+    tasks: plan.tasks?.length,
+    repetitions: plan.repetitions,
+    attempts: plan.schedule?.length,
+  };
+  for (const field of fields) {
+    integer(value[field], `${path}.${field}`, errors, 0, field === 'attempts' ? 1000 : 50);
+    if (value[field] !== expected[field])
+      errors.push(`${path}.${field}: does not match plan contents`);
+  }
+}
+
+function validateContextCost(value, path, errors) {
+  const fields = ['posture', 'context_max_usd', 'agent_max_usd', 'total_max_usd'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  oneOf(value.posture, ['free', 'paid', 'unknown'], `${path}.posture`, errors);
+  finiteNumber(value.context_max_usd, `${path}.context_max_usd`, errors, 0, 100_000);
+  for (const field of ['agent_max_usd', 'total_max_usd']) {
+    if (value[field] !== null) finiteNumber(value[field], `${path}.${field}`, errors, 0, 100_000);
+  }
+}
+
+function validateContextCostDerivation(plan, path, errors) {
+  if (!plan.cost || !Array.isArray(plan.providers) || !Array.isArray(plan.schedule)) return;
+  const contextMax = roundContextCost(
+    plan.providers.reduce(
+      (total, provider) =>
+        total + (Number.isFinite(provider?.max_usd_per_attempt) ? provider.max_usd_per_attempt : 0),
+      0
+    ) *
+      (plan.tasks?.length ?? 0) *
+      (plan.repetitions ?? 0)
+  );
+  const agentMax =
+    plan.agent_profile?.status === 'selected' &&
+    Number.isFinite(plan.agent_profile?.max_usd_per_attempt)
+      ? roundContextCost(plan.agent_profile.max_usd_per_attempt * plan.schedule.length)
+      : null;
+  const unknown =
+    plan.agent_profile?.cost_posture === 'unknown' ||
+    plan.providers.some((provider) => provider?.cost_posture === 'unknown');
+  const paid =
+    plan.agent_profile?.cost_posture === 'paid' ||
+    plan.providers.some((provider) => provider?.cost_posture === 'paid');
+  const posture = unknown ? 'unknown' : paid ? 'paid' : 'free';
+  const totalMax = agentMax === null ? null : roundContextCost(contextMax + agentMax);
+  for (const [field, expected] of Object.entries({
+    posture,
+    context_max_usd: contextMax,
+    agent_max_usd: agentMax,
+    total_max_usd: totalMax,
+  })) {
+    if (plan.cost[field] !== expected)
+      errors.push(`${path}.cost.${field}: does not match plan inputs`);
+  }
+}
+
+function roundContextCost(value) {
+  if (value === 0) return 0;
+  return Math.ceil(value * 1_000_000) / 1_000_000;
+}
+
+function validateContextApprovals(value, path, plan, errors) {
+  const fields = [
+    'approval_id',
+    'execution_required',
+    'paid_required',
+    'hosted_required',
+    'data_egress_required',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  id(value.approval_id, `${path}.approval_id`, errors);
+  exact(value.execution_required, true, `${path}.execution_required`, errors);
+  for (const field of ['paid_required', 'hosted_required', 'data_egress_required'])
+    boolean(value[field], `${path}.${field}`, errors);
+  const paid =
+    plan.agent_profile?.cost_posture !== 'free' ||
+    plan.providers?.some((provider) => provider?.cost_posture !== 'free');
+  const hosted = plan.providers?.some((provider) => provider?.operating_mode !== 'local');
+  const egress = plan.providers?.some((provider) => provider?.data_egress !== 'none');
+  if (value.paid_required !== paid)
+    errors.push(`${path}.paid_required: must match conservative cost posture`);
+  if (value.hosted_required !== hosted)
+    errors.push(`${path}.hosted_required: must match provider operating modes`);
+  if (value.data_egress_required !== egress)
+    errors.push(`${path}.data_egress_required: must match provider egress posture`);
+}
+
+function validateContextProviderComparison(value, path, errors) {
+  const fields = [
+    'schema_version',
+    'comparison_id',
+    'plan_sha256',
+    'scorer_sha256',
+    'status',
+    'providers',
+    'missing_arms',
+    'limitations',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['context-provider-comparison'],
+    `${path}.schema_version`,
+    errors
+  );
+  id(value.comparison_id, `${path}.comparison_id`, errors);
+  sha256(value.plan_sha256, `${path}.plan_sha256`, errors);
+  sha256(value.scorer_sha256, `${path}.scorer_sha256`, errors);
+  oneOf(value.status, ['descriptive', 'qualified', 'invalid'], `${path}.status`, errors);
+  array(value.providers, `${path}.providers`, errors, { max: 3 });
+  const providerIds = [];
+  for (const [index, provider] of (Array.isArray(value.providers)
+    ? value.providers
+    : []
+  ).entries()) {
+    const providerPath = `${path}.providers[${index}]`;
+    const providerFields = [
+      'provider_id',
+      'pairwise_score',
+      'raw_p_value',
+      'adjusted_p_value',
+      'pairwise_qualified',
+      'family_qualified',
+    ];
+    if (!closedObject(provider, providerPath, providerFields, providerFields, errors)) continue;
+    id(provider.provider_id, `${providerPath}.provider_id`, errors);
+    artifact(provider.pairwise_score, `${providerPath}.pairwise_score`, errors);
+    for (const field of ['raw_p_value', 'adjusted_p_value']) {
+      if (provider[field] !== null)
+        finiteNumber(provider[field], `${providerPath}.${field}`, errors, 0, 1);
+    }
+    boolean(provider.pairwise_qualified, `${providerPath}.pairwise_qualified`, errors);
+    boolean(provider.family_qualified, `${providerPath}.family_qualified`, errors);
+    if (provider.family_qualified && !provider.pairwise_qualified)
+      errors.push(`${providerPath}.family_qualified: requires pairwise qualification`);
+    if (typeof provider.provider_id === 'string') providerIds.push(provider.provider_id);
+  }
+  unique(providerIds, `${path}.providers provider_id`, errors);
+  sorted(providerIds, `${path}.providers`, errors);
+  stringArray(value.missing_arms, `${path}.missing_arms`, errors, { max: 1000, itemMax: 200 });
+  unique(value.missing_arms, `${path}.missing_arms`, errors);
+  sorted(value.missing_arms, `${path}.missing_arms`, errors);
+  stringArray(value.limitations, `${path}.limitations`, errors, { max: 50, itemMax: 500 });
+}
+
+function validatePrivacySafeDocument(value, path, errors) {
+  if (Array.isArray(value)) {
+    for (const [index, item] of value.entries())
+      validatePrivacySafeDocument(item, `${path}[${index}]`, errors);
+    return;
+  }
+  if (value && typeof value === 'object') {
+    for (const [key, item] of Object.entries(value))
+      validatePrivacySafeDocument(item, `${path}.${key}`, errors);
+    return;
+  }
+  if (typeof value !== 'string') return;
+  const unsafePatterns = [
+    [/^(?:\/Users\/|\/home\/|[A-Za-z]:\\|\\\\)/, 'absolute path'],
+    [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private key'],
+    [/(?:^|[^A-Za-z0-9])(?:sk|ghp|github_pat|xox[baprs])[-_][A-Za-z0-9_-]{12,}/, 'credential'],
+    [/AKIA[0-9A-Z]{16}/, 'credential'],
+    [/\bBearer\s+[A-Za-z0-9._~-]{12,}/i, 'credential'],
+    [/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i, 'provider account identifier'],
+  ];
+  for (const [pattern, label] of unsafePatterns) {
+    if (pattern.test(value)) errors.push(`${path}: ${label} is not allowed`);
+  }
+  if (value.includes('\n')) errors.push(`${path}: multiline or raw source content is not allowed`);
+}
+
 function qualificationPhaseV2(value, path, phase, errors) {
   const baselineStatuses = [
     'intended_failure',
@@ -1639,6 +2321,9 @@ const validators = Object.freeze({
   'adapter-diagnostics': validateAdapterDiagnostics,
   'agent-adapter': validateAgentAdapter,
   'check-result': validateCheckResult,
+  'context-provider-comparison': validateContextProviderComparison,
+  'context-provider-plan': validateContextProviderPlan,
+  'context-provider-probe': validateContextProviderProbe,
   'corpus-index': validateCorpusIndex,
   'evaluation-bundle': validateEvaluationBundle,
   'evaluation-score': validateEvaluationScore,

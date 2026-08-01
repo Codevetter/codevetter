@@ -38,12 +38,12 @@ test.describe('desktop visual system', () => {
 
       for (const [label, path] of routes) {
         const nav = page.getByRole('navigation', { name: 'Primary navigation' });
-        await nav.getByRole('link', { name: label }).click();
+        await nav.getByRole('link', { name: label, exact: true }).click();
         await expect.poll(() => new URL(page.url()).pathname).toBe(path);
 
         await expect(nav).toBeVisible();
-        await expect(nav.getByRole('link')).toHaveCount(routes.length);
-        await expect(nav.getByRole('link', { name: label })).toHaveAttribute(
+        await expect(nav.locator('[data-nav-destination]')).toHaveCount(routes.length);
+        await expect(nav.getByRole('link', { name: label, exact: true })).toHaveAttribute(
           'aria-current',
           'page'
         );
@@ -112,11 +112,37 @@ test.describe('desktop visual system', () => {
     await expect(search).toBeFocused();
   });
 
+  test('makes the verification path noticeable without removing the workbench', async ({
+    page,
+  }) => {
+    await navigateTo(page, '/');
+
+    const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+    const checkChange = nav.getByTestId('check-change-action');
+    await expect(checkChange).toBeVisible();
+    await expect(checkChange).toContainText('Review · run · decide');
+    await expect(page.getByTestId('verification-spotlight')).toContainText(
+      'Check an agent-authored change'
+    );
+
+    await checkChange.click();
+    await expect(page).toHaveURL(/\/review$/);
+    await expect(page.getByRole('heading', { name: 'Review the change' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Search commands' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('Check a change', { exact: true })).toBeVisible();
+    await expect(dialog.getByText('Go to Board', { exact: true })).toBeVisible();
+  });
+
   test('has no serious accessibility violations on primary routes', async ({ page }) => {
     test.setTimeout(60_000);
     for (const [label, path] of routes) {
       await navigateTo(page, path);
-      await expect(page.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByRole('link', { name: label, exact: true })).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
       await expect(page.locator('h1').first()).toBeVisible();
       const results = await new AxeBuilder({ page }).analyze();
       const blocking = results.violations.filter(

@@ -233,11 +233,14 @@ Internal (fleet):
 
 ### Benchmarks
 - Catch-rate benchmark harness (`benchmarks/agent-prs`): per-case or combined fixtures, `bench:new-case` starter, `bench:curation` readiness report, strict fixture validation, named CodeVetter / CodeRabbit free-tier / Claude Code comparator slots, false-positive and redundant-match counts, precision/F1, baseline deltas, severity-specific gates, JSON/Markdown report output.
-- Agent-task corpus foundation (`benchmarks/agent-tasks`): thirteen closed
-  versioned machine contracts, two-level SHA-256 task identity, fail-closed
-  validation, repeated baseline/known-good qualification, deterministic
-  dry-run planning, explicitly approved disposable adapter execution, and one
-  qualified synthetic sample that remains non-publishable for issue #53.
+- Agent-task corpus (`benchmarks/agent-tasks`): 30 compact synthetic tasks
+  qualified across eight failure categories, both browser/API lanes, and both
+  Node/TypeScript runtimes. Closed versioned contracts, two-level SHA-256 task
+  identity, repeated baseline/known-good qualification, deterministic dry-run
+  planning, explicitly approved disposable adapter execution, immutable v2
+  receipts, and deterministic receipt-to-score composition all fail closed.
+  The corpus passes its contract-readiness publication gates; it does not by
+  itself establish agent quality, provider superiority, or product value.
 - `--evidence-comparison=with:without` mode compares stored outputs with and without deterministic evidence search.
 - 27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7 languages and 15+ vulnerability types; `pnpm bench:public` scores catch-rate/precision/F1.
 

@@ -1,0 +1,35 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "hosted-provider",
+  "provider_name": "Hosted provider fixture",
+  "provider_version": "fixture-1",
+  "configuration_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "context_kind": "wiki-rag",
+  "interface_kind": "api",
+  "operating_mode": "hosted",
+  "indexing": {
+    "mode": "prebuilt",
+    "exact_revision_supported": true,
+    "snapshot_identity_supported": true,
+    "freshness_check": "provider-status"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": ["context_query"]
+  },
+  "data_egress": "source-content",
+  "authentication": "credential-name",
+  "environment_names": ["HOSTED_PROVIDER_TOKEN"],
+  "cost": {
+    "posture": "unknown",
+    "max_usd_per_attempt": 1
+  },
+  "setup": {
+    "status": "eligible",
+    "duration_ms": 100,
+    "evidence": ["fixture:hosted-provider"],
+    "exclusion_reasons": []
+  },
+  "publication": "restricted",
+  "limitations": ["Synthetic hosted-provider fixture."]
+}

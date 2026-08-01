@@ -19,6 +19,8 @@ test.describe('Smoke tests', () => {
     await navigateTo(page, '/');
     await waitForNoSpinners(page);
 
+    await expect(page.getByTestId('verification-spotlight')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Check a change' }).first()).toBeVisible();
     await expect(page.getByText('Usage telemetry')).toBeVisible();
     await expect(page.getByRole('button', { name: /Re-index local data|Indexing/ })).toBeVisible();
     await expect(page.getByText('Provider telemetry')).toBeVisible();
@@ -28,7 +30,7 @@ test.describe('Smoke tests', () => {
     await navigateTo(page, '/review');
     await waitForNoSpinners(page);
 
-    await expect(page.locator('h1', { hasText: 'Review' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Review the change' })).toBeVisible();
   });
 
   test('Settings page loads without errors', async ({ page }) => {
@@ -48,8 +50,9 @@ test.describe('Smoke tests', () => {
     await expect(nav).toBeVisible();
 
     // Product pillars plus the Settings utility.
-    const links = nav.locator('a');
+    const links = nav.locator('[data-nav-destination]');
     await expect(links).toHaveCount(7);
+    await expect(nav.getByTestId('check-change-action')).toBeVisible();
     for (const label of [
       'Usage',
       'Work',
@@ -59,7 +62,7 @@ test.describe('Smoke tests', () => {
       'Repo Unpack',
       'Settings',
     ]) {
-      await expect(nav.getByRole('link', { name: label })).toBeVisible();
+      await expect(nav.getByRole('link', { name: label, exact: true })).toBeVisible();
     }
     await expect(nav.getByText('Roadmap')).toHaveCount(0);
     await expect(nav.getByText('Now')).toHaveCount(0);

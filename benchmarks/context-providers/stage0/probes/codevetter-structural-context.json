@@ -1,0 +1,45 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "codevetter-structural-context",
+  "provider_name": "CodeVetter structural context",
+  "provider_version": "1.7.0",
+  "configuration_sha256": "d3426aa6ab55c29529cda93502bf45a37eb9c95b25e06bb3b7c4aa6249343938",
+  "context_kind": "graph",
+  "interface_kind": "mcp",
+  "operating_mode": "local",
+  "indexing": {
+    "mode": "on-demand",
+    "exact_revision_supported": true,
+    "snapshot_identity_supported": true,
+    "freshness_check": "revision-match"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": [
+      "graph_get_neighbors",
+      "graph_get_node",
+      "graph_impact",
+      "graph_path",
+      "graph_query"
+    ]
+  },
+  "data_egress": "none",
+  "authentication": "none",
+  "environment_names": [],
+  "cost": {
+    "posture": "free",
+    "max_usd_per_attempt": 0
+  },
+  "setup": {
+    "status": "eligible",
+    "duration_ms": null,
+    "evidence": [
+      "apps/desktop/src-tauri/src/commands/structural_graph/types.rs:snapshot-identity",
+      "apps/desktop/src-tauri/src/mcp/contracts.rs:graph-tools",
+      "apps/desktop/src-tauri/tauri.conf.json:version-1.7.0"
+    ],
+    "exclusion_reasons": []
+  },
+  "publication": "allowed",
+  "limitations": ["Repository contract inspection only; no MCP process or graph index was started."]
+}

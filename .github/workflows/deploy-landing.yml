@@ -33,13 +33,13 @@ jobs:
 
       - name: Build static landing page
         working-directory: apps/landing-page-astro
-        run: npm run build
+        run: pnpm run build
 
       - name: Build docs (Blume) and merge into /docs
         working-directory: docs-site
         run: |
-          npm ci
-          npm run build
+          pnpm install --frozen-lockfile
+          pnpm run build
           rm -rf ../apps/landing-page-astro/dist/docs
           mkdir -p ../apps/landing-page-astro/dist/docs
           cp -r dist/* ../apps/landing-page-astro/dist/docs/

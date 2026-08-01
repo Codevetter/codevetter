@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/context-provider-comparison.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "comparison_id",
+    "plan_sha256",
+    "scorer_sha256",
+    "status",
+    "providers",
+    "missing_arms",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "codevetter.context-provider-comparison.v1" },
+    "comparison_id": { "$ref": "common.schema.json#/$defs/id" },
+    "plan_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+    "scorer_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+    "status": { "enum": ["descriptive", "qualified", "invalid"] },
+    "providers": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider_id",
+          "pairwise_score",
+          "raw_p_value",
+          "adjusted_p_value",
+          "pairwise_qualified",
+          "family_qualified"
+        ],
+        "properties": {
+          "provider_id": { "$ref": "common.schema.json#/$defs/id" },
+          "pairwise_score": { "$ref": "common.schema.json#/$defs/artifact" },
+          "raw_p_value": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "adjusted_p_value": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "pairwise_qualified": { "type": "boolean" },
+          "family_qualified": { "type": "boolean" }
+        }
+      }
+    },
+    "missing_arms": {
+      "type": "array",
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  }
+}
