@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { PrerequisiteStatus } from '@/lib/tauri-ipc';
 import { checkPrerequisites, isTauriAvailable, setPreference } from '@/lib/tauri-ipc';
+import { VERIFICATION_COPY } from '@/lib/verification-presentation';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -22,9 +23,9 @@ const MODEL_OPTIONS: { value: ModelOption; label: string; desc: string }[] = [
 ];
 
 const TOUR_ITEMS: { icon: string; label: string; desc: string }[] = [
-  { icon: '\u2302', label: 'Home', desc: 'Usage stats & overview' },
-  { icon: '\u2714', label: 'Review', desc: 'AI code review' },
-  { icon: '\u2699', label: 'Settings', desc: 'Configuration' },
+  { icon: '\u25A3', label: 'Repo Unpack', desc: 'Understand structure, history, and risk' },
+  { icon: '\u2714', label: 'Review', desc: 'Inspect the exact change and evidence gaps' },
+  { icon: '\u25CE', label: 'Testing', desc: 'Run executable checks and inspect receipts' },
 ];
 
 export default function Onboarding({ onComplete }: OnboardingProps) {
@@ -117,10 +118,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               <div>
                 <h1 className="text-xl font-bold text-slate-100">CodeVetter</h1>
                 <p className="mt-1 text-sm font-medium text-amber-400/80">
-                  Your AI coding companion
+                  Evidence for shipping decisions
                 </p>
                 <p className="mt-3 text-sm text-slate-400 leading-relaxed">
-                  Monitor usage, review agent-generated code — all from your desktop.
+                  {VERIFICATION_COPY.workflow} Keep repository context, agent work, and usage in one
+                  local workbench.
                 </p>
               </div>
               <Button
@@ -192,9 +194,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           {step === 'model' && (
             <div className="flex flex-col items-center text-center gap-6">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Pick your default model</h2>
+                <h2 className="text-lg font-semibold text-slate-100">Choose the review model</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  You can change this anytime in settings
+                  Models surface leads. Executable checks determine confidence.
                 </p>
               </div>
 
@@ -242,9 +244,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             <div className="flex flex-col items-center text-center gap-6">
               <div>
                 <h2 className="text-lg font-semibold text-slate-100">Quick tour</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Here's what you'll find in the sidebar
-                </p>
+                <p className="mt-1 text-sm text-slate-500">One path through the workbench</p>
               </div>
 
               <div className="w-full space-y-2">
@@ -282,7 +282,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 className="w-full bg-amber-500 text-white hover:bg-amber-600"
                 size="lg"
               >
-                Start Using CodeVetter
+                Open the evidence workbench
                 <span className="ml-1">{'\u2192'}</span>
               </Button>
             </div>

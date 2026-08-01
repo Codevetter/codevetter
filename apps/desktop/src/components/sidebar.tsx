@@ -1,5 +1,6 @@
 import {
   Activity,
+  ArrowRight,
   Bot,
   Columns3,
   Command,
@@ -68,14 +69,14 @@ const workflowNavItems: NavItem[] = [
     href: '/review',
     icon: <Zap size={17} />,
     shortcut: 'R',
-    description: 'Diff review workspace',
+    description: 'Inspect the change and identify evidence gaps',
   },
   {
     label: 'Testing',
     href: '/trex',
     icon: <Eye size={17} />,
     shortcut: 'T',
-    description: 'Runtime and browser verification',
+    description: 'Run executable checks and inspect receipts',
   },
 ];
 
@@ -148,6 +149,7 @@ export default function Sidebar({ onSearch }: SidebarProps) {
         <TooltipTrigger asChild>
           <Link
             to={item.href}
+            data-nav-destination={item.href}
             aria-current={active ? 'page' : undefined}
             className={cn(
               'group relative flex min-h-[40px] items-center gap-3 rounded-lg px-3 text-[14px] transition-[background-color,color,box-shadow] duration-150',
@@ -207,10 +209,31 @@ export default function Sidebar({ onSearch }: SidebarProps) {
             </div>
           </div>
 
+          <Link
+            to="/review"
+            data-testid="check-change-action"
+            className="group mt-3 flex min-h-12 items-center gap-3 rounded-xl bg-[var(--cv-accent)] px-3 text-[#090a0c] shadow-[0_10px_28px_-18px_rgba(243,173,61,0.85)] transition-[background-color,box-shadow] duration-150 hover:bg-amber-300 hover:shadow-[0_12px_30px_-16px_rgba(243,173,61,0.9)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0b0d]"
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-black/10">
+              <Zap size={16} aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13px] font-semibold">Check a change</span>
+              <span className="block truncate text-[10px] font-medium text-black/60">
+                Review · run · decide
+              </span>
+            </span>
+            <ArrowRight
+              size={15}
+              className="transition-transform duration-150 group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </Link>
+
           <button
             type="button"
             onClick={onSearch}
-            className="mt-3 flex h-[40px] w-full items-center gap-2.5 rounded-xl border border-white/[0.075] bg-white/[0.035] px-3 text-left text-[13px] text-zinc-400/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-[border-color,background-color,color] duration-150 hover:border-white/[0.13] hover:bg-white/[0.055] hover:text-zinc-200"
+            className="mt-2 flex h-[40px] w-full items-center gap-2.5 rounded-xl border border-white/[0.075] bg-white/[0.035] px-3 text-left text-[13px] text-zinc-400/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-[border-color,background-color,color] duration-150 hover:border-white/[0.13] hover:bg-white/[0.055] hover:text-zinc-200"
             aria-label="Search commands"
           >
             <Search size={16} className="shrink-0" />
@@ -221,8 +244,8 @@ export default function Sidebar({ onSearch }: SidebarProps) {
           </button>
 
           <div className="mt-6 min-h-0 overflow-y-auto">
-            <NavGroup label="Context">{contextNavItems.map(renderNavItem)}</NavGroup>
-            <NavGroup label="Verification" className="mt-5">
+            <NavGroup label="Signals">{contextNavItems.map(renderNavItem)}</NavGroup>
+            <NavGroup label="Workbench" className="mt-5">
               {workflowNavItems.map(renderNavItem)}
             </NavGroup>
           </div>

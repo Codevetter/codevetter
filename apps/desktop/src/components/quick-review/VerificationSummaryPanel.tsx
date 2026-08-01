@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  ArrowRight,
   CheckCircle,
   ChevronDown,
   ChevronRight,
@@ -9,6 +10,7 @@ import {
   GitCommitHorizontal,
   History,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +19,7 @@ import { severityColor, uncheckedRiskCopy } from '@/lib/quick-review-format';
 import type { ProcedureExecutionEvent } from '@/lib/review-proof';
 import type { CliReviewFinding, EvidenceProcedureStep } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
+import { deriveVerificationDecisionSummary } from '@/lib/verification-presentation';
 
 interface EvidenceCounts {
   reproduced: number;
@@ -73,84 +76,123 @@ export default function VerificationSummaryPanel({
   uncheckedBySeverity,
   warmExecutionFindings,
 }: VerificationSummaryPanelProps) {
+  const decision = deriveVerificationDecisionSummary({
+    fixedCount: evidenceCounts.fixed,
+    reproducedCount: evidenceCounts.reproduced,
+    notReproducedCount: evidenceCounts.notReproduced,
+    uncheckedCount: uncheckedFindings.length,
+    // Warm findings include historical runs for context. Only current
+    // procedure events may control this review's shipping summary.
+    executionFailureCount: 0,
+    blockedProcedureCount: procedureExecutionEvents.filter((event) => event.status === 'blocked')
+      .length,
+    satisfiedProcedureCount: procedureExecutionEvents.filter(
+      (event) => event.status === 'satisfied'
+    ).length,
+  });
+  const decisionTone =
+    decision.status === 'ship_candidate'
+      ? 'border-emerald-400/25 bg-emerald-400/[0.07] text-emerald-200'
+      : decision.status === 'hold'
+        ? 'border-amber-400/25 bg-amber-400/[0.07] text-amber-200'
+        : 'border-slate-500/25 bg-slate-500/[0.07] text-slate-300';
+
   return (
     <>
-      {/* Verification group — always-visible summary header + toggle.
-        Collapses the detail sections (gates, timeline, intent, risk
-        ledger) so the panel isn't four stacked equal-weight blocks. */}
-      {(sortedFindings.length > 0 ||
-        evidenceProcedureSteps.length > 0 ||
-        procedureExecutionEvents.length > 0 ||
-        intentReport ||
-        uncheckedFindings.length > 0 ||
-        warmExecutionFindings.length > 0) && (
-        <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setVerificationOpen((o) => !o)}
-              className="flex min-w-0 flex-1 items-center gap-2 text-left"
-            >
-              {verificationOpen ? (
-                <ChevronDown size={12} className="shrink-0 text-slate-500" />
-              ) : (
-                <ChevronRight size={12} className="shrink-0 text-slate-500" />
-              )}
-              <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
-              <span className="cv-label shrink-0 text-slate-300">Verification</span>
-              <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 font-mono text-[10px]">
-                <span className="text-emerald-400">{evidenceCounts.fixed} fixed</span>
-                <span className="text-slate-700">·</span>
-                <span className="text-yellow-400">{evidenceCounts.reproduced} reproduced</span>
-                <span className="text-slate-700">·</span>
-                <span className="text-slate-500">{uncheckedFindings.length} unchecked</span>
-                {warmExecutionFindings.length > 0 && (
-                  <>
-                    <span className="text-slate-700">·</span>
-                    <span className="text-red-300">{warmExecutionFindings.length} execution</span>
-                  </>
-                )}
+      <div
+        className="shrink-0 border-b border-[var(--cv-line)] bg-[#07080a] px-4 py-4"
+        data-testid="verification-decision-summary"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className={cn('rounded-full text-[10px]', decisionTone)}>
+                {decision.label}
+              </Badge>
+              <span className="text-[11px] font-medium text-slate-400">
+                {decision.evidenceStrength}
               </span>
-            </button>
-            {sortedFindings.length > 0 && (
-              <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCopyProof}
-                  className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
-                >
-                  {proofCopied ? (
-                    <CheckCircle size={10} className="text-emerald-400" />
-                  ) : (
-                    <Copy size={10} />
-                  )}
-                  {proofCopied ? 'Copied!' : 'Copy proof'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCopyFindingNote}
-                  disabled={selectedFindingIdx === null}
-                  className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200 disabled:opacity-40"
-                  title={
-                    selectedFindingIdx === null
-                      ? 'Select a finding to copy its context note'
-                      : 'Copy selected finding context note'
-                  }
-                >
-                  {findingNoteCopied ? (
-                    <CheckCircle size={10} className="text-emerald-400" />
-                  ) : (
-                    <FileCode size={10} />
-                  )}
-                  {findingNoteCopied ? 'Copied!' : 'Copy note'}
-                </Button>
-              </>
-            )}
+            </div>
+            <p className="mt-2 text-xs leading-5 text-slate-300">{decision.limitation}</p>
+            <p className="mt-1 text-[11px] leading-5 text-slate-500">{decision.nextAction}</p>
           </div>
+          <Link
+            to="/trex"
+            className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-amber-200 transition-colors hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+          >
+            Runtime evidence
+            <ArrowRight size={12} aria-hidden="true" />
+          </Link>
         </div>
-      )}
+
+        <div className="mt-3 border-t border-[var(--cv-line)] pt-3">
+          <button
+            type="button"
+            onClick={() => setVerificationOpen((o) => !o)}
+            aria-expanded={verificationOpen}
+            className="flex w-full min-w-0 items-center gap-2 text-left"
+          >
+            {verificationOpen ? (
+              <ChevronDown size={12} className="shrink-0 text-slate-500" />
+            ) : (
+              <ChevronRight size={12} className="shrink-0 text-slate-500" />
+            )}
+            <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
+            <span className="cv-label shrink-0 text-slate-300">Evidence details</span>
+            <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 font-mono text-[10px]">
+              <span className="text-emerald-400">{evidenceCounts.fixed} fixed</span>
+              <span className="text-slate-700">·</span>
+              <span className="text-yellow-400">{evidenceCounts.reproduced} reproduced</span>
+              <span className="text-slate-700">·</span>
+              <span className="text-slate-500">{evidenceCounts.notReproduced} not reproduced</span>
+              <span className="text-slate-700">·</span>
+              <span className="text-slate-500">{uncheckedFindings.length} unchecked</span>
+              {warmExecutionFindings.length > 0 && (
+                <>
+                  <span className="text-slate-700">·</span>
+                  <span className="text-red-300">{warmExecutionFindings.length} execution</span>
+                </>
+              )}
+            </span>
+          </button>
+          {sortedFindings.length > 0 && (
+            <div className="mt-1.5 flex justify-end gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCopyProof}
+                className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
+              >
+                {proofCopied ? (
+                  <CheckCircle size={10} className="text-emerald-400" />
+                ) : (
+                  <Copy size={10} />
+                )}
+                {proofCopied ? 'Copied!' : 'Copy proof'}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCopyFindingNote}
+                disabled={selectedFindingIdx === null}
+                className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200 disabled:opacity-40"
+                title={
+                  selectedFindingIdx === null
+                    ? 'Select a finding to copy its context note'
+                    : 'Copy selected finding context note'
+                }
+              >
+                {findingNoteCopied ? (
+                  <CheckCircle size={10} className="text-emerald-400" />
+                ) : (
+                  <FileCode size={10} />
+                )}
+                {findingNoteCopied ? 'Copied!' : 'Copy note'}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
 
       {verificationOpen && evidenceProcedureSteps.length > 0 && (
         <div className="shrink-0 border-t border-[var(--cv-line)] bg-[#07080a] px-3 py-2">

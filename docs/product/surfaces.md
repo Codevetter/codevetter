@@ -7,10 +7,27 @@ sidebar:
 
 # Surfaces and navigation
 
-The desktop app has **six product surfaces** (defined in
-`apps/desktop/src/components/sidebar.tsx`) plus an integrated Settings utility
-and a set of **URL-only surfaces** that are reachable but intentionally off the
-top rail.
+The desktop app is a broad evidence workbench with **six product surfaces**
+(defined in `apps/desktop/src/components/sidebar.tsx`) plus an integrated
+Settings utility and a set of **URL-only surfaces** that are reachable but
+intentionally absent from the fixed navigation rail.
+
+## Verification-centered path
+
+The surfaces remain independently useful, but they are not equal steps in the
+primary workflow. The persistent **Check a change** action starts one coherent
+path:
+
+1. Use Repo Unpack when repository structure, history, or ownership is needed.
+2. Use Review to select the exact branch or pull request, capture task intent,
+   and identify findings and evidence gaps. Model findings are leads, not proof.
+3. Use Testing for executable runtime and browser evidence, receipts, failures,
+   and explicit limitations.
+4. Make a shipping decision from the combined evidence: ship candidate, hold,
+   or no confidence.
+
+Usage, Work, and Board remain part of the broader workbench. They do not replace
+executable verification and must not imply that an unrun check passed.
 
 ## Product pillars
 
@@ -22,12 +39,12 @@ Source: `navItems` in `apps/desktop/src/components/sidebar.tsx`.
 | Repo Unpack | `/unpack` | `apps/desktop/src/pages/RepoPage.tsx` | Whole-repo evidence-backed system brief. Tab `match`es `/unpack` and `/intel`. Scanner in `src-tauri/src/commands/unpack*.rs`; persisted to `repo_unpacked_reports`. See [architecture/repo-unpacked.md](../architecture/repo-unpacked.md). |
 | Work | `/agents` | `apps/desktop/src/pages/AgentPanel.tsx` | Outcome-first Codex/Claude conversations in expandable repository-project groups with visible operational state. Indexed history appears only when its local working directory still exists, and resumes only through an explicit action. PTY execution stays behind the conversation and activity interface. |
 | Board | `/board` | `apps/desktop/src/pages/AgentPanel.tsx` | Persistent Plan/Build/Review/Verify/Done orchestration with handoffs to Work, Review, Testing, and Repo Unpack. Shares one mounted workspace instance with Work so live provider state survives navigation. |
-| Review | `/review` | `apps/desktop/src/pages/QuickReview.tsx` | Deterministic changed-file review with source-qualified findings, explicit coverage/limitations, cancellation, fix + verification proof, and local Agent PR X-Ray export. Editor-primary layout with verdict sidebar. |
-| Testing | `/trex` | `apps/desktop/src/pages/TRex.tsx` | Direct PR or commit-range verification against an existing preview, plus changed-capability verification and PR watchers. See [trex-change-preview.md](./trex-change-preview.md). |
+| Review | `/review` | `apps/desktop/src/pages/QuickReview.tsx` | First change-checking stage: select an exact change, inspect source-qualified findings and coverage gaps, attach evidence, and export a local Agent PR X-Ray. Findings remain leads until executable evidence supports the decision. |
+| Testing | `/trex` | `apps/desktop/src/pages/TRex.tsx` | Runtime-evidence stage: direct PR or commit-range verification against an existing preview, plus changed-capability verification, receipts, scenarios, and PR watchers. See [trex-change-preview.md](./trex-change-preview.md). |
 
-Settings (`/settings`) is a labelled utility at the right of the same top rail,
-not a seventh product surface. It hosts preferences, Ops, Memories, Rubrics, Agent
-MCP, usage, and About through `?section=`.
+Settings (`/settings`) is a labelled utility separated at the bottom of the
+same fixed rail, not a seventh product surface. It hosts preferences, Ops,
+Memories, Rubrics, Agent MCP, usage, and About through `?section=`.
 
 The Repo surface (`apps/desktop/src/pages/RepoPage.tsx`) consolidates Unpack,
 Activity, Graph, Inventory, Analysis, Handoff, and past snapshots.

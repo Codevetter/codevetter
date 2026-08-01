@@ -1,0 +1,35 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "plain-repository-tools",
+  "provider_name": "Plain repository tools",
+  "provider_version": "builtin-1",
+  "configuration_sha256": "7ecedd57a9b43e8450a0b1f242382c1feb75ad4725ff9ab9fbc447aa796bc491",
+  "context_kind": "baseline",
+  "interface_kind": "none",
+  "operating_mode": "local",
+  "indexing": {
+    "mode": "none",
+    "exact_revision_supported": false,
+    "snapshot_identity_supported": false,
+    "freshness_check": "none"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": []
+  },
+  "data_egress": "none",
+  "authentication": "none",
+  "environment_names": [],
+  "cost": {
+    "posture": "free",
+    "max_usd_per_attempt": 0
+  },
+  "setup": {
+    "status": "eligible",
+    "duration_ms": 0,
+    "evidence": ["builtin-policy:repository-tools-only"],
+    "exclusion_reasons": []
+  },
+  "publication": "allowed",
+  "limitations": ["This control permits only the common repository tools supplied to every arm."]
+}

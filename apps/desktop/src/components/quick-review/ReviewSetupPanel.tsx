@@ -25,6 +25,7 @@ import type {
   RepoHistoryContext,
 } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
+import { VERIFICATION_COPY } from '@/lib/verification-presentation';
 
 interface HistoryFileSummary {
   file: string;
@@ -269,8 +270,12 @@ export default function ReviewSetupPanel({
           className="w-full gap-2 disabled:opacity-50"
         >
           {isReviewing ? <Square size={15} /> : <Zap size={16} />}
-          {isReviewing ? 'Cancel review' : 'Review with Claude'}
+          {isReviewing ? 'Cancel review' : VERIFICATION_COPY.reviewTitle}
         </Button>
+        <p className="text-[11px] leading-5 text-slate-500">
+          Findings are leads, not proof. Record executable evidence before making a shipping
+          decision.
+        </p>
 
         <details className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-slate-300">

@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/context-provider-plan.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "experiment_id",
+    "stage",
+    "corpus",
+    "corpus_id",
+    "corpus_version",
+    "agent_profile",
+    "provider_probes",
+    "providers",
+    "tasks",
+    "repetitions",
+    "schedule",
+    "counts",
+    "cost",
+    "environment",
+    "approvals",
+    "blocked_reasons",
+    "diagnostics",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "codevetter.context-provider-plan.v1" },
+    "plan_id": { "$ref": "common.schema.json#/$defs/id" },
+    "experiment_id": { "$ref": "common.schema.json#/$defs/id" },
+    "stage": { "enum": ["probe", "feasibility", "full"] },
+    "corpus": { "$ref": "common.schema.json#/$defs/artifact" },
+    "corpus_id": { "$ref": "common.schema.json#/$defs/id" },
+    "corpus_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "maxLength": 40 },
+    "agent_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "agent",
+        "model",
+        "adapter",
+        "configuration_sha256",
+        "environment_sha256",
+        "cost_posture",
+        "max_usd_per_attempt"
+      ],
+      "properties": {
+        "status": { "enum": ["unselected", "selected"] },
+        "agent": { "type": ["string", "null"], "maxLength": 120 },
+        "model": { "type": ["string", "null"], "maxLength": 160 },
+        "adapter": {
+          "anyOf": [{ "$ref": "common.schema.json#/$defs/artifact" }, { "type": "null" }]
+        },
+        "configuration_sha256": {
+          "anyOf": [{ "$ref": "common.schema.json#/$defs/sha256" }, { "type": "null" }]
+        },
+        "environment_sha256": {
+          "anyOf": [{ "$ref": "common.schema.json#/$defs/sha256" }, { "type": "null" }]
+        },
+        "cost_posture": { "enum": ["free", "paid", "unknown"] },
+        "max_usd_per_attempt": { "type": ["number", "null"], "minimum": 0, "maximum": 100000 }
+      }
+    },
+    "provider_probes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/artifact" }
+    },
+    "providers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider_id",
+          "probe_sha256",
+          "role",
+          "context_kind",
+          "interface_kind",
+          "operating_mode",
+          "data_egress",
+          "cost_posture",
+          "max_usd_per_attempt",
+          "environment_names",
+          "snapshot"
+        ],
+        "properties": {
+          "provider_id": { "$ref": "common.schema.json#/$defs/id" },
+          "probe_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+          "role": { "enum": ["baseline", "treatment"] },
+          "context_kind": { "enum": ["baseline", "graph", "search", "wiki-rag", "hybrid"] },
+          "interface_kind": { "enum": ["none", "cli", "mcp", "api"] },
+          "operating_mode": { "enum": ["local", "hosted", "enterprise"] },
+          "data_egress": { "enum": ["none", "metadata", "source-content", "unknown"] },
+          "cost_posture": { "enum": ["free", "paid", "unknown"] },
+          "max_usd_per_attempt": { "type": "number", "minimum": 0, "maximum": 100000 },
+          "environment_names": {
+            "type": "array",
+            "maxItems": 30,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,79}$" }
+          },
+          "snapshot": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "snapshot_id", "indexed_revision"],
+            "properties": {
+              "status": { "enum": ["not-required", "pending", "ready", "stale"] },
+              "snapshot_id": {
+                "anyOf": [{ "$ref": "common.schema.json#/$defs/id" }, { "type": "null" }]
+              },
+              "indexed_revision": {
+                "type": ["string", "null"],
+                "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task_id",
+          "manifest_sha256",
+          "repository_revision",
+          "lane",
+          "runtime",
+          "category"
+        ],
+        "properties": {
+          "task_id": { "$ref": "common.schema.json#/$defs/id" },
+          "manifest_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+          "repository_revision": { "type": "string", "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$" },
+          "lane": { "enum": ["api", "browser"] },
+          "runtime": { "enum": ["node", "typescript"] },
+          "category": { "$ref": "common.schema.json#/$defs/id" }
+        }
+      }
+    },
+    "repetitions": { "type": "integer", "minimum": 0, "maximum": 5 },
+    "schedule": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "task_id", "trial_index", "provider_id", "order"],
+        "properties": {
+          "sequence": { "type": "integer", "minimum": 1, "maximum": 1000 },
+          "task_id": { "$ref": "common.schema.json#/$defs/id" },
+          "trial_index": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "provider_id": { "$ref": "common.schema.json#/$defs/id" },
+          "order": { "type": "integer", "minimum": 1, "maximum": 4 }
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providers", "tasks", "repetitions", "attempts"],
+      "properties": {
+        "providers": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "tasks": { "type": "integer", "minimum": 0, "maximum": 50 },
+        "repetitions": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "attempts": { "type": "integer", "minimum": 0, "maximum": 1000 }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["posture", "context_max_usd", "agent_max_usd", "total_max_usd"],
+      "properties": {
+        "posture": { "enum": ["free", "paid", "unknown"] },
+        "context_max_usd": { "type": "number", "minimum": 0, "maximum": 100000 },
+        "agent_max_usd": { "type": ["number", "null"], "minimum": 0, "maximum": 100000 },
+        "total_max_usd": { "type": ["number", "null"], "minimum": 0, "maximum": 100000 }
+      }
+    },
+    "environment": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "available"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,79}$" },
+          "available": { "type": "boolean" }
+        }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_id",
+        "execution_required",
+        "paid_required",
+        "hosted_required",
+        "data_egress_required"
+      ],
+      "properties": {
+        "approval_id": { "$ref": "common.schema.json#/$defs/id" },
+        "execution_required": { "const": true },
+        "paid_required": { "type": "boolean" },
+        "hosted_required": { "type": "boolean" },
+        "data_egress_required": { "type": "boolean" }
+      }
+    },
+    "blocked_reasons": {
+      "type": "array",
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+    },
+    "diagnostics": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/id" }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  }
+}

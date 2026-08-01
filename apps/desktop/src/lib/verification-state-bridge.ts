@@ -18,13 +18,109 @@ export interface VerificationStatus {
 export interface VerificationWindow {
   __CODEVETTER_VERIFY__?: VerificationRequest;
   __CODEVETTER_VERIFY_STATE__?: VerificationStatus;
+  __CODEVETTER_VERIFY_RUNTIME_ERRORS__?: string[];
+  __CODEVETTER_VERIFY_REPORT__?: {
+    stateName: string;
+    reviewId: string;
+    runtimeErrorCount: number;
+    horizontalOverflow: boolean;
+    activeElementText: string;
+    reducedMotionForced: boolean;
+  };
 }
 
 type StateInstaller = (request: VerificationRequest) => void | Promise<void>;
 
+export type ReviewQualificationStateName =
+  | 'review-partial-ready'
+  | 'review-completed-ready'
+  | 'review-keyboard-focused'
+  | 'review-reduced-motion';
+
+export interface ReviewQualificationRequest extends VerificationRequest {
+  stateName: ReviewQualificationStateName;
+  reviewId: string;
+}
+
+interface PendingReviewState {
+  resolve: () => void;
+  reject: () => void;
+  timeout: ReturnType<typeof setTimeout>;
+}
+
+const pendingReviewStates = new Map<string, PendingReviewState>();
+
+const reviewQualificationStates = new Set<ReviewQualificationStateName>([
+  'review-partial-ready',
+  'review-completed-ready',
+  'review-keyboard-focused',
+  'review-reduced-motion',
+]);
+
+function requestKey(request: Pick<VerificationRequest, 'runId' | 'scenarioId'>): string {
+  return `${request.runId}:${request.scenarioId}`;
+}
+
+function waitForReviewState(request: VerificationRequest): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const key = requestKey(request);
+    const previous = pendingReviewStates.get(key);
+    if (previous) {
+      clearTimeout(previous.timeout);
+      previous.reject();
+    }
+    const timeout = setTimeout(() => {
+      pendingReviewStates.delete(key);
+      reject(new Error('Review qualification state timed out'));
+    }, 20_000);
+    pendingReviewStates.set(key, { resolve, reject, timeout });
+  });
+}
+
 const codevetterStates: Readonly<Record<string, StateInstaller>> = Object.freeze({
   'shell-navigation-ready': () => undefined,
+  'review-partial-ready': waitForReviewState,
+  'review-completed-ready': waitForReviewState,
+  'review-keyboard-focused': waitForReviewState,
+  'review-reduced-motion': waitForReviewState,
 });
+
+export function getReviewQualificationRequest(
+  host: VerificationWindow = window as unknown as VerificationWindow
+): ReviewQualificationRequest | null {
+  const request = host.__CODEVETTER_VERIFY__;
+  if (
+    !request ||
+    !reviewQualificationStates.has(request.stateName as ReviewQualificationStateName)
+  ) {
+    return null;
+  }
+  const reviewId = request.flags.reviewId;
+  if (typeof reviewId !== 'string' || !stableId(reviewId)) return null;
+  return {
+    ...request,
+    stateName: request.stateName as ReviewQualificationStateName,
+    reviewId,
+  };
+}
+
+export function completeReviewQualificationState(request: ReviewQualificationRequest): boolean {
+  const pending = pendingReviewStates.get(requestKey(request));
+  if (!pending) return false;
+  clearTimeout(pending.timeout);
+  pendingReviewStates.delete(requestKey(request));
+  pending.resolve();
+  return true;
+}
+
+export function failReviewQualificationState(request: ReviewQualificationRequest): boolean {
+  const pending = pendingReviewStates.get(requestKey(request));
+  if (!pending) return false;
+  clearTimeout(pending.timeout);
+  pendingReviewStates.delete(requestKey(request));
+  pending.reject();
+  return true;
+}
 
 export async function initializeVerificationStateBridge(
   host: VerificationWindow = window as unknown as VerificationWindow,

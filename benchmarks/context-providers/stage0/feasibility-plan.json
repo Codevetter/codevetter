@@ -1,0 +1,255 @@
+{
+  "schema_version": "codevetter.context-provider-plan.v1",
+  "experiment_id": "code-context-provider-comparison",
+  "stage": "feasibility",
+  "corpus": {
+    "path": "benchmarks/agent-tasks/sample/corpus.json",
+    "sha256": "1cf937c2bbd73d39702bf122f8afe5bd255ebd780480b93aab46defc099b9b52"
+  },
+  "corpus_id": "codevetter-agent-task-contract-sample",
+  "corpus_version": "0.3.0",
+  "agent_profile": {
+    "status": "unselected",
+    "agent": null,
+    "model": null,
+    "adapter": null,
+    "configuration_sha256": null,
+    "environment_sha256": null,
+    "cost_posture": "unknown",
+    "max_usd_per_attempt": null
+  },
+  "provider_probes": [
+    {
+      "path": "benchmarks/context-providers/stage0/probes/codevetter-structural-context.json",
+      "sha256": "41713c97caa56c94239d5740f1efde334f91d74cfd5c6ec6aae6d2baba978c69"
+    },
+    {
+      "path": "benchmarks/context-providers/stage0/probes/plain-repository-tools.json",
+      "sha256": "da196bec1e2e4a9119dae57c557ddee04a4f5204740d4f8ba3a01c32785f2052"
+    }
+  ],
+  "providers": [
+    {
+      "provider_id": "codevetter-structural-context",
+      "probe_sha256": "41713c97caa56c94239d5740f1efde334f91d74cfd5c6ec6aae6d2baba978c69",
+      "role": "treatment",
+      "context_kind": "graph",
+      "interface_kind": "mcp",
+      "operating_mode": "local",
+      "data_egress": "none",
+      "cost_posture": "free",
+      "max_usd_per_attempt": 0,
+      "environment_names": [],
+      "snapshot": {
+        "status": "pending",
+        "snapshot_id": null,
+        "indexed_revision": null
+      }
+    },
+    {
+      "provider_id": "plain-repository-tools",
+      "probe_sha256": "da196bec1e2e4a9119dae57c557ddee04a4f5204740d4f8ba3a01c32785f2052",
+      "role": "baseline",
+      "context_kind": "baseline",
+      "interface_kind": "none",
+      "operating_mode": "local",
+      "data_egress": "none",
+      "cost_posture": "free",
+      "max_usd_per_attempt": 0,
+      "environment_names": [],
+      "snapshot": {
+        "status": "not-required",
+        "snapshot_id": null,
+        "indexed_revision": null
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "accept-zero-duration",
+      "manifest_sha256": "dfc212aba38b530c55b28d3f5fef11403b8f753d853f311f66e8797ec5f12a27",
+      "repository_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
+      "lane": "api",
+      "runtime": "typescript",
+      "category": "validation"
+    },
+    {
+      "task_id": "await-transaction-commit",
+      "manifest_sha256": "52054adb14f8e18189de6516a288f6dfc751b54f7d7b87d180c8cebcfc371aed",
+      "repository_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
+      "lane": "api",
+      "runtime": "typescript",
+      "category": "persistence"
+    },
+    {
+      "task_id": "deduplicate-visible-items",
+      "manifest_sha256": "ce90f407cb7546cce2d559efff8a2e53f07355f754516da26a212946b86a5f52",
+      "repository_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
+      "lane": "browser",
+      "runtime": "node",
+      "category": "regression"
+    },
+    {
+      "task_id": "ignore-stale-search-response",
+      "manifest_sha256": "64e300cfb46489761b783df3af1efa0f07b112dbd22d9b0f2a64a6fa507a72db",
+      "repository_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
+      "lane": "browser",
+      "runtime": "typescript",
+      "category": "concurrency"
+    }
+  ],
+  "repetitions": 2,
+  "schedule": [
+    {
+      "sequence": 1,
+      "task_id": "accept-zero-duration",
+      "trial_index": 1,
+      "provider_id": "codevetter-structural-context",
+      "order": 1
+    },
+    {
+      "sequence": 2,
+      "task_id": "accept-zero-duration",
+      "trial_index": 1,
+      "provider_id": "plain-repository-tools",
+      "order": 2
+    },
+    {
+      "sequence": 3,
+      "task_id": "accept-zero-duration",
+      "trial_index": 2,
+      "provider_id": "plain-repository-tools",
+      "order": 1
+    },
+    {
+      "sequence": 4,
+      "task_id": "accept-zero-duration",
+      "trial_index": 2,
+      "provider_id": "codevetter-structural-context",
+      "order": 2
+    },
+    {
+      "sequence": 5,
+      "task_id": "await-transaction-commit",
+      "trial_index": 1,
+      "provider_id": "plain-repository-tools",
+      "order": 1
+    },
+    {
+      "sequence": 6,
+      "task_id": "await-transaction-commit",
+      "trial_index": 1,
+      "provider_id": "codevetter-structural-context",
+      "order": 2
+    },
+    {
+      "sequence": 7,
+      "task_id": "await-transaction-commit",
+      "trial_index": 2,
+      "provider_id": "codevetter-structural-context",
+      "order": 1
+    },
+    {
+      "sequence": 8,
+      "task_id": "await-transaction-commit",
+      "trial_index": 2,
+      "provider_id": "plain-repository-tools",
+      "order": 2
+    },
+    {
+      "sequence": 9,
+      "task_id": "deduplicate-visible-items",
+      "trial_index": 1,
+      "provider_id": "codevetter-structural-context",
+      "order": 1
+    },
+    {
+      "sequence": 10,
+      "task_id": "deduplicate-visible-items",
+      "trial_index": 1,
+      "provider_id": "plain-repository-tools",
+      "order": 2
+    },
+    {
+      "sequence": 11,
+      "task_id": "deduplicate-visible-items",
+      "trial_index": 2,
+      "provider_id": "plain-repository-tools",
+      "order": 1
+    },
+    {
+      "sequence": 12,
+      "task_id": "deduplicate-visible-items",
+      "trial_index": 2,
+      "provider_id": "codevetter-structural-context",
+      "order": 2
+    },
+    {
+      "sequence": 13,
+      "task_id": "ignore-stale-search-response",
+      "trial_index": 1,
+      "provider_id": "plain-repository-tools",
+      "order": 1
+    },
+    {
+      "sequence": 14,
+      "task_id": "ignore-stale-search-response",
+      "trial_index": 1,
+      "provider_id": "codevetter-structural-context",
+      "order": 2
+    },
+    {
+      "sequence": 15,
+      "task_id": "ignore-stale-search-response",
+      "trial_index": 2,
+      "provider_id": "codevetter-structural-context",
+      "order": 1
+    },
+    {
+      "sequence": 16,
+      "task_id": "ignore-stale-search-response",
+      "trial_index": 2,
+      "provider_id": "plain-repository-tools",
+      "order": 2
+    }
+  ],
+  "counts": {
+    "providers": 2,
+    "tasks": 4,
+    "repetitions": 2,
+    "attempts": 16
+  },
+  "cost": {
+    "posture": "unknown",
+    "context_max_usd": 0,
+    "agent_max_usd": null,
+    "total_max_usd": null
+  },
+  "environment": [],
+  "approvals": {
+    "execution_required": true,
+    "paid_required": true,
+    "hosted_required": false,
+    "data_egress_required": false,
+    "approval_id": "approval-9b1c52deeb731e118ae6bcb34c8c7b5c"
+  },
+  "blocked_reasons": [
+    "agent-profile-unselected",
+    "provider-snapshot-pending-codevetter-structural-context",
+    "unknown-cost-bound"
+  ],
+  "diagnostics": [
+    "agent-cost",
+    "context-tool-calls",
+    "files-inspected",
+    "files-modified",
+    "input-tokens",
+    "output-tokens"
+  ],
+  "limitations": [
+    "Stage 0 creates plans and capability evidence only; it does not launch providers or agents.",
+    "A provider capability probe is not evidence of agent-quality improvement.",
+    "Hidden executable checks remain the outcome authority for any later execution."
+  ],
+  "plan_id": "plan-c8269889cddf8f8193489fbac600d9cb"
+}

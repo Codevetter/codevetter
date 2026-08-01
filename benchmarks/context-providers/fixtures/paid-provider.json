@@ -1,0 +1,35 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "paid-provider",
+  "provider_name": "Paid provider fixture",
+  "provider_version": "fixture-1",
+  "configuration_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "context_kind": "search",
+  "interface_kind": "cli",
+  "operating_mode": "local",
+  "indexing": {
+    "mode": "on-demand",
+    "exact_revision_supported": true,
+    "snapshot_identity_supported": true,
+    "freshness_check": "revision-match"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": ["context_search"]
+  },
+  "data_egress": "none",
+  "authentication": "credential-name",
+  "environment_names": ["PROVIDER_TOKEN"],
+  "cost": {
+    "posture": "paid",
+    "max_usd_per_attempt": 0.5
+  },
+  "setup": {
+    "status": "eligible",
+    "duration_ms": 100,
+    "evidence": ["fixture:paid-provider"],
+    "exclusion_reasons": []
+  },
+  "publication": "allowed",
+  "limitations": ["Synthetic paid-provider fixture."]
+}

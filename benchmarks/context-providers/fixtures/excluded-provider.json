@@ -1,0 +1,35 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "excluded-provider",
+  "provider_name": "Excluded provider fixture",
+  "provider_version": "fixture-1",
+  "configuration_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "context_kind": "search",
+  "interface_kind": "none",
+  "operating_mode": "local",
+  "indexing": {
+    "mode": "none",
+    "exact_revision_supported": false,
+    "snapshot_identity_supported": false,
+    "freshness_check": "unknown"
+  },
+  "tools": {
+    "observable": false,
+    "allowed": []
+  },
+  "data_egress": "unknown",
+  "authentication": "unknown",
+  "environment_names": [],
+  "cost": {
+    "posture": "unknown",
+    "max_usd_per_attempt": 0
+  },
+  "setup": {
+    "status": "excluded",
+    "duration_ms": null,
+    "evidence": [],
+    "exclusion_reasons": ["No observable machine interface was available."]
+  },
+  "publication": "unknown",
+  "limitations": ["Synthetic exclusion fixture."]
+}

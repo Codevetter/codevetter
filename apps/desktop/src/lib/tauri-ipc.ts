@@ -72,6 +72,15 @@ export function isTauriAvailable(): boolean {
   );
 }
 
+export async function setCurrentWindowTitle(title: string): Promise<void> {
+  if (!isTauriAvailable()) return;
+  const host = window as unknown as {
+    __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+  };
+  const label = host.__TAURI_INTERNALS__?.metadata?.currentWindow?.label ?? 'main';
+  await safeInvoke('plugin:window|set_title', { label, value: title });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // REAL BACKEND TYPES (matching Rust structs from db/queries.rs)
 // ═══════════════════════════════════════════════════════════════════════════

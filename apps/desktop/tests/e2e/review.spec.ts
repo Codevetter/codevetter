@@ -18,7 +18,7 @@ test.describe('Review page', () => {
   // ─── Page header ──────────────────────────────────────────────────────
 
   test('Review heading is visible', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Review' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Review the change' })).toBeVisible();
   });
 
   // ─── Repository picker ────────────────────────────────────────────────
@@ -34,7 +34,7 @@ test.describe('Review page', () => {
   // ─── Right panel placeholder ──────────────────────────────────────────
 
   test('Empty state prompts project selection when none is active', async ({ page }) => {
-    await expect(page.getByText('Select a project from the sidebar')).toBeVisible();
+    await expect(page.getByText(/Select a project, then choose an exact branch/)).toBeVisible();
   });
 
   // ─── Past Reviews section ─────────────────────────────────────────────
@@ -46,7 +46,7 @@ test.describe('Review page', () => {
     const hasSection = (await pastReviewsToggle.count()) > 0;
 
     if (!hasSection) {
-      await expect(page.getByText('Select a project from the sidebar')).toBeVisible();
+      await expect(page.getByText(/Select a project, then choose an exact branch/)).toBeVisible();
       return;
     }
 
@@ -113,7 +113,7 @@ test.describe('Review page', () => {
     const hasSection = (await pastReviewsToggle.count()) > 0;
 
     if (!hasSection) {
-      await expect(page.getByText('Select a project from the sidebar')).toBeVisible();
+      await expect(page.getByText(/Select a project, then choose an exact branch/)).toBeVisible();
       return;
     }
 
@@ -127,7 +127,7 @@ test.describe('Review page', () => {
     const reviewExists = (await firstReview.count()) > 0;
 
     if (!reviewExists) {
-      await expect(page.getByText('Select a project from the sidebar')).toBeVisible();
+      await expect(page.getByText(/Select a project, then choose an exact branch/)).toBeVisible();
       return;
     }
 
@@ -140,7 +140,7 @@ test.describe('Review page', () => {
     await expect(newReviewButton).toBeVisible({ timeout: 5_000 });
     await newReviewButton.click();
 
-    await expect(page.getByRole('heading', { name: 'Review' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'Review the change' })).toBeVisible({
       timeout: 5_000,
     });
   });
@@ -149,7 +149,7 @@ test.describe('Review page', () => {
 
   test('Shows appropriate state when Tauri is unavailable', async ({ page }) => {
     await expect(page.getByText('Projects', { exact: true })).toBeVisible();
-    await expect(page.getByText('Select a project from the sidebar')).toBeVisible();
+    await expect(page.getByText(/Select a project, then choose an exact branch/)).toBeVisible();
     await expect(page.locator('text=Loading past reviews')).toHaveCount(0);
     await expect(page.locator('aside')).toHaveCount(1);
   });

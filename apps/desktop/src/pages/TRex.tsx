@@ -46,6 +46,7 @@ import {
   type TrexWatcher,
 } from '@/lib/tauri-ipc';
 import type { DaemonHealth } from '@/lib/warm-verification/contracts';
+import { VERIFICATION_COPY } from '@/lib/verification-presentation';
 
 function verdictBadge(v: string) {
   const cls =
@@ -352,8 +353,8 @@ export default function TRex() {
     <ProjectWorkspaceShell mainClassName="px-6 pb-24 pt-6">
       {!selectedRepoPath ? (
         <ProjectWorkspaceEmpty
-          title="Testing"
-          description="Select a project to compile verification scenarios, run changed-capability checks, or watch pull requests."
+          title={VERIFICATION_COPY.runtimeTitle}
+          description="Select a project to run executable checks, inspect receipts, compile scenarios, or watch pull requests."
         />
       ) : (
         <div className="mx-auto max-w-6xl">
@@ -366,10 +367,11 @@ export default function TRex() {
             }
           >
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-100">Testing</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
+                {VERIFICATION_COPY.runtimeTitle}
+              </h1>
               <p className="mt-1 max-w-3xl text-sm text-[var(--text-secondary)]">
-                Test an exact change against its deployed preview, then inspect or extend the
-                underlying verification evidence.
+                {VERIFICATION_COPY.runtimeDescription}
               </p>
             </div>
           </ProjectWorkspaceHeader>

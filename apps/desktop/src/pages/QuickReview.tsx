@@ -156,17 +156,58 @@ import {
   runReviewVerificationCommand,
   runSyntheticQa,
   sendTrayNotification,
+  setCurrentWindowTitle,
   setFindingDisposition,
   setPreference,
   suggestReviewVerificationCommands,
 } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
+import { VERIFICATION_COPY } from '@/lib/verification-presentation';
+import {
+  completeReviewQualificationState,
+  failReviewQualificationState,
+  getReviewQualificationRequest,
+  type VerificationWindow,
+} from '@/lib/verification-state-bridge';
 import {
   projectWarmVerification,
   type WarmVerificationProjection,
 } from '@/lib/warm-verification/adapters';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function nextPaint(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+function useCompactReviewLayout(): boolean {
+  const [compact, setCompact] = useState(() => window.matchMedia('(max-width: 1099px)').matches);
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 1099px)');
+    const update = () => setCompact(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+  return compact;
+}
+
+async function waitForDecisionSummary(expectedText?: string): Promise<HTMLElement> {
+  const deadline = performance.now() + 5_000;
+  while (performance.now() < deadline) {
+    const summary = document.querySelector<HTMLElement>(
+      '[data-testid="verification-decision-summary"]'
+    );
+    if (summary && (!expectedText || summary.textContent?.includes(expectedText))) {
+      return summary;
+    }
+    await new Promise((resolve) => window.setTimeout(resolve, 50));
+  }
+  throw new Error(
+    expectedText
+      ? `Verification decision summary did not render ${expectedText}`
+      : 'Verification decision summary did not render'
+  );
+}
 
 /**
  * Fire a desktop notification if the matching Settings toggle is enabled.
@@ -198,6 +239,12 @@ export default function QuickReview() {
     ready: workspaceReady,
   } = useProjectWorkspace();
   const repoPath = selectedRepoPath ?? '';
+  const reviewQualificationRequest = useMemo(
+    () => (import.meta.env.DEV ? getReviewQualificationRequest() : null),
+    []
+  );
+  const reviewQualificationStarted = useRef(false);
+  const compactReviewLayout = useCompactReviewLayout();
 
   // Mode: "create" shows the form, "view" shows past review results
   const [mode, setMode] = useState<'create' | 'view'>('create');
@@ -559,6 +606,62 @@ export default function QuickReview() {
     },
     [loadFolderData, selectProject]
   );
+
+  useEffect(() => {
+    if (!reviewQualificationRequest || reviewQualificationStarted.current) return;
+    reviewQualificationStarted.current = true;
+
+    void (async () => {
+      await handleLoadPastReview(reviewQualificationRequest.reviewId);
+      await nextPaint();
+      const expectedDecision =
+        reviewQualificationRequest.stateName === 'review-partial-ready'
+          ? 'Hold'
+          : reviewQualificationRequest.stateName === 'review-completed-ready'
+            ? 'Ship candidate'
+            : undefined;
+      const summary = await waitForDecisionSummary(expectedDecision);
+      await nextPaint();
+      if (reviewQualificationRequest.stateName === 'review-keyboard-focused') {
+        const target = summary.querySelector<HTMLAnchorElement>('a[href="/trex"]');
+        target?.focus();
+        await nextPaint();
+        if (!target || document.activeElement !== target) {
+          throw new Error('Native Review focus target was unavailable');
+        }
+      }
+      if (reviewQualificationRequest.stateName === 'review-reduced-motion') {
+        document.documentElement.classList.add('cv-verify-reduced-motion');
+        await nextPaint();
+      }
+
+      const host = window as unknown as VerificationWindow;
+      const runtimeErrorCount = host.__CODEVETTER_VERIFY_RUNTIME_ERRORS__?.length ?? 0;
+      const horizontalOverflow =
+        document.documentElement.scrollWidth > document.documentElement.clientWidth;
+      if (runtimeErrorCount > 0) throw new Error('Native Review emitted a runtime error');
+      if (horizontalOverflow) throw new Error('Native Review has document-level overflow');
+
+      host.__CODEVETTER_VERIFY_REPORT__ = {
+        stateName: reviewQualificationRequest.stateName,
+        reviewId: reviewQualificationRequest.reviewId,
+        runtimeErrorCount,
+        horizontalOverflow,
+        activeElementText: document.activeElement?.textContent?.trim().slice(0, 80) ?? '',
+        reducedMotionForced: document.documentElement.classList.contains(
+          'cv-verify-reduced-motion'
+        ),
+      };
+      const readyTitle = `CodeVetter · ${reviewQualificationRequest.stateName} · ready`;
+      document.title = readyTitle;
+      await setCurrentWindowTitle(readyTitle);
+      if (!completeReviewQualificationState(reviewQualificationRequest)) {
+        throw new Error('Native Review qualification bridge was not awaiting completion');
+      }
+    })().catch(() => {
+      failReviewQualificationState(reviewQualificationRequest);
+    });
+  }, [handleLoadPastReview, reviewQualificationRequest]);
 
   const handleDeletePastReview = useCallback(
     async (id: string) => {
@@ -2780,7 +2883,7 @@ export default function QuickReview() {
     }, {});
 
     return (
-      <ProjectWorkspaceShell mainClassName="overflow-hidden">
+      <ProjectWorkspaceShell mainClassName="overflow-hidden" showProjectSidebar={false}>
         <div className="flex h-full flex-col px-4 pb-4">
           {/* Result header */}
           <div className="cv-frame mb-3 flex h-12 shrink-0 items-center gap-3 overflow-hidden px-3">
@@ -2796,7 +2899,7 @@ export default function QuickReview() {
             <div className="h-6 w-px bg-[var(--cv-line)]" />
             <div className="min-w-0 flex-1">
               <div className="cv-label truncate text-slate-300">
-                review result · {result.agent}
+                change review · {result.agent}
                 {result.risk_tier ? ` · ${result.risk_tier}` : ''}
               </div>
               <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
@@ -2868,8 +2971,14 @@ export default function QuickReview() {
           )}
 
           {/* Editor + verdict body */}
-          <PanelGroup orientation="horizontal" className="min-h-0 flex-1 cv-frame overflow-hidden">
-            <Panel defaultSize={72} minSize={45}>
+          <PanelGroup
+            orientation={compactReviewLayout ? 'vertical' : 'horizontal'}
+            className="min-h-0 flex-1 cv-frame overflow-hidden"
+          >
+            <Panel
+              defaultSize={compactReviewLayout ? 58 : 60}
+              minSize={compactReviewLayout ? 42 : 45}
+            >
               <ReviewEditorPanel
                 fixResult={fixResult}
                 diffFiles={diffFiles}
@@ -2898,12 +3007,43 @@ export default function QuickReview() {
               />
             </Panel>
 
-            <PanelResizeHandle className="w-1.5 cursor-col-resize bg-[var(--cv-line)] transition-colors hover:bg-amber-400/30" />
+            <PanelResizeHandle
+              className={cn(
+                'bg-[var(--cv-line)] transition-colors hover:bg-amber-400/30',
+                compactReviewLayout ? 'h-1.5 cursor-row-resize' : 'w-1.5 cursor-col-resize'
+              )}
+            />
 
-            <Panel defaultSize={28} minSize={22}>
-              <aside className="flex h-full flex-col bg-white/[0.015]">
+            <Panel
+              defaultSize={compactReviewLayout ? 42 : 40}
+              minSize={compactReviewLayout ? 30 : 32}
+            >
+              <aside className="flex h-full flex-col overflow-y-auto bg-white/[0.015]">
+                <VerificationSummaryPanel
+                  sortedFindings={sortedFindings}
+                  evidenceProcedureSteps={evidenceProcedureSteps}
+                  procedureExecutionEvents={procedureExecutionEvents}
+                  intentReport={intentReport}
+                  uncheckedFindings={uncheckedFindings}
+                  verificationOpen={verificationOpen}
+                  setVerificationOpen={setVerificationOpen}
+                  evidenceCounts={evidenceCounts}
+                  handleCopyProof={handleCopyProof}
+                  proofCopied={proofCopied}
+                  handleCopyFindingNote={handleCopyFindingNote}
+                  findingNoteCopied={findingNoteCopied}
+                  selectedFindingIdx={selectedFindingIdx}
+                  procedureEventsByStep={procedureEventsByStep}
+                  procedureEventKey={procedureEventKey}
+                  procedureEventTimeLabel={procedureEventTimeLabel}
+                  uncheckedBySeverity={uncheckedBySeverity}
+                  warmExecutionFindings={warmExecutionFindings}
+                />
+
                 <div className="shrink-0 border-b border-[var(--cv-line)] p-6">
-                  <div className="cv-label mb-5">Verdict</div>
+                  <div className="cv-label mb-5">
+                    {activeFinding ? 'Selected finding' : 'Review findings'}
+                  </div>
                   {activeFinding ? (
                     <>
                       <Badge
@@ -3042,9 +3182,14 @@ export default function QuickReview() {
                       )}
                     </>
                   ) : (
-                    <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
-                      <CheckCircle size={18} />
-                      No findings.
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
+                        <CheckCircle size={18} />
+                        No review findings.
+                      </div>
+                      <p className="text-xs leading-5 text-slate-500">
+                        Runtime evidence and coverage limits still determine shipping confidence.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -3130,27 +3275,6 @@ export default function QuickReview() {
                   updateEvidenceCandidateStatus={updateEvidenceCandidateStatus}
                 />
 
-                <VerificationSummaryPanel
-                  sortedFindings={sortedFindings}
-                  evidenceProcedureSteps={evidenceProcedureSteps}
-                  procedureExecutionEvents={procedureExecutionEvents}
-                  intentReport={intentReport}
-                  uncheckedFindings={uncheckedFindings}
-                  verificationOpen={verificationOpen}
-                  setVerificationOpen={setVerificationOpen}
-                  evidenceCounts={evidenceCounts}
-                  handleCopyProof={handleCopyProof}
-                  proofCopied={proofCopied}
-                  handleCopyFindingNote={handleCopyFindingNote}
-                  findingNoteCopied={findingNoteCopied}
-                  selectedFindingIdx={selectedFindingIdx}
-                  procedureEventsByStep={procedureEventsByStep}
-                  procedureEventKey={procedureEventKey}
-                  procedureEventTimeLabel={procedureEventTimeLabel}
-                  uncheckedBySeverity={uncheckedBySeverity}
-                  warmExecutionFindings={warmExecutionFindings}
-                />
-
                 <div className="shrink-0 border-t border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
                   <div className="flex items-center gap-2">
                     <button
@@ -3206,14 +3330,16 @@ export default function QuickReview() {
     <ProjectWorkspaceShell mainClassName="flex flex-col overflow-hidden">
       {!repoPath ? (
         <ProjectWorkspaceEmpty
-          title="Review"
-          description="Select a project from the sidebar, then pick a branch or PR and run a local AI review against the diff."
+          title={VERIFICATION_COPY.reviewTitle}
+          description="Select a project, then choose an exact branch or pull request. Review findings are leads; executable checks determine confidence."
         />
       ) : (
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 items-center justify-between border-b border-[var(--cv-line)] px-4 py-3">
             <div className="min-w-0">
-              <h1 className="text-lg font-semibold tracking-tight text-slate-100">Review</h1>
+              <h1 className="text-lg font-semibold tracking-tight text-slate-100">
+                {VERIFICATION_COPY.reviewTitle}
+              </h1>
               <p className="truncate font-mono text-xs text-slate-500">
                 {selectedProject?.display_name ?? repoPath.split('/').pop()} · {repoPath}
               </p>

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codevetter.com/schemas/agent-task/context-provider-probe.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provider_id",
+    "provider_name",
+    "provider_version",
+    "configuration_sha256",
+    "context_kind",
+    "interface_kind",
+    "operating_mode",
+    "indexing",
+    "tools",
+    "data_egress",
+    "authentication",
+    "environment_names",
+    "cost",
+    "setup",
+    "publication",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "codevetter.context-provider-probe.v1" },
+    "provider_id": { "$ref": "common.schema.json#/$defs/id" },
+    "provider_name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "provider_version": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "configuration_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+    "context_kind": { "enum": ["baseline", "graph", "search", "wiki-rag", "hybrid"] },
+    "interface_kind": { "enum": ["none", "cli", "mcp", "api"] },
+    "operating_mode": { "enum": ["local", "hosted", "enterprise"] },
+    "indexing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "exact_revision_supported",
+        "snapshot_identity_supported",
+        "freshness_check"
+      ],
+      "properties": {
+        "mode": { "enum": ["none", "on-demand", "prebuilt", "continuous"] },
+        "exact_revision_supported": { "type": "boolean" },
+        "snapshot_identity_supported": { "type": "boolean" },
+        "freshness_check": { "enum": ["none", "revision-match", "provider-status", "unknown"] }
+      }
+    },
+    "tools": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observable", "allowed"],
+      "properties": {
+        "observable": { "type": "boolean" },
+        "allowed": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,79}$" }
+        }
+      }
+    },
+    "data_egress": { "enum": ["none", "metadata", "source-content", "unknown"] },
+    "authentication": { "enum": ["none", "credential-name", "unknown"] },
+    "environment_names": {
+      "type": "array",
+      "maxItems": 30,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,79}$" }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["posture", "max_usd_per_attempt"],
+      "properties": {
+        "posture": { "enum": ["free", "paid", "unknown"] },
+        "max_usd_per_attempt": { "type": "number", "minimum": 0, "maximum": 100000 }
+      }
+    },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "duration_ms", "evidence", "exclusion_reasons"],
+      "properties": {
+        "status": { "enum": ["eligible", "excluded", "blocked"] },
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0, "maximum": 3600000 },
+        "evidence": {
+          "type": "array",
+          "maxItems": 30,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 240 }
+        },
+        "exclusion_reasons": {
+          "type": "array",
+          "maxItems": 30,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 240 }
+        }
+      }
+    },
+    "publication": { "enum": ["allowed", "restricted", "unknown"] },
+    "limitations": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  }
+}

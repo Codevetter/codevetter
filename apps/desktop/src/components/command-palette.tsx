@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { VERIFICATION_COPY } from '@/lib/verification-presentation';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -111,6 +112,15 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         action: go('/agents'),
       },
       {
+        id: 'nav-board',
+        label: 'Go to Board',
+        description: 'Move outcomes from plan to proof',
+        icon: '\u25A6',
+        shortcut: 'g b',
+        group: 'Navigation',
+        action: go('/board'),
+      },
+      {
         id: 'nav-review',
         label: 'Go to Review',
         icon: '\u2714',
@@ -121,7 +131,7 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
       {
         id: 'nav-trex',
         label: 'Go to Testing',
-        description: 'Warm verification, scenarios, and pull request checks',
+        description: 'Runtime evidence, scenarios, and pull request checks',
         icon: '\u25CE',
         shortcut: 'g t',
         group: 'Navigation',
@@ -139,8 +149,8 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
       // Actions
       {
         id: 'act-start-review',
-        label: 'Start Review',
-        description: 'Run a code review',
+        label: VERIFICATION_COPY.action,
+        description: VERIFICATION_COPY.workflow,
         icon: '\u2714',
         group: 'Actions',
         action: go('/review'),
