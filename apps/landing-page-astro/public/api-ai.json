@@ -61,6 +61,34 @@
       "description": "Terms for the open-source desktop software"
     },
     {
+      "id": "coding-agent-verification",
+      "url": "https://codevetter.com/coding-agent-verification",
+      "md": "https://codevetter.com/coding-agent-verification.md",
+      "kind": "static",
+      "description": "Category guide to execution-backed coding-agent verification"
+    },
+    {
+      "id": "verify-ai-generated-code",
+      "url": "https://codevetter.com/verify-ai-generated-code",
+      "md": "https://codevetter.com/verify-ai-generated-code.md",
+      "kind": "static",
+      "description": "Practical workflow for verifying AI-generated code"
+    },
+    {
+      "id": "ai-code-review-vs-verification",
+      "url": "https://codevetter.com/ai-code-review-vs-verification",
+      "md": "https://codevetter.com/ai-code-review-vs-verification.md",
+      "kind": "static",
+      "description": "Comparison of static code review and executable verification"
+    },
+    {
+      "id": "verification-evidence-bundle",
+      "url": "https://codevetter.com/verification-evidence-bundle",
+      "md": "https://codevetter.com/verification-evidence-bundle.md",
+      "kind": "static",
+      "description": "Reference for portable verification evidence artifacts"
+    },
+    {
       "id": "docs",
       "url": "https://codevetter.com/docs/",
       "md": "https://codevetter.com/docs.md",
