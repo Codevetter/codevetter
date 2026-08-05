@@ -38,6 +38,13 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 - Changelog: https://codevetter.com/changelog — Verified shipped outcomes
 - Privacy: https://codevetter.com/privacy — Local-first data handling
 
+## Verification guides
+
+- Coding-agent verification: https://codevetter.com/coding-agent-verification
+- How to verify AI-generated code: https://codevetter.com/verify-ai-generated-code
+- AI code review vs verification: https://codevetter.com/ai-code-review-vs-verification
+- Verification evidence bundle: https://codevetter.com/verification-evidence-bundle
+
 ## Machine surfaces
 
 - https://codevetter.com/llms.txt
@@ -46,11 +53,15 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 - https://codevetter.com/index.md
 - https://codevetter.com/benchmark.md
 - https://codevetter.com/changelog.md
+- https://codevetter.com/coding-agent-verification.md
 - https://codevetter.com/docs.md
 - https://codevetter.com/download.md
 - https://codevetter.com/faq.md
 - https://codevetter.com/privacy.md
 - https://codevetter.com/terms.md
+- https://codevetter.com/ai-code-review-vs-verification.md
+- https://codevetter.com/verification-evidence-bundle.md
+- https://codevetter.com/verify-ai-generated-code.md
 - https://codevetter.com/xray.md
 - https://codevetter.com/sitemap.xml
 - https://codevetter.com/sitemap-index.xml

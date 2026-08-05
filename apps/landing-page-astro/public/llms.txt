@@ -12,6 +12,13 @@
 - [Changelog](https://codevetter.com/changelog): Verified shipped outcomes
 - [Privacy](https://codevetter.com/privacy): Local-first data handling
 
+## Verification guides
+
+- [Coding-agent verification](https://codevetter.com/coding-agent-verification): Category guide to task, change, execution, evidence, and verdict
+- [How to verify AI-generated code](https://codevetter.com/verify-ai-generated-code): Practical task-to-evidence workflow
+- [AI code review vs verification](https://codevetter.com/ai-code-review-vs-verification): Comparison of static review and executable verification
+- [Verification evidence bundle](https://codevetter.com/verification-evidence-bundle): Reference for portable verification artifacts
+
 ## Machine surfaces
 
 - [Agent catalog](https://codevetter.com/api/ai): JSON inventory of public surfaces
