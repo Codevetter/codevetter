@@ -41,6 +41,7 @@ for (const route of routes) {
 
 const catalog = JSON.parse(fs.readFileSync(path.join(dist, 'api-ai.json'), 'utf8'));
 const surfaces = Array.isArray(catalog.surfaces) ? catalog.surfaces : [];
+const catalogRouteSet = new Set();
 
 for (const surface of surfaces) {
   const id = String(surface?.id ?? 'unnamed');
@@ -54,11 +55,18 @@ for (const surface of surfaces) {
     failures.push(`${id}: catalog route or Markdown target is not same-origin`);
     continue;
   }
+  catalogRouteSet.add(canonicalUrl(route));
   if (!routeSet.has(canonicalUrl(route))) {
     failures.push(`${id}: catalog route is absent from the public sitemap`);
   }
   if (!readableMarkdown(markdown)) {
     failures.push(`${id}: Markdown target is not readable`);
+  }
+}
+
+for (const route of routeSet) {
+  if (!catalogRouteSet.has(route)) {
+    failures.push(`${new URL(route).pathname}: public sitemap route is absent from /api/ai`);
   }
 }
 
@@ -72,5 +80,5 @@ if (failures.length > 0) {
 
 console.log(`PASS ${routes.length}/${routes.length} sitemap routes have readable Markdown`);
 console.log(
-  `PASS ${surfaces.length}/${surfaces.length} API catalog surfaces are same-origin, in the sitemap, and readable`
+  `PASS ${surfaces.length}/${routes.length} API catalog surfaces cover every sitemap route and are readable`
 );
