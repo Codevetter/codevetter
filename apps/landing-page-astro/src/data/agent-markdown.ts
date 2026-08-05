@@ -2,6 +2,7 @@ import benchmark from '@/../public/benchmark/codevetter-benchmark-v1.json';
 import results from '@/data/benchmark-results.json';
 import examples from '@/data/xray-examples.json';
 import docsIndexSource from '../../../../docs/index.md?raw';
+import { verificationContent } from '@/data/verification-content';
 
 const SITE_URL = 'https://codevetter.com';
 
@@ -160,6 +161,14 @@ ${examples.map((example) => `- [${example.title}](${SITE_URL}/xray/${example.id}
 > Canonical rendered documentation: https://codevetter.com/docs/
 `,
 };
+
+for (const content of Object.values(verificationContent)) {
+  staticPages[content.path.replace(/^\//, '')] = page(
+    content.title,
+    content.path,
+    content.markdown
+  );
+}
 
 for (const example of examples) {
   staticPages[`xray/${example.id}`] = page(
