@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-07-31
+Last updated: 2026-08-05
 
 ## Why / What
 
@@ -38,6 +38,13 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-05 — Coding-agent verification field guide:** added four public
+  education routes that explain the task-to-evidence verification loop,
+  practical AI-code verification, review versus verification, and portable
+  evidence bundles. The existing benchmark now separates published results,
+  implemented qualification infrastructure, and work that is not yet proven.
+  Every route has canonical metadata, structured data, sitemap inclusion,
+  contextual internal links, and a matching Markdown surface.
 - **2026-07-31 — Thirty-task qualified agent corpus:** expanded the owned
   corpus to the strict 30-task minimum across browser state, authorization,
   API contracts, validation, concurrency, persistence, integration, and
@@ -232,6 +239,9 @@ Internal (fleet):
 - Playwright tests for zoom/copy interactions (metric drilldown, DORA/health, comparison evidence, outcome trends, trust actions, copy state).
 
 ### Benchmarks
+- Public verification field guide: four canonical evidence-first education
+  pages connect the product method to the published benchmark, with matching
+  Markdown alternates and explicit claim limits.
 - Catch-rate benchmark harness (`benchmarks/agent-prs`): per-case or combined fixtures, `bench:new-case` starter, `bench:curation` readiness report, strict fixture validation, named CodeVetter / CodeRabbit free-tier / Claude Code comparator slots, false-positive and redundant-match counts, precision/F1, baseline deltas, severity-specific gates, JSON/Markdown report output.
 - Agent-task corpus (`benchmarks/agent-tasks`): 30 compact synthetic tasks
   qualified across eight failure categories, both browser/API lanes, and both

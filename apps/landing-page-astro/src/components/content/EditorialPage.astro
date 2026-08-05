@@ -1,0 +1,76 @@
+---
+import Footer from '@/components/Footer.astro';
+import Nav from '@/components/Nav.astro';
+import Layout from '@/layouts/Layout.astro';
+import type { EditorialContent } from '@/data/verification-content';
+
+interface Props {
+  content: EditorialContent;
+}
+
+const { content } = Astro.props;
+const canonical = `https://codevetter.com${content.path}`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': content.schema[0] ?? 'TechArticle',
+      headline: content.title,
+      description: content.description,
+      url: canonical,
+      publisher: { '@type': 'Organization', name: 'CodeVetter', url: 'https://codevetter.com' },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'CodeVetter', item: 'https://codevetter.com/' },
+        { '@type': 'ListItem', position: 2, name: content.title, item: canonical },
+      ],
+    },
+  ],
+};
+---
+
+<Layout title={`${content.title} — CodeVetter`} description={content.description} path={content.path}>
+  <main class="min-h-screen bg-[--color-bg] text-[--color-text]">
+    <Nav />
+    <article class="mx-auto max-w-3xl px-6 pb-24 pt-32">
+      <header class="border-b border-[--color-line] pb-12">
+        <a href="/" class="font-mono text-xs text-[--color-text-mute] hover:text-[--color-accent]">← CodeVetter</a>
+        <p class="mt-8 font-mono text-xs uppercase tracking-[0.16em] text-[--color-accent]">Verification field guide</p>
+        <h1 class="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-white md:text-6xl">{content.title}</h1>
+        <p class="mt-6 max-w-2xl text-lg leading-8 text-[--color-text-dim]">{content.description}</p>
+      </header>
+
+      <div class="editorial-body mt-12" set:html={content.html} />
+
+      <aside class="mt-16 border-y border-[--color-line] py-8" aria-label="Continue reading">
+        <p class="font-mono text-xs uppercase tracking-[0.16em] text-[--color-text-mute]">Continue through the evidence</p>
+        <div class="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm">
+          {content.internalLinks.map((href) => (
+            <a class="text-[--color-accent] hover:underline" href={href}>{href.replace(/^\//, '').replaceAll('-', ' ')}</a>
+          ))}
+        </div>
+      </aside>
+    </article>
+    <Footer />
+  </main>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</Layout>
+
+<style>
+  .editorial-body :global(h2) { margin-top: 3.5rem; color: white; font-size: 1.35rem; font-weight: 650; letter-spacing: -0.02em; }
+  .editorial-body :global(h3) { margin-top: 2rem; color: white; font-size: 1.05rem; font-weight: 650; }
+  .editorial-body :global(p), .editorial-body :global(li) { color: var(--color-text-dim); font-size: 1rem; line-height: 1.8; }
+  .editorial-body :global(p) { margin-top: 1.15rem; }
+  .editorial-body :global(ul), .editorial-body :global(ol) { margin-top: 1rem; padding-left: 1.5rem; }
+  .editorial-body :global(li + li) { margin-top: 0.55rem; }
+  .editorial-body :global(strong) { color: white; font-weight: 650; }
+  .editorial-body :global(code) { color: var(--color-text); font-family: ui-monospace, monospace; }
+  .editorial-body :global(a) { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+  .editorial-body :global(table) { width: 100%; margin-top: 1.5rem; border-collapse: collapse; font-size: 0.9rem; }
+  .editorial-body :global(th), .editorial-body :global(td) { border-bottom: 1px solid var(--color-line); padding: 0.8rem 0.75rem; text-align: left; vertical-align: top; }
+  .editorial-body :global(th) { color: white; font-weight: 650; }
+  .editorial-body :global(td) { color: var(--color-text-dim); }
+  @media (max-width: 640px) { .editorial-body { overflow-wrap: anywhere; } .editorial-body :global(table) { display: block; overflow-x: auto; } }
+</style>
