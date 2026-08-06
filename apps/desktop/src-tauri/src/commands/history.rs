@@ -1052,18 +1052,13 @@ fn resolve_project_display_name(dir_name: &str) -> String {
 // Cost estimation
 // ─────────────────────────────────────────────────────────────────
 
-fn estimate_cost(
-    model: &str,
-    total_input: i64,
-    output_tokens: i64,
-    cache_read: i64,
-    cache_creation: i64,
-) -> f64 {
-    // Per-million-token pricing (input, output, cache-read, cache-write), USD.
-    // Cache-read ≈ 0.1× input, cache-write (5-min) ≈ 1.25× input. Bump
-    // PRICING_REV in recompute_all_session_costs whenever these change so the
-    // stored estimated_cost_usd is refreshed for already-indexed sessions.
-    let (input_price, output_price, cache_read_price, cache_write_price) = match model {
+/// Per-million-token pricing (input, output, cache-read, cache-write [5-min
+/// tier for Claude]), USD. Cache-read ≈ 0.1× input, cache-write (5-min)
+/// ≈ 1.25× input. Bump PRICING_REV in `recompute_all_session_costs` whenever
+/// these change so the stored `estimated_cost_usd` is refreshed for
+/// already-indexed sessions.
+fn pricing_table(model: &str) -> (f64, f64, f64, f64) {
+    match model {
         // Claude Code's internal non-API marker — no tokens are billed.
         m if m.contains("synthetic") => (0.0, 0.0, 0.0, 0.0),
         // Claude Fable 5 / Mythos 5 are $10/$50 (above Opus tier); cache-read
@@ -1085,10 +1080,14 @@ fn estimate_cost(
         m if m.contains("gpt-5") && m.contains("mini") => (0.25, 2.0, 0.025, 0.0),
         // GPT-5.5 (Codex CLI default, mid-2026): $5/$30, cached input $0.50.
         m if m.contains("gpt-5.5") => (5.0, 30.0, 0.50, 0.0),
-        // GPT-5.6 family (Jul 2026): Sol flagship $5/$30, Terra $2.50/$15,
-        // Luna $1/$6; cached input 90% off, cache writes 1.25× input.
-        m if m.contains("gpt-5.6") && m.contains("terra") => (2.5, 15.0, 0.25, 3.125),
-        m if m.contains("gpt-5.6") && m.contains("luna") => (1.0, 6.0, 0.10, 1.25),
+        // GPT-5.6 family (Jul 2026), short-context (<272k) rates from
+        // OpenAI's official pricing page: Sol $5/$30, Terra $2/$12,
+        // Luna $0.20/$1.20; cached input 90% off, cache writes 1.25× input.
+        // Rev 11 fix: Terra/Luna were previously derived by linearly scaling
+        // down Sol's price (÷2 and ÷5) instead of using OpenAI's real
+        // per-tier rates — Luna was overpriced 5×, Terra 1.25×.
+        m if m.contains("gpt-5.6") && m.contains("terra") => (2.0, 12.0, 0.20, 2.5),
+        m if m.contains("gpt-5.6") && m.contains("luna") => (0.20, 1.20, 0.02, 0.25),
         m if m.contains("gpt-5.6") => (5.0, 30.0, 0.50, 6.25),
         // OpenAI GPT-5.4 standard API: $2.50/$15, cached $0.25.
         m if m.contains("gpt-5.4") => (2.5, 15.0, 0.25, 0.0),
@@ -1108,10 +1107,12 @@ fn estimate_cost(
         m if m.contains("grok-code") || m.contains("grok-composer") => (0.2, 1.5, 0.02, 0.2),
         // Cursor Composer (non-Grok) — local token estimates; fast-tier pricing.
         m if m.contains("composer") => (0.2, 1.5, 0.02, 0.2),
-        // Current xAI chat/API models.
-        m if m.contains("grok-4.5") => (2.0, 6.0, 0.50, 2.0),
+        // Current xAI chat/API models (docs.x.ai/developers/pricing,
+        // short-context <200k rates). Rev 11 fix: grok-4.5 cached input was
+        // $0.50, xAI's published rate is $0.30.
+        m if m.contains("grok-4.5") => (2.0, 6.0, 0.30, 2.0),
         m if m.contains("grok-4.3") || m.contains("grok-4.20") => (1.25, 2.5, 0.20, 1.25),
-        m if m.contains("grok") => (2.0, 6.0, 0.50, 2.0),
+        m if m.contains("grok") => (2.0, 6.0, 0.30, 2.0),
         // GLM-5.2 (Z.ai): $1.40/$4.40, cached $0.26 (verified Jun 2026). Cache
         // creation storage is limited-time free → 0. Devin's internal models
         // (compactor, swe-*, MODEL_PRIVATE_*) are assumed GLM-based.
@@ -1123,19 +1124,56 @@ fn estimate_cost(
             (1.4, 4.4, 0.26, 0.0)
         }
         _ => (3.0, 15.0, 0.30, 3.75), // default ≈ sonnet pricing
-    };
+    }
+}
+
+/// Cost for one model's usage within a session. `cache_creation` is the
+/// total cache-write tokens; `cache_creation_1h` is the portion of those
+/// billed at Anthropic's 1-hour cache tier (2x input price) rather than the
+/// default 5-minute tier already baked into `pricing_table`'s cache-write
+/// price (~1.25x input). Non-Claude models never populate `cache_creation_1h`
+/// (always 0), so this formula is safe to apply universally.
+fn estimate_cost_with_cache_tiers(
+    model: &str,
+    total_input: i64,
+    output_tokens: i64,
+    cache_read: i64,
+    cache_creation: i64,
+    cache_creation_1h: i64,
+) -> f64 {
+    let (input_price, output_price, cache_read_price, cache_write_price) = pricing_table(model);
 
     // total_input already includes cache_read + cache_creation tokens (added
     // during indexing), so subtract them to get the base input token count
     // that is billed at the full input rate.
     let base_input = (total_input - cache_read - cache_creation).max(0);
+    // Split cache-creation into its 1h (2x input) and 5m (cache_write_price,
+    // ~1.25x input) portions. Clamp so a stale/short 1h count (e.g. from
+    // pre-split historical rows) can never exceed the total.
+    let cache_creation_1h = cache_creation_1h.clamp(0, cache_creation.max(0));
+    let cache_creation_5m = cache_creation - cache_creation_1h;
 
     let cost = (base_input as f64 * input_price
         + output_tokens as f64 * output_price
         + cache_read as f64 * cache_read_price
-        + cache_creation as f64 * cache_write_price)
+        + cache_creation_5m as f64 * cache_write_price
+        + cache_creation_1h as f64 * (input_price * 2.0))
         / 1_000_000.0;
     (cost * 100.0).round() / 100.0 // round to cents
+}
+
+/// Back-compat wrapper for callers that don't have (or don't need) the 1h
+/// cache-tier split — e.g. by-model aggregate rows that fall back to
+/// session-level totals without a per-model breakdown. Treats all
+/// cache-creation tokens as the default 5-minute tier.
+fn estimate_cost(
+    model: &str,
+    total_input: i64,
+    output_tokens: i64,
+    cache_read: i64,
+    cache_creation: i64,
+) -> f64 {
+    estimate_cost_with_cache_tiers(model, total_input, output_tokens, cache_read, cache_creation, 0)
 }
 
 /// Bump this whenever the `estimate_cost` price table changes so already-indexed
@@ -1157,7 +1195,22 @@ fn estimate_cost(
 /// Rev 10 = GPT-5.6 tiers (Sol $5/$30, Terra $2.50/$15, Luna $1/$6, cached 90%
 /// off) — 5.6-sol previously fell through to the GPT-5 family fallback and
 /// booked at ~1/4 of its real price.
-const PRICING_REV: &str = "10";
+/// Rev 11 = pricing audit fixes against providers' official rate cards:
+/// GPT-5.6 Terra/Luna were derived by linearly scaling Sol's price (÷2, ÷5)
+/// instead of using OpenAI's real per-tier rates — Terra was 1.25× overpriced
+/// ($2.50/$15 vs real $2/$12), Luna was 5× overpriced ($1/$6 vs real
+/// $0.20/$1.20). Grok-4.5 cached input corrected from $0.50 to xAI's
+/// published $0.30/M.
+/// Rev 12 = cache-creation tokens now split by TTL tier for Claude sessions
+/// with a `session_model_usage` breakdown: Anthropic bills 1-hour cache
+/// writes at 2x input price vs ~1.25x for the default 5-minute tier, but
+/// every cache-write token was previously priced at the 5m rate regardless —
+/// a live-corpus sample found ~78% of cache-creation tokens across Claude
+/// sessions are actually 1h-tier, meaning cache-write costs were
+/// systematically underestimated. Requires `MODEL_USAGE_BACKFILL_REV` to have
+/// re-scanned transcripts for the split; sessions without a breakdown (or
+/// whose transcript is gone) keep the conservative all-5m assumption.
+const PRICING_REV: &str = "12";
 
 /// Estimated cost for one session: per-model when a breakdown exists (correct
 /// for multi-model Claude sessions), else session-level `model_used` pricing.
@@ -1175,12 +1228,13 @@ fn estimate_session_cost(
             let cost: f64 = rows
                 .iter()
                 .map(|u| {
-                    estimate_cost(
+                    estimate_cost_with_cache_tiers(
                         &u.model,
                         u.input_tokens,
                         u.output_tokens,
                         u.cache_read_tokens,
                         u.cache_creation_tokens,
+                        u.cache_creation_1h_tokens,
                     )
                 })
                 .sum();
@@ -1262,7 +1316,11 @@ pub fn recompute_all_session_costs(conn: &rusqlite::Connection) {
 }
 
 /// Bump to re-run `backfill_session_model_usage` (gated by a preference).
-const MODEL_USAGE_BACKFILL_REV: &str = "1";
+/// Rev 2 = also captures the 1h/5m cache-creation TTL split (see
+/// `PRICING_REV` rev 12) so already-indexed sessions get accurate cache-write
+/// pricing, not just the per-model attribution this backfill originally
+/// existed for.
+const MODEL_USAGE_BACKFILL_REV: &str = "2";
 
 /// One-time backfill of `session_model_usage` for already-indexed Claude
 /// sessions (v1.1.100). Session-level `model_used` is last-model-wins, so a
@@ -1466,6 +1524,13 @@ fn scan_claude_model_usage(
         };
         let input = get("input_tokens");
         let cache_creation = get("cache_creation_input_tokens");
+        // 1h/5m cache-write split (see session_adapters.rs live parser for why
+        // this matters for pricing): nested under usage.cache_creation.
+        let cache_creation_1h = usage
+            .and_then(|u| u.get("cache_creation"))
+            .and_then(|c| c.get("ephemeral_1h_input_tokens"))
+            .and_then(|v| v.as_i64())
+            .unwrap_or(0);
         let cache_read = get("cache_read_input_tokens");
         let output = get("output_tokens");
         if input + cache_creation + cache_read + output == 0 {
@@ -1483,6 +1548,7 @@ fn scan_claude_model_usage(
         entry.output_tokens += output;
         entry.cache_read_tokens += cache_read;
         entry.cache_creation_tokens += cache_creation;
+        entry.cache_creation_1h_tokens += cache_creation_1h;
     }
     Ok(map)
 }
@@ -2187,6 +2253,7 @@ fn model_usage_deltas(
             output_tokens: u.output_tokens,
             cache_read_tokens: u.cache_read_tokens,
             cache_creation_tokens: u.cache_creation_tokens,
+            cache_creation_1h_tokens: u.cache_creation_1h_tokens,
         })
         .collect()
 }
@@ -5309,6 +5376,51 @@ mod tests {
 
     #[test]
     #[ignore]
+    fn diag_cache_tier_backfill_dry_run() {
+        // Dry-run the 1h/5m cache-tier backfill + repricing against a copy of
+        // the live DB (cp codevetter.db /tmp/cv_cache_tier_dryrun.db) and
+        // print before/after Claude spend.
+        let path = "/tmp/cv_cache_tier_dryrun.db";
+        if !std::path::Path::new(path).exists() {
+            eprintln!("SKIP: {path} not present");
+            return;
+        }
+        let conn = Connection::open(path).expect("open dry-run copy");
+        schema::run_migrations(&conn).expect("migrate");
+        let claude_cost = |c: &Connection| -> f64 {
+            c.query_row(
+                "SELECT COALESCE(SUM(estimated_cost_usd),0)
+                 FROM cc_sessions WHERE agent_type='claude-code'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap()
+        };
+        let cache_1h_total = |c: &Connection| -> i64 {
+            c.query_row(
+                "SELECT COALESCE(SUM(cache_creation_1h_tokens),0) FROM session_model_usage",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap()
+        };
+        let cost_before = claude_cost(&conn);
+        let t0 = std::time::Instant::now();
+        backfill_session_model_usage(&conn);
+        let after_backfill = std::time::Instant::now();
+        let cache_1h = cache_1h_total(&conn);
+        recompute_all_session_costs(&conn);
+        let cost_after = claude_cost(&conn);
+        eprintln!(
+            "claude spend BEFORE: ${cost_before:.2}\nclaude spend AFTER:  ${cost_after:.2}\ndelta: ${:.2}\n1h cache-creation tokens recovered: {cache_1h}\nbackfill {:.1}s, recompute {:.1}s",
+            cost_after - cost_before,
+            after_backfill.duration_since(t0).as_secs_f64(),
+            after_backfill.elapsed().as_secs_f64()
+        );
+    }
+
+    #[test]
+    #[ignore]
     fn diag_live_index_steady_state() {
         let path = "/tmp/cv_live_copy.db";
         if !std::path::Path::new(path).exists() {
@@ -5417,20 +5529,27 @@ mod tests {
             0.50
         ));
         assert!(near(estimate_cost("gpt-5", 1_000_000, 0, 0, 0), 1.25));
-        // GPT-5.6 tiers (Jul 2026): Sol $5/$30 cached $0.50, Terra $2.50/$15,
-        // Luna $1/$6 — none may fall through to the generic GPT-5 family arm
-        // (5.6-sol previously booked at ~1/4 its real price that way).
+        // GPT-5.6 tiers (Jul 2026, OpenAI's official short-context rates):
+        // Sol $5/$30 cached $0.50, Terra $2/$12 cached $0.20, Luna
+        // $0.20/$1.20 cached $0.02 — none may fall through to the generic
+        // GPT-5 family arm (5.6-sol previously booked at ~1/4 its real price
+        // that way). Terra/Luna were previously derived by linearly scaling
+        // Sol's price rather than using OpenAI's real per-tier rates (Terra
+        // 1.25× overpriced, Luna 5× overpriced) — this guards against that
+        // regressing.
         assert!(near(estimate_cost("gpt-5.6-sol", 1_000_000, 0, 0, 0), 5.0));
         assert!(near(estimate_cost("gpt-5.6-sol", 0, 1_000_000, 0, 0), 30.0));
         assert!(near(
             estimate_cost("gpt-5.6-sol", 1_000_000, 0, 1_000_000, 0),
             0.50
         ));
+        assert!(near(estimate_cost("gpt-5.6-terra", 1_000_000, 0, 0, 0), 2.0));
+        assert!(near(estimate_cost("gpt-5.6-terra", 0, 1_000_000, 0, 0), 12.0));
         assert!(near(
-            estimate_cost("gpt-5.6-terra", 1_000_000, 0, 0, 0),
-            2.5
+            estimate_cost("gpt-5.6-luna", 1_000_000, 0, 0, 0),
+            0.20
         ));
-        assert!(near(estimate_cost("gpt-5.6-luna", 0, 1_000_000, 0, 0), 6.0));
+        assert!(near(estimate_cost("gpt-5.6-luna", 0, 1_000_000, 0, 0), 1.20));
         // GPT-5.4 must beat the generic GPT-5 family arm.
         assert!(near(estimate_cost("gpt-5.4", 1_000_000, 0, 0, 0), 2.50));
         assert!(near(estimate_cost("gpt-5.4", 0, 1_000_000, 0, 0), 15.0));
@@ -5461,6 +5580,36 @@ mod tests {
         assert!(near(estimate_cost("glm-5-2", 1_000_000, 0, 0, 0), 1.4));
         assert!(near(estimate_cost("glm-5-2", 0, 1_000_000, 0, 0), 4.4));
         assert!(near(estimate_cost("glm-5-2", 0, 0, 1_000_000, 0), 0.26));
+    }
+
+    #[test]
+    fn eval_cache_tier_split_prices_1h_writes_at_2x_input() {
+        let near = |a: f64, b: f64| (a - b).abs() < 1e-6;
+        // Sonnet: $3/M input, so 5m cache writes are $3.75/M (1.25x) and 1h
+        // writes are $6/M (2x) — Anthropic's real pricing ratio. All 1M
+        // cache-creation tokens as 1h should cost double the all-5m case.
+        let all_5m = estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 0);
+        let all_1h =
+            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 1_000_000);
+        assert!(near(all_5m, 3.75));
+        assert!(near(all_1h, 6.0));
+        // A half/half split lands between the two pure cases (within a cent
+        // of rounding, since costs are rounded to cents).
+        let half_half =
+            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 500_000);
+        assert!((half_half - (all_5m + all_1h) / 2.0).abs() < 0.01);
+        // estimate_cost (no split info) matches the conservative all-5m case —
+        // this is the fallback used when a session has no per-model breakdown.
+        assert!(near(
+            estimate_cost("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000),
+            all_5m
+        ));
+        // A 1h count larger than the total cache-creation tokens (shouldn't
+        // happen, but guard against it) is clamped rather than going negative
+        // or over-crediting the 5m bucket.
+        let clamped =
+            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 5_000_000);
+        assert!(near(clamped, all_1h));
     }
 
     #[test]

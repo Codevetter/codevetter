@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-05
+Last updated: 2026-08-07
 
 ## Why / What
 
@@ -38,6 +38,34 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-07 — Grok billing staleness fix + cache-tier pricing audit (largest
+  cost-accuracy fix to date):** `check_live_usage_grok` re-served whatever
+  billing snapshot Grok CLI last logged to `~/.grok/logs/unified.jsonl`
+  (Grok only writes that line on-demand, e.g. `/usage`) with no staleness or
+  expired-billing-period check, so a machine that hadn't opened Grok CLI in
+  two weeks showed a permanently frozen "100% used / rate_limited" from an
+  already-rolled-over cycle. Now detects an expired billing period or a
+  log entry older than 2 days and downgrades status to `unknown` with a
+  `stale`/`stale_reason` surfaced in the UI instead of asserting rate-limited
+  off dead data. Separately, a provider-pricing audit against docs.x.ai and
+  developers.openai.com found GPT-5.6 Terra/Luna had been derived by linearly
+  scaling Sol's price instead of using OpenAI's real per-tier rates (Luna 5×
+  overpriced, Terra 1.25×) and grok-4.5 cached input was $0.50 vs xAI's
+  published $0.30 (pricing rev 11). The much larger finding: Claude Code's
+  `usage.cache_creation` splits cache-write tokens by TTL
+  (`ephemeral_1h_input_tokens` vs `ephemeral_5m_input_tokens`) — Anthropic
+  bills 1-hour cache writes at 2x input price vs ~1.25x for the default
+  5-minute tier, but every cache-write token was priced at the 5m rate
+  regardless of tier. A live-corpus sample found ~78% of cache-creation
+  tokens across Claude sessions are actually 1h-tier. Fix threads the split
+  through `session_model_usage` (new `cache_creation_1h_tokens` column,
+  model-usage backfill rev 2) and prices it separately (pricing rev 12); a
+  dry run against a live-DB copy recomputed all-time Claude spend
+  $46,986→$67,548 (+$20,561, +44%) from 551M recovered 1h-tokens. Sessions
+  without a per-model breakdown keep the conservative all-5m fallback.
+  Verified: 880 Rust tests (2 new), tsc, biome clean on touched files, and
+  the migration applied cleanly against a copy of the live 5,820-row
+  `session_model_usage` table.
 - **2026-08-05 — Coding-agent verification field guide:** added four public
   education routes that explain the task-to-evidence verification loop,
   practical AI-code verification, review versus verification, and portable
