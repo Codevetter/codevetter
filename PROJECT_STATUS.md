@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-05
+Last updated: 2026-08-07
 
 ## Why / What
 
@@ -38,6 +38,12 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-07 — Evidence-backed comparison coverage:** added source-complete
+  CodeVetter comparisons for CodeRabbit and Greptile using the existing public
+  editorial, sitemap, canonical, structured-data, and agent-readable Markdown
+  surfaces. Each page cites primary sources and explicitly avoids unsupported
+  head-to-head performance claims. Production remains unchanged pending the
+  normal manual deployment path.
 - **2026-08-05 — Coding-agent verification field guide:** added four public
   education routes that explain the task-to-evidence verification loop,
   practical AI-code verification, review versus verification, and portable
