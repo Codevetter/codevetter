@@ -89,6 +89,20 @@
       "description": "Reference for portable verification evidence artifacts"
     },
     {
+      "id": "codevetter-vs-coderabbit",
+      "url": "https://codevetter.com/codevetter-vs-coderabbit",
+      "md": "https://codevetter.com/codevetter-vs-coderabbit.md",
+      "kind": "static",
+      "description": "Evidence-bounded comparison of CodeVetter and CodeRabbit"
+    },
+    {
+      "id": "codevetter-vs-greptile",
+      "url": "https://codevetter.com/codevetter-vs-greptile",
+      "md": "https://codevetter.com/codevetter-vs-greptile.md",
+      "kind": "static",
+      "description": "Evidence-bounded comparison of CodeVetter and Greptile"
+    },
+    {
       "id": "docs",
       "url": "https://codevetter.com/docs/",
       "md": "https://codevetter.com/docs.md",
