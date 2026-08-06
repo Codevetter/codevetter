@@ -140,6 +140,16 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         )",
         [],
     );
+    // Anthropic bills cache-write tokens differently by TTL: 1-hour cache
+    // writes are 2x input price, 5-minute writes are ~1.25x. The lumped
+    // `cache_creation_tokens` above can't distinguish them, which silently
+    // underpriced any session using 1h caching (the majority of long agent
+    // sessions) — this column carries just the 1h portion so cost estimation
+    // can split it out. 0 for non-Claude models, which don't have this tier.
+    let _ = conn.execute(
+        "ALTER TABLE session_model_usage ADD COLUMN cache_creation_1h_tokens INTEGER NOT NULL DEFAULT 0",
+        [],
+    );
 
     // Stop the indexer pegging the CPU on "unarchivable" sessions. A handful of
     // sessions (malformed / archive-less transcripts — e.g. a 118 MB codex log)

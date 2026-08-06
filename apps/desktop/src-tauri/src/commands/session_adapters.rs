@@ -56,6 +56,12 @@ pub struct ModelTokenUsage {
     pub output_tokens: i64,
     pub cache_read_tokens: i64,
     pub cache_creation_tokens: i64,
+    /// Portion of `cache_creation_tokens` billed at Anthropic's 1-hour cache
+    /// write tier (2x input price) rather than the default 5-minute tier
+    /// (~1.25x input price). Claude's `usage.cache_creation` object splits
+    /// `ephemeral_1h_input_tokens` / `ephemeral_5m_input_tokens`; other
+    /// providers never populate this, so it stays 0 for them.
+    pub cache_creation_1h_tokens: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -531,6 +537,16 @@ impl SessionSourceAdapter for ClaudeCodeAdapter {
                 .and_then(|u| u.get("cache_creation_input_tokens"))
                 .and_then(|v| v.as_i64())
                 .unwrap_or(0);
+            // Claude also reports the 1h/5m split of cache-creation tokens
+            // under a nested `cache_creation` object (1h cache writes bill at
+            // 2x input price vs ~1.25x for 5m) — extract it so cost estimates
+            // can price each tier correctly instead of assuming everything is
+            // 5m.
+            let cache_creation_1h = usage
+                .and_then(|u| u.get("cache_creation"))
+                .and_then(|c| c.get("ephemeral_1h_input_tokens"))
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0);
             let cache_read = usage
                 .and_then(|u| u.get("cache_read_input_tokens"))
                 .and_then(|v| v.as_i64())
@@ -564,6 +580,7 @@ impl SessionSourceAdapter for ClaudeCodeAdapter {
                 entry.output_tokens += output;
                 entry.cache_read_tokens += cache_read;
                 entry.cache_creation_tokens += cache_creation;
+                entry.cache_creation_1h_tokens += cache_creation_1h;
             }
 
             if let Some(model) = parsed
@@ -1007,6 +1024,31 @@ mod tests {
         assert_eq!(sonnet.output_tokens, 40);
         assert_eq!(sonnet.cache_read_tokens, 25);
         assert_eq!(sonnet.cache_creation_tokens, 10);
+    }
+
+    #[test]
+    fn claude_cache_creation_1h_tier_is_split_from_5m() {
+        // Real Claude Code usage nests the TTL split under
+        // usage.cache_creation.{ephemeral_1h_input_tokens,ephemeral_5m_input_tokens}.
+        // Anthropic bills 1h writes at 2x input vs ~1.25x for 5m, so losing
+        // this split silently underprices any session using 1h caching.
+        let raw = concat!(
+            r#"{"type":"assistant","sessionId":"s1","timestamp":"2026-07-10T10:00:00.000Z","requestId":"r1","message":{"id":"m1","role":"assistant","model":"claude-sonnet-4-5","usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":5,"cache_creation_input_tokens":100,"cache_creation":{"ephemeral_1h_input_tokens":80,"ephemeral_5m_input_tokens":20}},"content":[{"type":"text","text":"hi"}]}}"#,
+            "\n",
+            r#"{"type":"assistant","sessionId":"s1","timestamp":"2026-07-10T10:01:00.000Z","requestId":"r2","message":{"id":"m2","role":"assistant","model":"claude-sonnet-4-5","usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":5,"cache_creation_input_tokens":50,"cache_creation":{"ephemeral_1h_input_tokens":0,"ephemeral_5m_input_tokens":50}},"content":[{"type":"text","text":"hi"}]}}"#,
+        );
+        let summary = ClaudeCodeAdapter.parse_raw("/fixtures/cache-tier.jsonl", raw);
+
+        // Session-level cache_creation_tokens stays the lumped total (used by
+        // the no-breakdown fallback); the per-model 1h field carries just the
+        // 1h portion so cost estimation can split it out.
+        assert_eq!(summary.cache_creation_tokens, 150);
+        let sonnet = summary
+            .model_usage
+            .get("claude-sonnet-4-5")
+            .expect("sonnet row");
+        assert_eq!(sonnet.cache_creation_tokens, 150);
+        assert_eq!(sonnet.cache_creation_1h_tokens, 80);
     }
 
     fn usage_line(msg_id: &str, request_id: &str, output: i64) -> String {

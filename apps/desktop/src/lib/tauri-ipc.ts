@@ -3696,6 +3696,11 @@ export interface LiveUsageResult {
     on_demand_cap?: number | null;
     prepaid_balance?: number | null;
     window_total_secs?: number | null;
+    // True when the billing snapshot's period has already ended, or the
+    // underlying CLI log entry is stale (Grok CLI only logs credits checks
+    // on-demand, so this can be days/weeks old if the CLI hasn't been used).
+    stale?: boolean;
+    stale_reason?: string | null;
   };
 }
 

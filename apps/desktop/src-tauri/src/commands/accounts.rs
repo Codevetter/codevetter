@@ -2625,6 +2625,17 @@ async fn check_live_usage_devin() -> Result<Value, String> {
 /// Grok live credit usage from CLI billing logs. Older logs carried
 /// `creditUsagePercent`; current Grok Build logs expose on-demand used/cap
 /// credit fields instead.
+///
+/// Grok CLI only appends a `"billing: fetched credits config"` line when it
+/// performs its own credits check (e.g. `/usage`, or certain billing-gated
+/// calls) — there's no push/pull live quota API, so this is a tail of
+/// whatever Grok last logged locally, which can be days/weeks old if the CLI
+/// hasn't been opened. Without a staleness check this silently re-served a
+/// dead snapshot (e.g. "100% used, rate_limited") forever after its billing
+/// period rolled over, which read as "Grok not updating". We now detect when
+/// the logged billing period has already ended (or the log entry itself is
+/// old) and downgrade the status instead of asserting rate-limited off stale
+/// data.
 async fn check_live_usage_grok() -> Result<Value, String> {
     let grok_home = grok_home_dir()?;
     if !grok_home.join("sessions").exists() {
@@ -2689,18 +2700,57 @@ async fn check_live_usage_grok() -> Result<Value, String> {
         _ => Some(SECS_PER_MONTH),
     };
 
-    let status = match used_pct {
-        Some(pct) if pct >= 100.0 => "rate_limited",
-        Some(_) => "allowed",
-        None => "unknown",
+    // Grok CLI only writes a billing-log entry when it performs its own
+    // credits check, so this can be an arbitrarily old snapshot. Treat it as
+    // stale if the billing period it describes has already ended, or if the
+    // log entry itself is older than a couple of days — either way, the
+    // used/rate-limited percentage no longer reflects reality and shouldn't
+    // be asserted as current status.
+    let now_ts = chrono::Utc::now().timestamp();
+    let fetched_at_epoch = chrono::DateTime::parse_from_rfc3339(&fetched_at)
+        .ok()
+        .map(|dt| dt.timestamp());
+    let period_expired = grok_billing_period_expired(now_ts, reset_at_epoch);
+    let log_stale = grok_billing_log_stale(now_ts, fetched_at_epoch);
+    let is_stale = period_expired || log_stale;
+    let stale_reason = if period_expired {
+        period_end.map(|end| {
+            format!("Grok billing period ended {end} — run /usage in Grok CLI to refresh.")
+        })
+    } else if log_stale {
+        Some(format!(
+            "Last Grok billing check was {} — run /usage in Grok CLI to refresh.",
+            if fetched_at.is_empty() {
+                "an unknown time ago".to_string()
+            } else {
+                fetched_at.clone()
+            }
+        ))
+    } else {
+        None
     };
+
+    let status = if is_stale {
+        "unknown"
+    } else {
+        match used_pct {
+            Some(pct) if pct >= 100.0 => "rate_limited",
+            Some(_) => "allowed",
+            None => "unknown",
+        }
+    };
+
+    let mut five_h = build_rate_window(used_pct, reset_at_epoch, window_total_secs);
+    if is_stale {
+        five_h["status"] = json!("unknown");
+    }
 
     Ok(json!({
         "supported": true,
         "status": status,
         "source": "grok_cli_billing_log",
         "quota_plan": subscription_tier,
-        "five_h": build_rate_window(used_pct, reset_at_epoch, window_total_secs),
+        "five_h": five_h,
         "checked_at": if fetched_at.is_empty() {
             chrono::Utc::now().to_rfc3339()
         } else {
@@ -2715,9 +2765,26 @@ async fn check_live_usage_grok() -> Result<Value, String> {
             "on_demand_used": on_demand_used,
             "on_demand_cap": on_demand_cap,
             "prepaid_balance": prepaid_balance,
+            "stale": is_stale,
+            "stale_reason": stale_reason,
             "window_total_secs": window_total_secs,
         },
     }))
+}
+
+/// Threshold beyond which a Grok billing-log entry is treated as stale even
+/// if its reported billing period hasn't technically ended yet.
+const GROK_BILLING_LOG_STALE_SECS: i64 = 2 * SECS_PER_DAY;
+
+fn grok_billing_period_expired(now_ts: i64, reset_at_epoch: Option<i64>) -> bool {
+    reset_at_epoch.is_some_and(|end| now_ts > end)
+}
+
+fn grok_billing_log_stale(now_ts: i64, fetched_at_epoch: Option<i64>) -> bool {
+    match fetched_at_epoch {
+        Some(f) => now_ts - f > GROK_BILLING_LOG_STALE_SECS,
+        None => true,
+    }
 }
 
 fn grok_credit_usage_percent(config: &Value) -> Option<f64> {
@@ -2795,6 +2862,33 @@ mod tests {
         });
 
         assert_eq!(grok_credit_usage_percent(&config), None);
+    }
+
+    #[test]
+    fn grok_billing_period_expired_detects_past_reset() {
+        let now = 1_000_000_i64;
+        assert!(grok_billing_period_expired(now, Some(now - 1)));
+        assert!(!grok_billing_period_expired(now, Some(now + 1)));
+        assert!(!grok_billing_period_expired(now, None));
+    }
+
+    #[test]
+    fn grok_billing_log_stale_flags_old_or_missing_timestamps() {
+        let now = 1_000_000_i64;
+        // Missing timestamp entirely -> treat as stale (can't prove freshness).
+        assert!(grok_billing_log_stale(now, None));
+        // Just fetched -> fresh.
+        assert!(!grok_billing_log_stale(now, Some(now)));
+        // Older than the 2-day threshold -> stale.
+        assert!(grok_billing_log_stale(
+            now,
+            Some(now - GROK_BILLING_LOG_STALE_SECS - 1)
+        ));
+        // Just under the threshold -> still fresh.
+        assert!(!grok_billing_log_stale(
+            now,
+            Some(now - GROK_BILLING_LOG_STALE_SECS + 1)
+        ));
     }
 
     #[test]

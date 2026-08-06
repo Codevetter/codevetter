@@ -2397,6 +2397,11 @@ pub struct SessionModelUsageDelta {
     pub output_tokens: i64,
     pub cache_read_tokens: i64,
     pub cache_creation_tokens: i64,
+    /// Portion of `cache_creation_tokens` billed at Anthropic's 1-hour cache
+    /// write tier (2x input price) instead of the default 5-minute tier
+    /// (~1.25x input price). 0 for non-Claude models, which don't have this
+    /// distinction.
+    pub cache_creation_1h_tokens: i64,
 }
 
 /// Replace a session's per-model usage rows with a freshly parsed breakdown
@@ -2427,14 +2432,15 @@ pub fn add_session_model_usage(
     let mut stmt = conn.prepare(
         "INSERT INTO session_model_usage
             (session_id, model, message_count, input_tokens, output_tokens,
-             cache_read_tokens, cache_creation_tokens)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+             cache_read_tokens, cache_creation_tokens, cache_creation_1h_tokens)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
          ON CONFLICT(session_id, model) DO UPDATE SET
             message_count = message_count + excluded.message_count,
             input_tokens = input_tokens + excluded.input_tokens,
             output_tokens = output_tokens + excluded.output_tokens,
             cache_read_tokens = cache_read_tokens + excluded.cache_read_tokens,
-            cache_creation_tokens = cache_creation_tokens + excluded.cache_creation_tokens",
+            cache_creation_tokens = cache_creation_tokens + excluded.cache_creation_tokens,
+            cache_creation_1h_tokens = cache_creation_1h_tokens + excluded.cache_creation_1h_tokens",
     )?;
     for u in usage {
         stmt.execute(params![
@@ -2445,6 +2451,7 @@ pub fn add_session_model_usage(
             u.output_tokens,
             u.cache_read_tokens,
             u.cache_creation_tokens,
+            u.cache_creation_1h_tokens,
         ])?;
     }
     Ok(())
@@ -2458,7 +2465,7 @@ pub fn get_session_model_usage(
 ) -> Result<Vec<SessionModelUsageDelta>, rusqlite::Error> {
     let mut stmt = conn.prepare(
         "SELECT model, message_count, input_tokens, output_tokens,
-                cache_read_tokens, cache_creation_tokens
+                cache_read_tokens, cache_creation_tokens, cache_creation_1h_tokens
          FROM session_model_usage WHERE session_id = ?1",
     )?;
     let rows = stmt
@@ -2470,6 +2477,7 @@ pub fn get_session_model_usage(
                 output_tokens: r.get(3)?,
                 cache_read_tokens: r.get(4)?,
                 cache_creation_tokens: r.get(5)?,
+                cache_creation_1h_tokens: r.get(6)?,
             })
         })?
         .collect::<Result<Vec<_>, _>>()?;
