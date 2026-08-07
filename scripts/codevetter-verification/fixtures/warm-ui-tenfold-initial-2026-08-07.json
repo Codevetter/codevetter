@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "capturedAt": "2026-08-06T20:36:58.608Z",
+  "machine": { "platform": "darwin", "arch": "arm64", "identity": "operator-machine-redacted" },
+  "revision": "worktree:f92645a9da14ed783d70dcfe60318b87be2c056af284f3a0f579df5dca3993f6",
+  "profile": "warm-ui-broad-fallback-v1",
+  "baseline": {
+    "scope": [
+      "apps/desktop/tests/e2e/smoke.spec.ts",
+      "apps/desktop/tests/e2e/visual-system.spec.ts"
+    ],
+    "testCount": 11,
+    "runnerWallMs": 16300,
+    "observedWallMs": 16746,
+    "verdict": "passed"
+  },
+  "candidate": {
+    "selectedScenarios": ["command-search", "shell-navigation", "usage-home"],
+    "selectionMode": "broad-fallback",
+    "sampleCount": 10,
+    "receiptWallMs": [
+      1116.492, 1122.472, 1119.666, 1117.116, 1057.214, 1121.012, 1068.421, 1019.823, 1114.666,
+      1114.876
+    ],
+    "receiptP50Ms": 1115.684,
+    "receiptP95Ms": 1122.472,
+    "receiptP95Speedup": 14.522,
+    "allPassed": true,
+    "modelCallCount": 0,
+    "isolatedFreshContexts": true,
+    "exactCommandSamples": {
+      "command": "pnpm verify changed",
+      "sampleCount": 10,
+      "observedWallMs": [1326, 1671, 1528, 1500, 1511, 1519, 1528, 1509, 1513, 1505],
+      "observedP50Ms": 1512,
+      "observedP95Ms": 1671,
+      "p95SpeedupAgainstObservedBaseline": 10.021,
+      "allPassed": true
+    }
+  },
+  "stageFindings": {
+    "commandSearchActionabilityAndDispatchMs": 83.656,
+    "commandSearchSettlementMs": 1.812,
+    "commandSearchAssertionMs": 9.484,
+    "commandSearchCleanupMs": 16.484,
+    "usageHomeSettlementMs": 291,
+    "dominantStage": "usage-home application settlement and final accessibility audit"
+  },
+  "limitations": [
+    "The 10x result applies to the checked representative CodeVetter UI path, not native builds, exhaustive verification, every repository change, or other projects.",
+    "Receipt and exact-command p95 values are each based on ten serial warm samples on one machine.",
+    "The machine had unrelated background load, so the fixture records wall time and verdict but does not claim CPU-time, peak-RSS, or bandwidth improvements.",
+    "Selected-versus-exhaustive application-verdict qualification remains required before focused selection becomes authoritative."
+  ]
+}

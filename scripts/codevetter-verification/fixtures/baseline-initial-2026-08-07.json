@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "capturedAt": "2026-08-07T00:00:00.000Z",
+  "machine": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "identity": "operator-machine-redacted"
+  },
+  "revision": "6bd668d",
+  "profile": "pre-optimization-observation",
+  "complete": false,
+  "qualified": false,
+  "observations": [
+    {
+      "lane": "frontend-unit-and-live-qualification",
+      "cacheState": "warm-after-browser-install",
+      "wallMs": 23231,
+      "cpuMs": null,
+      "peakRssBytes": null,
+      "verdict": "passed",
+      "executedChecks": 666
+    },
+    {
+      "lane": "rust-full",
+      "cacheState": "cold",
+      "wallMs": 71000,
+      "cpuMs": null,
+      "peakRssBytes": null,
+      "targetBytes": 4724464025,
+      "verdict": "no_confidence",
+      "limitation": "The full Rust test process was killed after cold compilation while another browser-heavy lane was active; CPU time and peak RSS were not retained."
+    }
+  ],
+  "limitations": [
+    "This is an honest pre-optimization incident baseline, not a passing qualification receipt.",
+    "No selected-versus-exhaustive comparison was available.",
+    "CPU, RSS, queue, bandwidth, and click-to-settle measurements were not yet instrumented."
+  ]
+}

@@ -282,8 +282,8 @@ export class ScenarioRunner {
           signal,
           stateRequest,
           actionTimeoutMs: Math.min(scenario.timeouts.actionMs, this.#config.budgets.actionMs),
-          step: (actionId, operation) =>
-            activeObserver.step(actionId, () => raceAbort(operation(), signal)),
+          step: (actionId, operation, phase) =>
+            activeObserver.step(actionId, () => raceAbort(operation(), signal), phase),
         }),
         signal
       );

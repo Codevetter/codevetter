@@ -90,11 +90,15 @@ export function materializeDeclarativeScenario(
     async run(context) {
       for (const action of plan.actions) {
         throwIfAborted(context.signal);
-        await context.step(action.id, () => executeAction(action, context));
+        await context.step(
+          action.id,
+          () => executeAction(action, context),
+          action.kind === 'navigate' ? 'settlement' : 'actionability_and_dispatch'
+        );
       }
       for (const assertion of plan.assertions) {
         throwIfAborted(context.signal);
-        await executeAssertion(assertion, context);
+        await context.step(assertion.id, () => executeAssertion(assertion, context), 'assertion');
       }
     },
   };

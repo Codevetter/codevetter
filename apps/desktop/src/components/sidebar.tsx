@@ -10,8 +10,8 @@ import {
   Settings,
   Zap,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 import { BrandMark } from '@/components/brand-mark';
 import ResourceChip from '@/components/ResourceChip';
@@ -22,7 +22,6 @@ interface NavItem {
   label: string;
   href: string;
   icon: ReactNode;
-  shortcut: string;
   description: string;
   match?: string[];
 }
@@ -36,14 +35,12 @@ const contextNavItems: NavItem[] = [
     label: 'Usage',
     href: '/',
     icon: <Activity size={17} />,
-    shortcut: 'H',
     description: 'AI usage, cost, and activity',
   },
   {
     label: 'Repo Unpack',
     href: '/unpack',
     icon: <ScanSearch size={17} />,
-    shortcut: 'P',
     description: 'Intel, history, graph, and ownership',
     match: ['/unpack', '/intel'],
   },
@@ -54,28 +51,24 @@ const workflowNavItems: NavItem[] = [
     label: 'Work',
     href: '/agents',
     icon: <Bot size={17} />,
-    shortcut: 'A',
     description: 'Build with Codex and Claude',
   },
   {
     label: 'Board',
     href: '/board',
     icon: <Columns3 size={17} />,
-    shortcut: 'B',
     description: 'Move outcomes from plan to proof',
   },
   {
     label: 'Review',
     href: '/review',
     icon: <Zap size={17} />,
-    shortcut: 'R',
     description: 'Inspect the change and identify evidence gaps',
   },
   {
     label: 'Testing',
     href: '/trex',
     icon: <Eye size={17} />,
-    shortcut: 'T',
     description: 'Run executable checks and inspect receipts',
   },
 ];
@@ -84,7 +77,6 @@ const settingsNavItem: NavItem = {
   label: 'Settings',
   href: '/settings',
   icon: <Settings size={17} />,
-  shortcut: ',',
   description: 'Providers and preferences',
 };
 
@@ -93,54 +85,12 @@ const navItems = [...productNavItems, settingsNavItem];
 
 export default function Sidebar({ onSearch }: SidebarProps) {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const pendingG = useRef(false);
-  const gTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function isActive(href: string): boolean {
     if (href === '/') return pathname === '/';
     const item = navItems.find((navItem) => navItem.href === href);
     return (item?.match ?? [href]).some((prefix) => pathname.startsWith(prefix));
   }
-
-  // Global "g then <key>" navigation (Linear-style)
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-      if (e.key === 'g' && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (!pendingG.current) {
-          pendingG.current = true;
-          if (gTimer.current) clearTimeout(gTimer.current);
-          gTimer.current = setTimeout(() => {
-            pendingG.current = false;
-          }, 500);
-          return;
-        }
-      }
-
-      if (pendingG.current) {
-        pendingG.current = false;
-        if (gTimer.current) clearTimeout(gTimer.current);
-
-        const key = e.key.toLowerCase();
-        if (key === 'i') {
-          e.preventDefault();
-          navigate('/unpack?section=activity');
-          return;
-        }
-        const match = navItems.find((item) => item.shortcut.toLowerCase() === key);
-        if (match) {
-          e.preventDefault();
-          navigate(match.href);
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
 
   function renderNavItem(item: NavItem) {
     const active = isActive(item.href);
@@ -169,15 +119,6 @@ export default function Sidebar({ onSearch }: SidebarProps) {
               {item.icon}
             </span>
             <span className="min-w-0 flex-1 truncate font-medium">{item.label}</span>
-            <span
-              className={cn(
-                'font-mono text-[10px] tracking-tight transition-colors duration-150',
-                active ? 'text-amber-200/65' : 'text-zinc-400/75 group-hover:text-zinc-300/80'
-              )}
-              aria-hidden="true"
-            >
-              G {item.shortcut.toUpperCase()}
-            </span>
           </Link>
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-52 text-[11px]">
@@ -212,16 +153,13 @@ export default function Sidebar({ onSearch }: SidebarProps) {
           <Link
             to="/review"
             data-testid="check-change-action"
-            className="group mt-3 flex min-h-12 items-center gap-3 rounded-xl bg-[var(--cv-accent)] px-3 text-[#090a0c] shadow-[0_10px_28px_-18px_rgba(243,173,61,0.85)] transition-[background-color,box-shadow] duration-150 hover:bg-amber-300 hover:shadow-[0_12px_30px_-16px_rgba(243,173,61,0.9)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0b0d]"
+            className="group mt-3 flex h-10 items-center gap-3 rounded-xl bg-[var(--cv-accent)] px-3 text-[#090a0c] shadow-[0_10px_28px_-18px_rgba(243,173,61,0.85)] transition-[background-color,box-shadow] duration-150 hover:bg-amber-300 hover:shadow-[0_12px_30px_-16px_rgba(243,173,61,0.9)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0b0d]"
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-black/10">
               <Zap size={16} aria-hidden="true" />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[13px] font-semibold">Check a change</span>
-              <span className="block truncate text-[10px] font-medium text-black/60">
-                Review · run · decide
-              </span>
+            <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+              Check a change
             </span>
             <ArrowRight
               size={15}
@@ -234,10 +172,10 @@ export default function Sidebar({ onSearch }: SidebarProps) {
             type="button"
             onClick={onSearch}
             className="mt-2 flex h-[40px] w-full items-center gap-2.5 rounded-xl border border-white/[0.075] bg-white/[0.035] px-3 text-left text-[13px] text-zinc-400/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-[border-color,background-color,color] duration-150 hover:border-white/[0.13] hover:bg-white/[0.055] hover:text-zinc-200"
-            aria-label="Search commands"
+            aria-label="Search pages and actions"
           >
             <Search size={16} className="shrink-0" />
-            <span className="min-w-0 flex-1 truncate">Search commands</span>
+            <span className="min-w-0 flex-1 truncate">Search</span>
             <kbd className="flex items-center gap-0.5 rounded-md border border-white/[0.07] bg-black/20 px-1.5 py-0.5 font-sans text-[10px] text-zinc-400/75">
               <Command size={10} aria-hidden="true" /> K
             </kbd>

@@ -19,7 +19,6 @@ test.describe('Smoke tests', () => {
     await navigateTo(page, '/');
     await waitForNoSpinners(page);
 
-    await expect(page.getByTestId('verification-spotlight')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Check a change' }).first()).toBeVisible();
     await expect(page.getByText('Usage telemetry')).toBeVisible();
     await expect(page.getByRole('button', { name: /Re-index local data|Indexing/ })).toBeVisible();

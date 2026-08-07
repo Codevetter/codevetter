@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import type { ConsoleMessage, Page, Request, Response } from '@playwright/test';
 import type { VerifyArtifact, VerifyObservation, VerifyObservationDisposition } from './contracts';
 import { isSensitiveEvidenceKey, redactEvidenceText } from './redaction';
-import type { ScenarioObserve } from './scenario';
+import type { ScenarioInteractionPhase, ScenarioObserve } from './scenario';
 import { matchesPathGlob } from './selection';
 import type { VisualCheckpointVerifier } from './visual';
 
@@ -106,7 +106,11 @@ export class AutomaticObserver implements ScenarioObserve {
     );
   }
 
-  async step<T>(actionId: string, operation: () => Promise<T>): Promise<T> {
+  async step<T>(
+    actionId: string,
+    operation: () => Promise<T>,
+    phase: ScenarioInteractionPhase = 'actionability_and_dispatch'
+  ): Promise<T> {
     const started = performance.now();
     try {
       return await operation();
@@ -117,8 +121,8 @@ export class AutomaticObserver implements ScenarioObserve {
         'interaction_timing',
         slow ? 'regression' : 'passed',
         'performance.interaction-budget',
-        `${actionId} completed in ${durationMs.toFixed(1)} ms`,
-        { action_id: actionId, duration_ms: roundDuration(durationMs) }
+        `${actionId} ${phase} completed in ${durationMs.toFixed(1)} ms`,
+        { action_id: actionId, phase, duration_ms: roundDuration(durationMs) }
       );
     }
   }

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "home-leaf",
+      "paths": ["apps/desktop/src/pages/Home.tsx"],
+      "focused": true,
+      "mustInclude": ["typecheck", "lint", "browser-ui"],
+      "failingLane": "browser-ui"
+    },
+    {
+      "id": "shell-leaf",
+      "paths": ["apps/desktop/src/components/sidebar.tsx"],
+      "focused": true,
+      "mustInclude": ["typecheck", "lint", "browser-ui"],
+      "failingLane": "browser-ui"
+    },
+    {
+      "id": "frontend-general",
+      "paths": ["apps/desktop/src/lib/review-proof.ts"],
+      "focused": true,
+      "mustInclude": ["typecheck", "lint", "frontend-unit", "browser-smoke"],
+      "failingLane": "frontend-unit"
+    },
+    {
+      "id": "smoke-spec",
+      "paths": ["apps/desktop/tests/e2e/smoke.spec.ts"],
+      "focused": true,
+      "mustInclude": ["typecheck", "lint", "browser-ui"],
+      "failingLane": "browser-ui"
+    },
+    {
+      "id": "rust-leaf",
+      "paths": ["apps/desktop/src-tauri/src/commands/accounts.rs"],
+      "focused": true,
+      "mustInclude": ["rust-lib"],
+      "failingLane": "rust-lib"
+    },
+    {
+      "id": "ipc-shared",
+      "paths": ["apps/desktop/src/lib/tauri-ipc.ts"],
+      "focused": false,
+      "mustInclude": ["frontend-unit", "browser-all", "rust-lib"],
+      "failingLane": "rust-lib"
+    },
+    {
+      "id": "lockfile-shared",
+      "paths": ["pnpm-lock.yaml"],
+      "focused": false,
+      "mustInclude": ["typecheck", "frontend-unit", "browser-all", "rust-lib"],
+      "failingLane": "browser-all"
+    },
+    {
+      "id": "unmatched",
+      "paths": ["unknown/file.xyz"],
+      "focused": false,
+      "mustInclude": ["browser-all", "rust-lib"],
+      "failingLane": "rust-lib"
+    },
+    {
+      "id": "stale-impact",
+      "paths": ["apps/desktop/src/pages/Home.tsx"],
+      "focused": false,
+      "mustInclude": ["browser-all", "rust-lib"],
+      "failingLane": "rust-lib",
+      "hints": [{ "state": "stale", "laneId": "rust-lib", "source": "coverage" }]
+    }
+  ]
+}

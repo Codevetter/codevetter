@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0.0",
+  "capturedAt": "2026-08-07T00:00:00.000Z",
+  "machine": { "platform": "darwin", "arch": "arm64", "identity": "operator-machine-redacted" },
+  "revision": "worktree:d0c50d67a1239e06f9c5835fadd7978d432411bfc6c5d446a0f61c2a891f522b",
+  "scope": ["apps/desktop/tests/e2e/smoke.spec.ts", "apps/desktop/tests/e2e/visual-system.spec.ts"],
+  "testCount": 11,
+  "runs": [
+    { "workers": 1, "runnerWallMs": 16300, "observedWallMs": 16746, "verdict": "passed" },
+    { "workers": 2, "runnerWallMs": 9800, "observedWallMs": 10101, "verdict": "passed" }
+  ],
+  "comparison": { "runnerSpeedup": 1.663, "runnerWallReductionPercent": 39.88 },
+  "limitations": [
+    "This is one sequential warm-machine comparison, not a p50 or p95 qualification.",
+    "CPU time, peak RSS, bandwidth, and click-to-settle stages were not yet retained.",
+    "The result applies only to these two independent Chromium files and does not justify raising concurrency for the full suite."
+  ]
+}

@@ -14,7 +14,6 @@ interface CommandItem {
   label: string;
   description?: string;
   icon: string;
-  shortcut?: string;
   group: string;
   action: () => void;
 }
@@ -80,7 +79,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         id: 'nav-home',
         label: 'Go to Usage',
         icon: '\u2302',
-        shortcut: 'g h',
         group: 'Navigation',
         action: go('/'),
       },
@@ -89,7 +87,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Repo Unpack',
         description: 'Snapshots, analysis, activity, graph, and handoff',
         icon: '\u25A3',
-        shortcut: 'g p',
         group: 'Navigation',
         action: go('/unpack'),
       },
@@ -98,7 +95,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Repo Activity',
         description: 'Git attribution, churn, authors, and release health',
         icon: '\u25C7',
-        shortcut: 'g i',
         group: 'Navigation',
         action: go('/unpack?section=activity'),
       },
@@ -107,7 +103,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Work',
         description: 'Build with local agent terminals and track work',
         icon: 'A',
-        shortcut: 'g a',
         group: 'Navigation',
         action: go('/agents'),
       },
@@ -116,7 +111,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Board',
         description: 'Move outcomes from plan to proof',
         icon: '\u25A6',
-        shortcut: 'g b',
         group: 'Navigation',
         action: go('/board'),
       },
@@ -124,7 +118,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         id: 'nav-review',
         label: 'Go to Review',
         icon: '\u2714',
-        shortcut: 'g r',
         group: 'Navigation',
         action: go('/review'),
       },
@@ -133,7 +126,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Testing',
         description: 'Runtime evidence, scenarios, and pull request checks',
         icon: '\u25CE',
-        shortcut: 'g t',
         group: 'Navigation',
         action: go('/trex'),
       },
@@ -141,7 +133,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         id: 'nav-settings',
         label: 'Go to Settings',
         icon: '\u2638',
-        shortcut: 'g ,',
         group: 'Navigation',
         action: go('/settings'),
       },
@@ -237,7 +228,7 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         onKeyDown={handleKeyDown}
         onCloseAutoFocus={onCloseAutoFocus}
       >
-        <DialogTitle className="sr-only">Search commands</DialogTitle>
+        <DialogTitle className="sr-only">Search pages and actions</DialogTitle>
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[#1a1a1a]">
           <span className="text-slate-500 text-sm">{'\u2315'}</span>
@@ -245,7 +236,7 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
             ref={inputRef}
             type="text"
             className="flex-1 bg-transparent text-lg text-slate-100 placeholder-slate-600 outline-none border-none shadow-none focus-visible:ring-0 h-auto p-0"
-            placeholder="Search commands..."
+            placeholder="Search pages and actions..."
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -292,14 +283,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
                       <span className="text-[11px] text-slate-600 truncate max-w-[160px]">
                         {item.description}
                       </span>
-                    )}
-                    {item.shortcut && (
-                      <Badge
-                        variant="outline"
-                        className="text-[11px] text-slate-600 font-mono shrink-0 rounded px-1 py-0"
-                      >
-                        {item.shortcut}
-                      </Badge>
                     )}
                   </Button>
                 );

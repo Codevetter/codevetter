@@ -23,8 +23,9 @@ decision unmistakable without removing the workbench's existing capabilities.
 - Dogfood the resulting workflow on three real agent-authored CodeVetter
   changes whose outcomes control an actual merge, release, or experiment
   decision. Synthetic corpus fixtures remain contract evidence only.
-- Keep routes, keyboard shortcuts, persistent mounting, underlying workflows,
-  and the incumbent ink-and-amber visual system compatible.
+- Keep routes, the `Command-K` command palette, native shortcuts, persistent
+  mounting, underlying workflows, and the incumbent ink-and-amber visual
+  system compatible.
 
 ## Capabilities
 

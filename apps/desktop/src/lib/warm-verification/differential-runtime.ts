@@ -248,8 +248,12 @@ export async function executeDifferentialSide(
           request.scenario.timeouts.actionMs,
           request.context.config.budgets.actionMs
         ),
-        step: (actionId, operation) =>
-          request.context.observer.step(actionId, () => raceAbort(operation(), request.signal)),
+        step: (actionId, operation, phase) =>
+          request.context.observer.step(
+            actionId,
+            () => raceAbort(operation(), request.signal),
+            phase
+          ),
       }),
       request.signal
     );

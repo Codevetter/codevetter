@@ -17,18 +17,27 @@ capabilities:
     paths:
       - apps/desktop/src/App.tsx
       - apps/desktop/src/main.tsx
-      - apps/desktop/src/components/sidebar.tsx
       - apps/desktop/src/components/persistent-routes.tsx
     scenarios: [shell-navigation]
+  - id: command-search
+    paths:
+      - apps/desktop/src/components/command-palette.tsx
+      - apps/desktop/src/components/sidebar.tsx
+    scenarios: [command-search]
+  - id: usage-home
+    paths:
+      - apps/desktop/src/pages/Home.tsx
+    scenarios: [usage-home]
 mandatorySmoke: [shell-navigation]
 sharedInfrastructure:
   paths:
-    - apps/desktop/src/**
+    - apps/desktop/src/lib/tauri-ipc.ts
+    - apps/desktop/src/lib/verification-state-bridge.ts
     - apps/desktop/vite.config.ts
     - apps/desktop/package.json
     - package.json
     - pnpm-lock.yaml
-  fallbackScenarios: [shell-navigation]
+  fallbackScenarios: [shell-navigation, command-search, usage-home]
 network:
   firstPartyOrigins: [http://127.0.0.1:1420]
   allowedFirstPartyRequests: [GET /**]

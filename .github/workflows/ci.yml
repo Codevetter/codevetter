@@ -28,6 +28,8 @@ jobs:
           workspaces: apps/desktop/src-tauri
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
+      - name: Qualify changed-verification selection
+        run: pnpm run verify:acceleration:qualify
       - name: Lint
         working-directory: apps/desktop
         run: pnpm run lint

@@ -5,7 +5,8 @@ coherent ink-and-amber system, accessible route persistence, a Review surface
 for changed-code findings and verification commands, and a Testing surface for
 runtime receipts. The problem is their presentation as peer features rather
 than parts of one workflow. The implementation must preserve all current
-routes, local data, keyboard shortcuts, and long-running mounted state.
+routes, local data, the `Command-K` command palette, native shortcuts, and
+long-running mounted state.
 
 The existing `compare-code-context-providers` change is a synthetic and
 provider-comparison experiment. The real shipping-decision pilot in this change
@@ -39,9 +40,10 @@ used to claim provider superiority or general product value.
 ### 1. Preserve breadth, introduce visual priority
 
 Add a persistent `Check a change` action near the top of the existing
-navigation and a matching verification spotlight before Usage telemetry on
-Home. Keep the seven destinations and their shortcuts. This creates an obvious
-entrance without a hard information-architecture reset.
+navigation. Keep the seven destinations, but use the `Command-K` palette as the
+single keyboard navigation model and let Usage lead with its own page content.
+This creates an obvious entrance without repeating a promotional verification
+panel or requiring users to memorize a second shortcut system.
 
 Alternative considered: replace the navigation with Verify, Runs,
 Experiments, and Settings. Rejected because the owner selected a broad
@@ -69,9 +71,9 @@ selected polish scope.
 
 ### 3. Use existing components and one warm action voice
 
-The spotlight, CTA, stage cues, and result summary will use existing Button,
-Badge, panel, focus, spacing, and semantic-state patterns. Amber remains reserved
-for the primary action or active verification context. No new visual metaphor,
+The CTA, stage cues, and result summary will use existing Button, Badge, panel,
+focus, spacing, and semantic-state patterns. Amber remains reserved for the
+primary action or active verification context. No new visual metaphor,
 animation system, or dependency is introduced.
 
 Alternative considered: add a new dashboard visualization of the workflow.
@@ -112,8 +114,8 @@ cases do not justify a product data-model expansion.
 - **The CTA overpromises because Review begins with model analysis** → Name the
   whole workflow, explicitly label findings as leads, and show runtime evidence
   as a separate required stage.
-- **Additive polish increases rather than reduces Home density** → Keep the
-  spotlight compact, place it before telemetry, and avoid new metrics or charts.
+- **Keyboard cleanup slows experienced users** → Keep every destination in the
+  `Command-K` palette with type-to-filter, arrow-key selection, and Enter.
 - **Old and new terminology drift across large pages** → Define one copy set in
   the spec, search all affected surfaces, and add focused UI assertions.
 - **Three self-authored cases bias the evidence** → Label them dogfood, retain
@@ -126,10 +128,11 @@ cases do not justify a product data-model expansion.
 ## Migration Plan
 
 1. Update the shell, Home, onboarding, Review, Testing, and command-palette copy
-   without changing routes or persistence.
+   without changing routes or persistence; remove the duplicate Home spotlight
+   and the parallel `g`-sequence navigation layer.
 2. Run focused frontend checks, then desktop visual qualification at the
    representative states required by `desktop-visual-system`.
-3. Roll back by removing the additive spotlight/stage cues and restoring copy;
+3. Roll back by restoring the Home spotlight or `g` handler and shortcut labels;
    no stored data or backend migration is involved.
 4. After exact Git ranges exist, execute cases A, B, and C independently. A
    failed or no-confidence case blocks only its named decision and records the

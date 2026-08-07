@@ -63,19 +63,21 @@ test.describe('desktop visual system', () => {
     }
   });
 
-  test('preserves keyboard navigation and suppresses non-essential reduced motion', async ({
+  test('uses command search for keyboard navigation and suppresses non-essential reduced motion', async ({
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await navigateTo(page, '/');
 
-    await page.keyboard.press('g');
-    await page.keyboard.press('b');
+    await page.keyboard.press('Control+k');
+    await page.getByPlaceholder('Search pages and actions...').fill('Board');
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/board$/);
     await expect(page.getByRole('link', { name: 'Board' })).toHaveAttribute('aria-current', 'page');
 
-    await page.keyboard.press('g');
-    await page.keyboard.press('t');
+    await page.keyboard.press('Control+k');
+    await page.getByPlaceholder('Search pages and actions...').fill('Testing');
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/trex$/);
 
     const activeLink = page.getByRole('link', { name: 'Testing' });
@@ -92,7 +94,7 @@ test.describe('desktop visual system', () => {
   test('opens command search from the sidebar and restores focus on close', async ({ page }) => {
     await navigateTo(page, '/');
 
-    const search = page.getByRole('button', { name: 'Search commands' });
+    const search = page.getByRole('button', { name: 'Search pages and actions' });
     const usage = page.getByRole('link', { name: 'Usage' });
     await expect(search).toBeVisible();
     await expect
@@ -105,7 +107,7 @@ test.describe('desktop visual system', () => {
     await search.focus();
     await search.click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByPlaceholder('Search commands...')).toBeFocused();
+    await expect(page.getByPlaceholder('Search pages and actions...')).toBeFocused();
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
@@ -120,16 +122,14 @@ test.describe('desktop visual system', () => {
     const nav = page.getByRole('navigation', { name: 'Primary navigation' });
     const checkChange = nav.getByTestId('check-change-action');
     await expect(checkChange).toBeVisible();
-    await expect(checkChange).toContainText('Review · run · decide');
-    await expect(page.getByTestId('verification-spotlight')).toContainText(
-      'Check an agent-authored change'
-    );
+    await expect(checkChange).toHaveText('Check a change');
+    await expect(page.getByTestId('verification-spotlight')).toHaveCount(0);
 
     await checkChange.click();
     await expect(page).toHaveURL(/\/review$/);
     await expect(page.getByRole('heading', { name: 'Review the change' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Search commands' }).click();
+    await page.getByRole('button', { name: 'Search pages and actions' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Check a change', { exact: true })).toBeVisible();
     await expect(dialog.getByText('Go to Board', { exact: true })).toBeVisible();

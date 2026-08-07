@@ -49,6 +49,7 @@ is only the presentation and search layer.
 
 - [setup.md](./development/setup.md) — prerequisites, install, run.
 - [testing.md](./development/testing.md) — the four test surfaces.
+- [verification-acceleration.md](./development/verification-acceleration.md) — opt-in changed-test planning, resource budgets, and qualification.
 - [performance.md](./development/performance.md) — perf harness and baselines.
 - [benchmark.md](./development/benchmark.md) — catch-rate benchmark.
 - [agent-task-corpus.md](./development/agent-task-corpus.md) — immutable

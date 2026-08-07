@@ -1,0 +1,230 @@
+{
+  "schemaVersion": "1.0.0",
+  "profiles": {
+    "interactive": {
+      "maxConcurrent": 2,
+      "cpuSlots": 1,
+      "memoryMb": 3072,
+      "browserContexts": 2,
+      "originTokens": 2
+    },
+    "exhaustive": {
+      "maxConcurrent": 2,
+      "cpuSlots": 2,
+      "memoryMb": 4096,
+      "browserContexts": 2,
+      "originTokens": 2
+    }
+  },
+  "lanes": [
+    {
+      "id": "docs",
+      "command": ["node", "scripts/check-docs.mjs"],
+      "resources": { "cpuSlots": 0, "memoryMb": 256, "browserContexts": 0, "originTokens": 0 }
+    },
+    {
+      "id": "typecheck",
+      "command": ["pnpm", "--dir", "apps/desktop", "exec", "tsc", "--noEmit"],
+      "resources": { "cpuSlots": 1, "memoryMb": 1024, "browserContexts": 0, "originTokens": 0 }
+    },
+    {
+      "id": "lint",
+      "command": ["pnpm", "--dir", "apps/desktop", "lint"],
+      "resources": { "cpuSlots": 1, "memoryMb": 768, "browserContexts": 0, "originTokens": 0 }
+    },
+    {
+      "id": "frontend-unit",
+      "command": [
+        "pnpm",
+        "--dir",
+        "apps/desktop",
+        "exec",
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "src/**/*.test.ts"
+      ],
+      "resources": {
+        "cpuSlots": 1,
+        "memoryMb": 1536,
+        "browserContexts": 1,
+        "originTokens": 1,
+        "exclusiveState": "verifyd"
+      }
+    },
+    {
+      "id": "browser-ui",
+      "command": [
+        "pnpm",
+        "--dir",
+        "apps/desktop",
+        "exec",
+        "playwright",
+        "test",
+        "tests/e2e/smoke.spec.ts",
+        "tests/e2e/visual-system.spec.ts",
+        "--project=chromium",
+        "--workers=2"
+      ],
+      "resources": {
+        "cpuSlots": 0,
+        "memoryMb": 2048,
+        "browserContexts": 2,
+        "originTokens": 2,
+        "exclusiveState": "vite-1420"
+      }
+    },
+    {
+      "id": "browser-smoke",
+      "command": [
+        "pnpm",
+        "--dir",
+        "apps/desktop",
+        "exec",
+        "playwright",
+        "test",
+        "tests/e2e/smoke.spec.ts",
+        "--project=chromium",
+        "--workers=2"
+      ],
+      "resources": {
+        "cpuSlots": 0,
+        "memoryMb": 1536,
+        "browserContexts": 2,
+        "originTokens": 2,
+        "exclusiveState": "vite-1420"
+      }
+    },
+    {
+      "id": "browser-visual",
+      "command": [
+        "pnpm",
+        "--dir",
+        "apps/desktop",
+        "exec",
+        "playwright",
+        "test",
+        "tests/e2e/visual-system.spec.ts",
+        "--project=chromium",
+        "--workers=2"
+      ],
+      "resources": {
+        "cpuSlots": 0,
+        "memoryMb": 1536,
+        "browserContexts": 2,
+        "originTokens": 2,
+        "exclusiveState": "vite-1420"
+      }
+    },
+    {
+      "id": "browser-all",
+      "command": [
+        "pnpm",
+        "--dir",
+        "apps/desktop",
+        "exec",
+        "playwright",
+        "test",
+        "--project=chromium",
+        "--workers=2"
+      ],
+      "resources": {
+        "cpuSlots": 1,
+        "memoryMb": 2048,
+        "browserContexts": 2,
+        "originTokens": 2,
+        "exclusiveState": "vite-1420"
+      }
+    },
+    {
+      "id": "rust-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "apps/desktop/src-tauri/Cargo.toml",
+        "--lib",
+        "--",
+        "--test-threads=2"
+      ],
+      "environment": { "CARGO_BUILD_JOBS": "2" },
+      "resources": {
+        "cpuSlots": 1,
+        "memoryMb": 3072,
+        "browserContexts": 0,
+        "originTokens": 0,
+        "exclusiveState": "cargo-target"
+      }
+    },
+    {
+      "id": "openspec",
+      "command": ["openspec", "validate", "--all", "--strict"],
+      "resources": { "cpuSlots": 0, "memoryMb": 256, "browserContexts": 0, "originTokens": 0 }
+    }
+  ],
+  "rules": [
+    { "id": "docs", "patterns": ["docs/**"], "lanes": ["docs"] },
+    { "id": "openspec", "patterns": ["openspec/**"], "lanes": ["openspec", "docs"] },
+    {
+      "id": "home-ui",
+      "patterns": ["apps/desktop/src/pages/Home.tsx"],
+      "lanes": ["typecheck", "lint", "browser-ui"]
+    },
+    {
+      "id": "shell-ui",
+      "patterns": [
+        "apps/desktop/src/components/sidebar.tsx",
+        "apps/desktop/src/components/command-palette.tsx"
+      ],
+      "lanes": ["typecheck", "lint", "browser-ui"]
+    },
+    {
+      "id": "frontend",
+      "patterns": ["apps/desktop/src/**"],
+      "lanes": ["typecheck", "lint", "frontend-unit", "browser-smoke"]
+    },
+    {
+      "id": "smoke-test",
+      "patterns": ["apps/desktop/tests/e2e/smoke.spec.ts"],
+      "lanes": ["typecheck", "lint", "browser-ui"]
+    },
+    {
+      "id": "visual-test",
+      "patterns": ["apps/desktop/tests/e2e/visual-system.spec.ts"],
+      "lanes": ["typecheck", "lint", "browser-ui"]
+    },
+    {
+      "id": "browser-tests",
+      "patterns": ["apps/desktop/tests/e2e/**"],
+      "lanes": ["typecheck", "lint", "browser-all"]
+    },
+    {
+      "id": "rust",
+      "patterns": ["apps/desktop/src-tauri/src/**", "apps/desktop/src-tauri/tests/**"],
+      "lanes": ["rust-lib"]
+    }
+  ],
+  "sharedPatterns": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "apps/desktop/package.json",
+    "apps/desktop/playwright.config.ts",
+    "apps/desktop/vite.config.ts",
+    "apps/desktop/src/App.tsx",
+    "apps/desktop/src/lib/tauri-ipc.ts",
+    "apps/desktop/src-tauri/Cargo.toml",
+    "apps/desktop/src-tauri/Cargo.lock",
+    "scripts/codevetter-verification/**"
+  ],
+  "fallbackLanes": [
+    "docs",
+    "openspec",
+    "typecheck",
+    "lint",
+    "frontend-unit",
+    "browser-all",
+    "rust-lib"
+  ]
+}

@@ -10,11 +10,12 @@ renaming the existing routes. On desktop-width windows, the navigation surface
 SHALL retain compact CodeVetter CPU and RAM telemetry with expanded process
 details on demand; background sampling MUST pause while the window is hidden.
 Navigation animation MUST NOT resize or reposition the main content, and
-keyboard shortcuts and persistent route mounting MUST remain functional.
+the `Command-K` palette, native shortcuts, and persistent route mounting MUST
+remain functional.
 
 #### Scenario: User navigates with the keyboard
 
-- **WHEN** the user activates an existing `g` sequence or focuses and activates a navigation destination
+- **WHEN** the user chooses a destination through the `Command-K` palette or focuses and activates a navigation destination
 - **THEN** the correct persistent route becomes visible, `aria-current` identifies it, focus remains visible, and previously visited route state is not reset
 
 #### Scenario: User starts from the persistent verification action
@@ -23,9 +24,9 @@ keyboard shortcuts and persistent route mounting MUST remain functional.
 - **THEN** CodeVetter opens the existing Review route at its change-selection state
 - **AND** explains that executable evidence is completed through the verification workflow
 
-#### Scenario: User opens Board with a shortcut
+#### Scenario: User opens Board through command search
 
-- **WHEN** the user enters the Board navigation shortcut
+- **WHEN** the user opens `Command-K`, filters for Board, and confirms the selection
 - **THEN** the application opens the persistent Board route
 - **AND** live Work conversations remain mounted and recoverable
 
@@ -43,8 +44,8 @@ findings MUST be identified as leads rather than executable proof.
 #### Scenario: User arrives on Home
 
 - **WHEN** the Usage route is the active arrival state
-- **THEN** a verification spotlight appears before usage telemetry with one primary action to check a change
-- **AND** the spotlight names the evidence-to-decision outcome without claiming that unrun checks passed
+- **THEN** usage telemetry is the first page-specific content
+- **AND** the persistent shell action remains the single prominent entry for checking a change
 
 #### Scenario: First-time user completes onboarding
 

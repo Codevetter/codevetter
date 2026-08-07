@@ -11,11 +11,11 @@
 
 - [x] 2.1 Add one keyboard-accessible, high-attention `Check a change` action
   to the existing desktop navigation without removing destinations, changing
-  routes, or breaking `g` shortcuts and persistent route mounting
-- [x] 2.2 Add a compact verification spotlight before Usage telemetry on Home
-  with a primary Review action and a secondary runtime-evidence action
-- [x] 2.3 Update the command palette so verification terminology and actions
-  match the shell and include the existing Board destination
+  routes, or breaking persistent route mounting
+- [x] 2.2 Keep Usage focused on usage telemetry; remove the duplicate Home
+  verification spotlight while retaining the persistent shell action
+- [x] 2.3 Make the `Command-K` palette the single keyboard navigation model,
+  remove `g` sequences and shortcut badges, and retain every destination
 
 ## 3. Workflow clarity
 
@@ -32,8 +32,8 @@
 
 ## 4. UI verification
 
-- [x] 4.1 Add focused frontend tests for the persistent CTA, Home spotlight,
-  onboarding mental model, command-palette destinations, and honest missing-
+- [x] 4.1 Add focused frontend tests for the persistent CTA, uncluttered Home,
+  onboarding mental model, command-palette navigation, and honest missing-
   evidence state
 - [x] 4.2 Run the smallest relevant desktop unit, lint, typecheck, and route
   checks, then fix only failures caused by this change

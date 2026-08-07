@@ -60,6 +60,12 @@ export interface ScenarioTimeoutBudgets {
 
 export type ScenarioFlagValue = string | number | boolean;
 
+export type ScenarioInteractionPhase =
+  | 'actionability_and_dispatch'
+  | 'settlement'
+  | 'assertion'
+  | 'cleanup';
+
 export interface ScenarioObserve {
   expectNoRuntimeErrors(): Promise<void>;
   expectMutationCount(routePattern: string, expected: number): Promise<void>;
@@ -75,7 +81,11 @@ export interface ScenarioExecutionContext {
   signal: AbortSignal;
   stateRequest: VerificationStateRequest;
   actionTimeoutMs: number;
-  step<T>(actionId: string, operation: () => Promise<T>): Promise<T>;
+  step<T>(
+    actionId: string,
+    operation: () => Promise<T>,
+    phase?: ScenarioInteractionPhase
+  ): Promise<T>;
 }
 
 export class ScenarioCheckpointContractError extends Error {

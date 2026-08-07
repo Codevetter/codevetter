@@ -50,9 +50,8 @@ The Repo surface (`apps/desktop/src/pages/RepoPage.tsx`) consolidates Unpack,
 Activity, Graph, Inventory, Analysis, Handoff, and past snapshots.
 `RepoUnpacked.tsx` is a child view within it, not the `/unpack` page itself.
 
-Keyboard navigation uses `g` followed by the surface shortcut, including `g b`
-for Board, plus `g i` → `/unpack?section=activity`. The command palette is the
-canonical shortcut reference.
+Keyboard navigation uses the `Command-K` command palette to search destinations
+and actions, then arrow keys and Enter to select. `Command-,` opens Settings.
 
 ## URL-only surfaces
 

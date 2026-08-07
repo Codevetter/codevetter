@@ -164,8 +164,16 @@ describe('AutomaticObserver', () => {
 
   it('records routes and bounded interaction timings on a clean flow', async () => {
     const { page, observer } = await pageWithObserver();
-    await observer.step('create', () => page.locator('#create').click());
-    await observer.expectVisible('Investment scheduled');
+    await observer.step(
+      'create',
+      () => page.locator('#create').click(),
+      'actionability_and_dispatch'
+    );
+    await observer.step(
+      'created-visible',
+      () => observer.expectVisible('Investment scheduled'),
+      'assertion'
+    );
     await observer.expectRoute('/');
 
     const result = observer.finish();
@@ -176,7 +184,16 @@ describe('AutomaticObserver', () => {
         (entry) =>
           entry.kind === 'interaction_timing' &&
           entry.evidence?.action_id === 'create' &&
+          entry.evidence?.phase === 'actionability_and_dispatch' &&
           entry.disposition === 'passed'
+      )
+    );
+    assert.ok(
+      result.observations.some(
+        (entry) =>
+          entry.kind === 'interaction_timing' &&
+          entry.evidence?.action_id === 'created-visible' &&
+          entry.evidence?.phase === 'assertion'
       )
     );
     await page.context().close();
