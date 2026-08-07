@@ -14,6 +14,11 @@ function canonicalUrl(value) {
   return url.toString();
 }
 
+function isPublishedUrlCanonical(value) {
+  const url = new URL(value, origin);
+  return url.pathname === '/' || url.pathname === '/docs/' || value === canonicalUrl(value);
+}
+
 function localFile(value) {
   const url = new URL(value, origin);
   const pathname = decodeURIComponent(url.pathname).replace(/^\/+/, '');
@@ -34,6 +39,18 @@ const submittedRoutes = [...submittedSitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>
 );
 const submittedRouteSet = new Set(submittedRoutes.map(canonicalUrl));
 const failures = [];
+
+for (const route of routes) {
+  if (!isPublishedUrlCanonical(route)) {
+    failures.push(`${new URL(route).pathname}: generated sitemap URL is not canonical`);
+  }
+}
+
+for (const route of submittedRoutes) {
+  if (!isPublishedUrlCanonical(route)) {
+    failures.push(`${new URL(route).pathname}: submitted sitemap URL is not canonical`);
+  }
+}
 
 for (const route of routeSet) {
   if (!submittedRouteSet.has(route)) {
@@ -73,6 +90,9 @@ for (const surface of surfaces) {
     continue;
   }
   catalogRouteSet.add(canonicalUrl(route));
+  if (!isPublishedUrlCanonical(surface.url)) {
+    failures.push(`${id}: catalog URL is not canonical`);
+  }
   if (!routeSet.has(canonicalUrl(route))) {
     failures.push(`${id}: catalog route is absent from the public sitemap`);
   }
