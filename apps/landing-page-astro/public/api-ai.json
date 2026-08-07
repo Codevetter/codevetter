@@ -111,7 +111,7 @@
     },
     {
       "id": "xray",
-      "url": "https://codevetter.com/xray/",
+      "url": "https://codevetter.com/xray",
       "md": "https://codevetter.com/xray.md",
       "kind": "static",
       "description": "Public evidence-export examples"
