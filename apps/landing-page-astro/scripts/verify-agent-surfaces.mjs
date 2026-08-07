@@ -28,7 +28,24 @@ function readableMarkdown(value) {
 const sitemap = fs.readFileSync(path.join(dist, 'sitemap-0.xml'), 'utf8');
 const routes = [...sitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map((match) => match[1]);
 const routeSet = new Set(routes.map(canonicalUrl));
+const submittedSitemap = fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');
+const submittedRoutes = [...submittedSitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map(
+  (match) => match[1]
+);
+const submittedRouteSet = new Set(submittedRoutes.map(canonicalUrl));
 const failures = [];
+
+for (const route of routeSet) {
+  if (!submittedRouteSet.has(route)) {
+    failures.push(`${new URL(route).pathname}: generated route is absent from /sitemap.xml`);
+  }
+}
+
+for (const route of submittedRouteSet) {
+  if (!routeSet.has(route)) {
+    failures.push(`${new URL(route).pathname}: submitted route is absent from generated sitemap`);
+  }
+}
 
 for (const route of routes) {
   const url = new URL(route);
@@ -71,6 +88,7 @@ for (const route of routeSet) {
 }
 
 if (routes.length === 0) failures.push('public sitemap contains no routes');
+if (submittedRoutes.length === 0) failures.push('/sitemap.xml contains no routes');
 if (surfaces.length === 0) failures.push('/api/ai contains no surfaces');
 
 if (failures.length > 0) {
@@ -79,6 +97,9 @@ if (failures.length > 0) {
 }
 
 console.log(`PASS ${routes.length}/${routes.length} sitemap routes have readable Markdown`);
+console.log(
+  `PASS ${submittedRoutes.length}/${routes.length} submitted sitemap routes match the generated sitemap`
+);
 console.log(
   `PASS ${surfaces.length}/${routes.length} API catalog surfaces cover every sitemap route and are readable`
 );
