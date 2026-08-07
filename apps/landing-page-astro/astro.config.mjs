@@ -24,7 +24,17 @@ export default defineConfig({
     format: 'file',
     inlineStylesheets: 'always',
   },
-  integrations: [sitemap({ customPages: ['https://codevetter.com/docs/'] })],
+  integrations: [
+    sitemap({
+      customPages: ['https://codevetter.com/docs/'],
+      serialize(item) {
+        if (item.url === 'https://codevetter.com/xray/') {
+          item.url = 'https://codevetter.com/xray';
+        }
+        return item;
+      },
+    }),
+  ],
   vite: {
     plugins: [tailwind()],
     css: { transformer: 'lightningcss' },
