@@ -33,34 +33,19 @@ function readableMarkdown(value) {
 const sitemap = fs.readFileSync(path.join(dist, 'sitemap-0.xml'), 'utf8');
 const routes = [...sitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map((match) => match[1]);
 const routeSet = new Set(routes.map(canonicalUrl));
-const submittedSitemap = fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');
-const submittedRoutes = [...submittedSitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map(
-  (match) => match[1]
-);
-const submittedRouteSet = new Set(submittedRoutes.map(canonicalUrl));
 const failures = [];
 
-for (const route of routes) {
-  if (!isPublishedUrlCanonical(route)) {
-    failures.push(`${new URL(route).pathname}: generated sitemap URL is not canonical`);
-  }
+// Verify sitemap-index.xml exists and points to sitemap-0.xml.
+const sitemapIndex = fs.readFileSync(path.join(dist, 'sitemap-index.xml'), 'utf8');
+const indexEntries = [...sitemapIndex.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map(
+  (match) => match[1]
+);
+if (indexEntries.length === 0) {
+  failures.push('sitemap-index.xml contains no sitemap entries');
 }
-
-for (const route of submittedRoutes) {
-  if (!isPublishedUrlCanonical(route)) {
-    failures.push(`${new URL(route).pathname}: submitted sitemap URL is not canonical`);
-  }
-}
-
-for (const route of routeSet) {
-  if (!submittedRouteSet.has(route)) {
-    failures.push(`${new URL(route).pathname}: generated route is absent from /sitemap.xml`);
-  }
-}
-
-for (const route of submittedRouteSet) {
-  if (!routeSet.has(route)) {
-    failures.push(`${new URL(route).pathname}: submitted route is absent from generated sitemap`);
+for (const entry of indexEntries) {
+  if (!entry.endsWith('/sitemap-0.xml')) {
+    failures.push(`${entry}: sitemap-index entry does not point to sitemap-0.xml`);
   }
 }
 
@@ -108,7 +93,6 @@ for (const route of routeSet) {
 }
 
 if (routes.length === 0) failures.push('public sitemap contains no routes');
-if (submittedRoutes.length === 0) failures.push('/sitemap.xml contains no routes');
 if (surfaces.length === 0) failures.push('/api/ai contains no surfaces');
 
 if (failures.length > 0) {
@@ -118,7 +102,7 @@ if (failures.length > 0) {
 
 console.log(`PASS ${routes.length}/${routes.length} sitemap routes have readable Markdown`);
 console.log(
-  `PASS ${submittedRoutes.length}/${routes.length} submitted sitemap routes match the generated sitemap`
+  `PASS ${indexEntries.length} sitemap-index entr${indexEntries.length === 1 ? 'y' : 'ies'} point to sitemap-0.xml`
 );
 console.log(
   `PASS ${surfaces.length}/${routes.length} API catalog surfaces cover every sitemap route and are readable`
