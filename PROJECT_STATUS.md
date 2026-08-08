@@ -38,6 +38,11 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-09 — Shared lint baseline:** Adopted the Fleet Ultracite baseline
+  for core TypeScript, React, and test code. Explicit compatibility exceptions
+  preserve current behavior while 662 files pass with zero diagnostics;
+  generated, public, HTML, SVG, Astro, and benchmark artifact surfaces remain
+  outside the checked surface.
 - **2026-08-07 — Grok billing staleness fix + cache-tier pricing audit (largest
   cost-accuracy fix to date):** `check_live_usage_grok` re-served whatever
   billing snapshot Grok CLI last logged to `~/.grok/logs/unified.jsonl`
@@ -233,6 +238,8 @@ Internal (fleet):
 ## Features (shipped)
 
 ### Foundation
+
+- Shared Ultracite lint baseline with a clean 662-file check.
 - Local-first desktop binary: Tauri 2 + React 19, macOS, offline, SQLite, no server.
 - Six-surface nav: Usage, Repo Unpack, Work, Board, Review, Testing. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.
