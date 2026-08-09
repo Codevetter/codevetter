@@ -97,6 +97,11 @@ the evidence does not justify one.
 
 ## What CodeVetter gained
 
+The implementation and all qualification artifacts are published together in
+[CodeVetter PR #108](https://github.com/Codevetter/codevetter/pull/108). The PR
+is a draft because the runtime, evaluator, campaign, challenge, and receipt
+surfaces deserve architecture review as one coherent system before merge.
+
 The campaign expanded CodeVetter from a one-shot profiler into a bounded local
 optimization laboratory:
 
