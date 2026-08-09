@@ -1,0 +1,168 @@
+{
+  "schema_version": "codevetter-1brc-campaign/v1",
+  "recorded_at": "2026-08-09T20:07:30.758Z",
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "logical_cpus": 18,
+    "node_version": "v24.19.0",
+    "go_version": "go version go1.26.5 darwin/arm64"
+  },
+  "fixture": {
+    "schema_version": "codevetter-1brc-fixture/v1",
+    "rows": 100000000,
+    "bytes": 1379543193,
+    "sha256": "366a1e6eba893deb6ce8ffdd793d6541d73edd841651f19bc1447c1fad82fce2",
+    "expected_output_sha256": "acf1ba35e8dbd906d79de5fb226a2be40f76e4891e18ac6a78b4ae1abe78569f",
+    "fixture_profile": "official-413-stations-deterministic-gaussian",
+    "station_count": 413,
+    "large_run_authorized": true,
+    "retention": "caller-controlled; campaign default is remove"
+  },
+  "methodology": {
+    "warmups": 1,
+    "samples": 5,
+    "aggregation": "discard minimum and maximum wall time; mean remaining samples",
+    "order": "round-robin rotation across runtime and worker lanes",
+    "fixture_retention": "removed after campaign"
+  },
+  "variants": [
+    {
+      "runtime": "go",
+      "workers": 12,
+      "samples": [
+        {
+          "duration_ms": 341.594,
+          "peak_rss_bytes": 9928704
+        },
+        {
+          "duration_ms": 343.823,
+          "peak_rss_bytes": 9945088
+        },
+        {
+          "duration_ms": 351.664,
+          "peak_rss_bytes": 10010624
+        },
+        {
+          "duration_ms": 346.934,
+          "peak_rss_bytes": 9912320
+        },
+        {
+          "duration_ms": 354.077,
+          "peak_rss_bytes": 9519104
+        }
+      ],
+      "duration_ms": {
+        "minimum": 341.594,
+        "maximum": 354.077,
+        "retained_mean": 347.474
+      },
+      "throughput_rows_per_second": 287791317,
+      "median_peak_rss_bytes": 9928704
+    },
+    {
+      "runtime": "node",
+      "workers": 12,
+      "samples": [
+        {
+          "duration_ms": 823.497,
+          "peak_rss_bytes": 1239089152
+        },
+        {
+          "duration_ms": 839.954,
+          "peak_rss_bytes": 1196818432
+        },
+        {
+          "duration_ms": 876.883,
+          "peak_rss_bytes": 1249771520
+        },
+        {
+          "duration_ms": 859.532,
+          "peak_rss_bytes": 1207943168
+        },
+        {
+          "duration_ms": 873.259,
+          "peak_rss_bytes": 1230323712
+        }
+      ],
+      "duration_ms": {
+        "minimum": 823.497,
+        "maximum": 876.883,
+        "retained_mean": 857.582
+      },
+      "throughput_rows_per_second": 116606925,
+      "median_peak_rss_bytes": 1230323712
+    },
+    {
+      "runtime": "go",
+      "workers": 16,
+      "samples": [
+        {
+          "duration_ms": 279.945,
+          "peak_rss_bytes": 10731520
+        },
+        {
+          "duration_ms": 272.901,
+          "peak_rss_bytes": 10371072
+        },
+        {
+          "duration_ms": 280.301,
+          "peak_rss_bytes": 10829824
+        },
+        {
+          "duration_ms": 290.205,
+          "peak_rss_bytes": 10436608
+        },
+        {
+          "duration_ms": 312.351,
+          "peak_rss_bytes": 10665984
+        }
+      ],
+      "duration_ms": {
+        "minimum": 272.901,
+        "maximum": 312.351,
+        "retained_mean": 283.484
+      },
+      "throughput_rows_per_second": 352753595,
+      "median_peak_rss_bytes": 10665984
+    },
+    {
+      "runtime": "node",
+      "workers": 16,
+      "samples": [
+        {
+          "duration_ms": 755.298,
+          "peak_rss_bytes": 1507000320
+        },
+        {
+          "duration_ms": 777.744,
+          "peak_rss_bytes": 1517600768
+        },
+        {
+          "duration_ms": 786.985,
+          "peak_rss_bytes": 1508294656
+        },
+        {
+          "duration_ms": 744.195,
+          "peak_rss_bytes": 1504378880
+        },
+        {
+          "duration_ms": 834.395,
+          "peak_rss_bytes": 1484554240
+        }
+      ],
+      "duration_ms": {
+        "minimum": 744.195,
+        "maximum": 834.395,
+        "retained_mean": 773.342
+      },
+      "throughput_rows_per_second": 129308896,
+      "median_peak_rss_bytes": 1507000320
+    }
+  ],
+  "limitations": [
+    "Local filesystem cache state is not reset between samples.",
+    "Peak RSS is the timed parent process value and may not include every Node worker allocation.",
+    "Results are comparable only within this recorded machine and campaign."
+  ]
+}
