@@ -1,10 +1,4 @@
-# Live Session Evidence
-
-## Purpose
-
-Define prompt, recoverable, and locally inspectable ingestion of active agent transcript evidence.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Active local transcripts become available promptly
 The system SHALL incrementally ingest complete appended messages and timestamped usage evidence from supported active local transcripts on a bounded best-effort cadence, SHALL emit a local archive-update event when new evidence is stored, and SHALL not require archive-search maintenance to complete before advancing usage evidence.
@@ -42,3 +36,4 @@ The system SHALL expose a versioned local policy/status contract identifying the
 #### Scenario: UI requests live-session status
 - **WHEN** the desktop UI requests the live-session evidence policy
 - **THEN** it receives the current cadence, adapter coverage, recovery mode, local-only status, usage freshness, and pending evidence counts from the same backend that owns indexing
+

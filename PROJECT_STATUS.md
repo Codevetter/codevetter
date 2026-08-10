@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-07
+Last updated: 2026-08-10
 
 ## Why / What
 
@@ -38,11 +38,27 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-10 (shipped in v1.7.3) — Deterministic Codex usage accounting:**
+  replaced message-prorated and replay-prone Codex totals with timestamped,
+  content-free usage observations; persisted cumulative counter state handles
+  duplicate snapshots, fork inheritance, copied prefixes, resets, and
+  interleaved lineages across incremental reads. Live usage ingestion is
+  independently serialized from archive/FTS maintenance, and Usage exposes
+  freshness and exclusion diagnostics. The revisioned historical repair is
+  fail-closed: readable transcripts reconcile session/model totals from
+  persisted accepted observations inside each transaction, while missing
+  sources retain their prior totals with explicit unrepaired audits. Frozen
+  qualification reconciled 91 readable sessions twice to an identical
+  2,742,608,446 accepted tokens and preserved 1,260 missing sources. Verified
+  with 913 Rust tests, 665 frontend tests plus the 20-scenario live
+  qualification, lint, typecheck, production build, docs, and strict OpenSpec.
+
 - **2026-08-09 — Shared lint baseline:** Adopted the Fleet Ultracite baseline
   for core TypeScript, React, and test code. Explicit compatibility exceptions
   preserve current behavior while 662 files pass with zero diagnostics;
   generated, public, HTML, SVG, Astro, and benchmark artifact surfaces remain
   outside the checked surface.
+
 - **2026-08-07 — Grok billing staleness fix + cache-tier pricing audit (largest
   cost-accuracy fix to date):** `check_live_usage_grok` re-served whatever
   billing snapshot Grok CLI last logged to `~/.grok/logs/unified.jsonl`

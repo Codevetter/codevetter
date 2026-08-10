@@ -1061,6 +1061,148 @@ pub fn set_session_cost(
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+pub struct CodexUsageObservationInput {
+    pub source_line: i64,
+    pub observed_at: Option<String>,
+    pub local_day: Option<String>,
+    pub model: String,
+    pub input_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub output_tokens: i64,
+    pub reasoning_tokens: i64,
+    pub cost_usd: f64,
+    pub cumulative_input_tokens: Option<i64>,
+    pub cumulative_cache_read_tokens: Option<i64>,
+    pub cumulative_output_tokens: Option<i64>,
+    pub cumulative_reasoning_tokens: Option<i64>,
+    pub disposition: String,
+}
+
+pub fn append_codex_usage_observations(
+    conn: &Connection,
+    session_id: &str,
+    observations: &[CodexUsageObservationInput],
+) -> Result<usize, rusqlite::Error> {
+    let mut inserted = 0;
+    for item in observations {
+        inserted += conn.execute(
+            "INSERT OR IGNORE INTO codex_usage_observations (
+                session_id, source_line, observed_at, local_day, model,
+                input_tokens, cache_read_tokens, output_tokens, reasoning_tokens, cost_usd,
+                cumulative_input_tokens, cumulative_cache_read_tokens,
+                cumulative_output_tokens, cumulative_reasoning_tokens, disposition
+             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+            params![
+                session_id,
+                item.source_line,
+                item.observed_at,
+                item.local_day,
+                item.model,
+                item.input_tokens,
+                item.cache_read_tokens,
+                item.output_tokens,
+                item.reasoning_tokens,
+                item.cost_usd,
+                item.cumulative_input_tokens,
+                item.cumulative_cache_read_tokens,
+                item.cumulative_output_tokens,
+                item.cumulative_reasoning_tokens,
+                item.disposition,
+            ],
+        )?;
+    }
+    Ok(inserted)
+}
+
+pub fn replace_codex_usage_observations(
+    conn: &Connection,
+    session_id: &str,
+    observations: &[CodexUsageObservationInput],
+) -> Result<usize, rusqlite::Error> {
+    conn.execute(
+        "DELETE FROM codex_usage_observations WHERE session_id = ?1",
+        params![session_id],
+    )?;
+    append_codex_usage_observations(conn, session_id, observations)
+}
+
+pub fn reconcile_codex_usage_totals(
+    conn: &Connection,
+    session_id: &str,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "UPDATE cc_sessions SET
+            total_input_tokens = COALESCE((
+                SELECT SUM(input_tokens) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0),
+            total_output_tokens = COALESCE((
+                SELECT SUM(output_tokens) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0),
+            cache_read_tokens = COALESCE((
+                SELECT SUM(cache_read_tokens) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0),
+            estimated_cost_usd = COALESCE((
+                SELECT SUM(cost_usd) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0)
+         WHERE id = ?1",
+        params![session_id],
+    )?;
+
+    conn.execute(
+        "DELETE FROM session_model_usage WHERE session_id = ?1",
+        params![session_id],
+    )?;
+    conn.execute(
+        "INSERT INTO session_model_usage (
+            session_id, model, message_count, input_tokens, output_tokens,
+            cache_read_tokens, cache_creation_tokens, cache_creation_1h_tokens
+         )
+         SELECT session_id, model, COUNT(*), SUM(input_tokens), SUM(output_tokens),
+                SUM(cache_read_tokens), 0, 0
+         FROM codex_usage_observations
+         WHERE session_id = ?1 AND disposition = 'accepted'
+         GROUP BY session_id, model",
+        params![session_id],
+    )?;
+    Ok(())
+}
+
+pub fn record_codex_usage_repair(
+    conn: &Connection,
+    session_id: &str,
+    revision: i64,
+    status: &str,
+    accepted_events: i64,
+    excluded_events: i64,
+    detail: Option<&str>,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "INSERT INTO codex_usage_repair_audit (
+            session_id, revision, status, accepted_events, excluded_events, repaired_at, detail
+         ) VALUES (?1,?2,?3,?4,?5,?6,?7)
+         ON CONFLICT(session_id) DO UPDATE SET
+            revision=excluded.revision, status=excluded.status,
+            accepted_events=excluded.accepted_events,
+            excluded_events=excluded.excluded_events,
+            repaired_at=excluded.repaired_at, detail=excluded.detail",
+        params![
+            session_id,
+            revision,
+            status,
+            accepted_events,
+            excluded_events,
+            chrono::Utc::now().to_rfc3339(),
+            detail,
+        ],
+    )?;
+    Ok(())
+}
+
 pub fn sync_session_message_archive_fts(conn: &Connection) -> Result<i64, rusqlite::Error> {
     let archive_count: i64 =
         conn.query_row("SELECT COUNT(*) FROM session_message_archive", [], |row| {
@@ -2102,9 +2244,9 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
     //
     // - Magnitude: session-level totals (cc_sessions.total_input_tokens +
     //   total_output_tokens). Same methodology as ccusage; includes cache.
-    // - Day attribution: distribute each session's canonical total across
-    //   days proportionally to per-day message activity (cc_session_days
-    //   bucket counts). Sessions active only on one day attribute fully.
+    // - Codex day attribution: sum accepted timestamped token observations.
+    // - Other adapters: distribute each session's canonical total across days
+    //   proportionally to per-day message activity (legacy approximation).
     //
     // cc_session_days replaced per-message rows in v1.1.9 — same math, but
     // ~50× less storage since we keep `(session, day, count)` not raw rows.
@@ -2115,8 +2257,8 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
              SELECT session_id, SUM(msg_count) AS total_n
              FROM cc_session_days
              GROUP BY session_id
-         )
-         SELECT d.day,
+         ), legacy_days AS (
+             SELECT d.day,
                 SUM(
                     (COALESCE(s.total_input_tokens, 0) + COALESCE(s.total_output_tokens, 0))
                     * d.msg_count * 1.0 / t.total_n
@@ -2137,8 +2279,21 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
          FROM cc_session_days d
          JOIN session_total t ON t.session_id = d.session_id
          JOIN cc_sessions s ON s.id = d.session_id
-         WHERE d.day >= ?1
-         GROUP BY d.day",
+         WHERE d.day >= ?1 AND s.agent_type != 'codex'
+         GROUP BY d.day
+         ), codex_days AS (
+             SELECT local_day AS day,
+                    SUM(input_tokens + output_tokens) AS tokens,
+                    SUM(MAX(input_tokens - cache_read_tokens, 0) + output_tokens) AS generated,
+                    SUM(cache_read_tokens) AS cache,
+                    SUM(cost_usd) AS cost
+             FROM codex_usage_observations
+             WHERE disposition = 'accepted' AND local_day >= ?1
+             GROUP BY local_day
+         )
+         SELECT day, SUM(tokens), SUM(generated), SUM(cache), SUM(cost)
+         FROM (SELECT * FROM legacy_days UNION ALL SELECT * FROM codex_days)
+         GROUP BY day",
     )?;
 
     // day -> (tokens, generated, cache, cost)
@@ -2219,47 +2374,11 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
     // Weekly series: last 12 ISO weeks (Monday-starting), zero-filled.
     let twelve_weeks_start = monday - Duration::weeks(11);
     let twelve_str = twelve_weeks_start.format("%Y-%m-%d").to_string();
-    let mut stmt2 = conn.prepare(
-        "WITH session_total AS (
-             SELECT session_id, SUM(msg_count) AS total_n
-             FROM cc_session_days
-             GROUP BY session_id
-         )
-         SELECT d.day,
-                SUM(
-                    (COALESCE(s.total_input_tokens, 0) + COALESCE(s.total_output_tokens, 0))
-                    * d.msg_count * 1.0 / t.total_n
-                ) AS tok,
-                SUM(
-                    (MAX(COALESCE(s.total_input_tokens, 0)
-                         - COALESCE(s.cache_read_tokens, 0)
-                         - COALESCE(s.cache_creation_tokens, 0), 0)
-                     + COALESCE(s.total_output_tokens, 0))
-                    * d.msg_count * 1.0 / t.total_n
-                ) AS gen,
-                SUM(
-                    COALESCE(s.cache_read_tokens, 0) * d.msg_count * 1.0 / t.total_n
-                ) AS cache,
-                SUM(
-                    COALESCE(s.estimated_cost_usd, 0.0) * d.msg_count * 1.0 / t.total_n
-                ) AS cost
-         FROM cc_session_days d
-         JOIN session_total t ON t.session_id = d.session_id
-         JOIN cc_sessions s ON s.id = d.session_id
-         WHERE d.day >= ?1
-         GROUP BY d.day",
-    )?;
-    let day_rows: Vec<(String, f64, f64, f64, f64)> = stmt2
-        .query_map(params![twelve_str], |r| {
-            Ok((
-                r.get::<_, String>(0)?,
-                r.get::<_, f64>(1)?,
-                r.get::<_, f64>(2)?,
-                r.get::<_, f64>(3)?,
-                r.get::<_, f64>(4)?,
-            ))
-        })?
-        .collect::<Result<_, _>>()?;
+    let day_rows: Vec<(String, f64, f64, f64, f64)> = day_map
+        .iter()
+        .filter(|(day, _)| day.as_str() >= twelve_str.as_str())
+        .map(|(day, values)| (day.clone(), values.0, values.1, values.2, values.3))
+        .collect();
 
     let mut weekly_series = Vec::with_capacity(12);
     for i in 0..12 {
@@ -2349,7 +2468,7 @@ pub fn get_agent_usage_by_day(
              SELECT session_id, SUM(msg_count) AS total_n
              FROM cc_session_days
              GROUP BY session_id
-         )
+         ), legacy AS (
          SELECT d.day, s.agent_type,
                 SUM(
                     (MAX(COALESCE(s.total_input_tokens, 0)
@@ -2367,10 +2486,22 @@ pub fn get_agent_usage_by_day(
          FROM cc_session_days d
          JOIN session_total t ON t.session_id = d.session_id
          JOIN cc_sessions s ON s.id = d.session_id
-         WHERE d.day >= ?1
+         WHERE d.day >= ?1 AND s.agent_type != 'codex'
          GROUP BY d.day, s.agent_type
-         HAVING generated > 0 OR cache > 0
-         ORDER BY d.day",
+         ), codex AS (
+             SELECT local_day AS day, 'codex' AS agent_type,
+                    SUM(MAX(input_tokens - cache_read_tokens, 0) + output_tokens) AS generated,
+                    SUM(cache_read_tokens) AS cache,
+                    SUM(cost_usd) AS cost
+             FROM codex_usage_observations
+             WHERE disposition = 'accepted' AND local_day >= ?1
+             GROUP BY local_day
+         )
+         SELECT day, agent_type, SUM(generated), SUM(cache), SUM(cost)
+         FROM (SELECT * FROM legacy UNION ALL SELECT * FROM codex)
+         GROUP BY day, agent_type
+         HAVING SUM(generated) > 0 OR SUM(cache) > 0
+         ORDER BY day",
     )?;
     let rows = stmt
         .query_map(params![since], |r| {
@@ -2553,6 +2684,11 @@ pub fn get_usage_by_model(
                  GROUP BY session_id
                  HAVING SUM(CASE WHEN day >= ?1 THEN msg_count ELSE 0 END) > 0"
     };
+    let codex_date_filter = if day_range.is_some() {
+        "o.local_day >= ?1 AND o.local_day < ?2"
+    } else {
+        "o.local_day >= ?1"
+    };
 
     let sql = if day_range.is_some() || since.is_some() {
         format!(
@@ -2571,7 +2707,7 @@ pub fn get_usage_by_model(
                 FROM session_model_usage u
                 JOIN cc_sessions s ON s.id = u.session_id
                 JOIN frac w ON w.session_id = u.session_id
-                WHERE 1=1{agent_filter}
+                WHERE s.agent_type != 'codex'{agent_filter}
                 UNION ALL
                 SELECT CASE WHEN COALESCE(NULLIF(s.model_used, ''), 'unknown') = '<synthetic>'
                             THEN 'synthetic'
@@ -2581,9 +2717,15 @@ pub fn get_usage_by_model(
                        w.f
                 FROM cc_sessions s
                 JOIN frac w ON w.session_id = s.id
-                WHERE NOT EXISTS (
+                WHERE s.agent_type != 'codex' AND NOT EXISTS (
                     SELECT 1 FROM session_model_usage u WHERE u.session_id = s.id
                 ){agent_filter}
+                UNION ALL
+                SELECT COALESCE(NULLIF(o.model, ''), 'unknown'), o.session_id,
+                       o.input_tokens, o.output_tokens, o.cache_read_tokens, 0, 1.0
+                FROM codex_usage_observations o
+                JOIN cc_sessions s ON s.id = o.session_id
+                WHERE o.disposition = 'accepted' AND {codex_date_filter}{agent_filter}
              )
              GROUP BY model"
         )
@@ -2841,6 +2983,101 @@ mod tests {
     use crate::db::schema;
 
     #[test]
+    fn codex_observations_are_idempotent_and_reconcile_canonical_totals() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        upsert_project(
+            &conn,
+            &ProjectInput {
+                id: "p".into(),
+                display_name: "P".into(),
+                dir_path: "/p".into(),
+                session_count: None,
+                last_activity: None,
+                created_at: "2026-01-01T00:00:00Z".into(),
+            },
+        )
+        .expect("project");
+        upsert_session(
+            &conn,
+            &SessionInput {
+                id: "s".into(),
+                project_id: "p".into(),
+                agent_type: Some("codex".into()),
+                jsonl_path: Some("/p/s.jsonl".into()),
+                git_branch: None,
+                cwd: None,
+                cli_version: None,
+                first_message: None,
+                last_message: None,
+                message_count: Some(1),
+                total_input_tokens: Some(999),
+                total_output_tokens: Some(999),
+                model_used: Some("gpt-5".into()),
+                slug: None,
+                file_size_bytes: None,
+                indexed_at: None,
+                file_mtime: None,
+                cache_read_tokens: Some(999),
+                cache_creation_tokens: Some(0),
+                compaction_count: None,
+                estimated_cost_usd: Some(999.0),
+            },
+        )
+        .expect("session");
+        let observation = CodexUsageObservationInput {
+            source_line: 7,
+            observed_at: Some("2026-01-02T00:00:00Z".into()),
+            local_day: Some("2026-01-02".into()),
+            model: "gpt-5".into(),
+            input_tokens: 100,
+            cache_read_tokens: 80,
+            output_tokens: 20,
+            reasoning_tokens: 5,
+            cost_usd: 0.25,
+            cumulative_input_tokens: Some(100),
+            cumulative_cache_read_tokens: Some(80),
+            cumulative_output_tokens: Some(20),
+            cumulative_reasoning_tokens: Some(5),
+            disposition: "accepted".into(),
+        };
+        assert_eq!(
+            append_codex_usage_observations(&conn, "s", &[observation.clone()]).unwrap(),
+            1
+        );
+        assert_eq!(
+            append_codex_usage_observations(&conn, "s", &[observation.clone()]).unwrap(),
+            0
+        );
+        reconcile_codex_usage_totals(&conn, "s").expect("reconcile");
+        let totals: (i64, i64, i64, f64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd FROM cc_sessions WHERE id='s'",
+            [], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+        ).unwrap();
+        assert_eq!(totals, (100, 20, 80, 0.25));
+        let models = get_session_model_usage(&conn, "s").unwrap();
+        assert_eq!(models.len(), 1);
+        assert_eq!(models[0].input_tokens, 100);
+
+        let mut replacement = observation;
+        replacement.source_line = 8;
+        replacement.input_tokens = 25;
+        replacement.cache_read_tokens = 20;
+        replacement.output_tokens = 5;
+        replacement.cost_usd = 0.05;
+        replace_codex_usage_observations(&conn, "s", &[replacement]).expect("replace");
+        reconcile_codex_usage_totals(&conn, "s").expect("reconcile replacement");
+        let replaced: (i64, i64, i64, f64, i64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
+                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='s')
+             FROM cc_sessions WHERE id='s'",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)),
+        ).unwrap();
+        assert_eq!(replaced, (25, 5, 20, 0.05, 1));
+    }
+
+    #[test]
     fn quick_index_zero_tokens_do_not_wipe_full_counts() {
         let conn = Connection::open_in_memory().expect("memory db");
         schema::run_migrations(&conn).expect("schema");
@@ -2976,7 +3213,7 @@ mod tests {
         let today = chrono::Local::now().date_naive();
         let today_str = today.format("%Y-%m-%d").to_string();
         let now = chrono::Utc::now().to_rfc3339();
-        insert_session("current", &now, 10_000, 900, 7_000, 1_000, 2.50);
+        insert_session("current", &now, 10_000, 900, 7_000, 0, 2.50);
         insert_session("old", "2020-01-01T00:00:00Z", 1_000, 700, 300, 200, 1.25);
         conn.execute(
             "INSERT INTO cc_session_days (session_id, day, msg_count)
@@ -2984,6 +3221,27 @@ mod tests {
             params![today_str],
         )
         .expect("day");
+        append_codex_usage_observations(
+            &conn,
+            "current",
+            &[CodexUsageObservationInput {
+                source_line: 1,
+                observed_at: Some(now),
+                local_day: Some(today_str.clone()),
+                model: "gpt-5.5".to_string(),
+                input_tokens: 10_000,
+                cache_read_tokens: 7_000,
+                output_tokens: 900,
+                reasoning_tokens: 0,
+                cost_usd: 2.50,
+                cumulative_input_tokens: Some(10_000),
+                cumulative_cache_read_tokens: Some(7_000),
+                cumulative_output_tokens: Some(900),
+                cumulative_reasoning_tokens: None,
+                disposition: "accepted".to_string(),
+            }],
+        )
+        .expect("observation");
 
         let rows = get_agent_usage_breakdown(&conn).expect("agent usage");
         let codex = rows
@@ -2991,21 +3249,21 @@ mod tests {
             .find(|r| r.agent_type == "codex")
             .expect("codex row");
         assert_eq!(codex.sessions, 2);
-        assert_eq!(codex.real_input_tokens, 2_500);
+        assert_eq!(codex.real_input_tokens, 3_500);
         assert_eq!(codex.cache_read_tokens, 7_300);
         assert_eq!(codex.output_tokens, 1_600);
-        assert_eq!(codex.week_real_input_tokens, 2_000);
+        assert_eq!(codex.week_real_input_tokens, 3_000);
         assert_eq!(codex.week_output_tokens, 900);
         assert_eq!(codex.cost, 3.75);
 
         let by_day = get_agent_usage_by_day(&conn, 1).expect("agent day usage");
         assert_eq!(by_day.len(), 1);
-        assert_eq!(by_day[0].generated, 2_900);
+        assert_eq!(by_day[0].generated, 3_900);
         assert_eq!(by_day[0].cache, 7_000);
         assert_eq!(by_day[0].cost, 2.50);
 
         let stats = get_token_usage_stats(&conn).expect("token usage stats");
-        assert_eq!(stats.today_generated, 2_900);
+        assert_eq!(stats.today_generated, 3_900);
         assert_eq!(stats.today_cost, 2.50);
     }
 
@@ -3064,6 +3322,27 @@ mod tests {
             [],
         )
         .expect("days");
+        append_codex_usage_observations(
+            &conn,
+            "codex",
+            &[CodexUsageObservationInput {
+                source_line: 1,
+                observed_at: Some("2026-01-03T00:00:00Z".to_string()),
+                local_day: Some("2026-01-03".to_string()),
+                model: "gpt-5".to_string(),
+                input_tokens: 2_000,
+                cache_read_tokens: 0,
+                output_tokens: 100,
+                reasoning_tokens: 0,
+                cost_usd: 2.0,
+                cumulative_input_tokens: Some(2_000),
+                cumulative_cache_read_tokens: Some(0),
+                cumulative_output_tokens: Some(100),
+                cumulative_reasoning_tokens: None,
+                disposition: "accepted".to_string(),
+            }],
+        )
+        .expect("observation");
 
         let estimate = |_: &str, input: i64, _: i64, _: i64, _: i64| input as f64 / 1_000.0;
         let exclude_codex = vec!["codex".to_string()];

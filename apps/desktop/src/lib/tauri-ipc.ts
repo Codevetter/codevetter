@@ -650,6 +650,11 @@ export interface LiveSessionEvidencePolicy {
   update_event: string;
   local_only: boolean;
   last_full_indexed_at?: string | null;
+  last_usage_observed_at?: string | null;
+  incomplete_codex_sources: number;
+  pending_codex_bytes: number;
+  duplicate_usage_events: number;
+  excluded_usage_events: number;
 }
 
 export interface SessionScorecard {

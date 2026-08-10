@@ -27,7 +27,7 @@ repairs run as idempotent migrations guarded by feature flags. The groups:
 
 | Group | Tables | Purpose |
 |---|---|---|
-| Sessions / telemetry | `cc_projects`, `cc_sessions`, `cc_session_days`, `cc_messages`, `session_model_usage`, `session_adapter_runs`, `session_message_archive` | Indexed agent transcripts (Claude / Codex / Gemini), per-day attribution, per-model usage splits, FTS archive. |
+| Sessions / telemetry | `cc_projects`, `cc_sessions`, `cc_session_days`, `cc_messages`, `session_model_usage`, `codex_usage_observations`, `codex_usage_repair_audit`, `session_adapter_runs`, `session_message_archive` | Indexed agent transcripts, timestamped Codex token evidence, repair diagnostics, per-day attribution, per-model usage splits, FTS archive. |
 | Reviews | `local_reviews`, `local_review_findings`, `review_procedure_events` | Review runs, findings (with `disposition` accept/dismiss), staged-verification events. |
 | Synthetic QA | `synthetic_qa_runs` | QA runs persisted as first-class records; fed as `qa_evidence` into review prompts. |
 | Audience validation | `audience_validation_runs`, `audience_validation_responses` | Privacy-minimizing audience runs + agent/human/imported responses; ShipRank diagnostics derive from these. |
@@ -46,9 +46,12 @@ repairs run as idempotent migrations guarded by feature flags. The groups:
   content block and repeats the final usage. Don't re-add raw usage without
   the dedup gate — see
   [knowledge/learnings/telemetry-and-indexing.md](../knowledge/learnings/telemetry-and-indexing.md).
-- **Codex tokens are cumulative.** Codex reports session-cumulative totals;
-  the indexer uses a `tokens_absolute` flag so cumulative totals are SET, not
-  added. The `fix_codex_token_totals` repair re-reads each Codex file.
+- **Codex accounting is observation-backed.** `token_count` events are normalized
+  into content-free `codex_usage_observations`. Exact cumulative repeats are
+  excluded, component watermarks contain resets/interleaved lineages, and the
+  serialized accounting state survives incremental boundaries. Session/model
+  totals are reconciled from accepted rows; period totals use each event's local
+  day rather than message-share proration.
 - **Migrations are guarded and idempotent.** Each one-time repair carries a
   feature-flag gate and is safe to run on a fresh DB. Re-running on an
   already-repaired DB is a no-op.
