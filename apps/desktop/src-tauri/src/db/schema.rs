@@ -110,6 +110,42 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
     // duplicate group split across two incremental tail reads (blocks can land
     // ~40s apart) is still counted once.
     let _ = conn.execute("ALTER TABLE cc_sessions ADD COLUMN last_usage_key TEXT", []);
+    // Timestamped, content-free Codex usage evidence. Unlike cc_session_days,
+    // these rows carry the token delta observed at the event timestamp, so
+    // calendar totals never need to prorate a whole session by message count.
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS codex_usage_observations (
+            session_id TEXT NOT NULL REFERENCES cc_sessions(id) ON DELETE CASCADE,
+            source_line INTEGER NOT NULL,
+            observed_at TEXT,
+            local_day TEXT,
+            model TEXT NOT NULL,
+            input_tokens INTEGER NOT NULL DEFAULT 0,
+            cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+            output_tokens INTEGER NOT NULL DEFAULT 0,
+            reasoning_tokens INTEGER NOT NULL DEFAULT 0,
+            cost_usd REAL NOT NULL DEFAULT 0,
+            cumulative_input_tokens INTEGER,
+            cumulative_cache_read_tokens INTEGER,
+            cumulative_output_tokens INTEGER,
+            cumulative_reasoning_tokens INTEGER,
+            disposition TEXT NOT NULL,
+            PRIMARY KEY (session_id, source_line)
+        );
+        CREATE INDEX IF NOT EXISTS idx_codex_usage_observations_day
+            ON codex_usage_observations(local_day, disposition);
+        CREATE INDEX IF NOT EXISTS idx_codex_usage_observations_session_time
+            ON codex_usage_observations(session_id, observed_at);
+        CREATE TABLE IF NOT EXISTS codex_usage_repair_audit (
+            session_id TEXT PRIMARY KEY REFERENCES cc_sessions(id) ON DELETE CASCADE,
+            revision INTEGER NOT NULL,
+            status TEXT NOT NULL,
+            accepted_events INTEGER NOT NULL DEFAULT 0,
+            excluded_events INTEGER NOT NULL DEFAULT 0,
+            repaired_at TEXT NOT NULL,
+            detail TEXT
+        );",
+    )?;
     let _ = conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_cc_sessions_last_message
          ON cc_sessions(last_message DESC)",

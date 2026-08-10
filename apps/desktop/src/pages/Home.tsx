@@ -2722,7 +2722,10 @@ export default function Home() {
     void (async () => {
       try {
         const { listen } = await import('@tauri-apps/api/event');
-        const un = await listen('session_archive_updated', () => run());
+        const un = await listen('session_archive_updated', () => {
+          run();
+          refreshDashboard();
+        });
         if (cancelled) un();
         else unlisten = un;
       } catch {
@@ -2734,7 +2737,7 @@ export default function Home() {
       clearInterval(interval);
       unlisten?.();
     };
-  }, [isHomeActive, hiddenAgents, fetchModelUsage]);
+  }, [isHomeActive, hiddenAgents, fetchModelUsage, refreshDashboard]);
 
   // ─── Periodic background sync every 60s ───────────────────────────────
   // Keeps token-usage counters near-realtime. Paused while the window is
@@ -2837,10 +2840,18 @@ export default function Home() {
                 <Badge
                   variant="outline"
                   className="h-6 border-emerald-500/25 bg-emerald-500/[0.06] px-2 text-[11px] font-medium text-emerald-300/80"
-                  title={`Local-only ${liveSessionPolicy.mode}; full/manual recovery every ${Math.round(liveSessionPolicy.full_index_recovery_interval_secs / 3600)}h; event ${liveSessionPolicy.update_event}`}
+                  title={`Local-only ${liveSessionPolicy.mode}; full/manual recovery every ${Math.round(liveSessionPolicy.full_index_recovery_interval_secs / 3600)}h; ${liveSessionPolicy.incomplete_codex_sources} Codex sources pending (${formatCompactNumber(liveSessionPolicy.pending_codex_bytes)} bytes); ${liveSessionPolicy.excluded_usage_events} excluded usage events; last usage ${liveSessionPolicy.last_usage_observed_at ?? 'unavailable'}`}
                 >
                   live archive · {liveSessionPolicy.incremental_interval_secs}s ·{' '}
                   {liveSessionPolicy.supported_incremental_adapters.join(' + ')}
+                </Badge>
+              )}
+              {liveSessionPolicy && liveSessionPolicy.incomplete_codex_sources > 0 && (
+                <Badge
+                  variant="outline"
+                  className="h-6 border-amber-500/25 bg-amber-500/[0.06] px-2 text-[11px] font-medium text-amber-300/80"
+                >
+                  usage catching up · {liveSessionPolicy.incomplete_codex_sources} sources
                 </Badge>
               )}
               <Button

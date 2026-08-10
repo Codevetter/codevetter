@@ -1,0 +1,4 @@
+{"timestamp":"2026-08-10T12:00:00Z","type":"session_meta","payload":{"id":"fork-direct","cwd":"/repo","forked_from_id":"parent"}}
+{"timestamp":"2026-08-10T12:00:00Z","type":"turn_context","payload":{"model":"gpt-5.5"}}
+{"timestamp":"2026-08-10T12:00:01Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":10},"total_token_usage":{"input_tokens":1100,"cached_input_tokens":880,"output_tokens":110}}}}
+{"timestamp":"2026-08-10T12:00:02Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":50,"cached_input_tokens":40,"output_tokens":5},"total_token_usage":{"input_tokens":1150,"cached_input_tokens":920,"output_tokens":115}}}}
