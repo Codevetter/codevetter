@@ -559,3 +559,13 @@ intended development-dependency exclusion. The installation was local, ran no
 package scripts or audit mutation, and is not a product runtime cost. The
 temporary clones, dependency tree, profiles, and paired checkout were removed
 after qualification.
+
+On 2026-08-10, publication requalification at the same current upstream
+revision used ten fresh alternating process pairs. It measured 0.772 to 0.518
+ms/op at 1,000 parameters, 9.266 to 4.880 at 10,000, and 41.706 to 23.183 at
+40,000. The largest input improved 44.413%, the endpoint exponent moved from
+1.081 to 1.030, and the verifier again returned `shipping_recommended: true`
+with no limitations. All 1,045 tests, lint, EditorConfig, README evaluation,
+distribution build, and diff check passed. Draft pull request
+[`ljharb/qs#592`](https://github.com/ljharb/qs/pull/592) contains only the
+source change; the benchmark harness was removed before publication.

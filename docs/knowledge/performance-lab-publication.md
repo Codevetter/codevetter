@@ -58,8 +58,8 @@ inactive-project disposition is retained in
 
 ### Marked
 
-[markedjs/marked#4048](https://github.com/markedjs/marked/pull/4048) is the only
-external upstream PR created by this campaign. It optimizes reference-link
+[markedjs/marked#4048](https://github.com/markedjs/marked/pull/4048) was the
+first external upstream PR created by this campaign. It optimizes reference-link
 membership during the normal post-block inline phase while retaining the
 dynamic direct-call path and clearing temporary state in `finally`.
 
@@ -78,12 +78,20 @@ type builds, lint, and generated-output checks. The PR is open and no longer a
 draft as of this record. Snyk passed; the visible Vercel failure is an external
 contributor authorization requirement, not a repository test failure.
 
+### qs
+
+[ljharb/qs#592](https://github.com/ljharb/qs/pull/592) adds a guarded fast path
+for entirely flat query strings. A fresh ten-pair interleaved publication run
+measured 41.706 to 23.183 ms/op at 40,000 parameters, or 44.413%, and returned
+`shipping_recommended: true` with no limitations. The 1,000- and
+10,000-parameter inputs improved 32.902% and 47.334%.
+
+All 1,045 upstream tests passed with 100% statement and line coverage. The PR
+also documents the two unsafe broader candidates that the correctness suite
+rejected before the final fallback boundary was retained.
+
 ### No upstream PR submitted
 
-- **qs:** flat parsing improved 45.086% at 40,000 parameters in ten-pair
-  interleaved verification and all 1,045 upstream tests passed. No PR was
-  submitted because the owner explicitly chose not to create a duplicate
-  contribution after reviewing the existing upstream situation.
 - **go-chi/chi:** the profiler found allocation pressure in the router path,
   but inspection tied it to required `http.Request.WithContext` and context
   semantics. No unsafe patch was attempted.
