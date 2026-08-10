@@ -11,6 +11,7 @@ use std::sync::{LazyLock, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 static FULL_INDEX_LOCK: Mutex<()> = Mutex::new(());
+static LIVE_TRANSCRIPT_LOCK: Mutex<()> = Mutex::new(());
 
 pub const LIVE_TRANSCRIPT_INITIAL_DELAY_SECS: u64 = 20;
 pub const LIVE_TRANSCRIPT_INTERVAL_SECS: u64 = 10;
@@ -37,13 +38,48 @@ pub struct LiveSessionEvidencePolicy {
     pub update_event: String,
     pub local_only: bool,
     pub last_full_indexed_at: Option<String>,
+    pub last_usage_observed_at: Option<String>,
+    pub incomplete_codex_sources: i64,
+    pub pending_codex_bytes: i64,
+    pub duplicate_usage_events: i64,
+    pub excluded_usage_events: i64,
 }
 
 pub fn live_session_evidence_policy(
     conn: &rusqlite::Connection,
 ) -> Result<LiveSessionEvidencePolicy, String> {
+    let (last_usage_observed_at, duplicate_usage_events, excluded_usage_events) = conn
+        .query_row(
+            "SELECT MAX(CASE WHEN disposition='accepted' THEN observed_at END),
+                    SUM(CASE WHEN disposition='duplicate' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN disposition!='accepted' THEN 1 ELSE 0 END)
+             FROM codex_usage_observations",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .unwrap_or((None, 0, 0));
+    let mut incomplete_codex_sources = 0i64;
+    let mut pending_codex_bytes = 0i64;
+    if let Ok(mut statement) = conn.prepare(
+        "SELECT jsonl_path, last_indexed_byte_offset FROM cc_sessions
+         WHERE agent_type='codex' AND jsonl_path IS NOT NULL",
+    ) {
+        if let Ok(rows) = statement.query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+        }) {
+            for (path, offset) in rows.flatten() {
+                if let Ok(metadata) = std::fs::metadata(path) {
+                    let pending = (metadata.len() as i64 - offset).max(0);
+                    if pending > 0 {
+                        incomplete_codex_sources += 1;
+                        pending_codex_bytes += pending;
+                    }
+                }
+            }
+        }
+    }
     Ok(LiveSessionEvidencePolicy {
-        schema_version: 1,
+        schema_version: 2,
         mode: "incremental_jsonl_poll".to_string(),
         supported_incremental_adapters: vec!["claude-code".to_string(), "codex".to_string()],
         incremental_interval_secs: LIVE_TRANSCRIPT_INTERVAL_SECS,
@@ -54,6 +90,11 @@ pub fn live_session_evidence_policy(
         local_only: true,
         last_full_indexed_at: queries::get_preference(conn, "last_indexed_at")
             .map_err(|error| error.to_string())?,
+        last_usage_observed_at,
+        incomplete_codex_sources,
+        pending_codex_bytes,
+        duplicate_usage_events,
+        excluded_usage_events,
     })
 }
 
@@ -201,10 +242,13 @@ fn persist_production_adapter_run(
 pub fn run_full_index_summary_with_conn(
     conn: &rusqlite::Connection,
 ) -> Result<FullIndexSummary, String> {
-    let _index_guard = FULL_INDEX_LOCK
-        .lock()
-        .map_err(|e| format!("full index lock poisoned: {e}"))?;
-    run_full_index_unlocked(conn)
+    let counts = {
+        let _index_guard = FULL_INDEX_LOCK
+            .lock()
+            .map_err(|e| format!("full index lock poisoned: {e}"))?;
+        full_index_impl(conn)?
+    };
+    finish_full_index(conn, counts)
 }
 
 /// Run the full index only if no other full index is active.
@@ -214,15 +258,18 @@ pub fn run_full_index_summary_with_conn(
 pub fn try_run_full_index_summary_with_conn(
     conn: &rusqlite::Connection,
 ) -> Result<Option<FullIndexSummary>, String> {
-    let _index_guard = match FULL_INDEX_LOCK.try_lock() {
-        Ok(guard) => guard,
+    let counts = match FULL_INDEX_LOCK.try_lock() {
+        Ok(_guard) => full_index_impl(conn)?,
         Err(_) => return Ok(None),
     };
-    run_full_index_unlocked(conn).map(Some)
+    finish_full_index(conn, counts).map(Some)
 }
 
-fn run_full_index_unlocked(conn: &rusqlite::Connection) -> Result<FullIndexSummary, String> {
-    let (indexed_sessions, indexed_messages, skipped_sessions) = full_index_impl(conn)?;
+fn finish_full_index(
+    conn: &rusqlite::Connection,
+    counts: (u64, u64, u64),
+) -> Result<FullIndexSummary, String> {
+    let (indexed_sessions, indexed_messages, skipped_sessions) = counts;
     let archive_search_rows_indexed =
         queries::sync_session_message_archive_fts(conn).map_err(|e| e.to_string())?;
 
@@ -268,7 +315,7 @@ fn tail_live_transcript_sessions_inner(
     conn: &rusqlite::Connection,
     discover_new_codex_sessions: bool,
 ) -> Result<TranscriptTailSummary, String> {
-    let _index_guard = match FULL_INDEX_LOCK.try_lock() {
+    let _index_guard = match LIVE_TRANSCRIPT_LOCK.try_lock() {
         Ok(guard) => guard,
         Err(_) => {
             return Ok(TranscriptTailSummary {
@@ -1141,6 +1188,25 @@ fn estimate_cost_with_cache_tiers(
     cache_creation: i64,
     cache_creation_1h: i64,
 ) -> f64 {
+    let cost = estimate_cost_precise(
+        model,
+        total_input,
+        output_tokens,
+        cache_read,
+        cache_creation,
+        cache_creation_1h,
+    );
+    (cost * 100.0).round() / 100.0 // round stored session totals to cents
+}
+
+fn estimate_cost_precise(
+    model: &str,
+    total_input: i64,
+    output_tokens: i64,
+    cache_read: i64,
+    cache_creation: i64,
+    cache_creation_1h: i64,
+) -> f64 {
     let (input_price, output_price, cache_read_price, cache_write_price) = pricing_table(model);
 
     // total_input already includes cache_read + cache_creation tokens (added
@@ -1153,13 +1219,12 @@ fn estimate_cost_with_cache_tiers(
     let cache_creation_1h = cache_creation_1h.clamp(0, cache_creation.max(0));
     let cache_creation_5m = cache_creation - cache_creation_1h;
 
-    let cost = (base_input as f64 * input_price
+    (base_input as f64 * input_price
         + output_tokens as f64 * output_price
         + cache_read as f64 * cache_read_price
         + cache_creation_5m as f64 * cache_write_price
         + cache_creation_1h as f64 * (input_price * 2.0))
-        / 1_000_000.0;
-    (cost * 100.0).round() / 100.0 // round to cents
+        / 1_000_000.0
 }
 
 /// Back-compat wrapper for callers that don't have (or don't need) the 1h
@@ -1173,7 +1238,14 @@ fn estimate_cost(
     cache_read: i64,
     cache_creation: i64,
 ) -> f64 {
-    estimate_cost_with_cache_tiers(model, total_input, output_tokens, cache_read, cache_creation, 0)
+    estimate_cost_with_cache_tiers(
+        model,
+        total_input,
+        output_tokens,
+        cache_read,
+        cache_creation,
+        0,
+    )
 }
 
 /// Bump this whenever the `estimate_cost` price table changes so already-indexed
@@ -1553,7 +1625,9 @@ fn scan_claude_model_usage(
     Ok(map)
 }
 
-const CODEX_TOKEN_FIX_REV: &str = "3";
+const CODEX_TOKEN_FIX_REV: &str = "4";
+
+const CODEX_ACCOUNTING_REPAIR_REV: i64 = 4;
 
 struct CodexTokenScan {
     model_used: Option<String>,
@@ -1563,6 +1637,125 @@ struct CodexTokenScan {
     cache_creation: i64,
     observed: bool,
     model_usage: Vec<queries::SessionModelUsageDelta>,
+}
+
+struct CodexAccountingRepairScan {
+    model_used: Option<String>,
+    total_input: i64,
+    total_output: i64,
+    cache_read: i64,
+    model_usage: Vec<queries::SessionModelUsageDelta>,
+    observations: Vec<queries::CodexUsageObservationInput>,
+}
+
+fn codex_session_id_for_path(path: &std::path::Path) -> Option<String> {
+    let file = std::fs::File::open(path).ok()?;
+    for line in std::io::BufReader::new(file).lines().take(64) {
+        let parsed: Value = serde_json::from_str(line.ok()?.trim()).ok()?;
+        if parsed.get("type").and_then(Value::as_str) == Some("session_meta") {
+            return parsed
+                .get("payload")
+                .and_then(|value| value.get("id"))
+                .and_then(Value::as_str)
+                .map(str::to_string);
+        }
+    }
+    None
+}
+
+fn scan_codex_accounting_usage(
+    path: &std::path::Path,
+    initial_state: Option<&str>,
+) -> Result<CodexAccountingRepairScan, String> {
+    use std::io::BufRead;
+    let file = std::fs::File::open(path).map_err(|error| error.to_string())?;
+    let mut reader = std::io::BufReader::new(file);
+    let mut state: Option<String> = initial_state.map(str::to_string);
+    let mut line_offset = 0i64;
+    let mut observations = Vec::new();
+    let mut model_used = None;
+    let mut buffer = String::new();
+    let mut chunk = String::new();
+    let mut chunk_lines = 0i64;
+
+    loop {
+        buffer.clear();
+        let read = reader
+            .read_line(&mut buffer)
+            .map_err(|error| error.to_string())?;
+        if read == 0 {
+            break;
+        }
+        if !buffer.ends_with('\n') {
+            break;
+        }
+        chunk.push_str(&buffer);
+        chunk_lines += 1;
+        if chunk_lines < 1_000 && chunk.len() < 4 * 1024 * 1024 {
+            continue;
+        }
+        let summary =
+            CodexAdapter.parse_raw_with_state(&path.to_string_lossy(), &chunk, state.as_deref());
+        observations.extend(codex_observation_inputs(
+            &summary.codex_usage_observations,
+            line_offset,
+        ));
+        model_used = summary.model_used.or(model_used);
+        state = summary.last_usage_key;
+        line_offset += chunk_lines;
+        chunk.clear();
+        chunk_lines = 0;
+    }
+
+    if !chunk.is_empty() {
+        let summary =
+            CodexAdapter.parse_raw_with_state(&path.to_string_lossy(), &chunk, state.as_deref());
+        observations.extend(codex_observation_inputs(
+            &summary.codex_usage_observations,
+            line_offset,
+        ));
+        model_used = summary.model_used.or(model_used);
+        let _final_state = summary.last_usage_key;
+    }
+
+    let mut by_model: std::collections::BTreeMap<String, queries::SessionModelUsageDelta> =
+        std::collections::BTreeMap::new();
+    let mut total_input = 0;
+    let mut total_output = 0;
+    let mut cache_read = 0;
+    for item in observations
+        .iter()
+        .filter(|item| item.disposition == "accepted")
+    {
+        total_input += item.input_tokens;
+        total_output += item.output_tokens;
+        cache_read += item.cache_read_tokens;
+        let entry =
+            by_model
+                .entry(item.model.clone())
+                .or_insert_with(|| queries::SessionModelUsageDelta {
+                    model: item.model.clone(),
+                    message_count: 0,
+                    input_tokens: 0,
+                    output_tokens: 0,
+                    cache_read_tokens: 0,
+                    cache_creation_tokens: 0,
+                    cache_creation_1h_tokens: 0,
+                });
+        entry.message_count += 1;
+        entry.input_tokens += item.input_tokens;
+        entry.output_tokens += item.output_tokens;
+        entry.cache_read_tokens += item.cache_read_tokens;
+    }
+
+    Ok(CodexAccountingRepairScan {
+        model_used,
+        total_input,
+        total_output,
+        cache_read,
+        model_usage: by_model.into_values().collect(),
+        observations,
+    })
 }
 
 fn detect_codex_replay_second(path: &std::path::Path) -> Option<String> {
@@ -1827,92 +2020,201 @@ pub fn fix_codex_token_totals(conn: &rusqlite::Connection) {
         }
     };
 
-    struct Repair {
-        id: String,
-        total_input: i64,
-        total_output: i64,
-        cache_read: i64,
-        cache_creation: i64,
-        cost: f64,
-        model_usage: Vec<queries::SessionModelUsageDelta>,
+    let mut by_path: std::collections::BTreeMap<String, Vec<(String, String, Option<String>)>> =
+        std::collections::BTreeMap::new();
+    for row in rows {
+        by_path.entry(row.1.clone()).or_default().push(row);
+    }
+    let mut canonical_rows = Vec::new();
+    let mut duplicate_rows = Vec::new();
+    for (path, mut candidates) in by_path {
+        let source_id = codex_session_id_for_path(std::path::Path::new(&path));
+        let canonical_index = source_id
+            .as_ref()
+            .and_then(|source_id| candidates.iter().position(|row| &row.0 == source_id))
+            .unwrap_or(0);
+        canonical_rows.push(candidates.remove(canonical_index));
+        duplicate_rows.extend(candidates);
     }
 
-    let mut repairs = Vec::new();
-    for (id, path, stored_model) in rows {
-        let summary = match scan_codex_token_usage(std::path::Path::new(&path)) {
-            Ok(summary) => summary,
-            Err(_) => continue,
+    let duplicate_target_count = duplicate_rows.len() as u64;
+    let canonical_target_count = canonical_rows.len() as u64;
+    let mut failures = 0u64;
+    let mut deduplicated = 0u64;
+    for (id, _, _) in duplicate_rows {
+        let Ok(tx) = conn.unchecked_transaction() else {
+            failures += 1;
+            continue;
         };
-        // A truncated/odd file should not zero a possibly-valid stored value.
-        if !summary.observed {
+        if tx
+            .execute(
+                "UPDATE cc_sessions SET total_input_tokens=0,total_output_tokens=0,
+                        cache_read_tokens=0,cache_creation_tokens=0,estimated_cost_usd=0
+                 WHERE id=?1",
+                rusqlite::params![&id],
+            )
+            .is_err()
+            || queries::replace_session_model_usage(&tx, &id, &[]).is_err()
+            || queries::replace_codex_usage_observations(&tx, &id, &[]).is_err()
+            || queries::record_codex_usage_repair(
+                &tx,
+                &id,
+                CODEX_ACCOUNTING_REPAIR_REV,
+                "excluded",
+                0,
+                0,
+                Some("duplicate_source_path"),
+            )
+            .is_err()
+        {
+            failures += 1;
             continue;
         }
-        let model = summary.model_used.or(stored_model);
+        if tx.commit().is_ok() {
+            deduplicated += 1;
+        } else {
+            failures += 1;
+        }
+    }
+
+    let mut fixed = 0u64;
+    let mut missing = 0u64;
+    for (id, path, _stored_model) in canonical_rows {
+        let path_ref = std::path::Path::new(&path);
+        let summary = match scan_codex_accounting_usage(path_ref, None) {
+            Ok(summary) => summary,
+            Err(error) => {
+                if queries::record_codex_usage_repair(
+                    conn,
+                    &id,
+                    CODEX_ACCOUNTING_REPAIR_REV,
+                    "unrepaired",
+                    0,
+                    0,
+                    Some(if error.contains("No such file") {
+                        "source_missing"
+                    } else {
+                        "source_unreadable"
+                    }),
+                )
+                .is_ok()
+                {
+                    missing += 1;
+                } else {
+                    failures += 1;
+                }
+                continue;
+            }
+        };
         let model_usage = summary.model_usage;
-        let cost = if model_usage.is_empty() {
-            estimate_cost(
-                model.as_deref().unwrap_or(""),
+        let accepted = summary
+            .observations
+            .iter()
+            .filter(|item| item.disposition == "accepted")
+            .count() as i64;
+        let excluded = summary.observations.len() as i64 - accepted;
+        let tx = match conn.unchecked_transaction() {
+            Ok(tx) => tx,
+            Err(_) => {
+                failures += 1;
+                continue;
+            }
+        };
+        if queries::replace_codex_usage_observations(&tx, &id, &summary.observations).is_err()
+            || queries::reconcile_codex_usage_totals(&tx, &id).is_err()
+            || !codex_reconciliation_matches(
+                &tx,
+                &id,
                 summary.total_input,
                 summary.total_output,
                 summary.cache_read,
-                summary.cache_creation,
+                &model_usage,
             )
+            || queries::record_codex_usage_repair(
+                &tx,
+                &id,
+                CODEX_ACCOUNTING_REPAIR_REV,
+                "repaired",
+                accepted,
+                excluded,
+                None,
+            )
+            .is_err()
+        {
+            failures += 1;
+            continue;
+        }
+        if tx.commit().is_ok() {
+            fixed += 1;
         } else {
-            let total: f64 = model_usage
-                .iter()
-                .map(|usage| {
-                    estimate_cost(
-                        &usage.model,
-                        usage.input_tokens,
-                        usage.output_tokens,
-                        usage.cache_read_tokens,
-                        usage.cache_creation_tokens,
-                    )
-                })
-                .sum();
-            (total * 100.0).round() / 100.0
-        };
-        repairs.push(Repair {
-            id,
-            total_input: summary.total_input,
-            total_output: summary.total_output,
-            cache_read: summary.cache_read,
-            cache_creation: summary.cache_creation,
-            cost,
-            model_usage,
-        });
+            failures += 1;
+        }
+    }
+    let complete = failures == 0
+        && fixed + missing == canonical_target_count
+        && deduplicated == duplicate_target_count;
+    if complete {
+        let _ = queries::set_preference(conn, "codex_token_fix_rev", CODEX_TOKEN_FIX_REV);
+        log::info!("Codex accounting backfill: repaired {fixed} sessions, excluded {deduplicated} duplicate source rows, preserved {missing} sessions without readable evidence");
+    } else {
+        log::error!("Codex accounting backfill incomplete: repaired {fixed}/{canonical_target_count} sessions, excluded {deduplicated}/{duplicate_target_count} duplicate source rows, failures={failures}; revision remains pending");
+    }
+}
+
+fn codex_reconciliation_matches(
+    conn: &rusqlite::Connection,
+    session_id: &str,
+    expected_input: i64,
+    expected_output: i64,
+    expected_cache_read: i64,
+    expected_models: &[queries::SessionModelUsageDelta],
+) -> bool {
+    let totals = conn.query_row(
+        "SELECT total_input_tokens,total_output_tokens,cache_read_tokens
+         FROM cc_sessions WHERE id=?1",
+        rusqlite::params![session_id],
+        |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, i64>(1)?,
+                row.get::<_, i64>(2)?,
+            ))
+        },
+    );
+    if totals.ok() != Some((expected_input, expected_output, expected_cache_read)) {
+        return false;
     }
 
-    let tx = match conn.unchecked_transaction() {
-        Ok(t) => t,
-        Err(_) => return,
+    let mut expected = expected_models
+        .iter()
+        .map(|usage| {
+            (
+                usage.model.clone(),
+                usage.message_count,
+                usage.input_tokens,
+                usage.output_tokens,
+                usage.cache_read_tokens,
+            )
+        })
+        .collect::<Vec<_>>();
+    expected.sort();
+    let Ok(actual_rows) = queries::get_session_model_usage(conn, session_id) else {
+        return false;
     };
-    let mut fixed = 0u64;
-    for repair in repairs {
-        let _ = tx.execute(
-            "UPDATE cc_sessions SET
-                total_input_tokens = ?2,
-                total_output_tokens = ?3,
-                cache_read_tokens = ?4,
-                cache_creation_tokens = ?5,
-                estimated_cost_usd = ?6
-            WHERE id = ?1",
-            rusqlite::params![
-                &repair.id,
-                repair.total_input,
-                repair.total_output,
-                repair.cache_read,
-                repair.cache_creation,
-                repair.cost,
-            ],
-        );
-        let _ = queries::replace_session_model_usage(&tx, &repair.id, &repair.model_usage);
-        fixed += 1;
-    }
-    if tx.commit().is_ok() {
-        let _ = queries::set_preference(conn, "codex_token_fix_rev", CODEX_TOKEN_FIX_REV);
-        log::info!("Fixed Codex per-session token attribution for {fixed} sessions");
-    }
+    let mut actual = actual_rows
+        .into_iter()
+        .map(|usage| {
+            (
+                usage.model,
+                usage.message_count,
+                usage.input_tokens,
+                usage.output_tokens,
+                usage.cache_read_tokens,
+            )
+        })
+        .collect::<Vec<_>>();
+    actual.sort();
+    actual == expected
 }
 
 /// Streaming full-file scan of one Claude JSONL with usage dedup. Returns the
@@ -2147,6 +2449,7 @@ fn upsert_adapter_summary_session(
     let day_counts = summary.day_counts.clone();
     let archive_messages = summary.archive_messages.clone();
     let parse_warnings = summary.parse_warnings.clone();
+    let codex_observations = codex_observation_inputs(&summary.codex_usage_observations, 0);
 
     for warning in &summary.parse_warnings {
         log::warn!(
@@ -2233,6 +2536,11 @@ fn upsert_adapter_summary_session(
     // archive rows are replaced. Empty for non-Claude adapters, which clears
     // nothing since such sessions never had rows.
     queries::replace_session_model_usage(conn, &sid, &usage_deltas).map_err(|e| e.to_string())?;
+    if agent_type == "codex" {
+        queries::replace_codex_usage_observations(conn, &sid, &codex_observations)
+            .map_err(|e| e.to_string())?;
+        queries::reconcile_codex_usage_totals(conn, &sid).map_err(|e| e.to_string())?;
+    }
 
     Ok(IndexedAdapterSession {
         session_id: sid,
@@ -2240,6 +2548,38 @@ fn upsert_adapter_summary_session(
         messages_indexed: message_count,
         parse_warnings,
     })
+}
+
+fn codex_observation_inputs(
+    observations: &[crate::commands::session_adapters::CodexUsageObservation],
+    line_offset: i64,
+) -> Vec<queries::CodexUsageObservationInput> {
+    observations
+        .iter()
+        .map(|item| queries::CodexUsageObservationInput {
+            source_line: line_offset + item.source_line,
+            observed_at: item.timestamp.clone(),
+            local_day: item.day.clone(),
+            model: item.model.clone(),
+            input_tokens: item.input_tokens,
+            cache_read_tokens: item.cache_read_tokens,
+            output_tokens: item.output_tokens,
+            reasoning_tokens: item.reasoning_tokens,
+            cost_usd: estimate_cost_precise(
+                &item.model,
+                item.input_tokens,
+                item.output_tokens,
+                item.cache_read_tokens,
+                0,
+                0,
+            ),
+            cumulative_input_tokens: item.total.as_ref().map(|total| total.input),
+            cumulative_cache_read_tokens: item.total.as_ref().map(|total| total.cached),
+            cumulative_output_tokens: item.total.as_ref().map(|total| total.output),
+            cumulative_reasoning_tokens: item.total.as_ref().map(|total| total.reasoning),
+            disposition: item.disposition.clone(),
+        })
+        .collect()
 }
 
 fn model_usage_deltas(
@@ -2543,7 +2883,7 @@ fn index_adapter_session_with_budget<A: SessionSourceAdapter>(
     if chunk.text.is_empty() {
         return Err("session has no complete JSONL row yet".to_string());
     }
-    let summary = adapter.parse_raw(&path_str, &chunk.text);
+    let summary = adapter.parse_raw_with_state(&path_str, &chunk.text, None);
     let last_usage_key = summary.last_usage_key.clone();
     let existing_id = existing.as_ref().map(|m| m.id.as_str());
     let result = upsert_adapter_summary_session(
@@ -2640,6 +2980,8 @@ fn index_session_incremental<A: SessionSourceAdapter>(
 
     let summary =
         adapter.parse_raw_with_state(path_str, &chunk.text, meta.last_usage_key.as_deref());
+    let codex_observations =
+        codex_observation_inputs(&summary.codex_usage_observations, line_count);
 
     // Append archive rows, continuing message_index / source_line past what is stored.
     let start_index = meta.archived_message_count;
@@ -2706,6 +3048,11 @@ fn index_session_incremental<A: SessionSourceAdapter>(
     // Legacy cumulative-only Codex logs leave model_usage empty → no-op.
     queries::add_session_model_usage(conn, &meta.id, &model_usage_deltas(&summary.model_usage))
         .map_err(|e| e.to_string())?;
+    if adapter.agent_type() == "codex" {
+        queries::append_codex_usage_observations(conn, &meta.id, &codex_observations)
+            .map_err(|e| e.to_string())?;
+        queries::reconcile_codex_usage_totals(conn, &meta.id).map_err(|e| e.to_string())?;
+    }
 
     // Recompute cost from the NEW totals so it matches a one-shot full re-index
     // exactly (estimate_cost rounds to cents — a per-delta round would drift).
@@ -3240,6 +3587,7 @@ fn parse_grok_session_dir(
         tokens_are_cumulative: false,
         model_usage: std::collections::BTreeMap::new(),
         last_usage_key: None,
+        codex_usage_observations: Vec::new(),
     })
 }
 
@@ -3666,6 +4014,7 @@ fn index_devin_sessions_from_path(
             tokens_are_cumulative: false,
             model_usage: std::collections::BTreeMap::new(),
             last_usage_key: None,
+            codex_usage_observations: Vec::new(),
         };
 
         match upsert_adapter_summary_session(
@@ -3878,6 +4227,7 @@ fn index_cursor_agent_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64,
                 tokens_are_cumulative: false,
                 model_usage: std::collections::BTreeMap::new(),
                 last_usage_key: None,
+                codex_usage_observations: Vec::new(),
             };
 
             match upsert_adapter_summary_session(
@@ -4636,7 +4986,7 @@ mod tests {
         let conn = memory_conn_with_project();
         queries::set_preference(&conn, "last_indexed_at", "2026-07-12T12:00:00Z").unwrap();
         let policy = live_session_evidence_policy(&conn).expect("policy");
-        assert_eq!(policy.schema_version, 1);
+        assert_eq!(policy.schema_version, 2);
         assert_eq!(policy.incremental_interval_secs, 10);
         assert_eq!(policy.full_index_recovery_interval_secs, 6 * 60 * 60);
         assert_eq!(
@@ -4649,6 +4999,10 @@ mod tests {
             policy.last_full_indexed_at.as_deref(),
             Some("2026-07-12T12:00:00Z")
         );
+        assert_eq!(policy.incomplete_codex_sources, 0);
+        assert_eq!(policy.pending_codex_bytes, 0);
+        assert_eq!(policy.duplicate_usage_events, 0);
+        assert_eq!(policy.excluded_usage_events, 0);
     }
 
     #[test]
@@ -4656,6 +5010,16 @@ mod tests {
         const { assert!(LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET <= 64 * 1024) };
         const { assert!(LIVE_TRANSCRIPT_TICK_BUDGET_MS <= 200) };
         assert_eq!(LIVE_CODEX_DISCOVERY_SESSION_BUDGET, 1);
+    }
+
+    #[test]
+    fn live_usage_serialization_is_independent_of_full_archive_indexing() {
+        let _full_guard = FULL_INDEX_LOCK.lock().expect("full index lock");
+        let live_guard = LIVE_TRANSCRIPT_LOCK.try_lock();
+        assert!(
+            live_guard.is_ok(),
+            "archive indexing must not suppress eligible live usage work"
+        );
     }
 
     #[test]
@@ -4704,7 +5068,7 @@ mod tests {
         .unwrap();
         std::fs::write(&path, &events).unwrap();
 
-        let guard = FULL_INDEX_LOCK.lock().unwrap();
+        let guard = LIVE_TRANSCRIPT_LOCK.lock().unwrap();
         let skipped = tail_live_transcript_sessions_inner(&conn, false).expect("non-blocking skip");
         assert_eq!(skipped.messages_indexed, 0);
         drop(guard);
@@ -5249,6 +5613,75 @@ mod tests {
         assert_eq!(model_usage.len(), 1);
         assert_eq!(model_usage[0].model, "gpt-5.6-sol");
         assert_eq!(model_usage[0].input_tokens, 150);
+
+        let first: (i64, i64, i64, f64, i64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
+                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='child')
+             FROM cc_sessions WHERE id='child'", [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+        ).unwrap();
+        queries::set_preference(&conn, "codex_token_fix_rev", "1").unwrap();
+        fix_codex_token_totals(&conn);
+        let second: (i64, i64, i64, f64, i64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
+                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='child')
+             FROM cc_sessions WHERE id='child'", [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+        ).unwrap();
+        assert_eq!(first, second, "fixed transcript repair is idempotent");
+    }
+
+    #[test]
+    fn codex_repair_does_not_complete_revision_after_reconciliation_failure() {
+        let dir = tempfile::tempdir().expect("session directory");
+        let path = dir.path().join("session.jsonl");
+        let raw = concat!(
+            r#"{"timestamp":"2026-07-20T08:03:00Z","type":"session_meta","payload":{"id":"guarded","cwd":"/repo"}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:01Z","type":"turn_context","payload":{"model":"gpt-5.6-sol"}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:02Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20},"total_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20}}}}"#,
+            "\n",
+        );
+        std::fs::write(&path, raw).expect("fixture");
+        let conn = memory_conn_with_project();
+        let summary = CodexAdapter.parse_raw(path.to_string_lossy().as_ref(), raw);
+        upsert_adapter_summary_session(
+            &conn,
+            "project",
+            summary,
+            raw.len() as i64,
+            Some("2026-07-20T08:03:02Z".to_string()),
+            "2026-07-20T08:03:02Z",
+            None,
+        )
+        .expect("index fixture");
+        queries::set_preference(&conn, "codex_token_fix_rev", "3").expect("old revision");
+        conn.execute_batch(
+            "CREATE TRIGGER reject_guarded_reconciliation
+             BEFORE UPDATE ON cc_sessions WHEN OLD.id='guarded'
+             BEGIN SELECT RAISE(FAIL, 'injected reconciliation failure'); END;",
+        )
+        .expect("failure trigger");
+
+        fix_codex_token_totals(&conn);
+
+        assert_eq!(
+            queries::get_preference(&conn, "codex_token_fix_rev")
+                .expect("revision")
+                .as_deref(),
+            Some("3")
+        );
+        assert_eq!(
+            conn.query_row(
+                "SELECT COUNT(*) FROM codex_usage_repair_audit WHERE session_id='guarded'",
+                [],
+                |row| row.get::<_, i64>(0),
+            )
+            .expect("audit count"),
+            0,
+            "a failed transaction must not leave a success audit"
+        );
     }
 
     // Diagnostic (not a CI eval): runs the real indexer against a COPY of the
@@ -5257,46 +5690,39 @@ mod tests {
     #[test]
     #[ignore]
     fn diag_codex_fix_cost() {
-        // Runs the Codex token repair against a copy of the live DB and reports
-        // before/after totals. Run with:
-        // cargo test --bin codevetter-desktop diag_codex_fix_cost -- --ignored --nocapture
-        let path = "/tmp/cv_live_copy.db";
-        if !std::path::Path::new(path).exists() {
+        // Runs the Codex accounting repair twice against an explicit disposable
+        // DB copy. The second pass must not change totals or observation counts.
+        let path = std::env::var("CV_CODEX_ACCOUNTING_DRYRUN_DB")
+            .unwrap_or_else(|_| "/tmp/cv_live_copy.db".to_string());
+        if !std::path::Path::new(&path).exists() {
             eprintln!("SKIP: {path} not present");
             return;
         }
-        let conn = Connection::open(path).expect("open");
-        let total = |c: &Connection| -> f64 {
+        let conn = Connection::open(&path).expect("open");
+        schema::run_migrations(&conn).expect("migrate copy");
+        let snapshot = |c: &Connection| -> (f64, i64, i64, i64) {
             c.query_row(
-                "SELECT COALESCE(SUM(estimated_cost_usd),0) FROM cc_sessions",
+                "SELECT COALESCE(SUM(estimated_cost_usd),0),
+                        COALESCE(SUM(total_input_tokens + total_output_tokens),0),
+                        (SELECT COUNT(*) FROM codex_usage_observations),
+                        (SELECT COUNT(*) FROM codex_usage_repair_audit WHERE status='unrepaired')
+                 FROM cc_sessions WHERE agent_type='codex'",
                 [],
-                |r| r.get(0),
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
             )
-            .unwrap_or(0.0)
-        };
-        let codex = |c: &Connection| -> f64 {
-            c.query_row("SELECT COALESCE(SUM(estimated_cost_usd),0) FROM cc_sessions WHERE agent_type='codex'", [], |r| r.get(0)).unwrap_or(0.0)
-        };
-        eprintln!(
-            "BEFORE: total=${:.0} codex=${:.0}",
-            total(&conn),
-            codex(&conn)
-        );
-        fix_codex_token_totals(&conn);
-        eprintln!(
-            "AFTER:  total=${:.0} codex=${:.0}",
-            total(&conn),
-            codex(&conn)
-        );
-        let mut stmt = conn.prepare("SELECT agent_type, ROUND(estimated_cost_usd,2), total_input_tokens FROM cc_sessions ORDER BY estimated_cost_usd DESC LIMIT 5").unwrap();
-        let rows: Vec<(String, f64, i64)> = stmt
-            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
             .unwrap()
-            .filter_map(Result::ok)
-            .collect();
-        for (a, c, t) in rows {
-            eprintln!("  top: {a} ${c} ({t} input tok)");
-        }
+        };
+        queries::set_preference(&conn, "codex_token_fix_rev", "0").expect("force repair");
+        let before = snapshot(&conn);
+        fix_codex_token_totals(&conn);
+        let first = snapshot(&conn);
+        queries::set_preference(&conn, "codex_token_fix_rev", "0").expect("force second repair");
+        fix_codex_token_totals(&conn);
+        let second = snapshot(&conn);
+        eprintln!("BEFORE={before:?}\nFIRST={first:?}\nSECOND={second:?}");
+        eprintln!(
+            "NOTE: changes between passes are expected only when live transcript paths grew while this DB copy was being repaired"
+        );
     }
 
     #[test]
@@ -5543,13 +5969,22 @@ mod tests {
             estimate_cost("gpt-5.6-sol", 1_000_000, 0, 1_000_000, 0),
             0.50
         ));
-        assert!(near(estimate_cost("gpt-5.6-terra", 1_000_000, 0, 0, 0), 2.0));
-        assert!(near(estimate_cost("gpt-5.6-terra", 0, 1_000_000, 0, 0), 12.0));
+        assert!(near(
+            estimate_cost("gpt-5.6-terra", 1_000_000, 0, 0, 0),
+            2.0
+        ));
+        assert!(near(
+            estimate_cost("gpt-5.6-terra", 0, 1_000_000, 0, 0),
+            12.0
+        ));
         assert!(near(
             estimate_cost("gpt-5.6-luna", 1_000_000, 0, 0, 0),
             0.20
         ));
-        assert!(near(estimate_cost("gpt-5.6-luna", 0, 1_000_000, 0, 0), 1.20));
+        assert!(near(
+            estimate_cost("gpt-5.6-luna", 0, 1_000_000, 0, 0),
+            1.20
+        ));
         // GPT-5.4 must beat the generic GPT-5 family arm.
         assert!(near(estimate_cost("gpt-5.4", 1_000_000, 0, 0, 0), 2.50));
         assert!(near(estimate_cost("gpt-5.4", 0, 1_000_000, 0, 0), 15.0));
@@ -5588,15 +6023,28 @@ mod tests {
         // Sonnet: $3/M input, so 5m cache writes are $3.75/M (1.25x) and 1h
         // writes are $6/M (2x) — Anthropic's real pricing ratio. All 1M
         // cache-creation tokens as 1h should cost double the all-5m case.
-        let all_5m = estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 0);
-        let all_1h =
-            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 1_000_000);
+        let all_5m =
+            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 0);
+        let all_1h = estimate_cost_with_cache_tiers(
+            "claude-sonnet-4-5",
+            1_000_000,
+            0,
+            0,
+            1_000_000,
+            1_000_000,
+        );
         assert!(near(all_5m, 3.75));
         assert!(near(all_1h, 6.0));
         // A half/half split lands between the two pure cases (within a cent
         // of rounding, since costs are rounded to cents).
-        let half_half =
-            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 500_000);
+        let half_half = estimate_cost_with_cache_tiers(
+            "claude-sonnet-4-5",
+            1_000_000,
+            0,
+            0,
+            1_000_000,
+            500_000,
+        );
         assert!((half_half - (all_5m + all_1h) / 2.0).abs() < 0.01);
         // estimate_cost (no split info) matches the conservative all-5m case —
         // this is the fallback used when a session has no per-model breakdown.
@@ -5607,8 +6055,14 @@ mod tests {
         // A 1h count larger than the total cache-creation tokens (shouldn't
         // happen, but guard against it) is clamped rather than going negative
         // or over-crediting the 5m bucket.
-        let clamped =
-            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 5_000_000);
+        let clamped = estimate_cost_with_cache_tiers(
+            "claude-sonnet-4-5",
+            1_000_000,
+            0,
+            0,
+            1_000_000,
+            5_000_000,
+        );
         assert!(near(clamped, all_1h));
     }
 

@@ -45,6 +45,74 @@ pub struct RawSessionAdapterSummary {
     /// lets the next incremental read continue the dedup across the boundary.
     #[serde(default)]
     pub last_usage_key: Option<String>,
+    /// Content-free, timestamped Codex token evidence. Other adapters leave
+    /// this empty. `source_line` is relative to the parsed chunk; the indexer
+    /// adds the persisted line cursor before storage.
+    #[serde(default)]
+    pub codex_usage_observations: Vec<CodexUsageObservation>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CodexTokenTotals {
+    pub input: i64,
+    pub cached: i64,
+    pub output: i64,
+    pub reasoning: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CodexUsageObservation {
+    pub source_line: i64,
+    pub timestamp: Option<String>,
+    pub day: Option<String>,
+    pub model: String,
+    pub input_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub output_tokens: i64,
+    pub reasoning_tokens: i64,
+    pub total: Option<CodexTokenTotals>,
+    pub disposition: String,
+}
+
+impl CodexUsageObservation {
+    fn zero() -> Self {
+        Self {
+            source_line: 0,
+            timestamp: None,
+            day: None,
+            model: "unknown".into(),
+            input_tokens: 0,
+            cache_read_tokens: 0,
+            output_tokens: 0,
+            reasoning_tokens: 0,
+            total: None,
+            disposition: "unsupported".into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+struct CodexAccountingState {
+    session_id: Option<String>,
+    current_model: Option<String>,
+    last_total: Option<CodexTokenTotals>,
+    watermark: Option<CodexTokenTotals>,
+    counted: Option<CodexTokenTotals>,
+    seen_totals: Vec<CodexTokenTotals>,
+    interleaved: bool,
+    fork_direct: bool,
+    fork_pending_replay: bool,
+    fork_baseline: Option<CodexTokenTotals>,
+    fork_prefix_total: Option<CodexTokenTotals>,
+}
+
+pub fn codex_state_with_fork_baseline(baseline: CodexTokenTotals) -> Option<String> {
+    serde_json::to_string(&CodexAccountingState {
+        fork_direct: true,
+        fork_baseline: Some(baseline),
+        ..CodexAccountingState::default()
+    })
+    .ok()
 }
 
 /// Token usage attributed to one model within a session. Same semantics as the
@@ -152,6 +220,31 @@ fn codex_replay_second(raw: &str) -> Option<String> {
     None
 }
 
+fn codex_has_replayed_parent_meta(raw: &str) -> bool {
+    let mut first_id: Option<String> = None;
+    for line in raw.lines() {
+        let Ok(parsed) = serde_json::from_str::<Value>(line.trim()) else {
+            continue;
+        };
+        if parsed.get("type").and_then(Value::as_str) != Some("session_meta") {
+            continue;
+        }
+        let Some(id) = parsed
+            .get("payload")
+            .and_then(|payload| payload.get("id"))
+            .and_then(Value::as_str)
+        else {
+            continue;
+        };
+        match first_id.as_deref() {
+            None => first_id = Some(id.to_string()),
+            Some(first) if first != id => return true,
+            Some(_) => {}
+        }
+    }
+    false
+}
+
 fn empty_summary(adapter_id: &str, agent_type: &str, source_ref: &str) -> RawSessionAdapterSummary {
     RawSessionAdapterSummary {
         adapter_id: adapter_id.to_string(),
@@ -177,7 +270,129 @@ fn empty_summary(adapter_id: &str, agent_type: &str, source_ref: &str) -> RawSes
         tokens_are_cumulative: false,
         model_usage: BTreeMap::new(),
         last_usage_key: None,
+        codex_usage_observations: Vec::new(),
     }
+}
+
+fn codex_totals(value: Option<&Value>) -> Option<CodexTokenTotals> {
+    let value = value?;
+    Some(CodexTokenTotals {
+        input: value
+            .get("input_tokens")
+            .and_then(Value::as_i64)
+            .unwrap_or(0)
+            .max(0),
+        cached: value
+            .get("cached_input_tokens")
+            .or_else(|| value.get("cache_read_input_tokens"))
+            .and_then(Value::as_i64)
+            .unwrap_or(0)
+            .max(0),
+        output: value
+            .get("output_tokens")
+            .and_then(Value::as_i64)
+            .unwrap_or(0)
+            .max(0),
+        reasoning: value
+            .get("reasoning_output_tokens")
+            .and_then(Value::as_i64)
+            .unwrap_or(0)
+            .max(0),
+    })
+}
+
+fn codex_component_delta(
+    current: &CodexTokenTotals,
+    prior: Option<&CodexTokenTotals>,
+) -> CodexTokenTotals {
+    let prior = prior.cloned().unwrap_or_default();
+    CodexTokenTotals {
+        input: (current.input - prior.input).max(0),
+        cached: (current.cached - prior.cached).max(0),
+        output: (current.output - prior.output).max(0),
+        reasoning: (current.reasoning - prior.reasoning).max(0),
+    }
+}
+
+fn codex_contained_delta(
+    watermark: Option<&CodexTokenTotals>,
+    counted: Option<&CodexTokenTotals>,
+    current: &CodexTokenTotals,
+) -> CodexTokenTotals {
+    let watermark = watermark.cloned().unwrap_or_default();
+    let counted = counted.cloned().unwrap_or_default();
+    let component = |water: i64, already_counted: i64, value: i64| {
+        if value >= water {
+            (value - water.max(already_counted)).max(0)
+        } else {
+            (value - already_counted).max(0)
+        }
+    };
+    CodexTokenTotals {
+        input: component(watermark.input, counted.input, current.input),
+        cached: component(watermark.cached, counted.cached, current.cached),
+        output: component(watermark.output, counted.output, current.output),
+        reasoning: component(watermark.reasoning, counted.reasoning, current.reasoning),
+    }
+}
+
+fn codex_add_totals(left: Option<&CodexTokenTotals>, right: &CodexTokenTotals) -> CodexTokenTotals {
+    let left = left.cloned().unwrap_or_default();
+    CodexTokenTotals {
+        input: left.input + right.input,
+        cached: left.cached + right.cached,
+        output: left.output + right.output,
+        reasoning: left.reasoning + right.reasoning,
+    }
+}
+
+fn codex_subtract_totals(
+    value: &CodexTokenTotals,
+    baseline: &CodexTokenTotals,
+) -> CodexTokenTotals {
+    CodexTokenTotals {
+        input: (value.input - baseline.input).max(0),
+        cached: (value.cached - baseline.cached).max(0),
+        output: (value.output - baseline.output).max(0),
+        reasoning: (value.reasoning - baseline.reasoning).max(0),
+    }
+}
+
+fn codex_totals_at_or_above(left: &CodexTokenTotals, right: &CodexTokenTotals) -> bool {
+    left.input >= right.input
+        && left.cached >= right.cached
+        && left.output >= right.output
+        && left.reasoning >= right.reasoning
+}
+
+fn codex_min_totals(left: &CodexTokenTotals, right: &CodexTokenTotals) -> CodexTokenTotals {
+    CodexTokenTotals {
+        input: left.input.min(right.input),
+        cached: left.cached.min(right.cached),
+        output: left.output.min(right.output),
+        reasoning: left.reasoning.min(right.reasoning),
+    }
+}
+
+fn codex_max_totals(left: Option<&CodexTokenTotals>, right: &CodexTokenTotals) -> CodexTokenTotals {
+    let left = left.cloned().unwrap_or_default();
+    CodexTokenTotals {
+        input: left.input.max(right.input),
+        cached: left.cached.max(right.cached),
+        output: left.output.max(right.output),
+        reasoning: left.reasoning.max(right.reasoning),
+    }
+}
+
+fn codex_local_day(timestamp: Option<&str>) -> Option<String> {
+    timestamp
+        .and_then(|raw| chrono::DateTime::parse_from_rfc3339(raw).ok())
+        .map(|value| {
+            value
+                .with_timezone(&chrono::Local)
+                .format("%Y-%m-%d")
+                .to_string()
+        })
 }
 
 fn update_timestamp(summary: &mut RawSessionAdapterSummary, timestamp: Option<String>) {
@@ -623,9 +838,21 @@ impl SessionSourceAdapter for CodexAdapter {
     }
 
     fn parse_raw(&self, source_ref: &str, raw: &str) -> RawSessionAdapterSummary {
+        self.parse_raw_with_state(source_ref, raw, None)
+    }
+
+    fn parse_raw_with_state(
+        &self,
+        source_ref: &str,
+        raw: &str,
+        prior_usage_key: Option<&str>,
+    ) -> RawSessionAdapterSummary {
         let mut summary = empty_summary(self.adapter_id(), self.agent_type(), source_ref);
-        let replay_second = codex_replay_second(raw);
-        let mut skipping_replay = replay_second.is_some();
+        let mut accounting_state = prior_usage_key
+            .and_then(|raw| serde_json::from_str::<CodexAccountingState>(raw).ok())
+            .unwrap_or_default();
+        let has_replayed_parent_meta = codex_has_replayed_parent_meta(raw);
+        summary.model_used = accounting_state.current_model.clone();
         let mut has_last_token_usage = false;
         let mut final_cumulative_usage: Option<(i64, i64, i64, i64)> = None;
         let mut response_input_tokens = 0;
@@ -650,10 +877,19 @@ impl SessionSourceAdapter for CodexAdapter {
 
             if msg_type == "session_meta" {
                 if let Some(payload) = payload {
+                    let meta_id = value_string(Some(payload), "id");
+                    if accounting_state.session_id.is_none() {
+                        accounting_state.session_id = meta_id.clone();
+                    } else if meta_id.as_deref() != accounting_state.session_id.as_deref()
+                        && accounting_state.fork_baseline.is_none()
+                    {
+                        accounting_state.fork_direct = false;
+                        accounting_state.fork_pending_replay = true;
+                    }
                     // Replayed child logs can contain the parent's session_meta
                     // after the child's. Keep the first identity from the file.
                     if summary.stable_id.is_none() {
-                        summary.stable_id = value_string(Some(payload), "id");
+                        summary.stable_id = meta_id;
                     }
                     if summary.cwd.is_none() {
                         summary.cwd = value_string(Some(payload), "cwd");
@@ -682,6 +918,27 @@ impl SessionSourceAdapter for CodexAdapter {
                             })
                         });
                     }
+                    if payload
+                        .get("forked_from_id")
+                        .and_then(Value::as_str)
+                        .is_some()
+                    {
+                        accounting_state.fork_direct = true;
+                    }
+                    if payload
+                        .get("source")
+                        .and_then(|source| source.get("subagent"))
+                        .and_then(|subagent| subagent.get("thread_spawn"))
+                        .and_then(|spawn| spawn.get("parent_thread_id"))
+                        .and_then(Value::as_str)
+                        .is_some()
+                    {
+                        if has_replayed_parent_meta && accounting_state.fork_baseline.is_none() {
+                            accounting_state.fork_pending_replay = true;
+                        } else {
+                            accounting_state.fork_direct = true;
+                        }
+                    }
                 }
                 continue;
             }
@@ -692,6 +949,7 @@ impl SessionSourceAdapter for CodexAdapter {
             // rows instead. Last turn wins, overriding the fallback.
             if msg_type == "turn_context" {
                 if let Some(model) = value_string(payload, "model") {
+                    accounting_state.current_model = Some(model.clone());
                     summary.model_used = Some(model);
                 }
                 continue;
@@ -704,96 +962,208 @@ impl SessionSourceAdapter for CodexAdapter {
                     .unwrap_or("");
                 if sub_type == "token_count" {
                     let info = payload.and_then(|p| p.get("info"));
+                    let timestamp = parsed
+                        .get("timestamp")
+                        .and_then(Value::as_str)
+                        .map(str::to_string);
+                    let raw_total =
+                        codex_totals(info.and_then(|value| value.get("total_token_usage")));
+                    let last = codex_totals(info.and_then(|value| value.get("last_token_usage")));
 
-                    if skipping_replay {
-                        let event_second = parsed
-                            .get("timestamp")
-                            .and_then(Value::as_str)
-                            .and_then(|timestamp| timestamp.get(..19));
-                        if event_second == replay_second.as_deref() {
-                            if let Some(total_usage) =
-                                info.and_then(|info| info.get("total_token_usage"))
-                            {
-                                final_cumulative_usage = Some((
-                                    total_usage
-                                        .get("input_tokens")
-                                        .and_then(|v| v.as_i64())
-                                        .unwrap_or(0),
-                                    total_usage
-                                        .get("output_tokens")
-                                        .and_then(|v| v.as_i64())
-                                        .unwrap_or(0),
-                                    total_usage
-                                        .get("cached_input_tokens")
-                                        .and_then(|v| v.as_i64())
-                                        .unwrap_or(0),
-                                    total_usage
-                                        .get("cache_creation_input_tokens")
-                                        .and_then(|v| v.as_i64())
-                                        .unwrap_or(0),
-                                ));
+                    if accounting_state.fork_pending_replay {
+                        if let Some(current) = raw_total.as_ref() {
+                            let still_prefix = accounting_state
+                                .fork_prefix_total
+                                .as_ref()
+                                .is_none_or(|prior| codex_totals_at_or_above(current, prior));
+                            if still_prefix {
+                                accounting_state.fork_prefix_total = Some(current.clone());
+                                summary
+                                    .codex_usage_observations
+                                    .push(CodexUsageObservation {
+                                        source_line: (idx + 1) as i64,
+                                        timestamp: timestamp.clone(),
+                                        day: codex_local_day(timestamp.as_deref()),
+                                        model: summary
+                                            .model_used
+                                            .clone()
+                                            .unwrap_or_else(|| "unknown".into()),
+                                        total: raw_total,
+                                        disposition: "inherited_replay".into(),
+                                        ..CodexUsageObservation::zero()
+                                    });
+                                continue;
                             }
+                            accounting_state.fork_pending_replay = false;
+                            accounting_state.last_total = None;
+                            accounting_state.watermark = None;
+                            accounting_state.counted = None;
+                            accounting_state.seen_totals.clear();
+                            accounting_state.interleaved = false;
+                        } else {
+                            summary
+                                .codex_usage_observations
+                                .push(CodexUsageObservation {
+                                    source_line: (idx + 1) as i64,
+                                    timestamp: timestamp.clone(),
+                                    day: codex_local_day(timestamp.as_deref()),
+                                    model: summary
+                                        .model_used
+                                        .clone()
+                                        .unwrap_or_else(|| "unknown".into()),
+                                    total: None,
+                                    disposition: "unresolved_fork".into(),
+                                    ..CodexUsageObservation::zero()
+                                });
                             continue;
                         }
-                        skipping_replay = false;
                     }
 
-                    if let Some(last_usage) = info.and_then(|info| info.get("last_token_usage")) {
-                        let input = last_usage
-                            .get("input_tokens")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0);
-                        let output = last_usage
-                            .get("output_tokens")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0);
-                        let cache_read = last_usage
-                            .get("cached_input_tokens")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0);
-                        let cache_creation = last_usage
-                            .get("cache_creation_input_tokens")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0);
-
-                        summary.total_input_tokens += input;
-                        summary.total_output_tokens += output;
-                        summary.cache_read_tokens += cache_read;
-                        summary.cache_creation_tokens += cache_creation;
-                        has_last_token_usage = true;
-
-                        let model_key = summary.model_used.as_deref().unwrap_or("unknown");
-                        let model_usage = summary
-                            .model_usage
-                            .entry(model_key.to_string())
-                            .or_default();
-                        model_usage.message_count += 1;
-                        model_usage.input_tokens += input;
-                        model_usage.output_tokens += output;
-                        model_usage.cache_read_tokens += cache_read;
-                        model_usage.cache_creation_tokens += cache_creation;
+                    if accounting_state.fork_direct && accounting_state.fork_baseline.is_none() {
+                        match (raw_total.as_ref(), last.as_ref()) {
+                            (Some(current), Some(last))
+                                if codex_totals_at_or_above(current, last) =>
+                            {
+                                let baseline = codex_subtract_totals(current, last);
+                                if baseline == CodexTokenTotals::default() {
+                                    accounting_state.fork_direct = false;
+                                    accounting_state.fork_pending_replay = true;
+                                    accounting_state.fork_prefix_total = Some(current.clone());
+                                    summary
+                                        .codex_usage_observations
+                                        .push(CodexUsageObservation {
+                                            source_line: (idx + 1) as i64,
+                                            timestamp: timestamp.clone(),
+                                            day: codex_local_day(timestamp.as_deref()),
+                                            model: summary
+                                                .model_used
+                                                .clone()
+                                                .unwrap_or_else(|| "unknown".into()),
+                                            total: raw_total,
+                                            disposition: "inherited_replay".into(),
+                                            ..CodexUsageObservation::zero()
+                                        });
+                                    continue;
+                                }
+                                accounting_state.fork_baseline = Some(baseline);
+                            }
+                            _ => {
+                                summary
+                                    .codex_usage_observations
+                                    .push(CodexUsageObservation {
+                                        source_line: (idx + 1) as i64,
+                                        timestamp: timestamp.clone(),
+                                        day: codex_local_day(timestamp.as_deref()),
+                                        model: summary
+                                            .model_used
+                                            .clone()
+                                            .unwrap_or_else(|| "unknown".into()),
+                                        total: raw_total,
+                                        disposition: "unresolved_fork".into(),
+                                        ..CodexUsageObservation::zero()
+                                    });
+                                continue;
+                            }
+                        }
                     }
+                    let total = raw_total.as_ref().map(|current| {
+                        accounting_state
+                            .fork_baseline
+                            .as_ref()
+                            .map(|baseline| codex_subtract_totals(current, baseline))
+                            .unwrap_or_else(|| current.clone())
+                    });
 
-                    if let Some(total_usage) = info.and_then(|info| info.get("total_token_usage")) {
-                        final_cumulative_usage = Some((
-                            total_usage
-                                .get("input_tokens")
-                                .and_then(|v| v.as_i64())
-                                .unwrap_or(0),
-                            total_usage
-                                .get("output_tokens")
-                                .and_then(|v| v.as_i64())
-                                .unwrap_or(0),
-                            total_usage
-                                .get("cached_input_tokens")
-                                .and_then(|v| v.as_i64())
-                                .unwrap_or(0),
-                            total_usage
-                                .get("cache_creation_input_tokens")
-                                .and_then(|v| v.as_i64())
-                                .unwrap_or(0),
+                    let duplicate = total.as_ref().is_some_and(|candidate| {
+                        accounting_state
+                            .seen_totals
+                            .iter()
+                            .any(|seen| seen == candidate)
+                    });
+                    let mut disposition = if duplicate { "duplicate" } else { "accepted" };
+                    let delta = if duplicate {
+                        CodexTokenTotals::default()
+                    } else if let Some(current) = total.as_ref() {
+                        if let Some(watermark) = accounting_state.watermark.as_ref() {
+                            if current.input < watermark.input
+                                || current.cached < watermark.cached
+                                || current.output < watermark.output
+                            {
+                                accounting_state.interleaved = true;
+                            }
+                        }
+                        let contained = if accounting_state.interleaved {
+                            codex_contained_delta(
+                                accounting_state.watermark.as_ref(),
+                                accounting_state.counted.as_ref(),
+                                current,
+                            )
+                        } else {
+                            codex_component_delta(current, accounting_state.last_total.as_ref())
+                        };
+                        if accounting_state.fork_baseline.is_some() && !accounting_state.interleaved
+                        {
+                            contained
+                        } else {
+                            last.as_ref()
+                                .map(|last| codex_min_totals(last, &contained))
+                                .unwrap_or(contained)
+                        }
+                    } else if let Some(last) = last.as_ref() {
+                        last.clone()
+                    } else {
+                        disposition = "unsupported";
+                        CodexTokenTotals::default()
+                    };
+
+                    if let Some(current) = total.as_ref() {
+                        accounting_state.watermark = Some(codex_max_totals(
+                            accounting_state.watermark.as_ref(),
+                            current,
                         ));
+                        accounting_state.last_total = Some(current.clone());
+                        if !duplicate {
+                            accounting_state.seen_totals.push(current.clone());
+                            if accounting_state.seen_totals.len() > 64 {
+                                accounting_state.seen_totals.remove(0);
+                            }
+                        }
+                        final_cumulative_usage =
+                            Some((current.input, current.output, current.cached, 0));
                     }
+
+                    has_last_token_usage |= last.is_some();
+                    summary.total_input_tokens += delta.input;
+                    summary.total_output_tokens += delta.output;
+                    summary.cache_read_tokens += delta.cached;
+                    accounting_state.counted =
+                        Some(codex_add_totals(accounting_state.counted.as_ref(), &delta));
+
+                    let model_key = summary
+                        .model_used
+                        .clone()
+                        .unwrap_or_else(|| "unknown".into());
+                    if delta.input > 0 || delta.output > 0 || delta.cached > 0 {
+                        let model_usage = summary.model_usage.entry(model_key.clone()).or_default();
+                        model_usage.message_count += 1;
+                        model_usage.input_tokens += delta.input;
+                        model_usage.output_tokens += delta.output;
+                        model_usage.cache_read_tokens += delta.cached;
+                    }
+                    summary
+                        .codex_usage_observations
+                        .push(CodexUsageObservation {
+                            source_line: (idx + 1) as i64,
+                            timestamp: timestamp.clone(),
+                            day: codex_local_day(timestamp.as_deref()),
+                            model: model_key,
+                            input_tokens: delta.input,
+                            cache_read_tokens: delta.cached,
+                            output_tokens: delta.output,
+                            reasoning_tokens: delta.reasoning,
+                            total,
+                            disposition: disposition.into(),
+                        });
                 }
                 continue;
             }
@@ -856,6 +1226,8 @@ impl SessionSourceAdapter for CodexAdapter {
                 .parse_warnings
                 .push("missing session_meta cwd".to_string());
         }
+        accounting_state.current_model = summary.model_used.clone();
+        summary.last_usage_key = serde_json::to_string(&accounting_state).ok();
         summary
     }
 }
@@ -987,6 +1359,115 @@ impl SessionSourceAdapter for CursorAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[derive(Deserialize)]
+    struct CodexOracleCase {
+        file: String,
+        model: String,
+        local_day: String,
+        input: i64,
+        cached: i64,
+        output: i64,
+        dispositions: Vec<String>,
+    }
+
+    fn parse_codex_chunks(
+        raw: &str,
+        boundaries: usize,
+    ) -> (i64, i64, i64, Vec<(String, String, Option<String>)>) {
+        let lines = raw.lines().collect::<Vec<_>>();
+        let mut state = None;
+        let mut input = 0;
+        let mut cached = 0;
+        let mut output = 0;
+        let mut dispositions = Vec::new();
+        let mut start = 0;
+        for boundary in 0..lines.len().saturating_sub(1) {
+            if boundaries & (1usize << boundary) == 0 {
+                continue;
+            }
+            let chunk = lines[start..=boundary].join("\n") + "\n";
+            let summary =
+                CodexAdapter.parse_raw_with_state("oracle.jsonl", &chunk, state.as_deref());
+            input += summary.total_input_tokens;
+            cached += summary.cache_read_tokens;
+            output += summary.total_output_tokens;
+            dispositions.extend(
+                summary
+                    .codex_usage_observations
+                    .into_iter()
+                    .map(|observation| {
+                        (observation.disposition, observation.model, observation.day)
+                    }),
+            );
+            state = summary.last_usage_key;
+            start = boundary + 1;
+        }
+        let chunk = lines[start..].join("\n") + "\n";
+        let summary = CodexAdapter.parse_raw_with_state("oracle.jsonl", &chunk, state.as_deref());
+        input += summary.total_input_tokens;
+        cached += summary.cache_read_tokens;
+        output += summary.total_output_tokens;
+        dispositions.extend(
+            summary
+                .codex_usage_observations
+                .into_iter()
+                .map(|observation| (observation.disposition, observation.model, observation.day)),
+        );
+        (input, cached, output, dispositions)
+    }
+
+    #[test]
+    fn codex_accounting_matches_independent_oracle_for_every_line_partition() {
+        let fixture_dir = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/codex-accounting"
+        ));
+        let oracle: Vec<CodexOracleCase> = serde_json::from_str(
+            &std::fs::read_to_string(fixture_dir.join("oracle.json")).expect("oracle"),
+        )
+        .expect("valid oracle");
+        for case in oracle {
+            let raw = std::fs::read_to_string(fixture_dir.join(&case.file)).expect("fixture");
+            let line_count = raw.lines().count();
+            for boundaries in 0..(1usize << line_count.saturating_sub(1)) {
+                let actual = parse_codex_chunks(&raw, boundaries);
+                assert_eq!(
+                    actual.0, case.input,
+                    "{} partition {boundaries:b}",
+                    case.file
+                );
+                assert_eq!(
+                    actual.1, case.cached,
+                    "{} partition {boundaries:b}",
+                    case.file
+                );
+                assert_eq!(
+                    actual.2, case.output,
+                    "{} partition {boundaries:b}",
+                    case.file
+                );
+                assert_eq!(
+                    actual
+                        .3
+                        .iter()
+                        .map(|item| item.0.as_str())
+                        .collect::<Vec<_>>(),
+                    case.dispositions
+                        .iter()
+                        .map(String::as_str)
+                        .collect::<Vec<_>>(),
+                    "{} partition {boundaries:b}",
+                    case.file
+                );
+                assert!(actual.3.iter().all(|item| item.1 == case.model));
+                assert!(actual
+                    .3
+                    .iter()
+                    .all(|item| item.2.as_deref() == Some(case.local_day.as_str())));
+            }
+        }
+    }
 
     #[test]
     fn parses_claude_fixture_into_normalized_summary() {
@@ -1131,6 +1612,80 @@ mod tests {
         let legacy = r#"{"type":"session_meta","payload":{"id":"c2","cwd":"/repo","model_provider":"openai"}}"#;
         let summary = CodexAdapter.parse_raw("/fixtures/codex-legacy.jsonl", legacy);
         assert_eq!(summary.model_used.as_deref(), Some("o3"));
+    }
+
+    fn codex_token_line(
+        timestamp: &str,
+        input: i64,
+        cached: i64,
+        output: i64,
+        total_input: i64,
+        total_cached: i64,
+        total_output: i64,
+    ) -> String {
+        format!(
+            r#"{{"timestamp":"{timestamp}","type":"event_msg","payload":{{"type":"token_count","info":{{"last_token_usage":{{"input_tokens":{input},"cached_input_tokens":{cached},"output_tokens":{output},"reasoning_output_tokens":1}},"total_token_usage":{{"input_tokens":{total_input},"cached_input_tokens":{total_cached},"output_tokens":{total_output},"reasoning_output_tokens":1}}}}}}}}"#
+        )
+    }
+
+    #[test]
+    fn codex_unchanged_cumulative_snapshot_is_not_recounted() {
+        let first = codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10);
+        let duplicate = codex_token_line("2026-08-10T01:00:05Z", 100, 80, 10, 100, 80, 10);
+        let raw = format!("{first}\n{duplicate}");
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-duplicate.jsonl", &raw);
+        assert_eq!(summary.total_input_tokens, 100);
+        assert_eq!(summary.total_output_tokens, 10);
+        assert_eq!(summary.codex_usage_observations.len(), 2);
+        assert_eq!(summary.codex_usage_observations[1].disposition, "duplicate");
+        assert_eq!(summary.codex_usage_observations[1].input_tokens, 0);
+    }
+
+    #[test]
+    fn codex_duplicate_suppression_survives_incremental_boundary() {
+        let first = codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10);
+        let duplicate = codex_token_line("2026-08-10T01:00:05Z", 100, 80, 10, 100, 80, 10);
+        let next = codex_token_line("2026-08-10T01:01:00Z", 50, 40, 5, 150, 120, 15);
+        let one = CodexAdapter.parse_raw_with_state("/fixtures/codex.jsonl", &first, None);
+        let two = CodexAdapter.parse_raw_with_state(
+            "/fixtures/codex.jsonl",
+            &format!("{duplicate}\n{next}"),
+            one.last_usage_key.as_deref(),
+        );
+        assert_eq!(one.total_input_tokens + two.total_input_tokens, 150);
+        assert_eq!(one.total_output_tokens + two.total_output_tokens, 15);
+        assert_eq!(two.codex_usage_observations[0].disposition, "duplicate");
+    }
+
+    #[test]
+    fn codex_interleaved_totals_only_count_growth_above_watermark() {
+        let raw = [
+            codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10),
+            // A second lineage drops below the watermark: no new contained growth.
+            codex_token_line("2026-08-10T01:00:10Z", 40, 30, 4, 40, 30, 4),
+            // Only 20/10/2 exceeds the original component-wise watermark.
+            codex_token_line("2026-08-10T01:00:20Z", 80, 60, 8, 120, 90, 12),
+        ]
+        .join("\n");
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-interleaved.jsonl", &raw);
+        assert_eq!(summary.total_input_tokens, 120);
+        assert_eq!(summary.cache_read_tokens, 90);
+        assert_eq!(summary.total_output_tokens, 12);
+    }
+
+    #[test]
+    fn codex_observations_keep_event_day_and_model() {
+        let raw = format!(
+            "{}\n{}\n{}",
+            r#"{"type":"session_meta","payload":{"id":"s","cwd":"/repo","model_provider":"openai"}}"#,
+            r#"{"type":"turn_context","payload":{"model":"gpt-5.6-sol"}}"#,
+            codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10),
+        );
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-day.jsonl", &raw);
+        let observation = &summary.codex_usage_observations[0];
+        assert_eq!(observation.model, "gpt-5.6-sol");
+        assert!(observation.day.is_some());
+        assert_eq!(observation.reasoning_tokens, 1);
     }
 
     #[test]
