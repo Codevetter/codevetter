@@ -7,8 +7,10 @@ import { createOptimizationCampaignService, inspectRepositoryState } from './cam
 import {
   CANDIDATE_CHALLENGE_SCHEMA_VERSION,
   CONTRIBUTION_LIMITS,
+  CONTRIBUTION_PUBLICATION_SCHEMA_VERSION,
   CONTRIBUTION_RECEIPT_SCHEMA_VERSION,
   assertCandidateChallenge,
+  assertContributionPublication,
   assertContributionReceipt,
   createDigestedArtifact,
   deriveContributionStatus,
@@ -17,6 +19,7 @@ import { redactText } from './redact.mjs';
 
 const CLOSEOUT_DIRECTORY = 'closeout';
 const RECEIPT_LEDGER = 'contributions.ndjson';
+const PUBLICATION_FILE = 'publication.json';
 const TREX_POLICIES = new Set(['optional', 'required', 'not_applicable']);
 const SIMPLER_TOLERANCE_PERCENT = 5;
 
@@ -80,7 +83,7 @@ async function challengeCandidate(root, input, dependencies) {
   const selected = challengeCandidateIdentity(
     selectedRecord,
     currentRepository.revision,
-    performanceMetric(selectedEvidence.evidence)
+    performanceMetrics(selectedEvidence.evidence)
   );
   let comparison = null;
   let comparisonEvidence = null;
@@ -97,7 +100,7 @@ async function challengeCandidate(root, input, dependencies) {
     comparison = challengeCandidateIdentity(
       comparisonRecord,
       comparisonRecord.repository.revision,
-      performanceMetric(comparisonEvidence.evidence)
+      performanceMetrics(comparisonEvidence.evidence)
     );
   }
   const diff = await dependencies.readCandidateDiff(root, campaign.manifest, currentRepository);
@@ -184,7 +187,17 @@ async function inspectContribution(root, input, dependencies) {
   const trex = await importTrexGate(root, input, challenge.candidate.candidate_revision, trexPath);
   const gates = contributionGates(challenge, selectedRecord, pullRequest, trex);
   const ledgerPath = `${campaignDirectory}/${CLOSEOUT_DIRECTORY}/${RECEIPT_LEDGER}`;
+  const publicationPath = `${campaignDirectory}/${CLOSEOUT_DIRECTORY}/${PUBLICATION_FILE}`;
   const previous = await readReceiptLedger(root, ledgerPath, canonicalCampaign);
+  const feedbackLearning = await deriveFeedbackLearning({
+    root,
+    previous,
+    challenge,
+    selectedRecord,
+    pullRequest,
+    gates,
+    canonicalCampaign,
+  });
   const receiptPayload = {
     campaign_id: campaign.manifest.campaign_id,
     observed_at: dependencies.now().toISOString(),
@@ -201,6 +214,7 @@ async function inspectContribution(root, input, dependencies) {
     gates,
     status: deriveContributionStatus(gates, pullRequest.identity),
     limitations: trex.limitations,
+    feedback_learning: feedbackLearning,
     previous_receipt_digest: previous.at(-1)?.receipt_digest ?? null,
   };
   const receipt = createDigestedArtifact(
@@ -210,7 +224,8 @@ async function inspectContribution(root, input, dependencies) {
   );
   assertContributionReceipt(receipt);
   await appendReceipt(root, ledgerPath, previous, receipt, canonicalCampaign);
-  return { receipt_path: ledgerPath, receipt };
+  const publication = await updatePublication(root, publicationPath, receipt, canonicalCampaign);
+  return { receipt_path: ledgerPath, receipt, publication_path: publicationPath, publication };
 }
 
 function qualifiedPromotion(records, sequence, label) {
@@ -227,42 +242,69 @@ function qualifiedPromotion(records, sequence, label) {
   return record;
 }
 
-function challengeCandidateIdentity(record, revision, metric) {
+function challengeCandidateIdentity(record, revision, metrics) {
   return {
     sequence: record.sequence,
     record_digest: record.record_digest,
     candidate_revision: revision,
     diff_digest: record.repository.diff_digest,
     complexity: record.complexity,
-    performance_metric: metric,
+    performance_metric: metrics.target,
+    control_metrics: metrics.controls,
   };
 }
 
-function performanceMetric(evidence) {
+function performanceMetrics(evidence) {
   const verification = evidence?.verification;
   const scale = verification?.observed?.find(
     (observation) => observation.kind === 'scale_point_comparison'
   );
   if (scale?.points?.length > 0) {
+    const target = scale.points.at(-1);
     return {
-      kind: 'largest_scale_point',
-      value: scale.points.at(-1).current,
-      unit: scale.points.at(-1).unit,
+      target: {
+        kind: 'largest_scale_point',
+        value: target.current,
+        unit: target.unit,
+      },
+      controls: scale.points.slice(0, -1).map((point) => ({
+        label: `input:${point.input}`,
+        kind: 'scale_control_point',
+        value: point.current,
+        unit: point.unit,
+      })),
     };
   }
   const go = verification?.observed?.find(
     (observation) => observation.kind === 'go_benchmark_comparison'
   );
   if (go?.metrics?.ns_per_op?.current !== undefined) {
-    return { kind: 'go_ns_per_op', value: go.metrics.ns_per_op.current, unit: 'ns/op' };
+    return {
+      target: { kind: 'go_ns_per_op', value: go.metrics.ns_per_op.current, unit: 'ns/op' },
+      controls: ['bytes_per_op', 'allocs_per_op'].flatMap((name) =>
+        go.metrics?.[name]?.current === undefined
+          ? []
+          : [
+              {
+                label: name,
+                kind: `go_${name}`,
+                value: go.metrics[name].current,
+                unit: name === 'bytes_per_op' ? 'B/op' : 'allocs/op',
+              },
+            ]
+      ),
+    };
   }
   const wall = verification?.observed?.find(
     (observation) => observation.kind === 'wall_time_comparison'
   );
   if (wall?.comparison?.current_median_ms !== undefined) {
-    return { kind: 'wall_time', value: wall.comparison.current_median_ms, unit: 'ms' };
+    return {
+      target: { kind: 'wall_time', value: wall.comparison.current_median_ms, unit: 'ms' },
+      controls: [],
+    };
   }
-  return null;
+  return { target: null, controls: [] };
 }
 
 function derivePatchQuality({
@@ -285,7 +327,8 @@ function derivePatchQuality({
       selected.performance_metric &&
       comparison.performance_metric &&
       selected.performance_metric.kind === comparison.performance_metric.kind &&
-      selected.performance_metric.unit === comparison.performance_metric.unit;
+      selected.performance_metric.unit === comparison.performance_metric.unit &&
+      compatibleControls(selected.control_metrics, comparison.control_metrics);
     if (!comparable) {
       return {
         status: 'no_confidence',
@@ -297,11 +340,16 @@ function derivePatchQuality({
     const comparisonMovement = codeMovement(comparison.complexity);
     const withinTolerance =
       selected.performance_metric.value <=
-      comparison.performance_metric.value * (1 + SIMPLER_TOLERANCE_PERCENT / 100);
+        comparison.performance_metric.value * (1 + SIMPLER_TOLERANCE_PERCENT / 100) &&
+      selected.control_metrics.every(
+        (metric, index) =>
+          metric.value <=
+          comparison.control_metrics[index].value * (1 + SIMPLER_TOLERANCE_PERCENT / 100)
+      );
     if (selectedMovement <= comparisonMovement && withinTolerance) {
       return {
         status: 'simpler_candidate_selected',
-        reason: `Selected candidate is no more complex and remains within ${SIMPLER_TOLERANCE_PERCENT}% of the qualified comparison.`,
+        reason: `Selected candidate is no more complex and remains within ${SIMPLER_TOLERANCE_PERCENT}% on the target and ${selected.control_metrics.length} recorded control metric(s).`,
         justification: sanitizedJustification,
       };
     }
@@ -330,6 +378,18 @@ function derivePatchQuality({
         : 'No deterministic defensive-complexity signal was observed; the missing comparison is explicitly bounded.',
     justification: sanitizedJustification,
   };
+}
+
+function compatibleControls(selected, comparison) {
+  return (
+    selected.length === comparison.length &&
+    selected.every(
+      (metric, index) =>
+        metric.label === comparison[index].label &&
+        metric.kind === comparison[index].kind &&
+        metric.unit === comparison[index].unit
+    )
+  );
 }
 
 function riskSignals(diff, changedFiles) {
@@ -361,6 +421,147 @@ function sanitizeJustification(value, root) {
     repositoryRoot: root,
     limit: CONTRIBUTION_LIMITS.justificationCharacters,
   }).text;
+}
+
+async function deriveFeedbackLearning({
+  root,
+  previous,
+  challenge,
+  selectedRecord,
+  pullRequest,
+  gates,
+  canonicalCampaign,
+}) {
+  const latest = previous.at(-1);
+  const carried = latest?.feedback_learning ?? [];
+  if (latest && latest.pull_request.url !== pullRequest.identity.url) {
+    throw new Error('contribution ledger belongs to a different pull request');
+  }
+  if (!latest || latest.evidence.candidate_revision === challenge.candidate.candidate_revision) {
+    return carried;
+  }
+  const source = previous.findLast(
+    (receipt) =>
+      receipt.evidence.candidate_revision !== challenge.candidate.candidate_revision &&
+      receipt.gates.reviews.observations.some(
+        (observation) =>
+          observation.kind === 'thread' && !observation.resolved && !observation.outdated
+      )
+  );
+  if (!source) return carried;
+  const feedback = source.gates.reviews.observations
+    .filter(
+      (observation) =>
+        observation.kind === 'thread' && !observation.resolved && !observation.outdated
+    )
+    .map((observation) => ({
+      author: observation.author,
+      path: observation.path,
+      line: observation.line ?? null,
+      summary: observation.summary,
+    }));
+  if (feedback.length === 0) return carried;
+  const priorChallenge = await readJsonArtifact(
+    root,
+    source.evidence.challenge_path,
+    CONTRIBUTION_LIMITS.receiptBytes,
+    canonicalCampaign
+  );
+  assertCandidateChallenge(priorChallenge);
+  if (priorChallenge.challenge_digest !== source.evidence.challenge_digest) {
+    throw new Error('previous contribution challenge digest does not match its receipt');
+  }
+  const learning = {
+    source_candidate_revision: source.evidence.candidate_revision,
+    revised_candidate_revision: challenge.candidate.candidate_revision,
+    feedback,
+    rejected_patterns: priorChallenge.diff_observations.risk_signals.map((signal) => signal.kind),
+    before_complexity: priorChallenge.candidate.complexity,
+    after_complexity: challenge.candidate.complexity,
+    revised_hypothesis:
+      typeof selectedRecord.hypothesis === 'string' && selectedRecord.hypothesis.trim()
+        ? sanitizeJustification(selectedRecord.hypothesis, root)
+        : null,
+    correctness_status: gates.correctness.status,
+    performance_status: gates.performance.status,
+    upstream_disposition: `${pullRequest.identity.state}:${deriveContributionStatus(gates, pullRequest.identity)}`,
+  };
+  return [...carried, learning].slice(-CONTRIBUTION_LIMITS.feedbackLearning);
+}
+
+async function updatePublication(root, path, receipt, canonicalCampaign) {
+  const existing = await readPublication(root, path, canonicalCampaign);
+  let publication;
+  if (receipt.gates.freshness.status === 'current') {
+    publication = createDigestedArtifact(
+      CONTRIBUTION_PUBLICATION_SCHEMA_VERSION,
+      {
+        campaign_id: receipt.campaign_id,
+        updated_at: receipt.observed_at,
+        status: 'current',
+        source_receipt_digest: receipt.receipt_digest,
+        candidate_revision: receipt.evidence.candidate_revision,
+        pull_request: receipt.pull_request,
+        summary: {
+          performance: receipt.gates.performance.status,
+          correctness: receipt.gates.correctness.status,
+          patch_quality: receipt.gates.patch_quality.status,
+          contribution: receipt.status,
+        },
+        feedback_learning: receipt.feedback_learning,
+        stale_reason: null,
+      },
+      'publication_digest'
+    );
+  } else if (existing) {
+    publication = createDigestedArtifact(
+      CONTRIBUTION_PUBLICATION_SCHEMA_VERSION,
+      {
+        campaign_id: existing.value.campaign_id,
+        updated_at: receipt.observed_at,
+        status: 'stale',
+        source_receipt_digest: existing.value.source_receipt_digest,
+        candidate_revision: existing.value.candidate_revision,
+        pull_request: existing.value.pull_request,
+        summary: existing.value.summary,
+        feedback_learning: existing.value.feedback_learning,
+        stale_reason: receipt.gates.freshness.reason,
+      },
+      'publication_digest'
+    );
+  } else {
+    return null;
+  }
+  assertContributionPublication(publication);
+  await replaceContainedArtifact(
+    root,
+    path,
+    `${stableStringify(publication)}\n`,
+    existing?.source ?? '',
+    canonicalCampaign
+  );
+  return publication;
+}
+
+async function readPublication(root, path, containmentRoot) {
+  const absolute = resolve(root, path);
+  assertContained(root, absolute, path);
+  try {
+    const canonical = await realpath(absolute);
+    assertContained(containmentRoot, canonical, path);
+    const details = await stat(canonical);
+    if (!details.isFile() || details.size > CONTRIBUTION_LIMITS.receiptBytes) {
+      throw new Error('contribution publication is unavailable or oversized');
+    }
+    const source = await readFile(canonical, 'utf8');
+    const value = JSON.parse(source);
+    assertContributionPublication(value);
+    return { source, value };
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    if (error instanceof SyntaxError) throw new Error('contribution publication is not valid JSON');
+    throw error;
+  }
 }
 
 function contributionGates(challenge, record, pullRequest, trex) {
@@ -795,6 +996,32 @@ async function writeContainedArtifact(root, path, source, containmentRoot = root
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
+  const temporary = `${target}.codevetter-${process.pid}.tmp`;
+  try {
+    await writeFile(temporary, source, { flag: 'wx' });
+    await rename(temporary, target);
+  } finally {
+    await rm(temporary, { force: true });
+  }
+}
+
+async function replaceContainedArtifact(root, path, source, expected, containmentRoot = root) {
+  const absolute = resolve(root, path);
+  assertContained(root, absolute, path);
+  if (Buffer.byteLength(source) > CONTRIBUTION_LIMITS.receiptBytes) {
+    throw new Error('contribution artifact exceeds size limit');
+  }
+  await mkdir(dirname(absolute), { recursive: true });
+  const canonicalParent = await realpath(dirname(absolute));
+  assertContained(containmentRoot, canonicalParent, path);
+  const target = resolve(canonicalParent, basename(absolute));
+  let current = '';
+  try {
+    current = await readFile(target, 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  if (current !== expected) throw new Error('contribution publication changed during refresh');
   const temporary = `${target}.codevetter-${process.pid}.tmp`;
   try {
     await writeFile(temporary, source, { flag: 'wx' });

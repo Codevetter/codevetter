@@ -899,8 +899,11 @@ pnpm --silent runtime:campaign -- challenge \
 The challenge binds the kept record, current commit, diff digest, complexity,
 and deterministic risk observations. It requires either a directly comparable
 qualified candidate or a bounded reason that a simpler comparison is not
-applicable. Risk tokens request evidence; they are not a model score and cannot
-offset correctness or performance.
+applicable. Candidate comparison retains the largest scale or latency value as
+the target and treats smaller scale points, bytes/op, and allocations/op as
+controls when they exist. The simpler candidate must stay within the same 5%
+tolerance on every retained metric. Risk tokens request evidence; they are not
+a model score and cannot offset correctness or performance.
 
 Inspect one published pull request with the returned challenge path:
 
@@ -924,6 +927,17 @@ gates. It distinguishes failed checks from fork-workflow approval, retains
 outdated and resolved feedback without treating either as current work, and
 reports `waiting_for_maintainer` when upstream owns merge. Use
 `refresh-contribution` for one explicit reread; there is no polling.
+
+The append-only receipt also carries bounded maintainer-feedback learning when
+a reviewed candidate is superseded: exact before/after SHAs and complexity,
+the actionable thread, prior deterministic risk signals, the revised campaign
+hypothesis, repeated local gates, and observed upstream disposition. This is
+evidence from one contribution, not a universal style rule.
+
+`closeout/publication.json` is a concise projection of the newest current
+receipt. A different PR head marks an existing projection `stale` while keeping
+its original receipt digest; only a newly challenged, current receipt can
+regenerate it. The receipt ledger remains the authority.
 
 The GitHub adapter uses one fixed read-only GraphQL query. It cannot comment,
 resolve a thread, request review, approve, merge, deploy, install an app, create

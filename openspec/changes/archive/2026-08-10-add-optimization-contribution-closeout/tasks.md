@@ -3,6 +3,7 @@
 - [x] 1.1 Define strict versioned challenge and contribution receipt contracts with bounded inputs and independent gates
 - [x] 1.2 Implement deterministic diff-risk observations, simpler-candidate comparison, and fail-closed patch-quality derivation
 - [x] 1.3 Add focused contract and challenge tests, including defensive-complexity and no-alternative cases
+- [x] 1.4 Retain target and control metrics when comparing qualified candidates
 
 ## 2. Contribution Evidence
 
@@ -10,6 +11,7 @@
 - [x] 2.2 Implement read-only thread-aware GitHub normalization with head-drift invalidation
 - [x] 2.3 Import optional, required, and not-applicable T-Rex receipts without launching browser or hosted work
 - [x] 2.4 Derive conservative contribution readiness and append bounded revision-bound receipts
+- [x] 2.5 Persist revision-bound feedback learning and current/stale publication projection
 
 ## 3. Machine Interfaces
 
@@ -20,6 +22,7 @@
 ## 4. Qualification and Documentation
 
 - [x] 4.1 Add a hermetic Marked-shaped fixture covering current, outdated, and resolved feedback plus approval-required checks
+- [x] 4.5 Extend the fixture through simplification, head invalidation, learning, and publication regeneration
 - [x] 4.2 Add a SHA-matched T-Rex receipt fixture and verify performance and browser-flow gates remain independent
 - [x] 4.3 Document the contributor-only workflow, concise evidence summary, limitations, and issue boundaries
 - [x] 4.4 Run focused tests, the runtime capsule suite, MCP smoke tests, docs validation, and diff checks

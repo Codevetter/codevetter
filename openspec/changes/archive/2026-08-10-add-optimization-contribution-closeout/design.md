@@ -52,6 +52,12 @@ new cache/state identifiers, `finally`/`defer` cleanup, and fallback branches.
 Signals are observations, not a quality score. A flagged candidate needs either
 a qualified simpler comparison or a bounded invariant justification.
 
+The comparison retains the largest scale or latency value as the target and
+smaller scale points, bytes/op, and allocations/op as controls when the
+promotion evidence contains them. A simpler candidate must stay inside the
+same tolerance on every recorded value. This avoids accepting a fast target
+that quietly regresses the no-op, small-input, or allocation surface.
+
 An AST dependency was rejected for the first slice because it would increase
 packaging and language scope. An LLM quality verdict was rejected because it
 would make the publication gate nondeterministic.
@@ -126,6 +132,21 @@ benchmark report, automatically requesting re-review, or reminding maintainers
 was rejected. Those actions externalize the contributor's verification cost
 onto open-source projects. A future explicit author action may copy a concise
 summary, but it is not part of this service.
+
+### 8. Derive learning and publication from receipt transitions
+
+When a reviewed candidate is superseded, the service reads the prior immutable
+challenge and carries the actionable thread into a bounded learning record. It
+records exact before/after revisions and complexity, prior risk signals, the
+revised campaign hypothesis, repeated gate status, and current upstream
+disposition. It does not infer a universal style rule or ask a maintainer to
+classify the feedback.
+
+`publication.json` is a replaceable projection, not evidence authority. A
+current receipt regenerates it. Head drift only marks the existing projection
+stale while preserving its source digest; no stale receipt can silently become
+the new publication. The append-only receipt ledger and immutable challenges
+remain authoritative.
 
 ## Risks / Trade-offs
 

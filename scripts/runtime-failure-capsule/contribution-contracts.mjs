@@ -2,6 +2,7 @@ import { sha256, stableStringify } from './campaign-contracts.mjs';
 
 export const CANDIDATE_CHALLENGE_SCHEMA_VERSION = 'optimization-candidate-challenge/v1';
 export const CONTRIBUTION_RECEIPT_SCHEMA_VERSION = 'optimization-contribution-receipt/v1';
+export const CONTRIBUTION_PUBLICATION_SCHEMA_VERSION = 'optimization-contribution-publication/v1';
 
 export const CONTRIBUTION_LIMITS = Object.freeze({
   justificationCharacters: 1_000,
@@ -10,6 +11,7 @@ export const CONTRIBUTION_LIMITS = Object.freeze({
   riskSignals: 16,
   reviewThreads: 100,
   checkRuns: 100,
+  feedbackLearning: 20,
 });
 
 const PATCH_QUALITY = new Set([
@@ -99,6 +101,7 @@ export function assertContributionReceipt(value) {
         'gates',
         'status',
         'limitations',
+        'feedback_learning',
         'previous_receipt_digest',
         'receipt_digest',
       ],
@@ -113,6 +116,7 @@ export function assertContributionReceipt(value) {
     gates(value.gates, errors);
     text(value.status, 'status', errors, 80);
     strings(value.limitations, 'limitations', errors, 50, 500);
+    feedbackLearning(value.feedback_learning, errors);
     if (value.previous_receipt_digest !== null) {
       digest(value.previous_receipt_digest, 'previous_receipt_digest', errors);
     }
@@ -127,6 +131,50 @@ export function assertContributionReceipt(value) {
     if (value.status !== derived) errors.push(`status must be derived as ${derived}`);
   }
   if (errors.length > 0) throw new Error(`invalid contribution receipt: ${errors.join('; ')}`);
+  return value;
+}
+
+export function assertContributionPublication(value) {
+  const errors = [];
+  object(value, 'publication', errors);
+  if (errors.length === 0) {
+    closed(
+      value,
+      [
+        'schema_version',
+        'campaign_id',
+        'updated_at',
+        'status',
+        'source_receipt_digest',
+        'candidate_revision',
+        'pull_request',
+        'summary',
+        'feedback_learning',
+        'stale_reason',
+        'publication_digest',
+      ],
+      'publication',
+      errors
+    );
+    exact(value.schema_version, CONTRIBUTION_PUBLICATION_SCHEMA_VERSION, 'schema_version', errors);
+    text(value.campaign_id, 'campaign_id', errors, 64);
+    timestamp(value.updated_at, 'updated_at', errors);
+    if (!['current', 'stale'].includes(value.status)) errors.push('publication.status is invalid');
+    digest(value.source_receipt_digest, 'source_receipt_digest', errors);
+    revision(value.candidate_revision, 'candidate_revision', errors);
+    pullRequest(value.pull_request, errors);
+    publicationSummary(value.summary, errors);
+    feedbackLearning(value.feedback_learning, errors);
+    if (value.stale_reason !== null) text(value.stale_reason, 'stale_reason', errors, 1_000);
+    digest(value.publication_digest, 'publication_digest', errors);
+    if (
+      typeof value.publication_digest === 'string' &&
+      value.publication_digest !== artifactDigest(value, 'publication_digest')
+    ) {
+      errors.push('publication_digest is invalid');
+    }
+  }
+  if (errors.length > 0) throw new Error(`invalid contribution publication: ${errors.join('; ')}`);
   return value;
 }
 
@@ -163,6 +211,7 @@ function candidate(value, label, errors) {
       'diff_digest',
       'complexity',
       'performance_metric',
+      'control_metrics',
     ],
     label,
     errors
@@ -173,17 +222,29 @@ function candidate(value, label, errors) {
   digest(value.diff_digest, `${label}.diff_digest`, errors);
   complexity(value.complexity, `${label}.complexity`, errors);
   if (value.performance_metric !== null) {
-    if (!object(value.performance_metric, `${label}.performance_metric`, errors)) return;
-    closed(
-      value.performance_metric,
-      ['kind', 'value', 'unit'],
-      `${label}.performance_metric`,
-      errors
-    );
-    text(value.performance_metric.kind, `${label}.performance_metric.kind`, errors, 80);
-    number(value.performance_metric.value, `${label}.performance_metric.value`, errors);
-    text(value.performance_metric.unit, `${label}.performance_metric.unit`, errors, 40);
+    performanceMetric(value.performance_metric, `${label}.performance_metric`, errors);
   }
+  if (!Array.isArray(value.control_metrics) || value.control_metrics.length > 16) {
+    errors.push(`${label}.control_metrics is invalid`);
+  } else {
+    value.control_metrics.forEach((metric, index) =>
+      performanceMetric(metric, `${label}.control_metrics[${index}]`, errors, { label: true })
+    );
+  }
+}
+
+function performanceMetric(value, label, errors, options = {}) {
+  if (!object(value, label, errors)) return;
+  closed(
+    value,
+    options.label ? ['label', 'kind', 'value', 'unit'] : ['kind', 'value', 'unit'],
+    label,
+    errors
+  );
+  if (options.label) text(value.label, `${label}.label`, errors, 80);
+  text(value.kind, `${label}.kind`, errors, 80);
+  number(value.value, `${label}.value`, errors);
+  text(value.unit, `${label}.unit`, errors, 40);
 }
 
 function complexity(value, label, errors) {
@@ -276,6 +337,70 @@ function evidence(value, errors) {
   safePath(value.challenge_path, 'evidence.challenge_path', errors);
   digest(value.challenge_digest, 'evidence.challenge_digest', errors);
   if (value.trex_path !== null) safePath(value.trex_path, 'evidence.trex_path', errors);
+}
+
+function feedbackLearning(value, errors) {
+  if (!Array.isArray(value) || value.length > CONTRIBUTION_LIMITS.feedbackLearning) {
+    errors.push('feedback_learning is invalid');
+    return;
+  }
+  value.forEach((entry, index) => {
+    const label = `feedback_learning[${index}]`;
+    if (!object(entry, label, errors)) return;
+    closed(
+      entry,
+      [
+        'source_candidate_revision',
+        'revised_candidate_revision',
+        'feedback',
+        'rejected_patterns',
+        'before_complexity',
+        'after_complexity',
+        'revised_hypothesis',
+        'correctness_status',
+        'performance_status',
+        'upstream_disposition',
+      ],
+      label,
+      errors
+    );
+    revision(entry.source_candidate_revision, `${label}.source_candidate_revision`, errors);
+    revision(entry.revised_candidate_revision, `${label}.revised_candidate_revision`, errors);
+    if (
+      !Array.isArray(entry.feedback) ||
+      entry.feedback.length > CONTRIBUTION_LIMITS.reviewThreads
+    ) {
+      errors.push(`${label}.feedback is invalid`);
+    } else {
+      entry.feedback.forEach((observation, observationIndex) => {
+        const observationLabel = `${label}.feedback[${observationIndex}]`;
+        if (!object(observation, observationLabel, errors)) return;
+        closed(observation, ['author', 'path', 'line', 'summary'], observationLabel, errors);
+        text(observation.author, `${observationLabel}.author`, errors, 100);
+        text(observation.path, `${observationLabel}.path`, errors, 300);
+        if (observation.line !== null)
+          integer(observation.line, `${observationLabel}.line`, errors, 1, 10_000_000);
+        text(observation.summary, `${observationLabel}.summary`, errors, 300);
+      });
+    }
+    strings(entry.rejected_patterns, `${label}.rejected_patterns`, errors, 16, 80);
+    complexity(entry.before_complexity, `${label}.before_complexity`, errors);
+    complexity(entry.after_complexity, `${label}.after_complexity`, errors);
+    if (entry.revised_hypothesis !== null)
+      text(entry.revised_hypothesis, `${label}.revised_hypothesis`, errors, 1_000);
+    text(entry.correctness_status, `${label}.correctness_status`, errors, 40);
+    text(entry.performance_status, `${label}.performance_status`, errors, 40);
+    text(entry.upstream_disposition, `${label}.upstream_disposition`, errors, 80);
+  });
+}
+
+function publicationSummary(value, errors) {
+  if (!object(value, 'summary', errors)) return;
+  closed(value, ['performance', 'correctness', 'patch_quality', 'contribution'], 'summary', errors);
+  text(value.performance, 'summary.performance', errors, 80);
+  text(value.correctness, 'summary.correctness', errors, 80);
+  text(value.patch_quality, 'summary.patch_quality', errors, 80);
+  text(value.contribution, 'summary.contribution', errors, 80);
 }
 
 function gates(value, errors) {

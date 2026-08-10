@@ -12,13 +12,21 @@ promotion record before it can report an optimization contribution as ready.
 The challenge MUST identify the selected candidate, record deterministic diff
 complexity, and contain either a comparison with another qualified candidate or
 an explicit bounded reason that a simpler-candidate attempt is not applicable.
+When the qualified performance evidence contains smaller-input or secondary
+metrics, the comparison MUST retain them as control metrics and apply the same
+declared tolerance before preferring a candidate.
 
 #### Scenario: Simpler qualified candidate is available
 - **WHEN** two correctness-preserving promotion records address the same
   optimization scope and the simpler candidate remains inside the declared
   performance tolerance
 - **THEN** the challenge withholds readiness until the simpler candidate is
-  selected and records the performance and complexity basis
+  selected and records the target, control, and complexity basis
+
+#### Scenario: Simpler candidate regresses a control
+- **WHEN** the simpler candidate remains inside tolerance on the target metric
+  but exceeds tolerance on a recorded smaller-input or secondary metric
+- **THEN** patch quality remains `no_confidence`
 
 #### Scenario: Candidate adds defensive complexity
 - **WHEN** the selected diff adds mutable state, caching, fallback, or cleanup
@@ -84,6 +92,27 @@ locally reverified.
 - **WHEN** the same current pull-request evidence is inspected again
 - **THEN** normalized receipt content remains stable apart from its explicit
   observation timestamp
+
+### Requirement: Review learning and publication remain revision-bound
+The system SHALL preserve current actionable maintainer feedback as bounded
+learning only when a later locally verified candidate supersedes the reviewed
+candidate. The record MUST retain the source and revised candidate revisions,
+feedback location and summary, rejected deterministic risk signals, before and
+after complexity, revised hypothesis when available, repeated correctness and
+performance status, and observed upstream disposition. A concise publication
+projection MUST be generated only from a current receipt; head drift MUST mark
+an existing projection stale without replacing its source evidence.
+
+#### Scenario: Reviewed candidate is simplified
+- **WHEN** a candidate with actionable inline feedback is replaced by a new
+  locally verified candidate for the same pull request
+- **THEN** the current receipt preserves one revision-bound feedback-learning
+  record and the current publication projects it
+
+#### Scenario: Pull-request head advances before local reverification
+- **WHEN** a current publication exists and GitHub reports a different head
+- **THEN** the publication becomes `stale` and keeps its original source receipt
+  until a current challenged receipt regenerates it
 
 ### Requirement: Existing T-Rex receipts compose without losing authority
 The system SHALL optionally ingest one repository-contained canonical T-Rex

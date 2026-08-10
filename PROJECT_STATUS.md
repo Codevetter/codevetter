@@ -68,7 +68,11 @@ Internal (fleet):
   dogfood against Marked PR #4048 caught and fixed a classifier error: Vercel
   fork authorization is now `approval_required`, not a code failure; two older
   inline threads remain visible as outdated. Raw evidence stays local and
-  upstream maintainers receive no additional workflow.
+  upstream maintainers receive no additional workflow. Qualified candidate
+  comparisons retain target plus available smaller-input/allocation controls,
+  and the full Marked-shaped fixture proves reviewed-head invalidation,
+  simpler-candidate selection, bounded feedback learning, and regeneration of
+  a current receipt-backed publication projection.
 - **2026-08-09 — Shared lint baseline:** Adopted the Fleet Ultracite baseline
   for core TypeScript, React, and test code. Explicit compatibility exceptions
   preserve current behavior while 662 files pass with zero diagnostics;

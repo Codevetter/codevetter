@@ -13,6 +13,7 @@ import { createOptimizationContributionService, normalizeGitHubEvidence } from '
 
 const BASE = 'a'.repeat(40);
 const HEAD = 'b'.repeat(40);
+const OLD_HEAD = 'c'.repeat(40);
 const DIFF = 'd'.repeat(64);
 const RECORD = 'e'.repeat(64);
 const WORKLOAD = 'f'.repeat(64);
@@ -57,6 +58,7 @@ test('Marked-shaped challenge selects the simpler qualified candidate within tol
   assert.equal(result.challenge.patch_quality.status, 'simpler_candidate_selected');
   assert.equal(result.challenge.candidate.complexity.added_lines, 4);
   assert.equal(result.challenge.comparison.complexity.added_lines, 12);
+  assert.equal(result.challenge.candidate.control_metrics.length, 1);
 });
 
 test('candidate challenge observes class state, public signatures, and dependency manifests', async (context) => {
@@ -79,6 +81,22 @@ test('candidate challenge observes class state, public signatures, and dependenc
     result.challenge.diff_observations.risk_signals.map((signal) => signal.kind),
     ['class_member_state', 'public_signature', 'dependency_manifest']
   );
+});
+
+test('candidate challenge rejects a simpler target candidate when its control exceeds tolerance', async (context) => {
+  const fixture = await contributionFixture(context, {
+    includeComparison: true,
+    selectedSimpler: true,
+  });
+  fixture.evidence.get(1).verification.observed[0].points[0].current = 1.1;
+  const service = await createOptimizationContributionService(fixture.root, fixture.dependencies);
+  const result = await service.challenge({
+    campaign_directory: fixture.campaignDirectory,
+    selected_sequence: 1,
+    comparison_sequence: 2,
+  });
+  assert.equal(result.challenge.patch_quality.status, 'no_confidence');
+  assert.match(result.challenge.patch_quality.reason, /tolerance/);
 });
 
 test('qualified comparison rejects a more complex candidate inside the same workload', async (context) => {
@@ -183,6 +201,25 @@ test('contribution receipt keeps review, approval, T-Rex, and head gates indepen
   assert.equal(first.receipt.gates.approvals.status, 'not_observed');
   assert.equal(first.receipt.gates.checks.status, 'approval_required');
   assert.equal(first.receipt.status, 'review_action_required');
+  assert.equal(first.publication.status, 'current');
+  assert.equal(first.publication.source_receipt_digest, first.receipt.receipt_digest);
+
+  github = {
+    ...githubEvidence(),
+    url: 'https://github.com/example/other/pull/1',
+    repository: 'example/other',
+    number: 1,
+  };
+  await assert.rejects(
+    service.refresh({
+      campaign_directory: fixture.campaignDirectory,
+      challenge_path: challenged.path,
+      pull_request_url: 'https://github.com/example/other/pull/1',
+      trex_policy: 'required',
+      trex_receipt: trexPath,
+    }),
+    /different pull request/
+  );
 
   github = githubEvidence({
     checks: [{ name: 'test', status: 'completed', conclusion: 'success' }],
@@ -209,6 +246,109 @@ test('contribution receipt keeps review, approval, T-Rex, and head gates indepen
   assert.equal(refreshed.receipt.previous_receipt_digest, first.receipt.receipt_digest);
   const ledger = await readFile(join(fixture.root, refreshed.receipt_path), 'utf8');
   assert.equal(ledger.trim().split('\n').length, 2);
+});
+
+test('Marked-shaped lifecycle invalidates publication and learns from revised feedback', async (context) => {
+  const fixture = await contributionFixture(context, { includeComparison: true });
+  fixture.records[1].repository.revision = OLD_HEAD;
+  fixture.records[2].repository.revision = HEAD;
+  fixture.records[2].hypothesis = 'Replace duplicated lexer state with direct membership.';
+  let repositoryRevision = OLD_HEAD;
+  let diff = '+ private links = new Map();\n+ try { if (ready) work(); } finally { fallback(); }\n';
+  let github = githubEvidence({
+    head: OLD_HEAD,
+    threads: [
+      {
+        resolved: false,
+        outdated: false,
+        author: 'maintainer',
+        path: 'src/Lexer.ts',
+        line: 42,
+        body: 'Use the existing links object directly.',
+      },
+    ],
+  });
+  const dependencies = {
+    ...fixture.dependencies,
+    inspectRepositoryState: async () => ({
+      revision: repositoryRevision,
+      diff_digest: DIFF,
+      changed_files: ['src/Lexer.ts'],
+    }),
+    readCandidateDiff: async () => diff,
+    githubInspector: async () => github,
+  };
+  const service = await createOptimizationContributionService(fixture.root, dependencies);
+  const complex = await service.challenge({
+    campaign_directory: fixture.campaignDirectory,
+    selected_sequence: 1,
+    simpler_not_applicable_reason:
+      'The first candidate preserves the old fallback during screening.',
+  });
+  const reviewed = await service.inspect({
+    campaign_directory: fixture.campaignDirectory,
+    challenge_path: complex.path,
+    pull_request_url: 'https://github.com/markedjs/marked/pull/4048',
+    trex_policy: 'not_applicable',
+    trex_not_applicable_reason: 'Parser library has no browser flow.',
+  });
+  assert.equal(reviewed.receipt.status, 'review_action_required');
+  assert.equal(reviewed.publication.status, 'current');
+
+  repositoryRevision = HEAD;
+  github = githubEvidence({
+    head: HEAD,
+    checks: [{ name: 'test', status: 'completed', conclusion: 'action_required' }],
+    threads: [
+      {
+        resolved: false,
+        outdated: true,
+        author: 'maintainer',
+        path: 'src/Lexer.ts',
+        line: null,
+        body: 'Use the existing links object directly.',
+      },
+    ],
+  });
+  dependencies.now = () => new Date('2026-08-10T00:00:02.000Z');
+  const stale = await service.refresh({
+    campaign_directory: fixture.campaignDirectory,
+    challenge_path: complex.path,
+    pull_request_url: 'https://github.com/markedjs/marked/pull/4048',
+    trex_policy: 'not_applicable',
+    trex_not_applicable_reason: 'Parser library has no browser flow.',
+  });
+  assert.equal(stale.receipt.status, 'stale');
+  assert.equal(stale.publication.status, 'stale');
+  assert.equal(stale.publication.source_receipt_digest, reviewed.receipt.receipt_digest);
+
+  diff = '+ return Object.hasOwn(tokens.links, label);\n';
+  dependencies.now = () => new Date('2026-08-10T00:00:03.000Z');
+  const simpler = await service.challenge({
+    campaign_directory: fixture.campaignDirectory,
+    selected_sequence: 2,
+    comparison_sequence: 1,
+  });
+  const current = await service.inspect({
+    campaign_directory: fixture.campaignDirectory,
+    challenge_path: simpler.path,
+    pull_request_url: 'https://github.com/markedjs/marked/pull/4048',
+    trex_policy: 'not_applicable',
+    trex_not_applicable_reason: 'Parser library has no browser flow.',
+  });
+  assert.equal(current.receipt.status, 'checks_approval_required');
+  assert.equal(current.receipt.feedback_learning.length, 1);
+  assert.deepEqual(current.receipt.feedback_learning[0].rejected_patterns, [
+    'class_member_state',
+    'cleanup_path',
+    'fallback_path',
+    'new_branch',
+  ]);
+  assert.equal(current.receipt.feedback_learning[0].feedback[0].line, 42);
+  assert.match(current.receipt.feedback_learning[0].revised_hypothesis, /direct membership/);
+  assert.equal(current.publication.status, 'current');
+  assert.equal(current.publication.source_receipt_digest, current.receipt.receipt_digest);
+  assert.equal(current.publication.feedback_learning.length, 1);
 });
 
 test('head drift and required missing T-Rex evidence fail closed', async (context) => {
@@ -378,7 +518,7 @@ async function contributionFixture(
       '+ const cache = new Map();\n+ try { if (ready) work(); } finally { fallback(); }\n',
     githubInspector: async () => githubEvidence(),
   };
-  return { root, campaignDirectory, dependencies };
+  return { root, campaignDirectory, dependencies, records, evidence };
 }
 
 function initializedRecord() {
@@ -415,7 +555,10 @@ function promotionEvidence(metric) {
       observed: [
         {
           kind: 'scale_point_comparison',
-          points: [{ input: 2_000, unit: 'ms/op', baseline: 100, current: metric }],
+          points: [
+            { input: 0, unit: 'ms/op', baseline: 1, current: metric / 10 },
+            { input: 2_000, unit: 'ms/op', baseline: 100, current: metric },
+          ],
         },
       ],
     },
