@@ -257,7 +257,7 @@ export function createPerformanceCapsule({
       ? summarizeConsoleBenchmarkMetrics(
           metricsExecutions.map((entry) => `${entry.stdout}\n${entry.stderr}`)
         )
-      : ['node-test', 'node-script'].includes(adapter) && measured.length > 0
+      : ['node-test', 'node-script', 'vitest'].includes(adapter) && measured.length > 0
         ? summarizeConsoleBenchmarkMetrics(
             measured.map((entry) => `${entry.stdout}\n${entry.stderr}`),
             'unprofiled_measurement_execution_median'

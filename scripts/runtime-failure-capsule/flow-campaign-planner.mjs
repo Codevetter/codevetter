@@ -106,7 +106,7 @@ export async function planFlowOptimizationCampaign({
           repository_revision: capsule.subject.repository_revision,
           dirty: capsule.subject.dirty,
           sample_policy: capsule.sample_policy,
-          profile_repeatability: capsule.observed.profile_repeatability ?? null,
+          profile_repeatability: sourceAlignedRepeatability(capsule, diagnosis),
           flow_events: capsule.observed.flow_evidence?.events.length ?? 0,
           temporary_artifacts_retained: capsule.capture.temporary_artifacts_retained,
         },
@@ -189,6 +189,33 @@ export async function planFlowOptimizationCampaign({
     ],
     verdict,
   });
+}
+
+function sourceAlignedRepeatability(capsule, diagnosis) {
+  const repeatability = capsule.observed.profile_repeatability;
+  if (!repeatability) return null;
+  const hotspot = diagnosis.observed?.find(
+    (observation) => observation.kind === 'repository_cpu_hotspot'
+  )?.source;
+  if (!hotspot?.reported_line || hotspot.reported_line === hotspot.line) return repeatability;
+
+  const align = (candidate) => {
+    if (
+      !candidate ||
+      candidate.file !== hotspot.file ||
+      candidate.function !== hotspot.function ||
+      candidate.line !== hotspot.reported_line
+    ) {
+      return candidate;
+    }
+    return { ...candidate, line: hotspot.line, reported_line: hotspot.reported_line };
+  };
+
+  return {
+    ...repeatability,
+    candidates: repeatability.candidates?.map(align) ?? [],
+    candidate: align(repeatability.candidate),
+  };
 }
 
 export async function loadFlowPriorityManifest(repositoryRoot, manifestPath) {
