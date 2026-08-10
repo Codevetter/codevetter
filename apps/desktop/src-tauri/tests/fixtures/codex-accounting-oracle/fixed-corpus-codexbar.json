@@ -1,0 +1,21 @@
+{
+  "provider": "codex",
+  "source": "local",
+  "totals": {
+    "inputTokens": 1495,
+    "cacheReadTokens": 1230,
+    "outputTokens": 149,
+    "totalTokens": 1644,
+    "totalCost": 0.003205
+  },
+  "daily": [
+    {
+      "date": "2026-07-16",
+      "inputTokens": 1495,
+      "cacheReadTokens": 1230,
+      "outputTokens": 149,
+      "totalTokens": 1644,
+      "totalCost": 0.003205
+    }
+  ]
+}

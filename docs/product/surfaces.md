@@ -35,7 +35,7 @@ Source: `navItems` in `apps/desktop/src/components/sidebar.tsx`.
 
 | Tab | Route | Page (via `persistent-routes.tsx`) | What it does |
 |---|---|---|---|
-| Usage | `/` | `apps/desktop/src/pages/Home.tsx` | Usage/token analytics + session history + acceptance-rate strip. |
+| Usage | `/` | `apps/desktop/src/pages/Home.tsx` | Verified Codex token evidence, explicit coverage/pricing diagnostics, separately labelled legacy estimates, recovery/import controls, session history, and acceptance-rate strip. |
 | Repo Unpack | `/unpack` | `apps/desktop/src/pages/RepoPage.tsx` | Whole-repo evidence-backed system brief. Tab `match`es `/unpack` and `/intel`. Scanner in `src-tauri/src/commands/unpack*.rs`; persisted to `repo_unpacked_reports`. See [architecture/repo-unpacked.md](../architecture/repo-unpacked.md). |
 | Work | `/agents` | `apps/desktop/src/pages/AgentPanel.tsx` | Outcome-first Codex/Claude conversations in expandable repository-project groups with visible operational state. Indexed history appears only when its local working directory still exists, and resumes only through an explicit action. PTY execution stays behind the conversation and activity interface. |
 | Board | `/board` | `apps/desktop/src/pages/AgentPanel.tsx` | Persistent Plan/Build/Review/Verify/Done orchestration with handoffs to Work, Review, Testing, and Repo Unpack. Shares one mounted workspace instance with Work so live provider state survives navigation. |

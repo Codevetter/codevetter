@@ -657,6 +657,32 @@ export interface LiveSessionEvidencePolicy {
   excluded_usage_events: number;
 }
 
+export interface CodexReconciliationTokenTotals {
+  input_tokens: number;
+  cache_read_tokens: number;
+  output_tokens: number;
+  reasoning_tokens: number;
+}
+
+export interface CodexUsageReconciliation {
+  scanner_revision: number;
+  verified_sessions: number;
+  legacy_estimated_sessions: number;
+  ambiguous_sessions: number;
+  missing_unestimated_sessions: number;
+  stale_sessions: number;
+  verified_totals: CodexReconciliationTokenTotals;
+  legacy_estimated_totals: CodexReconciliationTokenTotals;
+  legacy_estimated_cost_usd: number;
+  priced_exact_events: number;
+  priced_range_events: number;
+  unpriced_events: number;
+  verified_cost_min_microusd?: number | null;
+  verified_cost_max_microusd?: number | null;
+  pending_bytes: number;
+  observation_watermark?: string | null;
+}
+
 export interface SessionScorecard {
   schema_version: number;
   project?: string | null;
@@ -3338,6 +3364,14 @@ export async function triggerIndex(): Promise<TriggerIndexResult> {
 
 export async function getLiveSessionEvidencePolicy(): Promise<LiveSessionEvidencePolicy> {
   return safeInvoke<LiveSessionEvidencePolicy>('get_live_session_evidence_policy');
+}
+
+export async function getCodexUsageReconciliation(
+  scannerRevision?: number
+): Promise<CodexUsageReconciliation> {
+  return safeInvoke<CodexUsageReconciliation>('get_codex_usage_reconciliation', {
+    scannerRevision: scannerRevision ?? null,
+  });
 }
 
 export async function getTokenUsageStats(): Promise<TokenUsageStats> {

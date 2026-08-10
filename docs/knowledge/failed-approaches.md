@@ -73,6 +73,18 @@ and the constraint it leaves behind. Link here when rejecting a similar idea.
   one-time `fix_codex_token_totals` repair re-reading each Codex file.
 - **Constraint**: Codex tokens are cumulative — use SET semantics, not ADD.
 
+## Treating every Codex subagent as copied history
+
+- **What broke**: compact subagent sessions were assigned an unresolved parent
+  baseline and their independently owned token totals became zero.
+- **Root cause**: `parent_thread_id` was treated as proof of copied cumulative
+  counters, although it proves only ancestry. Compact subagents can reset their
+  own counter; copied-prefix rollouts have additional shape evidence.
+- **Fix**: distinguish embedded copied-prefix evidence from compact reset
+  counters, preserve the distinction in incremental state, and qualify at
+  identical oracle byte cursors.
+- **Constraint**: lineage identity and token ownership are separate facts.
+
 ## Multi-model Claude sessions billed to the last model
 
 - **What broke**: a 211MB session with 17k opus-4-7 messages + 1.6k fable-5
