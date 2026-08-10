@@ -53,6 +53,8 @@ is only the presentation and search layer.
 - [benchmark.md](./development/benchmark.md) — catch-rate benchmark.
 - [agent-task-corpus.md](./development/agent-task-corpus.md) — immutable
   coding-agent task packages and fail-closed readiness.
+- [verification-receipts.md](./development/verification-receipts.md) — ingest
+  project-runner evidence, compare regressions, and explain test blast radius.
 - [configuration.md](./development/configuration.md) — runtime config and CSP.
 - [docs.md](./development/docs.md) — how to write, validate, and render docs.
 
@@ -77,6 +79,8 @@ is only the presentation and search layer.
 
 - [failed-approaches.md](./knowledge/failed-approaches.md) — things that broke and the constraints they left.
 - [competitive-landscape.md](./knowledge/competitive-landscape.md) — AI code review competitive landscape.
+- [performance-lab-publication.md](./knowledge/performance-lab-publication.md) —
+  published optimization experiments, external PRs, and evidence boundaries.
 
 ### Learnings
 
