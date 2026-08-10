@@ -38,7 +38,7 @@ Internal (fleet):
 
 ## Timeline
 
-- **2026-08-11 (unreleased) — Trustworthy Codex evidence ledger:** release
+- **2026-08-11 (shipped in v1.7.4) — Trustworthy Codex evidence ledger:** release
   qualification found that v1.7.3 still undercounted compact subagent rollouts
   and presented incomplete historical coverage too confidently. The candidate
   now separates verified, legacy-estimated, ambiguous, missing, and stale
@@ -55,7 +55,7 @@ Internal (fleet):
   coverage. The candidate now snapshots the prior session/model/v1-observation
   projections exactly once; `CODEVETTER_CODEX_ACCOUNTING=legacy` restored all
   three retained-corpus aggregates exactly while preserving v2 evidence.
-  Release remains pending final checks.
+  Released after all local qualification and GitHub CI checks passed.
 
 - **2026-08-10 (shipped in v1.7.3) — Deterministic Codex usage accounting:**
   replaced message-prorated and replay-prone Codex totals with timestamped,
