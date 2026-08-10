@@ -1,0 +1,98 @@
+{
+  "schema_version": "codevetter.project-verification-receipt/v1",
+  "captured_at": "2026-08-07T09:00:49.000Z",
+  "subject": {
+    "repository": {
+      "id": "codevetter/codevetter",
+      "revision": "worktree:0f117ff9cea1ed5cd48825d0d951efdf1ffe96312ee7ef7c6147b4a49eebc721",
+      "dirty": true
+    },
+    "runner": {
+      "id": "codevetter-playwright-local-fast",
+      "version": "1",
+      "profile": "exhaustive-local-runtime",
+      "command": "pnpm test:local-fast"
+    },
+    "environment": {
+      "id": "apple-m5-pro-macos27-node24-playwright-chromium",
+      "platform": "darwin",
+      "arch": "arm64",
+      "runtime": "Node 24 and Playwright Chromium"
+    }
+  },
+  "selection": {
+    "mode": "all",
+    "inventory_id": "codevetter-e2e-79-v1",
+    "inventory_total": 79,
+    "selector_change_allowed": false,
+    "changed_files": [],
+    "tests": []
+  },
+  "outcome": {
+    "total": 79,
+    "passed": 79,
+    "failed": 0,
+    "skipped": 0,
+    "operational_failures": 0
+  },
+  "attempts": [],
+  "metrics": {
+    "wall_ms": 13800,
+    "cpu_ms": 78150,
+    "peak_rss_bytes": 831094784,
+    "peak_processes": null,
+    "samples": {
+      "wall_ms": [13290, 13370, 13800],
+      "cpu_ms": [77300, 77380, 78150],
+      "peak_rss_bytes": [831094784, 762593280, 751108096]
+    },
+    "coverage": {
+      "inventory": "aggregate",
+      "cpu": "complete",
+      "rss": "partial",
+      "process_tree": "partial",
+      "network": "missing",
+      "fixed_waits": "missing",
+      "selection": "missing"
+    }
+  },
+  "safety": {
+    "fixed_wait_ms": null,
+    "live_network_requests": null,
+    "mock_cost_usd": null,
+    "retries": 0
+  },
+  "budgets": {
+    "policy_id": "codevetter-local-fast-2026-08",
+    "maxima": {
+      "wall_ms": 20000,
+      "cpu_ms": 90000,
+      "peak_rss_bytes": null,
+      "peak_processes": null,
+      "fixed_wait_ms": null,
+      "live_network_requests": null,
+      "retries": 1
+    },
+    "required_metrics": ["wall_ms", "cpu_ms"],
+    "regression": {
+      "relative_percent": 20,
+      "wall_absolute_ms": 1000,
+      "cpu_absolute_ms": 1000,
+      "peak_rss_absolute_bytes": 67108864,
+      "peak_processes_absolute": 2
+    }
+  },
+  "evidence": [
+    {
+      "kind": "source-project-runner-receipt",
+      "path": "scripts/codevetter-verification/fixtures/exhaustive-local-runtime-initial-2026-08-07.json",
+      "sha256": "9d9d1e71faf54640b70f17c522a1ddba4e4d368f0a5384363915ac7a3b947c96"
+    }
+  ],
+  "limitations": [
+    "The source baseline is one corrected exhaustive sample; the candidate is three serial exhaustive samples on one machine.",
+    "Maximum resident set size is command-level and does not sum every descendant process.",
+    "The measurements apply to CodeVetter's 79-test Chromium corpus and do not predict another project's speedup.",
+    "The projection retains aggregate outcomes because the source receipt does not enumerate test identities or selection reasons."
+  ]
+}

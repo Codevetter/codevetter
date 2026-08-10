@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "capturedAt": "2026-08-07T09:00:49.000Z",
+  "machine": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "logicalCpuCount": 18,
+    "memoryGiB": 48,
+    "identity": "operator-machine-redacted"
+  },
+  "revision": "worktree:0f117ff9cea1ed5cd48825d0d951efdf1ffe96312ee7ef7c6147b4a49eebc721",
+  "scope": {
+    "command": "pnpm test:local-fast",
+    "testDirectory": "apps/desktop/tests/e2e",
+    "testFiles": 12,
+    "testCount": 79,
+    "browser": "playwright chromium",
+    "verdict": "passed"
+  },
+  "baseline": {
+    "mode": "vite development server, one Playwright worker and one browser process",
+    "sampleCount": 1,
+    "wallMs": [80700],
+    "cpuMs": [117380],
+    "maxResidentSetBytes": [390692864],
+    "passed": [79],
+    "failed": [0]
+  },
+  "candidate": {
+    "mode": "production preview, one shared local Chromium process, fresh context per test and fully parallel Playwright workers",
+    "workerRule": "min(16, logical CPUs minus 2, one worker per 2 GiB), override with CODEVETTER_E2E_WORKERS",
+    "sampleCount": 3,
+    "wallMs": [13290, 13370, 13800],
+    "wallP50Ms": 13370,
+    "wallP95Ms": 13800,
+    "cpuMs": [77300, 77380, 78150],
+    "cpuP95Ms": 78150,
+    "maxResidentSetBytes": [831094784, 762593280, 751108096],
+    "passed": [79, 79, 79],
+    "failed": [0, 0, 0],
+    "automaticFailureTraceRerun": true
+  },
+  "comparison": {
+    "wallP95Speedup": 5.848,
+    "cpuP95ReductionPercent": 33.42,
+    "verdictAgreement": true,
+    "executedTestAgreement": true
+  },
+  "limitations": [
+    "The baseline is one corrected exhaustive sample; the candidate is three serial exhaustive samples on one machine.",
+    "Maximum resident set size is command-level and does not sum every descendant process; the candidate peak is higher because the build and up to 16 isolated contexts overlap.",
+    "The result applies to CodeVetter's current 79-test Chromium corpus and does not predict another project's speedup.",
+    "Production-preview equivalence is guarded by the same exhaustive tests, but development-server-specific behavior remains covered by the existing direct Playwright command."
+  ]
+}

@@ -526,6 +526,498 @@ surface without duplicating legacy QA rows, preferences, controls, or persisted
 review-finding indices. That correction made the cleanup slice net +122 lines
 across 14 feature files (+228/-106) while closing the missing production path.
 
+## 9. Agent-facing runtime diagnosis (experimental)
+
+The repository CLI can profile one exact Node test, standalone Node benchmark
+script, Vitest test, or Go benchmark and turn the bounded capsule into a
+deterministic agent-facing diagnosis. This is separate from the desktop
+performance harness above: it is for understanding a target application's
+runtime path.
+
+For Node and Vitest workloads, the local flow lane packages this engine as a
+machine-queryable product capability rather than a profiling playbook:
+
+```bash
+pnpm --silent runtime:capture-flow -- \
+  --repo /path/to/project \
+  --adapter node-test \
+  --target test/http.test.mjs \
+  --name "exact request flow" \
+  --samples 3 \
+  --warmups 1 \
+  --json
+
+pnpm --silent runtime:mcp -- --repo /path/to/project
+```
+
+`--silent` is required when pnpm is the launcher because stdout is the CLI JSON
+or MCP protocol stream. MCP clients may instead execute
+`node scripts/runtime-failure-capsule/mcp.mjs --repo /path/to/project`
+directly.
+
+The repository-scoped local MCP exposes four closed operations:
+`capture_local_flow`, `inspect_local_flow`, `explain_local_flow`, and
+`verify_local_optimization`. Captures are held in memory for the current MCP
+session, capped at eight, and use opaque IDs. The MCP does not accept arbitrary
+commands or repository paths after startup.
+
+One unprofiled pass supplies the root timing distribution, one separate
+diagnostic pass observes loopback `fetch`, Node HTTP server activity, and
+request-scoped built-in `node:sqlite` operations, and two independent V8
+profile passes test source-candidate repeatability. A separate bounded V8
+coverage pass records repository-owned named function call counts without
+arguments, return values, or duration. Node tests use raw V8 coverage; Vitest
+uses its repository-local V8 provider so transformed modules map back to
+original TypeScript. An `AsyncLocalStorage`
+request context nests SQLite operations beneath the server flow; startup SQL
+outside a request is ignored. The capsule records operation, normalized SQL
+shape, outcome, and duration, but never bind arguments or returned rows.
+
+HTTP query strings are discarded, variable-looking path segments and SQL
+literals are normalized, and all owned raw artifacts are deleted after
+normalization. Child interval union provides accounted and unaccounted time
+inside one diagnostic request without double-counting concurrent children.
+Because the root timing comes from different executions, child durations are
+still not subtracted from the root median.
+
+A V8 source candidate is actionable only when both profile passes select the
+same repository-owned file/function and each pass contributes at least five
+samples, 10 ms self time, and 10% sample share. Weaker evidence returns
+`no_confidence` with a scale-up experiment. Optimization comparison separately
+reports whether movement is mechanically confirmed, materially useful, and
+strong enough to recommend shipping. Function frequency becomes a repeated-work
+candidate only when its source range intersects CPU evidence. Frequency alone
+never assigns duration. The MCP verification response returns a compact
+comparison and the two capture IDs; it does not duplicate the complete stored
+capsules.
+
+Vitest leaf names work inside nested `describe` blocks. CodeVetter accepts the
+scope only when exactly one assertion executes; a missing or duplicate leaf
+name fails closed. If the repository does not provide Vitest's V8 coverage
+provider, function frequency is reported as unavailable while independently
+complete timing and CPU evidence remain usable.
+
+```bash
+pnpm runtime:diagnose-performance -- \
+  --repo /path/to/project \
+  --adapter vitest \
+  --target src/recommendations.scale.test.ts \
+  --name "recommendation catalogue scale profiles representative catalogue sizes" \
+  --samples 3 \
+  --warmups 1 \
+  --json
+```
+
+Supported adapters are `node-test`, `node-script`, `vitest`, and `go-bench`.
+The target must be a repository-contained file and the optional workload name
+is applied as an exact selector. `node-script` accepts only `.js`, `.mjs`, or
+`.cjs`, supplies no caller arguments, and does not describe exit success as a
+correctness check. Profiling uses local runtime primitives and removes its
+owned temporary profiles after normalization.
+
+```bash
+pnpm --silent runtime:diagnose-performance -- \
+  --repo /path/to/project \
+  --adapter node-script \
+  --target benchmarks/parser.mjs \
+  --samples 3 \
+  --warmups 1 \
+  --json
+```
+
+Failed performance passes retain only bounded redacted operational error,
+stdout, and stderr on the exact failed execution. Every execution also reports
+whether bounded output confirmed the requested workload. This distinguishes a
+workload failure from a runner/profiler incompatibility without retaining raw
+profiles or successful-run logs.
+
+The `runtime-performance-diagnosis/v1` result separates:
+
+- `observed`: ranked measurements, scale curves, and repository source samples;
+- `inferred`: deterministic interpretations that reference observation IDs;
+- `unverified`: hypotheses with an explicit falsification step;
+- `next_action`: one bounded experiment instead of a list of speculative fixes;
+- `verification`: the identical adapter, target, name, and sample policy for a
+  before/after comparison;
+- `performance_capsule`: the complete bounded source evidence.
+
+For explicit `ms/op` scale metrics, the diagnosis also applies an absolute-cost
+guardrail. If the largest recorded supported input is at or below `0.1 ms/op`,
+CodeVetter keeps the workload as a regression baseline but does not recommend
+source optimization merely because the profiler can identify a hot function.
+
+For runtime-selected repository locations, the diagnosis also includes a
+redacted bounded source window and exact matched pattern lines. The first
+pattern family recognizes full sorting before a bounded slice, eager mapping,
+repeated traversal of the same source collection, and nested collection
+lookups. Function anchors are corrected against the original TypeScript source
+when a transformed V8 location points above the declaration. These observations
+influence a hypothesis only when they intersect runtime evidence; CodeVetter
+does not run a repository-wide performance linter.
+
+Node and Vitest console benchmark metrics are captured in `samples`
+independent, unprofiled executions and normalized by median. The profiled
+execution remains separate for CPU attribution. This prevents profiler overhead
+or one noisy host interval from confirming an optimization.
+
+V8 source attribution requires the same repository-owned candidate in two
+independent profiles plus minimum sample and self-time evidence. A candidate can
+be material relative to the full profile, or—when test-runner and dependency
+frames dominate—its file can own a majority of the captured application CPU as
+long as application work itself clears a bounded total-profile floor. The
+report records which materiality mode qualified the candidate.
+
+Use `/performance_capsule` from the diagnosis as the baseline JSON for the next
+run. A diagnosis never edits source or invokes a model. `actionable` means the
+measurements identify a candidate worth testing; it does not mean the candidate
+has been proven causal. A startup-dominated or incomplete run asks for better
+evidence instead of naming application code.
+
+After changing one candidate, verify the identical scope against either the
+saved performance capsule or the full saved diagnosis:
+
+```bash
+pnpm runtime:verify-optimization -- \
+  --repo /path/to/project \
+  --adapter vitest \
+  --target src/recommendations.scale.test.ts \
+  --name "recommendation catalogue scale profiles representative catalogue sizes" \
+  --baseline artifacts/baseline-diagnosis.json \
+  --samples 3 \
+  --warmups 1 \
+  --json
+```
+
+`runtime-optimization-verification/v1` compares matching scale inputs and units,
+or matching Go benchmark timing and allocation metrics. It returns `confirmed`,
+`rejected`, `inconclusive`, or `no_confidence`; a failed or incompatible
+workload can never confirm an optimization. Explicit in-workload benchmark
+metrics are compared independently from process startup timing, so noisy runner
+wall time cannot override a stable exact-scope `ms/op` series.
+
+When both revisions are independently runnable, prefer the paired lane:
+
+```bash
+pnpm runtime:verify-paired-optimization -- \
+  --baseline-repo /path/to/baseline-checkout \
+  --repo /path/to/candidate-checkout \
+  --adapter node-test \
+  --target test/performance.test.mjs \
+  --name "exact performance workload" \
+  --samples 3 \
+  --warmups 1 \
+  --json
+```
+
+The two repositories must be distinct, contained runnable checkouts with the
+same relative target and exact workload name. CodeVetter alternates baseline and
+candidate order for each sample, records `paired_schedule`, and labels the
+report `evidence_mode: paired_interleaved`. Any failed run or missing comparable
+metric yields `no_confidence`. This operation captures timing/domain metrics
+only; use `diagnose-performance` separately for source attribution.
+
+## 10. Official 1BRC Node artifact
+
+The repository-owned Node adaptation of the official One Billion Row Challenge
+provides enough application work for the runtime tools without a production
+database or giant fixture:
+
+```bash
+pnpm bench:1brc
+```
+
+It deterministically generates 20,000, 200,000, and 800,000
+`station;temperature` rows, checks exact count/min/max/sum aggregates, validates
+the official sorted min/mean/max output contract with UTF-8 station names, and
+emits the existing `size<N>=<duration>ms/op` contract. Dataset construction is
+outside the timed region. The benchmark's
+[README](../../benchmarks/runtime-challenges/temperature-aggregation/README.md)
+contains the exact diagnosis command, while its
+[artifact record](../../benchmarks/runtime-challenges/temperature-aggregation/ARTIFACT.md)
+records attribution and the differences from the official Java challenge.
+
+The initial qualification used CodeVetter to select the parser at 77.64% CPU
+share before source inspection. Replacing per-row string splitting with a
+single cursor pass reduced the 800,000-row median from 118.928 to 35.744 ms/op,
+and the identical-scope verifier confirmed a 69.945% improvement. A second
+micro-optimization improved the largest case by only 8.863% and regressed the
+smallest by 4.079%; it was reverted after the verifier returned inconclusive.
+See the active OpenSpec
+[qualification](../../openspec/changes/add-scaled-parsing-challenge/qualification.md)
+for the complete evidence and limitations.
+
+The challenge is not an official submission and does not claim one- or
+nine-billion-row performance. Its current boundary is one in-memory generated
+string at 800,000 rows. The next useful product lane is chunked input plus
+observed peak RSS and bytes processed, not an extrapolated completion time.
+
+## 11. CodeVetter-on-CodeVetter qualification
+
+The runtime tools also have a permanent self-profiling workload around V8
+function-coverage normalization:
+
+```bash
+node --test scripts/runtime-failure-capsule/function-coverage-performance.test.mjs
+```
+
+The synthetic ten-sample stress fixture grew from 1.138 ms/op at 80 source
+anchors to 405.185 ms/op at 3,200. CodeVetter localized 56.54% of
+repository-owned CPU samples to `collectV8FunctionCoverage` and captured its
+repeated source-offset scan. A line-start index plus binary-search lookup
+reduced the 3,200-anchor measurement to 4.830 ms/op, a 98.808% improvement for
+that deliberately adversarial one-file fixture while exact source-line output
+remained unchanged. This is not an end-to-end or representative CodeVetter
+speedup.
+
+A follow-up replay used 91 real V8 coverage documents emitted by the full
+runtime suite. After filtering the collector's own coverage document so source
+offsets remained comparable, 11-run medians improved from 39.873 to 32.652 ms,
+or 18.11%, with identical normalized function-output SHA-256. The representative
+result is therefore 18.11% for the coverage-normalization stage; 98.808% remains
+only the worst-case regression fixture.
+
+The self-trial is also an accuracy fixture. CodeVetter's first inference blamed
+a bounded coverage-filename sort even though the workload held file count at
+one. That hypothesis was rejected from the captured workload identity before
+the observed offset helper was optimized. The active OpenSpec
+[qualification](../../openspec/changes/add-runtime-performance-capsules/qualification.md)
+records the complete evidence, the conservative shipping limitation, and the
+decision-explanation bug found and fixed during the loop.
+
+A later four-project robustness pass found one additional material candidate:
+`qs` flat query parsing improved 45.086% at 40,000 parameters in a ten-pair
+interleaved run and passed all 1,045 upstream tests. Picomatch and Pixelmatch
+candidates stayed below the 10% materiality policy or regressed, while GJSON's
+selected benchmark already reported zero allocations and no material
+bottleneck. These negative results are part of the product evidence, not failed
+qualification runs.
+
+## 12. Autonomous local optimization campaigns
+
+An optimization campaign turns the single-run profiling primitives above into
+a resumable local laboratory. The coding agent still proposes and applies one
+bounded source edit. CodeVetter owns the immutable evaluation scope,
+correctness-first execution, screening verdict, paired promotion, incumbent,
+budgets, and tamper-evident history.
+
+Create `.codevetter/optimization-campaigns/<id>/manifest.json` in the target
+repository before initialization. The manifest is closed and versioned:
+
+```json
+{
+  "schema_version": "optimization-campaign-manifest/v1",
+  "campaign_id": "parser-loop",
+  "repository_revision": "0123456789abcdef0123456789abcdef01234567",
+  "artifact_directory": ".codevetter/optimization-campaigns/parser-loop",
+  "allowed_files": ["src/parser.js"],
+  "correctness": [
+    {
+      "adapter": "node-test",
+      "target": "test/parser.test.js",
+      "name": "preserves parser behavior",
+      "timeout_ms": 10000
+    }
+  ],
+  "performance": {
+    "adapter": "node-test",
+    "target": "test/parser.performance.test.js",
+    "name": "profiles representative parser input",
+    "timeout_ms": 30000,
+    "screening": { "samples": 3, "warmups": 1 },
+    "promotion": { "samples": 10, "warmups": 1 }
+  },
+  "budgets": {
+    "max_experiments": 12,
+    "max_elapsed_minutes": 120,
+    "max_consecutive_non_improvements": 4,
+    "max_consecutive_crashes": 2
+  }
+}
+```
+
+Evaluator targets cannot overlap writable `allowed_files`. Unsupported
+adapters, ambiguous test selection, changed manifests, escaping paths,
+out-of-scope diffs, incomplete evidence, or altered ledger/evidence digests all
+fail closed. Screening can only return `promising`; only correctness-preserving,
+limitation-free, ten-sample paired evidence can return `keep` and advance the
+incumbent.
+
+```bash
+pnpm --silent runtime:campaign -- init \
+  --repo /path/to/candidate \
+  --campaign .codevetter/optimization-campaigns/parser-loop --json
+
+pnpm --silent runtime:campaign -- baseline \
+  --repo /path/to/candidate \
+  --campaign .codevetter/optimization-campaigns/parser-loop --json
+
+pnpm --silent runtime:campaign -- screen \
+  --repo /path/to/candidate \
+  --campaign .codevetter/optimization-campaigns/parser-loop \
+  --hypothesis "Remove one redundant allocation without changing output." --json
+
+pnpm --silent runtime:campaign -- promote \
+  --repo /path/to/candidate \
+  --incumbent-repo /path/to/independent-incumbent \
+  --campaign .codevetter/optimization-campaigns/parser-loop \
+  --hypothesis "Remove one redundant allocation without changing output." --json
+```
+
+The same six operations are available from `runtime:mcp`. Start that server
+with `--repo /path/to/candidate --incumbent-repo /path/to/incumbent` so the
+promotion checkout is fixed outside tool arguments. The checked-in
+[agent program](../../scripts/runtime-failure-capsule/AUTONOMOUS_OPTIMIZATION_PROGRAM.md)
+defines the loop and its authority boundary.
+
+Campaign artifacts are local JSON under the declared directory: one manifest,
+an atomic append-only `ledger.ndjson`, and bounded evidence blobs. Status is
+derived from those records, so restarts cannot reset experiment, elapsed-time,
+plateau, or crash budgets. Recovery means fixing the local checkout or
+reproducing the incumbent in a separate worktree and calling status again; do
+not edit the ledger. The initialization record also pins a digest of the
+CodeVetter evaluator implementation; an evaluator upgrade can inspect old
+history but must start a new campaign before making new decisions. Removing a
+finished campaign is a manual local cleanup choice. The engine installs nothing,
+invokes no production or cloud endpoint,
+and never commits, pushes, resets source, or manufactures a checkout.
+
+## 13. Qualifying a workload before profiling
+
+Runtime detection proves that a repository contains a supported toolchain; it
+does not prove that an arbitrary test is representative enough to profile. Use
+the read-only qualification planner before selecting a target:
+
+```bash
+pnpm --silent runtime:qualify -- --repo /path/to/repository --json
+```
+
+The planner reads bounded manifests and test source without running project
+code. It returns package-scoped candidates, exact literal workload identities,
+score evidence, possible external-operation flags, and one of `ready`,
+`needs_selection`, `no_representative_workload`, `unsupported`, or
+`inaccessible`. Only `ready` includes a recipe for the existing profiler; even
+then, the result is a candidate and not proof of production representativeness.
+
+A portfolio scan uses an operator-owned manifest so CodeVetter does not assume
+a sibling-directory layout or compile private project paths into the product:
+
+```json
+{
+  "schema_version": "runtime-qualification-portfolio-manifest/v1",
+  "repositories": [
+    { "id": "catalog-api", "path": "../catalog-api" },
+    { "id": "web-client", "path": "../web-client" }
+  ]
+}
+```
+
+```bash
+pnpm --silent runtime:qualify-portfolio -- --manifest ./portfolio.json --json
+```
+
+Entries are inspected sequentially, output preserves manifest order, and
+absolute paths are omitted. The operation does not install dependencies, start
+services, use a browser, contact databases or networks, or execute the selected
+workloads. Agents can also call the read-only MCP operation
+`qualify_runtime_repository` before `capture_local_flow` or an explicit
+performance profile.
+
+## 14. Preserving a profiling attempt under failure
+
+Use the outer supervisor when a workload may crash, receive a signal, exceed
+its deadline, or produce unusable output. The supervisor writes an initialized
+receipt before it launches the existing diagnosis pipeline, updates a bounded
+heartbeat, and atomically records one terminal state:
+
+```bash
+pnpm --silent runtime:supervise-performance -- \
+  --repo /path/to/repository \
+  --run-id parser-baseline-01 \
+  --adapter node-script \
+  --target benchmark/parser.mjs \
+  --samples 3 \
+  --warmups 1 \
+  --timeout-ms 30000 \
+  --json
+
+pnpm --silent runtime:inspect-performance-run -- \
+  --repo /path/to/repository \
+  --run-id parser-baseline-01 \
+  --json
+```
+
+Artifacts live under
+`.codevetter/performance-runs/<run-id>/`. `receipt.json` is atomically replaced
+as lifecycle evidence changes; a successful run also owns one validated,
+digest-addressed `result.json`. Starting a duplicate run ID fails closed. The
+start command exits `0` only for `succeeded` and `2` for every complete but
+non-success state. Inspection is read-only and is also available through the
+MCP tool `inspect_performance_run`, whose repository is fixed when the MCP
+server starts.
+
+The supervisor accepts only existing closed adapters and their exact target and
+test-name scope. It does not accept arbitrary executable arguments, inherit
+application secrets, install dependencies, contact cloud services on its own,
+or alter source control. Child output is byte-bounded and redacted before it can
+become failure evidence; successful JSON is redacted, schema-validated, and
+hashed before preservation.
+
+Recovery is deliberately conservative. A killed profiling child, timeout,
+ordinary exit, spawn failure, or malformed result gets a terminal receipt and
+authorizes no performance conclusion. If the supervisor or entire machine dies,
+the last initialized/running heartbeat remains, but this version does not
+reconcile it automatically or resume partial profiling. Local CPU and memory
+limits still come from the workload and per-execution timeout; OS-level resource
+budgets are future work.
+
+## 15. Choosing the next local flow
+
+Qualification finds runnable workloads; the flow-campaign planner screens a
+bounded safe subset and decides which one deserves an optimization campaign:
+
+```bash
+pnpm --silent runtime:plan-flow-campaign -- \
+  --repo /path/to/repository \
+  --max-flows 3 \
+  --samples 3 \
+  --warmups 1 \
+  --timeout-ms 30000 \
+  --json
+```
+
+Automatic screening requires direct benchmark timing. Remote-network,
+database, browser, integration, and required-argument signals remain excluded;
+loopback-only HTTP may run through the closed Node or Vitest adapters. Workloads
+that merely contain URL fixture data remain eligible unless they invoke a
+network client. Workloads execute sequentially so their CPU profiles do not
+contaminate one another. Raw profiles are removed after normalization.
+
+The planner ranks only comparable application metrics: the largest explicit
+`ms/op` input or Go `ns/op` converted to milliseconds. Runner wall time is not
+treated as product latency. A project can add reviewable product context:
+
+```json
+{
+  "schema_version": "runtime-flow-priority-manifest/v1",
+  "flows": [
+    {
+      "candidate_id": "0123456789abcdef",
+      "frequency_weight": 8,
+      "user_impact_weight": 5,
+      "rationale": "Runs for every interactive request."
+    }
+  ]
+}
+```
+
+Pass it with `--priority-manifest path/to/priorities.json`. The deterministic
+ranking is `supported_scale_ms × frequency_weight × user_impact_weight`.
+Missing entries use neutral weights and remain explicitly unverified; the
+planner never fabricates production frequency. An already-fast flow stays as a
+regression guardrail, while the highest-ranked actionable flow becomes the one
+handoff to `runtime:campaign`. MCP clients can invoke the equivalent closed
+`plan_flow_optimization_campaign` tool.
+
 ## Principle
 
 A feature is on-budget when it doesn't make the app re-do work proportional to

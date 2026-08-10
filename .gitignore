@@ -65,6 +65,7 @@ cache.bin
 
 # Warm local verification artifacts (redacted but intentionally ephemeral)
 .codevetter/verify-artifacts/
+.codevetter/performance-runs/
 
 # Model-assisted scenario candidates remain private until explicit acceptance.
 .codevetter/scenario-candidates/
