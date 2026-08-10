@@ -66,6 +66,51 @@ test('campaign CLI is closed, emits JSON, and preserves decision exit semantics'
   );
   assert.equal(invalid, 2);
   assert.match(JSON.parse(output).error.message, /unknown option/);
+
+  output = '';
+  let challengeInput = null;
+  const contributionService = {
+    challenge: (input) => {
+      challengeInput = input;
+      return { challenge: { patch_quality: { status: 'retained_with_justification' } } };
+    },
+  };
+  const challenged = await campaignCli(
+    [
+      'challenge',
+      '--campaign',
+      '.codevetter/optimization-campaigns/hermetic',
+      '--selected-sequence',
+      '4',
+      '--justification',
+      'No simpler candidate is applicable.',
+      '--json',
+    ],
+    { contributionService, stdout }
+  );
+  assert.equal(challenged, 0);
+  assert.equal(challengeInput.selected_sequence, 4);
+  assert.equal(challengeInput.simpler_not_applicable_reason, 'No simpler candidate is applicable.');
+
+  output = '';
+  const rejectedContributionOption = await campaignCli(
+    [
+      'inspect-contribution',
+      '--campaign',
+      '.codevetter/optimization-campaigns/hermetic',
+      '--challenge',
+      '.codevetter/optimization-campaigns/hermetic/closeout/challenge.json',
+      '--pr',
+      'https://github.com/example/repo/pull/1',
+      '--trex-policy',
+      'optional',
+      '--command',
+      'gh pr comment',
+    ],
+    { contributionService, stdout }
+  );
+  assert.equal(rejectedContributionOption, 2);
+  assert.match(JSON.parse(output).error.message, /unknown option/);
 });
 
 test('campaign rejects faster incorrect work, promotes paired evidence, resumes, and stops on plateau', async () => {

@@ -191,6 +191,9 @@ test('runtime MCP exposes product capabilities and fails closed on unknown captu
       'promote_optimization_candidate',
       'inspect_optimization_campaign',
       'get_optimization_campaign_status',
+      'challenge_optimization_candidate',
+      'inspect_optimization_contribution',
+      'refresh_optimization_contribution',
     ]
   );
   assert.equal(tools[0].annotations.readOnlyHint, true);
@@ -201,7 +204,7 @@ test('runtime MCP exposes product capabilities and fails closed on unknown captu
 
   const handle = await createRuntimeMcpHandler(root);
   const listed = await handle({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
-  assert.equal(listed.result.tools.length, 13);
+  assert.equal(listed.result.tools.length, 16);
   const qualification = await handle({
     jsonrpc: '2.0',
     id: 2,
@@ -221,7 +224,17 @@ test('runtime MCP exposes product capabilities and fails closed on unknown captu
   const campaignService = {
     status: (input) => ({ campaign_id: 'fixture', input }),
   };
-  const campaignHandle = await createRuntimeMcpHandler(root, { campaignService });
+  let contributionInput = null;
+  const contributionService = {
+    challenge: (input) => {
+      contributionInput = input;
+      return { schema_version: 'optimization-candidate-challenge/v1' };
+    },
+  };
+  const campaignHandle = await createRuntimeMcpHandler(root, {
+    campaignService,
+    contributionService,
+  });
   const campaignStatus = await campaignHandle({
     jsonrpc: '2.0',
     id: 3,
@@ -246,6 +259,37 @@ test('runtime MCP exposes product capabilities and fails closed on unknown captu
   });
   assert.equal(escaped.result.isError, true);
   assert.match(escaped.result.structuredContent.error.message, /Unknown tool argument/);
+
+  const challenged = await campaignHandle({
+    jsonrpc: '2.0',
+    id: 7,
+    method: 'tools/call',
+    params: {
+      name: 'challenge_optimization_candidate',
+      arguments: {
+        campaign_directory: '.codevetter/optimization-campaigns/fixture',
+        selected_sequence: 4,
+        simpler_not_applicable_reason: 'No simpler candidate is applicable.',
+      },
+    },
+  });
+  assert.equal(challenged.result.isError, false);
+  assert.equal(contributionInput.selected_sequence, 4);
+  const mutationAttempt = await campaignHandle({
+    jsonrpc: '2.0',
+    id: 8,
+    method: 'tools/call',
+    params: {
+      name: 'challenge_optimization_candidate',
+      arguments: {
+        campaign_directory: '.codevetter/optimization-campaigns/fixture',
+        selected_sequence: 4,
+        command: 'gh pr comment',
+      },
+    },
+  });
+  assert.equal(mutationAttempt.result.isError, true);
+  assert.match(mutationAttempt.result.structuredContent.error.message, /Unknown tool argument/);
 
   let plannerInput = null;
   const plannerHandle = await createRuntimeMcpHandler(root, {
@@ -287,7 +331,7 @@ test('runtime MCP process speaks line-delimited JSON-RPC without network setup',
     { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} },
   ]);
   assert.equal(responses[0].result.serverInfo.name, 'codevetter-local-runtime');
-  assert.equal(responses[1].result.tools.length, 13);
+  assert.equal(responses[1].result.tools.length, 16);
 });
 
 test('validates the required recursive flow contract', () => {
