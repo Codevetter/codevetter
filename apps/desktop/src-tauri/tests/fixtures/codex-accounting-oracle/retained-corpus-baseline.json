@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "corpus": "operator-retained-codex-rollouts",
+  "contains_transcript_content": false,
+  "oracle": {
+    "name": "CodexBar",
+    "version": "0.46.0",
+    "revision": "4f0ac0680cd2f3cce36ed02b8a1e1fbc20bfee76",
+    "command": "codexbar cost --provider codex --json --refresh"
+  },
+  "observed_at": "2026-08-10T17:35:09Z",
+  "history_days": 30,
+  "currency": "USD",
+  "totals": {
+    "input_tokens": 1323422557,
+    "cache_read_tokens": 1295676160,
+    "output_tokens": 4098792,
+    "total_tokens": 1327521349,
+    "api_equivalent_cost_usd": 906.88799748
+  },
+  "daily": [
+    {
+      "date": "2026-08-08",
+      "input_tokens": 84092789,
+      "cache_read_tokens": 82015104,
+      "output_tokens": 357221,
+      "total_tokens": 84450010,
+      "api_equivalent_cost_usd": 62.112607,
+      "models": ["gpt-5.6-sol"]
+    },
+    {
+      "date": "2026-08-09",
+      "input_tokens": 786863167,
+      "cache_read_tokens": 771074816,
+      "output_tokens": 2424425,
+      "total_tokens": 789287592,
+      "api_equivalent_cost_usd": 537.211913,
+      "models": ["gpt-5.6-sol"]
+    },
+    {
+      "date": "2026-08-10",
+      "input_tokens": 452466601,
+      "cache_read_tokens": 442586240,
+      "output_tokens": 1317146,
+      "total_tokens": 453783747,
+      "api_equivalent_cost_usd": 307.56347748,
+      "models": ["codex-auto-review", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
+    }
+  ]
+}

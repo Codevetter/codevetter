@@ -146,6 +146,133 @@ pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
             detail TEXT
         );",
     )?;
+    // Revisioned Codex accounting ledger. These tables are additive beside the
+    // v1 observation tables so qualification and rollback never rewrite the
+    // only copy of historical evidence.
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS codex_usage_sources (
+            source_id TEXT PRIMARY KEY,
+            session_id TEXT,
+            source_ref TEXT NOT NULL,
+            source_fingerprint TEXT NOT NULL,
+            scanner_revision INTEGER NOT NULL,
+            parent_session_id TEXT,
+            fork_timestamp TEXT,
+            completed_byte_cursor INTEGER NOT NULL DEFAULT 0,
+            completed_line_cursor INTEGER NOT NULL DEFAULT 0,
+            source_size_bytes INTEGER NOT NULL DEFAULT 0,
+            last_observed_at TEXT,
+            discovered_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(source_ref, scanner_revision)
+        );
+        CREATE INDEX IF NOT EXISTS idx_codex_usage_sources_session
+            ON codex_usage_sources(session_id, scanner_revision);
+        CREATE TABLE IF NOT EXISTS codex_lineage_checkpoints (
+            source_id TEXT NOT NULL REFERENCES codex_usage_sources(source_id) ON DELETE CASCADE,
+            scanner_revision INTEGER NOT NULL,
+            source_line INTEGER NOT NULL,
+            observed_at TEXT,
+            counted_input_tokens INTEGER NOT NULL DEFAULT 0,
+            counted_cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+            counted_output_tokens INTEGER NOT NULL DEFAULT 0,
+            counted_reasoning_tokens INTEGER NOT NULL DEFAULT 0,
+            watermark_input_tokens INTEGER NOT NULL DEFAULT 0,
+            watermark_cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+            watermark_output_tokens INTEGER NOT NULL DEFAULT 0,
+            watermark_reasoning_tokens INTEGER NOT NULL DEFAULT 0,
+            state_json TEXT NOT NULL,
+            PRIMARY KEY (source_id, scanner_revision, source_line)
+        );
+        CREATE TABLE IF NOT EXISTS codex_usage_ledger (
+            source_id TEXT NOT NULL REFERENCES codex_usage_sources(source_id) ON DELETE CASCADE,
+            event_id TEXT NOT NULL,
+            session_id TEXT NOT NULL,
+            scanner_revision INTEGER NOT NULL,
+            source_line INTEGER NOT NULL,
+            observed_at TEXT,
+            local_day TEXT,
+            model TEXT NOT NULL,
+            service_tier TEXT,
+            input_tokens INTEGER NOT NULL DEFAULT 0,
+            cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+            output_tokens INTEGER NOT NULL DEFAULT 0,
+            reasoning_tokens INTEGER NOT NULL DEFAULT 0,
+            cumulative_input_tokens INTEGER,
+            cumulative_cache_read_tokens INTEGER,
+            cumulative_output_tokens INTEGER,
+            cumulative_reasoning_tokens INTEGER,
+            disposition TEXT NOT NULL,
+            pricing_status TEXT NOT NULL,
+            pricing_revision INTEGER NOT NULL,
+            cost_min_microusd INTEGER,
+            cost_max_microusd INTEGER,
+            committed_at TEXT NOT NULL,
+            PRIMARY KEY (source_id, scanner_revision, event_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_codex_usage_ledger_day
+            ON codex_usage_ledger(scanner_revision, local_day, disposition);
+        CREATE INDEX IF NOT EXISTS idx_codex_usage_ledger_session
+            ON codex_usage_ledger(session_id, scanner_revision, observed_at);
+        CREATE TABLE IF NOT EXISTS codex_usage_coverage (
+            source_id TEXT NOT NULL REFERENCES codex_usage_sources(source_id) ON DELETE CASCADE,
+            scanner_revision INTEGER NOT NULL,
+            coverage_state TEXT NOT NULL,
+            detail TEXT,
+            pending_bytes INTEGER NOT NULL DEFAULT 0,
+            observation_watermark TEXT,
+            classified_at TEXT NOT NULL,
+            PRIMARY KEY (source_id, scanner_revision)
+        );
+        CREATE TABLE IF NOT EXISTS codex_usage_projection_backup (
+            session_id TEXT NOT NULL REFERENCES cc_sessions(id) ON DELETE CASCADE,
+            scanner_revision INTEGER NOT NULL,
+            total_input_tokens INTEGER NOT NULL,
+            total_output_tokens INTEGER NOT NULL,
+            cache_read_tokens INTEGER NOT NULL,
+            cache_creation_tokens INTEGER NOT NULL,
+            estimated_cost_usd REAL NOT NULL,
+            captured_at TEXT NOT NULL,
+            PRIMARY KEY (session_id, scanner_revision)
+        );
+        CREATE TABLE IF NOT EXISTS codex_model_projection_backup (
+            session_id TEXT NOT NULL REFERENCES cc_sessions(id) ON DELETE CASCADE,
+            scanner_revision INTEGER NOT NULL,
+            model TEXT NOT NULL,
+            message_count INTEGER NOT NULL,
+            input_tokens INTEGER NOT NULL,
+            output_tokens INTEGER NOT NULL,
+            cache_read_tokens INTEGER NOT NULL,
+            cache_creation_tokens INTEGER NOT NULL,
+            cache_creation_1h_tokens INTEGER NOT NULL,
+            PRIMARY KEY (session_id, scanner_revision, model)
+        );
+        CREATE TABLE IF NOT EXISTS codex_observation_projection_backup (
+            session_id TEXT NOT NULL REFERENCES cc_sessions(id) ON DELETE CASCADE,
+            scanner_revision INTEGER NOT NULL,
+            source_line INTEGER NOT NULL,
+            observed_at TEXT,
+            local_day TEXT,
+            model TEXT NOT NULL,
+            input_tokens INTEGER NOT NULL,
+            cache_read_tokens INTEGER NOT NULL,
+            output_tokens INTEGER NOT NULL,
+            reasoning_tokens INTEGER NOT NULL,
+            cost_usd REAL NOT NULL,
+            cumulative_input_tokens INTEGER,
+            cumulative_cache_read_tokens INTEGER,
+            cumulative_output_tokens INTEGER,
+            cumulative_reasoning_tokens INTEGER,
+            disposition TEXT NOT NULL,
+            PRIMARY KEY (session_id, scanner_revision, source_line)
+        );
+        CREATE TRIGGER IF NOT EXISTS codex_usage_ledger_no_update
+        BEFORE UPDATE ON codex_usage_ledger
+        BEGIN SELECT RAISE(ABORT, 'codex usage ledger is append-only'); END;
+        CREATE TRIGGER IF NOT EXISTS codex_usage_ledger_no_delete
+        BEFORE DELETE ON codex_usage_ledger
+        BEGIN SELECT RAISE(ABORT, 'codex usage ledger is append-only'); END;",
+    )?;
     let _ = conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_cc_sessions_last_message
          ON cc_sessions(last_message DESC)",
@@ -1850,6 +1977,64 @@ mod tests {
             )
             .expect("T-Rex preview index count");
         assert_eq!(index_count, 1);
+    }
+
+    #[test]
+    fn codex_v2_accounting_schema_is_revisioned_and_append_only() {
+        let conn = test_conn();
+        assert_eq!(
+            table_columns(&conn, "codex_usage_sources"),
+            vec![
+                "source_id",
+                "session_id",
+                "source_ref",
+                "source_fingerprint",
+                "scanner_revision",
+                "parent_session_id",
+                "fork_timestamp",
+                "completed_byte_cursor",
+                "completed_line_cursor",
+                "source_size_bytes",
+                "last_observed_at",
+                "discovered_at",
+                "updated_at",
+            ]
+        );
+        let ledger_columns = table_columns(&conn, "codex_usage_ledger");
+        for required in [
+            "event_id",
+            "scanner_revision",
+            "service_tier",
+            "pricing_status",
+            "pricing_revision",
+            "cost_min_microusd",
+            "cost_max_microusd",
+        ] {
+            assert!(ledger_columns.iter().any(|column| column == required));
+        }
+        assert_eq!(table_columns(&conn, "codex_lineage_checkpoints").len(), 13);
+        assert_eq!(table_columns(&conn, "codex_usage_coverage").len(), 7);
+
+        conn.execute_batch(
+            "INSERT INTO codex_usage_sources (
+                source_id,session_id,source_ref,source_fingerprint,scanner_revision,
+                discovered_at,updated_at
+             ) VALUES ('source','session','/fixture','hash',2,'now','now');
+             INSERT INTO codex_usage_ledger (
+                source_id,event_id,session_id,scanner_revision,source_line,model,
+                disposition,pricing_status,pricing_revision,committed_at
+             ) VALUES ('source','event','session',2,1,'gpt-5.4','accepted','unpriced',1,'now');",
+        )
+        .expect("seed ledger");
+        assert!(conn
+            .execute(
+                "UPDATE codex_usage_ledger SET input_tokens=1 WHERE event_id='event'",
+                [],
+            )
+            .is_err());
+        assert!(conn
+            .execute("DELETE FROM codex_usage_ledger WHERE event_id='event'", [])
+            .is_err());
     }
 
     fn table_columns(conn: &Connection, table: &str) -> Vec<String> {

@@ -45,6 +45,16 @@ Format matches [new-things.md](new-things.md); roadmap in [README.md](README.md)
   the persisted accepted observations and checked against the streaming parse
   inside each transaction. Any mismatch, failed write, or missing audit keeps
   the accounting revision pending so it retries instead of claiming success.
+- A nested subagent parent marker proves lineage, not counter ownership. Compact
+  subagent rollouts whose first cumulative total equals their first per-event
+  usage have independently reset counters and must be counted. Embedded
+  ancestor metadata proves a copied prefix; a later counter reset can still
+  establish a trustworthy child-owned suffix even when the parent file is gone.
+- Compare independent scanners at the same committed byte cursor. CodexBar
+  0.46.0 can retain `scan_complete=0` large files and stale completed sizes
+  after `--refresh`; comparing its partial cache with a complete CodeVetter scan
+  creates a false disagreement. CodeVetter must publish pending bytes and never
+  label partial coverage complete.
 
 ## Incremental indexing with byte-offset cursors
 - What: re-reading only the appended tail of a growing file, from a persisted byte offset, instead of re-parsing the whole file.
