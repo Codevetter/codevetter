@@ -22,9 +22,14 @@ const SIMPLER_TOLERANCE_PERCENT = 5;
 
 const RISK_PATTERNS = Object.freeze([
   ['mutable_state', /^\+.*\b(?:cache|cached|memoized|state)\b/im],
+  ['class_member_state', /^\+\s*(?:private|protected)\s+(?:readonly\s+)?\w+\s*[:=]/im],
   ['cleanup_path', /^\+.*\b(?:finally|defer)\b/im],
   ['fallback_path', /^\+.*\b(?:fallback|else)\b/im],
   ['new_branch', /^\+.*\b(?:if\s*\(|switch\s*\()/im],
+  [
+    'public_signature',
+    /^\+.*\b(?:export\s+(?:async\s+)?(?:function|class|const|let|var)|public\s+\w+)/im,
+  ],
 ]);
 
 export async function createOptimizationContributionService(repositoryRoot, overrides = {}) {
@@ -99,7 +104,7 @@ async function challengeCandidate(root, input, dependencies) {
   const observations = {
     changed_files: currentRepository.changed_files,
     diff_digest: sha256(diff),
-    risk_signals: riskSignals(diff),
+    risk_signals: riskSignals(diff, currentRepository.changed_files),
   };
   const patchQuality = derivePatchQuality({
     selected,
@@ -327,12 +332,20 @@ function derivePatchQuality({
   };
 }
 
-function riskSignals(diff) {
-  return RISK_PATTERNS.flatMap(([kind, pattern]) => {
+function riskSignals(diff, changedFiles) {
+  const sourceSignals = RISK_PATTERNS.flatMap(([kind, pattern]) => {
     const flags = pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`;
     const matches = String(diff).match(new RegExp(pattern.source, flags));
     return matches?.length ? [{ kind, occurrences: matches.length }] : [];
   });
+  if (
+    changedFiles.some((path) =>
+      /(?:^|\/)(?:package\.json|go\.mod|Cargo\.toml|requirements\.txt|pyproject\.toml)$/.test(path)
+    )
+  ) {
+    sourceSignals.push({ kind: 'dependency_manifest', occurrences: 1 });
+  }
+  return sourceSignals;
 }
 
 function codeMovement(complexity) {
@@ -497,6 +510,7 @@ export function normalizeGitHubEvidence(value) {
       kind: 'thread',
       author: bounded(thread.author, 100),
       path: bounded(thread.path, 300),
+      line: Number.isInteger(thread.line) ? thread.line : null,
       summary: bounded(thread.body, 300),
       resolved: Boolean(thread.resolved),
       outdated: Boolean(thread.outdated),
@@ -583,7 +597,7 @@ function normalizeChecks(values) {
 
 export async function inspectGitHubPullRequest(url) {
   const parsed = parsePullRequestUrl(url);
-  const query = `query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){viewerPermission pullRequest(number:$number){url number state isDraft mergeable headRefOid baseRefOid reviews(first:100){nodes{author{login}state body}} reviewThreads(first:100){nodes{isResolved isOutdated comments(first:20){nodes{author{login}body path}}}} commits(last:1){nodes{commit{statusCheckRollup{contexts(first:100){nodes{__typename ... on CheckRun{name status conclusion detailsUrl} ... on StatusContext{context state targetUrl}}}}}}}}}}`;
+  const query = `query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){viewerPermission pullRequest(number:$number){url number state isDraft mergeable headRefOid baseRefOid reviews(first:100){nodes{author{login}state body}} reviewThreads(first:100){nodes{isResolved isOutdated comments(first:20){nodes{author{login}body path line}}}} commits(last:1){nodes{commit{statusCheckRollup{contexts(first:100){nodes{__typename ... on CheckRun{name status conclusion detailsUrl} ... on StatusContext{context state targetUrl}}}}}}}}}}`;
   const output = await runCommand('gh', [
     'api',
     'graphql',
@@ -643,6 +657,7 @@ export async function inspectGitHubPullRequest(url) {
         outdated: thread.isOutdated,
         author: comment.author?.login ?? 'unknown',
         path: comment.path ?? '',
+        line: comment.line ?? null,
         body: comment.body ?? '',
       };
     }),

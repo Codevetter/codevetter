@@ -43,6 +43,44 @@ test('candidate challenge records diff risk and requires an explicit bounded rea
   assert.match(qualified.path, /challenge-b{12}-[0-9a-f]{12}\.json$/);
 });
 
+test('Marked-shaped challenge selects the simpler qualified candidate within tolerance', async (context) => {
+  const fixture = await contributionFixture(context, {
+    includeComparison: true,
+    selectedSimpler: true,
+  });
+  const service = await createOptimizationContributionService(fixture.root, fixture.dependencies);
+  const result = await service.challenge({
+    campaign_directory: fixture.campaignDirectory,
+    selected_sequence: 1,
+    comparison_sequence: 2,
+  });
+  assert.equal(result.challenge.patch_quality.status, 'simpler_candidate_selected');
+  assert.equal(result.challenge.candidate.complexity.added_lines, 4);
+  assert.equal(result.challenge.comparison.complexity.added_lines, 12);
+});
+
+test('candidate challenge observes class state, public signatures, and dependency manifests', async (context) => {
+  const fixture = await contributionFixture(context);
+  fixture.dependencies.inspectRepositoryState = async () => ({
+    revision: HEAD,
+    diff_digest: DIFF,
+    changed_files: ['src/Lexer.ts', 'package.json'],
+  });
+  fixture.dependencies.readCandidateDiff = async () =>
+    '+ private links = new Map();\n+ export function parse() {}\n';
+  const service = await createOptimizationContributionService(fixture.root, fixture.dependencies);
+  const result = await service.challenge({
+    campaign_directory: fixture.campaignDirectory,
+    selected_sequence: 1,
+    simpler_not_applicable_reason:
+      'The changed public surface and dependency manifest were reviewed.',
+  });
+  assert.deepEqual(
+    result.challenge.diff_observations.risk_signals.map((signal) => signal.kind),
+    ['class_member_state', 'public_signature', 'dependency_manifest']
+  );
+});
+
 test('qualified comparison rejects a more complex candidate inside the same workload', async (context) => {
   const fixture = await contributionFixture(context, { includeComparison: true });
   const service = await createOptimizationContributionService(fixture.root, fixture.dependencies);
@@ -82,6 +120,7 @@ test('contribution receipt keeps review, approval, T-Rex, and head gates indepen
         outdated: false,
         author: 'maintainer',
         path: 'src/Lexer.ts',
+        line: 42,
         body: 'Use existing state.',
       },
       {
@@ -135,6 +174,12 @@ test('contribution receipt keeps review, approval, T-Rex, and head gates indepen
   assert.equal(first.receipt.gates.reviews.current_threads, 1);
   assert.equal(first.receipt.gates.reviews.outdated_threads, 1);
   assert.equal(first.receipt.gates.reviews.resolved_threads, 1);
+  assert.equal(
+    first.receipt.gates.reviews.observations.find(
+      (observation) => observation.kind === 'thread' && !observation.outdated
+    ).line,
+    42
+  );
   assert.equal(first.receipt.gates.approvals.status, 'not_observed');
   assert.equal(first.receipt.gates.checks.status, 'approval_required');
   assert.equal(first.receipt.status, 'review_action_required');
@@ -279,13 +324,29 @@ test('GitHub normalization does not call an empty check list passing', () => {
   assert.equal(normalized.checks.status, 'not_observed');
 });
 
-async function contributionFixture(context, { includeComparison = false } = {}) {
+async function contributionFixture(
+  context,
+  { includeComparison = false, selectedSimpler = false } = {}
+) {
   const root = await mkdtemp(join(tmpdir(), 'codevetter-contribution-'));
   context.after(() => rm(root, { recursive: true, force: true }));
   const campaignDirectory = '.codevetter/optimization-campaigns/fixture';
   await mkdir(join(root, campaignDirectory), { recursive: true });
-  const records = [initializedRecord(), promotionRecord(1, { movement: 12, metric: 10 })];
-  if (includeComparison) records.push(promotionRecord(2, { movement: 4, metric: 10.2 }));
+  const records = [
+    initializedRecord(),
+    promotionRecord(
+      1,
+      selectedSimpler ? { movement: 4, metric: 10.2 } : { movement: 12, metric: 10 }
+    ),
+  ];
+  if (includeComparison) {
+    records.push(
+      promotionRecord(
+        2,
+        selectedSimpler ? { movement: 12, metric: 10 } : { movement: 4, metric: 10.2 }
+      )
+    );
+  }
   const evidence = new Map(
     records
       .filter((record) => record.kind === 'promotion')
