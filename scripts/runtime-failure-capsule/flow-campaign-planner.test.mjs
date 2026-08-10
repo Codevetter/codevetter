@@ -219,6 +219,46 @@ test('planner requests a representative workload when no domain metric is compar
   assert.equal(plan.next_action.kind, 'author_representative_workload');
 });
 
+test('planner exposes source-anchored lines while retaining the raw profiler line', async (context) => {
+  const root = await mkdtemp(join(tmpdir(), 'codevetter-flow-plan-'));
+  context.after(() => rm(root, { recursive: true, force: true }));
+  const profiled = capsule({
+    target: 'work.performance.test.ts',
+    name: 'performance flow aaaaaaaaaaaaaaaa',
+    samples: 3,
+    warmups: 1,
+  });
+  profiled.observed.profile_repeatability = {
+    qualified: true,
+    candidates: [{ function: 'calculateWork', file: 'src/work.ts', line: 18, samples: 12 }],
+    candidate: { function: 'calculateWork', file: 'src/work.ts', line: 18, samples: 12 },
+  };
+  const plan = await planFlowOptimizationCampaign({
+    repositoryRoot: root,
+    qualify: async () => qualification([candidate('aaaaaaaaaaaaaaaa')]),
+    profile: async () => profiled,
+    diagnose: async () => ({
+      ...diagnosis(4),
+      observed: [
+        ...diagnosis(4).observed,
+        {
+          kind: 'repository_cpu_hotspot',
+          source: {
+            function: 'calculateWork',
+            file: 'src/work.ts',
+            line: 42,
+            reported_line: 18,
+          },
+        },
+      ],
+    }),
+  });
+
+  assert.equal(plan.screened[0].evidence.profile_repeatability.candidate.line, 42);
+  assert.equal(plan.screened[0].evidence.profile_repeatability.candidate.reported_line, 18);
+  assert.equal(plan.screened[0].evidence.profile_repeatability.candidates[0].line, 42);
+});
+
 test('plan-flow-campaign CLI discovers and screens one exact local workload', async (context) => {
   const root = await gitFixture(context, {
     'package.json': JSON.stringify({ type: 'module', scripts: { test: 'node --test' } }),

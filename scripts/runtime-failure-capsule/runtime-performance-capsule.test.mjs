@@ -10,6 +10,7 @@ import { PERFORMANCE_DIAGNOSIS_SCHEMA_VERSION, PERFORMANCE_SCHEMA_VERSION } from
 import { inspectGitDiff } from './git-diff.mjs';
 import {
   comparePerformanceCapsules,
+  createPerformanceCapsule,
   evaluateV8Repeatability,
   parseConsoleBenchmarkMetrics,
   summarizeConsoleBenchmarkMetrics,
@@ -62,6 +63,61 @@ test('summarizes timing distributions and Go benchmark measurements', () => {
   assert.equal(benchmarks[0].ns_per_op.median, 120.5);
   assert.equal(benchmarks[0].bytes_per_op.max, 40);
   assert.equal(benchmarks[0].allocs_per_op.p95, 3);
+});
+
+test('retains repeated Vitest domain metrics when paired runs omit a profile pass', () => {
+  const execution = (value) => ({
+    status: 'exited',
+    exitCode: 0,
+    signal: null,
+    durationMs: 250,
+    stdout: `[benchmark] size35000=${value}ms/op\nTest Files 1 passed\nTests 1 passed`,
+    stderr: '',
+    operationalError: '',
+    environmentValues: [],
+    stdoutBytes: 80,
+    stderrBytes: 0,
+    truncated: false,
+  });
+  const capsule = createPerformanceCapsule({
+    root: '/tmp/codevetter-vitest-paired-fixture',
+    lexicalRoot: '/tmp/codevetter-vitest-paired-fixture',
+    git: {
+      repository_revision: 'abc123',
+      diff_identity: 'HEAD..worktree',
+      dirty: false,
+      changed_lines: new Map(),
+    },
+    adapter: 'vitest',
+    target: 'src/work.performance.test.ts',
+    name: 'paired benchmark',
+    samples: 3,
+    warmups: 0,
+    executions: [10, 12, 11].map((value, index) => ({
+      phase: 'measurement',
+      index,
+      execution: execution(value),
+    })),
+    profileEvidence: {
+      kind: 'paired_timing_only',
+      profile_files: 0,
+      profile_bytes: 0,
+      profile_samples: 0,
+      hotspots: [],
+      truncated: false,
+      redaction_count: 0,
+      failed_kinds: [],
+    },
+  });
+
+  assert.deepEqual(capsule.observed.console_metrics, [
+    {
+      kind: 'console_benchmark_metrics',
+      metrics: [{ name: 'size35000', value: 11, unit: 'ms/op', sample_count: 3 }],
+      iterations: null,
+      provenance: 'unprofiled_measurement_execution_median',
+    },
+  ]);
 });
 
 test('qualifies a repeated V8 frame when CPU is distributed across one application file', () => {
