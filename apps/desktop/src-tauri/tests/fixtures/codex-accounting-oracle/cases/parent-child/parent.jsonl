@@ -1,0 +1,4 @@
+{"timestamp":"2026-07-16T12:00:00Z","type":"session_meta","payload":{"id":"oracle-parent","cwd":"/fixture"}}
+{"timestamp":"2026-07-16T12:00:00Z","type":"turn_context","payload":{"model":"gpt-5.4"}}
+{"timestamp":"2026-07-16T12:00:01Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":100},"total_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":100}}}}
+{"timestamp":"2026-07-16T12:00:03Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":20,"cached_input_tokens":5,"output_tokens":3},"total_token_usage":{"input_tokens":1020,"cached_input_tokens":905,"output_tokens":103}}}}

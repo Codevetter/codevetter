@@ -50,6 +50,17 @@ pub struct RawSessionAdapterSummary {
     /// adds the persisted line cursor before storage.
     #[serde(default)]
     pub codex_usage_observations: Vec<CodexUsageObservation>,
+    /// Content-free lineage and source identity extracted from Codex session
+    /// metadata. Other adapters leave this at its default value.
+    #[serde(default)]
+    pub codex_lineage: CodexLineageMetadata,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CodexLineageMetadata {
+    pub source_session_id: Option<String>,
+    pub parent_session_id: Option<String>,
+    pub fork_timestamp: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -66,6 +77,8 @@ pub struct CodexUsageObservation {
     pub timestamp: Option<String>,
     pub day: Option<String>,
     pub model: String,
+    #[serde(default)]
+    pub service_tier: Option<String>,
     pub input_tokens: i64,
     pub cache_read_tokens: i64,
     pub output_tokens: i64,
@@ -81,6 +94,7 @@ impl CodexUsageObservation {
             timestamp: None,
             day: None,
             model: "unknown".into(),
+            service_tier: None,
             input_tokens: 0,
             cache_read_tokens: 0,
             output_tokens: 0,
@@ -94,22 +108,39 @@ impl CodexUsageObservation {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 struct CodexAccountingState {
     session_id: Option<String>,
+    parent_session_id: Option<String>,
+    fork_timestamp: Option<String>,
     current_model: Option<String>,
+    #[serde(default)]
+    current_service_tier: Option<String>,
     last_total: Option<CodexTokenTotals>,
     watermark: Option<CodexTokenTotals>,
     counted: Option<CodexTokenTotals>,
     seen_totals: Vec<CodexTokenTotals>,
     interleaved: bool,
     fork_direct: bool,
+    #[serde(default)]
+    fork_compact_subagent: bool,
     fork_pending_replay: bool,
     fork_baseline: Option<CodexTokenTotals>,
     fork_prefix_total: Option<CodexTokenTotals>,
+    fork_resolution: Option<String>,
 }
 
 pub fn codex_state_with_fork_baseline(baseline: CodexTokenTotals) -> Option<String> {
     serde_json::to_string(&CodexAccountingState {
         fork_direct: true,
         fork_baseline: Some(baseline),
+        fork_resolution: Some("resolved".into()),
+        ..CodexAccountingState::default()
+    })
+    .ok()
+}
+
+pub fn codex_state_with_unresolved_fork() -> Option<String> {
+    serde_json::to_string(&CodexAccountingState {
+        fork_direct: true,
+        fork_resolution: Some("unresolved".into()),
         ..CodexAccountingState::default()
     })
     .ok()
@@ -271,6 +302,7 @@ fn empty_summary(adapter_id: &str, agent_type: &str, source_ref: &str) -> RawSes
         model_usage: BTreeMap::new(),
         last_usage_key: None,
         codex_usage_observations: Vec::new(),
+        codex_lineage: CodexLineageMetadata::default(),
     }
 }
 
@@ -877,13 +909,16 @@ impl SessionSourceAdapter for CodexAdapter {
 
             if msg_type == "session_meta" {
                 if let Some(payload) = payload {
-                    let meta_id = value_string(Some(payload), "id");
+                    let meta_id = value_string(Some(payload), "id")
+                        .or_else(|| value_string(Some(payload), "session_id"));
                     if accounting_state.session_id.is_none() {
                         accounting_state.session_id = meta_id.clone();
+                        summary.codex_lineage.source_session_id = meta_id.clone();
                     } else if meta_id.as_deref() != accounting_state.session_id.as_deref()
                         && accounting_state.fork_baseline.is_none()
                     {
                         accounting_state.fork_direct = false;
+                        accounting_state.fork_compact_subagent = false;
                         accounting_state.fork_pending_replay = true;
                     }
                     // Replayed child logs can contain the parent's session_meta
@@ -918,21 +953,37 @@ impl SessionSourceAdapter for CodexAdapter {
                             })
                         });
                     }
-                    if payload
-                        .get("forked_from_id")
-                        .and_then(Value::as_str)
-                        .is_some()
-                    {
-                        accounting_state.fork_direct = true;
-                    }
-                    if payload
+                    let explicit_parent = value_string(Some(payload), "forked_from_id");
+                    let has_explicit_parent = explicit_parent.is_some();
+                    let spawned_parent = payload
                         .get("source")
                         .and_then(|source| source.get("subagent"))
                         .and_then(|subagent| subagent.get("thread_spawn"))
                         .and_then(|spawn| spawn.get("parent_thread_id"))
                         .and_then(Value::as_str)
-                        .is_some()
-                    {
+                        .map(str::to_string);
+                    let has_spawned_parent = spawned_parent.is_some();
+                    let parent_session_id = explicit_parent.or(spawned_parent);
+                    let has_parent_marker = parent_session_id.is_some();
+                    if let Some(parent_session_id) = parent_session_id {
+                        accounting_state.parent_session_id = Some(parent_session_id.clone());
+                        summary.codex_lineage.parent_session_id = Some(parent_session_id);
+                        let fork_timestamp =
+                            value_string(Some(payload), "timestamp").or_else(|| {
+                                parsed
+                                    .get("timestamp")
+                                    .and_then(Value::as_str)
+                                    .map(str::to_string)
+                            });
+                        if fork_timestamp.is_some() {
+                            accounting_state.fork_timestamp = fork_timestamp.clone();
+                            summary.codex_lineage.fork_timestamp = fork_timestamp;
+                        }
+                        accounting_state.fork_direct = true;
+                        accounting_state.fork_compact_subagent =
+                            has_spawned_parent && !has_explicit_parent;
+                    }
+                    if has_parent_marker {
                         if has_replayed_parent_meta && accounting_state.fork_baseline.is_none() {
                             accounting_state.fork_pending_replay = true;
                         } else {
@@ -952,6 +1003,9 @@ impl SessionSourceAdapter for CodexAdapter {
                     accounting_state.current_model = Some(model.clone());
                     summary.model_used = Some(model);
                 }
+                if let Some(service_tier) = value_string(payload, "service_tier") {
+                    accounting_state.current_service_tier = Some(service_tier);
+                }
                 continue;
             }
 
@@ -962,6 +1016,11 @@ impl SessionSourceAdapter for CodexAdapter {
                     .unwrap_or("");
                 if sub_type == "token_count" {
                     let info = payload.and_then(|p| p.get("info"));
+                    if let Some(service_tier) = value_string(info, "service_tier")
+                        .or_else(|| value_string(payload, "service_tier"))
+                    {
+                        accounting_state.current_service_tier = Some(service_tier);
+                    }
                     let timestamp = parsed
                         .get("timestamp")
                         .and_then(Value::as_str)
@@ -1020,30 +1079,52 @@ impl SessionSourceAdapter for CodexAdapter {
                     }
 
                     if accounting_state.fork_direct && accounting_state.fork_baseline.is_none() {
+                        if accounting_state.fork_resolution.as_deref() == Some("unresolved") {
+                            summary
+                                .codex_usage_observations
+                                .push(CodexUsageObservation {
+                                    source_line: (idx + 1) as i64,
+                                    timestamp: timestamp.clone(),
+                                    day: codex_local_day(timestamp.as_deref()),
+                                    model: summary
+                                        .model_used
+                                        .clone()
+                                        .unwrap_or_else(|| "unknown".into()),
+                                    total: raw_total,
+                                    disposition: "unresolved_fork".into(),
+                                    ..CodexUsageObservation::zero()
+                                });
+                            continue;
+                        }
                         match (raw_total.as_ref(), last.as_ref()) {
                             (Some(current), Some(last))
                                 if codex_totals_at_or_above(current, last) =>
                             {
                                 let baseline = codex_subtract_totals(current, last);
                                 if baseline == CodexTokenTotals::default() {
-                                    accounting_state.fork_direct = false;
-                                    accounting_state.fork_pending_replay = true;
-                                    accounting_state.fork_prefix_total = Some(current.clone());
-                                    summary
-                                        .codex_usage_observations
-                                        .push(CodexUsageObservation {
-                                            source_line: (idx + 1) as i64,
-                                            timestamp: timestamp.clone(),
-                                            day: codex_local_day(timestamp.as_deref()),
-                                            model: summary
-                                                .model_used
-                                                .clone()
-                                                .unwrap_or_else(|| "unknown".into()),
-                                            total: raw_total,
-                                            disposition: "inherited_replay".into(),
-                                            ..CodexUsageObservation::zero()
-                                        });
-                                    continue;
+                                    if accounting_state.fork_compact_subagent {
+                                        accounting_state.fork_direct = false;
+                                        accounting_state.fork_compact_subagent = false;
+                                    } else {
+                                        accounting_state.fork_direct = false;
+                                        accounting_state.fork_pending_replay = true;
+                                        accounting_state.fork_prefix_total = Some(current.clone());
+                                        summary.codex_usage_observations.push(
+                                            CodexUsageObservation {
+                                                source_line: (idx + 1) as i64,
+                                                timestamp: timestamp.clone(),
+                                                day: codex_local_day(timestamp.as_deref()),
+                                                model: summary
+                                                    .model_used
+                                                    .clone()
+                                                    .unwrap_or_else(|| "unknown".into()),
+                                                total: raw_total,
+                                                disposition: "inherited_replay".into(),
+                                                ..CodexUsageObservation::zero()
+                                            },
+                                        );
+                                        continue;
+                                    }
                                 }
                                 accounting_state.fork_baseline = Some(baseline);
                             }
@@ -1157,6 +1238,7 @@ impl SessionSourceAdapter for CodexAdapter {
                             timestamp: timestamp.clone(),
                             day: codex_local_day(timestamp.as_deref()),
                             model: model_key,
+                            service_tier: accounting_state.current_service_tier.clone(),
                             input_tokens: delta.input,
                             cache_read_tokens: delta.cached,
                             output_tokens: delta.output,
@@ -1227,6 +1309,9 @@ impl SessionSourceAdapter for CodexAdapter {
                 .push("missing session_meta cwd".to_string());
         }
         accounting_state.current_model = summary.model_used.clone();
+        summary.codex_lineage.source_session_id = accounting_state.session_id.clone();
+        summary.codex_lineage.parent_session_id = accounting_state.parent_session_id.clone();
+        summary.codex_lineage.fork_timestamp = accounting_state.fork_timestamp.clone();
         summary.last_usage_key = serde_json::to_string(&accounting_state).ok();
         summary
     }
@@ -1614,6 +1699,53 @@ mod tests {
         assert_eq!(summary.model_used.as_deref(), Some("o3"));
     }
 
+    #[test]
+    fn codex_lineage_metadata_supports_session_id_and_nested_parent_marker() {
+        let raw = concat!(
+            r#"{"timestamp":"2026-07-16T12:00:00Z","type":"session_meta","payload":{"session_id":"child","timestamp":"2026-07-16T11:59:59Z","source":{"subagent":{"thread_spawn":{"parent_thread_id":"parent"}}}}}"#,
+            "\n",
+            r#"{"type":"turn_context","payload":{"model":"gpt-5.4"}}"#,
+        );
+        let summary = CodexAdapter.parse_raw("/fixtures/lineage.jsonl", raw);
+        assert_eq!(summary.stable_id.as_deref(), Some("child"));
+        assert_eq!(
+            summary.codex_lineage.source_session_id.as_deref(),
+            Some("child")
+        );
+        assert_eq!(
+            summary.codex_lineage.parent_session_id.as_deref(),
+            Some("parent")
+        );
+        assert_eq!(
+            summary.codex_lineage.fork_timestamp.as_deref(),
+            Some("2026-07-16T11:59:59Z")
+        );
+    }
+
+    #[test]
+    fn codex_lineage_metadata_survives_incremental_chunks() {
+        let first = r#"{"timestamp":"2026-07-16T12:00:00Z","type":"session_meta","payload":{"id":"child","forked_from_id":"parent"}}"#;
+        let second = r#"{"timestamp":"2026-07-16T12:00:01Z","type":"turn_context","payload":{"model":"gpt-5.4"}}"#;
+        let prefix = CodexAdapter.parse_raw_with_state("/fixtures/lineage.jsonl", first, None);
+        let suffix = CodexAdapter.parse_raw_with_state(
+            "/fixtures/lineage.jsonl",
+            second,
+            prefix.last_usage_key.as_deref(),
+        );
+        assert_eq!(
+            suffix.codex_lineage.source_session_id.as_deref(),
+            Some("child")
+        );
+        assert_eq!(
+            suffix.codex_lineage.parent_session_id.as_deref(),
+            Some("parent")
+        );
+        assert_eq!(
+            suffix.codex_lineage.fork_timestamp.as_deref(),
+            Some("2026-07-16T12:00:00Z")
+        );
+    }
+
     fn codex_token_line(
         timestamp: &str,
         input: i64,
@@ -1674,18 +1806,90 @@ mod tests {
     }
 
     #[test]
+    fn codex_interleaved_latch_and_watermark_survive_incremental_boundary() {
+        let prefix = [
+            codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10),
+            codex_token_line("2026-08-10T01:00:10Z", 40, 30, 4, 40, 30, 4),
+        ]
+        .join("\n");
+        let suffix = codex_token_line("2026-08-10T01:00:20Z", 80, 60, 8, 120, 90, 12);
+        let first = CodexAdapter.parse_raw_with_state("/fixtures/interleaved.jsonl", &prefix, None);
+        let second = CodexAdapter.parse_raw_with_state(
+            "/fixtures/interleaved.jsonl",
+            &suffix,
+            first.last_usage_key.as_deref(),
+        );
+        assert_eq!(first.total_input_tokens + second.total_input_tokens, 120);
+        assert_eq!(first.cache_read_tokens + second.cache_read_tokens, 90);
+        assert_eq!(first.total_output_tokens + second.total_output_tokens, 12);
+        let state: CodexAccountingState =
+            serde_json::from_str(second.last_usage_key.as_deref().expect("state"))
+                .expect("valid state");
+        assert!(state.interleaved);
+        assert_eq!(state.watermark.expect("watermark").input, 120);
+    }
+
+    #[test]
+    fn codex_seen_totals_are_bounded_without_affecting_watermark() {
+        let raw = (1..=70)
+            .map(|index| codex_token_line("2026-08-10T01:00:00Z", 1, 1, 1, index, index, index))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let summary = CodexAdapter.parse_raw("/fixtures/bounded.jsonl", &raw);
+        let state: CodexAccountingState =
+            serde_json::from_str(summary.last_usage_key.as_deref().expect("state"))
+                .expect("valid state");
+        assert_eq!(state.seen_totals.len(), 64);
+        assert_eq!(state.watermark.expect("watermark").input, 70);
+        assert_eq!(summary.total_input_tokens, 70);
+    }
+
+    #[test]
+    fn codex_post_latch_growth_is_capped_by_last_usage() {
+        let raw = [
+            codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10),
+            codex_token_line("2026-08-10T01:00:10Z", 40, 30, 4, 40, 30, 4),
+            // Cumulative growth contains 50/40/5 above the watermark, but the
+            // event owns only 20/10/2. The smaller per-event delta is binding.
+            codex_token_line("2026-08-10T01:00:20Z", 20, 10, 2, 150, 120, 15),
+        ]
+        .join("\n");
+        let summary = CodexAdapter.parse_raw("/fixtures/post-latch-cap.jsonl", &raw);
+        assert_eq!(summary.total_input_tokens, 120);
+        assert_eq!(summary.cache_read_tokens, 90);
+        assert_eq!(summary.total_output_tokens, 12);
+        assert_eq!(summary.codex_usage_observations[2].input_tokens, 20);
+    }
+
+    #[test]
     fn codex_observations_keep_event_day_and_model() {
         let raw = format!(
             "{}\n{}\n{}",
             r#"{"type":"session_meta","payload":{"id":"s","cwd":"/repo","model_provider":"openai"}}"#,
-            r#"{"type":"turn_context","payload":{"model":"gpt-5.6-sol"}}"#,
+            r#"{"type":"turn_context","payload":{"model":"gpt-5.6-sol","service_tier":"priority"}}"#,
             codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10),
         );
         let summary = CodexAdapter.parse_raw("/fixtures/codex-day.jsonl", &raw);
         let observation = &summary.codex_usage_observations[0];
         assert_eq!(observation.model, "gpt-5.6-sol");
+        assert_eq!(observation.service_tier.as_deref(), Some("priority"));
         assert!(observation.day.is_some());
         assert_eq!(observation.reasoning_tokens, 1);
+    }
+
+    #[test]
+    fn codex_quota_windows_never_enter_transcript_compute_totals() {
+        let raw = format!(
+            "{}\n{}\n{}",
+            r#"{"type":"session_meta","payload":{"id":"s","cwd":"/repo","model_provider":"openai"}}"#,
+            r#"{"type":"event_msg","payload":{"type":"rate_limits","primary":{"used_percent":99,"window_minutes":300},"secondary":{"used_percent":80,"window_minutes":10080}}}"#,
+            codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10),
+        );
+        let summary = CodexAdapter.parse_raw("/fixtures/codex-quota.jsonl", &raw);
+        assert_eq!(summary.total_input_tokens, 100);
+        assert_eq!(summary.cache_read_tokens, 80);
+        assert_eq!(summary.total_output_tokens, 10);
+        assert_eq!(summary.codex_usage_observations.len(), 1);
     }
 
     #[test]
@@ -1710,6 +1914,24 @@ mod tests {
         assert_eq!(model.input_tokens, 260);
         assert_eq!(model.cache_read_tokens, 210);
         assert_eq!(model.output_tokens, 20);
+    }
+
+    #[test]
+    fn codex_compact_subagent_reset_is_independent_usage() {
+        let raw = format!(
+            "{}\n{}\n{}",
+            r#"{"type":"session_meta","payload":{"id":"child","source":{"subagent":{"thread_spawn":{"parent_thread_id":"parent"}}}}}"#,
+            codex_token_line("2026-08-10T01:00:00Z", 100, 80, 10, 100, 80, 10),
+            codex_token_line("2026-08-10T01:00:01Z", 50, 40, 5, 150, 120, 15),
+        );
+        let summary = CodexAdapter.parse_raw("/fixtures/compact-subagent.jsonl", &raw);
+        assert_eq!(summary.total_input_tokens, 150);
+        assert_eq!(summary.cache_read_tokens, 120);
+        assert_eq!(summary.total_output_tokens, 15);
+        assert!(summary
+            .codex_usage_observations
+            .iter()
+            .all(|observation| observation.disposition == "accepted"));
     }
 
     #[test]

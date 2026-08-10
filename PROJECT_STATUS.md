@@ -38,6 +38,25 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-11 (unreleased) — Trustworthy Codex evidence ledger:** release
+  qualification found that v1.7.3 still undercounted compact subagent rollouts
+  and presented incomplete historical coverage too confidently. The candidate
+  now separates verified, legacy-estimated, ambiguous, missing, and stale
+  evidence; persists append-only lineage-aware observations; reports
+  API-equivalent pricing as exact, bounded, or unpriced; and imports additional
+  Codex homes without double counting stable session identities. A retained
+  cursor-aligned comparison matches pinned CodexBar 0.46.0 exactly across all
+  12 comparable sessions (1,257,163,311 input, 1,230,980,352 cached, 3,863,267
+  output). A separately frozen 96-source backfill is exactly idempotent across
+  two runs and records 3,147,488,441 verified input tokens while preserving
+  1,260 unrecoverable historical rows as non-verified. CodexBar itself retained
+  two incomplete large-file scans and two stale completed sizes after
+  `--refresh`, so parity is cursor-aligned and CodeVetter exposes its own byte
+  coverage. The candidate now snapshots the prior session/model/v1-observation
+  projections exactly once; `CODEVETTER_CODEX_ACCOUNTING=legacy` restored all
+  three retained-corpus aggregates exactly while preserving v2 evidence.
+  Release remains pending final checks.
+
 - **2026-08-10 (shipped in v1.7.3) — Deterministic Codex usage accounting:**
   replaced message-prorated and replay-prone Codex totals with timestamped,
   content-free usage observations; persisted cumulative counter state handles
@@ -48,8 +67,9 @@ Internal (fleet):
   fail-closed: readable transcripts reconcile session/model totals from
   persisted accepted observations inside each transaction, while missing
   sources retain their prior totals with explicit unrepaired audits. Frozen
-  qualification reconciled 91 readable sessions twice to an identical
-  2,742,608,446 accepted tokens and preserved 1,260 missing sources. Verified
+  qualification at release time reconciled 91 readable sessions twice to an
+  identical 2,742,608,446 accepted tokens and preserved 1,260 missing sources;
+  the 2026-08-11 audit above supersedes that confidence claim. Verified
   with 913 Rust tests, 665 frontend tests plus the 20-scenario live
   qualification, lint, typecheck, production build, docs, and strict OpenSpec.
 
