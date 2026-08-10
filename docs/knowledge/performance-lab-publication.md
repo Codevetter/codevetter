@@ -63,23 +63,26 @@ disposition is retained in
 
 [markedjs/marked#4048](https://github.com/markedjs/marked/pull/4048) was the
 first external upstream PR created by this campaign. It optimizes reference-link
-membership during the normal post-block inline phase while retaining the
-dynamic direct-call path and clearing temporary state in `finally`.
+membership by checking the existing link table directly instead of rebuilding
+and linearly searching its keys for every queued inline source. The revised
+patch contains no duplicate lexer state.
 
-Five-sample paired verification measured:
+Thirty alternating fresh-process pairs with per-process warmup measured:
 
-| References | Baseline | Candidate | Change |
+| References | Baseline | Candidate | Paired median change (95% interval) |
 | ---: | ---: | ---: | ---: |
-| 100 | 1.577 ms/op | 0.869 ms/op | -44.9% |
-| 500 | 15.472 ms/op | 3.326 ms/op | -78.5% |
-| 2,000 | 217.253 ms/op | 12.761 ms/op | -94.126% |
+| 100 | 0.805 ms/op | 0.489 ms/op | -39.2% (-40.3, -38.8) |
+| 500 | 11.512 ms/op | 2.265 ms/op | -80.4% (-80.5, -80.2) |
+| 2,000 | 164.115 ms/op | 10.095 ms/op | -93.8% (-93.9, -93.8) |
 
-The endpoint exponent fell from 1.644 to 0.897. A representative Markdown
-control moved +2.722%, below the 10% materiality threshold. Marked's complete
-`npm test` passed: 190 unit tests, 1,779 specification tests, ESM/UMD/CJS and
-type builds, lint, and generated-output checks. The PR is open and no longer a
-draft as of this record. Its visible unit, specification, security, and Vercel
-checks pass; upstream maintainers still own the merge decision.
+A 2,000-paragraph no-definition control moved +1.3% with a +0.3% to +2.3%
+interval. Reintroducing `Object.keys` or using `for...in` restored that fast path
+but re-enumerated the full link table and erased most of the target improvement,
+so neither experiment was retained. Marked's complete `npm test` passed: 190
+unit tests, 1,779 specification tests, ESM/UMD/CJS and type builds, lint, and
+generated-output checks. The PR is open and no longer a draft. Two maintainer
+threads on the earlier implementation are outdated. Snyk passes; Vercel's fork
+preview requires upstream authorization and is not a code-test failure.
 
 ### qs
 
@@ -143,6 +146,10 @@ optimization laboratory:
 10. **Self-profiling** found and fixed repeated source-offset scans in V8
     function coverage. The representative 91-document replay improved 18.11%;
     the 98.808% number belongs only to the adversarial regression fixture.
+11. **Contribution closeout** now challenges retained patch complexity, binds
+    local and optional T-Rex evidence to the pull-request head, reads current
+    and outdated review threads, distinguishes failed checks from fork approval,
+    and stops at upstream ownership without posting or assigning maintainer work.
 
 The most important tooling improvements came from false or incomplete early
 results: startup-dominated tests now fail closed, Vitest names must identify one

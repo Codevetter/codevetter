@@ -863,7 +863,7 @@ pnpm --silent runtime:campaign -- promote \
   --hypothesis "Remove one redundant allocation without changing output." --json
 ```
 
-The same six operations are available from `runtime:mcp`. Start that server
+The same six campaign operations are available from `runtime:mcp`. Start that server
 with `--repo /path/to/candidate --incumbent-repo /path/to/incumbent` so the
 promotion checkout is fixed outside tool arguments. The checked-in
 [agent program](../../scripts/runtime-failure-capsule/AUTONOMOUS_OPTIMIZATION_PROGRAM.md)
@@ -880,6 +880,72 @@ history but must start a new campaign before making new decisions. Removing a
 finished campaign is a manual local cleanup choice. The engine installs nothing,
 invokes no production or cloud endpoint,
 and never commits, pushes, resets source, or manufactures a checkout.
+
+### Candidate challenge and contribution closeout
+
+A campaign `keep` proves only the declared local scopes. Commit the candidate
+before paired promotion so the kept record names the future PR head; uncommitted
+source at challenge time fails closed. Before publishing, challenge that exact
+retained SHA:
+
+```bash
+pnpm --silent runtime:campaign -- challenge \
+  --repo /path/to/candidate \
+  --campaign .codevetter/optimization-campaigns/parser-loop \
+  --selected-sequence 4 \
+  --justification "The direct lookup adds no cache or fallback state." --json
+```
+
+The challenge binds the kept record, current commit, diff digest, complexity,
+and deterministic risk observations. It requires either a directly comparable
+qualified candidate or a bounded reason that a simpler comparison is not
+applicable. Candidate comparison retains the largest scale or latency value as
+the target and treats smaller scale points, bytes/op, and allocations/op as
+controls when they exist. The simpler candidate must stay within the same 5%
+tolerance on every retained metric. Risk tokens request evidence; they are not
+a model score and cannot offset correctness or performance.
+
+Inspect one published pull request with the returned challenge path:
+
+```bash
+pnpm --silent runtime:campaign -- inspect-contribution \
+  --repo /path/to/candidate \
+  --campaign .codevetter/optimization-campaigns/parser-loop \
+  --challenge .codevetter/optimization-campaigns/parser-loop/closeout/challenge-<sha>-<digest>.json \
+  --pr https://github.com/owner/repository/pull/123 \
+  --trex-policy optional --json
+```
+
+`trex-policy` is `optional`, `required`, or `not_applicable`. A supplied T-Rex
+preview receipt is read from a contained local path and must identify the same
+candidate SHA. CodeVetter does not launch T-Rex, a browser, preview, or hosted
+load from this operation.
+
+The contribution receipt keeps correctness, performance, patch quality, T-Rex,
+head freshness, checks, review threads, and merge authority as independent
+gates. It distinguishes failed checks from fork-workflow approval, retains
+outdated and resolved feedback without treating either as current work, and
+reports `waiting_for_maintainer` when upstream owns merge. Use
+`refresh-contribution` for one explicit reread; there is no polling.
+
+The append-only receipt also carries bounded maintainer-feedback learning when
+a reviewed candidate is superseded: exact before/after SHAs and complexity,
+the actionable thread, prior deterministic risk signals, the revised campaign
+hypothesis, repeated local gates, and observed upstream disposition. This is
+evidence from one contribution, not a universal style rule.
+
+`closeout/publication.json` is a concise projection of the newest current
+receipt. A different PR head marks an existing projection `stale` while keeping
+its original receipt digest; only a newly challenged, current receipt can
+regenerate it. The receipt ledger remains the authority.
+
+The GitHub adapter uses one fixed read-only GraphQL query. It cannot comment,
+resolve a thread, request review, approve, merge, deploy, install an app, create
+a required check, or change pull-request metadata. Raw receipts remain local;
+an author can copy a concise summary separately.
+
+The challenge, inspection, and refresh operations are also available through
+`runtime:mcp`; their repository is fixed when the server starts.
 
 ## 13. Qualifying a workload before profiling
 
