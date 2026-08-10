@@ -53,6 +53,26 @@ Internal (fleet):
   with 913 Rust tests, 665 frontend tests plus the 20-scenario live
   qualification, lint, typecheck, production build, docs, and strict OpenSpec.
 
+- **2026-08-10 — Revision-bound optimization contribution closeout:** extended
+  the local performance campaign with a mandatory post-promotion candidate
+  challenge and three closed CLI/MCP operations. The new local receipt binds
+  the kept campaign record, baseline, candidate commit, diff, optional T-Rex
+  preview evidence, and one canonical GitHub PR while preserving correctness,
+  performance, patch quality, head freshness, checks, review threads,
+  approvals, and merge authority as independent fail-closed gates. Candidate
+  source must be committed before promotion/challenge; stale heads, missing
+  required T-Rex evidence, unobserved checks, actionable feedback, and
+  symlink/path escapes cannot become ready. GitHub access is one fixed read-only
+  GraphQL query with explicit refresh—no polling, app install, comment, review
+  request, thread resolution, required check, merge, or deploy. Live read-only
+  dogfood against Marked PR #4048 caught and fixed a classifier error: Vercel
+  fork authorization is now `approval_required`, not a code failure; two older
+  inline threads remain visible as outdated. Raw evidence stays local and
+  upstream maintainers receive no additional workflow. Qualified candidate
+  comparisons retain target plus available smaller-input/allocation controls,
+  and the full Marked-shaped fixture proves reviewed-head invalidation,
+  simpler-candidate selection, bounded feedback learning, and regeneration of
+  a current receipt-backed publication projection.
 - **2026-08-09 — Shared lint baseline:** Adopted the Fleet Ultracite baseline
   for core TypeScript, React, and test code. Explicit compatibility exceptions
   preserve current behavior while 662 files pass with zero diagnostics;

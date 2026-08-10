@@ -3,6 +3,7 @@ import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 
 import { createOptimizationCampaignService } from './campaign.mjs';
+import { createOptimizationContributionService } from './contribution.mjs';
 import { createLocalFlowService } from './flow-service.mjs';
 import { planFlowOptimizationCampaign } from './flow-campaign-planner.mjs';
 import { qualifyRepository } from './qualification.mjs';
@@ -16,6 +17,9 @@ export async function createRuntimeMcpHandler(repositoryRoot, options = {}) {
   const flowService = options.flowService ?? (await createLocalFlowService(repositoryRoot));
   const campaignService =
     options.campaignService ?? (await createOptimizationCampaignService(repositoryRoot));
+  const contributionService =
+    options.contributionService ??
+    (await createOptimizationContributionService(repositoryRoot, { campaignService }));
   const flowCampaignPlanner =
     options.flowCampaignPlanner ?? ((input) => planFlowOptimizationCampaign(input));
   return async function handle(request) {
@@ -37,6 +41,7 @@ export async function createRuntimeMcpHandler(repositoryRoot, options = {}) {
       const result = await callTool(
         flowService,
         campaignService,
+        contributionService,
         flowCampaignPlanner,
         repositoryRoot,
         options.incumbentRepositoryRoot,
@@ -67,6 +72,7 @@ export async function createRuntimeMcpHandler(repositoryRoot, options = {}) {
 async function callTool(
   flowService,
   campaignService,
+  contributionService,
   flowCampaignPlanner,
   repositoryRoot,
   incumbentRepositoryRoot,
@@ -142,20 +148,56 @@ async function callTool(
     closedArguments(args, ['campaign_directory']);
     return campaignService.status(args);
   }
+  if (name === 'challenge_optimization_candidate') {
+    closedArguments(
+      args,
+      ['campaign_directory'],
+      ['simpler_not_applicable_reason'],
+      ['selected_sequence'],
+      ['comparison_sequence']
+    );
+    return contributionService.challenge(args);
+  }
+  if (['inspect_optimization_contribution', 'refresh_optimization_contribution'].includes(name)) {
+    closedArguments(
+      args,
+      ['campaign_directory', 'challenge_path', 'pull_request_url', 'trex_policy'],
+      ['trex_receipt', 'trex_not_applicable_reason']
+    );
+    return contributionService[name.startsWith('inspect') ? 'inspect' : 'refresh'](args);
+  }
   throw new Error('Unknown local runtime tool');
 }
 
-function closedArguments(value, required, optional = []) {
+function closedArguments(
+  value,
+  required,
+  optional = [],
+  requiredIntegers = [],
+  optionalIntegers = []
+) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Tool arguments must be an object');
   }
-  const allowed = new Set([...required, ...optional]);
+  const allowed = new Set([...required, ...optional, ...requiredIntegers, ...optionalIntegers]);
   const unknown = Object.keys(value).filter((key) => !allowed.has(key));
   const missing = required.filter(
     (key) => typeof value[key] !== 'string' || value[key].trim() === ''
   );
+  const missingIntegers = requiredIntegers.filter(
+    (key) => !Number.isInteger(value[key]) || value[key] < 0
+  );
+  const invalidOptionalIntegers = optionalIntegers.filter(
+    (key) => value[key] !== undefined && (!Number.isInteger(value[key]) || value[key] < 0)
+  );
   if (unknown.length > 0) throw new Error(`Unknown tool argument: ${unknown.join(', ')}`);
   if (missing.length > 0) throw new Error(`Missing tool argument: ${missing.join(', ')}`);
+  if (missingIntegers.length > 0) {
+    throw new Error(`Missing integer tool argument: ${missingIntegers.join(', ')}`);
+  }
+  if (invalidOptionalIntegers.length > 0) {
+    throw new Error(`Invalid integer tool argument: ${invalidOptionalIntegers.join(', ')}`);
+  }
 }
 
 export function toolDefinitions() {
@@ -316,15 +358,39 @@ export function toolDefinitions() {
       ['campaign_directory'],
       readAnnotations
     ),
+    {
+      name: 'challenge_optimization_candidate',
+      description:
+        'Challenge one kept optimization against deterministic diff complexity before publication.',
+      annotations: executeAnnotations,
+      inputSchema: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['campaign_directory', 'selected_sequence'],
+        properties: {
+          campaign_directory: campaignDirectorySchema(),
+          selected_sequence: { type: 'integer', minimum: 0, maximum: 300 },
+          comparison_sequence: { type: 'integer', minimum: 0, maximum: 300 },
+          simpler_not_applicable_reason: { type: 'string', minLength: 1, maxLength: 1000 },
+        },
+      },
+    },
+    contributionTool(
+      'inspect_optimization_contribution',
+      'Inspect one GitHub pull request read-only and emit a revision-bound contribution receipt.',
+      executeAnnotations
+    ),
+    contributionTool(
+      'refresh_optimization_contribution',
+      'Refresh existing read-only GitHub evidence once without polling or notifying maintainers.',
+      executeAnnotations
+    ),
   ];
 }
 
 function campaignTool(name, description, required, annotations) {
   const properties = {
-    campaign_directory: {
-      type: 'string',
-      description: 'Repository-relative directory under .codevetter/optimization-campaigns/.',
-    },
+    campaign_directory: campaignDirectorySchema(),
   };
   if (required.includes('hypothesis')) {
     properties.hypothesis = {
@@ -338,6 +404,38 @@ function campaignTool(name, description, required, annotations) {
     description,
     annotations,
     inputSchema: { type: 'object', additionalProperties: false, required, properties },
+  };
+}
+
+function campaignDirectorySchema() {
+  return {
+    type: 'string',
+    description: 'Repository-relative directory under .codevetter/optimization-campaigns/.',
+  };
+}
+
+function contributionTool(name, description, annotations) {
+  return {
+    name,
+    description,
+    annotations,
+    inputSchema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['campaign_directory', 'challenge_path', 'pull_request_url', 'trex_policy'],
+      properties: {
+        campaign_directory: campaignDirectorySchema(),
+        challenge_path: { type: 'string', maxLength: 500 },
+        pull_request_url: {
+          type: 'string',
+          pattern: '^https://github\\.com/[^/]+/[^/]+/pull/[0-9]+/?$',
+          maxLength: 300,
+        },
+        trex_policy: { type: 'string', enum: ['optional', 'required', 'not_applicable'] },
+        trex_receipt: { type: 'string', maxLength: 500 },
+        trex_not_applicable_reason: { type: 'string', minLength: 1, maxLength: 1000 },
+      },
+    },
   };
 }
 
