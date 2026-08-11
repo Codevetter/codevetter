@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-10
+Last updated: 2026-08-11
 
 ## Why / What
 
@@ -38,6 +38,14 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-11 — Code-health coverage became executable:** Added CI-blocking
+  unused-code, duplication-regression, runtime dependency-cycle, and production
+  vulnerability gates. Removed six unused public type exports, confirmed zero
+  runtime import cycles repository-wide, capped changed-file cognitive
+  complexity at 20, ratcheted duplication at the measured 0.75% baseline, and
+  reduced dependency-audit exposure from 17 high advisories to zero. Historical
+  complexity and the remaining Astro 6 low/moderate advisories are explicitly
+  tracked as dated follow-up instead of being suppressed.
 - **2026-08-11 (shipped in v1.7.4) — Trustworthy Codex evidence ledger:** release
   qualification found that v1.7.3 still undercounted compact subagent rollouts
   and presented incomplete historical coverage too confidently. The candidate
@@ -296,6 +304,10 @@ Internal (fleet):
 ### Foundation
 
 - Shared Ultracite lint baseline with a clean 662-file check.
+- CI-blocking code-health gates for unused exports/dependencies, changed-file
+  cognitive complexity, runtime import cycles, clone regression, and
+  high/critical production advisories, with generated and fixture boundaries
+  explicit and historical debt tracked in GitHub Issues.
 - Local-first desktop binary: Tauri 2 + React 19, macOS, offline, SQLite, no server.
 - Six-surface nav: Usage, Repo Unpack, Work, Board, Review, Testing. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.
