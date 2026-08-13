@@ -1,11 +1,6 @@
-export type AgentTeamProvider = 'codex' | 'claude';
+type AgentTeamProvider = 'codex' | 'claude';
 
-export type AgentTeamRole =
-  | 'implementation'
-  | 'investigation'
-  | 'product-ux'
-  | 'review'
-  | 'verification';
+type AgentTeamRole = 'implementation' | 'investigation' | 'product-ux' | 'review' | 'verification';
 
 export interface AgentRoleRecommendation {
   role: AgentTeamRole;

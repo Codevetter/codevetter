@@ -78,6 +78,11 @@ pnpm lint          # Biome check .
 # From repo root
 pnpm install           # Install all workspace deps
 pnpm lint              # Biome check . (root)
+pnpm knip:strict       # Unused code and dependency gate
+pnpm quality:complexity # Changed-file cognitive-complexity gate
+pnpm quality:cycles    # Runtime import-cycle gate
+pnpm quality:duplication # Clone-regression gate
+pnpm quality:dependencies # High/critical production advisory gate
 node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 ```
 

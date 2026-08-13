@@ -108,7 +108,8 @@
     "netstat",
     "ps",
     "rustc",
-    "cargo"
+    "cargo",
+    "swift"
   ],
   "ignoreIssues": {
     "src/app/api/**/route.ts": ["exports", "types"],
