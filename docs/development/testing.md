@@ -1,6 +1,6 @@
 ---
 title: Testing
-description: The four test surfaces and how to run each one.
+description: The test and code-health surfaces and how to run each one.
 sidebar:
   order: 2
 ---
@@ -106,14 +106,32 @@ Architecture, privacy boundaries, and remaining release qualification are in
 
 ## CI order
 
-`ci.yml` runs, in order: lint → typecheck → unit tests → MCP sidecar build
-smoke → desktop build → MCP protocol/safety tests → MCP release-mode stdio
-lifecycle. A failure stops the pipeline.
+`ci.yml` runs, in order: lint → code health → typecheck → unit tests → MCP
+sidecar build smoke → desktop build → MCP protocol/safety tests → MCP
+release-mode stdio lifecycle. A failure stops the pipeline.
 
 ## Strictness gates
 
 - **Biome** is the linter/formatter (`biome.json`, root `pnpm lint`).
 - **`tsc --noEmit`** typecheck in `apps/desktop`.
+- **Knip** is the unused-code and unused-dependency authority (`pnpm knip:strict`).
+- **Biome changed-file complexity** caps new or modified functions at cognitive
+  complexity 20 (`pnpm quality:complexity`). Historical over-threshold
+  functions remain explicit in
+  [GitHub issue #117](https://github.com/Codevetter/codevetter/issues/117) for
+  review by 2026-09-11 rather than being hidden by global suppressions.
+- **Biome's project scanner** rejects runtime dependency cycles
+  (`pnpm quality:cycles`). Type-only imports are excluded because they are
+  erased before runtime.
+- **jscpd** prevents clone growth across authored desktop, landing, and script
+  sources (`pnpm quality:duplication`). Generated artifacts and fixtures are
+  excluded. The 2026-08-11 baseline is 0.75% duplicated lines: 1,000 of 133,900
+  lines across 356 files, with 72 clones at the 8-line/60-token floor.
+- **Dependency audit** blocks high and critical advisories across production
+  and development dependencies
+  (`pnpm quality:dependencies`). The remaining Astro 6 low/moderate baseline is
+  owned by [GitHub issue #116](https://github.com/Codevetter/codevetter/issues/116)
+  for review by 2026-09-11 because its fix requires the Astro 7 major upgrade.
 - **Clippy zero-warning** in release qualification.
 - **Bundle budgets** via `apps/desktop/scripts/bundle-budget.mjs`.
 - **OpenSpec strict** validation for specs under `openspec/`.

@@ -91,6 +91,7 @@
         "noUnusedExpressions": "off",
         "noExplicitAny": "off",
         "noAssignInExpressions": "off",
+        "noImportCycles": "error",
         "useIterableCallbackReturn": "off",
         "noArrayIndexKey": "off",
         "noSuspiciousSemicolonInJsx": "off",
