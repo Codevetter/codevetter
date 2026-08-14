@@ -179,6 +179,8 @@ test('runtime MCP exposes product capabilities and fails closed on unknown captu
     tools.map((tool) => tool.name),
     [
       'qualify_runtime_repository',
+      'profile_local_performance',
+      'verify_paired_performance',
       'inspect_performance_run',
       'plan_flow_optimization_campaign',
       'capture_local_flow',
@@ -197,14 +199,14 @@ test('runtime MCP exposes product capabilities and fails closed on unknown captu
     ]
   );
   assert.equal(tools[0].annotations.readOnlyHint, true);
-  assert.equal(tools[1].annotations.readOnlyHint, true);
+  assert.equal(tools[1].annotations.readOnlyHint, false);
   assert.equal(tools[2].annotations.readOnlyHint, false);
-  assert.equal(tools[3].annotations.readOnlyHint, false);
-  assert.equal(tools[4].annotations.readOnlyHint, true);
+  assert.equal(tools[3].annotations.readOnlyHint, true);
+  assert.equal(tools[4].annotations.readOnlyHint, false);
 
   const handle = await createRuntimeMcpHandler(root);
   const listed = await handle({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
-  assert.equal(listed.result.tools.length, 16);
+  assert.equal(listed.result.tools.length, 18);
   const qualification = await handle({
     jsonrpc: '2.0',
     id: 2,
@@ -331,7 +333,7 @@ test('runtime MCP process speaks line-delimited JSON-RPC without network setup',
     { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} },
   ]);
   assert.equal(responses[0].result.serverInfo.name, 'codevetter-local-runtime');
-  assert.equal(responses[1].result.tools.length, 16);
+  assert.equal(responses[1].result.tools.length, 18);
 });
 
 test('validates the required recursive flow contract', () => {

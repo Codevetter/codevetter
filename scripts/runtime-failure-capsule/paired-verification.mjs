@@ -7,6 +7,7 @@ import { createPerformanceCapsule } from './performance.mjs';
 import { inspectGitDiff } from './git-diff.mjs';
 import { verifyOptimizationCapsules } from './optimization-verification.mjs';
 import { runClosedAdapter } from './runner.mjs';
+import { inspectExistingViteArtifact } from './vite-artifact.mjs';
 
 const DIAGNOSTIC_ONLY_LIMITATIONS = new Set([
   'The runtime produced no V8 CPU profile.',
@@ -23,7 +24,12 @@ export async function verifyPairedRepositories({
   timeoutMs,
   samples,
   warmups,
+  viteBuildDirectory,
+  viteEntry,
 }) {
+  if (adapter === 'playwright' && samples < 3) {
+    throw new Error('paired Playwright verification requires at least three samples per side');
+  }
   const baselineRoot = await realpath(resolve(baselineRepositoryRoot));
   const currentRoot = await realpath(resolve(currentRepositoryRoot));
   if (baselineRoot === currentRoot) {
@@ -76,6 +82,10 @@ export async function verifyPairedRepositories({
     inspectGitDiff(baselineRoot),
     inspectGitDiff(currentRoot),
   ]);
+  const [baselineViteArtifact, currentViteArtifact] = await Promise.all([
+    inspectExistingViteArtifact(baselineRoot, viteBuildDirectory, viteEntry),
+    inspectExistingViteArtifact(currentRoot, viteBuildDirectory, viteEntry),
+  ]);
   const baseline = pairedCapsule({
     root: baselineRoot,
     git: baselineGit,
@@ -85,6 +95,7 @@ export async function verifyPairedRepositories({
     samples,
     warmups,
     executions: executions.baseline,
+    viteArtifact: baselineViteArtifact,
   });
   const current = pairedCapsule({
     root: currentRoot,
@@ -95,6 +106,7 @@ export async function verifyPairedRepositories({
     samples,
     warmups,
     executions: executions.current,
+    viteArtifact: currentViteArtifact,
   });
   const verification = verifyOptimizationCapsules(baseline, current);
   return {
@@ -147,7 +159,17 @@ async function runSide({
   });
 }
 
-function pairedCapsule({ root, git, adapter, target, name, samples, warmups, executions }) {
+function pairedCapsule({
+  root,
+  git,
+  adapter,
+  target,
+  name,
+  samples,
+  warmups,
+  executions,
+  viteArtifact,
+}) {
   const capsule = createPerformanceCapsule({
     root,
     lexicalRoot: root,
@@ -168,6 +190,7 @@ function pairedCapsule({ root, git, adapter, target, name, samples, warmups, exe
       redaction_count: 0,
       failed_kinds: [],
     },
+    viteArtifact,
   });
   capsule.limitations = capsule.limitations.filter(
     (limitation) => !DIAGNOSTIC_ONLY_LIMITATIONS.has(limitation)

@@ -9,7 +9,13 @@ export const FLOW_PRIORITY_MANIFEST_SCHEMA_VERSION = 'runtime-flow-priority-mani
 export const FLOW_CAMPAIGN_PLAN_SCHEMA_VERSION = 'runtime-flow-campaign-plan/v1';
 export const DETECTION_SCHEMA_VERSION = 'runtime-lane-detection/v1';
 export const ADAPTERS = Object.freeze(['node-test', 'vitest', 'playwright', 'go-test']);
-export const PROFILE_ADAPTERS = Object.freeze(['node-test', 'node-script', 'vitest', 'go-bench']);
+export const PROFILE_ADAPTERS = Object.freeze([
+  'node-test',
+  'node-script',
+  'vitest',
+  'playwright',
+  'go-bench',
+]);
 export const FLOW_ADAPTERS = Object.freeze(['node-test', 'vitest']);
 export const IMPORT_KINDS = Object.freeze(['browser', 'worker']);
 export const LIMITS = Object.freeze({

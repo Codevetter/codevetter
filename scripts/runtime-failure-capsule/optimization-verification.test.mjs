@@ -126,6 +126,32 @@ test('loads a performance capsule from a full diagnosis document', async (contex
   assert.deepEqual(await loadPerformanceCapsule(root, 'diagnosis.json'), baseline);
 });
 
+test('confirms exact Playwright flow duration while guarding process wall time', () => {
+  const baseline = capsule({ adapter: 'playwright', samples: 10 });
+  const current = capsule({ adapter: 'playwright', samples: 10 });
+  baseline.observed.playwright_test = playwrightTest(200);
+  current.observed.playwright_test = playwrightTest(170);
+  baseline.observed.wall_time_ms = distribution(1_000);
+  current.observed.wall_time_ms = distribution(1_050);
+
+  const report = verifyOptimizationCapsules(baseline, current);
+
+  assert.equal(report.verdict.status, 'confirmed');
+  assert.equal(report.observed[0].duration_ms.delta, -30);
+  assert.equal(report.decisions.shipping_recommended, true);
+});
+
+test('rejects a faster Playwright flow when process wall time materially regresses', () => {
+  const baseline = capsule({ adapter: 'playwright', samples: 10 });
+  const current = capsule({ adapter: 'playwright', samples: 10 });
+  baseline.observed.playwright_test = playwrightTest(200);
+  current.observed.playwright_test = playwrightTest(170);
+  baseline.observed.wall_time_ms = distribution(1_000);
+  current.observed.wall_time_ms = distribution(1_250);
+
+  assert.equal(verifyOptimizationCapsules(baseline, current).verdict.status, 'rejected');
+});
+
 function capsule({ adapter = 'vitest', metrics = [], benchmarks = [], samples = 3 } = {}) {
   return {
     schema_version: 'runtime-performance-capsule/v1',
@@ -183,4 +209,16 @@ function goBenchmark(nsPerOp, bytesPerOp, allocsPerOp) {
 
 function distribution(median) {
   return { count: 3, min: median, median, p95: median, max: median, spread_percent: 0 };
+}
+
+function playwrightTest(median) {
+  return {
+    exact_name: 'exact workload',
+    duration_ms: distribution(median),
+    expected_samples: 10,
+    captured_samples: 10,
+    complete: true,
+    limitations: [],
+    provenance: 'playwright_json_reporter',
+  };
 }

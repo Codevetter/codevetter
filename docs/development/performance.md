@@ -716,6 +716,55 @@ report `evidence_mode: paired_interleaved`. Any failed run or missing comparable
 metric yields `no_confidence`. This operation captures timing/domain metrics
 only; use `diagnose-performance` separately for source attribution.
 
+### Explicit Playwright flow evidence
+
+An existing repository-owned Playwright test can be selected explicitly as a
+local performance scope. Qualification lists browser candidates but never
+declares one representative automatically:
+
+```bash
+pnpm runtime:profile -- \
+  --repo /path/to/react-app \
+  --adapter playwright \
+  --target tests/checkout.spec.ts \
+  --name "completes checkout" \
+  --samples 3 \
+  --warmups 1 \
+  --json
+```
+
+The capsule records the exact test duration reported by Playwright separately
+from owned-process wall time. Missing, failed, retried, ambiguous, or truncated
+reporter evidence yields `no_confidence`. Paired Playwright verification uses
+the same scope with `runtime:verify-paired-optimization`; direct comparisons
+require at least three samples, while campaign promotion retains the ten-sample
+floor. Confirmation requires at least 10% and 10 ms median test-duration
+improvement with no process-wall regression above 20%.
+
+An existing Vite output can be inspected without running a build:
+
+```bash
+pnpm runtime:profile -- \
+  --repo /path/to/react-app \
+  --adapter playwright \
+  --target tests/checkout.spec.ts \
+  --name "completes checkout" \
+  --vite-build-dir dist \
+  --vite-entry index.html \
+  --json
+```
+
+Only a bounded initial HTML/static-JavaScript closure is read. Raw and gzip
+bytes are always labelled `existing_unverified_vite_artifact`; they cannot
+confirm or keep an optimization because CodeVetter did not run or attest the
+build. MCP exposes the same closed inputs as `profile_local_performance` and
+`verify_paired_performance`; neither accepts commands or installs packages.
+
+This compact lane deliberately does not restore the retired general browser
+runtime. It does not capture Chrome traces, Core Web Vitals, React commits,
+browser memory, request waterfalls, production traffic, or automatic patches.
+Those gaps remain explicit in every Playwright performance capsule.
+
 ## 10. Official 1BRC Node artifact
 
 The repository-owned Node adaptation of the official One Billion Row Challenge

@@ -16,6 +16,7 @@ import { collectV8FunctionCoverage, emptyFunctionCoverage } from './function-cov
 import { redactText } from './redact.mjs';
 import { inspectGoProfile, runClosedAdapter } from './runner.mjs';
 import { collectNodeFlowEvents } from './flow-capture.mjs';
+import { inspectExistingViteArtifact } from './vite-artifact.mjs';
 
 const APPLICATION_HOTSPOT_SHARE = 0.05;
 const STARTUP_DOMINATED_SHARE_PERCENT = 10;
@@ -41,7 +42,12 @@ export async function profileRepository({
   regressionPercent = 20,
   regressionMs = 25,
   captureFlow = false,
+  viteBuildDirectory,
+  viteEntry,
 }) {
+  if (adapter === 'playwright' && !name) {
+    throw new Error('playwright performance profiling requires an exact test name');
+  }
   const lexicalRoot = resolve(repositoryRoot);
   const root = await realpath(lexicalRoot);
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'codevetter-profile-'));
@@ -130,7 +136,8 @@ export async function profileRepository({
       functionCoverage = await collectV8FunctionCoverage(coverageDirectory, root);
     }
 
-    const profileRunCount = adapter === 'go-bench' ? 1 : V8_PROFILE_RUNS;
+    const profileRunCount =
+      adapter === 'playwright' ? 0 : adapter === 'go-bench' ? 1 : V8_PROFILE_RUNS;
     for (let index = 0; index < profileRunCount; index += 1) {
       const profileDirectory = join(temporaryDirectory, `profile-${index}`);
       await mkdir(profileDirectory);
@@ -162,6 +169,7 @@ export async function profileRepository({
   }
 
   const git = await inspectGitDiff(root);
+  const viteArtifact = await inspectExistingViteArtifact(root, viteBuildDirectory, viteEntry);
   const baseline = baselinePath ? await loadPerformanceCapsule(root, baselinePath) : null;
   return createPerformanceCapsule({
     root,
@@ -181,6 +189,7 @@ export async function profileRepository({
     baseline,
     regressionPercent,
     regressionMs,
+    viteArtifact,
   });
 }
 
@@ -202,6 +211,7 @@ export function createPerformanceCapsule({
   baseline = null,
   regressionPercent = 20,
   regressionMs = 25,
+  viteArtifact = null,
 }) {
   let redactionCount = 0;
   let outputTruncated = false;
@@ -250,6 +260,16 @@ export function createPerformanceCapsule({
         )
       : [];
   const vitestExecutionShare = summarizeVitestExecutionShare(vitestTests, timing);
+  const playwrightTest =
+    adapter === 'playwright'
+      ? parsePlaywrightTimings(
+          measured.map((entry) => ({
+            stdout: entry.execution.stdout,
+            truncated: entry.execution.truncated,
+          })),
+          name
+        )
+      : null;
   const metricsExecutions = sanitizedExecutions.filter((entry) => entry.phase === 'metrics');
   const profileExecution = sanitizedExecutions.find((entry) => entry.phase === 'profile');
   const consoleMetrics =
@@ -295,6 +315,9 @@ export function createPerformanceCapsule({
   if (cleanupFailed)
     limitations.push('Owned temporary profiling artifacts could not be completely removed.');
   if (outputTruncated) limitations.push('Runner output was truncated before normalization.');
+  if (adapter === 'playwright' && !playwrightTest.complete) {
+    limitations.push(...playwrightTest.limitations);
+  }
   if (adapter === 'go-bench' && goBenchmarks.length === 0) {
     limitations.push('No matching Go benchmark measurement was captured.');
   }
@@ -304,14 +327,20 @@ export function createPerformanceCapsule({
   for (const kind of profileEvidence.failed_kinds ?? []) {
     limitations.push(`The ${kind} Go profile could not be normalized.`);
   }
-  if (adapter !== 'go-bench' && profileEvidence.profile_files === 0) {
+  if (
+    ['node-test', 'node-script', 'vitest'].includes(adapter) &&
+    profileEvidence.profile_files === 0
+  ) {
     limitations.push('The runtime produced no V8 CPU profile.');
   }
-  if (adapter !== 'go-bench' && profileEvidence.hotspots.length === 0) {
+  if (
+    ['node-test', 'node-script', 'vitest'].includes(adapter) &&
+    profileEvidence.hotspots.length === 0
+  ) {
     limitations.push('The CPU profile contained no repository-owned source samples.');
   }
   if (
-    adapter !== 'go-bench' &&
+    ['node-test', 'node-script', 'vitest'].includes(adapter) &&
     profileEvidence.hotspots.length > 0 &&
     !profileEvidence.hotspots.some((hotspot) => hotspot.role === 'application')
   ) {
@@ -320,7 +349,7 @@ export function createPerformanceCapsule({
   if (profileEvidence.truncated)
     limitations.push('Runtime profile evidence exceeded collection bounds.');
   if (
-    adapter !== 'go-bench' &&
+    ['node-test', 'node-script', 'vitest'].includes(adapter) &&
     profileRuns.length >= V8_PROFILE_RUNS &&
     !profileEvidence.repeatability?.qualified
   ) {
@@ -337,6 +366,7 @@ export function createPerformanceCapsule({
       `Vitest reported assertion time is ${vitestExecutionShare.assertion_share_percent}% of exact-scope wall time; runner startup dominates and no product bottleneck is attributed.`
     );
   }
+  if (viteArtifact) limitations.push(...viteArtifact.limitations);
 
   const comparison = baseline
     ? comparePerformanceCapsules(
@@ -358,6 +388,7 @@ export function createPerformanceCapsule({
     executionComplete &&
     !cleanupFailed &&
     timing.count >= LIMITS.minimumSamples &&
+    (adapter !== 'playwright' || playwrightTest.complete) &&
     (adapter !== 'go-bench' || goBenchmarks.length > 0) &&
     comparison?.status !== 'incompatible';
   const verdict = !complete
@@ -496,30 +527,55 @@ export function createPerformanceCapsule({
       go_benchmarks: goBenchmarks,
       vitest_tests: vitestTests,
       vitest_execution_share: vitestExecutionShare,
+      playwright_test: playwrightTest,
       console_metrics: consoleMetrics,
       profile_runs: profileRuns.map(profileRunSummary),
       profile_repeatability: profileEvidence.repeatability ?? null,
       flow_evidence: flowEvidence,
       function_coverage: functionCoverage,
+      vite_artifact: viteArtifact,
     },
     findings,
     relationships: relevantChanges,
-    unverified: profileEvidence.hotspots
-      .filter(
-        (hotspot) =>
-          hotspot.role === 'application' &&
-          (adapter === 'go-bench' ||
-            (qualifiedV8Candidate &&
-              hotspot.file === qualifiedV8Candidate.file &&
-              hotspot.function === qualifiedV8Candidate.function))
-      )
-      .slice(0, 1)
-      .map((hotspot) => ({
-        kind: 'optimization_hypothesis',
-        summary: `Investigate ${hotspot.file}:${hotspot.line} because it received the largest repository-owned application CPU share.`,
-        verification_required:
-          'Change the candidate, capture a new capsule, and compare it with this baseline.',
-      })),
+    unverified: [
+      ...profileEvidence.hotspots
+        .filter(
+          (hotspot) =>
+            hotspot.role === 'application' &&
+            (adapter === 'go-bench' ||
+              (qualifiedV8Candidate &&
+                hotspot.file === qualifiedV8Candidate.file &&
+                hotspot.function === qualifiedV8Candidate.function))
+        )
+        .slice(0, 1)
+        .map((hotspot) => ({
+          kind: 'optimization_hypothesis',
+          summary: `Investigate ${hotspot.file}:${hotspot.line} because it received the largest repository-owned application CPU share.`,
+          verification_required:
+            'Change the candidate, capture a new capsule, and compare it with this baseline.',
+        })),
+      ...(viteArtifact
+        ? [
+            {
+              kind: 'vite_artifact_observation',
+              summary: `Existing initial JavaScript closure contains ${viteArtifact.file_count} files, ${viteArtifact.raw_bytes} raw bytes, and ${viteArtifact.gzip_bytes} gzip bytes.`,
+              verification_required:
+                'Rebuild both identical source snapshots under an attested build contract before comparing artifact movement.',
+            },
+          ]
+        : []),
+      ...(adapter === 'playwright'
+        ? [
+            {
+              kind: 'playwright_coverage_gap',
+              summary:
+                'Exact local test duration does not measure production traffic, representative-device rendering, browser memory, React component attribution, network-scale behavior, or global application optimality.',
+              verification_required:
+                'Use separately authorized production and representative-device evidence for those claims.',
+            },
+          ]
+        : []),
+    ],
     comparison,
     limitations: [...new Set(limitations)],
     capture: {
@@ -701,6 +757,72 @@ export function parseVitestTimings(outputs, repositoryRoot) {
       duration_ms: summarizeDistribution(group.durations),
       provenance: 'vitest_json_reporter',
     }));
+}
+
+export function parsePlaywrightTimings(outputs, exactName) {
+  const durations = [];
+  const limitations = [];
+  for (const [index, output] of outputs.entries()) {
+    if (output?.truncated) {
+      limitations.push(`Playwright reporter output for sample ${index + 1} was truncated.`);
+      continue;
+    }
+    let report;
+    try {
+      report = JSON.parse(output?.stdout ?? '');
+    } catch {
+      limitations.push(`Playwright reporter output for sample ${index + 1} was not valid JSON.`);
+      continue;
+    }
+    const matches = [];
+    visitPlaywrightSuites(report?.suites, (spec) => {
+      if (spec?.title === exactName) matches.push(spec);
+    });
+    if (matches.length !== 1) {
+      limitations.push(
+        `Playwright sample ${index + 1} contained ${matches.length} exact matching specs; one was required.`
+      );
+      continue;
+    }
+    const tests = Array.isArray(matches[0].tests) ? matches[0].tests : [];
+    if (tests.length !== 1) {
+      limitations.push(
+        `Playwright sample ${index + 1} contained ${tests.length} matching project tests; one was required.`
+      );
+      continue;
+    }
+    const results = Array.isArray(tests[0].results) ? tests[0].results : [];
+    const result = results[0];
+    if (
+      results.length !== 1 ||
+      result?.status !== 'passed' ||
+      Number(result?.retry ?? 0) !== 0 ||
+      !Number.isFinite(Number(result?.duration))
+    ) {
+      limitations.push(
+        `Playwright sample ${index + 1} did not contain one passing, unretried duration.`
+      );
+      continue;
+    }
+    durations.push(Number(result.duration));
+  }
+  const complete = outputs.length > 0 && durations.length === outputs.length;
+  return {
+    exact_name: exactName ?? null,
+    duration_ms: summarizeDistribution(durations),
+    expected_samples: outputs.length,
+    captured_samples: durations.length,
+    complete,
+    limitations: complete ? [] : [...new Set(limitations)],
+    provenance: 'playwright_json_reporter',
+  };
+}
+
+function visitPlaywrightSuites(suites, visit) {
+  for (const suite of Array.isArray(suites) ? suites : []) {
+    for (const spec of Array.isArray(suite?.specs) ? suite.specs : []) visit(spec);
+    visitPlaywrightSuites(suite?.suites, visit);
+  }
 }
 
 export function parseConsoleBenchmarkMetrics(output, provenance = 'profile_execution_stdout') {
@@ -1111,6 +1233,12 @@ export function selectedWorkloadExecuted(entry, adapter, name) {
     return /Test Files\s+[1-9]\d*\s+passed|Tests\s+[1-9]\d*\s+passed/.test(output);
   }
   if (adapter === 'go-bench') return parseGoBenchmarks(output).length > 0;
+  if (adapter === 'playwright') {
+    return parsePlaywrightTimings(
+      [{ stdout: entry.execution.stdout, truncated: entry.execution.truncated }],
+      name
+    ).complete;
+  }
   return !name || output.includes(name);
 }
 
@@ -1159,7 +1287,12 @@ function sourceRole(file) {
 
 function emptyProfileEvidence(adapter) {
   return {
-    kind: adapter === 'go-bench' ? 'go_benchmark_cpu_artifact' : 'v8_cpu',
+    kind:
+      adapter === 'go-bench'
+        ? 'go_benchmark_cpu_artifact'
+        : adapter === 'playwright'
+          ? 'playwright_reporter_timing'
+          : 'v8_cpu',
     profile_files: 0,
     profile_bytes: 0,
     profile_samples: 0,
