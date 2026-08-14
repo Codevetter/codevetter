@@ -1,0 +1,92 @@
+{
+  "schema_version": "codevetter-react-component-hotspot-proof/v1",
+  "recorded_at": "2026-08-14",
+  "claim": "CodeVetter converted one unchanged chosen-product React flow into one source-linked repeated self-render candidate before the supervising agent opened that source.",
+  "product": "anime-list",
+  "subject": {
+    "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+    "source_snapshot_sha256": "a4495d048bd64993d60a4dcae8845d21445779c8baf910d74a5977a9d80c571f",
+    "dirty": true
+  },
+  "flow": {
+    "target": "e2e/mobile.spec.ts",
+    "name": "homepage hero reaches a stable local performance boundary",
+    "browser_project": "desktop",
+    "runtime": "owned config-disabled local Vite",
+    "remote_http_denied": true
+  },
+  "capture": {
+    "id": "react-hotspot-anime-20260814",
+    "state": "succeeded",
+    "receipt": ".codevetter/playwright-runs/react-hotspot-anime-20260814/receipt.json",
+    "result": ".codevetter/playwright-runs/react-hotspot-anime-20260814/result.json",
+    "result_sha256": "cc59b1a965532542d8791f2958b70fbf51b1105ba4ed25639c57bee7f064098e",
+    "authoritative_browser_observations": {
+      "largest_contentful_paint_ms": 53.813,
+      "javascript_ms": 74.9,
+      "long_task_count": 0,
+      "process_tree_peak_rss_bytes": 898990080
+    }
+  },
+  "react_evidence": {
+    "schema_version": "runtime-playwright-react-commits/v2",
+    "commit_count": 7,
+    "profiled_commit_count": 7,
+    "total_actual_duration_ms": 19.6,
+    "measurement_complete": true,
+    "presentation_truncated": true,
+    "self_duration_provenance": "inclusive_minus_direct_child_actual_duration",
+    "source_attribution": {
+      "state": "complete",
+      "files_scanned": 190,
+      "bytes_scanned": 812106
+    }
+  },
+  "finding": {
+    "id": "21c6ac64c601d1541f15cc4e",
+    "detector": "browser_react_component_commit_hotspot",
+    "kind": "react_component_commit_hotspot",
+    "component": "HomePage",
+    "source": "src/pages/HomePage.tsx:55",
+    "commits_present": 5,
+    "derived_self_actual_duration_ms": 7.5,
+    "root_duration_share": 0.3827,
+    "eligible_for_experiment": true,
+    "coverage_status": "ran"
+  },
+  "accuracy_result": {
+    "old_inclusive_ancestor_example": {
+      "component": "QueryProvider",
+      "inclusive_actual_duration_ms": 19.2,
+      "derived_self_actual_duration_ms": 0.5
+    },
+    "selected_leafward_candidate": {
+      "component": "HomePage",
+      "inclusive_actual_duration_ms": 14,
+      "derived_self_actual_duration_ms": 7.5
+    },
+    "summary": "Derived self duration avoided selecting an inclusive provider ancestor whose observed work was almost entirely below it."
+  },
+  "product_surface": {
+    "public_mcp_tool_count": 19,
+    "new_public_operation_added": false,
+    "existing_operations_used": [
+      "qualify_runtime_repository",
+      "run_autonomous_performance_lab"
+    ]
+  },
+  "verification_boundary": {
+    "product_source_opened_after_finding": true,
+    "product_source_edited": false,
+    "optimization_confirmed": false,
+    "next_required_step": "Test one bounded source hypothesis with exact correctness and paired browser verification; reject it if authoritative browser timing or memory regresses."
+  },
+  "limitations": [
+    "The React pass is a separate diagnostic rerun and does not replace the authoritative browser clock.",
+    "Derived self duration is not exact exclusive JavaScript CPU and does not prove source causation.",
+    "Five observed commits do not prove that a render was redundant or removable.",
+    "Presentation truncation means a stronger omitted component may exist, although measurement and the repository source scan completed.",
+    "The dirty local snapshot is evidence-bound but is not a clean release revision.",
+    "Local Vite and Chromium evidence does not establish production frequency, devices, latency, memory, or user impact."
+  ]
+}

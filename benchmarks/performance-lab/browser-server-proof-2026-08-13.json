@@ -1,0 +1,111 @@
+{
+  "schema_version": "codevetter-browser-server-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "A primary exact Playwright pass can scope and join browser resources to requests handled by a CodeVetter-owned local Next runtime, then retain bounded request child work and residual timing without cross-clock or causal inference.",
+  "real_product": {
+    "product": "high-signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "dirty": false,
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "owned_config_disabled_next",
+      "browser_binary": "system_chrome"
+    },
+    "capture": {
+      "id": "server-flow-high-signal-20260813-e",
+      "state": "failed",
+      "receipt": ".codevetter/playwright-runs/server-flow-high-signal-20260813-e/receipt.json",
+      "result": ".codevetter/playwright-runs/server-flow-high-signal-20260813-e/result.json",
+      "result_sha256": "fcc6da396d083f342dc0f9f0d3d7c5c08a86382db7ef22c98d97d36d3a44015d",
+      "correctness": "failed_expected_heading_not_rendered"
+    },
+    "observed": {
+      "server_requests": 10,
+      "retained_server_requests": 10,
+      "inventory_complete": true,
+      "unique_browser_server_joins": 9,
+      "ambiguous_joins": 0,
+      "navigation_action_ordinal": 2,
+      "navigation_duration_ms": 1476.609,
+      "root_document_browser_duration_ms": 854.597,
+      "root_document_server_duration_ms": 853.396,
+      "root_document_supported_child_operations": 0,
+      "root_document_unaccounted_ms": 853.396,
+      "root_document_static_route_owner": {
+        "file": "src/app/page.tsx",
+        "line": 13,
+        "provenance": "static_unique_next_route"
+      },
+      "completed_response_transfer_bytes": 4444695,
+      "renderer_long_tasks_over_50_ms": 2,
+      "largest_renderer_long_task_ms": 131.496
+    },
+    "deterministic_finding": {
+      "id": "047371051656fe7c7f03ebc3",
+      "detector": "browser_server_unaccounted_time",
+      "kind": "unaccounted_flow_time",
+      "summary": "GET / spent 853.396 ms outside supported child database or loopback HTTP observations, 100% of its server interval.",
+      "eligible_for_experiment": false
+    },
+    "verdict": "Evidence proves correlation but authorizes no optimization because the exact product assertion failed and residual time has no source or mechanism attribution."
+  },
+  "runtime_fixture": {
+    "test": "scripts/runtime-failure-capsule/browser-server-flow.test.mjs",
+    "observed": [
+      "A request with a non-matching capture identity was absent.",
+      "The matching query-free request and its request-scoped built-in SQLite operation were retained.",
+      "SQL literal values, URL query values, and the non-matching capture identity were absent from normalized evidence."
+    ]
+  },
+  "chosen_product_boundaries": [
+    {
+      "product": "anime-list",
+      "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+      "source_snapshot_sha256": "4ddf75c099727b5b9b9ddfaefbb35cef31a99dd7f1dcea569b9753f34741e1da",
+      "state": "unavailable",
+      "reason": "frontend_only_vite",
+      "explanation": "The owned Vite runtime serves development frontend assets; Anime List's Cloudflare backend is not treated as a Node application server."
+    },
+    {
+      "product": "significanthobbies",
+      "repository_revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+      "source_snapshot_sha256": "e043e6e4586aa3a26f48a4cb40d7fe5978b6411c63c4827c74103f64232d52ae",
+      "state": "unavailable",
+      "reason": "environment_blocked",
+      "explanation": "A loadable development env filename exists; CodeVetter neither reads it nor starts the owned Next runtime."
+    },
+    {
+      "product": "app-health",
+      "repository_revision": "2074138658a1347dcc1c5b9c4023a0b263c2c414",
+      "source_snapshot_sha256": "7e12d9e6f9ae7210e784b67762090036a196204790c044174702890265a2d746",
+      "state": "unavailable",
+      "reason": "go_instrumentation_not_authorized",
+      "explanation": "Go CPU/allocation benchmarks remain supported, but request correlation requires explicit repository or OTLP instrumentation rather than a fabricated preload."
+    }
+  ],
+  "implementation_regressions_found_by_the_proof": [
+    {
+      "issue": "Next development startup rewrote tracked next-env.d.ts.",
+      "resolution": "The owned config-disabled launcher now suppresses Next's next-env.d.ts and tsconfig.json writes; the real product remained source-clean on the final run."
+    },
+    {
+      "issue": "Declared Playwright devices were resolved from the monorepo root instead of the selected package.",
+      "resolution": "Device and browser resolution now starts at the exact target directory."
+    },
+    {
+      "issue": "The repository Playwright revision had no matching managed Chromium binary despite newer cached browsers.",
+      "resolution": "CodeVetter used installed system Chrome and recorded that less-reproducible binary authority in the receipt."
+    }
+  ],
+  "claim_boundaries": [
+    "The capture header scopes primary local requests but is not a production trace identity.",
+    "Browser/server joins require unique method and normalized route identity; repeated identities remain ambiguous.",
+    "Browser and server clocks are not compared.",
+    "Action association is temporal and does not establish request initiation or causality.",
+    "Residual request time may be framework compilation, handler CPU, unsupported I/O, waiting, streaming, or observer overhead.",
+    "Config-disabled Next development timing, system Chrome, a failed assertion, and one local machine cannot establish an optimization or production impact."
+  ]
+}

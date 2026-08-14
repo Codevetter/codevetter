@@ -1,0 +1,245 @@
+{
+  "schema_version": "codevetter-react-redundancy-proof/v2",
+  "captured_at": "2026-08-14",
+  "operation": "inspect-react-redundancy",
+  "products": [
+    {
+      "id": "anime-list",
+      "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+      "dirty": true,
+      "analyzer": {
+        "kind": "knip",
+        "version": "6.29.0",
+        "configuration": "knip.jsonc"
+      },
+      "clone_analyzer": {
+        "kind": "jscpd",
+        "status": "unavailable",
+        "availability": "declared_not_installed"
+      },
+      "observed": {
+        "candidates": 5,
+        "diff_relevant": 0,
+        "screened_out": 0,
+        "by_kind": {
+          "unused_enum_member": 4,
+          "unused_export_surface": 1
+        },
+        "candidate_sources": [
+          "src/config.ts:3",
+          "src/config.ts:8",
+          "src/types/manga.ts:43",
+          "src/types/manga.ts:49",
+          "src/worker/readPagination.ts:1"
+        ]
+      },
+      "manual_cross_check": {
+        "enum_member_references_found": 0,
+        "read_page_max_internal_references": 2,
+        "interpretation": "The enum members are removal candidates. READ_PAGE_MAX is used internally, so only its public export surface is a candidate."
+      },
+      "resolution": {
+        "removed_enum_members": [
+          "AnimeField.Url",
+          "AnimeField.Aired",
+          "MangaField.Url",
+          "MangaField.Published"
+        ],
+        "narrowed_export_surface": "READ_PAGE_MAX",
+        "post_edit_knip_candidates": 0,
+        "verification": {
+          "focused_read_pagination_tests": "2 passed",
+          "full_product_tests": "137 passed in 30 files",
+          "typecheck": "passed",
+          "lint": "204 files checked",
+          "production_build": "passed"
+        },
+        "claim": "Verified static-hygiene cleanup only; no runtime, bundle-size, memory, or production-performance improvement is inferred."
+      }
+    },
+    {
+      "id": "significant-hobbies",
+      "repository_revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+      "dirty": true,
+      "analyzer": {
+        "kind": "knip",
+        "version": "6.29.0",
+        "configuration": "knip.json"
+      },
+      "clone_analyzer": {
+        "kind": "jscpd",
+        "status": "unavailable",
+        "availability": "declared_not_installed"
+      },
+      "observed": {
+        "candidates": 0,
+        "diff_relevant": 0,
+        "screened_out": 1,
+        "screened_symbol": "jscpd",
+        "screening_reason": "declared_package_script_usage",
+        "screening_reference": "package.json#scripts.quality:duplication:raw"
+      },
+      "manual_cross_check": {
+        "quality_wrapper_reference": "scripts/check-code-health.mjs",
+        "installed_jscpd_available": false,
+        "interpretation": "The dependency is intended by the repository and is not a safe unused-dependency removal. The current local dependency payload cannot execute its duplication lane."
+      }
+    },
+    {
+      "id": "codevetter",
+      "repository_revision": "8eb6139db67bba224cceff73d015ad091e401880",
+      "dirty": true,
+      "analyzer": {
+        "kind": "knip",
+        "version": "6.27.0",
+        "configuration": "knip.json"
+      },
+      "clone_analyzer": {
+        "kind": "jscpd",
+        "status": "unavailable"
+      },
+      "observed": {
+        "candidates": 6,
+        "diff_relevant": 0,
+        "screened_out": 0,
+        "by_kind": {
+          "unused_type_export": 6
+        },
+        "candidate_files": [
+          "apps/desktop/src/lib/agent-attention.ts",
+          "apps/desktop/src/lib/agent-team-recommendation.ts",
+          "apps/desktop/src/lib/work-items.ts"
+        ]
+      },
+      "manual_cross_check": {
+        "internally_used_types": 6,
+        "interpretation": "These are public type-export candidates, not dead internal type declarations."
+      },
+      "current_self_hosting": {
+        "changed_file_count": 308,
+        "changed_file_limit": 256,
+        "verdict": "no_confidence",
+        "reason": "source_snapshot_changed_file_inventory_exceeded_bound",
+        "analyzers": "not_run",
+        "retained_candidates": 0,
+        "interpretation": "The older six-candidate result is not reusable against the current oversized dirty snapshot. CodeVetter preserved the safety limit and returned a structured partial-subject receipt instead of a generic CLI error."
+      }
+    },
+    {
+      "id": "high-signal",
+      "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+      "dirty": false,
+      "analyzers": {
+        "knip": "6.32.2",
+        "jscpd": "5.0.14"
+      },
+      "observed": {
+        "candidates": 128,
+        "diff_relevant": 0,
+        "clone_groups": 73,
+        "analyzed_sources": 281,
+        "analyzed_lines": 62702,
+        "duplicated_lines": 1097,
+        "duplication_percentage": 1.7495454690440497,
+        "by_kind": {
+          "duplicate_export_group": 2,
+          "duplicate_implementation_fragment": 73,
+          "unused_export_surface": 23,
+          "unused_type_export": 30
+        }
+      },
+      "manual_cross_check": {
+        "largest_react_pair": [
+          "apps/web/src/app/daily/history/page.tsx:182",
+          "apps/web/src/app/signals/today/page.tsx:218"
+        ],
+        "largest_react_pair_lines": 46,
+        "interpretation": "The pair contains substantively repeated filter controls with product-specific differences; it is a credible extraction candidate, not a safe automatic replacement."
+      }
+    },
+    {
+      "id": "posttrainllm",
+      "repository_revision": "ebe47d7e43c604782fbdc1461bfe8d8ee5a91f6d",
+      "dirty": false,
+      "analyzers": {
+        "knip": "installed",
+        "jscpd": "5.0.14"
+      },
+      "observed": {
+        "candidates": 166,
+        "diff_relevant": 0,
+        "clone_groups": 73,
+        "analyzed_sources": 87,
+        "analyzed_lines": 21700,
+        "duplicated_lines": 1441,
+        "duplication_percentage": 6.640552995391705,
+        "by_kind": {
+          "duplicate_implementation_fragment": 73,
+          "unused_dependency": 4,
+          "unused_file": 89
+        }
+      },
+      "manual_cross_check": {
+        "largest_pair": [
+          "browser/train_demo.mjs:25",
+          "browser/train_demo_medium.mjs:30"
+        ],
+        "largest_pair_lines": 132,
+        "interpretation": "The two browser-training drivers duplicate their orchestration and differ in preset and timing policy; shared extraction is plausible but still requires their exact flows."
+      }
+    },
+    {
+      "id": "pace",
+      "repository_revision": "d0dc99e5fac3f8aa0fa65f52fbe9ec81777ca8f2",
+      "dirty": false,
+      "analyzers": {
+        "knip": "unavailable",
+        "jscpd": "5.0.14"
+      },
+      "observed": {
+        "candidates": 0,
+        "diff_relevant": 0,
+        "clone_groups": 0,
+        "analyzed_sources": 13,
+        "analyzed_lines": 1410,
+        "duplicated_lines": 0,
+        "duplication_percentage": 0
+      },
+      "manual_cross_check": {
+        "interpretation": "The independent jscpd lane remains useful when Knip is absent and correctly reports no clone candidate at the fixed threshold."
+      }
+    }
+  ],
+  "aggregate": {
+    "products": 6,
+    "products_with_knip_evidence": 5,
+    "products_with_clone_evidence": 3,
+    "retained_static_candidates": 305,
+    "retained_clone_groups": 146,
+    "screened_out_contradictions": 1,
+    "verified_removals": 4,
+    "verified_export_narrowings": 1,
+    "verified_performance_improvements": 0
+  },
+  "verification": {
+    "focused_static_redundancy": "19 passed",
+    "runtime_failure_capsule": "551 passed, 2 skipped, 0 failed",
+    "anime_list_cleanup": "137 tests, typecheck, lint, and production build passed",
+    "rust_cli": "8 passed",
+    "cli_release_contract": "5 passed",
+    "serialized_runtime_suite": "completed with exit code 0",
+    "rust_library": "908 passed, 25 ignored",
+    "biome": "803 files checked",
+    "documentation": "76 Markdown files checked",
+    "openspec": "322 of 322 tasks complete; strict validation passed",
+    "compatible_browser_note": "The exact Chromium headless-shell revision required by installed Playwright is absent; browser tests requiring it skip instead of accepting unrelated cached revisions."
+  },
+  "claim_boundary": [
+    "The operation discovers bounded static candidates; it does not prove safe deletion.",
+    "Only the four Anime List enum members and one public export surface named in this artifact were changed after repository-wide reference review and full product verification.",
+    "No React runtime, bundle-size, or production-performance improvement is claimed.",
+    "Knip duplicate issues describe duplicate exports; jscpd groups describe token clones, not semantic equivalence.",
+    "jscpd source fragments were excluded from CodeVetter evidence.",
+    "Duplication percentages describe the locally analyzed source set, not application or production performance."
+  ]
+}

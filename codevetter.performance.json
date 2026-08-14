@@ -1,0 +1,18 @@
+{
+  "schema_version": "codevetter-performance-flows/v1",
+  "flows": [
+    {
+      "sources": ["scripts/runtime-failure-capsule/function-coverage.mjs"],
+      "performance": {
+        "adapter": "node-test",
+        "target": "scripts/runtime-failure-capsule/function-coverage-performance.test.mjs",
+        "name": "function coverage normalization scales across source anchors"
+      },
+      "correctness": {
+        "adapter": "node-test",
+        "target": "scripts/runtime-failure-capsule/local-flow-runtime.test.mjs",
+        "name": "function coverage fast path still redacts credential and URL-shaped names"
+      }
+    }
+  ]
+}

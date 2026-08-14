@@ -23,7 +23,9 @@ export async function capsuleFromExecution({ repositoryRoot, adapter, execution,
   const combined = `${sanitized.stdout.text}\n${sanitized.stderr.text}`;
   const frames = extractSourceFrames(combined, { target: execution.scope.target });
   const relevantChanges = rankRelevantChanges(frames, git.changed_lines).slice(0, LIMITS.changes);
-  const selection = adapter === 'vitest' ? parseVitestSelection(sanitized.stdout.text) : null;
+  const selection = ['vitest', 'jest'].includes(adapter)
+    ? parseVitestSelection(sanitized.stdout.text)
+    : null;
   const selectedNameAppears = !execution.scope.name || combined.includes(execution.scope.name);
   const selectedTestExecuted = selection ? selection.executed_tests > 0 : selectedNameAppears;
   const reproduced =
@@ -93,12 +95,8 @@ export async function capsuleFromExecution({ repositoryRoot, adapter, execution,
 }
 
 export function parseVitestSelection(output) {
-  let report;
-  try {
-    report = JSON.parse(output);
-  } catch {
-    return null;
-  }
+  const report = parseVitestReport(output);
+  if (!report) return null;
   const total = Number(report?.numTotalTests);
   const pending = Number(report?.numPendingTests ?? 0);
   const todo = Number(report?.numTodoTests ?? 0);
@@ -110,6 +108,33 @@ export function parseVitestSelection(output) {
       ? Number(report.numFailedTests)
       : null,
   };
+}
+
+export function parseVitestReport(output) {
+  const text = String(output).trim();
+  if (text.length === 0) return null;
+  const lineCandidates = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('{') && line.endsWith('}'))
+    .reverse();
+  const candidates =
+    text.startsWith('{') && text.endsWith('}')
+      ? [text, ...lineCandidates.filter((line) => line !== text)]
+      : lineCandidates;
+  for (const candidate of candidates.slice(0, LIMITS.observations)) {
+    let report;
+    try {
+      report = JSON.parse(candidate);
+    } catch {
+      continue;
+    }
+    if (!report || Array.isArray(report) || typeof report !== 'object') continue;
+    const hasCounts = Number.isFinite(Number(report.numTotalTests));
+    const hasResults = Array.isArray(report.testResults);
+    if (hasCounts || hasResults) return report;
+  }
+  return null;
 }
 
 export async function capsuleFromReceipt({ repositoryRoot, kind, receiptPath, diffRange }) {

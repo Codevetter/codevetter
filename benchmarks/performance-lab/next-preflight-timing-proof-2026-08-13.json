@@ -1,0 +1,105 @@
+{
+  "schema_version": "codevetter-next-preflight-timing-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can compare two bounded same-runtime Next preflight requests with one uniquely correlated browser request and classify coarse timing shape without inventing compilation or source causation.",
+  "implementation_evidence": {
+    "runtime_schema": "runtime-local-browser-server/v3",
+    "browser_server_schema": "runtime-browser-server-flow/v6",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v13",
+    "preflight_policy": {
+      "requests": 2,
+      "shared_deadline_ms": 10000,
+      "method": "GET",
+      "redirects": "manual_and_rejected",
+      "response_body": "cancelled_and_not_retained",
+      "materiality_ms": 100,
+      "outlier_ratio": 2
+    },
+    "classifications": [
+      "first_preflight_outlier",
+      "browser_request_outlier",
+      "repeated_high_latency",
+      "no_material_outlier",
+      "insufficient_evidence"
+    ],
+    "retained_values": [
+      "request ordinal",
+      "rounded duration",
+      "status class",
+      "inventory completeness",
+      "closed timing classification"
+    ],
+    "discarded_values": [
+      "response body",
+      "response headers",
+      "URL or route value in runtime evidence",
+      "query",
+      "application values",
+      "source location"
+    ],
+    "focused_tests": {
+      "command": "node --test scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs scripts/runtime-failure-capsule/owned-vite-runtime.test.mjs scripts/runtime-failure-capsule/playwright-capture.test.mjs scripts/runtime-failure-capsule/performance-lab.test.mjs",
+      "passed": 93,
+      "failed": 0,
+      "skipped": 1,
+      "proofs": [
+        "Exactly two body-free GET observations share one bounded deadline.",
+        "Redirect, timeout, malformed, private-value, Vite, and unowned-listener cases fail closed.",
+        "Route, status-class, and unique browser-server identity must all match before comparison.",
+        "Every material classification is source-null, low-confidence, and edit-ineligible."
+      ]
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "capture_id": "preflight-high-signal-20260813-a",
+    "receipt": ".codevetter/playwright-runs/preflight-high-signal-20260813-a/receipt.json",
+    "result": ".codevetter/playwright-runs/preflight-high-signal-20260813-a/result.json",
+    "receipt_sha256": "a25a5f6d08fffd9841d995101ea94e1b136bde5553a4804449e3d14dc5887661",
+    "result_sha256": "fd4c26451faba6e403660816235c5330357f9b925334e4b8f3895874096610ae",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "Next config-disabled development",
+      "owned_ephemeral_port": 56953,
+      "cleanup": "force_terminated",
+      "capture_state": "failed",
+      "execution_status": "timeout",
+      "failure_boundary": "The existing exact assertion did not pass before the bounded timeout; the timing shape remains diagnostic only."
+    },
+    "comparison": {
+      "classification": "first_preflight_outlier",
+      "first_duration_ms": 2183,
+      "repeat_duration_ms": 842,
+      "browser_duration_ms": 1175.502,
+      "status_class": "2xx",
+      "first_to_repeat_ratio": 2.5926,
+      "browser_to_repeat_ratio": 1.3961,
+      "interpretation": "The first request was a material outlier, while both later observations remained expensive enough that initial-request effects do not explain the full latency."
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "unaccounted_ms": 1175.502,
+      "framework_phase_overlap_ms": 0.674,
+      "repository_cpu_samples": 0
+    },
+    "diagnosis": {
+      "detector": "browser_server_preflight_timing",
+      "source": null,
+      "confidence": "low",
+      "eligible_for_experiment": false,
+      "result": "The product surfaced the timing shape but did not call it compilation, name an application source, or authorize an optimization."
+    }
+  },
+  "limitations": [
+    "Two preflights and one browser request are a diagnostic sequence, not a latency distribution.",
+    "Preflight wall time and correlated server wall time use different observers.",
+    "A first-request outlier does not prove compilation, cache behavior, or exclusive work.",
+    "The local config-disabled Next development runtime does not establish repository-configured or production performance.",
+    "The existing Playwright assertion timed out, so this capture authorizes no source edit or optimization claim."
+  ]
+}

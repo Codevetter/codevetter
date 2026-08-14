@@ -1,0 +1,110 @@
+{
+  "schema_version": "codevetter-browser-loading-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "Exact local Playwright flows expose bounded completed-response transfer evidence and exact Vite source ownership without treating development payloads as production bundle evidence.",
+  "products": [
+    {
+      "product": "anime-list",
+      "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+      "source_snapshot_sha256": "4ddf75c099727b5b9b9ddfaefbb35cef31a99dd7f1dcea569b9753f34741e1da",
+      "dirty": true,
+      "flow": {
+        "target": "e2e/mobile.spec.ts",
+        "name": "homepage hero reaches a stable local performance boundary",
+        "browser_project": "desktop"
+      },
+      "capture": {
+        "state": "succeeded",
+        "receipt": ".codevetter/playwright-runs/loading-anime-20260813-c/receipt.json",
+        "result": ".codevetter/playwright-runs/loading-anime-20260813-c/result.json",
+        "result_sha256": "becfa72b75039fb1e0c1ed3724382712ec68f4477c6fd909e9926a41bc558a2f"
+      },
+      "loading": {
+        "resource_count": 63,
+        "resources_with_transfer_size": 57,
+        "all_resource_total_complete": false,
+        "completed_response_count": 57,
+        "completed_response_total_complete": true,
+        "completed_response_transfer_bytes": 13245761,
+        "failed_or_aborted_count": 6,
+        "repository_module_count": 32,
+        "repository_module_observed_transfer_bytes": 656297,
+        "largest_repository_modules": [
+          {
+            "file": "lib/feedback-widget/index.mjs",
+            "transfer_bytes": 126327
+          },
+          {
+            "file": "src/styles/globals.css",
+            "transfer_bytes": 107996
+          },
+          {
+            "file": "src/pages/HomePage.tsx",
+            "transfer_bytes": 49616
+          },
+          {
+            "file": "lib/api.ts",
+            "transfer_bytes": 44545
+          },
+          {
+            "file": "components/Navigation.tsx",
+            "transfer_bytes": 39131
+          }
+        ]
+      },
+      "repeatability_check": {
+        "capture": ".codevetter/playwright-runs/loading-anime-20260813-b/result.json",
+        "result_sha256": "9c198971e33ae2b6ded2e1451d108de508647e89e1c9173f2d9d71af2068d71c",
+        "completed_response_transfer_bytes": 13245761,
+        "current_capture_transfer_bytes": 13245761,
+        "absolute_delta_bytes": 0,
+        "failed_or_aborted_identity_stable": true
+      }
+    },
+    {
+      "product": "significanthobbies",
+      "repository_revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+      "source_snapshot_sha256": "e043e6e4586aa3a26f48a4cb40d7fe5978b6411c63c4827c74103f64232d52ae",
+      "dirty": true,
+      "flow": {
+        "target": "e2e/life-bingo.spec.ts",
+        "name": "introduces the product and starts without an account",
+        "browser_project": "mobile"
+      },
+      "capture": {
+        "state": "succeeded",
+        "receipt": ".codevetter/playwright-runs/loading-hobbies-20260813-c/receipt.json",
+        "result": ".codevetter/playwright-runs/loading-hobbies-20260813-c/result.json",
+        "result_sha256": "1a1e81c22f38324103c260303434de7ea8692ce491ca8befa0972855f8dd09cc"
+      },
+      "loading": {
+        "resource_count": 36,
+        "resources_with_transfer_size": 31,
+        "all_resource_total_complete": false,
+        "completed_response_count": 31,
+        "completed_response_total_complete": true,
+        "completed_response_transfer_bytes": 1287110,
+        "failed_or_aborted_count": 5,
+        "repository_module_count": 0,
+        "repository_module_observed_transfer_bytes": 0,
+        "source_attribution": "unavailable_for_generated_next_chunks"
+      },
+      "repeatability_check": {
+        "capture": ".codevetter/playwright-runs/loading-hobbies-20260813-b/result.json",
+        "result_sha256": "f2cc931c9ee9a4cf57155e0ae526e6cbca8f1b3d7ff88324e17f3034b4a2cd38",
+        "completed_response_transfer_bytes": 1287185,
+        "current_capture_transfer_bytes": 1287110,
+        "absolute_delta_bytes": 75,
+        "failed_or_aborted_identity_stable": true
+      }
+    }
+  ],
+  "claim_boundaries": [
+    "The totals cover completed responses in one local development-server flow; failed or aborted request identities are hashed and must remain compatible for paired verification.",
+    "The all-resource total remains incomplete when failed or aborted resources have no transfer size.",
+    "Vite transformed-module bytes are local diagnostic evidence, not production bundle, compression, CDN, cache, device, network, or user-impact evidence.",
+    "Generated Next and dependency chunks remain unresolved rather than being guessed back to source files.",
+    "Playwright HAR snapshots do not provide a trustworthy JavaScript initiator graph, so no dependency or critical chain is claimed.",
+    "No optimization or production improvement is claimed by these same-snapshot captures; paired baseline/current evidence is required."
+  ]
+}

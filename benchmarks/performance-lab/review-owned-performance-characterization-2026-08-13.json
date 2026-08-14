@@ -1,0 +1,121 @@
+{
+  "schema_version": "runtime-review-owned-performance-replay/v1",
+  "protocol": {
+    "authority": "repository_manifest_source_binding",
+    "order": ["exact_current_correctness", "current_performance_characterization"],
+    "performance_samples": 2,
+    "performance_warmups": 0,
+    "claim": "current_characterization_only"
+  },
+  "products": [
+    {
+      "product": "app-health",
+      "source": "packages/go/middleware.go",
+      "revision": "2074138658a1347dcc1c5b9c4023a0b263c2c414",
+      "source_snapshot_sha256": "7e12d9e6f9ae7210e784b67762090036a196204790c044174702890265a2d746",
+      "correctness": { "status": "passed", "executed": 1, "failed": 0, "duration_ms": 760 },
+      "performance": {
+        "scope": "BenchmarkMiddlewareOverhead",
+        "wall_time_median_ms": 832,
+        "peak_rss_median_bytes": 65536000,
+        "ns_per_op": 1736,
+        "bytes_per_op": 7190,
+        "allocs_per_op": 27
+      },
+      "diagnosis": "allocation_signal_below_experiment_floor",
+      "candidate": null
+    },
+    {
+      "product": "anime-list",
+      "source": "src/recommendations.ts",
+      "revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+      "source_snapshot_sha256": "4ddf75c099727b5b9b9ddfaefbb35cef31a99dd7f1dcea569b9753f34741e1da",
+      "correctness": { "status": "passed", "executed": 1, "failed": 0, "duration_ms": 1644 },
+      "performance": {
+        "scope": "scales taste recommendations across the checked-in catalog",
+        "largest_input_ms_per_op": 4.098,
+        "wall_time_median_ms": 648,
+        "peak_rss_median_bytes": 448462848,
+        "assertion_share_percent": 18.937
+      },
+      "diagnosis": "node_allocation_source",
+      "candidate": "src/recommendations.ts:84 scoreAnimeTaste"
+    },
+    {
+      "product": "significant-hobbies",
+      "source": "src/lib/bucket-list-insights.ts",
+      "revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+      "source_snapshot_sha256": "e043e6e4586aa3a26f48a4cb40d7fe5978b6411c63c4827c74103f64232d52ae",
+      "correctness": { "status": "passed", "executed": 1, "failed": 0, "duration_ms": 575 },
+      "performance": {
+        "scope": "scales across existing bucket-list sizes",
+        "largest_input_ms_per_op": 7.873,
+        "wall_time_median_ms": 666,
+        "peak_rss_median_bytes": 414859264,
+        "assertion_share_percent": 22.457
+      },
+      "diagnosis": "node_allocation_source",
+      "candidate": "src/lib/bucket-list-insights.ts:255 shuffle"
+    },
+    {
+      "product": "codevetter",
+      "source": "scripts/runtime-failure-capsule/function-coverage.mjs",
+      "revision": "8eb6139db67bba224cceff73d015ad091e401880",
+      "source_snapshot_sha256": "7ca4f004d1c32d6efd4438a72e3c233296c4e2d17c9f2b5cd532e5f21d46d288",
+      "correctness": { "status": "passed", "executed": 1, "failed": 0, "duration_ms": 92 },
+      "performance": {
+        "scope": "function coverage normalization scales across source anchors",
+        "largest_input_ms_per_op": 2.459,
+        "wall_time_median_ms": 84,
+        "peak_rss_median_bytes": 103874560
+      },
+      "diagnosis": "node_allocation_source",
+      "candidate": "scripts/runtime-failure-capsule/function-coverage.mjs:8 collectV8FunctionCoverage"
+    }
+  ],
+  "accuracy_iteration": {
+    "observed_gap": "The initial Significant Hobbies two-iteration flow exposed a lower-level allocation source while its top-level diagnosis remained startup_dominated_workload at 8.739% assertion share.",
+    "tool_change": "Review now withholds a source candidate unless the top-level next action is optimize_one_candidate_then_compare.",
+    "harness_change": "The repository-owned exact flow increased from 2 to 10 iterations.",
+    "replay": "Assertion share reached 22.457%, classification became application_time_material, and the candidate became actionable."
+  },
+  "history_replay": {
+    "storage_schema": "runtime-review-performance-history/v1",
+    "chosen_product_baselines": [
+      {
+        "product": "app-health",
+        "snapshot": "7e12d9e6f9ae7210e784b67762090036a196204790c044174702890265a2d746",
+        "status": "recorded",
+        "binding_key": "6ceedcd8a83c352457741a52955f77585d752240b2c6e5a90270d4cb48e78030"
+      },
+      {
+        "product": "anime-list",
+        "snapshot": "4ddf75c099727b5b9b9ddfaefbb35cef31a99dd7f1dcea569b9753f34741e1da",
+        "status": "recorded",
+        "binding_key": "0afb908a0f61c0523b32e6e817598fcd2980b035ab6300cb509a312b46460e53"
+      },
+      {
+        "product": "significant-hobbies",
+        "snapshot": "e043e6e4586aa3a26f48a4cb40d7fe5978b6411c63c4827c74103f64232d52ae",
+        "status": "recorded",
+        "binding_key": "7223484bd03483337b8f38a443cf58b1392f31ef907c17fe7dfd225bcaa6f3f5"
+      }
+    ],
+    "codevetter_sequential_screen": {
+      "baseline_snapshot": "119f7cbca17881219c62742cf41175b8710412078a64979509e5baf50c917986",
+      "current_snapshot": "2e5740fca23f86d0827b005db532cb098fcbdcec12d34cf9a22b46480ca6c418",
+      "binding_key": "224fe420e394139c4f85767e87619a15dfdccde970ad95dbfa0ac3ff3eb7af2b",
+      "evidence_mode": "sequential_historical",
+      "largest_input_delta_percent": -6.143,
+      "wall_time_screen": "inconclusive",
+      "paired_verification_required": false,
+      "shipping_recommended": false
+    },
+    "claim_boundary": "The retained history automatically routes future work, but only interleaved paired verification can authorize an optimization claim."
+  },
+  "unverified": [
+    "No entry is an improvement or regression verdict because no compatible baseline pair was executed in this review path.",
+    "Measurements are exact local-flow evidence, not production or project-wide claims.",
+    "Every source candidate remains an inference requiring a semantics-preserving change and paired verification."
+  ]
+}

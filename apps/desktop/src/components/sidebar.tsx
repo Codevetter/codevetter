@@ -5,6 +5,7 @@ import {
   Columns3,
   Command,
   Eye,
+  Gauge,
   ScanSearch,
   Search,
   Settings,
@@ -77,6 +78,13 @@ const workflowNavItems: NavItem[] = [
     icon: <Eye size={17} />,
     shortcut: 'T',
     description: 'Run executable checks and inspect receipts',
+  },
+  {
+    label: 'Optimize',
+    href: '/optimize',
+    icon: <Gauge size={17} />,
+    shortcut: 'O',
+    description: 'Profile local flows and verify performance changes',
   },
 ];
 

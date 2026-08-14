@@ -1,0 +1,109 @@
+{
+  "schema_version": "codevetter-browser-probe-recapture-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can execute the durable async/framework inventory-completion probe on the same exact local Playwright flow, expand only that probe's bounded request presentation, persist integrity-bound provenance, and preserve failed correctness independently from evidence completion.",
+  "implementation_evidence": {
+    "recapture_schema": "runtime-browser-probe-recapture/v1",
+    "browser_server_schema": "runtime-browser-server-flow/v13",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v21",
+    "ordinary_limits": {
+      "async_resources_per_request": 8,
+      "framework_phases_per_request": 8
+    },
+    "expanded_probe_limits": {
+      "async_resources_per_request": 32,
+      "framework_phases_per_request": 32
+    },
+    "supported_probe": "complete_async_and_framework_inventories",
+    "surfaces": [
+      "recapture-browser-probe CLI",
+      "recapture_browser_probe MCP"
+    ],
+    "execution_boundaries": [
+      "prior receipt, result digest, compact diagnosis, probe, ordinal, revision, and source snapshot validated before startup",
+      "one exact statically qualified target, test name, and browser project",
+      "owned or attested local Vite/Next runtime only",
+      "remote HTTP denied and caller cannot provide commands, paths, environment, base URLs, or network policy",
+      "runtime cleanup attempted in finally and cleanup failure is terminal",
+      "evidence completion remains low-confidence, non-causal, edit-ineligible, and correctness-gated"
+    ]
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "source_capture_id": "probe-inspection-high-signal-20260813-b-s2",
+    "source_probe": "complete_async_and_framework_inventories",
+    "source_request": {
+      "ordinal": 1,
+      "method": "GET",
+      "route": "/",
+      "async_inventory": {
+        "total": 12,
+        "retained": 8,
+        "complete": false
+      },
+      "framework_inventory": {
+        "total": 3,
+        "retained": 3,
+        "complete": true
+      }
+    },
+    "cli_recapture": {
+      "id": "executable-probe-high-signal-20260813-a",
+      "probe_receipt": ".codevetter/browser-probe-runs/executable-probe-high-signal-20260813-a/receipt.json",
+      "probe_receipt_sha256": "5bf24c26706c0edf81c91678e34357e46d7aff262d6db0cadeb462ef32cb5134",
+      "capture_receipt_sha256": "9eb494b3881b4f9cb75a7a6f0975530ec560815c708a50c148f82857f10a32f4",
+      "capture_result_sha256": "7da853275c4e00caea4bf160180b59d602d646ce435281bb53cccd2c5c8889f3",
+      "evidence_outcome": "evidence_completed",
+      "correctness": "failed",
+      "async_inventory": {
+        "total": 12,
+        "retained": 12,
+        "complete": true
+      },
+      "framework_inventory": {
+        "total": 3,
+        "retained": 3,
+        "complete": true
+      },
+      "request_duration_ms": 1496.517,
+      "preparation_ms": 1470.033,
+      "preparation_process_cpu_ms": 305.386,
+      "preparation_cpu_to_wall_ratio": 0.2077,
+      "next_probe": "inspect_main_thread_runtime"
+    },
+    "mcp_recapture": {
+      "id": "executable-probe-high-signal-20260813-b",
+      "probe_receipt": ".codevetter/browser-probe-runs/executable-probe-high-signal-20260813-b/receipt.json",
+      "probe_receipt_sha256": "d037fcc85e52848c7847dda125ee80b95ca42b7ea51eb3db02b3118c51d73afb",
+      "capture_receipt_sha256": "34a9d2255f1b09fb8f2a31ab7667b8adc4a56a6ecb2355868cb4de33c34cfae9",
+      "capture_result_sha256": "662365dbf8e8e4bcf61253c4446b75931b890cac533fc96c5cc50d726530ecc7",
+      "evidence_outcome": "evidence_completed",
+      "correctness": "failed",
+      "async_inventory": {
+        "total": 12,
+        "retained": 12,
+        "complete": true
+      },
+      "framework_inventory": {
+        "total": 3,
+        "retained": 3,
+        "complete": true
+      },
+      "request_duration_ms": 1625.031,
+      "preparation_ms": 1603.667,
+      "preparation_process_cpu_ms": 312.027,
+      "preparation_cpu_to_wall_ratio": 0.1946,
+      "next_probe": "capture_narrower_precommit_evidence"
+    },
+    "interpretation": "Both product surfaces executed the same closed probe and resolved the 12-versus-8 presentation gap. The next classification crossed the fixed CPU-ratio boundary in only one of two runs, demonstrating local variance and preventing a stable bottleneck or source-edit claim. The existing browser assertion failed in both runs."
+  },
+  "limitations": [
+    "Only the async/framework inventory-completion probe is executable in this version; other probe families remain inspection-only.",
+    "The operation runs a local development server and Playwright Chromium, so it consumes local CPU, memory, and wall time even though it makes no cloud or production call.",
+    "The owned Next runtime disables repository configuration and does not establish production-build equivalence.",
+    "Both High Signal assertions failed, so no optimization, correctness, or shipping claim is authorized.",
+    "The two new diagnoses selected different next probes around the 0.20 process-CPU ratio threshold, so repeated evidence is required before treating either route as stable."
+  ]
+}

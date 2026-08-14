@@ -26,6 +26,7 @@ const TOUR_ITEMS: { icon: string; label: string; desc: string }[] = [
   { icon: '\u25A3', label: 'Repo Unpack', desc: 'Understand structure, history, and risk' },
   { icon: '\u2714', label: 'Review', desc: 'Inspect the exact change and evidence gaps' },
   { icon: '\u25CE', label: 'Testing', desc: 'Run executable checks and inspect receipts' },
+  { icon: '\u2198', label: 'Optimize', desc: 'Profile local flows and prove improvements' },
 ];
 
 export default function Onboarding({ onComplete }: OnboardingProps) {

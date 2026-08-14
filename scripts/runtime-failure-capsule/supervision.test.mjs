@@ -7,7 +7,11 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { validateSupervisedRunReceipt } from './supervision-contracts.mjs';
-import { inspectSupervisedRun, supervisePerformanceRun } from './supervision.mjs';
+import {
+  inspectSupervisedRun,
+  listSupervisedRunEvidence,
+  supervisePerformanceRun,
+} from './supervision.mjs';
 
 test('persists and inspects a successful validated diagnosis', async (context) => {
   const root = await gitFixture(context);
@@ -24,11 +28,39 @@ test('persists and inspects a successful validated diagnosis', async (context) =
   assert.equal(inspected.receipt.run_id, 'success');
   assert.equal(inspected.result_summary.verdict.status, 'measured');
   assert.equal(inspected.result_summary.diagnosis.kind, 'repository_cpu_candidate');
+  assert.deepEqual(await listSupervisedRunEvidence(root), [
+    {
+      run_id: 'success',
+      state: 'succeeded',
+      subject: receipt.subject,
+      scope: receipt.scope,
+      policy: receipt.policy,
+      completed_at: receipt.lifecycle.completed_at,
+      verdict: inspected.result_summary.verdict,
+      diagnosis: inspected.result_summary.diagnosis,
+      eligible_experiment_findings: 0,
+      eligible_experiment_findings_total: 0,
+      candidate_exclusions_exhausted: false,
+    },
+  ]);
 
   await assert.rejects(
     () => superviseFixture(root, 'success', printJson(validDiagnosis())),
     /EEXIST/
   );
+});
+
+test('a Node measurement from another runtime is not reusable coverage', async (context) => {
+  const root = await gitFixture(context);
+  const diagnosis = validDiagnosis();
+  diagnosis.performance_capsule.subject.node_version = 'v24.19.0';
+  await superviseFixture(root, 'old-node', printJson(diagnosis));
+
+  const [evidence] = await listSupervisedRunEvidence(root, {
+    currentNodeVersion: 'v26.7.0',
+  });
+  assert.equal(evidence.state, 'runtime_incompatible');
+  assert.equal(evidence.eligible_experiment_findings, 0);
 });
 
 test('runs the existing diagnosis pipeline through the public supervisor boundary', async (context) => {
@@ -156,6 +188,21 @@ test('persists timeout, signal, spawn, and invalid-result terminal states', asyn
   assert.equal(invalid.state, 'invalid_result');
   assert.match(invalid.failure.operational_error, /JSON/i);
   assert.equal(invalid.result, null);
+});
+
+test('invalidates a result when the source snapshot changes during execution', async (context) => {
+  const root = await gitFixture(context);
+  const changedSource = 'console.log("changed during profile");\n';
+  const script = [
+    `require('node:fs').writeFileSync(${JSON.stringify(join(root, 'src/benchmark.mjs'))}, ${JSON.stringify(changedSource)});`,
+    printJson(validDiagnosis()),
+  ].join('');
+
+  const receipt = await superviseFixture(root, 'source-changed', script);
+
+  assert.equal(receipt.state, 'invalid_result');
+  assert.equal(receipt.result, null);
+  assert.match(receipt.failure.operational_error, /source snapshot changed/i);
 });
 
 test('rejects unsafe IDs and detects result tampering', async (context) => {

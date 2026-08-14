@@ -1,0 +1,9 @@
+{
+  "schema_version": "runtime-qualification-portfolio-manifest/v1",
+  "repositories": [
+    { "id": "anime-list", "path": "../../../anime-list" },
+    { "id": "significant-hobbies", "path": "../../../significanthobbies" },
+    { "id": "app-health-go", "path": "../../../app-health/packages/go" },
+    { "id": "polaris", "path": "../../../../vaultwealth/polaris" }
+  ]
+}

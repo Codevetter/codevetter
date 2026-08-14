@@ -1,5 +1,15 @@
 import { createHash } from 'node:crypto';
-import { access, mkdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
+import {
+  access,
+  mkdir,
+  readFile,
+  readdir,
+  realpath,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { spawn } from 'node:child_process';
 
@@ -13,34 +23,28 @@ import {
   sha256,
   stableStringify,
 } from './campaign-contracts.mjs';
+import { assessChangeCost, inspectChangeCost } from './change-cost.mjs';
 import { parseVitestSelection } from './capsule.mjs';
+import { ensureCodeVetterEvidenceRoot } from './evidence-root.mjs';
 import { verifyOptimizationCapsules } from './optimization-verification.mjs';
 import { verifyPairedRepositories } from './paired-verification.mjs';
 import { profileRepository } from './performance.mjs';
+import { qualifiedBrowserBaseUrl } from './playwright-capture.mjs';
+import { qualifyRepository } from './qualification.mjs';
 import { redactText } from './redact.mjs';
 import { runClosedAdapter } from './runner.mjs';
 
 const MANIFEST_FILE = 'manifest.json';
 const LEDGER_FILE = 'ledger.ndjson';
 const EVIDENCE_DIRECTORY = 'evidence';
-const ENGINE_FILES = [
-  'campaign-contracts.mjs',
-  'campaign.mjs',
-  'capsule.mjs',
-  'contracts.mjs',
-  'optimization-verification.mjs',
-  'paired-verification.mjs',
-  'performance-diagnosis.mjs',
-  'performance.mjs',
-  'runner.mjs',
-];
-
 export async function createOptimizationCampaignService(repositoryRoot, overrides = {}) {
   const root = await realpath(resolve(repositoryRoot));
+  await ensureCodeVetterEvidenceRoot(root);
   const dependencies = {
     now: () => new Date(),
     engineIdentity: await optimizationCampaignEngineIdentity(),
     profileRepository,
+    qualifyRepository,
     verifyOptimizationCapsules,
     verifyPairedRepositories,
     runClosedAdapter,
@@ -117,15 +121,18 @@ async function baselineCampaign(root, input, dependencies) {
   if (correctness.status === 'passed') {
     try {
       const scope = campaign.manifest.performance;
-      const capsule = await dependencies.profileRepository({
-        repositoryRoot: root,
-        adapter: scope.adapter,
-        target: scope.target,
-        name: scope.name,
-        timeoutMs: scope.timeout_ms,
-        samples: scope.screening.samples,
-        warmups: scope.screening.warmups,
-      });
+      const capsule =
+        scope.adapter === 'playwright'
+          ? await qualifyBrowserCampaignScope(root, scope, dependencies)
+          : await dependencies.profileRepository({
+              repositoryRoot: root,
+              adapter: scope.adapter,
+              target: scope.target,
+              name: scope.name,
+              timeoutMs: scope.timeout_ms,
+              samples: scope.screening.samples,
+              warmups: scope.screening.warmups,
+            });
       evidence = { correctness: correctness.results, performance_capsule: capsule };
       if (capsule.verdict.status === 'no_confidence') {
         limitations.push(...capsule.limitations);
@@ -136,7 +143,10 @@ async function baselineCampaign(root, input, dependencies) {
       } else {
         decision = {
           status: 'baseline_ready',
-          reason: 'All correctness scopes passed and the performance baseline completed.',
+          reason:
+            scope.adapter === 'playwright'
+              ? 'All correctness scopes passed and the exact browser scope qualified for paired capture.'
+              : 'All correctness scopes passed and the performance baseline completed.',
         };
       }
     } catch (error) {
@@ -194,40 +204,80 @@ async function screenCampaign(root, input, dependencies) {
   if (repository.diff_digest === status.incumbent.repository.diff_digest) {
     throw new Error('candidate source identity matches the incumbent');
   }
+  const changeCost = assessChangeCost(
+    await inspectChangeCost(root, repository.changed_files, repository.base_revision),
+    { allowedFiles: campaign.manifest.allowed_files }
+  );
   const attempt = status.experiments + 1;
-  const correctness = await runCorrectness(root, campaign.manifest.correctness, dependencies);
+  const correctness =
+    changeCost.violations.length === 0
+      ? await runCorrectness(root, campaign.manifest.correctness, dependencies)
+      : { status: 'not_run', results: [], limitations: [] };
   const limitations = [...correctness.limitations];
   let evidence = {
     correctness: correctness.results,
     performance_capsule: null,
     verification: null,
+    artifact_verification: input?.artifact_verification ?? null,
   };
   let decision;
 
-  if (correctness.status !== 'passed') {
+  if (changeCost.violations.length > 0) {
+    decision = {
+      status: 'discard',
+      reason: `Candidate exceeded its change-cost budget: ${changeCost.violations.join(', ')}.`,
+    };
+  } else if (correctness.status !== 'passed') {
     decision = correctnessDecision(correctness.status);
   } else {
     try {
-      const baselineEvidence = await loadEvidence(campaign, status.incumbent.performance);
-      const baseline = incumbentCapsule(baselineEvidence, status.incumbent);
       const scope = campaign.manifest.performance;
-      const current = await dependencies.profileRepository({
-        repositoryRoot: root,
-        adapter: scope.adapter,
-        target: scope.target,
-        name: scope.name,
-        timeoutMs: scope.timeout_ms,
-        samples: scope.screening.samples,
-        warmups: scope.screening.warmups,
-      });
-      const verification = dependencies.verifyOptimizationCapsules(baseline, current);
+      let current = null;
+      let verification;
+      if (scope.adapter === 'playwright') {
+        const incumbentRoot = await assertScreenIncumbent(
+          root,
+          input,
+          campaign.manifest,
+          status.incumbent
+        );
+        verification = await dependencies.verifyPairedRepositories({
+          baselineRepositoryRoot: incumbentRoot,
+          currentRepositoryRoot: root,
+          adapter: scope.adapter,
+          target: scope.target,
+          name: scope.name,
+          project: scope.project,
+          sources: campaign.manifest.allowed_files,
+          timeoutMs: scope.timeout_ms,
+          samples: scope.screening.samples,
+          warmups: scope.screening.warmups,
+        });
+      } else {
+        const baselineEvidence = await loadEvidence(campaign, status.incumbent.performance);
+        const baseline = incumbentCapsule(baselineEvidence, status.incumbent);
+        current = await dependencies.profileRepository({
+          repositoryRoot: root,
+          adapter: scope.adapter,
+          target: scope.target,
+          name: scope.name,
+          timeoutMs: scope.timeout_ms,
+          samples: scope.screening.samples,
+          warmups: scope.screening.warmups,
+        });
+        verification = dependencies.verifyOptimizationCapsules(baseline, current, {
+          memory_regression_gate: false,
+        });
+      }
       evidence = {
         correctness: correctness.results,
         performance_capsule: current,
         verification,
+        artifact_verification: input?.artifact_verification ?? null,
       };
       limitations.push(...verification.limitations);
-      decision = screeningDecision(verification);
+      limitations.push(...(input?.artifact_verification?.limitations ?? []));
+      decision = screeningDecision(verification, input?.artifact_verification);
     } catch (error) {
       limitations.push(sanitizeMessage(error, root));
       decision = {
@@ -296,7 +346,11 @@ async function promoteCampaign(root, input, dependencies) {
   ]);
   const correctness = [...incumbentCorrectness.results, ...candidateCorrectness.results];
   const limitations = [...incumbentCorrectness.limitations, ...candidateCorrectness.limitations];
-  let evidence = { correctness, verification: null };
+  let evidence = {
+    correctness,
+    verification: null,
+    artifact_verification: input?.artifact_verification ?? null,
+  };
   let decision;
 
   if (incumbentCorrectness.status !== 'passed') {
@@ -315,13 +369,20 @@ async function promoteCampaign(root, input, dependencies) {
         adapter: scope.adapter,
         target: scope.target,
         name: scope.name,
+        project: scope.project,
+        sources: scope.adapter === 'playwright' ? campaign.manifest.allowed_files : undefined,
         timeoutMs: scope.timeout_ms,
         samples: scope.promotion.samples,
         warmups: scope.promotion.warmups,
       });
-      evidence = { correctness, verification };
+      evidence = {
+        correctness,
+        verification,
+        artifact_verification: input?.artifact_verification ?? null,
+      };
       limitations.push(...verification.limitations);
-      decision = promotionDecision(verification);
+      limitations.push(...(input?.artifact_verification?.limitations ?? []));
+      decision = promotionDecision(verification, input?.artifact_verification);
     } catch (error) {
       limitations.push(sanitizeMessage(error, root, [incumbentRoot]));
       decision = {
@@ -354,6 +415,51 @@ async function promoteCampaign(root, input, dependencies) {
   });
   await appendRecord(campaign, record);
   return campaignReport(campaign.manifest, [...campaign.records, record], dependencies.now());
+}
+
+async function qualifyBrowserCampaignScope(root, scope, dependencies) {
+  const qualification = await dependencies.qualifyRepository(root);
+  const matches = (qualification.flows ?? []).filter(
+    (flow) =>
+      flow.adapter === 'playwright' &&
+      flow.target === scope.target &&
+      flow.name === scope.name &&
+      (flow.browser_profile?.project_name ?? null) === (scope.project ?? null)
+  );
+  if (matches.length !== 1 || !qualifiedBrowserBaseUrl(matches[0])) {
+    return {
+      schema_version: 'optimization-browser-baseline/v1',
+      adapter: { kind: 'playwright' },
+      scope: { target: scope.target, name: scope.name, project: scope.project ?? null },
+      candidate_id: null,
+      verdict: { status: 'no_confidence' },
+      limitations: ['The exact browser scope was not eligible for owned local capture.'],
+    };
+  }
+  return {
+    schema_version: 'optimization-browser-baseline/v1',
+    adapter: { kind: 'playwright' },
+    scope: { target: scope.target, name: scope.name, project: scope.project ?? null },
+    candidate_id: matches[0].id,
+    verdict: { status: 'profiled' },
+    limitations: [
+      'Browser timing is deferred to paired interleaved screening against the independent incumbent.',
+    ],
+  };
+}
+
+async function assertScreenIncumbent(root, input, manifest, incumbent) {
+  if (typeof input?.incumbent_repository !== 'string' || input.incumbent_repository.trim() === '') {
+    throw new Error('incumbent_repository is required for paired browser screening');
+  }
+  const incumbentRoot = await realpath(resolve(input.incumbent_repository));
+  if (incumbentRoot === root) throw new Error('incumbent and candidate repositories must differ');
+  const repository = await inspectRepositoryState(incumbentRoot, manifest);
+  assertAllowedChanges(manifest, repository.changed_files);
+  if (repository.diff_digest !== incumbent.repository.diff_digest) {
+    throw new Error('incumbent checkout does not match the recorded incumbent');
+  }
+  return incumbentRoot;
 }
 
 async function inspectCampaign(root, input, dependencies) {
@@ -511,7 +617,7 @@ export function normalizeCorrectnessExecution(scope, execution, role = 'candidat
 }
 
 function exactSelection(scope, stdout) {
-  if (scope.adapter === 'vitest') {
+  if (['vitest', 'jest'].includes(scope.adapter)) {
     const parsed = parseVitestSelection(stdout);
     return {
       executed: parsed?.executed_tests ?? 0,
@@ -708,7 +814,20 @@ function nextRecord(campaign, payload) {
   });
 }
 
-function screeningDecision(verification) {
+function screeningDecision(verification, artifactVerification = null) {
+  if (artifactVerification?.verdict?.status === 'rejected') {
+    return { status: 'discard', reason: artifactVerification.verdict.reason };
+  }
+  if (
+    artifactVerification?.verdict?.status === 'confirmed' &&
+    artifactCompatibleBrowserEvidence(verification)
+  ) {
+    return {
+      status: 'promising',
+      reason:
+        'A source-bound initial-route artifact materially improved without a demonstrated browser regression; paired promotion is required.',
+    };
+  }
   if (
     verification.verdict.status === 'confirmed' &&
     verification.decisions.mechanically_confirmed &&
@@ -729,13 +848,25 @@ function screeningDecision(verification) {
   };
 }
 
-function promotionDecision(verification) {
+function promotionDecision(verification, artifactVerification = null) {
+  if (artifactVerification?.verdict?.status === 'rejected') {
+    return { status: 'discard', reason: artifactVerification.verdict.reason };
+  }
+  if (
+    artifactVerification?.verdict?.status === 'confirmed' &&
+    artifactCompatibleBrowserEvidence(verification)
+  ) {
+    return {
+      status: 'keep',
+      reason:
+        'Correctness passed, the source-bound initial-route artifact materially improved, and paired browser evidence showed no protected regression.',
+    };
+  }
   if (
     verification.verdict.status === 'confirmed' &&
     verification.decisions.mechanically_confirmed &&
     verification.decisions.materially_useful &&
-    verification.decisions.shipping_recommended &&
-    verification.limitations.length === 0
+    verification.decisions.shipping_recommended
   ) {
     return {
       status: 'keep',
@@ -749,6 +880,20 @@ function promotionDecision(verification) {
     status: 'discard',
     reason: `Promotion did not meet the keep policy: ${verification.verdict.reason}`,
   };
+}
+
+function artifactCompatibleBrowserEvidence(verification) {
+  if (verification?.schema_version !== 'runtime-browser-optimization-verification/v1') {
+    return false;
+  }
+  if (verification?.verdict?.status === 'confirmed') return true;
+  if (verification?.verdict?.status !== 'inconclusive') return false;
+  const metrics = verification.observed?.metrics;
+  return (
+    Array.isArray(metrics) &&
+    metrics.length > 0 &&
+    metrics.every((metric) => metric.regressed !== true && metric.stable !== false)
+  );
 }
 
 function correctnessDecision(status) {
@@ -889,7 +1034,10 @@ function assertCampaignEngine(campaign, engineIdentity) {
 
 async function optimizationCampaignEngineIdentity() {
   const hash = createHash('sha256');
-  for (const file of ENGINE_FILES) {
+  const files = (await readdir(new URL('.', import.meta.url)))
+    .filter((file) => file.endsWith('.mjs') && !file.endsWith('.test.mjs'))
+    .sort();
+  for (const file of files) {
     hash.update(`${file}\n`);
     hash.update(await readFile(new URL(file, import.meta.url)));
   }

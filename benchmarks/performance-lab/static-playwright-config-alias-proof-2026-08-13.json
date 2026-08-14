@@ -1,0 +1,73 @@
+{
+  "schema_version": "codevetter-static-playwright-config-alias-proof/v1",
+  "recorded_at": "2026-08-13T17:55:00.000Z",
+  "scope": "bounded_local_qualification_and_runtime_admission",
+  "observed": {
+    "controlled_contract": {
+      "test": "scripts/runtime-failure-capsule/qualification.test.mjs",
+      "tests_passed": 40,
+      "tests_failed": 0,
+      "config_evaluated": false,
+      "environment_value_read": false,
+      "environment_name_retained": false,
+      "unsupported_alias_cases": [
+        "environment_only",
+        "call_derived",
+        "property_derived",
+        "computed",
+        "oversized",
+        "remote",
+        "ambiguous"
+      ]
+    },
+    "rolepatch": {
+      "repository_revision": "a9abcccf1e70e5f6fc130b129b2906ba87ac725a",
+      "source_snapshot_sha256": "92309983f658deaeae69bb5285baa059d1f2b36a832a12c409a33dbbb1087355",
+      "dirty": false,
+      "qualification_status": "ready",
+      "retained_playwright_flows": 16,
+      "representative_candidate_id": "2121ff465cb6d731",
+      "representative_flow": "landing page renders",
+      "project": "desktop",
+      "base_url": "http://localhost:3000",
+      "server_family": "next",
+      "runtime_state": "environment_blocked",
+      "runtime_startup_ms": 0,
+      "runtime_ownership": "none",
+      "runtime_cleanup": "not_started",
+      "browser_executed": false,
+      "probe_route": null
+    },
+    "truehire": {
+      "repository_revision": "e1eed7d2e6ca39e65b32c1c4b2d6431ab72bab1a",
+      "source_snapshot_sha256": "4c54eba73423baab25676240997810dc19dfe0589742672dab2fece769c1c416",
+      "dirty": false,
+      "qualification_status": "needs_selection",
+      "retained_playwright_flows": 14,
+      "representative_candidate_id": "497e04783840b50e",
+      "representative_flow": "landing renders hero + CTA",
+      "project": "chromium",
+      "base_url": "http://localhost:3000",
+      "server_family": "next",
+      "runtime_state": "unsupported",
+      "browser_executed": false,
+      "offline_install": {
+        "network_allowed": false,
+        "lifecycle_scripts_allowed": false,
+        "completed": false,
+        "partial_node_modules_kib": 1080028,
+        "recovery_location": "~/.Trash/codevetter-truehire-node_modules-20260813-2304"
+      }
+    }
+  },
+  "inferred": {
+    "qualification_gain": "The closed grammar admits a common real-product Playwright configuration without adding config evaluation or environment authority.",
+    "remaining_positive_gc_gap": "A passing real Next server-GC case study still requires an eligible product with installed dependencies, no loadable environment files, and a passing exact flow."
+  },
+  "unverified": [
+    "No RolePatch or TrueHire browser assertion ran in this proof.",
+    "No local result establishes a performance bottleneck or optimization.",
+    "No result establishes production latency, frequency, scale, memory, cost, cache behavior, or user impact.",
+    "Qualification of a local fallback does not establish repository-configured or production-build equivalence."
+  ]
+}

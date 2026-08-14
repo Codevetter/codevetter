@@ -80,7 +80,7 @@ export async function planFlowOptimizationCampaign({
         timeoutMs,
         samples,
         warmups,
-        captureFlow: ['node-test', 'vitest'].includes(candidate.adapter),
+        captureFlow: ['node-test', 'vitest', 'jest'].includes(candidate.adapter),
       });
       const diagnosis = await diagnose(capsule, root);
       const cost = supportedScaleCost(diagnosis);
@@ -242,7 +242,8 @@ export function buildFlowInventory(qualification) {
     const reasons = [];
     const unsafeFlags = candidate.safety_flags.filter(
       (flag) =>
-        flag.kind !== 'local_service_signal' || !['node-test', 'vitest'].includes(candidate.adapter)
+        flag.kind !== 'local_service_signal' ||
+        !['node-test', 'vitest', 'jest'].includes(candidate.adapter)
     );
     if (unsafeFlags.length > 0) {
       reasons.push(...unsafeFlags.map((flag) => flag.kind));

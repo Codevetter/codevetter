@@ -1,0 +1,124 @@
+---
+/*
+THESIS: The proof is the sequence of rejection, retention, and qualification—not one flattering percentage.
+OWN-WORLD: Inherit the landing system's black instrument field, cyan measurement lines, and compact mono evidence labels.
+STORY: See what moved, see what failed policy, see what production did not confirm, then inspect the receipt.
+FIRST VIEWPORT: A large local-flow delta is physically paired with the small production delta and the decision ledger.
+FORM: Existing preserve-lane editorial evidence section; no concept seed or new visual world is required.
+*/
+import proof from '../../../../benchmarks/performance-lab/autonomous-browser-loop-anime-proof-2026-08-14.json';
+import { optimizationCaseStudies } from '@/data/optimization-case-studies';
+
+const retained = proof.retained_experiment;
+const rejected = proof.rejected_experiments[0];
+const production = proof.production_build_check;
+const transfer = retained.promotion.browser_completed_response_transfer_bytes;
+const localReduction = Math.abs(transfer.delta_percent).toFixed(1);
+const productionReduction = Math.abs(production.delta.gzip_percent).toFixed(1);
+const proofUrl = '/benchmark/performance-proof.json';
+const portfolioProofUrl = '/benchmark/optimization-proofs.json';
+const datedTrials = optimizationCaseStudies.filter((study) => study.slug !== 'anime-list');
+---
+
+<section
+  id="optimization-case-study"
+  class="relative scroll-mt-28 overflow-hidden border-y border-[--color-line] bg-[#090a0c] py-20"
+  aria-labelledby="optimization-proof-title"
+>
+  <div class="relative mx-auto max-w-7xl px-6">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em]">
+          <span class="border border-[--color-ok]/25 bg-[--color-ok]/[0.07] px-2.5 py-1 text-[--color-ok]">Real project trial</span>
+          <span class="border border-[--color-line-2] px-2.5 py-1 text-[#9297a1]">Local development flow</span>
+          <span class="border border-[--color-line-2] px-2.5 py-1 text-[#9297a1]">Observed {proof.recorded_at}</span>
+        </div>
+        <h2
+          id="optimization-proof-title"
+          class="mt-5 max-w-2xl font-display text-4xl font-bold tracking-[-0.035em] text-white md:text-5xl"
+        >
+          One local optimization survived. Production barely moved.
+        </h2>
+        <p class="mt-5 max-w-[68ch] text-sm leading-7 text-[--color-text-dim]">
+          On an isolated Anime List checkout, CodeVetter measured one mobile home-page navigation,
+          rejected a five-file Radix import change below policy, and retained a two-file icon-import
+          boundary only after repeated paired measurement and a zero-failure correctness check.
+        </p>
+
+        <dl class="mt-8 grid grid-cols-1 gap-px overflow-hidden border border-[--color-line] bg-[--color-line] sm:grid-cols-2">
+          <div class="bg-[--color-bg-elev] p-5">
+            <dt class="font-mono text-xs uppercase tracking-[0.14em] text-[#9297a1]">Local response bytes</dt>
+            <dd class="mt-2 font-mono text-3xl font-semibold tracking-[-0.04em] text-[--color-ok]">{localReduction}% fewer</dd>
+            <p class="mt-2 text-xs leading-5 text-[#9297a1]">material for this exact local Vite navigation with project config disabled</p>
+          </div>
+          <div class="bg-[--color-bg-elev] p-5">
+            <dt class="font-mono text-xs uppercase tracking-[0.14em] text-[#9297a1]">Production gzip</dt>
+            <dd class="mt-2 font-mono text-3xl font-semibold tracking-[-0.04em] text-white">{productionReduction}% smaller</dd>
+            <p class="mt-2 text-xs leading-5 text-[--color-warn]">not a material shipped-bundle win</p>
+          </div>
+        </dl>
+      </div>
+
+      <div class="border border-[--color-line] bg-[--color-surface]/55">
+        <div class="flex items-center justify-between border-b border-[--color-line] px-5 py-3">
+          <span class="font-mono text-xs uppercase tracking-[0.16em] text-[#9297a1]">Decision ledger</span>
+          <span class="font-mono text-xs text-[#9297a1]">{retained.campaign_elapsed_minutes_from_initialization_to_keep} min local</span>
+        </div>
+        <ol>
+          <li class="grid grid-cols-[70px_minmax(0,1fr)] gap-4 border-b border-[--color-line] px-5 py-5">
+            <span class="font-mono text-[11px] uppercase tracking-wider text-[--color-danger]">Rejected</span>
+            <div>
+              <p class="text-sm font-medium text-white">Radix package subpaths</p>
+              <p class="mt-1 text-xs leading-5 text-[--color-text-dim]">
+                {Math.abs(rejected.delta_percent).toFixed(1)}% fewer bytes across {rejected.screening_samples_per_side} samples per side—below the policy's 10% minimum.
+              </p>
+            </div>
+          </li>
+          <li class="grid grid-cols-[70px_minmax(0,1fr)] gap-4 border-b border-[--color-line] px-5 py-5">
+            <span class="font-mono text-[11px] uppercase tracking-wider text-[--color-ok]">Retained</span>
+            <div>
+              <p class="text-sm font-medium text-white">Lucide removed from the initial flow boundary</p>
+              <p class="mt-1 text-xs leading-5 text-[--color-text-dim]">
+                {transfer.baseline_median.toLocaleString()} → {transfer.candidate_median.toLocaleString()} bytes; {retained.promotion.samples_per_side} samples per side plus warmups.
+              </p>
+            </div>
+          </li>
+          <li class="grid grid-cols-[70px_minmax(0,1fr)] gap-4 px-5 py-5">
+            <span class="font-mono text-[11px] uppercase tracking-wider text-[--color-warn]">Qualified</span>
+            <div>
+              <p class="text-sm font-medium text-white">Useful locally, not a consumer speed claim</p>
+              <p class="mt-1 text-xs leading-5 text-[--color-text-dim]">
+                Workload, LCP, memory, and React timing moved less than policy; the separate production build moved only {production.delta.gzip_percent}% gzip.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="mt-10 border-y border-[--color-line]" aria-label="Additional dated optimization trials">
+      <div class="hidden gap-2 border-b border-[--color-line] py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-[#9297a1] sm:grid sm:grid-cols-[110px_90px_minmax(0,1fr)_100px]">
+        <span>Project</span><span>Decision</span><span>Measured result and patch cost</span><span class="sm:text-right">Observed</span>
+      </div>
+      {datedTrials.map((trial) => (
+        <div class="grid gap-2 border-b border-[--color-line] py-4 text-xs last:border-b-0 sm:grid-cols-[110px_90px_minmax(0,1fr)_100px] sm:items-baseline">
+          <a class="font-medium text-white hover:text-[--color-accent]" href={`/benchmark/optimization/${trial.slug}`}>{trial.project}</a>
+          <span class:list={['font-mono uppercase tracking-wider', trial.decision === 'rejected' ? 'text-[--color-danger]' : 'text-[--color-ok]']}>{trial.decision}</span>
+          <span class="leading-5 text-[--color-text-dim]">{trial.primaryMetric.value}; {trial.changeCost.files} file · net {trial.changeCost.net} lines · {trial.changeCost.dependencies} new dependencies.</span>
+          <time class="font-mono text-[#9297a1] sm:text-right" datetime={trial.date}>{trial.date}</time>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-8 flex flex-col gap-3 border-t border-[--color-line] pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <p class="max-w-2xl text-xs leading-5 text-[#9297a1]">
+        Observed on revision <code class="text-[--color-text-dim]">{proof.subject.repository_revision.slice(0, 12)}</code>. No production, cloud, package installation, paid model, or secret operation ran.
+      </p>
+      <div class="flex shrink-0 flex-wrap gap-2">
+        <a href="/benchmark/optimization" class="inline-flex h-9 items-center border border-[--color-line-2] px-4 text-xs font-medium text-white transition-colors hover:border-[--color-accent]/50 hover:text-[--color-accent]">Browse case studies</a>
+        <a href={proofUrl} class="inline-flex h-9 items-center border border-[--color-line-2] px-4 text-xs font-medium text-[--color-text-dim] transition-colors hover:border-[--color-accent]/50 hover:text-white">Proof JSON</a>
+        <a href={portfolioProofUrl} class="inline-flex h-9 items-center border border-[--color-line-2] px-4 text-xs font-medium text-[--color-text-dim] transition-colors hover:border-[--color-accent]/50 hover:text-white">All trial JSON</a>
+      </div>
+    </div>
+  </div>
+</section>

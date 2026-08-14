@@ -60,9 +60,12 @@ test('detects the power-law runtime lanes from bounded repository evidence', asy
   const root = await temporaryRoot(context);
   await writeFile(
     join(root, 'package.json'),
-    JSON.stringify({ devDependencies: { vitest: '1.0.0', '@playwright/test': '1.0.0' } })
+    JSON.stringify({
+      devDependencies: { vitest: '1.0.0', jest: '1.0.0', '@playwright/test': '1.0.0' },
+    })
   );
   await writeFile(join(root, 'vitest.config.ts'), 'export default {};\n');
+  await writeFile(join(root, 'jest.config.js'), 'export default {};\n');
   await writeFile(join(root, 'playwright.config.ts'), 'export default {};\n');
   await writeFile(join(root, 'wrangler.toml'), 'name = "fixture"\n');
   await writeFile(join(root, 'go.mod'), 'module example.test/capsule\n\ngo 1.22\n');
@@ -71,7 +74,7 @@ test('detects the power-law runtime lanes from bounded repository evidence', asy
   const report = await detectRuntimeLanes(root);
   assert.deepEqual(
     report.lanes.map((lane) => lane.kind),
-    ['node-test', 'vitest', 'browser', 'cloudflare-worker', 'go-test']
+    ['node-test', 'vitest', 'jest', 'browser', 'cloudflare-worker', 'go-test']
   );
   assert.deepEqual(report.lanes.find((lane) => lane.kind === 'cloudflare-worker').adapters, [
     'vitest',
@@ -86,6 +89,13 @@ for (const adapterCase of [
     manifestDependency: 'vitest',
     expectedLane: 'cloudflare-worker',
     extraFile: ['wrangler.toml', 'name = "fixture"\n'],
+  },
+  {
+    adapter: 'jest',
+    executable: 'node_modules/jest/bin/jest.js',
+    config: 'jest.config.js',
+    manifestDependency: 'jest',
+    expectedLane: 'jest',
   },
   {
     adapter: 'playwright',
@@ -131,10 +141,19 @@ for (const adapterCase of [
     assert.ok(capsule.relevant_changes.length > 0, JSON.stringify(capsule));
     assert.equal(capsule.relevant_changes[0].file, 'apps/web/source.js');
     if (adapterCase.adapter === 'vitest') {
-      assert.deepEqual(execution.command.arguments.slice(-2), [
+      assert.ok(execution.command.arguments.includes('--reporter=json'));
+      assert.ok(execution.command.arguments.includes('--reporter=verbose'));
+      assert.ok(execution.command.arguments.includes('--pool=forks'));
+      assert.ok(execution.command.arguments.includes('--maxWorkers=1'));
+      assert.ok(execution.command.arguments.includes('--no-file-parallelism'));
+      assert.deepEqual(execution.command.arguments.slice(4, 6), [
         '--testNamePattern',
         '(?:^| )nested failure$',
       ]);
+    }
+    if (adapterCase.adapter === 'jest') {
+      assert.ok(execution.command.arguments.includes('--testNamePattern=(?:^| )nested failure$'));
+      assert.ok(execution.command.arguments.includes('--runInBand'));
     }
   });
 }
@@ -188,6 +207,32 @@ test('Vitest profiling flags reach the test worker through Node execArgv', async
     false
   );
   assert.equal(execution.environmentValues.includes(profileDirectory), false);
+});
+
+test('Jest profiling is in-band and keeps owned paths out of public arguments', async (context) => {
+  const root = await gitFixture(context, {
+    'package.json': JSON.stringify({ devDependencies: { jest: '1.0.0' } }),
+    'node_modules/jest/bin/jest.js': 'console.log(JSON.stringify(process.execArgv));\n',
+    'source.test.js': 'test("nested result", () => {});\n',
+  });
+  const profileDirectory = join(root, 'owned-jest-profile');
+  await mkdir(profileDirectory);
+  const execution = await runClosedAdapter({
+    repositoryRoot: root,
+    adapter: 'jest',
+    target: 'source.test.js',
+    name: 'nested result',
+    timeoutMs: 5_000,
+    profileDirectory,
+  });
+  const execArgv = JSON.parse(execution.stdout.trim());
+  assert.ok(execArgv.includes('--cpu-prof'));
+  assert.ok(execArgv.includes(`--cpu-prof-dir=${profileDirectory}`));
+  assert.ok(execution.command.arguments.includes('--runInBand'));
+  assert.equal(
+    execution.command.arguments.some((argument) => argument.includes(profileDirectory)),
+    false
+  );
 });
 
 test('missing local runner and escaping target fail closed', async (context) => {

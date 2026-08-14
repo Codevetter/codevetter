@@ -1,0 +1,260 @@
+{
+  "schema_version": "runtime-performance-blind-evaluation/v1",
+  "policy": {
+    "target_tool_originated_rate": 0.8,
+    "minimum_accepted_experiments": 5,
+    "source_access": "withheld_until_experiment_sealed",
+    "fixture_results_count_toward_rate": false
+  },
+  "hermetic_contract": {
+    "status": "passed",
+    "tests": 224,
+    "qualified_for_product_involvement": false
+  },
+  "calibration": [
+    {
+      "repository": "calorie",
+      "revision": "bd1eecab89c5ab384cb9c38646d6aefff34255f8",
+      "result": "tool_gap_fixed",
+      "finding": "src/lib/recommendations.ts:254 calculateGymGuidance",
+      "qualification": "excluded",
+      "reason": "The first flow run exposed missing Vitest function-frequency evidence. The lower-level repeatable CPU evidence was then promoted into the common finding contract, but the source was visible before the sealing operation existed."
+    },
+    {
+      "repository": "polaris",
+      "revision": "5a6da5eec817a0b4d92354f310605ff839989090",
+      "result": "tool_gap_fixed_and_candidate_rejected",
+      "finding": "internal/api/asset_search.go:1143 eodhdResultToItem",
+      "qualification": "excluded",
+      "reason": "A dirty-snapshot read-only run exposed that cumulative Go CPU time was mislabeled as self time; the detector was corrected to require direct flat samples. The remaining direct allocation candidate led to a pre-sized-map experiment, but ten-sample verification found 484 allocs/op and 36747 B/op unchanged while latency worsened 5.9%, so the source edit was reverted. The trial is excluded because the large Polaris patch was already visible and could not be sealed as a clean blind experiment."
+    }
+  ],
+  "blind_trials": [
+    {
+      "repository": "reader",
+      "revision": "93bf33e90949628805a8ccee428587a5de530045",
+      "workload": "RSS parsing scales across supported feed sizes",
+      "finding_id": "02ce5c397f4d469ee44736e0",
+      "experiment_id": "6516ccdbebe0ad61aaf02b2d",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "src/lib/rss-parser.ts:164 normalizeEntry",
+      "outcome": {
+        "accepted": true,
+        "tool_verified": true,
+        "verification_status": "confirmed",
+        "baseline_largest_input_ms_per_op": 10.528,
+        "candidate_largest_input_ms_per_op": 7.822,
+        "improvement_percent": 25.703,
+        "runtime": "Node v24.19.0 on darwin-arm64",
+        "reason": "The parser reuses one DOMParser, avoids a second sanitization pass when deriving an excerpt from already-sanitized HTML, and keeps the plain-GUID fast path. Exact output hashes and focused behavior tests passed. Earlier narrower variants were append-only inconclusive or rejected outcomes."
+      }
+    },
+    {
+      "repository": "free-ai",
+      "revision": "6eb86d42ba0bc5263bb2ccff662403733553ef77",
+      "workload": "model selection scales across the supported registry size",
+      "finding_id": null,
+      "experiment_id": null,
+      "origin": null,
+      "outcome": {
+        "accepted": false,
+        "tool_verified": false,
+        "verification_status": "no_experiment",
+        "reason": "The exact supported-scale operation was already cheap and no repeatable repository CPU candidate qualified. CodeVetter returned detector coverage rather than inventing an optimization."
+      }
+    },
+    {
+      "repository": "posttrainllm",
+      "revision": "5038f01ee61c085ac413c78cf099237cf58ff0ce",
+      "workload": "tests/bench_wasm.mjs",
+      "finding_id": null,
+      "experiment_id": null,
+      "origin": null,
+      "outcome": {
+        "accepted": false,
+        "tool_verified": false,
+        "verification_status": "operational_gap",
+        "reason": "The bounded profile attempt returned no machine-readable JSON result. This trial is excluded from involvement and requires supervisor hardening before retry."
+      }
+    },
+    {
+      "repository": "tidwall/gjson",
+      "revision": "7d8b3821e9d2acf35e8a226b63fcf801078e9b96",
+      "workload": "BenchmarkValid",
+      "finding_id": "0ff38778b2d0ecf296e6701b",
+      "experiment_id": "0ef34dde2546575829decf55",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "gjson.go:2477 validpayload",
+      "outcome": {
+        "accepted": false,
+        "tool_verified": true,
+        "verification_status": "inconclusive",
+        "baseline_ns_per_op": 742.4,
+        "candidate_ns_per_op": 786.1,
+        "baseline_allocs_per_op": 0,
+        "candidate_allocs_per_op": 0,
+        "reason": "The candidate passed the full Go test suite but median benchmark latency worsened by 5.9% and did not cross the acceptance policy. The source edit was reverted."
+      }
+    },
+    {
+      "repository": "rolepatch",
+      "revision": "6e97de4e355618d7cefc125865ec330af062b6c6",
+      "workload": "ATS scoring scales through the supported resume size",
+      "finding_id": "4b865e2c58b99eefd6794a79",
+      "experiment_id": "4472615bbf55f76a18cab6e5",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "src/lib/ats-score.ts:185 calculateATSScore",
+      "outcome": {
+        "accepted": true,
+        "tool_verified": true,
+        "verification_status": "confirmed",
+        "baseline_largest_input_ms_per_op": 9.405,
+        "candidate_largest_input_ms_per_op": 1.938,
+        "improvement_percent": 79.348,
+        "runtime": "Node v26.7.0 on darwin-arm64",
+        "reason": "One multi-pattern scan replaced repeated full-resume substring scans while preserving overlapping includes semantics and output order. Ten samples per side crossed the shipping floor; focused behavior, hash, lint, and type checks passed."
+      }
+    },
+    {
+      "repository": "looptv",
+      "revision": "cbdb502190f775956adfb9790c52af110452a12a",
+      "workload": "Smart Mix ranks the supported catalog size",
+      "finding_id": "7dee12dbdc535a0231622862",
+      "experiment_id": "d5ae896ee10780452ebcb47d",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "src/lib/smartmix.ts:41 pickSmartMixVideo",
+      "outcome": {
+        "accepted": true,
+        "tool_verified": true,
+        "verification_status": "confirmed",
+        "baseline_largest_input_ms_per_op": 4.768,
+        "candidate_largest_input_ms_per_op": 2.335,
+        "improvement_percent": 51.028,
+        "runtime": "Node v24.19.0 on darwin-arm64",
+        "reason": "A single catalog pass retains only the exact stable top-12 band instead of materializing, mapping, and sorting every eligible video. Exact selection semantics and focused tests passed."
+      }
+    },
+    {
+      "repository": "email-manager",
+      "revision": "4ad803aa8cf9561ac53cdddfda7539b5cd62dadd",
+      "workload": "weekly digest scales across local inbox sizes",
+      "finding_id": "f42a22729413c44217bb958b",
+      "experiment_id": "a44de6a52be5d5bcbd0a38c8",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "src/lib/digest.ts:92 buildWeeklyDigest",
+      "outcome": {
+        "accepted": true,
+        "tool_verified": true,
+        "verification_status": "confirmed",
+        "baseline_largest_input_ms_per_op": 7.605,
+        "candidate_largest_input_ms_per_op": 4.147,
+        "improvement_percent": 45.47,
+        "runtime": "Node v24.19.0 on darwin-arm64",
+        "reason": "One digest build parses each repeated timestamp once. Golden output tests passed, while a separate all-unique timestamp guard showed no material regression."
+      }
+    },
+    {
+      "repository": "starboard",
+      "revision": "7b0616f2afb6cb438f2093ab4f0d75c85cc49886",
+      "workload": "project recommendations scale across local catalog sizes",
+      "finding_id": "a28ed1b781e670062abf5b48",
+      "experiment_id": "1994e1e68a48debf08e987bc",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "src/lib/project-recommendations.ts:170 rankProjectRecommendations",
+      "outcome": {
+        "accepted": true,
+        "tool_verified": true,
+        "verification_status": "confirmed",
+        "baseline_largest_input_ms_per_op": 46.9,
+        "candidate_largest_input_ms_per_op": 32.464,
+        "improvement_percent": 30.78,
+        "runtime": "Node v24.19.0 on darwin-arm64",
+        "reason": "A bounded worst-first heap retains only the requested peers and defers evidence-string construction until a candidate can enter that set. Exact digest and focused behavior tests passed."
+      }
+    },
+    {
+      "repository": "app-health-go",
+      "revision": "3f41e347ecec1b02a3959ab4cbd6991133e0d3c5",
+      "workload": "route-template normalization benchmark",
+      "finding_id": "884a6671447ed94cf9e4aa0c",
+      "experiment_id": "1945fe8a85373d0486462384",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "normalize.go:25 normalizeRouteTemplate",
+      "outcome": {
+        "accepted": true,
+        "tool_verified": true,
+        "verification_status": "confirmed",
+        "baseline_ns_per_op": 428,
+        "candidate_ns_per_op": 97.05,
+        "improvement_percent": 77.325,
+        "baseline_bytes_per_op": 144,
+        "candidate_bytes_per_op": 64,
+        "baseline_allocs_per_op": 2,
+        "candidate_allocs_per_op": 1,
+        "runtime": "Go go1.26.5 on darwin-arm64",
+        "reason": "One bounded byte scan replaces regexp matching plus split and join while preserving uppercase UUID, invalid UUID, numeric, mixed, repeated-slash, and trailing-slash behavior. The main Go module tests and vet passed."
+      }
+    },
+    {
+      "repository": "app-health-go",
+      "revision": "3f41e347ecec1b02a3959ab4cbd6991133e0d3c5",
+      "workload": "middleware request overhead",
+      "finding_id": "867dade0ac95c1e6e1e4e694",
+      "experiment_id": "506a885d1779843627ed081e",
+      "origin": "tool_detected",
+      "source_access_at_seal": "withheld",
+      "candidate": "client.go:200 (*Client).Record",
+      "outcome": {
+        "accepted": false,
+        "tool_verified": true,
+        "verification_status": "inconclusive",
+        "baseline_ns_per_op": 2921,
+        "candidate_ns_per_op": 3248,
+        "delta_percent": 11.195,
+        "baseline_allocs_per_op": 29,
+        "candidate_allocs_per_op": 29,
+        "correctness_tests_passed": 49,
+        "runtime": "Go go1.26.5 on darwin-arm64",
+        "reason": "Moving UUID generation from Record to batched delivery passed the package tests but made the repeated benchmark slower without reducing allocations. CodeVetter rejected the source-bounded edit, which was then reverted."
+      }
+    },
+    {
+      "repository": "significanthobbies",
+      "revision": "223919b07b06809549efcccba4183878f6670c23",
+      "workload": null,
+      "finding_id": null,
+      "experiment_id": null,
+      "origin": null,
+      "outcome": {
+        "accepted": false,
+        "tool_verified": false,
+        "verification_status": "no_experiment",
+        "reason": "Qualification rejected a false performance-intent match for a performing-arts test, resolved the top-level static Next origin in the multi-server Next/Astro Playwright config, excluded the alternate Astro landing project, and retained four Next flows inside the bounded inventory. The clean lab then stopped without starting scripts because port 3000 belonged to an attestation-mismatched Polaris listener. This is an accuracy and safe-non-execution result, not an optimization claim."
+      }
+    }
+  ],
+  "involvement": {
+    "manifest": "historical-qualified-portfolio.json",
+    "manifest_digest": "e1fc07bf43a3e68adabaeaee7d51cc7d16f3cb3c0ae987da24f67d0462b0fbbd",
+    "accepted_experiments": 6,
+    "accepted_tool_originated_experiments": 6,
+    "tool_originated_rate": 1,
+    "verdict": "target_met",
+    "target_met": true,
+    "reason": "The historical qualification portfolio contains six accepted experiments with persisted source-bound verification receipts; all six originated from CodeVetter before source access."
+  },
+  "limitations": [
+    "The accepted denominator is five selected local TypeScript/Vitest workloads and one selected Go benchmark. It meets the bound portfolio policy but does not establish an 80% rate across arbitrary repositories.",
+    "One accepted Go benchmark plus one honest rejected unseen-project Go experiment does not establish broad Go coverage.",
+    "Local measurements do not establish production impact, external-service latency, or representative production data volume.",
+    "The workloads use deterministic local datasets; they prove behavior for those encoded sizes, not production traffic distributions.",
+    "Rejected and no-experiment trials improve precision evidence but do not increase the accepted-experiment denominator."
+  ]
+}

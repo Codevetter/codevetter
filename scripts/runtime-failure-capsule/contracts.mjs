@@ -1,5 +1,7 @@
 import { relative, resolve, sep } from 'node:path';
 
+import { validatePerformanceFindingsReport } from './performance-findings-contracts.mjs';
+
 export const CAPSULE_SCHEMA_VERSION = 'runtime-failure-capsule/v1';
 export const PERFORMANCE_SCHEMA_VERSION = 'runtime-performance-capsule/v1';
 export const PERFORMANCE_DIAGNOSIS_SCHEMA_VERSION = 'runtime-performance-diagnosis/v1';
@@ -8,9 +10,16 @@ export const FLOW_SCHEMA_VERSION = 'runtime-flow-capsule/v1';
 export const FLOW_PRIORITY_MANIFEST_SCHEMA_VERSION = 'runtime-flow-priority-manifest/v1';
 export const FLOW_CAMPAIGN_PLAN_SCHEMA_VERSION = 'runtime-flow-campaign-plan/v1';
 export const DETECTION_SCHEMA_VERSION = 'runtime-lane-detection/v1';
-export const ADAPTERS = Object.freeze(['node-test', 'vitest', 'playwright', 'go-test']);
-export const PROFILE_ADAPTERS = Object.freeze(['node-test', 'node-script', 'vitest', 'go-bench']);
-export const FLOW_ADAPTERS = Object.freeze(['node-test', 'vitest']);
+export const ADAPTERS = Object.freeze(['node-test', 'vitest', 'jest', 'playwright', 'go-test']);
+export const PROFILE_ADAPTERS = Object.freeze([
+  'node-test',
+  'node-script',
+  'vitest',
+  'jest',
+  'go-bench',
+]);
+export const PAIRED_ADAPTERS = Object.freeze([...PROFILE_ADAPTERS, 'playwright']);
+export const FLOW_ADAPTERS = Object.freeze(['node-test', 'vitest', 'jest']);
 export const IMPORT_KINDS = Object.freeze(['browser', 'worker']);
 export const LIMITS = Object.freeze({
   outputBytes: 128 * 1024,
@@ -41,6 +50,7 @@ export const LIMITS = Object.freeze({
   minimumSamples: 2,
   defaultSamples: 3,
   maximumSamples: 10,
+  memorySamples: 3,
   defaultWarmups: 1,
   maximumWarmups: 5,
 });
@@ -73,6 +83,13 @@ export function assertImportKind(value) {
 export function assertProfileAdapter(value) {
   if (!PROFILE_ADAPTERS.includes(value)) {
     throw new Error(`unsupported profile adapter: ${value ?? '<missing>'}`);
+  }
+  return value;
+}
+
+export function assertPairedAdapter(value) {
+  if (!PAIRED_ADAPTERS.includes(value)) {
+    throw new Error(`unsupported paired adapter: ${value ?? '<missing>'}`);
   }
   return value;
 }
@@ -168,7 +185,23 @@ export function validatePerformanceCapsule(capsule) {
     errors.push('observed.executions must be an array');
   if (!Array.isArray(capsule?.observed?.hotspots))
     errors.push('observed.hotspots must be an array');
+  if (
+    capsule?.observed?.heap_allocation_hotspots !== undefined &&
+    !Array.isArray(capsule.observed.heap_allocation_hotspots)
+  )
+    errors.push('observed.heap_allocation_hotspots must be an array');
+  if (
+    capsule?.observed?.heap_profile_runs !== undefined &&
+    !Array.isArray(capsule.observed.heap_profile_runs)
+  )
+    errors.push('observed.heap_profile_runs must be an array');
   if (!Array.isArray(capsule?.findings)) errors.push('findings must be an array');
+  if (
+    capsule?.detector_coverage_matrix !== undefined &&
+    capsule.detector_coverage_matrix?.schema_version !== 'runtime-detector-coverage-matrix/v1'
+  ) {
+    errors.push('invalid detector_coverage_matrix');
+  }
   if (!Array.isArray(capsule?.unverified)) errors.push('unverified must be an array');
   if (!Array.isArray(capsule?.limitations)) errors.push('limitations must be an array');
   return errors;
@@ -343,6 +376,15 @@ export function validateFlowCapsule(capsule) {
   }
   if (!Array.isArray(capsule?.relationships)) errors.push('relationships must be an array');
   if (!Array.isArray(capsule?.limitations)) errors.push('limitations must be an array');
+  if (validatePerformanceFindingsReport(capsule?.tool_diagnosis).length > 0) {
+    errors.push('invalid tool_diagnosis');
+  }
+  if (
+    capsule?.detector_coverage_matrix !== undefined &&
+    capsule.detector_coverage_matrix?.schema_version !== 'runtime-detector-coverage-matrix/v1'
+  ) {
+    errors.push('invalid detector_coverage_matrix');
+  }
   if (!['captured', 'no_confidence'].includes(capsule?.verdict?.status)) {
     errors.push('invalid verdict.status');
   }
@@ -356,6 +398,24 @@ export function validateFlowCapsule(capsule) {
   }
   if (capsule?.root_flow_id && !identifiers.has(capsule.root_flow_id)) {
     errors.push('root_flow_id does not identify a flow');
+  }
+  const evidenceIdentifiers = new Set([
+    ...(Array.isArray(capsule?.flows)
+      ? capsule.flows.flatMap((flow) =>
+          Array.isArray(flow?.evidence_ids) ? flow.evidence_ids : []
+        )
+      : []),
+    ...(Array.isArray(capsule?.function_analysis?.repeated_work_candidate?.evidence_ids)
+      ? capsule.function_analysis.repeated_work_candidate.evidence_ids
+      : []),
+  ]);
+  for (const finding of capsule?.tool_diagnosis?.findings ?? []) {
+    if (!identifiers.has(finding.flow_id)) errors.push('finding flow_id does not identify a flow');
+    for (const evidenceId of finding.evidence_ids ?? []) {
+      if (!evidenceIdentifiers.has(evidenceId)) {
+        errors.push('finding evidence_id does not identify captured evidence');
+      }
+    }
   }
   return [...new Set(errors)];
 }

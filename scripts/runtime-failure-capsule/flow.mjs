@@ -1,7 +1,9 @@
 import { FLOW_SCHEMA_VERSION, validateFlowCapsule } from './contracts.mjs';
 import { normalizeNodeFlowEvents } from './flow-capture.mjs';
 import { diagnosePerformanceRepository } from './performance-diagnosis.mjs';
+import { createDetectorCoverageMatrix } from './detector-coverage-matrix.mjs';
 import { profileRepository } from './performance.mjs';
+import { diagnoseToolLedPerformance } from './tool-led-performance-diagnosis.mjs';
 
 export async function captureFlowRepository(options) {
   const performanceCapsule = await profileRepository({ ...options, captureFlow: true });
@@ -19,6 +21,9 @@ export function createFlowCapsule(performanceCapsule, diagnosis) {
   const limitations = [
     ...new Set([...performanceCapsule.limitations, ...diagnosis.limitations, ...flowLimitations]),
   ];
+  limitations.push(
+    'Diagnostic callsites depend on runtime source-map quality; missing or incorrect maps can suppress original TypeScript attribution.'
+  );
   const executionComplete = performanceCapsule.verdict.status !== 'no_confidence';
   const flowAnalysis = analyzeFlowOperations(normalized.flows);
   const functionAnalysis = analyzeFunctionFrequency(performanceCapsule, normalized.flows);
@@ -61,6 +66,12 @@ export function createFlowCapsule(performanceCapsule, diagnosis) {
         : 'The exact local workload did not complete with required bounded evidence.',
     },
   };
+  capsule.tool_diagnosis = diagnoseToolLedPerformance(capsule);
+  capsule.detector_coverage_matrix = createDetectorCoverageMatrix({
+    adapter: performanceCapsule.adapter.kind,
+    performanceCapsule,
+    flowCapsule: capsule,
+  });
   const errors = validateFlowCapsule(capsule);
   if (errors.length > 0) throw new Error(`invalid flow capsule: ${errors.join(', ')}`);
   return capsule;

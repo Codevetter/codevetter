@@ -5,6 +5,11 @@ import {
   validatePerformanceDiagnosis,
 } from './contracts.mjs';
 import { collectRuntimeSourceContexts } from './source-context.mjs';
+import {
+  ALLOCATION_EXPERIMENT_MINIMUM_DIRECT_SHARE,
+  ALLOCATION_PATTERN_MINIMUM_DIRECT_SHARE,
+  diagnoseProfileToolFinding,
+} from './profile-tool-diagnosis.mjs';
 
 const SCALE_PREFIX = /^(?:size|items?|n)[._-]?(\d+)$/i;
 const ACTIONABILITY_FLOOR_MS_PER_OP = 0.1;
@@ -29,11 +34,35 @@ export function diagnosePerformanceCapsule(
   const scaleCurve = extractScaleCurve(capsule.observed.console_metrics);
   const comparison = capsule.comparison;
   const startup = capsule.findings.find((finding) => finding.kind === 'startup_dominated_scope');
-  const allocation = capsule.findings.find(
-    (finding) => finding.kind === 'go_allocation_path_candidate'
+  const allocations = rankAllocationCandidates(
+    capsule.findings.filter((finding) => finding.kind === 'go_allocation_path_candidate'),
+    sourceContexts
   );
+  const allocation = allocations[0] ?? null;
+  const allocationExperimentEligible = Boolean(
+    allocation?.profile_kind === 'go_alloc_objects' &&
+      allocation.flat_profile_objects > 0 &&
+      (allocation.flat_share >= ALLOCATION_EXPERIMENT_MINIMUM_DIRECT_SHARE ||
+        patternBackedAllocationCandidate(allocation, sourceContexts))
+  );
+  const heapAllocations = capsule.findings
+    .filter(
+      (finding) =>
+        finding.kind === 'node_allocation_candidate' &&
+        finding.sampled_bytes > 0 &&
+        finding.sample_share > 0
+    )
+    .map((finding) => ({
+      ...finding,
+      source: alignSourceToSourceContext(finding.source, sourceContexts),
+    }));
+  const heapAllocation = heapAllocations[0] ?? null;
   const qualifiedApplicationFinding = capsule.findings.find(
-    (finding) => finding.kind === 'application_hotspot_candidate'
+    (finding) =>
+      finding.kind === 'application_hotspot_candidate' &&
+      finding.basis !== 'repository_owned_go_cpu_cumulative_path' &&
+      finding.self_time_ms > 0 &&
+      finding.sample_share > 0
   );
   const capturedApplicationHotspot = qualifiedApplicationFinding
     ? capsule.observed.hotspots.find(
@@ -45,7 +74,7 @@ export function diagnosePerformanceCapsule(
           (qualifiedApplicationFinding.profile_kind === undefined ||
             hotspot.profile_kind === qualifiedApplicationFinding.profile_kind)
       )
-    : capsule.observed.profile_repeatability === undefined
+    : capsule.adapter.kind !== 'go-bench' && capsule.observed.profile_repeatability === undefined
       ? capsule.observed.hotspots.find((hotspot) => hotspot.role === 'application')
       : null;
   const applicationHotspot = alignHotspotToSourceContext(
@@ -60,7 +89,8 @@ export function diagnosePerformanceCapsule(
     comparison,
     scaleCurve,
     startup,
-    allocation,
+    allocations,
+    heapAllocations,
     applicationHotspot,
     benchmark,
     sourceContexts,
@@ -72,6 +102,8 @@ export function diagnosePerformanceCapsule(
     scaleCurve,
     startup,
     allocation,
+    allocationExperimentEligible,
+    heapAllocation,
     applicationHotspot,
     benchmark,
     sourcePattern,
@@ -84,6 +116,7 @@ export function diagnosePerformanceCapsule(
     evidenceIds,
     scaleCurve,
     allocation,
+    heapAllocation,
     applicationHotspot,
     benchmark,
     comparison,
@@ -94,6 +127,7 @@ export function diagnosePerformanceCapsule(
     diagnosis,
     evidenceIds,
     allocation,
+    heapAllocation,
     applicationHotspot,
     benchmark,
     scaleCurve,
@@ -130,9 +164,55 @@ export function diagnosePerformanceCapsule(
     performance_capsule: capsule,
     verdict: diagnosis.verdict,
   };
+  report.tool_diagnosis = diagnoseProfileToolFinding(report);
   const errors = validatePerformanceDiagnosis(report);
   if (errors.length > 0) throw new Error(`invalid performance diagnosis: ${errors.join(', ')}`);
   return report;
+}
+
+function rankAllocationCandidates(candidates, sourceContexts) {
+  const ranked = candidates.toSorted(
+    (left, right) =>
+      Number(patternBackedAllocationCandidate(right, sourceContexts)) -
+        Number(patternBackedAllocationCandidate(left, sourceContexts)) ||
+      Number(right.profile_kind === 'go_alloc_objects' && right.flat_profile_objects > 0) -
+        Number(left.profile_kind === 'go_alloc_objects' && left.flat_profile_objects > 0) ||
+      Number(right.profile_kind === 'go_alloc_objects') -
+        Number(left.profile_kind === 'go_alloc_objects') ||
+      (right.cumulative_share ?? 0) - (left.cumulative_share ?? 0) ||
+      String(left.source?.file ?? '').localeCompare(String(right.source?.file ?? '')) ||
+      String(left.source?.function ?? '').localeCompare(String(right.source?.function ?? '')) ||
+      (left.source?.line ?? 0) - (right.source?.line ?? 0)
+  );
+  const seen = new Set();
+  return ranked
+    .filter((candidate) => {
+      const key = `${candidate.source?.file ?? ''}\0${candidate.source?.function ?? candidate.source?.line ?? ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, LIMITS.sourceFiles);
+}
+
+function patternBackedAllocationCandidate(candidate, sourceContexts) {
+  return Boolean(
+    candidate.profile_kind === 'go_alloc_objects' &&
+      candidate.flat_profile_objects > 0 &&
+      candidate.flat_share >= ALLOCATION_PATTERN_MINIMUM_DIRECT_SHARE &&
+      sourceContextForCandidate(candidate, sourceContexts)?.patterns?.some(
+        (pattern) => pattern.kind === 'go_static_string_format'
+      )
+  );
+}
+
+function sourceContextForCandidate(candidate, sourceContexts) {
+  return sourceContexts.find(
+    (context) =>
+      context.source?.file === candidate.source?.file &&
+      (context.source?.reported_function === candidate.source?.function ||
+        context.source?.function === candidate.source?.function)
+  );
 }
 
 export function extractScaleCurve(consoleMetrics) {
@@ -196,7 +276,8 @@ function rankEvidence({
   comparison,
   scaleCurve,
   startup,
-  allocation,
+  allocations,
+  heapAllocations,
   applicationHotspot,
   benchmark,
   sourceContexts,
@@ -219,15 +300,40 @@ function rankEvidence({
       provenance: benchmark.provenance,
     });
   }
-  if (allocation) {
+  for (const allocation of allocations) {
     evidence.push({
       kind: 'repository_allocation_path',
       source: allocation.source,
-      flat_profile_bytes: allocation.flat_profile_bytes,
-      cumulative_profile_bytes: allocation.cumulative_profile_bytes,
+      profile_kind: allocation.profile_kind ?? 'go_alloc_space',
+      ...(allocation.profile_kind === 'go_alloc_objects'
+        ? {
+            flat_profile_objects: allocation.flat_profile_objects,
+            cumulative_profile_objects: allocation.cumulative_profile_objects,
+          }
+        : {
+            flat_profile_bytes: allocation.flat_profile_bytes,
+            cumulative_profile_bytes: allocation.cumulative_profile_bytes,
+          }),
       flat_share: allocation.flat_share,
       cumulative_share: allocation.cumulative_share,
+      ...(Number.isFinite(allocation.objects_per_op)
+        ? {
+            objects_per_op: allocation.objects_per_op,
+            per_run_objects_per_op: allocation.per_run_objects_per_op,
+          }
+        : {}),
       provenance: allocation.basis,
+    });
+  }
+  for (const heapAllocation of heapAllocations) {
+    evidence.push({
+      kind: 'repository_heap_allocation_source',
+      source: heapAllocation.source,
+      sampled_bytes: heapAllocation.sampled_bytes,
+      per_run_sampled_bytes: heapAllocation.per_run_sampled_bytes,
+      sample_share: heapAllocation.sample_share,
+      provenance: heapAllocation.basis,
+      interpretation: 'sampled_allocations_including_objects_collected_by_minor_and_major_gc',
     });
   }
   if (applicationHotspot) {
@@ -264,6 +370,8 @@ function classifyDiagnosis({
   scaleCurve,
   startup,
   allocation,
+  allocationExperimentEligible,
+  heapAllocation,
   applicationHotspot,
   sourcePattern,
 }) {
@@ -399,14 +507,45 @@ function classifyDiagnosis({
       'The deterministic endpoint exponent exceeds the superlinear threshold.'
     );
   }
+  if (allocation && !allocationExperimentEligible) {
+    const repeatedDirect = Number.isFinite(allocation.objects_per_op);
+    return classification(
+      'allocation_signal_below_experiment_floor',
+      repeatedDirect
+        ? `The strongest repeated direct allocation leaf contributes ${round(allocation.objects_per_op)} objects/op but only ${round(allocation.flat_share * 100)}% of total allocation objects.`
+        : 'The captured repository allocation evidence contains only cumulative callers or immaterial direct leaves.',
+      'high',
+      ['go_benchmark_measurement', 'repository_allocation_path'],
+      'measured',
+      'No direct source crossed the autonomous allocation experiment floor.'
+    );
+  }
   if (allocation) {
+    const repeatedDirect = Number.isFinite(allocation.objects_per_op);
     return classification(
       'allocation_pressure',
-      `The strongest repository allocation path carries ${round(allocation.cumulative_share * 100)}% cumulative profile share.`,
+      repeatedDirect
+        ? `The strongest repeated direct allocation leaf contributes ${round(allocation.objects_per_op)} objects/op and ${round(allocation.flat_share * 100)}% direct object share.`
+        : `The strongest repository repeated-allocation path carries ${round(allocation.cumulative_share * 100)}% cumulative object share.`,
       'medium',
       ['go_benchmark_measurement', 'repository_allocation_path'],
       'actionable',
-      'Benchmark allocation measurements and a repository-owned cumulative path agree.'
+      'Benchmark allocation measurements and a repository-owned alloc_objects path agree.'
+    );
+  }
+  if (heapAllocation) {
+    const intersectsCpu = heapAllocation.basis.endsWith('_intersecting_cpu_candidate');
+    return classification(
+      'node_allocation_source',
+      intersectsCpu
+        ? `${heapAllocation.source.file}:${heapAllocation.source.line} repeated as a material sampled heap-allocation source on the leading CPU path.`
+        : `${heapAllocation.source.file}:${heapAllocation.source.line} repeated as the leading repository-owned sampled heap-allocation source.`,
+      'medium',
+      ['repository_heap_allocation_source'],
+      'actionable',
+      intersectsCpu
+        ? 'Two independent V8 sampling heap profiles repeated a material source matching the repeated CPU candidate.'
+        : 'Two independent V8 sampling heap profiles repeated the same material application source.'
     );
   }
   if (applicationHotspot) {
@@ -458,6 +597,7 @@ function buildInferences({
   evidenceIds,
   scaleCurve,
   allocation,
+  heapAllocation,
   applicationHotspot,
   benchmark,
   comparison,
@@ -530,7 +670,18 @@ function buildInferences({
     return [
       {
         kind: 'allocation_path_candidate',
-        summary: `${allocation.source.file}:${allocation.source.line} is the strongest captured repository-owned cumulative allocation path for ${benchmark?.name ?? 'the selected benchmark'}.`,
+        summary: Number.isFinite(allocation.objects_per_op)
+          ? `${allocation.source.file}:${allocation.source.line} repeated as a direct allocation leaf at ${allocation.objects_per_op} objects/op across both profiles for ${benchmark?.name ?? 'the selected benchmark'}.`
+          : `${allocation.source.file}:${allocation.source.line} is the strongest captured repository-owned cumulative allocation path for ${benchmark?.name ?? 'the selected benchmark'}.`,
+        ...shared,
+      },
+    ];
+  }
+  if (diagnosis.kind === 'node_allocation_source') {
+    return [
+      {
+        kind: 'heap_allocation_source_candidate',
+        summary: `${heapAllocation.source.file}:${heapAllocation.source.line} accounts for ${heapAllocation.sampled_bytes} combined sampled bytes across two independent completion-time heap profiles.`,
         ...shared,
       },
     ];
@@ -554,6 +705,9 @@ function buildInferences({
       },
     ];
   }
+  if (diagnosis.kind === 'allocation_signal_below_experiment_floor') {
+    return [];
+  }
   if (diagnosis.kind === 'application_cpu_hotspot') {
     return [
       {
@@ -570,6 +724,7 @@ function buildHypotheses({
   diagnosis,
   evidenceIds,
   allocation,
+  heapAllocation,
   applicationHotspot,
   benchmark,
   scaleCurve,
@@ -583,6 +738,17 @@ function buildHypotheses({
         evidence_ids: evidenceIds,
         falsification:
           'Rerun the identical benchmark; reject this hypothesis if B/op and allocs/op do not decrease.',
+      },
+    ];
+  }
+  if (diagnosis.kind === 'node_allocation_source') {
+    return [
+      {
+        kind: 'heap_allocation_reduction_hypothesis',
+        summary: `Reducing heap retained through ${heapAllocation.source.file}:${heapAllocation.source.line} may lower the repeated completion-time sampled-byte signal.`,
+        evidence_ids: evidenceIds,
+        falsification:
+          'Rerun two identical heap profiles; reject if the same source does not repeat with fewer sampled bytes or if correctness, latency, or peak RSS regresses.',
       },
     ];
   }
@@ -731,6 +897,14 @@ function buildNextAction(diagnosis, evidenceIds) {
       evidence_ids: evidenceIds,
     };
   }
+  if (diagnosis.kind === 'allocation_signal_below_experiment_floor') {
+    return {
+      kind: 'retain_guardrail_and_profile_another_flow',
+      summary:
+        'Keep this allocation benchmark as a regression guardrail and profile another flow with a material direct source candidate.',
+      evidence_ids: evidenceIds,
+    };
+  }
   if (diagnosis.verdict.status === 'actionable') {
     return {
       kind: 'optimize_one_candidate_then_compare',
@@ -749,6 +923,12 @@ function buildNextAction(diagnosis, evidenceIds) {
 function verificationCriteria(kind) {
   if (kind === 'allocation_pressure')
     return ['B/op decreases', 'allocs/op does not regress', 'workload passes'];
+  if (kind === 'node_allocation_source')
+    return [
+      'repeated candidate sampled bytes decrease',
+      'median wall time and peak RSS do not regress',
+      'workload passes',
+    ];
   if (
     kind === 'superlinear_scaling' ||
     kind === 'bounded_result_overwork' ||
@@ -781,21 +961,39 @@ function verificationCriteria(kind) {
 
 function alignHotspotToSourceContext(hotspot, sourceContexts) {
   if (!hotspot) return null;
-  const context = sourceContexts.find(
-    (candidate) =>
-      candidate.source.file === hotspot.file &&
-      (candidate.source.function === hotspot.function ||
-        candidate.source.reported_function === hotspot.function)
+  const source = alignSourceToSourceContext(
+    { file: hotspot.file, line: hotspot.line, function: hotspot.function },
+    sourceContexts
   );
-  if (!context || context.source.line === hotspot.line) return hotspot;
+  if (source.line === hotspot.line) return hotspot;
   return {
     ...hotspot,
+    line: source.line,
+    function: source.function,
+    reported_line: source.reported_line,
+    ...(source.reported_function === undefined
+      ? {}
+      : { reported_function: source.reported_function }),
+  };
+}
+
+function alignSourceToSourceContext(source, sourceContexts) {
+  if (!source) return source;
+  const context = sourceContexts.find(
+    (candidate) =>
+      candidate.source.file === source.file &&
+      (candidate.source.function === source.function ||
+        candidate.source.reported_function === source.function)
+  );
+  if (!context || context.source.line === source.line) return source;
+  return {
+    ...source,
     line: context.source.line,
     function: context.source.function,
-    reported_line: hotspot.line,
+    reported_line: source.line,
     ...(context.source.reported_function === undefined
       ? {}
-      : { reported_function: hotspot.function }),
+      : { reported_function: source.function }),
   };
 }
 

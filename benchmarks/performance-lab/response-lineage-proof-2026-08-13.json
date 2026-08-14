@@ -1,0 +1,116 @@
+{
+  "schema_version": "codevetter-response-lineage-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can preserve an unrelated listener, run one existing React/Next Playwright flow on an owned ephemeral loopback port, and distinguish response-finalization async descendants from complete request-context-only callbacks without authorizing an unsupported edit.",
+  "qualification_flywheel": {
+    "product": "karte",
+    "repository_revision": "feef009d734c3cf51f67d915c91c7fce9ce51175",
+    "source_snapshot_sha256": "719f6de64a11384437ae657a5497fe31d0a1d0130c33feb0d6130961fd1afbd5",
+    "dirty": false,
+    "before": {
+      "browser_capture_eligible_flows": 0,
+      "reason": "The static qualifier did not resolve a shorthand baseURL whose template referenced a source-declared environment-backed port fallback."
+    },
+    "after": {
+      "browser_capture_eligible_flows": 12,
+      "projects": [
+        "desktop",
+        "mobile"
+      ],
+      "execution": "unsupported_local_dependency",
+      "reason": "The checkout had no locally resolvable Next package, so CodeVetter stopped without installing dependencies or starting a process."
+    }
+  },
+  "real_product": {
+    "product": "high-signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "dirty": false,
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "owned_config_disabled_next",
+      "browser_binary": "system_chrome"
+    },
+    "capture": {
+      "id": "response-lineage-high-signal-20260813-e",
+      "state": "failed",
+      "receipt": ".codevetter/playwright-runs/response-lineage-high-signal-20260813-e/receipt.json",
+      "result": ".codevetter/playwright-runs/response-lineage-high-signal-20260813-e/result.json",
+      "result_sha256": "34f96ce2f31f5647ff03cf31e1df57e5a9ada3675ff18c116c018252ed4bc4b3",
+      "receipt_sha256": "c826695c376517d5ffd590f5a2f400986e45cebca2ab7ef0c1221ef15764a286",
+      "correctness": "failed_expected_heading_not_rendered"
+    },
+    "runtime": {
+      "declared_port": 3000,
+      "declared_listener": "healthy_unrelated_polaris_process_preserved",
+      "owned_ephemeral_port": 61440,
+      "startup_ms": 4609,
+      "cleanup": "force_terminated",
+      "process_tree_peak_rss_bytes": 1897005056
+    },
+    "observed": {
+      "request": "GET /",
+      "request_duration_ms": 1537.079,
+      "request_source": "src/app/page.tsx:13",
+      "async_resource_total": 15,
+      "async_resource_retained": 8,
+      "async_inventory_complete": false,
+      "async_overlap_ms": 535.631,
+      "response_completion_overlap_ms": 26.416,
+      "response_completion_descendants": {
+        "count": 3,
+        "delays_ms": [
+          18.345,
+          8.071,
+          7.582
+        ]
+      },
+      "context_only": {
+        "count": 5,
+        "delays_ms": [
+          498.89,
+          18.869,
+          17.02,
+          12.504,
+          12.048
+        ]
+      }
+    },
+    "final_detector_replay": {
+      "detector": "browser_server_async_delay",
+      "selected_relationship": "response_completion_descendant",
+      "selected_delay_ms": 18.345,
+      "selected_parent_share": 0.0119,
+      "dismissed_context_only_delay_ms": 498.89,
+      "source": null,
+      "confidence": "low",
+      "eligible_for_experiment": false,
+      "verdict": "The bounded scheduling lineage reached response.end, but no contained creation call site was resolved. The complete context-only timer is retained as evidence but is not promoted as a response bottleneck.",
+      "repeat_capture": {
+        "id": "response-lineage-high-signal-20260813-d",
+        "result_sha256": "7cc805769a361c33526b3c47dffb27fcef12f8cb98a57dbf106d55084e7d6d0c",
+        "selected_descendant_delay_ms": 20.459,
+        "dismissed_context_only_delay_ms": 498.915,
+        "classification_match": true
+      }
+    }
+  },
+  "bounds": {
+    "maximum_active_lineage_nodes_per_request": 4096,
+    "maximum_active_lineage_nodes_per_process": 16384,
+    "maximum_pending_async_resources": 256,
+    "maximum_public_resources_per_request": 8,
+    "generated_next_asset_lineage": "excluded",
+    "remote_browser_http": "denied"
+  },
+  "claim_boundaries": [
+    "The scheduling relationship proves bounded runtime lineage to response.end, not JavaScript await syntax, exclusive blocking time, or a complete critical path.",
+    "The public async inventory was sampled to eight resources and cannot support absence claims.",
+    "The existing High Signal assertion failed, so no optimization or source edit is authorized.",
+    "No contained creation callsite was resolved for the linked timer.",
+    "The config-disabled Next development runtime, system Chrome, one local machine, and a failed test do not establish production frequency or impact.",
+    "The 1.92 GB peak is the sampled local Playwright plus Next process tree for this diagnostic run, not steady application memory or production overhead."
+  ]
+}

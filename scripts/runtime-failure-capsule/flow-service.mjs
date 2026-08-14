@@ -52,9 +52,36 @@ export async function createLocalFlowService(repositoryRoot) {
         diagnosis: capsule.diagnosis,
         flow_analysis: capsule.flow_analysis,
         function_analysis: capsule.function_analysis,
+        tool_diagnosis: capsule.tool_diagnosis,
+        detector_coverage_matrix: capsule.detector_coverage_matrix,
         coverage: capsule.coverage,
         capture: capsule.performance_capsule.capture,
         limitations: capsule.limitations,
+      };
+    },
+
+    diagnose(input) {
+      const capsule = requireCapture(requiredString(input, 'capture_id'));
+      return {
+        capture_id: input.capture_id,
+        ...capsule.tool_diagnosis,
+      };
+    },
+
+    inspectFinding(input) {
+      const capsule = requireCapture(requiredString(input, 'capture_id'));
+      const findingId = requiredString(input, 'finding_id');
+      const finding = capsule.tool_diagnosis.findings.find(
+        (candidate) => candidate.id === findingId
+      );
+      if (!finding) throw new Error('Unknown performance finding identifier');
+      return {
+        capture_id: input.capture_id,
+        finding,
+        evidence: capsule.flows.filter((flow) => finding.evidence_ids.includes(flow.id)),
+        detector_coverage: capsule.tool_diagnosis.detector_coverage.find(
+          (entry) => entry.detector === finding.detector
+        ),
       };
     },
 
@@ -84,6 +111,7 @@ export async function createLocalFlowService(repositoryRoot) {
         diagnosis: capsule.diagnosis,
         flow_analysis: capsule.flow_analysis,
         function_analysis: capsule.function_analysis,
+        tool_diagnosis: capsule.tool_diagnosis,
         observed: capsule.observed,
         inferred: capsule.inferred,
         unverified: capsule.unverified,

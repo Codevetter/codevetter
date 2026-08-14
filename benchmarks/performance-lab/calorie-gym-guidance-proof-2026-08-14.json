@@ -1,0 +1,147 @@
+{
+  "schema_version": "codevetter-performance-proof/v1",
+  "recorded_at": "2026-08-14",
+  "capability": "cross_product_node_allocation_diagnosis_and_paired_acceptance",
+  "subject": {
+    "product": "Calorie",
+    "repository_revision": "27075e26c20461d7b9617cfd09c02f851b5a627d",
+    "baseline_source_snapshot_sha256": "c222c0c552160585895f1ee1666cd8c10f316a00b7d846dde237cfefc0f0a424",
+    "candidate_source_snapshot_sha256": "ad8d11349c2af797ecfb55f4a76f1934607934b1d956ee5097e0c79423b63617",
+    "flow": {
+      "adapter": "vitest",
+      "target": "src/lib/recommendations.performance.test.ts",
+      "name": "scales across synthetic food histories",
+      "largest_input_entries": 35000
+    },
+    "correctness_scope": {
+      "adapter": "vitest",
+      "target": "src/lib/recommendations.test.ts",
+      "name": "selects the most recent open exercise window without relying on entry order"
+    }
+  },
+  "observed": {
+    "diagnosis": {
+      "candidate_id": "22f35c9b893364a6a26bfe84",
+      "candidate_key": "588883d8781f9b28bb43cde1",
+      "source": "src/lib/recommendations.ts:177",
+      "function": "calculateGymGuidance",
+      "provenance": "two independent V8 sampling heap profiles intersecting a repeated V8 CPU candidate",
+      "baseline_per_run_sampled_bytes": [148696496, 148187752],
+      "allocation_profile_share": 0.830705
+    },
+    "diagnostic_accuracy_iteration": {
+      "lab_id": "calorie-source-anchor-20260814a",
+      "candidate_id": "d0608269161526eb65d86a9c",
+      "candidate_key": "588883d8781f9b28bb43cde1",
+      "source": {
+        "file": "src/lib/recommendations.ts",
+        "line": 254,
+        "function": "calculateGymGuidance",
+        "reported_line": 177
+      },
+      "result": "The public laboratory now reports the unique current TypeScript definition while preserving the transformed V8 coordinate separately; candidate identity is unchanged."
+    },
+    "react_redundancy_iteration": {
+      "analyzers": {
+        "knip": "6.29.0",
+        "jscpd": "5.0.14"
+      },
+      "initial_result": {
+        "candidates": 38,
+        "analyzed_lines": 31192,
+        "duplication_percentage": 6.767760964349834,
+        "leading_noise": "Generated worker-configuration.d.ts and a shared import preamble ranked ahead of authored implementation clones."
+      },
+      "corrected_result": {
+        "knip_candidates": 0,
+        "implementation_clone_candidates": 14,
+        "analyzed_lines": 15087,
+        "duplication_percentage": 1.3786703784715317,
+        "leading_candidate": "The shared wake-time and sleep-hours fields in OnboardingPage and SettingsPage.",
+        "verdict": "review_candidates_only_no_safe_removal"
+      },
+      "tool_change": "Generated Wrangler declaration files with an exact header marker are excluded from jscpd and screened defensively; import-preamble clones are screened after bounded contained source inspection.",
+      "repository_mutation_performed_by_analyzers": false
+    },
+    "source_change": "Replace the per-qualifying-entry tuple and winner wrapper object with scalar winner state while preserving selection and output semantics.",
+    "sequential_screens": [
+      {
+        "lab_id": "calorie-recommendations-20260814d",
+        "largest_input_delta_percent": -62.199,
+        "verdict": "confirmed_but_paired_verification_required"
+      },
+      {
+        "lab_id": "calorie-recommendations-20260814e",
+        "largest_input_delta_percent": -62.543,
+        "verdict": "operational_failure_escaping_dependency_symlink"
+      },
+      {
+        "lab_id": "calorie-recommendations-20260814f",
+        "largest_input_delta_percent": -62.887,
+        "verdict": "no_confidence_incumbent_snapshot_mismatch"
+      }
+    ],
+    "paired_acceptance": {
+      "lab_id": "calorie-recommendations-20260814g",
+      "evidence_mode": "paired_interleaved",
+      "workload_identity_sha256": "c9e70dc5206ae68420bf9e04cb3cb4e5e96df320ba7fb8780cc19de92239bb6a",
+      "largest_input": {
+        "baseline_ms_per_op": 0.296,
+        "candidate_ms_per_op": 0.111,
+        "delta_percent": -62.5
+      },
+      "selected_source_sampled_bytes": {
+        "baseline_median": 149890856,
+        "candidate_median": 336340,
+        "delta_percent": -99.776,
+        "conservative_improvement_percent": 99.551
+      },
+      "process_tree_peak_rss": {
+        "baseline_bytes": 195608576,
+        "candidate_bytes": 204242944,
+        "delta_percent": 4.414,
+        "regression_gate_triggered": false
+      },
+      "correctness": {
+        "incumbent": "passed_exactly_one_test",
+        "candidate": "passed_exactly_one_test"
+      },
+      "verdict": "accepted",
+      "shipping_recommended": true
+    },
+    "product_checks": {
+      "focused_recommendation_tests": "16 passed",
+      "full_test_suite": "149 passed across 36 files",
+      "coverage_run": "149 passed; recommendations.ts reached 92% statements, 78.04% branches, 94.11% functions, and 93.47% lines",
+      "lint": "116 files checked, no fixes",
+      "typecheck": "both application and Worker configs passed",
+      "production_build": "Vite build passed"
+    }
+  },
+  "inferred": {
+    "summary": "CodeVetter found and verified a real local compute optimization in a previously untried React/Node product. Removing repeated transient allocations is the likely mechanism for the lower sampled bytes and largest-input runtime.",
+    "confidence": "high_for_the_exact_local_flow",
+    "product_contribution": "CodeVetter selected the exact flow, localized the repeated source, sealed the candidate and expected metric, rejected invalid incumbent evidence, ran the sequential screens, bound correctness, interleaved the final comparison, and made the retain decision. The agent supplied the small semantics-preserving edit and a self-contained incumbent checkout."
+  },
+  "unverified": [
+    "The synthetic 35,000-entry history does not establish production input frequency or typical user-visible impact.",
+    "The flow does not execute Calorie's browser rendering, Cloudflare Worker, D1 database, network, or native iOS paths.",
+    "V8 sampled allocation bytes are approximate allocation evidence, not retained heap or leak measurement.",
+    "Process-tree RSS includes Vitest and Node startup and is retained only as a regression guard.",
+    "The raw V8 line differs from the current TypeScript definition; CodeVetter preserves both coordinates and resolves only a unique contained function declaration.",
+    "The remaining React clone candidates may justify maintainability refactors, but no runtime cost, dead code, or safe deletion was established."
+  ],
+  "durable_evidence": {
+    "receipt": ".codevetter/performance-labs/calorie-recommendations-20260814g/receipt.json",
+    "receipt_sha256": "bbf19f2c6ef4b79a6fed21d9144086a4850cc37d487205f8955e57d1a10ca85c",
+    "paired_verification": ".codevetter/performance-labs/calorie-recommendations-20260814g/paired-verification.json",
+    "paired_verification_sha256": "5ecbf25470c85b49b65e219dfa317bed5ab03257869b1be94ae7c0329d95b546"
+  },
+  "cost_boundary": {
+    "cloud_calls": 0,
+    "production_calls": 0,
+    "package_registry_calls": 0,
+    "baseline_dependencies": "installed from the existing pnpm store with --offline",
+    "retained_codevetter_evidence_kib": 664
+  }
+}

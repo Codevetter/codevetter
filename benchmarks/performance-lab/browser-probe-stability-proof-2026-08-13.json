@@ -1,0 +1,66 @@
+{
+  "schema_version": "codevetter-browser-probe-stability-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can compare bounded integrity-checked browser-probe recaptures without rerunning the application and withhold a follow-up when repeated routes disagree.",
+  "implementation_evidence": {
+    "assessment_schema": "runtime-browser-probe-stability/v1",
+    "surfaces": [
+      "assess-browser-probe-stability CLI",
+      "assess_browser_probe_stability MCP"
+    ],
+    "policy": {
+      "minimum_runs": 2,
+      "stable_runs": 3,
+      "maximum_runs": 5,
+      "stable_route_requirement": "same non-null classification and next probe in every included run",
+      "route_disagreement": "unstable immediately; no majority vote",
+      "follow_up_requirement": "stable route and passed correctness in every included run"
+    },
+    "boundaries": [
+      "fixed local probe and Playwright receipt locations only",
+      "regular non-symlink files with linked receipt and result digest validation",
+      "exact source snapshot, source probe, request, flow, project, presentation profile, runtime, and completed-evidence compatibility",
+      "read-only operation with no browser, application, local runtime, production, or cloud execution",
+      "low confidence, non-causal, edit-ineligible output"
+    ]
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "current_snapshot": true,
+    "recapture_ids": [
+      "executable-probe-high-signal-20260813-a",
+      "executable-probe-high-signal-20260813-b"
+    ],
+    "correctness": [
+      "failed",
+      "failed"
+    ],
+    "routes": [
+      {
+        "preparation_cpu_to_wall_ratio": 0.2077,
+        "classification": "main_thread_runtime",
+        "next_probe": "inspect_main_thread_runtime"
+      },
+      {
+        "preparation_cpu_to_wall_ratio": 0.1946,
+        "classification": "mixed_evidence",
+        "next_probe": "capture_narrower_precommit_evidence"
+      }
+    ],
+    "cpu_ratio_threshold": 0.2,
+    "cpu_ratio_range": 0.0131,
+    "assessment_state": "unstable",
+    "follow_up_eligible": false,
+    "next_action": "stabilize_measurement_before_following_probe",
+    "cli_mcp_normalized_parity": true,
+    "normalized_assessment_sha256": "5bcfcd9a9977ed2fad8a3e5a34fdea9bbb9c7244f6ec454b8123fd70209c5108"
+  },
+  "interpretation": "The earlier single-run routes were not reproducible across two compatible recaptures. CodeVetter now exposes that instability instead of allowing an agent to choose the more actionable-looking branch. Two runs cannot establish stability even when they agree; a third unanimous repetition is required.",
+  "limitations": [
+    "The CPU-ratio threshold is retained as observed context; proximity does not prove that the threshold caused the disagreement.",
+    "Both exact browser assertions failed, independently blocking follow-up eligibility.",
+    "This is local repeated evidence and establishes no production frequency, latency, scale, user impact, bottleneck, source cause, or optimization."
+  ]
+}

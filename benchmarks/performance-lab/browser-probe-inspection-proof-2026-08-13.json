@@ -1,0 +1,70 @@
+{
+  "schema_version": "codevetter-browser-probe-inspection-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can reload one durable browser diagnosis by capture identity, bind its next probe to one exact server request, and return the same bounded read-only projection through CLI and MCP without rerunning application code.",
+  "implementation_evidence": {
+    "inspection_schema": "runtime-browser-probe-inspection/v1",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v20",
+    "candidate_limit": 8,
+    "integrity_checks": [
+      "contained regular non-symlink receipt",
+      "contained regular non-symlink result",
+      "receipt and result byte bounds",
+      "result byte count and SHA-256 digest",
+      "compact diagnosis equality",
+      "current repository revision and source snapshot",
+      "exact next-probe name and server-request ordinal"
+    ],
+    "supported_families": [
+      "main_thread",
+      "worker_thread",
+      "libuv_threadpool",
+      "response_linked_async",
+      "framework_phase",
+      "async_and_framework_inventory_gap"
+    ],
+    "authority": {
+      "confidence": "low",
+      "source_causal": false,
+      "edit_eligible": false,
+      "correctness_required": true
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "capture_id": "probe-inspection-high-signal-20260813-b-s2",
+    "capture_receipt": ".codevetter/playwright-runs/probe-inspection-high-signal-20260813-b-s2/receipt.json",
+    "capture_result": ".codevetter/playwright-runs/probe-inspection-high-signal-20260813-b-s2/result.json",
+    "capture_receipt_sha256": "550b89099d3c22c943cfe175d91623b38b6b2ecdfd091840682016ebbdb04f47",
+    "capture_result_sha256": "e03b8dd914c5b2feaa9c5f590837ccc8903c51b333b3c16a423d4390c36b4993",
+    "inspection_sha256": "1e50c3b1259720f5a81b4f4a23f43a89a5f11d4b17605044838a48f984841273",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "capture_state": "failed"
+    },
+    "probe": {
+      "name": "complete_async_and_framework_inventories",
+      "server_request_ordinal": 1,
+      "request": "GET /",
+      "duration_ms": 1749.921,
+      "preparation_ms": 1720.917,
+      "preparation_process_cpu_ms": 324.091,
+      "preparation_main_thread_cpu_ms": 247.753,
+      "preparation_other_threads_cpu_ms": 76.338,
+      "async_inventory_complete": false,
+      "framework_inventory_complete": true,
+      "source_candidates": 0,
+      "next_action": "recapture_same_exact_flow_with_complete_async_and_framework_inventories"
+    },
+    "transport_parity": "The repository CLI and runtime MCP returned byte-identical JSON for the normalized inspection object."
+  },
+  "limitations": [
+    "The inspection reloads captured evidence; it does not execute the requested recapture or profile the application again.",
+    "The High Signal browser assertion failed, so the projection cannot authorize an edit, optimization, or correctness claim.",
+    "The request source is static route context, not proof that the route file caused the observed time.",
+    "No source candidate was available because the selected probe was an evidence-completeness gap, not source attribution."
+  ]
+}

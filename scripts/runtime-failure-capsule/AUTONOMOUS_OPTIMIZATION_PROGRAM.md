@@ -4,6 +4,46 @@ Use this program only inside a local, disposable, independently runnable
 checkout. CodeVetter owns evidence and decisions; the coding agent owns source
 inspection, one hypothesis, and one bounded edit.
 
+For a qualified browser flow, prefer the high-level loop so CodeVetter gathers
+all supported evidence families before the first edit:
+
+1. Capture the exact Playwright flow and initialize its optimization campaign.
+2. Call `plan_browser_optimization_loop` with the capture ID and campaign
+   directory. Preserve the returned loop ID. For build-graph experiments, also
+   provide the contained build directory and source/artifact SHA-256 attestation
+   produced by a separately trusted builder. The plan automatically consults
+   CodeVetter's review-evidence selector and attaches any exact source-owned
+   correctness scope or current accepted local evidence to matching work.
+3. Call `get_next_browser_experiment`. If `state` is not `active`, report the
+   coverage-qualified terminal result and stop.
+4. Inspect only the cited evidence and source boundary. Apply one candidate
+   edit using normal host tools; do not alter evaluators, evidence, dependencies,
+   generated files, or anything outside `allowed_files`.
+5. Call `evaluate_browser_experiment`. CodeVetter checks the edit boundary,
+   runs correctness-first screening, promotes only promising candidates with an
+   independently runnable incumbent checkout, and replans after a confirmed
+   keep. Supply the candidate build attestation again when the predicted metric
+   is initial-route JavaScript.
+6. After rejection, restore the exact incumbent using the host's recoverable
+   worktree or branch operation. CodeVetter will not serve the next experiment
+   until the source snapshot matches.
+7. Repeat steps 3–6 until the queue, plateau, time, experiment, or failure budget
+   stops the loop.
+
+The repository CLI exposes the same protocol as
+`runtime:plan-browser-optimization-loop`,
+`runtime:get-next-browser-experiment`, and
+`runtime:evaluate-browser-experiment`. Neither surface accepts a patch or shell
+command.
+
+CodeVetter deliberately does not run a repository Vite build to create the
+attestation. Vite configuration is arbitrary code and may load environment
+files. An unattested `dist` directory can rank an experiment but cannot retain
+it.
+
+Use the lower-level campaign program below for non-browser flows or protocol
+debugging.
+
 1. Read the repository instructions and campaign `manifest.json`. Do not alter
    the manifest, evaluator targets, campaign ledger, evidence, dependencies,
    generated files, or files outside `allowed_files`.

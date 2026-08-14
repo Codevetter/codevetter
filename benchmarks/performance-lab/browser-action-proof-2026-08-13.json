@@ -1,0 +1,134 @@
+{
+  "schema_version": "codevetter-browser-action-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "Exact local Playwright flows expose a bounded action timeline with temporal resource drill-down while discarding selectors, values, arbitrary labels, and causal attribution.",
+  "products": [
+    {
+      "product": "anime-list",
+      "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+      "source_snapshot_sha256": "4ddf75c099727b5b9b9ddfaefbb35cef31a99dd7f1dcea569b9753f34741e1da",
+      "dirty": true,
+      "flow": {
+        "target": "e2e/personal-flows.spec.ts",
+        "name": "adds a discovery recommendation to the watchlist",
+        "browser_project": "desktop"
+      },
+      "capture": {
+        "state": "succeeded",
+        "receipt": ".codevetter/playwright-runs/actions-anime-interactive-20260813-b/receipt.json",
+        "result": ".codevetter/playwright-runs/actions-anime-interactive-20260813-b/result.json",
+        "result_sha256": "c80b3dc17d24c94884b343e9e5aeb993ea707ccf2dd389d73265ba061cd95cdc"
+      },
+      "actions": {
+        "started": 6,
+        "completed": 6,
+        "retained": 6,
+        "complete": true,
+        "sampled": false,
+        "selected_windows": [
+          {
+            "ordinal": 3,
+            "name": "frame.goto",
+            "category": "navigation",
+            "duration_ms": 161.349,
+            "resources_started": 52,
+            "completed_response_transfer_bytes": 12135621
+          },
+          {
+            "ordinal": 4,
+            "name": "frame.expect",
+            "category": "assertion",
+            "duration_ms": 325.102,
+            "resources_started": 5,
+            "completed_response_transfer_bytes": 25959,
+            "largest_routes": [
+              "/components/ui/select.tsx",
+              "/api/discover/queue",
+              "/api/watchlist/tags"
+            ]
+          },
+          {
+            "ordinal": 6,
+            "name": "frame.click",
+            "category": "interaction",
+            "duration_ms": 28.239,
+            "resources_started": 4,
+            "completed_responses": 1,
+            "failed_or_aborted_resources": 3,
+            "completed_response_transfer_bytes": 199,
+            "largest_routes": [
+              "/api/watched/add"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "product": "significanthobbies",
+      "repository_revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+      "source_snapshot_sha256": "e043e6e4586aa3a26f48a4cb40d7fe5978b6411c63c4827c74103f64232d52ae",
+      "dirty": true,
+      "flow": {
+        "target": "e2e/life-bingo.spec.ts",
+        "name": "introduces the product and starts without an account",
+        "browser_project": "mobile"
+      },
+      "capture": {
+        "state": "succeeded",
+        "receipt": ".codevetter/playwright-runs/actions-hobbies-20260813-c/receipt.json",
+        "result": ".codevetter/playwright-runs/actions-hobbies-20260813-c/result.json",
+        "result_sha256": "2d824f5a10a970eb722b43acd9ff028411d9ce7f3fba702f9a86f168c341e07d"
+      },
+      "actions": {
+        "started": 8,
+        "completed": 8,
+        "retained": 8,
+        "complete": true,
+        "sampled": false,
+        "selected_windows": [
+          {
+            "ordinal": 2,
+            "name": "frame.goto",
+            "category": "navigation",
+            "duration_ms": 86.511,
+            "resources_started": 27,
+            "completed_response_transfer_bytes": 1204000
+          },
+          {
+            "ordinal": 3,
+            "name": "frame.evaluateExpression",
+            "category": "evaluation",
+            "duration_ms": 70.701,
+            "resources_started": 3,
+            "completed_response_transfer_bytes": 82806,
+            "largest_routes": [
+              "/_next/webpack-hmr",
+              "/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_1mojsay._.js",
+              "/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_1hi4ssr._.js"
+            ],
+            "interpretation": "temporal_overlap_only_not_evaluation_causality"
+          },
+          {
+            "ordinal": 4,
+            "name": "frame.expect",
+            "category": "assertion",
+            "duration_ms": 22.193,
+            "resources_started": 1,
+            "completed_response_transfer_bytes": 307,
+            "largest_routes": [
+              "/api/auth/get-session"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "claim_boundaries": [
+    "Action duration is Playwright wall time including waits and framework overhead, not exclusive application CPU.",
+    "A resource starting or renderer task overlapping an action is a temporal association, not initiator, causality, or exclusive ownership.",
+    "Nested action windows may refer to the same browser observation more than once.",
+    "Selectors, parameters, input values, test titles, call identities, attachments, absolute paths, and error messages are not retained.",
+    "Known CodeVetter network-interception setup is excluded from the action inventory.",
+    "These single local captures discover action windows; they do not prove an optimization or production user impact."
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "codevetter-node-main-thread-cpu-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can partition one selected Node request's current-process CPU into exact request-handling-thread and other-thread deltas, reconcile compatible Worker CPU inside the other-thread residual, and select a durable next probe without presenting child-process CPU as part of that residual or granting edit authority.",
+  "implementation_evidence": {
+    "browser_server_schema": "runtime-browser-server-flow/v11",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v18",
+    "performance_lab_schema": "runtime-performance-lab-run/v6",
+    "thread_partition_states": [
+      "observed",
+      "unsupported",
+      "incomplete",
+      "inconsistent"
+    ],
+    "reconciliation_tolerance_ms": 1,
+    "authority": {
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false,
+      "failed_flow_requires_correctness": true
+    },
+    "focused_tests": {
+      "command": "node --test scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs scripts/runtime-failure-capsule/playwright-capture.test.mjs scripts/runtime-failure-capsule/server-request-worker-cpu.test.mjs",
+      "passed": 91,
+      "failed": 0,
+      "skipped": 1,
+      "proofs": [
+        "Process counter intervals enclose current-thread counter intervals at admission, response commitment, and request finish.",
+        "Legacy, unsupported, incomplete, malformed, negative, excessive, and inconsistent thread evidence fails closed.",
+        "Exact current-thread CPU owns main-versus-other thread routing while compatible V8 samples only name scope.",
+        "Worker CPU is divided by other-thread CPU when exact evidence exists and over-accounting requests recapture.",
+        "No current-process residual classification or next probe presents child-process CPU as a possible explanation."
+      ]
+    },
+    "broad_tests": {
+      "command": "pnpm test:runtime-failure-capsule",
+      "passed": 445,
+      "failed": 0,
+      "skipped": 2
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "lab_id": "main-thread-cpu-high-signal-lab-20260813-a",
+    "capture_id": "main-thread-cpu-high-signal-20260813-a",
+    "lab_receipt": ".codevetter/performance-labs/main-thread-cpu-high-signal-lab-20260813-a/receipt.json",
+    "capture_receipt": ".codevetter/playwright-runs/main-thread-cpu-high-signal-20260813-a/receipt.json",
+    "capture_result": ".codevetter/playwright-runs/main-thread-cpu-high-signal-20260813-a/result.json",
+    "lab_receipt_sha256": "f7fe5e5fe35ef8ad9cef7dac3a48c900a4b47396bfcdabe801c4046adfab16fb",
+    "capture_receipt_sha256": "144009e2e4da4ce70a206dfce01a98927eb329fcd3e94e044d5f197696b9ca96",
+    "capture_result_sha256": "00b26645f77c7ece6ea5832964cf48a644efdc2d6221790797e7d638615365b9",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "runtime": "Next config-disabled development",
+      "capture_state": "failed",
+      "execution_duration_ms": 9494,
+      "peak_process_tree_rss_bytes": 1924005888
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "duration_ms": 1746.563,
+      "preparation_wall_ms": 1718.955,
+      "preparation_process_cpu_ms": 449.793,
+      "preparation_main_thread_cpu_ms": 269.254,
+      "preparation_other_threads_cpu_ms": 180.539,
+      "main_thread_to_process_cpu_ratio": 0.5986,
+      "main_thread_non_idle_sampled_ms": 209.831,
+      "dominant_sampled_scope": "runtime",
+      "dominant_scope_sampled_ms": 175.043,
+      "registered_workers": 0,
+      "worker_cpu_ms": 0
+    },
+    "diagnosis": {
+      "classification": "main_thread_runtime",
+      "next_probe": "inspect_main_thread_runtime",
+      "basis": "exact current-thread CPU crossed the 50% process-CPU threshold and compatible V8 samples selected runtime scope",
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false,
+      "failed_flow_requires_correctness": true,
+      "durable_lab_inspection_without_recapture": true
+    }
+  },
+  "limitations": [
+    "Sequential process and thread snapshots enclose rather than exactly coincide; the result is a bounded counter partition, not instruction-level accounting.",
+    "Other-thread CPU can include Worker threads, V8 background work, libuv threadpool work, native addons, and runtime background activity; this slice does not attribute the 180.539 ms residual further.",
+    "Child processes are excluded from process.cpuUsage() and therefore require a separate end-to-end flow cost contract.",
+    "The runtime disables repository Next configuration and does not establish production-build equivalence.",
+    "The existing browser assertion failed, so the evidence authorizes no source edit, optimization, correctness, or production claim."
+  ]
+}

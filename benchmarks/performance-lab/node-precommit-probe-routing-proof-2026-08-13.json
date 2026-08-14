@@ -1,0 +1,103 @@
+{
+  "schema_version": "codevetter-node-precommit-probe-routing-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can reconcile request response boundaries, process CPU, main-thread samples, response-linked async work, and framework phases to select one bounded next observation, then preserve and inspect a failed-flow diagnosis without treating it as correctness or optimization evidence.",
+  "implementation_evidence": {
+    "browser_server_schema": "runtime-browser-server-flow/v9",
+    "playwright_capture_schema": "runtime-playwright-capture/v5",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v16",
+    "performance_lab_schema": "runtime-performance-lab-run/v6",
+    "routes": [
+      "main_thread_repository",
+      "main_thread_dependency",
+      "main_thread_generated",
+      "main_thread_runtime",
+      "off_main_thread_or_background_cpu",
+      "response_linked_async_<kind>",
+      "framework_phase_<phase>",
+      "mixed_evidence",
+      "insufficient_evidence"
+    ],
+    "authority": {
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false,
+      "failed_flow_requires_correctness": true
+    },
+    "focused_tests": {
+      "command": "node --test scripts/runtime-failure-capsule/server-request-cpu.test.mjs scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs scripts/runtime-failure-capsule/playwright-capture.test.mjs scripts/runtime-failure-capsule/performance-lab.test.mjs",
+      "passed": 104,
+      "failed": 0,
+      "skipped": 1,
+      "proofs": [
+        "Pre-commit V8 samples are clipped by cumulative time deltas at the response-commit boundary.",
+        "Every closed routing family is exercised under fixed thresholds.",
+        "Missing, malformed, truncated, contaminated, or incomplete evidence requests another observation instead of guessing.",
+        "A validated failed-browser result is distinguished from operational capture failure and successful correctness.",
+        "The autonomous lab verifies the stored result digest and compact diagnosis without recapture or edit authority."
+      ]
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "lab_id": "probe-route-high-signal-20260813-a",
+    "capture_id": "probe-route-high-signal-20260813-a-s1",
+    "lab_receipt": ".codevetter/performance-labs/probe-route-high-signal-20260813-a/receipt.json",
+    "capture_receipt": ".codevetter/playwright-runs/probe-route-high-signal-20260813-a-s1/receipt.json",
+    "capture_result": ".codevetter/playwright-runs/probe-route-high-signal-20260813-a-s1/result.json",
+    "lab_receipt_sha256": "10e21ac8c7d6e9929293607de18db8eda99c9428ebb433a5dfd599c7509cb33c",
+    "capture_receipt_sha256": "21d5af16ab99ca000a035d181ca4ffe1a3f655e2b9489b39b36e1567f2002369",
+    "capture_result_sha256": "6f3e68f173bfca6f9ce13078912d2280953629d577a5cbe0f25e08cc83124ee4",
+    "lab": {
+      "state": "stopped",
+      "steps": [
+        "capture_playwright_flow",
+        "inspect_failed_browser_diagnosis"
+      ],
+      "stop_kind": "failed_flow_diagnosed",
+      "browser_failure_diagnosed_flows": 1,
+      "recapture_for_inspection": false
+    },
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "runtime": "Next config-disabled development",
+      "capture_state": "failed",
+      "server_identity": "verified_by_declared_process",
+      "execution_duration_ms": 14813,
+      "peak_process_tree_rss_bytes": 1901690880
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "duration_ms": 1665.525,
+      "preparation_wall_ms": 1630.353,
+      "preparation_process_cpu_ms": 507.435,
+      "preparation_process_cpu_to_wall_ratio": 0.3112,
+      "main_thread_non_idle_sampled_ms": 232.086,
+      "main_thread_to_process_cpu_ratio": 0.4574,
+      "dominant_main_thread_scope": "runtime",
+      "dominant_main_thread_sampled_ms": 195.755,
+      "response_linked_async_preparation_overlap_ms": 32.305,
+      "async_inventory_complete": false,
+      "framework_preparation_overlap_ms": 0.767
+    },
+    "diagnosis": {
+      "classification": "off_main_thread_or_background_cpu",
+      "next_probe": "capture_worker_or_background_cpu",
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false,
+      "failed_flow_requires_correctness": true
+    }
+  },
+  "limitations": [
+    "The 45.74% relationship compares sampled main-thread non-idle time with process CPU; neither quantity is exact or exclusive request CPU.",
+    "Off-main-thread-or-background is a probe route, not proof that a Worker caused the interval.",
+    "The async inventory was incomplete, so retained async observations cannot exclude missing work.",
+    "The runtime disables repository Next configuration and does not establish production-build equivalence.",
+    "The existing browser assertion failed, so the evidence authorizes no source edit, optimization, correctness, or production claim."
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "runtime-react-proof/v1",
+  "repository": "significant-hobbies",
+  "revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+  "snapshot": "clean_detached_worktree",
+  "runtime": {
+    "family": "next",
+    "origin": "loopback",
+    "build": "clean_revision_bound_production_build",
+    "ownership": "agent_started_codevetter_attested",
+    "project": "mobile",
+    "device": "Pixel 7",
+    "remote_http": "denied"
+  },
+  "bounded_browser_floor": {
+    "flows": 16,
+    "distinct_test_declarations": 16,
+    "passed": 16,
+    "failed": 0,
+    "source_bounded_candidates": 0,
+    "inventory_truncated": true,
+    "next_action": "narrow_or_expand_flow_inventory"
+  },
+  "representative_observations": [
+    {
+      "scope": "e2e/blog.spec.ts / blog index loads with posts",
+      "root_flow_ms": 126.325,
+      "lcp_ms": 50.814,
+      "javascript_ms": 68.968,
+      "process_tree_peak_rss_bytes": 795213824,
+      "renderer_heap_peak_bytes": 10756752,
+      "dom_nodes_peak": 3060,
+      "event_listeners_peak": 472,
+      "eligible_findings": 0
+    },
+    {
+      "scope": "e2e/blog.spec.ts / blog post loads",
+      "root_flow_ms": 111.149,
+      "lcp_ms": 46.561,
+      "javascript_ms": 56.523,
+      "process_tree_peak_rss_bytes": 770834432,
+      "renderer_heap_peak_bytes": 7683444,
+      "dom_nodes_peak": 740,
+      "event_listeners_peak": 426,
+      "eligible_findings": 0
+    },
+    {
+      "scope": "e2e/content-flywheel.spec.ts / does not introduce horizontal overflow at phone, tablet, or desktop widths",
+      "navigation_count": 6,
+      "corrected_lcp_ms": 40.554,
+      "process_tree_peak_rss_bytes": 1034027008,
+      "corrected_diagnosis": "no_findings",
+      "limitation": "Heap, DOM, document, and listener deltas span six complete navigations and are not leak evidence."
+    }
+  ],
+  "source_attribution_probe": {
+    "runtime": "warmed_attested_next_development",
+    "scope": "e2e/blog.spec.ts / blog index loads with posts",
+    "profile_samples": 5780,
+    "repository_samples": 9,
+    "largest_repository_sample_count": 1,
+    "largest_repository_sample_share": 0.0002,
+    "result": "no_material_repository_cpu_candidate",
+    "limitation": "Development timing and memory were diagnostic only and were not compared with production-build measurements."
+  },
+  "autonomous_next_runtime_probe": {
+    "runtime": "codevetter_owned_config_disabled_next_development",
+    "active_checkout_environment_boundary": "stopped_before_startup_on_env_local_filename_without_reading_contents",
+    "clean_snapshot_environment_files": [
+      ".env.example"
+    ],
+    "scope": "e2e/blog.spec.ts / blog post loads",
+    "browser_profile": "mobile / Pixel 7",
+    "warmup": "completed_static_query_free_get",
+    "attestation": "verified_by_declared_process",
+    "cleanup": "terminated",
+    "lcp_ms": 74.831,
+    "process_tree_peak_rss_bytes": 1063518208,
+    "eligible_findings": 0,
+    "accuracy_result": "Next development framework chunks are excluded only under the recorded config-disabled development runtime; two remaining source-less observations were ineligible.",
+    "limitation": "This runtime bypasses repository Next configuration and is not equivalent to the production build evidence above."
+  },
+  "product_improvements_from_trial": [
+    "Resolve one exported typed literal Playwright project array without evaluating the configuration module.",
+    "Apply static testIgnore rules and device-field overrides to exact project-qualified flows.",
+    "Prefer distinct journeys before extra device variants inside the bounded browser floor.",
+    "Preserve exact statically asserted HTTP status codes so intentional 4xx behavior is not called a failure.",
+    "Assign resources to separate page.goto parents in multi-navigation tests.",
+    "Distinguish query variants with a value-free SHA-256 identity instead of merging redacted URLs.",
+    "Associate contained Next webpack-internal V8 frames with repository files while retaining the unverified-map limitation.",
+    "Accept an explicitly marked Next standalone process only after repository-CWD and declared-family attestation.",
+    "Own a config-disabled Next development lifecycle with environment-file rejection, static GET warmup, attestation, and cleanup.",
+    "Exclude Next development framework chunks only when that exact runtime configuration is retained in the capture."
+  ],
+  "result": "no_optimization_supported",
+  "limitations": [
+    "The production-build evidence used an externally prepared clean build; the autonomous runtime is a separate config-disabled development mode.",
+    "All timings and memory values are local one-shot observations, not paired optimization evidence or production impact.",
+    "The bounded inventory is truncated and does not establish full repository flow coverage."
+  ]
+}

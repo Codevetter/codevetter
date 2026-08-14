@@ -163,6 +163,29 @@ test('campaign rejects faster incorrect work, promotes paired evidence, resumes,
   }
 });
 
+test('campaign rejects disproportionate source growth before verification', async () => {
+  const fixture = await createFixture();
+  try {
+    const service = await createOptimizationCampaignService(fixture.root, fakeDependencies());
+    await service.initialize({ campaign_directory: fixture.campaignDirectory });
+    await service.baseline({ campaign_directory: fixture.campaignDirectory });
+    await writeFile(
+      join(fixture.root, 'source.js'),
+      Array.from({ length: 170 }, (_, index) => `export const value${index} = ${index};`).join('\n')
+    );
+
+    const result = await service.screen({
+      campaign_directory: fixture.campaignDirectory,
+      hypothesis: 'Add a large shortcut.',
+    });
+
+    assert.equal(result.record.decision.status, 'discard');
+    assert.match(result.record.decision.reason, /change-cost budget: lines_added/);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test('campaign records crash and no-confidence outcomes and detects evidence or ledger tampering', async () => {
   for (const candidate of [
     { source: 'export const mode = "CRASH";\n', decision: 'crash' },
@@ -211,6 +234,92 @@ test('campaign records crash and no-confidence outcomes and detects evidence or 
   }
 });
 
+test('browser campaign qualifies once and uses paired incumbent evidence for screen and promotion', async () => {
+  const fixture = await createFixture();
+  const incumbentRoot = await mkdtemp(join(tmpdir(), 'codevetter-browser-campaign-incumbent-'));
+  await rm(incumbentRoot, { recursive: true, force: true });
+  await git(process.cwd(), ['clone', '--quiet', fixture.root, incumbentRoot]);
+  try {
+    const manifestPath = join(fixture.root, fixture.campaignDirectory, 'manifest.json');
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    manifest.performance.adapter = 'playwright';
+    manifest.performance.project = 'mobile';
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    const pairedInputs = [];
+    const dependencies = {
+      ...fakeDependencies(),
+      qualifyRepository: async () => ({
+        subject: { repository_revision: manifest.repository_revision, dirty: false },
+        flows: [
+          {
+            id: 'browser-flow',
+            adapter: 'playwright',
+            target: manifest.performance.target,
+            name: manifest.performance.name,
+            browser_profile: {
+              project_name: 'mobile',
+              device_name: 'iPhone 13',
+              viewport: null,
+              device_scale_factor: null,
+              is_mobile: null,
+              has_touch: null,
+              provenance: 'static_playwright_device',
+            },
+            safety_flags: [],
+            signals: [
+              { kind: 'browser_request_fixture', evidence: manifest.performance.target },
+              { kind: 'loopback_browser_base_url', evidence: 'http://127.0.0.1:4173' },
+              { kind: 'declared_browser_server_family', evidence: 'vite' },
+            ],
+          },
+        ],
+      }),
+      verifyPairedRepositories: async (input) => {
+        pairedInputs.push(input);
+        return {
+          ...verification('inconclusive'),
+          schema_version: 'runtime-browser-optimization-verification/v1',
+          observed: { metrics: [{ stable: true, regressed: false }] },
+        };
+      },
+    };
+    const service = await createOptimizationCampaignService(fixture.root, dependencies);
+    await service.initialize({ campaign_directory: fixture.campaignDirectory });
+    const baseline = await service.baseline({ campaign_directory: fixture.campaignDirectory });
+    assert.equal(baseline.record.decision.status, 'baseline_ready');
+    await writeFile(join(fixture.root, 'source.js'), 'export const mode = "FAST";\n');
+    const hypothesis = 'Reduce browser work while preserving the exact journey.';
+    const artifactVerification = {
+      verdict: { status: 'confirmed', reason: 'Attested initial route shrank.' },
+      limitations: ['Fixture artifact limitation.'],
+    };
+    const screened = await service.screen({
+      campaign_directory: fixture.campaignDirectory,
+      hypothesis,
+      incumbent_repository: incumbentRoot,
+      artifact_verification: artifactVerification,
+    });
+    assert.equal(screened.record.decision.status, 'promising');
+    const promoted = await service.promote({
+      campaign_directory: fixture.campaignDirectory,
+      hypothesis,
+      incumbent_repository: incumbentRoot,
+      artifact_verification: artifactVerification,
+    });
+    assert.equal(promoted.record.decision.status, 'keep');
+    assert.deepEqual(
+      pairedInputs.map((input) => [input.adapter, input.project, input.samples, input.sources]),
+      [
+        ['playwright', 'mobile', 3, ['source.js']],
+        ['playwright', 'mobile', 10, ['source.js']],
+      ]
+    );
+  } finally {
+    await rm(incumbentRoot, { recursive: true, force: true });
+    await fixture.cleanup();
+  }
+});
+
 function fakeDependencies(onProfile = () => {}) {
   return {
     now: () => new Date('2026-08-09T00:00:00.000Z'),
@@ -229,6 +338,7 @@ function fakeDependencies(onProfile = () => {}) {
         limitations: source.includes('NOISY') ? ['Measurements were unstable.'] : [],
       };
     },
+    qualifyRepository: async () => ({ flows: [] }),
     verifyOptimizationCapsules: (_baseline, current) =>
       verification(
         current.marker === 'fast'
@@ -239,6 +349,9 @@ function fakeDependencies(onProfile = () => {}) {
       ),
     verifyPairedRepositories: async () => ({
       ...verification('confirmed', { shipping: true }),
+      limitations: [
+        'Peak RSS is sampled from an owned Go benchmark binary with compilation excluded; it is a regression guard and does not identify an allocation source.',
+      ],
       current_capsule: { marker: 'fast', verdict: { status: 'profiled' }, limitations: [] },
     }),
   };
@@ -309,6 +422,7 @@ function manifestFor(revision, { maxNonImprovements = 5, maxCrashes = 2, campaig
       adapter: 'node-test',
       target: 'test/performance.test.js',
       name: 'performance',
+      project: null,
       timeout_ms: 10_000,
       screening: { samples: 3, warmups: 1 },
       promotion: { samples: 10, warmups: 1 },

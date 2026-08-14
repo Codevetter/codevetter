@@ -1,0 +1,88 @@
+{
+  "schema_version": "codevetter-node-native-activity-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can capture bounded request-scoped Node trace activity, normalize closed libuv worker and V8 mechanisms, and use compatible libuv activity to choose a narrower probe without presenting elapsed overlap as CPU attribution or granting edit authority.",
+  "implementation_evidence": {
+    "browser_server_schema": "runtime-browser-server-flow/v12",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v19",
+    "native_activity_schema": "runtime-node-request-native-activity/v1",
+    "bounds": {
+      "trace_bytes": 16777216,
+      "trace_events": 50000,
+      "event_bytes": 65536,
+      "markers": 8
+    },
+    "closed_states": [
+      "observed",
+      "observed_zero",
+      "unsupported",
+      "incomplete",
+      "contaminated",
+      "invalid"
+    ],
+    "controlled_proofs": [
+      "An actual pbkdf2 HTTP handler produces a complete crypto libuv worker interval and routes to inspect_libuv_threadpool_crypto.",
+      "Overlapping intervals are unioned within each mechanism and across each public activity group rather than summed as CPU.",
+      "Live partial trace containers admit only complete event objects; malformed, oversized, unpaired, truncated, contaminated, and incompatible evidence fails closed.",
+      "Trace arguments, raw event names, event IDs, process IDs, thread IDs, paths, versions, values, and absolute timestamps do not enter public evidence.",
+      "Native activity routes remain source-null, low-confidence, edit-ineligible, and contain no activity-to-CPU ratio or subtraction."
+    ],
+    "verification": {
+      "focused_command": "node --test scripts/runtime-failure-capsule/server-request-native-activity.test.mjs scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/owned-vite-runtime.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs scripts/runtime-failure-capsule/playwright-capture.test.mjs",
+      "focused_passed": 102,
+      "focused_failed": 0,
+      "focused_skipped": 1,
+      "broad_command": "pnpm test:runtime-failure-capsule",
+      "broad_passed": 453,
+      "broad_failed": 0,
+      "broad_skipped": 2
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "lab_id": "native-activity-high-signal-lab-20260813-a",
+    "capture_id": "native-activity-high-signal-lab-20260813-a-s1",
+    "lab_receipt": ".codevetter/performance-labs/native-activity-high-signal-lab-20260813-a/receipt.json",
+    "capture_receipt": ".codevetter/playwright-runs/native-activity-high-signal-lab-20260813-a-s1/receipt.json",
+    "capture_result": ".codevetter/playwright-runs/native-activity-high-signal-lab-20260813-a-s1/result.json",
+    "lab_receipt_sha256": "8cd75f0474e6d346a4ecec65d4ddba0eafa76a15f18f62529810106fd4d994dc",
+    "capture_receipt_sha256": "8982b73ef6aabd65a5de0052ab852f2348eb4ca8c93d6f328d1efc2570decdb5",
+    "capture_result_sha256": "725426ba66fa083fb4ba2b91840513a0af9dec1be415343b73689a35f4ea420b",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "runtime": "Next config-disabled development",
+      "capture_state": "failed"
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "duration_ms": 3091.817,
+      "preparation_wall_ms": 3065.885,
+      "preparation_process_cpu_ms": 524.661,
+      "preparation_main_thread_cpu_ms": 315.003,
+      "preparation_other_threads_cpu_ms": 209.658,
+      "registered_workers": 0,
+      "native_activity_state": "observed",
+      "native_activity_interval_ms": 3066.092,
+      "trace_events_seen": 295,
+      "retained_intervals": 285,
+      "libuv_zlib_count": 5,
+      "libuv_zlib_union_activity_ms": 0.048,
+      "v8_gc_count": 257,
+      "v8_gc_union_activity_ms": 13.636,
+      "v8_compilation_count": 23,
+      "v8_compilation_union_activity_ms": 0.076
+    },
+    "interpretation": "The real replay proves exact-request collection and privacy-bounded normalization. Its libuv activity remained below the fixed 5 ms routing floor, so it does not establish a libuv bottleneck or optimization."
+  },
+  "limitations": [
+    "Trace activity is elapsed overlap and may execute concurrently; it is not exclusive CPU time and is never subtracted from or divided by process CPU.",
+    "The trace observer changes the diagnostic request and therefore does not replace uninstrumented paired benchmark evidence.",
+    "The selected categories do not cover every native addon, V8 background task, child process, kernel operation, or external service.",
+    "The runtime disables repository Next configuration and does not establish production-build equivalence.",
+    "The existing browser assertion failed, so the evidence authorizes no source edit, optimization, correctness, or production claim."
+  ]
+}

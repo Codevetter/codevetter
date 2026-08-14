@@ -1,0 +1,53 @@
+{
+  "schema_version": "runtime-performance-review-evidence-replay/v1",
+  "product": "significant-hobbies",
+  "accepted_lab_id": "significant-flow-bound-accepted-v26b-20260813",
+  "receipt_sha256": "82f5f3fced97b395ec4b82268350893fa744e339888f8fa99f159f3ea2e1cf61",
+  "paired_artifact": {
+    "sha256": "f8d9212d9b4bced210e6a5b41b4c3085051586ef279edb4ca743d3fb96a03fcc",
+    "bytes": 43505
+  },
+  "sealed_receipt_replay": {
+    "status": "qualified",
+    "subject": {
+      "repository_revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+      "source_snapshot_sha256": "c33f023fd27e99d42f25c339bc93efcefa637a8c4cd44e1d4809e7cb58f8766a"
+    },
+    "candidate_source": "src/lib/bucket-list-insights.ts:238 getBucketListSuggestions",
+    "performance_flow": "src/lib/bucket-list-insights.performance.test.ts — scales across existing bucket-list sizes",
+    "correctness_flow": "src/lib/bucket-list-insights.test.ts — is deterministic for the same inputs and seed",
+    "correctness_binding_sha256": "ac74ce01061c3f32680cff3242656975e84cf23b8ac49237302bf8df144e3344",
+    "observed": [
+      "10-item local scale point: 5.033 ms/op to 2.503 ms/op (-50.268%)",
+      "50-item local scale point: 9.344 ms/op to 6.645 ms/op (-28.885%)",
+      "selected-source sampled allocation: -66.955%",
+      "repository-application sampled allocation: -37.328%",
+      "sampled process-tree peak RSS: -1.089% (not material)"
+    ],
+    "inferred": "Exact local correctness passed and paired gates recommended retaining the candidate.",
+    "unverified": [
+      "Production impact and production-scale behavior",
+      "Flows outside the exact performance and correctness scopes",
+      "Risks not exercised by the accepted local receipt"
+    ]
+  },
+  "live_current_checkout": {
+    "status": "correctness_reverified",
+    "current_source_snapshot_sha256": "e2c544106b4f7f078399d7d16b41f83a9325c97c7e8e418beb45de90c17e095f",
+    "performance_claim_status": "stale_excluded",
+    "fresh_correctness": {
+      "adapter": "vitest",
+      "target": "src/lib/bucket-list-insights.test.ts",
+      "name": "is deterministic for the same inputs and seed",
+      "status": "passed",
+      "exit_code": 0,
+      "duration_ms": 1004,
+      "selection": {
+        "executed": 1,
+        "failed": 0
+      }
+    },
+    "interpretation": "The current checkout changed after acceptance. CodeVetter used only the unchanged repository-owned test-selection authority, reran one exact current correctness test, and excluded every historical performance metric."
+  },
+  "claim_boundary": "The sealed replay exercises the real closed receipt, full paired report, artifact digest, correctness binding, and compact-summary parity. It does not override the current-checkout snapshot gate or claim production impact."
+}

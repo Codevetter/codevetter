@@ -1,0 +1,101 @@
+{
+  "schema_version": "codevetter-performance-proof/v1",
+  "recorded_at": "2026-08-13",
+  "capability": "clean_snapshot_browser_runtime",
+  "tool_surface_count": 19,
+  "subject": {
+    "product": "RolePatch",
+    "repository_revision": "a9abcccf1e70e5f6fc130b129b2906ba87ac725a",
+    "source_snapshot_sha256": "92309983f658deaeae69bb5285baa059d1f2b36a832a12c409a33dbbb1087355",
+    "dirty": false,
+    "flow": {
+      "adapter": "playwright",
+      "candidate_id": "2121ff465cb6d731",
+      "target": "e2e/navigation.spec.ts",
+      "name": "landing page renders",
+      "project": "desktop"
+    }
+  },
+  "execution_source": {
+    "mode": "clean_git_snapshot",
+    "tree_sha256": "91b78a26c7f8608f5a35943ae4c682e025cb301c9be2d2b1cecebde0a414c1ca",
+    "files": 421,
+    "bytes": 5760877,
+    "excluded_sensitive_path_count": 1,
+    "excluded_sensitive_paths_sha256": "798064667625aa1d8bea5e8cbf1e09b6f54a0d1dacfd468358ed05adcb33b127",
+    "graft_count": 1,
+    "grafts": ["node_modules"],
+    "graft_sha256": "07b4d23c94e1f7fa1d02c1cce7a58b98fb9c5131b00827091f68da1e1e781ba7",
+    "cleanup": "removed"
+  },
+  "observed": {
+    "capture_id": "rolepatch-clean-snapshot-20260813f",
+    "capture_state": "succeeded",
+    "remote_http_denied": true,
+    "runtime_configuration": "codevetter_config_disabled",
+    "browser_execution_ms": 3408,
+    "process_tree_peak_rss_bytes": 1076248576,
+    "largest_contentful_paint_ms": 1189.573,
+    "browser_main_thread": {
+      "javascript_ms": 338.581,
+      "style_ms": 25.238,
+      "layout_ms": 16.735,
+      "paint_ms": 10.987,
+      "long_task_count": 3,
+      "long_task_total_ms": 421.605
+    },
+    "react": {
+      "state": "succeeded",
+      "commit_count": 4,
+      "profiled_commit_count": 0
+    },
+    "loading": {
+      "observed_transfer_bytes": 4787535,
+      "complete": false
+    },
+    "server": {
+      "retained_requests": 13,
+      "inventory_complete": true,
+      "root_request": {
+        "route": "/",
+        "status": 307,
+        "duration_ms": 852.769,
+        "preparation_ms": 769.306,
+        "source": "src/app/page.tsx:7",
+        "preparation_main_thread_cpu_ms": 730.281,
+        "preparation_other_threads_cpu_ms": 404.809
+      }
+    },
+    "continuation": {
+      "recapture_id": "rolepatch-main-thread-20260813",
+      "state": "completed",
+      "correctness": "passed",
+      "outcome": "evidence_incomplete",
+      "runtime_mechanism_samples": 0,
+      "edit_eligible": false
+    }
+  },
+  "inferred": {
+    "summary": "CodeVetter can now execute and diagnose one exact clean Next.js browser flow even when the developer checkout contains ignored loadable environment files.",
+    "confidence": "high",
+    "basis": "The flow passed twice from an attested committed-source snapshot, durable evidence remained bound to the unchanged authoritative checkout, and both snapshots were removed."
+  },
+  "unverified": [
+    "The retained local development timings do not establish production latency, frequency, scale, or user impact.",
+    "The 48-second cold preflight is dominated by a cache-free Next development compile and is not an application optimization target.",
+    "The first root request contains material main-thread CPU, but the narrower recapture retained no compatible runtime mechanism samples and does not identify an editable source cause.",
+    "The process-tree RSS peak includes the owned Next runtime, Playwright, Chromium, and diagnostic passes; it is not application heap usage.",
+    "Observed transfer bytes are incomplete and development bundles do not represent a production build."
+  ],
+  "durable_evidence": {
+    "capture_receipt": ".codevetter/playwright-runs/rolepatch-clean-snapshot-20260813f/receipt.json",
+    "capture_result": ".codevetter/playwright-runs/rolepatch-clean-snapshot-20260813f/result.json",
+    "recapture_receipt": ".codevetter/browser-probe-runs/rolepatch-main-thread-20260813/receipt.json"
+  },
+  "cost_and_storage": {
+    "cloud_calls": 0,
+    "package_installs": 0,
+    "production_calls": 0,
+    "rolepatch_codevetter_evidence_bytes_approx": 401408
+  }
+}

@@ -8,6 +8,7 @@ const AgentPanel = lazy(() => import('@/pages/AgentPanel'));
 const QuickReview = lazy(() => import('@/pages/QuickReview'));
 const RepoPage = lazy(() => import('@/pages/RepoPage'));
 const TRex = lazy(() => import('@/pages/TRex'));
+const Optimize = lazy(() => import('@/pages/Optimize'));
 const Settings = lazy(() => import('@/pages/Settings'));
 
 type PersistentPage = {
@@ -41,6 +42,11 @@ const PERSISTENT_PAGES: PersistentPage[] = [
     id: 'trex',
     match: (pathname) => pathname === '/trex' || pathname.startsWith('/trex/'),
     Component: TRex,
+  },
+  {
+    id: 'optimize',
+    match: (pathname) => pathname === '/optimize' || pathname.startsWith('/optimize/'),
+    Component: Optimize,
   },
   {
     id: 'settings',

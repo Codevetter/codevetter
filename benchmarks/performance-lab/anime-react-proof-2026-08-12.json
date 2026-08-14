@@ -1,0 +1,139 @@
+{
+  "schema_version": "runtime-react-proof/v1",
+  "repository": "anime-list",
+  "revision": "e98d192da27a4abc9e5579e91ead546716bd4828",
+  "snapshot": "clean_detached_worktree",
+  "runtime": {
+    "family": "vite",
+    "origin": "loopback",
+    "ownership": "codevetter_owned_attested",
+    "remote_http": "denied",
+    "cleanup": "terminated"
+  },
+  "flows": [
+    {
+      "target": "e2e/personal-flows.spec.ts",
+      "name": "adds a discovery recommendation to the watchlist",
+      "result": "passed",
+      "navigation_ms": 384.481,
+      "main_thread": {
+        "javascript_ms": 135.778,
+        "style_ms": 12.691,
+        "layout_ms": 16.108,
+        "paint_ms": 3.016,
+        "long_tasks": 0,
+        "profile_samples": 6491,
+        "repository_samples": 42,
+        "verified_source_maps": 4
+      },
+      "diagnosis_after_accuracy_fix": "no_findings"
+    },
+    {
+      "target": "e2e/personal-flows.spec.ts",
+      "name": "previews a watchlist import without applying it",
+      "result": "passed",
+      "navigation_ms": 317.83,
+      "main_thread": {
+        "javascript_ms": 105.262,
+        "style_ms": 10.539,
+        "layout_ms": 10.463,
+        "paint_ms": 2.203,
+        "long_tasks": 0,
+        "profile_samples": 6423,
+        "repository_samples": 42,
+        "verified_source_maps": 4
+      },
+      "diagnosis": "no_findings"
+    }
+  ],
+  "expanded_lab": {
+    "lab_id": "anime-current-proof-v3-20260812",
+    "eligible_flows": 4,
+    "passed_flows": 3,
+    "failed_flows": 1,
+    "excluded_before_execution": [
+      "anime detail page loads from the deployed API",
+      "detail page serves unique title in HTML and app still mounts",
+      "unknown anime id gets noindex and app still mounts"
+    ],
+    "result": "no_source_bounded_optimization_candidate"
+  },
+  "historical_candidate": {
+    "revision": "4a16e1688379dfab7fb08cdbabceea8622131173",
+    "baseline_revision": "70c3147b41bb8aff0c2243f118509fcea3e0449c",
+    "scope": "e2e/mobile.spec.ts / home page has no horizontal scroll",
+    "project": "mobile",
+    "browser_profile": {
+      "device": "iPhone 13",
+      "viewport": { "width": 390, "height": 664 },
+      "device_scale_factor": 3,
+      "is_mobile": true,
+      "has_touch": true
+    },
+    "samples_per_side": 10,
+    "baseline_lcp_ms": 235.8935,
+    "candidate_lcp_ms": 237.3365,
+    "root_flow_delta_percent": 0.399,
+    "javascript_delta_percent": 2.325,
+    "rss_delta_percent": -0.602,
+    "verdict": "inconclusive",
+    "campaign_screen": "discard",
+    "limitation": "One candidate LCP sample was 26 ms while the other nine were near 237 ms. CodeVetter now suppresses optimization verdicts from that unstable distribution. The resolved project remains local Chromium emulation, not production or field-device evidence."
+  },
+  "stable_homepage_flow": {
+    "revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+    "source_snapshot_sha256": "0bba5e4a76ffad7e969aecfc9db9c1b321b6b230b14842e34a13d7ae574bd0a6",
+    "snapshot": "qualified_dirty_test_addition",
+    "scope": "e2e/mobile.spec.ts / homepage hero reaches a stable local performance boundary",
+    "semantic_boundary": "Accessible hero heading and primary CTA visible, document fonts ready, then two animation frames.",
+    "desktop": {
+      "lcp_ms": 40.907,
+      "javascript_ms": 51.432,
+      "style_ms": 1.364,
+      "layout_ms": 4.076,
+      "paint_ms": 0.457,
+      "long_task_count": 0,
+      "repository_cpu_samples": 25,
+      "repository_cpu_self_time_ms": 3.198,
+      "post_gc_heap_spread_percent": 0.04,
+      "diagnosis": "no_findings"
+    },
+    "mobile": {
+      "project": "mobile",
+      "device": "iPhone 13",
+      "lcp_ms": 290.427,
+      "javascript_ms": 52.873,
+      "style_ms": 2.125,
+      "layout_ms": 3.947,
+      "paint_ms": 0.409,
+      "long_task_count": 0,
+      "repository_cpu_samples": 22,
+      "repository_cpu_self_time_ms": 2.823,
+      "post_gc_heap_spread_percent": 0.02,
+      "diagnosis": "no_findings"
+    },
+    "eligible_browser_flows": 10,
+    "passed_browser_flows": 8,
+    "failed_browser_flows": 2,
+    "known_failure": "The existing title-search assertion did not expose its expected control on the synthesized remote-denied Vite route in either project.",
+    "claim_boundary": "Local owned Vite and Chromium evidence only; the inventory is truncated and no React optimization, field-device, or production claim is supported."
+  },
+  "product_improvements_from_trial": [
+    "Recognize a static Playwright environment override only when a repository-declared Vite frontend establishes a safe owned loopback origin.",
+    "Prioritize repository-fixtured browser flows over remote-dependent siblings inside the bounded adapter sample.",
+    "Permit one retained exact browser capture without turning a truncated inventory into a complete-coverage claim.",
+    "Support the contained repository-root @ alias without evaluating Vite config or loading environment files.",
+    "Do not promote policy-denied transport errors, Playwright-fulfilled requests without an HTTP status, or Vite runtime resources as optimization findings.",
+    "Reject server-document assertions when the loopback Vite origin was synthesized from a remote-default Playwright configuration.",
+    "Retain a failed exact browser assertion as flow evidence while continuing to later safe flows.",
+    "Retain outer-main-frame LCP in compact capture and paired-verification evidence.",
+    "Preserve static Playwright project/device identity through qualification, owned capture, paired verification, and campaign screening.",
+    "Prevent unstable LCP distributions from confirming an optimization.",
+    "Explain browser no-finding outcomes with compact phase, long-task, and repository CPU attribution evidence."
+  ],
+  "limitations": [
+    "These are one-shot local development-server timings, not a paired optimization benchmark.",
+    "The two project-owned flows use local request fixtures and do not represent production data, network latency, cache state, or traffic frequency.",
+    "No optimization was proposed because the corrected deterministic detectors found no material source-bounded bottleneck."
+  ]
+}

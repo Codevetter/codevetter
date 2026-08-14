@@ -1,0 +1,110 @@
+{
+  "schema_version": "codevetter-node-worker-cpu-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can observe the complete bounded Node Worker inventory across one selected request pre-commit interval, retain anonymous Worker CPU and sampled source scopes when supported, reconcile that evidence with process and main-thread CPU, and preserve the resulting next probe without granting edit authority.",
+  "implementation_evidence": {
+    "raw_schema": "codevetter-node-request-worker-cpu/v1",
+    "public_schema": "runtime-node-request-worker-cpu/v1",
+    "browser_server_schema": "runtime-browser-server-flow/v10",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v17",
+    "performance_lab_schema": "runtime-performance-lab-run/v6",
+    "bounds": {
+      "registered_workers": 16,
+      "profiled_workers_per_request": 4,
+      "samples_per_worker": 100000,
+      "raw_bytes": 8388608
+    },
+    "routes": [
+      "worker_thread_repository",
+      "worker_thread_dependency",
+      "worker_thread_generated",
+      "worker_thread_runtime",
+      "worker_thread_unattributed",
+      "native_child_process_background_or_sampling_gap",
+      "worker_cpu_contaminated",
+      "worker_cpu_unsupported",
+      "worker_cpu_incomplete",
+      "worker_cpu_incompatible_interval"
+    ],
+    "thresholds": {
+      "minimum_worker_cpu_ms": 5,
+      "minimum_worker_to_process_cpu_ratio": 0.2,
+      "interval_tolerance_ms": 25
+    },
+    "authority": {
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false,
+      "failed_flow_requires_correctness": true
+    },
+    "focused_tests": {
+      "command": "node --test scripts/runtime-failure-capsule/server-request-worker-cpu.test.mjs scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs scripts/runtime-failure-capsule/playwright-capture.test.mjs",
+      "passed": 89,
+      "failed": 0,
+      "skipped": 1,
+      "proofs": [
+        "CommonJS and ESM Worker construction remains instance-compatible while two Workers are profiled.",
+        "Late, exited, unsupported, overlapping, malformed, oversized, inconsistent, incomplete, and zero-Worker cases fail closed.",
+        "Repository, dependency, generated, runtime, unattributed, native or child, recapture, unsupported, and incomplete routes are exercised at fixed threshold edges.",
+        "The compact durable diagnosis retains the selected Worker-aware probe with no source or edit authority."
+      ]
+    },
+    "broad_tests": {
+      "command": "pnpm test:runtime-failure-capsule",
+      "passed": 443,
+      "failed": 0,
+      "skipped": 2
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "lab_id": "worker-cpu-high-signal-lab-20260813-a",
+    "capture_id": "worker-cpu-high-signal-20260813-a",
+    "lab_receipt": ".codevetter/performance-labs/worker-cpu-high-signal-lab-20260813-a/receipt.json",
+    "capture_receipt": ".codevetter/playwright-runs/worker-cpu-high-signal-20260813-a/receipt.json",
+    "capture_result": ".codevetter/playwright-runs/worker-cpu-high-signal-20260813-a/result.json",
+    "lab_receipt_sha256": "7bfca3266763b3084224726d84847831b47483153d8e5a9046dbe9b9f6b6ed8a",
+    "capture_receipt_sha256": "d6f5b16182128be1708702a81bf378c72b2a13580721ebf6529f9e857fe2c9de",
+    "capture_result_sha256": "76606f5c04f92e5e69676d22f87cae70961a16df589fbbcb153d2a92cb50a6c7",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "runtime": "Next config-disabled development",
+      "capture_state": "failed",
+      "execution_duration_ms": 14703,
+      "peak_process_tree_rss_bytes": 1806336000
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "duration_ms": 1260.032,
+      "preparation_wall_ms": 1216.029,
+      "preparation_process_cpu_ms": 510.433,
+      "main_thread_non_idle_sampled_ms": 266.334,
+      "main_thread_to_process_cpu_ratio": 0.5218,
+      "worker_runtime_support": "supported",
+      "registered_workers": 0,
+      "worker_cpu_state": "observed_zero",
+      "worker_cpu_ms": 0,
+      "worker_inventory_complete": true
+    },
+    "diagnosis": {
+      "classification": "main_thread_runtime",
+      "next_probe": "inspect_main_thread_runtime",
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false,
+      "failed_flow_requires_correctness": true,
+      "durable_lab_inspection_without_recapture": true
+    }
+  },
+  "limitations": [
+    "A complete zero-Worker inventory rules out only registered Node worker_threads Workers observed by the owned parent process; it does not rule out child processes, native threads, libuv work, or sampling gaps.",
+    "Worker profiling requires Node 24.8 or newer and introduces observer effect before handler dispatch.",
+    "The selected route remained main-thread runtime because retained non-idle main-thread samples represented 52.18% of observed process CPU; CodeVetter did not force a Worker route after observing zero Workers.",
+    "The runtime disables repository Next configuration and does not establish production-build equivalence.",
+    "The existing browser assertion failed, so the evidence authorizes no source edit, optimization, correctness, or production claim."
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": "codevetter-node-precommit-cpu-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can classify one material non-overlapping Node pre-commit interval by observed process CPU pressure without retaining absolute counters or assigning exclusive CPU, waiting, framework, or source causation.",
+  "implementation_evidence": {
+    "browser_server_schema": "runtime-browser-server-flow/v8",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v15",
+    "snapshots": [
+      "request admission",
+      "first response commitment",
+      "request finish"
+    ],
+    "retained_values": [
+      "user and system CPU deltas in milliseconds",
+      "pre-commit and whole-request CPU totals",
+      "CPU-to-wall ratios",
+      "bounded whole-request and pre-commit overlap counts"
+    ],
+    "discarded_values": [
+      "absolute process CPU counters",
+      "request identities used for overlap tracking",
+      "response headers and body values",
+      "application values",
+      "source location"
+    ],
+    "classification_policy": {
+      "minimum_precommit_ms": 5,
+      "high_process_cpu_minimum_ratio": 0.5,
+      "low_observed_process_cpu_maximum_ratio": 0.2,
+      "classifications": [
+        "high_process_cpu",
+        "low_observed_process_cpu",
+        "mixed_process_cpu",
+        "insufficient_evidence"
+      ],
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false
+    },
+    "focused_tests": {
+      "command": "node --test scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs scripts/runtime-failure-capsule/playwright-capture.test.mjs",
+      "passed": 75,
+      "failed": 0,
+      "skipped": 1,
+      "proofs": [
+        "Response behavior is preserved while process CPU deltas are captured.",
+        "Overlapping pre-commit intervals contaminate both requests.",
+        "Overlap beginning after commitment contaminates whole-request CPU without erasing the earlier isolated interval.",
+        "High, low, mixed, malformed, incomplete, overlapping, and immaterial cases follow the closed policy."
+      ]
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "capture_id": "precommit-cpu-high-signal-20260813-b",
+    "receipt": ".codevetter/playwright-runs/precommit-cpu-high-signal-20260813-b/receipt.json",
+    "result": ".codevetter/playwright-runs/precommit-cpu-high-signal-20260813-b/result.json",
+    "receipt_sha256": "f7d7885db6e421a80d265756f1112608eefc8787695c66ae1c24cf11297d9d16",
+    "result_sha256": "89b47e75d89db8193ad47e6f3dae34ecdfa7753ad9e490e0d442d91893076bd7",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "Next config-disabled development",
+      "owned_ephemeral_port": 61231,
+      "capture_state": "failed",
+      "execution_status": "exited",
+      "exit_code": 1,
+      "execution_duration_ms": 7931,
+      "peak_process_tree_rss_bytes": 1917288448,
+      "failure_boundary": "The existing exact Playwright assertion failed, so the CPU shape remains diagnostic only."
+    },
+    "preflight_comparison": {
+      "classification": "first_preflight_outlier",
+      "first_duration_ms": 2668,
+      "repeat_duration_ms": 698,
+      "browser_duration_ms": 1269.592
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "duration_ms": 1269.592,
+      "preparation_wall_ms": 1225.79,
+      "preparation_user_ms": 424.784,
+      "preparation_system_ms": 99.945,
+      "preparation_cpu_ms": 524.729,
+      "preparation_cpu_to_wall_ratio": 0.4281,
+      "whole_request_cpu_ms": 602.573,
+      "whole_request_cpu_to_wall_ratio": 0.4746,
+      "overlapping_preparation_request_count": 0,
+      "overlapping_request_count": 7,
+      "supported_child_ms": 0,
+      "async_overlap_ms": 549.325,
+      "async_inventory_complete": false,
+      "framework_phase_overlap_ms": 1.371,
+      "repository_cpu_samples": 0
+    },
+    "diagnosis": {
+      "detector": "browser_server_precommit_process_cpu",
+      "classification": "mixed_process_cpu",
+      "source": null,
+      "confidence": "low",
+      "eligible_for_experiment": false,
+      "result": "Observed process CPU was between the fixed low and high thresholds, so CodeVetter requested a narrower probe instead of claiming CPU-bound or wait-bound execution."
+    }
+  },
+  "limitations": [
+    "Process CPU is not exclusive request CPU and can include worker threads or unrelated background work.",
+    "Zero admitted pre-commit overlap does not exclude background process work.",
+    "The mixed classification does not identify compilation, rendering, I/O, async waiting, or a source cause.",
+    "The async inventory was incomplete and overlapping delays are not additive exclusive work.",
+    "The exact browser assertion failed, so this capture authorizes no source edit or optimization claim."
+  ]
+}

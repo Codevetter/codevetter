@@ -1,0 +1,61 @@
+{
+  "schema_version": "codevetter-gc-pressure-proof/v1",
+  "recorded_at": "2026-08-13T17:30:00.000Z",
+  "scope": "bounded_local_development_evidence",
+  "observed": {
+    "controlled_live_node_handler": {
+      "test": "scripts/runtime-failure-capsule/server-request-gc-pressure.test.mjs",
+      "request": "GET /allocate",
+      "allocation_shape": "80000 bounded row objects",
+      "heap_sampling": "request_scoped",
+      "cpu_sampling": "disabled",
+      "profile_complete": true,
+      "contained_repository_source": "server.mjs"
+    },
+    "qualified_passing_react_flow": {
+      "repository": "anime-list",
+      "capture_id": "gc-pressure-anime-browser-20260813-a",
+      "receipt_sha256": "73e2e2fbea96b73bb0a8e97ca666695f54d3330f3fb98fd0b6ed7b6db7ff809b",
+      "result_sha256": "ab157c6b185cd1acb5b7654b3966144db331596a7baae9d948647476f310619d",
+      "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+      "source_snapshot_sha256": "4ddf75c099727b5b9b9ddfaefbb35cef31a99dd7f1dcea569b9753f34741e1da",
+      "flow": "homepage hero reaches a stable local performance boundary",
+      "project": "desktop",
+      "correctness": "passed",
+      "execution_wall_ms": 2140,
+      "process_tree_peak_rss_bytes": 897318912,
+      "largest_contentful_paint_ms": 171.456,
+      "repository_cpu_self_time_ms": 2.531,
+      "react_commit_count": 7,
+      "react_actual_duration_ms": 20.4,
+      "completed_response_transfer_bytes": 12979405,
+      "server_evidence": "unavailable_frontend_only_vite",
+      "verdict": "no_findings"
+    },
+    "failed_correctness_guard": {
+      "repository": "high-signal",
+      "source_recapture_id": "low-overhead-high-signal-20260813-a",
+      "recapture_id": "gc-pressure-high-signal-blocked-20260813-a",
+      "recapture_receipt_sha256": "4a12a1ca9b4ceb8f10a8d356d61c060f7daacdc83b02af818408b6128c536744",
+      "schedule_id": "gc-pressure-high-signal-blocked-schedule-20260813-b",
+      "schedule_receipt_sha256": "892f7dcf12efebc16f7336eccf294a7b6770355aafe91c2a20f82b6229f5d2f4",
+      "route": "inspect_gc_pressure",
+      "upstream_classification": "low_overhead_gc",
+      "upstream_correctness": "failed",
+      "recapture_state": "failed",
+      "schedule_state": "correctness_failed",
+      "new_runs_executed": 0
+    }
+  },
+  "inferred": {
+    "usefulness": "The product can now narrow independently corroborated GC activity to a bounded sampled allocation source while preserving exact-flow provenance and correctness authority.",
+    "react_boundary": "The same browser tooling remains useful on frontend-only React flows, but it correctly withholds Node server-GC claims when no application backend is owned."
+  },
+  "unverified": [
+    "No captured value establishes production frequency, latency, scale, memory, cache behavior, or user impact.",
+    "Heap deltas do not prove retention or a leak.",
+    "Sampled allocation bytes are not exact allocated bytes and do not prove that a source caused GC.",
+    "The passing React/Vite flow did not exercise the server GC probe because its owned runtime is frontend-only.",
+    "No optimization or source edit is authorized by this proof."
+  ]
+}

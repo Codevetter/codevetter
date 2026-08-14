@@ -18,7 +18,11 @@ export async function main(argv = process.argv.slice(2), overrides = {}) {
     if (operation === 'init') result = await service.initialize(input);
     else if (operation === 'baseline') result = await service.baseline(input);
     else if (operation === 'screen') {
-      result = await service.screen({ ...input, hypothesis: required(options, 'hypothesis') });
+      result = await service.screen({
+        ...input,
+        hypothesis: required(options, 'hypothesis'),
+        incumbent_repository: options['incumbent-repo'],
+      });
     } else if (operation === 'promote') {
       result = await service.promote({
         ...input,
@@ -82,7 +86,7 @@ function parseArguments(argv) {
   }
   const allowed = new Set(
     operation === 'screen'
-      ? ['repo', 'campaign', 'hypothesis', 'json']
+      ? ['repo', 'campaign', 'hypothesis', 'incumbent-repo', 'json']
       : operation === 'promote'
         ? ['repo', 'campaign', 'hypothesis', 'incumbent-repo', 'json']
         : ['repo', 'campaign', 'json']

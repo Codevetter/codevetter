@@ -3,7 +3,7 @@ import { cpus, loadavg, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { parseVitestSelection } from './capsule.mjs';
+import { parseVitestReport, parseVitestSelection } from './capsule.mjs';
 import {
   LIMITS,
   PERFORMANCE_SCHEMA_VERSION,
@@ -12,14 +12,33 @@ import {
   validatePerformanceCapsule,
 } from './contracts.mjs';
 import { inspectGitDiff, rankRelevantChanges } from './git-diff.mjs';
+import { createDetectorCoverageMatrix } from './detector-coverage-matrix.mjs';
 import { collectV8FunctionCoverage, emptyFunctionCoverage } from './function-coverage.mjs';
 import { redactText } from './redact.mjs';
-import { inspectGoProfile, runClosedAdapter } from './runner.mjs';
+import {
+  compileGoBenchmarkBinary,
+  inspectGoProfile,
+  inspectGoRuntimeVersion,
+  runClosedAdapter,
+} from './runner.mjs';
 import { collectNodeFlowEvents } from './flow-capture.mjs';
+import {
+  V8_HEAP_CANDIDATE_LIMIT,
+  V8_HEAP_PROFILE_RUNS,
+  collectV8HeapProfileEvidence,
+  combineV8HeapProfileRuns,
+  emptyV8HeapProfileEvidence,
+  evaluateV8HeapRepeatability,
+  repeatableV8HeapAllocationCandidates,
+  v8HeapProfileRunSummary,
+} from './v8-heap-profile.mjs';
 
 const APPLICATION_HOTSPOT_SHARE = 0.05;
+const APPLICATION_ALLOCATION_OBJECT_SHARE = 0.01;
 const STARTUP_DOMINATED_SHARE_PERCENT = 10;
 const V8_PROFILE_RUNS = 2;
+const GO_PROFILE_TARGET_NS = 250_000_000;
+const GO_PROFILE_MAXIMUM_ITERATIONS = 25_000;
 const V8_MATERIALITY_POLICY = Object.freeze({
   minimum_samples: 5,
   minimum_self_time_ms: 10,
@@ -44,10 +63,14 @@ export async function profileRepository({
 }) {
   const lexicalRoot = resolve(repositoryRoot);
   const root = await realpath(lexicalRoot);
+  const goVersion = adapter === 'go-bench' ? await inspectGoRuntimeVersion(root) : null;
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'codevetter-profile-'));
   const executions = [];
   let profileEvidence = emptyProfileEvidence(adapter);
   const profileRuns = [];
+  let heapProfileEvidence = emptyV8HeapProfileEvidence();
+  const heapProfileRuns = [];
+  let goMemoryBinary = null;
   let flowEvidence = emptyFlowEvidence();
   let functionCoverage = emptyFunctionCoverage();
   let cleanupFailed = false;
@@ -79,10 +102,24 @@ export async function profileRepository({
         }),
       });
     }
-    if (['vitest', 'node-test', 'node-script'].includes(adapter)) {
-      for (let index = 0; index < samples; index += 1) {
+    if (adapter === 'go-bench') {
+      const memoryBinaryDirectory = join(temporaryDirectory, 'go-memory-binary');
+      await mkdir(memoryBinaryDirectory);
+      const preparation = await compileGoBenchmarkBinary({
+        repositoryRoot: root,
+        target,
+        timeoutMs,
+        outputDirectory: memoryBinaryDirectory,
+      });
+      if (!preparation.prepared_binary) {
+        throw new Error('the owned Go benchmark memory binary could not be compiled');
+      }
+      goMemoryBinary = preparation.prepared_binary;
+    }
+    if (['vitest', 'jest', 'node-test', 'node-script', 'go-bench'].includes(adapter)) {
+      for (let index = 0; index < LIMITS.memorySamples; index += 1) {
         executions.push({
-          phase: 'metrics',
+          phase: 'memory',
           index,
           execution: await runClosedAdapter({
             repositoryRoot: root,
@@ -90,12 +127,13 @@ export async function profileRepository({
             target,
             name,
             timeoutMs,
-            vitestReporter: adapter === 'vitest' ? 'verbose' : undefined,
+            measureMemory: true,
+            goBenchmarkBinary: goMemoryBinary,
           }),
         });
       }
     }
-    if (captureFlow && ['node-test', 'vitest'].includes(adapter)) {
+    if (captureFlow && ['node-test', 'vitest', 'jest'].includes(adapter)) {
       const flowDirectory = join(temporaryDirectory, 'flow');
       await mkdir(flowDirectory);
       executions.push({
@@ -130,29 +168,70 @@ export async function profileRepository({
       functionCoverage = await collectV8FunctionCoverage(coverageDirectory, root);
     }
 
-    const profileRunCount = adapter === 'go-bench' ? 1 : V8_PROFILE_RUNS;
+    const goProfileIterations =
+      adapter === 'go-bench'
+        ? goProfileIterationCount(
+            parseGoBenchmarks(
+              executions
+                .filter((entry) => entry.phase === 'measurement')
+                .map((entry) => `${entry.execution.stdout}\n${entry.execution.stderr}`)
+                .join('\n')
+            )[0]
+          )
+        : null;
+    const profileRunCount = V8_PROFILE_RUNS;
     for (let index = 0; index < profileRunCount; index += 1) {
       const profileDirectory = join(temporaryDirectory, `profile-${index}`);
       await mkdir(profileDirectory);
+      const execution = await runClosedAdapter({
+        repositoryRoot: root,
+        adapter,
+        target,
+        name,
+        timeoutMs,
+        profileDirectory,
+        goBenchmarkIterations: goProfileIterations,
+      });
       executions.push({
         phase: 'profile',
         index,
-        execution: await runClosedAdapter({
-          repositoryRoot: root,
-          adapter,
-          target,
-          name,
-          timeoutMs,
-          profileDirectory,
-        }),
+        execution,
       });
-      profileRuns.push(
+      const profileRun =
         adapter === 'go-bench'
           ? await collectGoProfileEvidence(profileDirectory, root)
-          : await collectV8ProfileEvidence(profileDirectory, root)
+          : await collectV8ProfileEvidence(profileDirectory, root);
+      profileRuns.push(
+        adapter === 'go-bench'
+          ? {
+              ...profileRun,
+              benchmark: parseGoBenchmarks(`${execution.stdout}\n${execution.stderr}`)[0] ?? null,
+              fixed_benchmark_iterations: goProfileIterations,
+            }
+          : profileRun
       );
     }
     profileEvidence = combineProfileRuns(profileRuns, adapter);
+    if (adapter !== 'go-bench') {
+      for (let index = 0; index < V8_HEAP_PROFILE_RUNS; index += 1) {
+        const heapProfileDirectory = join(temporaryDirectory, `heap-profile-${index}`);
+        await mkdir(heapProfileDirectory);
+        executions.push({
+          phase: 'heap_profile',
+          index,
+          execution: await runClosedAdapter({
+            repositoryRoot: root,
+            adapter,
+            target,
+            name,
+            timeoutMs,
+            heapProfileDirectory,
+          }),
+        });
+        heapProfileRuns.push(await collectV8HeapProfileEvidence(heapProfileDirectory, root));
+      }
+      heapProfileEvidence = combineV8HeapProfileRuns(heapProfileRuns);
+    }
   } finally {
     try {
       await rm(temporaryDirectory, { recursive: true, force: true });
@@ -175,12 +254,15 @@ export async function profileRepository({
     executions,
     profileEvidence,
     profileRuns,
+    heapProfileEvidence,
+    heapProfileRuns,
     flowEvidence,
     functionCoverage,
     cleanupFailed,
     baseline,
     regressionPercent,
     regressionMs,
+    goVersion,
   });
 }
 
@@ -196,12 +278,15 @@ export function createPerformanceCapsule({
   executions,
   profileEvidence,
   profileRuns = [],
+  heapProfileEvidence = emptyV8HeapProfileEvidence(),
+  heapProfileRuns = [],
   flowEvidence = emptyFlowEvidence(),
   functionCoverage = emptyFunctionCoverage(),
   cleanupFailed = false,
   baseline = null,
   regressionPercent = 20,
   regressionMs = 25,
+  goVersion = null,
 }) {
   let redactionCount = 0;
   let outputTruncated = false;
@@ -238,6 +323,11 @@ export function createPerformanceCapsule({
   });
   const measured = sanitizedExecutions.filter((entry) => entry.phase === 'measurement');
   const timing = summarizeDistribution(measured.map((entry) => entry.execution.durationMs));
+  const memoryPeakRss = summarizeDistribution(
+    sanitizedExecutions
+      .filter((entry) => entry.phase === 'memory')
+      .map((entry) => entry.execution.memory?.peak_rss_bytes)
+  );
   const goBenchmarks =
     adapter === 'go-bench'
       ? parseGoBenchmarks(measured.map((entry) => `${entry.stdout}\n${entry.stderr}`).join('\n'))
@@ -250,23 +340,30 @@ export function createPerformanceCapsule({
         )
       : [];
   const vitestExecutionShare = summarizeVitestExecutionShare(vitestTests, timing);
-  const metricsExecutions = sanitizedExecutions.filter((entry) => entry.phase === 'metrics');
   const profileExecution = sanitizedExecutions.find((entry) => entry.phase === 'profile');
   const consoleMetrics =
-    metricsExecutions.length > 0
+    ['node-test', 'node-script', 'vitest', 'jest'].includes(adapter) && measured.length > 0
       ? summarizeConsoleBenchmarkMetrics(
-          metricsExecutions.map((entry) => `${entry.stdout}\n${entry.stderr}`)
+          measured.map((entry) => `${entry.stdout}\n${entry.stderr}`),
+          'unprofiled_measurement_execution_median'
         )
-      : ['node-test', 'node-script', 'vitest'].includes(adapter) && measured.length > 0
-        ? summarizeConsoleBenchmarkMetrics(
-            measured.map((entry) => `${entry.stdout}\n${entry.stderr}`),
-            'unprofiled_measurement_execution_median'
-          )
-        : parseConsoleBenchmarkMetrics(
-            profileExecution ? `${profileExecution.stdout}\n${profileExecution.stderr}` : '',
-            'profile_execution_stdout'
-          );
+      : parseConsoleBenchmarkMetrics(
+          profileExecution ? `${profileExecution.stdout}\n${profileExecution.stderr}` : '',
+          'profile_execution_stdout'
+        );
   const executionComplete = requiredExecutionsCompleted(sanitizedExecutions, adapter, name);
+  const heapProfileExecutions = sanitizedExecutions.filter(
+    (entry) => entry.phase === 'heap_profile'
+  );
+  const heapProfileExecutionComplete =
+    adapter !== 'go-bench' &&
+    heapProfileExecutions.length === V8_HEAP_PROFILE_RUNS &&
+    heapProfileExecutions.every(
+      (entry) =>
+        entry.execution.status === 'exited' &&
+        entry.execution.exitCode === 0 &&
+        selectedWorkloadExecuted(entry, adapter, name)
+    );
   const limitations = [];
   limitations.push(...functionCoverage.limitations);
   if (functionCoverage.truncated) {
@@ -283,9 +380,19 @@ export function createPerformanceCapsule({
       `Optional function coverage execution failed: ${entry.operationalError || `exit ${entry.execution.exitCode ?? 'unknown'}`}.`
     );
   }
+  for (const entry of heapProfileExecutions.filter(
+    (candidate) =>
+      candidate.execution.status !== 'exited' ||
+      candidate.execution.exitCode !== 0 ||
+      !selectedWorkloadExecuted(candidate, adapter, name)
+  )) {
+    limitations.push(
+      `Optional heap-allocation profile ${entry.index + 1} failed or did not select the exact workload: ${entry.operationalError || `exit ${entry.execution.exitCode ?? 'unknown'}`}.`
+    );
+  }
   for (const entry of sanitizedExecutions.filter(
     (candidate) =>
-      candidate.phase !== 'coverage' &&
+      !['coverage', 'heap_profile'].includes(candidate.phase) &&
       (candidate.execution.status !== 'exited' || candidate.execution.exitCode !== 0)
   )) {
     limitations.push(
@@ -301,6 +408,11 @@ export function createPerformanceCapsule({
   if (adapter === 'go-bench' && profileEvidence.hotspots.length === 0) {
     limitations.push('Go profiles contained no repository-owned source rows.');
   }
+  if (adapter === 'go-bench' && profileRuns.length > 0) {
+    limitations.push(
+      'Go pprof direct allocation values are normalized per benchmark operation; they do not represent retained heap or peak memory.'
+    );
+  }
   for (const kind of profileEvidence.failed_kinds ?? []) {
     limitations.push(`The ${kind} Go profile could not be normalized.`);
   }
@@ -309,6 +421,32 @@ export function createPerformanceCapsule({
   }
   if (adapter !== 'go-bench' && profileEvidence.hotspots.length === 0) {
     limitations.push('The CPU profile contained no repository-owned source samples.');
+  }
+  if (
+    adapter !== 'go-bench' &&
+    heapProfileExecutions.length > 0 &&
+    heapProfileEvidence.profile_files === 0
+  ) {
+    limitations.push('The runtime produced no V8 heap-allocation profile.');
+  }
+  if (
+    adapter !== 'go-bench' &&
+    heapProfileExecutionComplete &&
+    heapProfileEvidence.hotspots.every((hotspot) => hotspot.role !== 'application')
+  ) {
+    limitations.push(
+      'The heap-allocation profiles contained no repository-owned application source.'
+    );
+  }
+  if (
+    adapter !== 'go-bench' &&
+    heapProfileExecutionComplete &&
+    !heapProfileEvidence.repeatability?.qualified
+  ) {
+    limitations.push(heapProfileEvidence.repeatability.reason);
+  }
+  if (heapProfileEvidence.truncated) {
+    limitations.push('V8 heap-allocation profile evidence exceeded collection bounds.');
   }
   if (
     adapter !== 'go-bench' &&
@@ -330,6 +468,13 @@ export function createPerformanceCapsule({
   if (adapter !== 'go-bench' && timing.spread_percent !== null && timing.spread_percent > 50) {
     limitations.push(
       `Wall-time samples varied by ${timing.spread_percent}%; host load or startup noise may dominate the comparison.`
+    );
+  }
+  if (memoryPeakRss.count > 0) {
+    limitations.push(
+      adapter === 'go-bench'
+        ? 'Peak RSS is sampled from an owned Go benchmark binary with compilation excluded; it is a regression guard and does not identify an allocation source.'
+        : 'Peak RSS is sampled process-tree evidence; it includes runtime and test-runner memory and does not identify an allocation source.'
     );
   }
   if (vitestExecutionShare?.classification === 'startup_dominated') {
@@ -370,11 +515,27 @@ export function createPerformanceCapsule({
           ? 'stable'
           : 'profiled';
 
+  const qualifiedV8Candidate = profileEvidence.repeatability?.qualified
+    ? profileEvidence.repeatability.candidate
+    : null;
+  const qualifiedHeapAllocationSelections =
+    heapProfileExecutionComplete && !heapProfileEvidence.truncated
+      ? selectV8HeapAllocationCandidates(heapProfileEvidence, heapProfileRuns, qualifiedV8Candidate)
+      : [];
+  const qualifiedHeapAllocationSelection = qualifiedHeapAllocationSelections[0] ?? null;
+  const qualifiedHeapAllocationCandidate = qualifiedHeapAllocationSelection?.candidate ?? null;
   const hotspotFrames = profileEvidence.hotspots.map((hotspot, index) => ({
     id: `hotspot-${index + 1}`,
     file: hotspot.file,
     line: hotspot.line,
   }));
+  for (const [index, selection] of qualifiedHeapAllocationSelections.entries()) {
+    hotspotFrames.push({
+      id: `heap-allocation-hotspot-${index + 1}`,
+      file: selection.candidate.file,
+      line: selection.candidate.line,
+    });
+  }
   const relevantChanges = rankRelevantChanges(hotspotFrames, git.changed_lines).slice(
     0,
     LIMITS.changes
@@ -398,9 +559,6 @@ export function createPerformanceCapsule({
       threshold_percent: STARTUP_DOMINATED_SHARE_PERCENT,
     });
   }
-  const qualifiedV8Candidate = profileEvidence.repeatability?.qualified
-    ? profileEvidence.repeatability.candidate
-    : null;
   for (const hotspot of profileEvidence.hotspots
     .filter(
       (candidate) =>
@@ -419,23 +577,50 @@ export function createPerformanceCapsule({
       sample_share: hotspot.sample_share,
     });
   }
-  for (const hotspot of profileEvidence.hotspots
+  for (const { candidate, basis } of qualifiedHeapAllocationSelections) {
+    findings.push({
+      kind: 'node_allocation_candidate',
+      basis,
+      source: {
+        file: candidate.file,
+        line: candidate.line,
+        function: candidate.function,
+      },
+      sampled_bytes: candidate.sampled_bytes,
+      per_run_sampled_bytes: candidate.per_run_sampled_bytes,
+      sample_share: candidate.sample_share,
+      provenance: candidate.provenance,
+    });
+  }
+  const repeatedGoAllocations =
+    adapter === 'go-bench' ? repeatableGoAllocationCandidates(profileRuns) : [];
+  const repeatedGoAllocationKeys = new Set(
+    repeatedGoAllocations.map(
+      (candidate) => `${candidate.source.file}\0${candidate.source.function}`
+    )
+  );
+  const cumulativeGoAllocations = profileEvidence.hotspots
     .filter(
       (candidate) =>
         adapter === 'go-bench' &&
         candidate.role === 'application' &&
-        candidate.profile_kind === 'go_alloc_space' &&
-        candidate.cumulative_share >= APPLICATION_HOTSPOT_SHARE
+        candidate.profile_kind === 'go_alloc_objects' &&
+        candidate.cumulative_share >= APPLICATION_ALLOCATION_OBJECT_SHARE &&
+        !repeatedGoAllocationKeys.has(`${candidate.file}\0${candidate.function}`)
     )
-    .slice(0, 5)) {
-    findings.push({
-      kind: 'go_allocation_path_candidate',
-      basis: 'repository_owned_go_alloc_space_cumulative_path',
+    .map((hotspot) => ({
+      basis: 'repository_owned_go_alloc_objects_cumulative_path',
+      profile_kind: hotspot.profile_kind,
       source: { file: hotspot.file, line: hotspot.line, function: hotspot.function },
-      flat_profile_bytes: hotspot.flat,
-      cumulative_profile_bytes: hotspot.cumulative,
+      flat_profile_objects: hotspot.flat,
+      cumulative_profile_objects: hotspot.cumulative,
       flat_share: hotspot.flat_share,
       cumulative_share: hotspot.cumulative_share,
+    }));
+  for (const candidate of [...repeatedGoAllocations, ...cumulativeGoAllocations].slice(0, 5)) {
+    findings.push({
+      kind: 'go_allocation_path_candidate',
+      ...candidate,
     });
   }
   for (const hotspot of profileEvidence.hotspots
@@ -444,16 +629,16 @@ export function createPerformanceCapsule({
         adapter === 'go-bench' &&
         candidate.role === 'application' &&
         candidate.profile_kind === 'go_cpu' &&
-        candidate.cumulative_share >= APPLICATION_HOTSPOT_SHARE
+        candidate.flat_share >= APPLICATION_HOTSPOT_SHARE
     )
     .slice(0, 5)) {
     findings.push({
       kind: 'application_hotspot_candidate',
-      basis: 'repository_owned_go_cpu_cumulative_path',
+      basis: 'repository_owned_go_cpu_direct_path',
       profile_kind: hotspot.profile_kind,
       source: { file: hotspot.file, line: hotspot.line, function: hotspot.function },
-      self_time_ms: hotspot.cumulative,
-      sample_share: hotspot.cumulative_share,
+      self_time_ms: hotspot.flat,
+      sample_share: hotspot.flat_share,
     });
   }
   for (const change of relevantChanges) {
@@ -470,10 +655,12 @@ export function createPerformanceCapsule({
     subject: {
       repository_revision: git.repository_revision,
       diff_identity: git.diff_identity,
+      source_snapshot_sha256: git.source_snapshot_sha256,
       dirty: git.dirty,
       platform: process.platform,
       architecture: process.arch,
       node_version: process.version,
+      go_version: goVersion,
       host_load: {
         logical_cpus: cpus().length,
         one_minute: round(loadavg()[0]),
@@ -492,6 +679,7 @@ export function createPerformanceCapsule({
     observed: {
       executions: sanitizedExecutions.map((entry) => summarizeExecution(entry, adapter, name)),
       wall_time_ms: timing,
+      peak_rss_bytes: memoryPeakRss,
       hotspots: profileEvidence.hotspots,
       go_benchmarks: goBenchmarks,
       vitest_tests: vitestTests,
@@ -499,27 +687,42 @@ export function createPerformanceCapsule({
       console_metrics: consoleMetrics,
       profile_runs: profileRuns.map(profileRunSummary),
       profile_repeatability: profileEvidence.repeatability ?? null,
+      heap_allocation_hotspots: heapProfileEvidence.hotspots,
+      heap_profile_runs: heapProfileRuns.map(v8HeapProfileRunSummary),
+      heap_profile_repeatability: heapProfileEvidence.repeatability,
       flow_evidence: flowEvidence,
       function_coverage: functionCoverage,
     },
     findings,
     relationships: relevantChanges,
-    unverified: profileEvidence.hotspots
-      .filter(
-        (hotspot) =>
-          hotspot.role === 'application' &&
-          (adapter === 'go-bench' ||
-            (qualifiedV8Candidate &&
-              hotspot.file === qualifiedV8Candidate.file &&
-              hotspot.function === qualifiedV8Candidate.function))
-      )
-      .slice(0, 1)
-      .map((hotspot) => ({
-        kind: 'optimization_hypothesis',
-        summary: `Investigate ${hotspot.file}:${hotspot.line} because it received the largest repository-owned application CPU share.`,
-        verification_required:
-          'Change the candidate, capture a new capsule, and compare it with this baseline.',
-      })),
+    unverified: [
+      ...profileEvidence.hotspots
+        .filter(
+          (hotspot) =>
+            hotspot.role === 'application' &&
+            (adapter === 'go-bench' ||
+              (qualifiedV8Candidate &&
+                hotspot.file === qualifiedV8Candidate.file &&
+                hotspot.function === qualifiedV8Candidate.function))
+        )
+        .slice(0, 1)
+        .map((hotspot) => ({
+          kind: 'optimization_hypothesis',
+          summary: `Investigate ${hotspot.file}:${hotspot.line} because it received the largest repository-owned application CPU share.`,
+          verification_required:
+            'Change the candidate, capture a new capsule, and compare it with this baseline.',
+        })),
+      ...(qualifiedHeapAllocationCandidate
+        ? [
+            {
+              kind: 'allocation_reduction_hypothesis',
+              summary: `Investigate ${qualifiedHeapAllocationCandidate.file}:${qualifiedHeapAllocationCandidate.line} because two V8 heap profiles repeated it as the leading repository-owned sampled-allocation source.`,
+              verification_required:
+                'Rerun the identical workload and require lower repeated sampled-allocation evidence without correctness, latency, or peak-RSS regression.',
+            },
+          ]
+        : []),
+    ],
     comparison,
     limitations: [...new Set(limitations)],
     capture: {
@@ -527,9 +730,20 @@ export function createPerformanceCapsule({
       profile_files: profileEvidence.profile_files,
       profile_bytes: profileEvidence.profile_bytes,
       profile_samples: profileEvidence.profile_samples,
+      heap_profile_files: heapProfileEvidence.profile_files,
+      heap_profile_bytes: heapProfileEvidence.profile_bytes,
+      heap_profile_samples: heapProfileEvidence.profile_samples,
+      heap_sampled_bytes: heapProfileEvidence.sampled_bytes,
+      heap_sampling_interval_bytes: heapProfileEvidence.sampling_interval_bytes,
+      go_profile_iterations:
+        adapter === 'go-bench' ? (profileRuns[0]?.fixed_benchmark_iterations ?? null) : null,
+      heap_profile_truncated: heapProfileEvidence.truncated,
       truncated: profileEvidence.truncated || outputTruncated,
       redaction_count:
-        redactionCount + profileEvidence.redaction_count + functionCoverage.redaction_count,
+        redactionCount +
+        profileEvidence.redaction_count +
+        heapProfileEvidence.redaction_count +
+        functionCoverage.redaction_count,
       temporary_artifacts_retained: cleanupFailed,
       flow_files: flowEvidence.files,
       flow_events: flowEvidence.events.length,
@@ -547,6 +761,10 @@ export function createPerformanceCapsule({
             : 'The exact workload completed with bounded performance evidence.',
     },
   };
+  capsule.detector_coverage_matrix = createDetectorCoverageMatrix({
+    adapter,
+    performanceCapsule: capsule,
+  });
   const errors = validatePerformanceCapsule(capsule);
   if (errors.length > 0) throw new Error(`invalid performance capsule: ${errors.join(', ')}`);
   return capsule;
@@ -561,6 +779,7 @@ function summarizeExecution(entry, adapter, name) {
     signal: entry.execution.signal,
     duration_ms: entry.execution.durationMs,
     workload_selected: selectedWorkloadExecuted(entry, adapter, name),
+    ...(entry.execution.memory ? { memory: entry.execution.memory } : {}),
   };
   if (entry.execution.status === 'exited' && entry.execution.exitCode === 0) return summary;
   return {
@@ -660,15 +879,20 @@ export function parseGoBenchmarks(output) {
     }));
 }
 
+export function goProfileIterationCount(benchmark) {
+  const nanoseconds = benchmark?.ns_per_op?.median;
+  if (!Number.isFinite(nanoseconds) || nanoseconds <= 0) return null;
+  return Math.max(
+    1,
+    Math.min(GO_PROFILE_MAXIMUM_ITERATIONS, Math.round(GO_PROFILE_TARGET_NS / nanoseconds))
+  );
+}
+
 export function parseVitestTimings(outputs, repositoryRoot) {
   const groups = new Map();
   for (const output of outputs) {
-    let report;
-    try {
-      report = JSON.parse(output);
-    } catch {
-      continue;
-    }
+    const report = parseVitestReport(output);
+    if (!report) continue;
     for (const result of Array.isArray(report?.testResults) ? report.testResults : []) {
       const file = normalizeVitestFile(result?.name, repositoryRoot);
       for (const assertion of Array.isArray(result?.assertionResults)
@@ -956,7 +1180,8 @@ async function collectV8ProfileEvidence(directory, repositoryRoot) {
 }
 
 export function parseGoPprofTop(output, repositoryRoot, profileKind) {
-  const unit = profileKind === 'go_cpu' ? 'ms' : 'bytes';
+  const unit =
+    profileKind === 'go_cpu' ? 'ms' : profileKind === 'go_alloc_objects' ? 'count' : 'bytes';
   const rows = [];
   for (const line of String(output).split(/\r?\n/)) {
     const sourceMatch = /\s+(\/[^\s]+\.go):(\d+)(?:\s+\(inline\))?$/.exec(line);
@@ -992,18 +1217,20 @@ export function parseGoPprofTop(output, repositoryRoot, profileKind) {
         left.file.localeCompare(right.file) ||
         left.line - right.line
     )
-    .slice(0, LIMITS.hotspots);
+    .slice(0, LIMITS.hotspots * 8);
 }
 
-async function collectGoProfileEvidence(directory, repositoryRoot) {
+export async function collectGoProfileEvidence(directory, repositoryRoot) {
   const entries = await profileEntries(directory);
   const descriptors = [
     { name: 'go-cpu.pprof', kind: 'go_cpu', inspectKind: 'cpu' },
     { name: 'go-mem.pprof', kind: 'go_alloc_space', inspectKind: 'alloc_space' },
+    { name: 'go-mem.pprof', kind: 'go_alloc_objects', inspectKind: 'alloc_objects' },
   ];
   const files = entries.filter((entry) => descriptors.some((item) => item.name === entry.name));
   const hotspots = [];
   const failedKinds = [];
+  let truncated = false;
   for (const descriptor of descriptors) {
     if (!files.some((file) => file.name === descriptor.name)) {
       failedKinds.push(descriptor.kind);
@@ -1018,26 +1245,29 @@ async function collectGoProfileEvidence(directory, repositoryRoot) {
       failedKinds.push(descriptor.kind);
       continue;
     }
-    hotspots.push(...parseGoPprofTop(execution.stdout, repositoryRoot, descriptor.kind));
+    const rows = parseGoPprofTop(execution.stdout, repositoryRoot, descriptor.kind);
+    hotspots.push(...rows);
+    truncated ||= execution.truncated || rows.length >= LIMITS.hotspots * 8;
   }
   const selectedHotspots = [
-    ...selectGoProfileRows(hotspots, 'go_alloc_space', 16),
+    ...selectGoProfileRows(hotspots, 'go_alloc_objects', 12),
+    ...selectGoProfileRows(hotspots, 'go_alloc_space', 4),
     ...selectGoProfileRows(hotspots, 'go_cpu', 8),
   ];
   return {
-    kind: 'go_cpu_and_alloc_space',
+    kind: 'go_cpu_and_allocation',
     profile_files: files.length,
     profile_bytes: files.reduce((total, entry) => total + entry.size, 0),
     profile_samples: hotspots.length,
     hotspots: selectedHotspots,
     failed_kinds: failedKinds,
-    truncated: hotspots.length > selectedHotspots.length,
+    truncated,
     redaction_count: 0,
   };
 }
 
-function selectGoProfileRows(rows, kind, limit) {
-  return rows
+export function selectGoProfileRows(rows, kind, limit) {
+  const matching = rows
     .filter((row) => row.profile_kind === kind)
     .sort(
       (left, right) =>
@@ -1046,15 +1276,130 @@ function selectGoProfileRows(rows, kind, limit) {
         right.flat - left.flat ||
         left.file.localeCompare(right.file) ||
         left.line - right.line
+    );
+  if (kind !== 'go_alloc_objects') return matching.slice(0, limit);
+  const direct = matching
+    .filter((row) => row.flat > 0)
+    .toSorted(
+      (left, right) =>
+        Number(right.role === 'application') - Number(left.role === 'application') ||
+        right.flat - left.flat ||
+        right.cumulative - left.cumulative ||
+        left.file.localeCompare(right.file) ||
+        left.line - right.line
     )
-    .slice(0, limit);
+    .slice(0, Math.ceil(limit * 0.67));
+  const selected = new Set(direct.map((row) => `${row.file}\0${row.line}\0${row.function}`));
+  return [
+    ...direct,
+    ...matching.filter((row) => !selected.has(`${row.file}\0${row.line}\0${row.function}`)),
+  ].slice(0, limit);
+}
+
+export function repeatableGoAllocationCandidates(runs) {
+  if (!Array.isArray(runs) || runs.length !== V8_PROFILE_RUNS) return [];
+  const normalizedRuns = runs.map(normalizeGoAllocationRun);
+  if (normalizedRuns.some((run) => run === null)) return [];
+  const [first, second] = normalizedRuns;
+  const candidates = [];
+  for (const [key, leading] of first.candidates) {
+    const repeated = second.candidates.get(key);
+    if (!repeated) continue;
+    const perRunFlatObjects = [leading.flat, repeated.flat];
+    const perRunObjectsPerOperation = [
+      round(leading.flat / first.iterations, 6),
+      round(repeated.flat / second.iterations, 6),
+    ];
+    const flatShares = [leading.flat_share, repeated.flat_share];
+    const cumulativeShares = [leading.cumulative_share, repeated.cumulative_share];
+    candidates.push({
+      basis: 'repository_owned_go_alloc_objects_repeated_direct_path',
+      profile_kind: 'go_alloc_objects',
+      source: {
+        file: leading.file,
+        line: leading.line,
+        function: leading.function,
+      },
+      flat_profile_objects: round(summarizeDistribution(perRunFlatObjects).median),
+      cumulative_profile_objects: round(
+        summarizeDistribution([leading.cumulative, repeated.cumulative]).median
+      ),
+      flat_share: round(summarizeDistribution(flatShares).median, 4),
+      cumulative_share: round(summarizeDistribution(cumulativeShares).median, 4),
+      objects_per_op: round(summarizeDistribution(perRunObjectsPerOperation).median, 6),
+      per_run_objects_per_op: perRunObjectsPerOperation,
+      profile_runs: V8_PROFILE_RUNS,
+    });
+  }
+  return candidates.toSorted(
+    (left, right) =>
+      right.objects_per_op - left.objects_per_op ||
+      right.flat_share - left.flat_share ||
+      left.source.file.localeCompare(right.source.file) ||
+      left.source.function.localeCompare(right.source.function)
+  );
+}
+
+function normalizeGoAllocationRun(run) {
+  const iterations = run?.benchmark?.iterations?.median;
+  if (
+    run?.profile_files < 2 ||
+    run?.failed_kinds?.includes('go_alloc_objects') ||
+    !Number.isFinite(iterations) ||
+    iterations <= 0 ||
+    !Number.isInteger(run.fixed_benchmark_iterations) ||
+    iterations !== run.fixed_benchmark_iterations ||
+    !Array.isArray(run.hotspots)
+  ) {
+    return null;
+  }
+  const candidates = new Map();
+  for (const hotspot of run.hotspots) {
+    if (
+      hotspot.role !== 'application' ||
+      hotspot.profile_kind !== 'go_alloc_objects' ||
+      !Number.isFinite(hotspot.flat) ||
+      hotspot.flat <= 0
+    ) {
+      continue;
+    }
+    const key = `${hotspot.file}\0${hotspot.function}`;
+    const candidate = candidates.get(key) ?? {
+      file: hotspot.file,
+      line: hotspot.line,
+      function: hotspot.function,
+      flat: 0,
+      leading_flat: 0,
+      cumulative: 0,
+      flat_share: 0,
+      cumulative_share: 0,
+    };
+    if (hotspot.flat > candidate.leading_flat) {
+      candidate.line = hotspot.line;
+      candidate.leading_flat = hotspot.flat;
+    }
+    candidate.flat += hotspot.flat;
+    candidate.cumulative = Math.max(candidate.cumulative, hotspot.cumulative);
+    candidate.flat_share += hotspot.flat_share;
+    candidate.cumulative_share = Math.max(candidate.cumulative_share, hotspot.cumulative_share);
+    candidates.set(key, candidate);
+  }
+  return { iterations, candidates };
 }
 
 function parseGoPprofValue(value, unit) {
   if (value === '0') return 0;
+  if (unit === 'count') return parseScaledNumber(value);
   const suffix = unit === 'ms' ? 'ms' : 'B';
   if (!value.endsWith(suffix)) return Number.NaN;
-  return Number(value.slice(0, -suffix.length));
+  return parseScaledNumber(value.slice(0, -suffix.length));
+}
+
+function parseScaledNumber(value) {
+  const match = /^(-?\d+(?:\.\d+)?)([kKmMgG]?)$/.exec(value);
+  if (!match) return Number.NaN;
+  const scale = { '': 1, k: 1e3, K: 1e3, m: 1e6, M: 1e6, g: 1e9, G: 1e9 }[match[2]];
+  return Number(match[1]) * scale;
 }
 
 function parsePercent(value) {
@@ -1102,7 +1447,7 @@ export async function loadPerformanceCapsule(root, baselinePath) {
 export function selectedWorkloadExecuted(entry, adapter, name) {
   const output = `${entry.stdout}\n${entry.stderr}`;
   if (adapter === 'node-script') return true;
-  if (adapter === 'vitest') {
+  if (['vitest', 'jest'].includes(adapter)) {
     const selection = parseVitestSelection(entry.stdout);
     if (selection) return name ? selection.executed_tests === 1 : selection.executed_tests > 0;
     if (name && output.includes(`"status":"passed","title":${JSON.stringify(name)}`)) {
@@ -1115,12 +1460,12 @@ export function selectedWorkloadExecuted(entry, adapter, name) {
 }
 
 export function requiredExecutionsCompleted(entries, adapter, name) {
-  const required = entries.filter((entry) => entry.phase !== 'coverage');
+  const required = entries.filter((entry) => !['coverage', 'heap_profile'].includes(entry.phase));
   const exitedSuccessfully = required.every(
     (entry) => entry.execution.status === 'exited' && entry.execution.exitCode === 0
   );
   if (!exitedSuccessfully) return false;
-  if (adapter === 'vitest') {
+  if (['vitest', 'jest'].includes(adapter)) {
     return required.some((entry) => selectedWorkloadExecuted(entry, adapter, name));
   }
   return required.every((entry) => selectedWorkloadExecuted(entry, adapter, name));
@@ -1174,9 +1519,20 @@ function emptyFlowEvidence() {
   return { files: 0, bytes: 0, events: [], truncated: false, limitations: [] };
 }
 
-function combineProfileRuns(runs, adapter) {
+export function combineProfileRuns(runs, adapter) {
   if (runs.length === 0) return emptyProfileEvidence(adapter);
-  if (adapter === 'go-bench') return { ...runs[0], profile_runs: 1 };
+  if (adapter === 'go-bench') {
+    return {
+      ...runs[0],
+      profile_runs: runs.length,
+      profile_files: runs.reduce((total, run) => total + run.profile_files, 0),
+      profile_bytes: runs.reduce((total, run) => total + run.profile_bytes, 0),
+      profile_samples: runs.reduce((total, run) => total + run.profile_samples, 0),
+      failed_kinds: [...new Set(runs.flatMap((run) => run.failed_kinds ?? []))],
+      truncated: runs.some((run) => run.truncated),
+      redaction_count: runs.reduce((total, run) => total + run.redaction_count, 0),
+    };
+  }
   const aggregates = new Map();
   for (const run of runs) {
     for (const hotspot of run.hotspots) {
@@ -1297,6 +1653,81 @@ export function evaluateV8Repeatability(runs) {
   };
 }
 
+export function selectV8HeapAllocationCandidate(heapEvidence, heapRuns, cpuCandidate) {
+  return selectV8HeapAllocationCandidates(heapEvidence, heapRuns, cpuCandidate)[0] ?? null;
+}
+
+export function selectV8HeapAllocationCandidates(heapEvidence, heapRuns, cpuCandidate) {
+  const selections = [];
+  const primary = selectPrimaryV8HeapAllocationCandidate(heapEvidence, heapRuns, cpuCandidate);
+  if (primary) selections.push(primary);
+  for (const candidate of repeatableV8HeapAllocationCandidates(heapRuns, {
+    file: cpuCandidate?.file,
+  })) {
+    if (
+      selections.some(
+        (selection) =>
+          selection.candidate.file === candidate.file &&
+          selection.candidate.function === candidate.function
+      )
+    ) {
+      continue;
+    }
+    selections.push({
+      candidate,
+      basis: 'repository_owned_v8_sampled_allocation_bytes',
+    });
+  }
+  return selections.slice(0, V8_HEAP_CANDIDATE_LIMIT);
+}
+
+function selectPrimaryV8HeapAllocationCandidate(heapEvidence, heapRuns, cpuCandidate) {
+  const fallback = heapEvidence?.repeatability?.qualified
+    ? {
+        candidate: {
+          ...heapEvidence.repeatability.candidate,
+          sample_share:
+            heapEvidence.sampled_bytes > 0
+              ? round(
+                  heapEvidence.repeatability.candidate.sampled_bytes / heapEvidence.sampled_bytes,
+                  6
+                )
+              : 0,
+        },
+        basis: 'repository_owned_v8_sampled_allocation_bytes',
+      }
+    : null;
+  if (!cpuCandidate || heapRuns.length < V8_HEAP_PROFILE_RUNS) return fallback;
+
+  const alignedRuns = [];
+  for (const run of heapRuns) {
+    const candidate = run.hotspots.find(
+      (hotspot) =>
+        hotspot.role === 'application' &&
+        hotspot.file === cpuCandidate.file &&
+        hotspot.function === cpuCandidate.function
+    );
+    if (!candidate) return fallback;
+    alignedRuns.push({
+      ...run,
+      hotspots: [candidate, ...run.hotspots.filter((hotspot) => hotspot !== candidate)],
+    });
+  }
+  const aligned = evaluateV8HeapRepeatability(alignedRuns);
+  if (!aligned.qualified) return fallback;
+  return {
+    candidate: {
+      ...aligned.candidate,
+      sample_share:
+        heapEvidence.sampled_bytes > 0
+          ? round(aligned.candidate.sampled_bytes / heapEvidence.sampled_bytes, 6)
+          : 0,
+      provenance: 'repeated_v8_heap_source_intersecting_repeated_cpu_candidate',
+    },
+    basis: 'repository_owned_v8_sampled_allocation_bytes_intersecting_cpu_candidate',
+  };
+}
+
 function profileRunSummary(run, index) {
   return {
     index,
@@ -1306,6 +1737,12 @@ function profileRunSummary(run, index) {
     profile_samples: run.profile_samples,
     leading_application_hotspot:
       run.hotspots.find((hotspot) => hotspot.role === 'application') ?? null,
+    application_hotspots: run.hotspots
+      .filter((hotspot) => hotspot.role === 'application')
+      .slice(0, LIMITS.hotspots),
+    benchmark: run.benchmark ?? null,
+    fixed_benchmark_iterations: run.fixed_benchmark_iterations ?? null,
+    failed_kinds: run.failed_kinds ?? [],
     truncated: run.truncated,
   };
 }

@@ -1,0 +1,266 @@
+{
+  "schema_version": "runtime-self-improvement-proof/v1",
+  "repository": "codevetter",
+  "snapshot": "qualified_dirty_agent_worktree",
+  "inventory": {
+    "discovered_flows": 128,
+    "profile_capable_flows": 107,
+    "measurement_ready_flows": 6,
+    "discovery_truncated": true
+  },
+  "qualification_accuracy_fix": {
+    "false_flow": "scripts/runtime-failure-capsule/performance-diagnosis.test.mjs / diagnoses Go allocation pressure with evidence-linked verification",
+    "before": {
+      "score": 95,
+      "incorrect_direct_signal": "timing_measurement_source from an allocs/op assertion literal"
+    },
+    "after": {
+      "score": 70,
+      "direct_timing_signal": false,
+      "qualification_status": "needs_selection"
+    },
+    "rule": "Only executable timing calls inside the exact declaration establish direct Node measurement intent."
+  },
+  "selected_workload": {
+    "lab_id": "codevetter-self-qualified-20260812",
+    "target": "benchmarks/runtime-challenges/temperature-aggregation/go/parser_test.go",
+    "name": "BenchmarkAggregateFile",
+    "candidate": "benchmarks/runtime-challenges/temperature-aggregation/go/parser.go:44 aggregateReader",
+    "candidate_allocation_profile_share": 0.2712
+  },
+  "optimization": {
+    "summary": "Allocate aggregate values in stable 32-entry blocks instead of one heap object per distinct station.",
+    "correctness": "5 Go tests passed, including a block-boundary stability test.",
+    "samples": 10,
+    "warmups": 1,
+    "sub_benchmarks": [
+      {
+        "workers": 1,
+        "baseline_ns_per_op": 14082538,
+        "current_ns_per_op": 13889558,
+        "latency_delta_percent": -1.37,
+        "baseline_allocs_per_op": 144,
+        "current_allocs_per_op": 82,
+        "allocation_delta_percent": -43.056,
+        "baseline_bytes_per_op": 75984,
+        "current_bytes_per_op": 75984
+      },
+      {
+        "workers": 2,
+        "baseline_ns_per_op": 8721649,
+        "current_ns_per_op": 8494839,
+        "latency_delta_percent": -2.601,
+        "baseline_allocs_per_op": 367,
+        "current_allocs_per_op": 243,
+        "allocation_delta_percent": -33.787
+      },
+      {
+        "workers": 4,
+        "baseline_ns_per_op": 4569187,
+        "current_ns_per_op": 4344150,
+        "latency_delta_percent": -4.925,
+        "baseline_allocs_per_op": 652,
+        "current_allocs_per_op": 404,
+        "allocation_delta_percent": -38.037
+      },
+      {
+        "workers": 8,
+        "baseline_ns_per_op": 2576855,
+        "current_ns_per_op": 2516346,
+        "latency_delta_percent": -2.348,
+        "baseline_allocs_per_op": 1221,
+        "current_allocs_per_op": 725,
+        "allocation_delta_percent": -40.622
+      }
+    ],
+    "peak_rss": {
+      "baseline_median_bytes": 39452672,
+      "current_median_bytes": 39108608,
+      "delta_percent": -0.872,
+      "interpretation": "No regression; below the threshold for a standalone memory-improvement claim."
+    },
+    "verdict": {
+      "status": "confirmed",
+      "mechanically_confirmed": true,
+      "materially_useful": true,
+      "shipping_recommended": true,
+      "reason": "Allocation cost improved without an unacceptable ns/op regression."
+    }
+  },
+  "autonomous_accuracy_fixes": {
+    "observer_overhead": {
+      "false_candidate": "scripts/runtime-failure-capsule/node-heap-profile-preload.mjs:73 writeProfile",
+      "candidate_key": "27e633282c237f9098679eb9",
+      "per_run_sampled_bytes": [1690672, 2062744],
+      "cause": "Self-profiling made owned checkpoint and final-profile serialization look repository-contained and therefore application-owned.",
+      "change": "Retain the owned heap preload as test_or_harness evidence while excluding it from application sampled-byte totals, repeatability, and candidate selection.",
+      "replay": "codevetter-self-observer-boundary-20260813 completed eight bounded steps with no candidate_ready flow and no observer recommendation."
+    },
+    "nested_typescript_node_tests": {
+      "failed_run": "codevetter-self-observer-boundary-continue-20260813-s5",
+      "failure": "Raw root-level Node could not resolve the nested package's @/ TypeScript alias.",
+      "change": "Require a declared contained TSX loader, run from the nearest package root, keep the public target repository-relative, and hide the absolute loader path.",
+      "proof_run": "codevetter-nested-tsx-proof-20260813",
+      "adapter_identity": "local:node-test+tsx",
+      "working_directory": "apps/desktop",
+      "result": "The original ten-sample exact flow and three later desktop screens succeeded; the small flow produced no repeated material application allocation candidate."
+    },
+    "write_capable_standalone_scripts": {
+      "invalidated_run": "codevetter-self-tsx-enabled-continue-20260813-s8",
+      "observed": "scripts/generate-benchmark-dataset.mjs changed two tracked generated outputs before source-snapshot invalidation stopped the result.",
+      "cleanup": "Only the two lab-created generated-file diffs were reversed and both paths were verified clean.",
+      "change": "Generator/build/publish/migration-style names and direct filesystem-write primitives add blocking autonomous-qualification safety flags.",
+      "claim_boundary": "The invalidated run is safety evidence only and supports no performance conclusion."
+    }
+  },
+  "node_measured_path_accuracy": {
+    "workload": "benchmarks/runtime-challenges/temperature-aggregation/node/file-parser.benchmark.mjs",
+    "setup_source_retained": "file-fixture.mjs:18 buildDeterministicBlock",
+    "corrected_candidate": "node/file-parser.mjs:77 parseTextRows",
+    "candidate_sampled_bytes": 204984048,
+    "candidate_allocation_profile_share": 0.213231,
+    "selection_basis": "material repeated heap source intersecting the repeated CPU candidate",
+    "experiments": [
+      {
+        "kind": "collision-safe station interning",
+        "allocation_delta_percent": -99.5,
+        "latency_results_percent": [6.744, 10.09, 9.735],
+        "verdict": "rejected_as_threshold_unstable"
+      },
+      {
+        "kind": "direct byte parsing with first-seen station decoding",
+        "allocation_source_current_sampled_bytes": 0,
+        "latency_delta_percent": 27.702,
+        "verdict": "rejected"
+      }
+    ],
+    "result": "Both source edits were reverted; allocation churn alone did not justify the measured CPU cost."
+  },
+  "function_coverage_optimization": {
+    "workload": "function coverage normalization scales across source anchors",
+    "candidate": "scripts/runtime-failure-capsule/redact.mjs:10 redactText",
+    "baseline_candidate_sampled_bytes_per_run": [17118000, 16691760],
+    "current_candidate_sampled_bytes_per_run": [0, 0],
+    "change": "Coverage function names without credential, path, URL, query, or truncation syntax bypass the general-purpose text scrubber.",
+    "security_regression": "token=supersecret remains token=<redacted>, increments redaction_count, and does not survive serialized output.",
+    "samples": 10,
+    "largest_input_baseline_ms_per_op": 4.826,
+    "largest_input_current_ms_per_op_runs": [2.806, 2.673, 2.634],
+    "largest_input_delta_percent_runs": [-41.857, -44.613, -45.421],
+    "rss_first_run_delta_percent": -3.346,
+    "verdict": {
+      "status": "confirmed",
+      "mechanically_confirmed": true,
+      "materially_useful": true,
+      "shipping_recommended": true
+    }
+  },
+  "function_coverage_columnar_optimization": {
+    "candidate": "scripts/runtime-failure-capsule/function-coverage.mjs:8 collectV8FunctionCoverage",
+    "baseline_candidate_sampled_bytes_per_run": [5985592, 5767064],
+    "change": "Accumulate function metadata in one index Map and parallel arrays, then materialize objects only for the final bounded 128 functions.",
+    "behavior": "Cross-document duplicate call counts, deterministic ranking, V8 source anchors, runner-native coverage, and redaction remain unchanged.",
+    "samples": 10,
+    "allocation_delta_percent_runs": [-54.889, -57.351, -50.148],
+    "conservative_allocation_delta_percent_runs": [-53.628, -54.096, -46.166],
+    "largest_input_latency_delta_percent_runs": [0.345, 3.603, 1.495],
+    "rss_delta_percent_runs": [0.498, 1.681, 1.447],
+    "verdict": {
+      "status": "confirmed",
+      "mechanically_confirmed": true,
+      "materially_useful": true,
+      "shipping_recommended": true
+    }
+  },
+  "function_coverage_identity_optimization": {
+    "candidate": "scripts/runtime-failure-capsule/function-coverage.mjs:132 addFunction",
+    "baseline_candidate_sampled_bytes_per_run": [3721392, 4270944],
+    "change": "Replace per-function composite identity strings with a 32-bit numeric hash, exact field comparison, and linked collision chains.",
+    "correctness": "A deterministic regression uses two real colliding names (hash 2919344851) and proves both identities plus duplicate call-count aggregation survive.",
+    "samples": 10,
+    "allocation_delta_percent_runs": [-55.436, -59.123, -55.602],
+    "conservative_allocation_delta_percent_runs": [-50.775, -49.047, -48.275],
+    "largest_input_latency_delta_percent_runs": [-19.723, -17.394, -17.213],
+    "rss_delta_percent_runs": [1.431, 0.529, -0.607],
+    "verdict": {
+      "status": "confirmed",
+      "mechanically_confirmed": true,
+      "materially_useful": true,
+      "shipping_recommended": true
+    }
+  },
+  "go_temperature_cpu_experiment": {
+    "candidate": "benchmarks/runtime-challenges/temperature-aggregation/go/parser.go:77 parseTemperature",
+    "change": "Inline fixed-format unsigned digit validation.",
+    "latency_delta_percent": -0.081,
+    "allocation_delta_percent": 0,
+    "rss_delta_percent": -0.662,
+    "verdict": "inconclusive",
+    "result": "Source edit reverted and candidate excluded as immaterial."
+  },
+  "node_allocation_candidate_progression": {
+    "change": "Intersect both V8 heap runs and retain at most eight material application sources while returning only one selected candidate; when CPU evidence exists, secondary experiments remain in the CPU candidate's repository file.",
+    "setup_guard": "After parseTextRows was excluded, buildDeterministicBlock remained observed but could not displace measured-path sources in another file.",
+    "self_profile_candidates": [
+      {
+        "function": "collectV8FunctionCoverage",
+        "per_run_sampled_bytes": [2824000, 2459272],
+        "result": "excluded_as_broad_container"
+      },
+      {
+        "function": "addFunction",
+        "per_run_sampled_bytes": [1708216, 1890208],
+        "result": "retained_as_necessary_collision_safe_index_storage"
+      },
+      {
+        "function": "indexLineStarts",
+        "per_run_sampled_bytes": [431376, 535808],
+        "result": "experiment_rejected_and_reverted"
+      },
+      {
+        "function": "redactCoverageFunctionName",
+        "per_run_sampled_bytes": [557504, 655904],
+        "result": "experiment_confirmed"
+      }
+    ],
+    "verification_accuracy_fix": "An exact alternate file/function can be selected for verification, but source reduction now confirms only when total repository-application sampled bytes also show a separated improvement.",
+    "rejected_index_experiment": {
+      "change": "Replace boxed line-start offsets with a two-pass Uint32Array.",
+      "source_sampled_bytes_current": [0, 0],
+      "largest_input_latency_delta_percent": 8.524,
+      "rss_delta_percent": -0.511,
+      "baseline_application_sampled_bytes": [5455448, 5311632],
+      "current_application_sampled_bytes": [5782288, 5588072],
+      "verdict": "rejected_as_source_attribution_shift",
+      "result": "The source edit was reverted; disappearing source bytes did not represent a total application allocation reduction."
+    },
+    "dense_sampling_policy": {
+      "sampling_interval_bytes": 8192,
+      "baseline_profile_samples_per_run": [1237, 1145],
+      "baseline_profile_bytes_per_run": [142515, 136077],
+      "comparison_identity": "Baseline and current sampling intervals must match; a mismatch returns no confidence.",
+      "bounds": "Existing 250000-sample and 16 MiB profile ceilings remain unchanged."
+    },
+    "safe_name_wrapper_optimization": {
+      "change": "Return ordinary function-name strings directly and reserve the redaction result wrapper for credential, path, URL, query, backslash, newline, or truncation-shaped names.",
+      "baseline_source_sampled_bytes_per_run": [599984, 452048],
+      "current_source_sampled_bytes_per_run_runs": [[0, 0], [0, 0], [0, 0]],
+      "conservative_application_allocation_delta_percent_runs": [-15.105, -19.01, -20.622],
+      "largest_input_latency_delta_percent_runs": [-6.255, 0.546, 0.294],
+      "rss_delta_percent_runs": [0.653, 0.529, 0.373],
+      "rss_delta_bytes_runs": [688128, 557056, 393216],
+      "correctness": "Credential and URL-shaped names still use full redaction; secret values are absent and redaction counts remain correct.",
+      "verdict": {
+        "status": "confirmed",
+        "mechanically_confirmed": true,
+        "materially_useful": true,
+        "shipping_recommended": true
+      }
+    }
+  },
+  "limitations": [
+    "The inventory is truncated and does not establish complete CodeVetter flow coverage.",
+    "The result is an exact local deterministic Go benchmark, not production traffic or a public 1BRC leaderboard result.",
+    "RSS is a regression guard and does not attribute retained memory to the changed source."
+  ]
+}

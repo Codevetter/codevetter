@@ -8,7 +8,8 @@ import {
   validateDetection,
 } from './contracts.mjs';
 
-const CONFIG_PATTERN = /^(?:vitest|playwright)\.config\.[cm]?[jt]s$|^wrangler\.(?:toml|jsonc?)$/;
+const CONFIG_PATTERN =
+  /^(?:vitest|jest|playwright)\.config\.[cm]?[jt]s$|^wrangler\.(?:toml|jsonc?)$/;
 
 export async function detectRuntimeLanes(repositoryRoot) {
   const root = resolve(repositoryRoot);
@@ -16,6 +17,7 @@ export async function detectRuntimeLanes(repositoryRoot) {
   const packageFiles = files.filter((path) => basename(path) === 'package.json');
   const manifests = await Promise.all(packageFiles.map((path) => readPackage(join(root, path))));
   const vitestConfigs = files.filter((path) => basename(path).startsWith('vitest.config.'));
+  const jestConfigs = files.filter((path) => basename(path).startsWith('jest.config.'));
   const playwrightConfigs = files.filter((path) => basename(path).startsWith('playwright.config.'));
   const wranglerConfigs = files.filter((path) => basename(path).startsWith('wrangler.'));
   const goModules = files.filter((path) => basename(path) === 'go.mod');
@@ -38,6 +40,14 @@ export async function detectRuntimeLanes(repositoryRoot) {
       adapters: ['vitest'],
       evidence: [...vitestConfigs, ...packageFiles].slice(0, 16),
       limitations: ['Vitest availability is checked only when a diagnostic run is requested.'],
+    });
+  }
+  if (jestConfigs.length > 0 || hasDependency('jest')) {
+    lanes.push({
+      kind: 'jest',
+      adapters: ['jest'],
+      evidence: [...jestConfigs, ...packageFiles].slice(0, 16),
+      limitations: ['Jest availability is checked only when a diagnostic run is requested.'],
     });
   }
   if (playwrightConfigs.length > 0 || hasDependency('@playwright/test')) {

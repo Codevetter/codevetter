@@ -1,10 +1,18 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import { validatePerformanceDiagnosis } from './contracts.mjs';
-import { diagnosePerformanceCapsule, extractScaleCurve } from './performance-diagnosis.mjs';
+import {
+  diagnosePerformanceCapsule,
+  diagnosePerformanceRepository,
+  extractScaleCurve,
+} from './performance-diagnosis.mjs';
+import { selectProfileExperimentFinding } from './profile-tool-diagnosis.mjs';
 
-test('diagnoses Go allocation pressure with evidence-linked verification', () => {
+test('keeps cumulative-only Go allocation pressure below the experiment floor', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
       adapter: 'go-bench',
@@ -23,9 +31,10 @@ test('diagnoses Go allocation pressure with evidence-linked verification', () =>
           file: 'middleware.go',
           line: 55,
           role: 'application',
-          profile_kind: 'go_alloc_space',
+          profile_kind: 'go_alloc_objects',
+          unit: 'count',
           flat: 0,
-          cumulative: 6_051_072,
+          cumulative: 60_512,
           flat_share: 0,
           cumulative_share: 0.1059,
           sample_share: 0,
@@ -34,10 +43,21 @@ test('diagnoses Go allocation pressure with evidence-linked verification', () =>
       findings: [
         {
           kind: 'go_allocation_path_candidate',
-          basis: 'repository_owned_go_alloc_space_cumulative_path',
+          basis: 'repository_owned_go_alloc_objects_cumulative_path',
+          profile_kind: 'go_alloc_objects',
+          source: { file: 'middleware.go', line: 42, function: 'example.Middleware' },
+          flat_profile_objects: 0,
+          cumulative_profile_objects: 100_000,
+          flat_share: 0,
+          cumulative_share: 0.1,
+        },
+        {
+          kind: 'go_allocation_path_candidate',
+          basis: 'repository_owned_go_alloc_objects_cumulative_path',
+          profile_kind: 'go_alloc_objects',
           source: { file: 'middleware.go', line: 55, function: 'example.(*Client).Middleware' },
-          flat_profile_bytes: 0,
-          cumulative_profile_bytes: 6_051_072,
+          flat_profile_objects: 0,
+          cumulative_profile_objects: 60_512,
           flat_share: 0,
           cumulative_share: 0.1059,
         },
@@ -45,21 +65,406 @@ test('diagnoses Go allocation pressure with evidence-linked verification', () =>
     })
   );
 
-  assert.equal(report.diagnosis.kind, 'allocation_pressure');
-  assert.equal(report.verdict.status, 'actionable');
-  assert.equal(report.inferred[0].kind, 'allocation_path_candidate');
-  assert.deepEqual(report.inferred[0].evidence_ids, report.diagnosis.evidence_ids);
-  assert.match(report.unverified[0].falsification, /B\/op and allocs\/op/);
+  assert.equal(report.diagnosis.kind, 'allocation_signal_below_experiment_floor');
+  assert.equal(report.verdict.status, 'measured');
+  assert.deepEqual(report.inferred, []);
+  assert.deepEqual(report.unverified, []);
   assert.deepEqual(report.verification.success_criteria, [
-    'B/op decreases',
-    'allocs/op does not regress',
     'workload passes',
+    'compatible evidence is captured',
   ]);
+  assert.equal(report.next_action.kind, 'retain_guardrail_and_profile_another_flow');
+  const toolFinding = report.tool_diagnosis.findings.find(
+    (finding) => finding.kind === 'application_allocation_hotspot'
+  );
+  assert.equal(toolFinding.origin, 'tool_detected');
+  assert.equal(toolFinding.eligible_for_experiment, false);
+  assert.equal(toolFinding.observed.allocs_per_op, 30);
+  assert.equal(toolFinding.source.file, 'middleware.go');
+  assert.equal(selectProfileExperimentFinding(report), null);
+  assert.equal(
+    report.tool_diagnosis.detector_coverage.find(
+      (entry) => entry.detector === 'repository_allocation_hotspot'
+    ).status,
+    'ran'
+  );
   assert.equal(report.verification.baseline_json_pointer, '/performance_capsule');
   assert.deepEqual(validatePerformanceDiagnosis(report), []);
 });
 
-test('promotes a repository-owned Go cumulative CPU path after allocation pressure clears', () => {
+test('permits a material directly sampled repeated Go allocation line', () => {
+  const report = diagnosePerformanceCapsule(
+    performanceCapsule({
+      adapter: 'go-bench',
+      goBenchmarks: [
+        {
+          name: 'BenchmarkMiddleware-18',
+          ns_per_op: distribution(2423),
+          bytes_per_op: distribution(7358),
+          allocs_per_op: distribution(30),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      hotspots: [
+        {
+          function: 'example.newEventID',
+          file: 'uuid.go',
+          line: 35,
+          role: 'application',
+          profile_kind: 'go_alloc_objects',
+          unit: 'count',
+          flat: 25_035,
+          cumulative: 25_035,
+          flat_share: 0.12,
+          cumulative_share: 0.12,
+          sample_share: 0.12,
+        },
+      ],
+      findings: [
+        {
+          kind: 'go_allocation_path_candidate',
+          basis: 'repository_owned_go_alloc_objects_repeated_direct_path',
+          profile_kind: 'go_alloc_objects',
+          source: { file: 'uuid.go', line: 35, function: 'example.newEventID' },
+          flat_profile_objects: 25_035,
+          cumulative_profile_objects: 25_035,
+          flat_share: 0.12,
+          cumulative_share: 0.12,
+          objects_per_op: 1,
+          per_run_objects_per_op: [1, 1],
+        },
+      ],
+    })
+  );
+
+  const finding = selectProfileExperimentFinding(report);
+  assert.equal(report.diagnosis.kind, 'allocation_pressure');
+  assert.equal(finding.kind, 'application_allocation_hotspot');
+  assert.equal(finding.source.file, 'uuid.go');
+  assert.equal(finding.observed.allocation_profile_objects, 25_035);
+  assert.equal(finding.observed.objects_per_op, 1);
+  assert.equal(finding.inference.mechanism, 'repeatable_direct_go_allocation_source');
+  assert.equal(finding.eligible_for_experiment, true);
+});
+
+test('prefers a Polaris-shaped concrete allocation leaf over a broader direct allocator', () => {
+  const generic = {
+    kind: 'go_allocation_path_candidate',
+    basis: 'repository_owned_go_alloc_objects_cumulative_path',
+    profile_kind: 'go_alloc_objects',
+    source: {
+      file: 'internal/api/asset_search.go',
+      line: 1143,
+      function: 'example.eodhdResultToItem',
+    },
+    flat_profile_objects: 77_360,
+    cumulative_profile_objects: 77_360,
+    flat_share: 0.1716,
+    cumulative_share: 0.1716,
+  };
+  const concrete = {
+    kind: 'go_allocation_path_candidate',
+    basis: 'repository_owned_go_alloc_objects_cumulative_path',
+    profile_kind: 'go_alloc_objects',
+    source: {
+      file: 'internal/logos/logodev.go',
+      line: 64,
+      function: 'example.forLogoDevTicker',
+    },
+    flat_profile_objects: 30_944,
+    cumulative_profile_objects: 61_906,
+    flat_share: 0.0686,
+    cumulative_share: 0.1373,
+  };
+  const sourceContexts = [
+    sourceContext(generic.source, []),
+    sourceContext(concrete.source, [
+      {
+        kind: 'go_static_string_format',
+        lines: [64],
+        string_verbs: 3,
+        observation: 'fmt.Sprintf constructs one string from literal text and %s verbs only.',
+      },
+    ]),
+  ];
+  const report = diagnosePerformanceCapsule(
+    performanceCapsule({
+      adapter: 'go-bench',
+      goBenchmarks: [
+        {
+          name: 'BenchmarkCrossCategorySearchMerged-18',
+          ns_per_op: distribution(15_873),
+          bytes_per_op: distribution(36_746),
+          allocs_per_op: distribution(484),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      findings: [generic, concrete],
+    }),
+    { sourceContexts }
+  );
+
+  const selected = selectProfileExperimentFinding(report);
+  assert.equal(report.diagnosis.kind, 'allocation_pressure');
+  assert.equal(selected.source.file, 'internal/logos/logodev.go');
+  assert.equal(
+    selected.observed.selection_basis,
+    'direct_allocation_with_supported_source_pattern'
+  );
+  assert.deepEqual(selected.observed.source_pattern, {
+    kind: 'go_static_string_format',
+    lines: [64],
+    string_verbs: 3,
+  });
+  assert.equal(selected.eligible_for_experiment, true);
+  assert.match(selected.candidate_key, /^[0-9a-f]{24}$/);
+  assert.match(selected.unverified.join(' '), /only a hypothesis/);
+  assert.equal(
+    report.tool_diagnosis.findings.filter(
+      (finding) => finding.kind === 'application_allocation_hotspot'
+    ).length,
+    2
+  );
+  assert.equal(
+    selectProfileExperimentFinding(report, { excludedFindingIds: [selected.id] }).source.file,
+    'internal/api/asset_search.go'
+  );
+
+  const secondReport = diagnosePerformanceCapsule(
+    performanceCapsule({
+      adapter: 'go-bench',
+      goBenchmarks: [
+        {
+          name: 'BenchmarkLiveSearch-18',
+          ns_per_op: distribution(12_000),
+          bytes_per_op: distribution(26_456),
+          allocs_per_op: distribution(371),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      findings: [generic, concrete],
+    }),
+    { sourceContexts }
+  );
+  const secondSelected = selectProfileExperimentFinding(secondReport);
+  assert.notEqual(secondSelected.id, selected.id);
+  assert.equal(secondSelected.candidate_key, selected.candidate_key);
+  assert.equal(
+    selectProfileExperimentFinding(secondReport, {
+      excludedCandidateKeys: [selected.candidate_key],
+    }).source.file,
+    'internal/api/asset_search.go'
+  );
+
+  const changedSnapshot = performanceCapsule({
+    adapter: 'go-bench',
+    sourceSnapshotSha256: '1'.repeat(64),
+    goBenchmarks: [
+      {
+        name: 'BenchmarkLiveSearch-18',
+        ns_per_op: distribution(12_000),
+        bytes_per_op: distribution(26_456),
+        allocs_per_op: distribution(371),
+        provenance: 'go_test_benchmark_output',
+      },
+    ],
+    findings: [generic, concrete],
+  });
+  const changedSelected = selectProfileExperimentFinding(
+    diagnosePerformanceCapsule(changedSnapshot, { sourceContexts })
+  );
+  assert.notEqual(changedSelected.candidate_key, selected.candidate_key);
+});
+
+test('the repository diagnosis pipeline reaches a crowded Polaris-shaped allocation leaf', async (context) => {
+  const root = await mkdtemp(join(tmpdir(), 'codevetter-polaris-shaped-'));
+  context.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(
+    join(root, 'asset_search.go'),
+    [
+      'package example',
+      'func eodhdResultToItem(value string) map[string]any {',
+      '  meta := map[string]any{"value": value}',
+      '  meta["copy"] = value',
+      '  return meta',
+      '}',
+      '',
+    ].join('\n')
+  );
+  await writeFile(
+    join(root, 'logodev.go'),
+    [
+      'package example',
+      'import "fmt"',
+      'func forLogoDevTicker(ticker, token string) string {',
+      '  return fmt.Sprintf("https://img.example/ticker/%s?token=%s", ticker, token)',
+      '}',
+      '',
+    ].join('\n')
+  );
+  const generic = directGoAllocation('asset_search.go', 3, 'example.eodhdResultToItem', 0.1716);
+  const sameFunctionLine = directGoAllocation(
+    'asset_search.go',
+    4,
+    'example.eodhdResultToItem',
+    0.0858
+  );
+  const concrete = directGoAllocation('logodev.go', 4, 'example.forLogoDevTicker', 0.0686);
+  const report = await diagnosePerformanceRepository(
+    performanceCapsule({
+      adapter: 'go-bench',
+      goBenchmarks: [
+        {
+          name: 'BenchmarkCrossCategorySearchMerged-18',
+          ns_per_op: distribution(15_873),
+          bytes_per_op: distribution(36_746),
+          allocs_per_op: distribution(484),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      findings: [generic, sameFunctionLine, concrete],
+    }),
+    root
+  );
+
+  const selected = selectProfileExperimentFinding(report);
+  assert.equal(selected.source.file, 'logodev.go');
+  assert.equal(selected.inference.mechanism, 'direct_allocation_source_with_static_string_format');
+  assert.match(selected.candidate_context_sha256, /^[0-9a-f]{64}$/);
+  assert.deepEqual(
+    report.observed
+      .filter((entry) => entry.kind === 'runtime_source_context')
+      .map((entry) => entry.source.function),
+    ['eodhdResultToItem', 'forLogoDevTicker']
+  );
+
+  await writeFile(
+    join(root, 'logodev.go'),
+    [
+      'package example',
+      'import "fmt"',
+      '',
+      '',
+      'func forLogoDevTicker(ticker, token string) string {',
+      '  return fmt.Sprintf("https://img.example/ticker/%s?token=%s", ticker, token)',
+      '}',
+      '',
+    ].join('\n')
+  );
+  const lineMovedSnapshot = await diagnosePerformanceRepository(
+    performanceCapsule({
+      adapter: 'go-bench',
+      sourceSnapshotSha256: '1'.repeat(64),
+      goBenchmarks: [
+        {
+          name: 'BenchmarkCrossCategorySearchMerged-18',
+          ns_per_op: distribution(15_873),
+          bytes_per_op: distribution(36_746),
+          allocs_per_op: distribution(484),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      findings: [generic, sameFunctionLine, concrete],
+    }),
+    root
+  );
+  assert.equal(
+    selectProfileExperimentFinding(lineMovedSnapshot).candidate_key,
+    selected.candidate_key
+  );
+
+  await writeFile(join(root, 'unrelated.go'), 'package example\nconst unrelated = true\n');
+  const unrelatedSnapshot = await diagnosePerformanceRepository(
+    performanceCapsule({
+      adapter: 'go-bench',
+      sourceSnapshotSha256: '1'.repeat(64),
+      goBenchmarks: [
+        {
+          name: 'BenchmarkCrossCategorySearchMerged-18',
+          ns_per_op: distribution(15_873),
+          bytes_per_op: distribution(36_746),
+          allocs_per_op: distribution(484),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      findings: [generic, sameFunctionLine, concrete],
+    }),
+    root
+  );
+  assert.equal(
+    selectProfileExperimentFinding(unrelatedSnapshot).candidate_key,
+    selected.candidate_key
+  );
+
+  await writeFile(
+    join(root, 'logodev.go'),
+    [
+      'package example',
+      'import "fmt"',
+      'func forLogoDevTicker(ticker, token string) string {',
+      '  return fmt.Sprintf("https://changed.example/ticker/%s?token=%s", ticker, token)',
+      '}',
+      '',
+    ].join('\n')
+  );
+  const changedSource = await diagnosePerformanceRepository(
+    performanceCapsule({
+      adapter: 'go-bench',
+      sourceSnapshotSha256: '2'.repeat(64),
+      goBenchmarks: [
+        {
+          name: 'BenchmarkCrossCategorySearchMerged-18',
+          ns_per_op: distribution(15_873),
+          bytes_per_op: distribution(36_746),
+          allocs_per_op: distribution(484),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      findings: [generic, sameFunctionLine, concrete],
+    }),
+    root
+  );
+  assert.notEqual(
+    selectProfileExperimentFinding(changedSource).candidate_key,
+    selected.candidate_key
+  );
+});
+
+test('unsupported formatting does not displace the ordinary direct-allocation floor', () => {
+  const generic = directGoAllocation('generic.go', 10, 'example.generic', 0.12);
+  const unsupported = directGoAllocation('format.go', 20, 'example.formatCount', 0.06);
+  const report = diagnosePerformanceCapsule(
+    performanceCapsule({
+      adapter: 'go-bench',
+      goBenchmarks: [
+        {
+          name: 'BenchmarkFormat-18',
+          ns_per_op: distribution(1_000),
+          bytes_per_op: distribution(100),
+          allocs_per_op: distribution(2),
+          provenance: 'go_test_benchmark_output',
+        },
+      ],
+      findings: [generic, unsupported],
+    }),
+    { sourceContexts: [sourceContext(generic.source, []), sourceContext(unsupported.source, [])] }
+  );
+
+  assert.equal(selectProfileExperimentFinding(report).source.file, 'generic.go');
+});
+
+test('falls back to an eligible CPU finding when the preferred allocation path is ineligible', () => {
+  const allocation = { kind: 'application_allocation_hotspot', eligible_for_experiment: false };
+  const cpu = { kind: 'application_cpu_hotspot', eligible_for_experiment: true };
+  const selected = selectProfileExperimentFinding({
+    diagnosis: { kind: 'allocation_pressure' },
+    tool_diagnosis: { findings: [allocation, cpu] },
+  });
+
+  assert.equal(selected, cpu);
+});
+
+test('does not promote a cumulative-only Go CPU path as direct source evidence', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
       adapter: 'go-bench',
@@ -91,13 +496,17 @@ test('promotes a repository-owned Go cumulative CPU path after allocation pressu
     })
   );
 
-  assert.equal(report.diagnosis.kind, 'application_cpu_hotspot');
-  assert.equal(report.verdict.status, 'actionable');
+  assert.equal(report.diagnosis.kind, 'no_material_bottleneck_identified');
+  assert.equal(report.verdict.status, 'measured');
   assert.equal(
-    report.observed.find((entry) => entry.kind === 'repository_cpu_hotspot').source.line,
-    23
+    report.observed.some((entry) => entry.kind === 'repository_cpu_hotspot'),
+    false
   );
-  assert.equal(report.inferred[0].kind, 'cpu_path_candidate');
+  assert.equal(
+    report.tool_diagnosis.findings.some((finding) => finding.kind === 'application_cpu_hotspot'),
+    false
+  );
+  assert.equal(report.tool_diagnosis.detector_coverage[0].status, 'insufficient_evidence');
   assert.deepEqual(validatePerformanceDiagnosis(report), []);
 });
 
@@ -437,6 +846,60 @@ test('reports a repository CPU candidate when no stronger signal exists', () => 
   assert.equal(report.unverified[0].kind, 'cpu_reduction_hypothesis');
 });
 
+test('anchors a V8 heap candidate to the unique current source definition', () => {
+  const report = diagnosePerformanceCapsule(
+    performanceCapsule({
+      findings: [
+        {
+          kind: 'node_allocation_candidate',
+          basis: 'repository_owned_v8_sampled_allocation_bytes_intersecting_cpu_candidate',
+          source: {
+            file: 'src/lib/recommendations.ts',
+            line: 177,
+            function: 'calculateGymGuidance',
+          },
+          sampled_bytes: 296_884_248,
+          per_run_sampled_bytes: [148_696_496, 148_187_752],
+          sample_share: 0.830705,
+          provenance: 'repeated_v8_heap_source_intersecting_repeated_cpu_candidate',
+        },
+      ],
+    }),
+    {
+      sourceContexts: [
+        {
+          source: {
+            file: 'src/lib/recommendations.ts',
+            line: 254,
+            reported_line: 177,
+            function: 'calculateGymGuidance',
+            start_line: 230,
+            end_line: 310,
+          },
+          source_context_sha256: 'a'.repeat(64),
+          excerpt: '254: export function calculateGymGuidance() {',
+          patterns: [],
+          redaction_count: 0,
+          truncated: false,
+          provenance: 'bounded_runtime_selected_source',
+        },
+      ],
+    }
+  );
+
+  const observed = report.observed.find(
+    (entry) => entry.kind === 'repository_heap_allocation_source'
+  );
+  assert.equal(observed.source.line, 254);
+  assert.equal(observed.source.reported_line, 177);
+  const finding = selectProfileExperimentFinding(report);
+  assert.equal(finding.source.line, 254);
+  assert.equal(finding.source.reported_line, 177);
+  assert.match(finding.inference.summary, /recommendations\.ts:254/);
+  assert.match(finding.candidate_key, /^[0-9a-f]{24}$/);
+  assert.deepEqual(validatePerformanceDiagnosis(report), []);
+});
+
 test('keeps an already-fast supported-scale operation as a guardrail instead of optimization work', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
@@ -529,10 +992,15 @@ function performanceCapsule({
   goBenchmarks = [],
   consoleMetrics = [],
   findings = [],
+  sourceSnapshotSha256 = '0'.repeat(64),
 } = {}) {
   return {
     schema_version: 'runtime-performance-capsule/v1',
-    subject: { repository_revision: 'abc123', dirty: false },
+    subject: {
+      repository_revision: 'abc123',
+      source_snapshot_sha256: sourceSnapshotSha256,
+      dirty: false,
+    },
     adapter: { kind: adapter, executable_identity: `local:${adapter}`, arguments: [] },
     scope: {
       target: adapter === 'go-bench' ? 'benchmark_test.go' : 'src/work.test.ts',
@@ -572,4 +1040,35 @@ function metric(name, value) {
 
 function distribution(median) {
   return { count: 3, min: median, median, p95: median, max: median, spread_percent: 0 };
+}
+
+function directGoAllocation(file, line, functionName, share) {
+  return {
+    kind: 'go_allocation_path_candidate',
+    basis: 'repository_owned_go_alloc_objects_cumulative_path',
+    profile_kind: 'go_alloc_objects',
+    source: { file, line, function: functionName },
+    flat_profile_objects: 10_000,
+    cumulative_profile_objects: 10_000,
+    flat_share: share,
+    cumulative_share: share,
+  };
+}
+
+function sourceContext(source, patterns) {
+  return {
+    source: {
+      file: source.file,
+      line: source.line,
+      function: source.function.split('.').at(-1),
+      reported_function: source.function,
+      start_line: Math.max(1, source.line - 2),
+      end_line: source.line + 2,
+    },
+    excerpt: '',
+    patterns,
+    redaction_count: 0,
+    truncated: false,
+    provenance: 'bounded_runtime_selected_source',
+  };
 }

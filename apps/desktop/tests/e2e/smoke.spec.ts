@@ -51,7 +51,7 @@ test.describe('Smoke tests', () => {
 
     // Product pillars plus the Settings utility.
     const links = nav.locator('[data-nav-destination]');
-    await expect(links).toHaveCount(7);
+    await expect(links).toHaveCount(8);
     await expect(nav.getByTestId('check-change-action')).toBeVisible();
     for (const label of [
       'Usage',
@@ -59,6 +59,7 @@ test.describe('Smoke tests', () => {
       'Board',
       'Review',
       'Testing',
+      'Optimize',
       'Repo Unpack',
       'Settings',
     ]) {
@@ -66,6 +67,22 @@ test.describe('Smoke tests', () => {
     }
     await expect(nav.getByText('Roadmap')).toHaveCount(0);
     await expect(nav.getByText('Now')).toHaveCount(0);
+  });
+
+  test('Optimize explains the bounded process and completed proof in browser preview', async ({
+    page,
+  }) => {
+    await navigateTo(page, '/optimize');
+    await waitForNoSpinners(page);
+
+    await expect(
+      page.getByRole('heading', { name: 'Profile a flow. Prove the change.' })
+    ).toBeVisible();
+    await expect(page.getByText('One bounded evidence loop, in order')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Anime List: one candidate rejected, one retained' })
+    ).toBeVisible();
+    await expect(page.getByText('not a material shipped-bundle win')).toBeVisible();
   });
 
   test('Nav bar highlights the active route', async ({ page }) => {
@@ -82,7 +99,7 @@ test.describe('Smoke tests', () => {
   // ─── No console errors across all pages ────────────────────────────────
 
   test('No unexpected console errors on any page', async ({ page }) => {
-    const routes = ['/', '/review', '/settings'];
+    const routes = ['/', '/review', '/optimize', '/settings'];
 
     for (const route of routes) {
       await navigateTo(page, route);

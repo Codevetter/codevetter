@@ -614,6 +614,8 @@ fn main() {
             commands::history::get_usage_by_model,
             commands::local_qualification::benchmark_dashboard_ipc,
             commands::local_qualification::account_local_caches,
+            commands::performance_lab::run_performance_lab,
+            commands::performance_lab::list_performance_lab_receipts,
             // Repo activity intelligence (shown inside Repo -> Activity)
             // T-Rex sandbox (/review → Test branch)
             commands::sandbox::run_branch_sandbox,

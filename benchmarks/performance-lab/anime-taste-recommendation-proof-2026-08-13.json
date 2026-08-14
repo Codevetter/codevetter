@@ -1,0 +1,81 @@
+{
+  "schema_version": "runtime-product-optimization-proof/v1",
+  "product": "anime-list",
+  "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+  "snapshot": "qualified_stable_dirty_patch",
+  "claim_boundary": "Exact local pure-function workload over the checked-in 14,841-title catalog only; production invocation frequency, D1 and network latency, browser responsiveness, field devices, and retained-heap impact are unverified.",
+  "flow": {
+    "target": "src/recommendations.performance.test.ts",
+    "name": "scales taste recommendations across the checked-in catalog",
+    "catalog_sizes": [1000, 5000, 14841],
+    "watchlist_titles": 120,
+    "recommendation_limit": 12,
+    "iterations_per_input": 20,
+    "external_operations": []
+  },
+  "harness_correction": {
+    "observed": "A static 16 MB JSON import was transformed by Vite in both the parent and test worker. The exact one-worker process tree independently peaked at 5624201216 bytes; CodeVetter's three-pass median stayed at 5752242176 bytes.",
+    "one_worker_was_not_the_cause": "The pre-bound median was 5774032896 bytes and the one-worker replay remained 5752242176 bytes.",
+    "change": "Read and parse the same checked-in catalog inside the test worker before the timed operation instead of statically importing it through Vite.",
+    "bounded_median_process_tree_rss_bytes": 468172800,
+    "harness_rss_correction_percent": 91.861,
+    "wall_median_ms_before": 3044,
+    "wall_median_ms_after": 613,
+    "claim": "This is benchmark-harness correction, not an Anime product memory or latency improvement."
+  },
+  "workload_discovery": {
+    "assertion_median_ms": 156.044,
+    "wall_median_ms": 613,
+    "assertion_share_percent": 25.456,
+    "verdict": "actionable",
+    "selected_cpu_source": "src/recommendations.ts:123 scoreAnime",
+    "selected_allocation_source": "src/recommendations.ts:60 scoreAnime",
+    "baseline_source_sampled_bytes_per_run": [178315800, 176089088],
+    "baseline_application_sampled_bytes_per_run": [182724384, 180703176]
+  },
+  "change": {
+    "summary": "During the positive-limit catalog scan, compute only rounded taste score and retain bounded anime/score pairs; materialize the public recommendation objects, genre/theme arrays, and reason arrays only for final winners.",
+    "unchanged_path": "The existing limit <= 0 path remains unchanged.",
+    "behavior_gate": {
+      "real_catalog_sizes": [1000, 5000, 14841],
+      "limits": [1, 12, 0, -1],
+      "cases": 12,
+      "baseline_sha256": "57f260e7867e5ced7933786c87152d3e08f40f1b73e52a382e5c6dfbb78de093",
+      "current_sha256": "57f260e7867e5ced7933786c87152d3e08f40f1b73e52a382e5c6dfbb78de093"
+    }
+  },
+  "verification": {
+    "baseline_samples": 10,
+    "current_samples_per_run": 10,
+    "independent_current_runs": 3,
+    "baseline_ms_per_op": {
+      "size1000": 0.51,
+      "size5000": 1.882,
+      "size14841": 4.545
+    },
+    "current_ms_per_op_runs": {
+      "size1000": [0.28, 0.281, 0.283],
+      "size5000": [0.883, 0.881, 0.891],
+      "size14841": [2.805, 2.778, 2.798]
+    },
+    "largest_input_latency_improvement_percent_runs": [38.284, 38.878, 38.438],
+    "source_conservative_allocation_improvement_percent_runs": [99.958, 99.944, 99.958],
+    "application_conservative_allocation_improvement_percent_runs": [60.2, 61.211, 61.125],
+    "baseline_median_process_tree_rss_bytes": 470384640,
+    "current_median_process_tree_rss_bytes_runs": [442990592, 441614336, 441319424],
+    "median_process_tree_rss_delta_percent_runs": [-5.824, -6.116, -6.179],
+    "verdict_runs": ["confirmed", "confirmed", "confirmed"],
+    "shipping_recommended_runs": [true, true, true],
+    "correctness": {
+      "tests": "137 passed across 30 files.",
+      "typecheck": "passed",
+      "lint": "passed"
+    }
+  },
+  "codevetter_accuracy_improvement": {
+    "fixed_topology": "Every exact Vitest pass now uses one fork worker with file parallelism disabled.",
+    "large_fixture_admission": "Contained relative static JSON imports above 1 MiB remain visible but receive a large_static_json_fixture_signal and cannot enter autonomous execution. Metadata is inspected without reading fixture contents.",
+    "small_fixture_boundary": "Contained static JSON fixtures at or below 1 MiB remain eligible.",
+    "result": "The corrected harness retained the same actionable scoreAnime finding while reducing evaluator RSS from multi-gigabyte amplification to a bounded local process tree."
+  }
+}

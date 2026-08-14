@@ -1,0 +1,78 @@
+{
+  "schema_version": "codevetter-browser-probe-stability-schedule-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can own the local repetition budget for a browser probe, reuse integrity-checked evidence first, and stop without spending an admitted run when existing routes already disagree.",
+  "implementation_evidence": {
+    "schedule_schema": "runtime-browser-probe-stability-schedule/v1",
+    "surfaces": [
+      "stabilize-browser-probe CLI",
+      "stabilize_browser_probe MCP"
+    ],
+    "limits": {
+      "maximum_total_observations": 3,
+      "maximum_new_runs": 3,
+      "execution": "sequential",
+      "receipt_bytes": 131072
+    },
+    "stop_states": [
+      "stable",
+      "unstable",
+      "correctness_failed",
+      "evidence_incomplete",
+      "stale",
+      "operational_failure",
+      "budget_exhausted"
+    ],
+    "boundaries": [
+      "existing probe and linked Playwright evidence is integrity-checked before new execution",
+      "new recapture IDs are derived from one bounded schedule ID",
+      "route disagreement stops before a third run and is never majority-voted away",
+      "source identity is checked before each terminal receipt is atomically persisted",
+      "caller cannot provide commands, paths, environment, base URLs, concurrency, or network policy",
+      "schedule assessment remains local-only, low-confidence, non-causal, and edit-ineligible"
+    ]
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "schedule_id": "stability-schedule-high-signal-20260813-a",
+    "schedule_receipt": ".codevetter/browser-probe-stability-schedules/stability-schedule-high-signal-20260813-a/receipt.json",
+    "schedule_receipt_sha256": "c1f843d38a3e47708370f219649ed35930aa58e921f54089a98cde68ca0120ea",
+    "schedule_receipt_bytes": 6299,
+    "existing_recapture_ids": [
+      "executable-probe-high-signal-20260813-a",
+      "executable-probe-high-signal-20260813-b"
+    ],
+    "budget": {
+      "existing_requested": 2,
+      "reused": 2,
+      "new_runs_requested": 1,
+      "new_runs_admitted": 1,
+      "new_runs_executed": 0,
+      "total_observations": 2,
+      "remaining_new_runs": 1,
+      "remaining_observations": 1
+    },
+    "state": "unstable",
+    "terminal_reason": "compatible_routes_disagreed",
+    "correctness": [
+      "failed",
+      "failed"
+    ],
+    "routes": [
+      "inspect_main_thread_runtime",
+      "capture_narrower_precommit_evidence"
+    ],
+    "cli_mcp_idempotent_parity": true,
+    "normalized_schedule_sha256": "2129e1ae10dbb8904caf943dc286bf6e14e46713ed3121ac3c237cfbe2186584",
+    "application_or_browser_processes_started_by_schedule": 0,
+    "cloud_or_production_operations": 0
+  },
+  "interpretation": "Although the caller allowed one additional local run, CodeVetter consumed none because two compatible durable observations already disagreed. The terminal receipt preserves the unspent budget and exposes no next probe or edit authority. Reinvoking the same schedule through MCP reused the integrity-checked receipt and returned the same normalized result.",
+  "limitations": [
+    "This proof exercises evidence reuse and early stopping; its fresh-execution behavior is covered by hermetic sequential scheduler tests rather than another High Signal browser run.",
+    "Both reused browser assertions failed, independently preventing follow-up eligibility.",
+    "No bottleneck, source cause, optimization, production behavior, or user impact is claimed."
+  ]
+}

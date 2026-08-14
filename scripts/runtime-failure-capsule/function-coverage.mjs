@@ -14,7 +14,13 @@ export async function collectV8FunctionCoverage(directory, repositoryRoot) {
     return emptyFunctionCoverage(['The V8 coverage artifact directory was unavailable.']);
   }
 
-  const aggregates = new Map();
+  const aggregateIndexes = new Map();
+  const aggregateFunctions = [];
+  const aggregateFiles = [];
+  const aggregateStartLines = [];
+  const aggregateEndLines = [];
+  const aggregateCallCounts = [];
+  const aggregateCollisionNext = [];
   const sourceCache = new Map();
   let bytes = 0;
   let redactionCount = 0;
@@ -62,21 +68,12 @@ export async function collectV8FunctionCoverage(directory, repositoryRoot) {
         ) {
           continue;
         }
-        const safeName = redactText(name, { repositoryRoot: root, limit: 160 });
-        redactionCount += safeName.redaction_count;
+        const safeName = redactCoverageFunctionName(name, root);
+        const functionName = typeof safeName === 'string' ? safeName : safeName.text;
+        if (typeof safeName !== 'string') redactionCount += safeName.redaction_count;
         const startLine = offsetLine(source, range.startOffset);
         const endLine = offsetLine(source, range.endOffset);
-        const key = `${source.relative}:${startLine}:${endLine}:${safeName.text}`;
-        const aggregate = aggregates.get(key) ?? {
-          function: safeName.text,
-          file: source.relative,
-          start_line: startLine,
-          end_line: endLine,
-          call_count: 0,
-          role: 'application',
-        };
-        aggregate.call_count += range.count;
-        aggregates.set(key, aggregate);
+        addFunction(functionName, source.relative, startLine, endLine, range.count);
       }
     }
     for (const [sourcePath, coverage] of Object.entries(document).slice(0, LIMITS.scanFiles)) {
@@ -98,33 +95,32 @@ export async function collectV8FunctionCoverage(directory, repositoryRoot) {
         ) {
           continue;
         }
-        const safeName = redactText(functionName, { repositoryRoot: root, limit: 160 });
-        redactionCount += safeName.redaction_count;
-        const key = `${relative}:${startLine}:${endLine}:${safeName.text}`;
-        const aggregate = aggregates.get(key) ?? {
-          function: safeName.text,
-          file: relative,
-          start_line: startLine,
-          end_line: endLine,
-          call_count: 0,
-          role: 'application',
-        };
-        aggregate.call_count += count;
-        aggregates.set(key, aggregate);
+        const safeName = redactCoverageFunctionName(functionName, root);
+        const redactedFunctionName = typeof safeName === 'string' ? safeName : safeName.text;
+        if (typeof safeName !== 'string') redactionCount += safeName.redaction_count;
+        addFunction(redactedFunctionName, relative, startLine, endLine, count);
       }
     }
   }
 
-  const functions = [...aggregates.values()]
+  const functions = Array.from({ length: aggregateCallCounts.length }, (_, index) => index)
     .toSorted(
       (left, right) =>
-        right.call_count - left.call_count ||
-        left.file.localeCompare(right.file) ||
-        left.start_line - right.start_line
+        aggregateCallCounts[right] - aggregateCallCounts[left] ||
+        aggregateFiles[left].localeCompare(aggregateFiles[right]) ||
+        aggregateStartLines[left] - aggregateStartLines[right]
     )
     .slice(0, LIMITS.functionCoverage)
-    .map((entry, index) => ({ id: `function-coverage-${index + 1}`, ...entry }));
-  if (aggregates.size > functions.length) truncated = true;
+    .map((entry, index) => ({
+      id: `function-coverage-${index + 1}`,
+      function: aggregateFunctions[entry],
+      file: aggregateFiles[entry],
+      start_line: aggregateStartLines[entry],
+      end_line: aggregateEndLines[entry],
+      call_count: aggregateCallCounts[entry],
+      role: 'application',
+    }));
+  if (aggregateCallCounts.length > functions.length) truncated = true;
   return {
     kind: 'v8_function_coverage',
     coverage_files: names.length,
@@ -135,6 +131,44 @@ export async function collectV8FunctionCoverage(directory, repositoryRoot) {
     limitations:
       names.length === 0 ? ['The diagnostic execution produced no V8 function coverage.'] : [],
   };
+
+  function addFunction(name, file, startLine, endLine, count) {
+    const key = functionIdentityHash(name, file, startLine, endLine);
+    let existing = aggregateIndexes.get(key);
+    while (existing !== undefined && existing !== -1) {
+      if (
+        aggregateFunctions[existing] === name &&
+        aggregateFiles[existing] === file &&
+        aggregateStartLines[existing] === startLine &&
+        aggregateEndLines[existing] === endLine
+      ) {
+        aggregateCallCounts[existing] += count;
+        return;
+      }
+      existing = aggregateCollisionNext[existing];
+    }
+    const index = aggregateCallCounts.length;
+    aggregateCollisionNext.push(aggregateIndexes.get(key) ?? -1);
+    aggregateIndexes.set(key, index);
+    aggregateFunctions.push(name);
+    aggregateFiles.push(file);
+    aggregateStartLines.push(startLine);
+    aggregateEndLines.push(endLine);
+    aggregateCallCounts.push(count);
+  }
+}
+
+function functionIdentityHash(name, file, startLine, endLine) {
+  let hash = 2_166_136_261;
+  for (let index = 0; index < file.length; index += 1) {
+    hash = Math.imul(hash ^ file.charCodeAt(index), 16_777_619);
+  }
+  hash = Math.imul(hash ^ startLine, 16_777_619);
+  hash = Math.imul(hash ^ endLine, 16_777_619);
+  for (let index = 0; index < name.length; index += 1) {
+    hash = Math.imul(hash ^ name.charCodeAt(index), 16_777_619);
+  }
+  return hash >>> 0;
 }
 
 export function emptyFunctionCoverage(limitations = []) {
@@ -147,6 +181,29 @@ export function emptyFunctionCoverage(limitations = []) {
     redaction_count: 0,
     limitations,
   };
+}
+
+function redactCoverageFunctionName(name, repositoryRoot) {
+  if (name.length <= 160) {
+    let sensitiveSyntax = false;
+    for (let index = 0; index < name.length; index += 1) {
+      const code = name.charCodeAt(index);
+      if (
+        code === 10 ||
+        code === 13 ||
+        code === 47 ||
+        code === 58 ||
+        code === 61 ||
+        code === 63 ||
+        code === 92
+      ) {
+        sensitiveSyntax = true;
+        break;
+      }
+    }
+    if (!sensitiveSyntax) return name;
+  }
+  return redactText(name, { repositoryRoot, limit: 160 });
 }
 
 async function containedSource(url, root, cache) {

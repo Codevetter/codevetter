@@ -1,0 +1,311 @@
+{
+  "schema_version": "chosen-product-performance-proof/v1",
+  "product": "polaris",
+  "provenance": "CodeVetter local Go benchmark over deterministic stub providers; no database, network, external-provider, production-load, or user-latency claim.",
+  "subject": {
+    "repository_revision": "5a6da5eec817a0b4d92354f310605ff839989090",
+    "baseline_source_snapshot_sha256": "27762db617829165afb4043aa4000d8974a00a885cd43d09a87ec56658105ab2",
+    "candidate_source_snapshot_sha256": "009ee95d3b6eb51bc772a92008f60cb0e6c54c41d42dcfb4283a61ceea4013cf",
+    "latest_source_snapshot_sha256": "45ac14955002e9e8ff03b344c98989e5de7239f40c9e2972474b46239d06a28a",
+    "dirty": true
+  },
+  "scope": {
+    "target": "internal/api/asset_search_benchmark_test.go",
+    "name": "BenchmarkCrossCategorySearchMerged",
+    "candidate": "internal/logos/logodev.go URL construction"
+  },
+  "baseline": {
+    "samples": 10,
+    "median_ns_per_op": 15873,
+    "bytes_per_op": 36746,
+    "allocs_per_op": 484,
+    "median_peak_process_tree_rss_bytes": 190627840
+  },
+  "verification_runs": [
+    {
+      "samples": 10,
+      "median_ns_per_op": 14050,
+      "latency_delta_percent": -11.485,
+      "bytes_per_op": 36232,
+      "bytes_delta_percent": -1.399,
+      "allocs_per_op": 452,
+      "allocations_delta_percent": -6.612,
+      "median_peak_process_tree_rss_bytes": 190283776,
+      "rss_delta_percent": -0.18,
+      "verdict": "confirmed"
+    },
+    {
+      "samples": 10,
+      "median_ns_per_op": 13892,
+      "latency_delta_percent": -12.48,
+      "bytes_per_op": 36232,
+      "bytes_delta_percent": -1.399,
+      "allocs_per_op": 452,
+      "allocations_delta_percent": -6.612,
+      "median_peak_process_tree_rss_bytes": 190185472,
+      "rss_delta_percent": -0.232,
+      "verdict": "confirmed"
+    }
+  ],
+  "correctness": {
+    "focused_search_tests": 59,
+    "focused_logo_tests": 31,
+    "full_go_tests": 1160,
+    "packages": 36,
+    "status": "passed"
+  },
+  "flow_progression": {
+    "excluded_findings": [
+      "f44a63e5c88c14ff8ce539f0",
+      "53e4fee324d661d1e4e7bfac"
+    ],
+    "initial_measured_flows": 1,
+    "final_measured_flows": 5,
+    "total_declared_flows": 10,
+    "measured_after_exhaustion": [
+      "BenchmarkEnrichIngestRowsLocalPipeline",
+      "BenchmarkIngestPostEnrichmentNormalization",
+      "BenchmarkLiveEODHDSearchStocksFunds",
+      "BenchmarkStaticCatalogSearchCommonQuery"
+    ],
+    "boundary": "Exclusions were caller skips. The earlier pre-sized-map verifier is evidence for one source hypothesis, not proof that every later finding at that source is rejected."
+  },
+  "static_catalog_experiment": {
+    "candidate": "Precompute deterministic catalog logo URLs in the existing immutable search index.",
+    "baseline": {
+      "samples": 10,
+      "median_ns_per_op": 1785,
+      "bytes_per_op": 5248,
+      "allocs_per_op": 5,
+      "median_peak_process_tree_rss_bytes": 198098944
+    },
+    "verification_runs": [
+      {
+        "samples": 10,
+        "median_ns_per_op": 1581,
+        "latency_delta_percent": -11.429,
+        "bytes_per_op": 4864,
+        "bytes_delta_percent": -7.317,
+        "allocs_per_op": 1,
+        "allocations_delta_percent": -80,
+        "median_peak_process_tree_rss_bytes": 202932224,
+        "rss_delta_percent": 2.44,
+        "verdict": "confirmed"
+      },
+      {
+        "samples": 10,
+        "median_ns_per_op": 1577,
+        "latency_delta_percent": -11.653,
+        "bytes_per_op": 4864,
+        "bytes_delta_percent": -7.317,
+        "allocs_per_op": 1,
+        "allocations_delta_percent": -80,
+        "median_peak_process_tree_rss_bytes": 215842816,
+        "rss_delta_percent": 8.957,
+        "verdict": "confirmed"
+      },
+      {
+        "samples": 10,
+        "median_ns_per_op": 1533,
+        "latency_delta_percent": -14.118,
+        "bytes_per_op": 4864,
+        "bytes_delta_percent": -7.317,
+        "allocs_per_op": 1,
+        "allocations_delta_percent": -80,
+        "median_peak_process_tree_rss_bytes": 202113024,
+        "rss_delta_percent": 2.026,
+        "verdict": "confirmed"
+      }
+    ],
+    "memory_boundary": "One RSS repeat moved 8.957% and 16.9 MiB, below the conjunctive 10% plus 16 MiB rejection gate; the other repeats moved 2.44% and 2.026%. RSS remains a noisy regression guard, not retained-memory attribution.",
+    "correctness": {
+      "focused_api_tests": 66,
+      "full_go_tests": 773,
+      "packages": 36,
+      "status": "passed"
+    }
+  },
+  "candidate_key_progression": {
+    "source_snapshot_sha256": "92656f9b492553fcc78bd4ecaa50d6ebad3527529c8e9cafab64bc24c168fdac",
+    "candidate_key": "3b18d6c5ce1a413e5b1f56c1",
+    "cross_category_finding_id": "e3f3781c4a4284af7f796fcf",
+    "live_search_finding_id": "5804e1da71563f89de17eec4",
+    "source": "internal/api/asset_search.go eodhdResultToItem",
+    "mechanism": "repository_alloc_objects_path",
+    "result": "One candidate-key exclusion suppressed the later live-search finding and advanced the lab to the no-match flow without mutating either diagnosis.",
+    "measured_flows_after_replay": 6,
+    "total_declared_flows": 10
+  },
+  "context_candidate_key_progression": {
+    "first_source_snapshot_sha256": "4480c757d37da66d564c8693ffe5e0646194e1204614e1820c59c99c7deabf09",
+    "second_source_snapshot_sha256": "45ac14955002e9e8ff03b344c98989e5de7239f40c9e2972474b46239d06a28a",
+    "candidate_context_sha256": "3158b1c7ece4acbf90cbae0ec83ab93bc8b91c06f95504067b6d0177848c69a6",
+    "candidate_key": "3e640ea380a33839988a0b82",
+    "first_finding_id": "5b1044a3aed8d59a14b30e56",
+    "second_finding_id": "123eb645725bd449fad83a5b",
+    "source": "internal/api/asset_search.go eodhdResultToItem",
+    "mechanism": "repository_alloc_objects_path",
+    "result": "An unrelated fund-analysis source edit changed snapshot and finding identity while preserving the selected-function digest and candidate key. The existing exclusion still suppressed the source during the complete current-snapshot replay.",
+    "retained_raw_source": false
+  },
+  "sparse_catalog_allocation_experiment": {
+    "candidate": "Delay queryful catalog result capacity until the first match while preserving full no-query preallocation.",
+    "no_match": {
+      "baseline": {
+        "samples": 10,
+        "median_ns_per_op": 1224,
+        "bytes_per_op": 4864,
+        "allocs_per_op": 1,
+        "median_peak_process_tree_rss_bytes": 202620928
+      },
+      "verification_runs": [
+        {
+          "samples": 10,
+          "median_ns_per_op": 977.6,
+          "latency_delta_percent": -20.131,
+          "bytes_per_op": 0,
+          "bytes_delta_percent": -100,
+          "allocs_per_op": 0,
+          "allocations_delta_percent": -100,
+          "median_peak_process_tree_rss_bytes": 153927680,
+          "rss_delta_percent": -24.032,
+          "verdict": "confirmed"
+        },
+        {
+          "samples": 10,
+          "median_ns_per_op": 981.1,
+          "latency_delta_percent": -19.845,
+          "bytes_per_op": 0,
+          "bytes_delta_percent": -100,
+          "allocs_per_op": 0,
+          "allocations_delta_percent": -100,
+          "median_peak_process_tree_rss_bytes": 159744000,
+          "rss_delta_percent": -21.161,
+          "verdict": "confirmed"
+        }
+      ]
+    },
+    "common_query": {
+      "baseline": {
+        "samples": 10,
+        "median_ns_per_op": 1533,
+        "bytes_per_op": 4864,
+        "allocs_per_op": 1,
+        "median_peak_process_tree_rss_bytes": 202113024
+      },
+      "verification_runs": [
+        {
+          "samples": 10,
+          "median_ns_per_op": 1376,
+          "latency_delta_percent": -10.241,
+          "bytes_per_op": 896,
+          "bytes_delta_percent": -81.579,
+          "allocs_per_op": 1,
+          "allocations_delta_percent": 0,
+          "median_peak_process_tree_rss_bytes": 188760064,
+          "rss_delta_percent": -6.607,
+          "verdict": "confirmed"
+        },
+        {
+          "samples": 10,
+          "median_ns_per_op": 1399,
+          "latency_delta_percent": -8.741,
+          "bytes_per_op": 896,
+          "bytes_delta_percent": -81.579,
+          "allocs_per_op": 1,
+          "allocations_delta_percent": 0,
+          "median_peak_process_tree_rss_bytes": 188006400,
+          "rss_delta_percent": -6.98,
+          "verdict": "confirmed"
+        }
+      ]
+    },
+    "correctness": {
+      "focused_api_tests": 66,
+      "full_go_tests": 773,
+      "packages": 36,
+      "status": "passed"
+    },
+    "claim_boundary": "The no-query path retains its original full-limit preallocation and existing initial-dropdown correctness coverage. Results remain local stub-backed evidence."
+  },
+  "fund_delta_allocation_experiment": {
+    "candidate": "Retain scalar return deltas while ranking and expose pointers only from final winner storage.",
+    "baseline": {
+      "samples": 10,
+      "median_ns_per_op": 647522,
+      "bytes_per_op": 300486,
+      "allocs_per_op": 1683,
+      "median_peak_process_tree_rss_bytes": 158040064
+    },
+    "verification_runs": [
+      {
+        "samples": 10,
+        "median_ns_per_op": 642095,
+        "latency_delta_percent": -0.838,
+        "bytes_per_op": 300374,
+        "bytes_delta_percent": -0.037,
+        "allocs_per_op": 1294,
+        "allocations_delta_percent": -23.113,
+        "median_peak_process_tree_rss_bytes": 157237248,
+        "rss_delta_percent": -0.508,
+        "verdict": "confirmed"
+      },
+      {
+        "samples": 10,
+        "median_ns_per_op": 647309,
+        "latency_delta_percent": -0.033,
+        "bytes_per_op": 300373,
+        "bytes_delta_percent": -0.038,
+        "allocs_per_op": 1294,
+        "allocations_delta_percent": -23.113,
+        "median_peak_process_tree_rss_bytes": 158318592,
+        "rss_delta_percent": 0.176,
+        "verdict": "confirmed"
+      },
+      {
+        "samples": 10,
+        "median_ns_per_op": 649239,
+        "latency_delta_percent": 0.265,
+        "bytes_per_op": 300372,
+        "bytes_delta_percent": -0.038,
+        "allocs_per_op": 1294,
+        "allocations_delta_percent": -23.113,
+        "median_peak_process_tree_rss_bytes": 158253056,
+        "rss_delta_percent": 0.135,
+        "verdict": "confirmed"
+      }
+    ],
+    "post_change_profile": "The changed function had no remaining direct eligible allocation finding; only non-experiment-eligible cumulative callers remained.",
+    "correctness": {
+      "focused_fundanalysis_tests": 237,
+      "full_go_tests": 790,
+      "packages": 36,
+      "status": "passed"
+    },
+    "claim_boundary": "The benchmark is deterministic in-process fixture analysis. It excludes database, provider, request, production-load, and user-latency effects."
+  },
+  "post_fix_flow_coverage": {
+    "source_snapshot_sha256": "45ac14955002e9e8ff03b344c98989e5de7239f40c9e2972474b46239d06a28a",
+    "discovered_flows": 10,
+    "profile_capable_flows": 10,
+    "measured_profile_flows": 10,
+    "candidate_ready_flows": 0,
+    "candidate_exhausted_flows": 4,
+    "discovery_truncated": false,
+    "terminal_state": "candidate_exclusions_exhausted",
+    "boundary": "All discovered safe local benchmark flows were measured on one snapshot. Four earlier source candidates remained caller-excluded; this does not verify them as rejected and does not establish production coverage."
+  },
+  "tooling_followup": {
+    "previous_selection": "The first diagnosis spent bounded source slots on several pprof lines from eodhdResultToItem and selected its 17.16% direct map-allocation row; the map-capacity experiment was rejected.",
+    "corrected_selection": "Source contexts are now deduplicated by file and function. A Polaris-shaped replay selects forLogoDevTicker at 6.86% direct object share because its one-line literal-plus-%s fmt.Sprintf pattern is concrete, while still returning only one unverified experiment candidate whose argument types require checking.",
+    "unsupported_boundary": "Dynamic, numeric, width, precision, cumulative-only, and sub-5% sources do not receive this preference.",
+    "cross_flow_progression": "Finding exclusions now project into coverage. A candidate-exhausted flow remains visible and measured but yields to the next safe unmeasured flow; terminal exhaustion remains explicit when no safe action remains.",
+    "candidate_key_progression": "New source findings bind their opaque candidate key to the bounded selected function digest and stable source/mechanism identity. Unrelated edits and line movement preserve the key; selected-function edits invalidate it. Legacy snapshot-bound findings remain readable."
+  },
+  "limitations": [
+    "Go pprof allocation values are normalized per operation and do not represent retained heap or peak memory.",
+    "The profile attribution inventory hit its bound; complete benchmark metrics remain authoritative for the paired comparison.",
+    "Peak RSS is sampled from the owned benchmark binary and is a regression guard, not source attribution.",
+    "The result is local deterministic evidence and does not establish production impact."
+  ]
+}

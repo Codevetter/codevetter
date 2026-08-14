@@ -3890,6 +3890,88 @@ export async function pickXrayExportPath(
   }
 }
 
+// ─── Local Performance Laboratory ──────────────────────────────────────────
+
+export type PerformanceLabState = 'running' | 'completed' | 'stopped' | 'failed';
+
+export interface PerformanceLabStep {
+  index: number;
+  action: string;
+  coverage_action: string;
+  result: string;
+  run_id: string | null;
+  capture_id: string | null;
+  experiment_id: string | null;
+  scope?: Record<string, unknown>;
+  diagnosis?: Record<string, unknown> | null;
+  runtime?: Record<string, unknown> | null;
+}
+
+export interface PerformanceLabReceipt {
+  schema_version: 'runtime-performance-lab-run/v6';
+  lab_id: string;
+  state: PerformanceLabState;
+  subject: {
+    repository_revision?: string | null;
+    source_snapshot_sha256?: string | null;
+    dirty?: boolean | null;
+  };
+  policy: {
+    max_steps: number;
+    samples: number;
+    warmups: number;
+    timeout_ms: number;
+  };
+  lifecycle: {
+    started_at: string;
+    completed_at: string | null;
+  };
+  initial_summary: Record<string, unknown> | null;
+  final_summary: Record<string, unknown> | null;
+  steps: PerformanceLabStep[];
+  stop: {
+    kind: string;
+    reason: string;
+    next_action_kind?: string | null;
+    [key: string]: unknown;
+  } | null;
+  limitations: string[];
+  screening?: Record<string, unknown> | null;
+  acceptance?: {
+    change_cost?: {
+      observed?: {
+        files_changed?: number;
+        lines_added?: number;
+        lines_removed?: number;
+        gross_lines_changed?: number;
+        production_dependencies_added?: string[];
+      } | null;
+      violations?: string[];
+    } | null;
+    verdict?: { status?: string; reason?: string };
+    [key: string]: unknown;
+  } | null;
+}
+
+export interface PerformanceLabRecord {
+  lab_id: string;
+  receipt_path: string;
+  recorded_at: string | null;
+  receipt: PerformanceLabReceipt;
+}
+
+export function runPerformanceLab(args: {
+  repoPath: string;
+  labId: string;
+  maxSteps?: number;
+}): Promise<PerformanceLabRecord> {
+  return safeInvoke('run_performance_lab', args);
+}
+
+export function listPerformanceLabReceipts(repoPath: string): Promise<PerformanceLabRecord[]> {
+  return safeInvoke('list_performance_lab_receipts', { repoPath });
+}
+
 // ─── Event Listeners ────────────────────────────────────────────────────────
 
 // ─── File Tree Commands ──────────────────────────────────────────────────

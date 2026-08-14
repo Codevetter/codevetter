@@ -10,6 +10,7 @@ const routes = [
   ['Board', '/board'],
   ['Review', '/review'],
   ['Testing', '/trex'],
+  ['Optimize', '/optimize'],
   ['Settings', '/settings'],
 ] as const;
 

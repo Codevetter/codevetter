@@ -1,0 +1,74 @@
+{
+  "schema_version": "codevetter-request-cpu-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can sample CPU inside one isolated capture-scoped owned Node request, retain only contained repository sources above fixed thresholds, and refuse source attribution when the samples do not support it.",
+  "runtime_fixture": {
+    "test": "scripts/runtime-failure-capsule/server-request-cpu.test.mjs",
+    "observed": [
+      "A 40 ms repository function produced a material contained source candidate without application source modifications.",
+      "An extension-shaped static request did not start a CPU profile.",
+      "Two overlapping dynamic requests contaminated the process-wide profile and produced no source candidate.",
+      "Generated output, malformed profiles, raw query text, absolute paths, and credential-shaped function text were not exposed."
+    ]
+  },
+  "real_product": {
+    "product": "high-signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "dirty": false,
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "owned_config_disabled_next",
+      "browser_binary": "system_chrome"
+    },
+    "capture": {
+      "id": "request-cpu-high-signal-20260813-c",
+      "state": "failed",
+      "receipt": ".codevetter/playwright-runs/request-cpu-high-signal-20260813-c/receipt.json",
+      "result": ".codevetter/playwright-runs/request-cpu-high-signal-20260813-c/result.json",
+      "result_sha256": "efa9dec8403846837ca524d18d85095b6506ae463b64f3f6a0d0d81313782cbc",
+      "correctness": "failed_expected_heading_not_rendered"
+    },
+    "observed": {
+      "request": "GET /",
+      "request_duration_ms": 2259.81,
+      "profile_samples": 16089,
+      "sampled_time_ms": 2259.708,
+      "sample_scope": {
+        "repository": 0,
+        "dependency": 391,
+        "generated": 6,
+        "runtime": 203,
+        "idle": 15481,
+        "unresolved": 8
+      },
+      "repository_sample_share": 0,
+      "profile_complete": true,
+      "overlapping_dynamic_requests": 0
+    },
+    "detector": {
+      "name": "browser_server_cpu_hotspot",
+      "status": "insufficient_evidence",
+      "finding_count": 0,
+      "reason": "Request CPU samples did not cross the fixed repository sample and share thresholds."
+    },
+    "verdict": "The 2.26 second development request was approximately 96.2% idle samples and contained no repository self-CPU sample. CodeVetter correctly withheld an optimization candidate instead of blaming the static route owner."
+  },
+  "bounds": {
+    "maximum_profiled_dynamic_requests": 8,
+    "maximum_public_candidates_per_request": 8,
+    "minimum_candidate_samples": 5,
+    "minimum_candidate_sample_share": 0.1,
+    "raw_profiles": "owned temporary runtime directory only; removed during cleanup",
+    "source_authority": "regular contained file or closed Next server webpack-internal source URL"
+  },
+  "claim_boundaries": [
+    "V8 sampling begins immediately before handler dispatch and perturbs the diagnostic request.",
+    "Sample counts estimate on-CPU and idle states; they do not assign wall time exclusively to a source line.",
+    "Overlapping dynamic requests invalidate source attribution because the V8 profiler is process-wide.",
+    "A config-disabled Next development runtime, system Chrome, failed product assertion, and one local machine do not establish production performance.",
+    "A source edit still requires compatible paired measurement and project-owned correctness evidence."
+  ]
+}

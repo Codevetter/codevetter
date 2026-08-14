@@ -90,6 +90,29 @@ test('detects repeated linear membership over materialized object keys', () => {
   );
 });
 
+test('detects only string-only one-line Go formatting', () => {
+  const supported = analyzeSourcePatterns(
+    [
+      'return fmt.Sprintf("https://img.example/%s?token=%s&%%", ticker, token)',
+      'return fmt.Sprintf("count=%d", count)',
+      'return fmt.Sprintf(dynamicFormat, ticker)',
+    ],
+    40
+  );
+
+  assert.deepEqual(
+    supported.filter((pattern) => pattern.kind === 'go_static_string_format'),
+    [
+      {
+        kind: 'go_static_string_format',
+        lines: [40],
+        string_verbs: 2,
+        observation: 'fmt.Sprintf constructs one string from literal text and %s verbs only.',
+      },
+    ]
+  );
+});
+
 test('does not join mutually exclusive traversals separated by a return', () => {
   const patterns = analyzeSourcePatterns([
     'for (const item of catalog) collect(item);',
@@ -195,4 +218,55 @@ test('collects only contained runtime-selected source windows', async (context) 
   assert.match(result.contexts[0].excerpt, /\.sort\(compare\)/);
   assert.equal(result.contexts[0].patterns[0].kind, 'full_sort_before_bounded_slice');
   assert.ok(result.limitations.some((limitation) => limitation.includes('escaped')));
+});
+
+test('deduplicates line-level Go allocation rows before the source-context bound', async (context) => {
+  const root = await mkdtemp(join(tmpdir(), 'codevetter-go-context-'));
+  context.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(
+    join(root, 'api.go'),
+    [
+      'package example',
+      'func mapResult(value string) string {',
+      '  copy := value',
+      '  return copy',
+      '}',
+      '',
+    ].join('\n')
+  );
+  await writeFile(
+    join(root, 'logo.go'),
+    [
+      'package example',
+      'import "fmt"',
+      'func formatLogo(ticker, token string) string {',
+      '  return fmt.Sprintf("https://img.example/%s?token=%s", ticker, token)',
+      '}',
+      '',
+    ].join('\n')
+  );
+  const allocation = (file, line, functionName, flatShare) => ({
+    kind: 'go_allocation_path_candidate',
+    profile_kind: 'go_alloc_objects',
+    source: { file, line, function: functionName },
+    flat_profile_objects: 10_000,
+    flat_share: flatShare,
+    cumulative_share: flatShare,
+  });
+  const result = await collectRuntimeSourceContexts(root, {
+    findings: [
+      allocation('api.go', 2, 'example.mapResult', 0.17),
+      allocation('api.go', 3, 'example.mapResult', 0.09),
+      allocation('api.go', 4, 'example.mapResult', 0.08),
+      allocation('logo.go', 4, 'example.formatLogo', 0.06),
+    ],
+    observed: { hotspots: [] },
+  });
+
+  assert.deepEqual(
+    result.contexts.map((entry) => entry.source.function),
+    ['mapResult', 'formatLogo']
+  );
+  assert.equal(result.contexts[1].source.reported_function, 'example.formatLogo');
+  assert.equal(result.contexts[1].patterns[0].kind, 'go_static_string_format');
 });

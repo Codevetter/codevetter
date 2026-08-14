@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -12,7 +12,13 @@ import {
   repositoryRelative,
   validatePerformanceDiagnosis,
 } from './contracts.mjs';
+import { ensureCodeVetterEvidenceRoot } from './evidence-root.mjs';
 import { inspectGitDiff } from './git-diff.mjs';
+import { selectProfileExperimentFinding } from './profile-tool-diagnosis.mjs';
+import {
+  boundedPerformanceCandidateExclusions,
+  boundedPerformanceFindingExclusions,
+} from './performance-lab-contracts.mjs';
 import { redactJsonValue, redactText } from './redact.mjs';
 import {
   SUPERVISED_RUN_SCHEMA_VERSION,
@@ -59,6 +65,7 @@ export async function supervisePerformanceRun({
   await assertTarget(root, target);
   const git = await inspectGitDiff(root);
   const relativeDirectory = `${RUNS_DIRECTORY}/${safeRunId}`;
+  await ensureCodeVetterEvidenceRoot(root);
   const lexicalRunsDirectory = resolve(root, RUNS_DIRECTORY);
   await mkdir(lexicalRunsDirectory, { recursive: true });
   const realRunsDirectory = await realpath(lexicalRunsDirectory);
@@ -73,7 +80,11 @@ export async function supervisePerformanceRun({
     schema_version: SUPERVISED_RUN_SCHEMA_VERSION,
     run_id: safeRunId,
     state: 'initialized',
-    subject: { repository_revision: git.repository_revision, dirty: git.dirty },
+    subject: {
+      repository_revision: git.repository_revision,
+      source_snapshot_sha256: git.source_snapshot_sha256,
+      dirty: git.dirty,
+    },
     scope: { adapter: safeAdapter, target, name: name ?? null },
     policy: {
       samples: safeSamples,
@@ -148,12 +159,23 @@ export async function supervisePerformanceRun({
     relativeDirectory,
     receipt,
     outcome,
+    initialSnapshot: git,
   });
   await writeReceipt(receiptPath, finalized);
   return finalized;
 }
 
 export async function inspectSupervisedRun(repositoryRoot, runId) {
+  const { receipt, result } = await loadSupervisedRunResult(repositoryRoot, runId);
+  return {
+    receipt,
+    result_summary: result
+      ? { verdict: result.verdict, diagnosis: result.diagnosis, scope: result.scope }
+      : null,
+  };
+}
+
+export async function loadSupervisedRunResult(repositoryRoot, runId) {
   const root = await realpath(resolve(repositoryRoot));
   const safeRunId = assertRunId(runId);
   const absoluteDirectory = await realpath(resolve(root, RUNS_DIRECTORY, safeRunId));
@@ -169,7 +191,7 @@ export async function inspectSupervisedRun(repositoryRoot, runId) {
     'supervised run receipt'
   );
   assertSupervisedRunReceipt(receipt);
-  let resultSummary = null;
+  let result = null;
   if (receipt.result) {
     const resultPath = await realpath(resolve(root, receipt.result.path));
     if (repositoryRelative(absoluteDirectory, resultPath) === null) {
@@ -182,19 +204,81 @@ export async function inspectSupervisedRun(repositoryRoot, runId) {
     ) {
       throw new Error('supervised result digest is invalid');
     }
-    const result = JSON.parse(source);
+    result = JSON.parse(source);
     const errors = validatePerformanceDiagnosis(result);
     if (errors.length > 0) throw new Error('supervised result contract is invalid');
-    resultSummary = {
-      verdict: result.verdict,
-      diagnosis: result.diagnosis,
-      scope: result.scope,
-    };
   }
-  return { receipt, result_summary: resultSummary };
+  return { receipt, result };
 }
 
-async function finalizeRun({ root, repositoryRoots, relativeDirectory, receipt, outcome }) {
+export async function listSupervisedRunEvidence(
+  repositoryRoot,
+  { excludedFindingIds = [], excludedCandidateKeys = [], currentNodeVersion = process.version } = {}
+) {
+  const root = await realpath(resolve(repositoryRoot));
+  const safeExclusions = boundedPerformanceFindingExclusions(excludedFindingIds);
+  const safeCandidateExclusions = boundedPerformanceCandidateExclusions(excludedCandidateKeys);
+  let entries = [];
+  try {
+    entries = await readdir(resolve(root, RUNS_DIRECTORY), { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === 'ENOENT') return [];
+    throw error;
+  }
+  if (entries.length > SUPERVISION_LIMITS.runs) {
+    throw new Error('supervised performance run ledger exceeds bound');
+  }
+  const evidence = [];
+  for (const entry of entries.toSorted((left, right) => left.name.localeCompare(right.name))) {
+    if (!entry.isDirectory() || !/^[a-z0-9][a-z0-9-]*$/.test(entry.name)) continue;
+    const { receipt, result } = await loadSupervisedRunResult(root, entry.name);
+    const eligibleFindings =
+      result?.tool_diagnosis?.findings?.filter((finding) => finding.eligible_for_experiment) ?? [];
+    const selectedFinding = result
+      ? selectProfileExperimentFinding(result, {
+          excludedFindingIds: safeExclusions,
+          excludedCandidateKeys: safeCandidateExclusions,
+        })
+      : null;
+    const runtimeCompatible = measurementRuntimeCompatible(result, currentNodeVersion);
+    evidence.push({
+      run_id: receipt.run_id,
+      state:
+        receipt.state === 'succeeded' && !runtimeCompatible
+          ? 'runtime_incompatible'
+          : receipt.state,
+      subject: receipt.subject,
+      scope: receipt.scope,
+      policy: receipt.policy,
+      completed_at: receipt.lifecycle.completed_at,
+      verdict: result?.verdict ?? null,
+      diagnosis: result?.diagnosis ?? null,
+      eligible_experiment_findings: selectedFinding ? 1 : 0,
+      eligible_experiment_findings_total: eligibleFindings.length,
+      candidate_exclusions_exhausted:
+        eligibleFindings.length > 0 &&
+        selectedFinding === null &&
+        (safeExclusions.length > 0 || safeCandidateExclusions.length > 0),
+    });
+  }
+  return evidence;
+}
+
+function measurementRuntimeCompatible(result, currentNodeVersion) {
+  const capsule = result?.performance_capsule;
+  if (!capsule || capsule.adapter?.kind === 'go-bench') return true;
+  const measured = capsule.subject?.node_version;
+  return typeof measured !== 'string' || measured === currentNodeVersion;
+}
+
+async function finalizeRun({
+  root,
+  repositoryRoots,
+  relativeDirectory,
+  receipt,
+  outcome,
+  initialSnapshot,
+}) {
   const sanitizedStdout = redactText(outcome.stdout, {
     repositoryRoots,
     limit: SUPERVISION_LIMITS.failureCharacters,
@@ -212,7 +296,19 @@ async function finalizeRun({ root, repositoryRoots, relativeDirectory, receipt, 
   let invalidReason = null;
   let resultRedactionCount = 0;
   let resultWasTruncated = false;
-  if (outcome.timedOut) state = 'timed_out';
+  let snapshotChanged = false;
+  try {
+    const current = await inspectGitDiff(root);
+    snapshotChanged =
+      current.repository_revision !== initialSnapshot.repository_revision ||
+      current.source_snapshot_sha256 !== initialSnapshot.source_snapshot_sha256;
+  } catch {
+    snapshotChanged = true;
+  }
+  if (snapshotChanged) {
+    state = 'invalid_result';
+    invalidReason = 'Repository source snapshot changed during supervised execution.';
+  } else if (outcome.timedOut) state = 'timed_out';
   else if (outcome.operationalError) state = 'spawn_failed';
   else if (outcome.signal) state = 'signaled';
   else if (outcome.exitCode !== 0) state = 'failed';
@@ -414,8 +510,10 @@ function diagnosisCommand({ root, adapter, target, name, timeoutMs, samples, war
 
 function deriveSupervisorDeadline(adapter, timeoutMs, samples, warmups) {
   const profilePasses = adapter === 'go-bench' ? 1 : 2;
-  const metricPasses = ['node-test', 'node-script', 'vitest'].includes(adapter) ? samples : 0;
-  const passes = warmups + samples + metricPasses + profilePasses + 1;
+  const memoryPasses = ['node-test', 'node-script', 'vitest', 'jest'].includes(adapter)
+    ? LIMITS.memorySamples
+    : 0;
+  const passes = warmups + samples + memoryPasses + profilePasses + 1;
   return Math.min(SUPERVISION_LIMITS.maximumDeadlineMs, timeoutMs * passes);
 }
 

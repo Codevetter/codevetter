@@ -1,0 +1,219 @@
+{
+  "schema_version": "codevetter-autonomous-browser-loop-proof/v1",
+  "recorded_at": "2026-08-14",
+  "claim": "On an isolated Anime List checkout, CodeVetter rejected sub-threshold candidates and retained one two-file local-development loading improvement after correctness-first screening and ten-sample paired promotion.",
+  "product": "anime-list",
+  "subject": {
+    "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+    "baseline_source_snapshot_sha256": "01de0824927741ce93da7ff9eb4334d772711d451ec96ff166f5874d908db19d",
+    "retained_source_snapshot_sha256": "c3a862e3d50f322b4d201c7e10c970fc3d6fcabc8a3dd475039c64709c386145",
+    "isolation": "disposable detached worktrees with copied package payload and an empty HOME",
+    "network_or_cloud": false
+  },
+  "flow": {
+    "target": "e2e/mobile.spec.ts",
+    "name": "home page has no horizontal scroll",
+    "browser_project": "mobile",
+    "scope": "one exact local Chromium navigation against CodeVetter's config-disabled owned Vite runtime"
+  },
+  "first_pass": {
+    "observed_families": [
+      "browser_timing",
+      "memory",
+      "react",
+      "actions",
+      "dependencies"
+    ],
+    "incomplete_families": ["loading"],
+    "unavailable_families": ["build_artifact", "review"],
+    "cause_groups": 6,
+    "queued_experiments": 4,
+    "highest_measured_dependency": {
+      "package": "lucide-react",
+      "development_response_bytes": 4263394,
+      "exact_initial_importers": [
+        "components/Navigation.tsx",
+        "components/ui/dropdown-menu.tsx"
+      ]
+    }
+  },
+  "rejected_experiments": [
+    {
+      "hypothesis": "Replace five radix-ui package-root imports with package subpaths.",
+      "changed_files": 5,
+      "screening_samples_per_side": 3,
+      "baseline_completed_response_bytes_median": 12979530,
+      "candidate_completed_response_bytes_median": 11778516,
+      "delta_bytes": -1201014,
+      "delta_percent": -9.254,
+      "decision": "rejected",
+      "reason": "The measured movement did not clear the 10 percent transfer materiality floor.",
+      "loop_elapsed_minutes_at_decision": 0.788
+    },
+    {
+      "hypothesis": "Memoize HomePage to remove repeated React work.",
+      "changed_files": 1,
+      "screening_samples_per_side": 3,
+      "decision": "rejected",
+      "reason": "No exact-flow timing, memory, React, or loading metric cleared materiality."
+    }
+  ],
+  "retained_experiment": {
+    "experiment_id": "bcbcd81274431f6792a3ef74",
+    "hypothesis": "Remove lucide-react from the exact initial home-flow boundary while preserving deferred-route usage.",
+    "host_patch": "Inline four small SVG icons in the two statically reachable importers; deferred routes remain unchanged.",
+    "changed_files": [
+      "components/Navigation.tsx",
+      "components/ui/dropdown-menu.tsx"
+    ],
+    "complexity": {
+      "files_changed": 2,
+      "added_lines": 60,
+      "deleted_lines": 2,
+      "gross_lines_changed": 62,
+      "net_lines_changed": 58,
+      "production_dependencies_added": [],
+      "budget": {
+        "max_files_changed": 3,
+        "max_lines_added": 160,
+        "max_gross_lines_changed": 200,
+        "max_production_dependencies_added": 0
+      },
+      "violations": []
+    },
+    "screening": {
+      "samples_per_side": 3,
+      "browser_completed_response_transfer_bytes": {
+        "baseline_median": 11871129,
+        "candidate_median": 7616611,
+        "delta_bytes": -4254518,
+        "delta_percent": -35.839
+      },
+      "decision": "promote"
+    },
+    "promotion": {
+      "samples_per_side": 10,
+      "warmups_per_side": 1,
+      "browser_completed_response_transfer_bytes": {
+        "baseline_median": 11871129,
+        "candidate_median": 7616611,
+        "delta_bytes": -4254518,
+        "delta_percent": -35.839,
+        "stable": true
+      },
+      "workload_duration_ms": {
+        "baseline_median": 316.5115,
+        "candidate_median": 303.9395,
+        "delta_percent": -3.972,
+        "material": false,
+        "regressed": false
+      },
+      "largest_contentful_paint_ms": {
+        "baseline_median": 250.916,
+        "candidate_median": 236.1995,
+        "delta_percent": -5.865,
+        "material": false,
+        "regressed": false
+      },
+      "process_tree_peak_rss_bytes": {
+        "baseline_median": 861634560,
+        "candidate_median": 819912704,
+        "delta_percent": -4.842,
+        "material": false,
+        "regressed": false
+      },
+      "react_actual_duration_ms": {
+        "baseline_median": 17.55,
+        "candidate_median": 17.2,
+        "delta_percent": -1.994,
+        "material": false,
+        "regressed": false
+      },
+      "correctness": {
+        "adapter": "vitest",
+        "target": "src/recommendations.test.ts",
+        "name": "keeps only the highest-ranked recommendations in stable order",
+        "incumbent_selected": 1,
+        "incumbent_failed": 0,
+        "candidate_selected": 1,
+        "candidate_failed": 0
+      },
+      "decision": "kept",
+      "reason": "Correctness passed and stable paired evidence met the promotion policy."
+    },
+    "campaign_elapsed_minutes_from_initialization_to_keep": 2.315,
+    "next_generation_replanned": true
+  },
+  "production_build_check": {
+    "provenance": "Separate host-run Vite production builds with an empty HOME; this is a diagnostic qualification, not the loop's acceptance metric.",
+    "baseline_initial_javascript": {
+      "raw_bytes": 504556,
+      "gzip_bytes": 159923
+    },
+    "candidate_initial_javascript": {
+      "raw_bytes": 503474,
+      "gzip_bytes": 159423
+    },
+    "delta": {
+      "raw_bytes": -1082,
+      "raw_percent": -0.214,
+      "gzip_bytes": -500,
+      "gzip_percent": -0.313
+    },
+    "conclusion": "The retained result is a material local Vite development-navigation improvement, not a material shipped initial-bundle improvement."
+  },
+  "superseded_measurement": {
+    "previous_claimed_gzip_change_percent": -28.452,
+    "reason": "That comparison measured selected chunk redistribution rather than the complete HTML-referenced initial JavaScript closure.",
+    "correct_full_closure_chunk_rule_result": {
+      "baseline_gzip_bytes": 159923,
+      "candidate_gzip_bytes": 154162,
+      "delta_bytes": -5761,
+      "delta_percent": -3.602,
+      "decision": "rejected_below_materiality"
+    }
+  },
+  "manual_vs_loop": {
+    "prior_manual_investigation": {
+      "agent_actions": [
+        "inspect source and historical diff",
+        "construct four build variants",
+        "manually compare chunk output",
+        "run a separate non-interleaved browser replay"
+      ],
+      "outcome": "Mechanism hypothesis only; no candidate retained, and the headline percentage was later found to use an incomplete closure."
+    },
+    "autonomous_loop": {
+      "host_actions_per_experiment": [
+        "apply the returned bounded edit",
+        "call evaluate-browser-experiment",
+        "restore only when rejected"
+      ],
+      "codevetter_owned": [
+        "evidence collection and dependency ranking",
+        "exact static-versus-deferred source seal",
+        "correctness selection",
+        "alternating screening captures",
+        "automatic ten-sample promotion",
+        "materiality and regression gates",
+        "append-only keep or reject decision",
+        "incumbent advancement and replanning"
+      ],
+      "outcome": "One sub-threshold candidate rejected and one local-development loading candidate retained with repeated evidence."
+    }
+  },
+  "product_improvements_discovered_during_trial": [
+    "Dirty candidates are accepted only when every changed file is inside the exact sealed experiment boundary and the snapshot is rechecked around every capture.",
+    "Multiline static imports are included in the literal graph.",
+    "Initial and deferred importers are retained separately, preventing lazy-route files from inflating the edit seal.",
+    "Large captured Vite dependency routes join to all exact static importers rather than substring-matching unrelated packages.",
+    "Transfer verification prefers the complete zero-failure navigation action cohort, excluding later evaluation and analytics request noise."
+  ],
+  "limitations": [
+    "The keep proves one local config-disabled Vite development navigation, not production traffic, representative devices, CDN behavior, or end-user impact.",
+    "The correctness scope is one exact repository-owned recommendation test plus the selected Playwright flow; it is not the full Anime List suite.",
+    "The production build check shows only a 0.313 percent gzip reduction, so this candidate should be presented as local developer-flow optimization rather than a consumer performance case study.",
+    "The host agent still invents and applies source patches; CodeVetter owns evidence, boundaries, verification, decisions, and replanning.",
+    "No production, cloud, registry, package installation, migration, deployment, paid-model, or secret operation was used."
+  ]
+}

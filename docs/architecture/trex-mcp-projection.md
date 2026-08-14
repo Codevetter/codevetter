@@ -109,6 +109,23 @@ call itself completed.
 Protocol/framing errors may use MCP errors. Verification outcomes must use the
 canonical receipt shape so CLI, desktop, and MCP consumers do not diverge.
 
+## Performance-laboratory consumption
+
+The local performance engine may consume an explicitly exported canonical T-Rex
+receipt through its read-only CLI/internal correctness qualifier. That
+low-level adapter is intentionally not exposed as another performance MCP tool.
+It does not call T-Rex, read the desktop SQLite database, or gain browser or
+preview authority. The normalized projection omits preview URLs, machine paths,
+artifacts, output, and all T-Rex timing.
+
+This join happens only after commit. The T-Rex base must equal the performance
+experiment's sealed revision, its head and verified preview revision must equal
+the current clean HEAD, changed paths must remain inside the sealed source
+boundary, and the exact requested browser flow must pass. A prior accepted local
+experiment is mandatory. T-Rex therefore adds shipping smoke confidence but
+never substitutes for the project-verification receipt that gated the dirty
+local optimization.
+
 ## Write boundary
 
 T-Rex is read-only toward the target repository and preview. It does write one

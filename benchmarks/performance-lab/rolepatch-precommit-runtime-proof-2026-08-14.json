@@ -1,0 +1,105 @@
+{
+  "schema_version": "codevetter-performance-proof/v1",
+  "recorded_at": "2026-08-14",
+  "capability": "redirect_safe_precommit_and_streamed_native_evidence",
+  "subject": {
+    "product": "RolePatch",
+    "repository_revision": "a9abcccf1e70e5f6fc130b129b2906ba87ac725a",
+    "source_snapshot_sha256": "92309983f658deaeae69bb5285baa059d1f2b36a832a12c409a33dbbb1087355",
+    "dirty_before": false,
+    "dirty_after": false,
+    "flow": {
+      "adapter": "playwright",
+      "target": "e2e/navigation.spec.ts",
+      "name": "landing page renders",
+      "project": "desktop",
+      "request_ordinal": 1,
+      "method": "GET",
+      "route": "/"
+    }
+  },
+  "observed": {
+    "runtime_recapture": {
+      "recapture_id": "rolepatch-main-thread-precommit-20260813a",
+      "correctness": "passed",
+      "evidence_outcome": "evidence_completed",
+      "whole_request_state": "contaminated",
+      "whole_request_source_candidates": 0,
+      "precommit_overlap_count": 0,
+      "runtime_samples": 151,
+      "sampled_time_ms": 516.169,
+      "dominant_mechanism": "inspector",
+      "dominant_self_time_ms": 495.958,
+      "dominant_runtime_sample_share": 0.960844,
+      "route": "observer_effect",
+      "next_probe": "repeat_with_lower_overhead_cpu_measurement",
+      "edit_eligible": false
+    },
+    "lower_overhead_iterations": [
+      {
+        "recapture_id": "rolepatch-low-overhead-precommit-20260814a",
+        "correctness": "passed",
+        "evidence_outcome": "evidence_incomplete",
+        "precommit_wall_ms": 37.587,
+        "main_thread_cpu_ms": 36.215,
+        "other_threads_cpu_ms": 131.641
+      },
+      {
+        "recapture_id": "rolepatch-low-overhead-reason-20260814a",
+        "correctness": "passed",
+        "evidence_outcome": "evidence_incomplete",
+        "native_incomplete_reason": "trace_oversized"
+      },
+      {
+        "recapture_id": "rolepatch-low-overhead-streaming-20260814a",
+        "correctness": "passed",
+        "evidence_outcome": "evidence_completed",
+        "state": "unresolved",
+        "precommit_wall_ms": 65.636,
+        "process_cpu_ms": 109.701,
+        "main_thread_cpu_ms": 59.919,
+        "other_threads_cpu_ms": 49.782,
+        "native_state": "observed_zero",
+        "native_gc_union_activity_ms": 0,
+        "native_compilation_union_activity_ms": 0,
+        "native_libuv_union_activity_ms": 0,
+        "next_probe": null,
+        "edit_eligible": false
+      }
+    ],
+    "native_trace_policy": {
+      "maximum_private_file_bytes": 134217728,
+      "maximum_read_chunk_bytes": 262144,
+      "maximum_request_markers": 8,
+      "maximum_retained_events": 50000,
+      "maximum_event_bytes": 65536,
+      "raw_trace_retained": false
+    }
+  },
+  "inferred": {
+    "summary": "CodeVetter recovered an isolated pre-commit profile across a post-commit redirect, identified profiler observer effect, executed an integrity-bound independent measurement, and closed the evidence loop without inventing a RolePatch source optimization.",
+    "confidence": "high",
+    "basis": "The unchanged exact flow passed each bounded local recapture, the final profiler-disabled observation was complete, and every route retained null source causality and no edit authority."
+  },
+  "unverified": [
+    "These cache-free local Next.js development runs do not establish production latency, frequency, scale, or user impact.",
+    "Timings across sampling and profiler-disabled runs are not a before-and-after application performance comparison.",
+    "Observed-zero closed native intervals do not prove that every source of Node or V8 work was absent.",
+    "No RolePatch source optimization was identified or verified by this continuation."
+  ],
+  "durable_evidence": {
+    "source_capture_receipt": ".codevetter/playwright-runs/rolepatch-clean-snapshot-20260813f/receipt.json",
+    "runtime_recapture_receipt": ".codevetter/browser-probe-runs/rolepatch-main-thread-precommit-20260813a/receipt.json",
+    "final_recapture_receipt": ".codevetter/browser-probe-runs/rolepatch-low-overhead-streaming-20260814a/receipt.json",
+    "final_capture_result": ".codevetter/playwright-runs/rolepatch-low-overhead-streaming-20260814a/result.json"
+  },
+  "cost_and_cleanup": {
+    "cloud_calls": 0,
+    "production_calls": 0,
+    "package_registry_calls": 0,
+    "package_installs": 0,
+    "temporary_snapshots_removed": true,
+    "owned_server_processes_remaining": 0,
+    "rolepatch_codevetter_allocated_bytes_approx": 1261568
+  }
+}

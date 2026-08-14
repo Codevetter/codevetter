@@ -1,0 +1,108 @@
+{
+  "schema_version": "runtime-performance-product-proof/v1",
+  "product": "app-health-go",
+  "recorded_at": "2026-08-13",
+  "subject": {
+    "repository_revision": "2074138658a1347dcc1c5b9c4023a0b263c2c414",
+    "source_snapshot_sha256": "eed3d4910f484c1bdd890c927d016443a0cf0e20a7c0fc6e192cb3462d84576b",
+    "dirty": false,
+    "go_version": "go1.26.5"
+  },
+  "claim_boundary": "Local Go benchmark evidence only. Production request frequency, traffic, network, database, retained heap, and user impact are unverified.",
+  "planner": {
+    "samples": 3,
+    "warmups": 1,
+    "flows_screened": 5,
+    "actionable_flows": 0,
+    "verdict": "measured",
+    "next_action": "profile_another_repository"
+  },
+  "flows": [
+    {
+      "name": "BenchmarkBareHandler",
+      "median_ns_per_op": 1039,
+      "result": "measured_guardrail"
+    },
+    {
+      "name": "BenchmarkMiddlewareOverhead",
+      "median_ns_per_op": 1790,
+      "direct_sources": [
+        {
+          "source": "packages/go/uuid.go:newEventID",
+          "objects_per_op": 1.01,
+          "direct_object_share_percent": 3.83
+        },
+        {
+          "source": "packages/go/client.go:Record",
+          "objects_per_op": 1,
+          "direct_object_share_percent": 3.79
+        }
+      ],
+      "result": "measured_below_experiment_floor"
+    },
+    {
+      "name": "BenchmarkNormalizeRouteTemplate",
+      "median_ns_per_op": 93,
+      "result": "measured_without_material_direct_leaf"
+    },
+    {
+      "name": "BenchmarkEchoRequest",
+      "median_ns_per_op": 1320,
+      "leading_direct_objects_per_op": 1,
+      "leading_direct_object_share_percent": 3.32,
+      "result": "measured_below_experiment_floor"
+    },
+    {
+      "name": "BenchmarkEchoRequestParallel",
+      "median_ns_per_op": 1341,
+      "leading_direct_objects_per_op": 1.001,
+      "leading_direct_object_share_percent": 3.3,
+      "result": "measured_below_experiment_floor"
+    }
+  ],
+  "source_policy": {
+    "profile_runs": 2,
+    "profile_benchtime": "25000x for the retained middleware diagnosis",
+    "generic_direct_share_floor_percent": 10,
+    "supported_static_string_pattern_floor_percent": 5,
+    "requirements": [
+      "same application file and function repeats in both profiles",
+      "profile output reports the exact fixed iteration count",
+      "direct alloc_objects value is non-zero",
+      "existing direct-share materiality floor is met"
+    ]
+  },
+  "invalidated_evidence": {
+    "value": "1.791 objects/op for newEventID",
+    "reason": "Time-calibrated Go pprof included hidden benchmark calibration rounds while normalization divided by only the final reported b.N.",
+    "authority": "none"
+  },
+  "tooling_changes": [
+    "ordinary Go diagnosis captures two independent profiles",
+    "unprofiled ns/op derives a bounded fixed Nx profile count",
+    "direct allocation rows are retained before larger cumulative callers",
+    "direct objects are normalized by the exact fixed count",
+    "fixed Go profile count is part of comparison capture identity",
+    "sub-floor source evidence yields a measured guardrail instead of an actionable experiment"
+  ],
+  "correctness": {
+    "command": "go test ./...",
+    "result": "55 tests passed in 2 packages"
+  },
+  "distributed_product_smoke": {
+    "entrypoint": "codevetter performance-lab",
+    "lab_id": "shipped-bridge-smoke-20260813",
+    "receipt_schema": "runtime-performance-lab-run/v3",
+    "adapter": "go-bench",
+    "target": "packages/go/benchmark_test.go",
+    "name": "BenchmarkBareHandler",
+    "result": "one bounded measurement step succeeded through the prepared CodeVetter CLI sidecar",
+    "stop": "step_budget_exhausted",
+    "repository_remained_clean": true,
+    "prerequisite": "existing local node executable; no download fallback"
+  },
+  "product_change": {
+    "source_files_changed": 0,
+    "reason": "No existing flow produced an autonomous source candidate above the materiality floor."
+  }
+}

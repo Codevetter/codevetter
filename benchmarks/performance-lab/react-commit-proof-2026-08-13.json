@@ -1,0 +1,103 @@
+{
+  "schema_version": "codevetter-react-commit-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "Exact Playwright flows can expose bounded React commit and repository-component evidence without changing the selected test or using the diagnostic pass as the authoritative benchmark clock.",
+  "products": [
+    {
+      "product": "anime-list",
+      "repository_revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+      "dirty": true,
+      "flow": {
+        "target": "e2e/mobile.spec.ts",
+        "name": "homepage hero reaches a stable local performance boundary",
+        "browser_project": "desktop"
+      },
+      "capture": {
+        "state": "succeeded",
+        "receipt": ".codevetter/playwright-runs/react-lifecycle-anime-20260813/receipt.json",
+        "result": ".codevetter/playwright-runs/react-lifecycle-anime-20260813/result.json",
+        "result_sha256": "7d091d25924d33fd5e005f0c911070a34e8469e5ac3e3099c5df1f16d136fe63"
+      },
+      "react": {
+        "renderer_versions": ["19.2.8"],
+        "commit_count": 7,
+        "profiled_commit_count": 7,
+        "total_actual_duration_ms": 17.2,
+        "max_commit_duration_ms": 11.7,
+        "delivery": {
+          "documents_delivered": 2,
+          "binding_calls": 10,
+          "fallback_pages_evaluated": 1
+        },
+        "repository_components": [
+          { "name": "QueryProvider", "file": "lib/query-provider.tsx", "line": 24 },
+          { "name": "RootLayout", "file": "src/RootLayout.tsx", "line": 9 },
+          {
+            "name": "AnalyticsProvider",
+            "file": "components/posthog-provider.tsx",
+            "line": 10
+          },
+          { "name": "AuthProvider", "file": "lib/auth.tsx", "line": 34 },
+          { "name": "HomePage", "file": "src/pages/HomePage.tsx", "line": 55 },
+          { "name": "Navigation", "file": "components/Navigation.tsx", "line": 44 }
+        ]
+      },
+      "verdict": "diagnostic_evidence_only"
+    },
+    {
+      "product": "significanthobbies",
+      "repository_revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+      "dirty": true,
+      "flow": {
+        "target": "e2e/life-bingo.spec.ts",
+        "name": "introduces the product and starts without an account",
+        "browser_project": "mobile"
+      },
+      "capture": {
+        "state": "succeeded",
+        "receipt": ".codevetter/playwright-runs/react-owned-hobbies-20260813/receipt.json",
+        "result": ".codevetter/playwright-runs/react-owned-hobbies-20260813/result.json",
+        "result_sha256": "a5df399b337b0f3a43ba22fd15a2b5ba14e8686523b9a9e869d640315e0e2994"
+      },
+      "react": {
+        "renderer_versions": ["19.3.0-canary-3f0b9e61-20260317"],
+        "commit_count": 6,
+        "profiled_commit_count": 1,
+        "total_actual_duration_ms": 20.5,
+        "max_commit_duration_ms": 20.5,
+        "delivery": {
+          "documents_delivered": 2,
+          "binding_calls": 10,
+          "fallback_pages_evaluated": 1
+        },
+        "repository_components": [
+          {
+            "name": "AnalyticsProvider",
+            "file": "src/components/posthog-provider.tsx",
+            "line": 25
+          },
+          { "name": "Providers", "file": "src/components/providers.tsx", "line": 6 },
+          {
+            "name": "StorageModeProvider",
+            "file": "src/components/storage-mode-provider.tsx",
+            "line": 7
+          },
+          { "name": "RouteChrome", "file": "src/components/route-chrome.tsx", "line": 10 },
+          {
+            "name": "BingoBoard",
+            "file": "src/components/bucket-list/bingo-board.tsx",
+            "line": 14
+          }
+        ]
+      },
+      "verdict": "diagnostic_evidence_only"
+    }
+  ],
+  "limitations": [
+    "Both products were dirty, so each receipt is bound to its recorded source snapshot rather than a clean release revision.",
+    "React actualDuration is inclusive diagnostic evidence and does not establish exclusive component CPU cost.",
+    "The Significant Hobbies runner transpiles the selected TypeScript test through CommonJS, so CodeVetter uses a target-scoped preload in addition to its ESM loader.",
+    "One capture does not establish repeatability or confirm an optimization; paired verification requires at least three compatible captures per side.",
+    "Local browser evidence does not establish production device, network, cache, or user impact."
+  ]
+}

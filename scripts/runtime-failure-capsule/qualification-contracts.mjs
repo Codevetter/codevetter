@@ -5,6 +5,7 @@ export const PORTFOLIO_REPORT_SCHEMA_VERSION = 'runtime-qualification-portfolio/
 export const QUALIFICATION_LIMITS = Object.freeze({
   repositories: 64,
   candidates: 24,
+  flows: 128,
   sourceFiles: 500,
   sourceDepth: 6,
   sourceFileBytes: 512 * 1024,
@@ -22,7 +23,8 @@ export const QUALIFICATION_STATUSES = Object.freeze([
   'inaccessible',
 ]);
 
-const PROFILE_ADAPTERS = new Set(['node-test', 'node-script', 'vitest', 'go-bench']);
+const PROFILE_ADAPTERS = new Set(['node-test', 'node-script', 'vitest', 'jest', 'go-bench']);
+const FLOW_INVENTORY_ADAPTERS = new Set([...PROFILE_ADAPTERS, 'playwright']);
 
 export function assertPortfolioManifest(value) {
   const errors = validatePortfolioManifest(value);
@@ -83,6 +85,21 @@ export function validateQualification(value) {
   if (value.schema_version !== QUALIFICATION_SCHEMA_VERSION) errors.push('invalid schema_version');
   if (!QUALIFICATION_STATUSES.includes(value.status)) errors.push('invalid status');
   if (!plainObject(value.subject)) errors.push('subject must be an object');
+  else {
+    closed(
+      value.subject,
+      ['repository_revision', 'source_snapshot_sha256', 'dirty'],
+      'subject',
+      errors
+    );
+    if (
+      value.subject.source_snapshot_sha256 !== null &&
+      value.subject.source_snapshot_sha256 !== undefined &&
+      !/^[0-9a-f]{64}$/.test(value.subject.source_snapshot_sha256 ?? '')
+    ) {
+      errors.push('subject.source_snapshot_sha256 is invalid');
+    }
+  }
   if (!Array.isArray(value.lanes)) errors.push('lanes must be an array');
   if (!Array.isArray(value.candidates)) errors.push('candidates must be an array');
   if (value.candidates?.length > QUALIFICATION_LIMITS.candidates) {
@@ -90,6 +107,13 @@ export function validateQualification(value) {
   }
   for (const [index, candidate] of (value.candidates ?? []).entries()) {
     validateCandidate(candidate, `candidates[${index}]`, errors);
+  }
+  if (value.flows !== undefined) {
+    if (!Array.isArray(value.flows)) errors.push('flows must be an array');
+    if (value.flows?.length > QUALIFICATION_LIMITS.flows) errors.push('flows exceed bound');
+    for (const [index, flow] of (value.flows ?? []).entries()) {
+      validateCandidate(flow, `flows[${index}]`, errors, FLOW_INVENTORY_ADAPTERS);
+    }
   }
   if (value.recommended !== null) validateRecipe(value.recommended, 'recommended', errors);
   if (!plainObject(value.next_action) || typeof value.next_action.kind !== 'string') {
@@ -134,13 +158,13 @@ export function validatePortfolioReport(value) {
   return errors;
 }
 
-function validateCandidate(value, label, errors) {
+function validateCandidate(value, label, errors, adapters = PROFILE_ADAPTERS) {
   if (!plainObject(value)) {
     errors.push(`${label} must be an object`);
     return;
   }
   if (typeof value.id !== 'string' || value.id.length === 0) errors.push(`${label}.id is invalid`);
-  if (!PROFILE_ADAPTERS.has(value.adapter)) errors.push(`${label}.adapter is invalid`);
+  if (!adapters.has(value.adapter)) errors.push(`${label}.adapter is invalid`);
   if (typeof value.target !== 'string' || value.target.length === 0) {
     errors.push(`${label}.target is invalid`);
   }
@@ -154,6 +178,56 @@ function validateCandidate(value, label, errors) {
   if (!Array.isArray(value.signals)) errors.push(`${label}.signals must be an array`);
   if (!Array.isArray(value.safety_flags)) errors.push(`${label}.safety_flags must be an array`);
   if (!Array.isArray(value.evidence)) errors.push(`${label}.evidence must be an array`);
+  if (value.browser_profile !== undefined) {
+    validateBrowserProfile(value.browser_profile, `${label}.browser_profile`, errors);
+  }
+}
+
+function validateBrowserProfile(value, label, errors) {
+  if (!plainObject(value)) {
+    errors.push(`${label} must be an object`);
+    return;
+  }
+  closed(
+    value,
+    [
+      'project_name',
+      'device_name',
+      'viewport',
+      'device_scale_factor',
+      'is_mobile',
+      'has_touch',
+      'provenance',
+    ],
+    label,
+    errors
+  );
+  if (typeof value.project_name !== 'string' || value.project_name.length === 0) {
+    errors.push(`${label}.project_name is invalid`);
+  }
+  if (value.device_name !== null && typeof value.device_name !== 'string') {
+    errors.push(`${label}.device_name is invalid`);
+  }
+  if (value.viewport !== null) {
+    if (
+      !plainObject(value.viewport) ||
+      !Number.isInteger(value.viewport.width) ||
+      !Number.isInteger(value.viewport.height)
+    ) {
+      errors.push(`${label}.viewport is invalid`);
+    }
+  }
+  for (const field of ['device_scale_factor', 'is_mobile', 'has_touch']) {
+    if (
+      value[field] !== null &&
+      typeof value[field] !== (field === 'device_scale_factor' ? 'number' : 'boolean')
+    ) {
+      errors.push(`${label}.${field} is invalid`);
+    }
+  }
+  if (!['static_playwright_device', 'static_playwright_viewport'].includes(value.provenance)) {
+    errors.push(`${label}.provenance is invalid`);
+  }
 }
 
 function validateRecipe(value, label, errors) {

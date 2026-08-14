@@ -1,0 +1,206 @@
+{
+  "schema_version": "runtime-product-optimization-proof/v1",
+  "product": "significant-hobbies",
+  "repository_revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+  "claim_boundary": "Exact local Vitest workload only; production frequency, browser responsiveness, field devices, traffic, and retained-heap impact are unverified.",
+  "flow": {
+    "target": "src/lib/bucket-list-insights.performance.test.ts",
+    "name": "scales across existing bucket-list sizes",
+    "inputs": {
+      "existing_bucket_list_items": [0, 10, 50],
+      "suggestions_requested": 6,
+      "iterations_per_input": 2
+    },
+    "correctness_scope": "The real full-corpus deterministic suggestion operation; no external database or network operation."
+  },
+  "workload_discovery": {
+    "first_exact_test_assertion_share_percent": 0.703,
+    "first_next_action": "design_representative_workload",
+    "scaled_assertion_share_percent": 46.575,
+    "scaled_verdict": "actionable",
+    "selected_allocation_source": "src/lib/bucket-list-insights.ts:240 getBucketListSuggestions",
+    "selected_cpu_source": "src/lib/bucket-list-insights.ts:270 tokenize",
+    "baseline_source_sampled_bytes_per_run": [463477048, 464785344]
+  },
+  "change": {
+    "summary": "Tokenize each existing title once and each pool candidate once per suggestion call instead of rebuilding both token sets for every candidate-existing pair.",
+    "retained_cache": false,
+    "behavior": "Jaccard threshold, deterministic seed, category split, backfill, ordering, and return bound remain unchanged."
+  },
+  "second_change": {
+    "selected_by": "The corrected combined heap evidence promoted shuffle as the first CPU-aligned allocation experiment without manual profile ranking.",
+    "summary": "Replace decorate-sort-undecorate wrapper objects with a Float64Array of identical RNG keys and a stable sort of numeric indices.",
+    "behavior_gate": {
+      "fixed_input_seed_cases": 9,
+      "baseline_sha256": "992424c82878fbb6b73d9baed7aa6721ed54c121d1211e86e8e498d2749d6eaa",
+      "current_sha256": "992424c82878fbb6b73d9baed7aa6721ed54c121d1211e86e8e498d2749d6eaa",
+      "result": "exact_match"
+    },
+    "verification": {
+      "baseline_samples": 10,
+      "current_samples_per_run": 10,
+      "independent_current_runs": 3,
+      "shuffle_conservative_allocation_improvement_percent_runs": [26.387, 25.353, 24.765],
+      "application_conservative_allocation_improvement_percent_runs": [13.106, 11.977, 12.18],
+      "size10_latency_delta_percent_runs": [-4.831, -4.005, -3.571],
+      "size50_latency_delta_percent_runs": [1.363, 1.935, 1.238],
+      "median_process_tree_rss_delta_percent_runs": [-0.652, -0.797, -0.008],
+      "verdict_runs": ["confirmed", "confirmed", "confirmed"],
+      "shipping_recommended_runs": [true, true, true],
+      "correctness": "The nine-case output hash is unchanged; 48 focused tests and the full 484-test suite, typecheck, and lint pass."
+    },
+    "claim_boundary": "The allocation reduction is confirmed for the exact local 0/10/50-item workload. Largest-input latency and RSS did not materially regress; no production-frequency or retained-heap improvement is claimed."
+  },
+  "third_change": {
+    "selected_by": "The shipped performance-lab CLI selected getBucketListSuggestions from two repeated allocation profiles, then a digest-bound continuation remeasured the same exact flow after the edit.",
+    "summary": "Tokenize the immutable 5,000-item suggestion corpus once at module initialization instead of rebuilding every candidate token Set on every suggestion call.",
+    "tradeoff": "The module retains one token Set per suggestion so repeated calls allocate less; production call frequency and long-lived retained-heap impact remain unverified.",
+    "continuation_screen": {
+      "baseline_lab": "significant-token-cache-baseline-v26b-20260813",
+      "current_lab": "significant-token-cache-screen-v26-20260813",
+      "predecessor_receipt_sha256": "e9e8993ea729a2e97a1c18be1ab713044990ee4b679aab13181f368a15ebe145",
+      "verdict": "confirmed",
+      "stop": "paired_verification_required",
+      "largest_input_latency_delta_percent": -33.499,
+      "selected_source_allocation_delta_percent": -68.846,
+      "application_allocation_delta_percent": -36.516,
+      "median_process_tree_rss_delta_percent": -0.363
+    },
+    "paired_verification": {
+      "evidence_mode": "paired_interleaved",
+      "samples_per_side": 10,
+      "verdict": "confirmed",
+      "shipping_recommended": true,
+      "size10_latency_delta_percent": -47.101,
+      "size50_latency_delta_percent": -27.243,
+      "selected_source_allocation_delta_percent": -72.269,
+      "application_allocation_delta_percent": -41.647,
+      "median_process_tree_rss_delta_percent": -7.48,
+      "correctness": "48 focused tests and the full 484-test suite pass; typecheck and focused lint pass."
+    },
+    "codevetter_acceptance": {
+      "lab": "significant-token-cache-accepted-v26b-20260813",
+      "state": "completed",
+      "stop": "candidate_accepted",
+      "correctness": {
+        "adapter": "vitest",
+        "target": "src/lib/bucket-list-insights.test.ts",
+        "name": "is deterministic for the same inputs and seed",
+        "incumbent": "passed exactly once",
+        "candidate": "passed exactly once"
+      },
+      "paired_evidence": {
+        "path": ".codevetter/performance-labs/significant-token-cache-accepted-v26b-20260813/paired-verification.json",
+        "sha256": "349fa87e2f9e7231b801639f8cea46ce72cf3a2d9d292670192fa77ee2dd56aa",
+        "bytes": 43786,
+        "evidence_mode": "paired_interleaved",
+        "samples_per_side": 10,
+        "size10_latency_delta_percent": -51.48,
+        "size50_latency_delta_percent": -30.829,
+        "selected_source_allocation_delta_percent": -66.594,
+        "application_allocation_delta_percent": -35.017,
+        "median_process_tree_rss_delta_percent": -1.274,
+        "shipping_recommended": true
+      }
+    },
+    "flow_owned_acceptance": {
+      "lab": "significant-flow-bound-accepted-v26b-20260813",
+      "baseline_lab": "significant-bound-token-cache-baseline-v26b-20260813",
+      "state": "completed",
+      "stop": "candidate_accepted",
+      "correctness_cli_flags": 0,
+      "correctness_binding": {
+        "source": "repository_manifest",
+        "manifest_sha256": "ac74ce01061c3f32680cff3242656975e84cf23b8ac49237302bf8df144e3344",
+        "incumbent": "passed exactly once",
+        "candidate": "passed exactly once"
+      },
+      "coverage": {
+        "correctness_bound_flows": 1,
+        "stale_correctness_bindings": 0
+      },
+      "paired_evidence": {
+        "path": ".codevetter/performance-labs/significant-flow-bound-accepted-v26b-20260813/paired-verification.json",
+        "sha256": "f8d9212d9b4bced210e6a5b41b4c3085051586ef279edb4ca743d3fb96a03fcc",
+        "bytes": 43505,
+        "evidence_mode": "paired_interleaved",
+        "samples_per_side": 10,
+        "size10_latency_delta_percent": -50.268,
+        "size50_latency_delta_percent": -28.885,
+        "selected_source_allocation_delta_percent": -66.955,
+        "application_allocation_delta_percent": -37.328,
+        "median_process_tree_rss_delta_percent": -1.089,
+        "shipping_recommended": true
+      }
+    },
+    "claim_boundary": "These are exact local fixture-backed Vitest results. They do not estimate browser, production, database, network, field-device, traffic, or retained-heap performance."
+  },
+  "verification": {
+    "samples": 10,
+    "warmups": 1,
+    "independent_current_runs": 3,
+    "median_wall_time_ms": {
+      "baseline": 811,
+      "current_runs": [490, 512, 497],
+      "delta_percent_runs": [-39.581, -36.868, -38.718]
+    },
+    "assertion_median_total_ms": {
+      "baseline": 377.724,
+      "current_runs": [61.981, 62.702, 62.39]
+    },
+    "source_conservative_allocation_delta_percent_runs": [-96.085, -96.05, -96.018],
+    "application_conservative_allocation_delta_percent_runs": [-92.798, -92.783, -92.763],
+    "median_process_tree_rss_delta_percent_runs": [-10.923, -7.988, -8.078],
+    "median_process_tree_rss_delta_bytes_runs": [-49627136, -36290560, -36700160],
+    "verdict_runs": ["confirmed", "confirmed", "confirmed"],
+    "shipping_recommended_runs": [true, true, true],
+    "correctness": {
+      "focused_tests": "48 passed across bucket-list insights, experiences, and the scale contract.",
+      "full_tests": "484 passed across 53 files.",
+      "typecheck": "passed",
+      "lint": "passed"
+    }
+  },
+  "codevetter_accuracy_improvement": {
+    "observed": "The first shared-corpus profile fully parsed about 22.9k heap samples per run but was marked truncated only because more low-ranked sources existed than the compact hotspot output retains.",
+    "change": "Compact top-source projection no longer marks fully parsed evidence truncated; malformed structure and actual file, byte, sample, or node bounds still do.",
+    "result": "The replay restored the repeated shuffle source at 2881944 and 2939664 sampled bytes, then the scaled workload promoted the broader allocation source and independent tokenize CPU hotspot.",
+    "scale_metric_capture": {
+      "observed_gap": "Vitest's JSON-only reporter preserved exact test identity and duration but suppressed the benchmark console line, leaving all four original capsules with an empty console_metrics array.",
+      "change": "Unprofiled Vitest executions now use JSON and verbose reporters in the same process, and the bounded parser accepts only an embedded object matching the Vitest result shape.",
+      "replay_samples": 5,
+      "replay_metrics_median_ms_per_op": {
+        "size0": 3.981,
+        "size10": 5.388,
+        "size50": 9.742
+      },
+      "metric_sample_count": 5,
+      "assertion_median_ms": 64.084,
+      "wall_median_ms": 506,
+      "median_process_tree_rss_bytes": 418660352,
+      "extra_workload_executions": 0,
+      "provenance": "unprofiled_measurement_execution_median",
+      "claim_boundary": "The scale values are short local microbenchmark medians and are retained to compare identical revisions and inputs, not to estimate production latency."
+    },
+    "combined_heap_projection": {
+      "observed_gap": "Two individually complete heap runs were marked truncated after aggregation only because their source union exceeded the combined display window, suppressing an otherwise repeatable allocation finding.",
+      "change": "Combined evidence now propagates actual constituent truncation only; compact aggregate projection remains presentation-only.",
+      "replay_result": "The exact workload changed from insufficient_source_evidence to actionable, restored getBucketListSuggestions as the repeated leading source, and promoted shuffle as the first CPU-aligned allocation experiment."
+    },
+    "autonomous_continuation": {
+      "observed_gap": "The laboratory stopped at source_edit_required, leaving the agent to reconstruct the post-edit comparison, and same-snapshot evidence from Node 24 was initially reused under Node 26.",
+      "change": "A new --continue-from run binds to the predecessor receipt digest and candidate, forces the same exact flow, records a conservative sequential screen, and still requires paired correctness verification. Node evidence from another runtime is retained but no longer counts as reusable coverage.",
+      "real_product_result": "The first continuation correctly returned no confidence for Node 24 versus Node 26. A runtime-compatible replay then predicted a material improvement, and independent interleaved verification confirmed it."
+    },
+    "in_lab_acceptance": {
+      "observed_gap": "Even after a material continuation screen, an agent had to leave the laboratory and manually assemble exact correctness plus paired verification.",
+      "change": "A continuation may now accept a distinct digest-matched incumbent and one exact correctness scope, run correctness in both checkouts, invoke the existing interleaved verifier, and persist its full report by digest.",
+      "real_product_result": "One shipped CLI command accepted the Significant Hobbies token-cache candidate after both exact correctness executions passed and ten paired samples confirmed a 30.829% largest-input latency improvement with 66.594% fewer sampled bytes at the diagnosed source. The 1.274% RSS reduction is below the memory materiality threshold and is not claimed as a footprint improvement."
+    },
+    "flow_owned_correctness": {
+      "observed_gap": "The agent still had to reconstruct and repeat correctness adapter, target, and exact name flags even though they were stable product intent for the measured flow.",
+      "change": "A fixed bounded tracked data contract now joins exact performance identities to exact correctness scopes, exposes bound and stale counts, and requires the same manifest digest in incumbent and candidate checkouts.",
+      "real_product_result": "The shipped CLI accepted the same Significant Hobbies candidate with only continuation, incumbent, and execution-bound flags. It selected the deterministic correctness test from the flow contract, executed it exactly once in each checkout, and retained the manifest digest in the receipt."
+    }
+  }
+}

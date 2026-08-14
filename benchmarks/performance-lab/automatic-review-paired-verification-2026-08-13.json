@@ -1,0 +1,116 @@
+{
+  "schema_version": "codevetter-performance-lab-proof/v1",
+  "captured_on": "2026-08-13",
+  "codevetter_revision": "8eb6139db67bba224cceff73d015ad091e401880",
+  "capability": "automatic_clean_git_incumbent_paired_review",
+  "observed": {
+    "node_fixture": {
+      "adapter": "node-test",
+      "dependency_shape": "root node_modules graft with one imported package",
+      "correctness": "exact baseline and current tests passed",
+      "paired_evidence_mode": "paired_interleaved",
+      "samples_per_side": 10,
+      "warmups_per_side": 1,
+      "result": "accepted",
+      "artifact_reuse": "proved without rematerialization",
+      "tamper_detection": "payload digest mismatch rejected"
+    },
+    "go_fixture": {
+      "correctness_adapter": "go-test",
+      "performance_adapter": "go-bench",
+      "correctness": "exact baseline and current tests passed",
+      "paired_evidence_mode": "paired_interleaved",
+      "samples_per_side": 10,
+      "warmups_per_side": 1,
+      "result": "accepted"
+    },
+    "temporary_incumbent": {
+      "source": "clean local Git revision",
+      "git_worktree_created": false,
+      "dependency_install_ran": false,
+      "developer_checkout_mutated": false,
+      "owned_cleanup_proved": true,
+      "direct_workspace_dependency_link": "rejected before baseline execution"
+    },
+    "chosen_product_eligibility": [
+      {
+        "product": "App Health",
+        "revision": "2074138658a1347dcc1c5b9c4023a0b263c2c414",
+        "status": "no_confidence",
+        "reason": "review_change_not_sealed_to_owned_sources",
+        "change_classification": {
+          "owned_source_files": [],
+          "evaluator_files": ["codevetter.performance.json"],
+          "unrelated_files": []
+        },
+        "next_action": "establish_evaluator_baseline",
+        "automated": false,
+        "repository_mutation_performed": false
+      },
+      {
+        "product": "Anime List",
+        "revision": "db1faf0e0c27996c3eacfb9f1e3a4c0a65958938",
+        "status": "no_confidence",
+        "reason": "review_change_not_sealed_to_owned_sources",
+        "change_classification": {
+          "owned_source_files": ["src/recommendations.ts"],
+          "evaluator_files": [
+            "codevetter.performance.json",
+            "src/recommendations.performance.test.ts"
+          ],
+          "unrelated_files": ["e2e/mobile.spec.ts"]
+        },
+        "next_action": "establish_evaluator_baseline",
+        "automated": false,
+        "repository_mutation_performed": false
+      },
+      {
+        "product": "Significant Hobbies",
+        "revision": "650e5b27792873b316b7b2c943a24658dfd25c6e",
+        "status": "no_confidence",
+        "reason": "review_change_not_sealed_to_owned_sources",
+        "change_classification": {
+          "owned_source_files": ["src/lib/bucket-list-insights.ts"],
+          "evaluator_files": [
+            "codevetter.performance.json",
+            "src/lib/bucket-list-insights.performance.test.ts"
+          ],
+          "unrelated_files": ["docs/development/testing.md"]
+        },
+        "next_action": "establish_evaluator_baseline",
+        "automated": false,
+        "repository_mutation_performed": false
+      }
+    ]
+  },
+  "interpretation": {
+    "observed": "The same automatic review operation reached digest-bound accepted local evidence on real Node and Go fixtures and returned bounded source, evaluator, and unrelated-file blocker categories for all three currently unsealed chosen-product checkouts.",
+    "inferred": "Once a chosen product commits its manifest and evaluator targets, a later same-revision source-only change can enter automatic clean-Git pairing without an agent-prepared incumbent checkout.",
+    "unverified": [
+      "No chosen-product source change was accepted by this automatic path because current evaluator and unrelated changes are not sealed.",
+      "No production, external-service, field-device, or whole-project performance claim is supported.",
+      "The exact local paired result does not prove every changed line is independently causal."
+    ]
+  },
+  "verification_commands": [
+    "node --test scripts/runtime-failure-capsule/performance-review-incumbent.test.mjs scripts/runtime-failure-capsule/runner-dependency-root.test.mjs scripts/runtime-failure-capsule/performance-review-paired.test.mjs scripts/runtime-failure-capsule/performance-review-paired-go.test.mjs",
+    "pnpm test:runtime-failure-capsule",
+    "cargo test --lib",
+    "pnpm lint",
+    "node scripts/check-docs.mjs",
+    "openspec validate connect-application-flows-to-performance-lab --strict",
+    "pnpm --dir apps/desktop test:cli-qualification",
+    "pnpm --dir apps/desktop qualify:cli",
+    "git diff --check"
+  ],
+  "verification_results": {
+    "focused_review_family": "38 passed",
+    "serialized_runtime_suite": "331 passed, 2 skipped",
+    "rust_library": "908 passed, 25 ignored",
+    "biome": "803 files checked",
+    "documentation": "76 Markdown files checked",
+    "openspec": "311 of 311 tasks complete; strict validation passed",
+    "cli_release_contract": "5 release-contract tests and 8 source-binary tests passed; help contract contains 19 required fragments",
+    "diff_check": "passed"
+  }
+}

@@ -138,6 +138,15 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         action: go('/trex'),
       },
       {
+        id: 'nav-optimize',
+        label: 'Go to Optimize',
+        description: 'Profile local flows and inspect performance receipts',
+        icon: '\u2198',
+        shortcut: 'g o',
+        group: 'Navigation',
+        action: go('/optimize'),
+      },
+      {
         id: 'nav-settings',
         label: 'Go to Settings',
         icon: '\u2638',

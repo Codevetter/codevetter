@@ -1,0 +1,56 @@
+{
+  "schema_version": "runtime-performance-cold-start-review-replay/v2",
+  "product": "app-health",
+  "review_target": "packages/go/middleware.go",
+  "selection": {
+    "status": "cold_start_correctness_required",
+    "authority": "repository_manifest_source_binding",
+    "manifest_sha256": "ccbd6a079cd05249eeeb56099831435e2fcfca4fd92a747816eeeef4b05fd480",
+    "repository_revision": "2074138658a1347dcc1c5b9c4023a0b263c2c414",
+    "source_snapshot_sha256": "7e12d9e6f9ae7210e784b67762090036a196204790c044174702890265a2d746",
+    "performance_flow": {
+      "adapter": "go-bench",
+      "target": "packages/go/benchmark_test.go",
+      "name": "BenchmarkMiddlewareOverhead"
+    },
+    "correctness_scope": {
+      "adapter": "go-test",
+      "target": "packages/go/middleware_test.go",
+      "name": "TestMiddleware_ServeMuxPattern"
+    }
+  },
+  "fresh_correctness": {
+    "status": "passed",
+    "reason": "exact_current_correctness_passed",
+    "exit_code": 0,
+    "duration_ms": 760,
+    "selection": {
+      "executed": 1,
+      "failed": 0
+    }
+  },
+  "current_performance": {
+    "status": "profiled",
+    "sample_policy": { "samples": 2, "warmups": 0 },
+    "wall_time_ms": { "median": 832, "spread_percent": 57.332 },
+    "peak_rss_bytes": { "median": 65536000, "spread_percent": 8.925 },
+    "benchmark": {
+      "name": "BenchmarkMiddlewareOverhead-18",
+      "ns_per_op": 1736,
+      "bytes_per_op": 7190,
+      "allocs_per_op": 27
+    },
+    "diagnosis": {
+      "kind": "allocation_signal_below_experiment_floor",
+      "summary": "The strongest repeated direct allocation leaf contributed 1.01 objects/op but only 3.83% of total allocation objects.",
+      "candidate": null
+    }
+  },
+  "performance_claim_status": "current_characterization_only",
+  "observed": "CodeVetter selected and ran one exact current Go correctness test, then characterized its repository-owned performance flow without a prior accepted laboratory receipt.",
+  "unverified": [
+    "No baseline or paired performance comparison was executed.",
+    "No optimization or production impact is claimed.",
+    "Flows outside the exact correctness scope remain unverified."
+  ]
+}

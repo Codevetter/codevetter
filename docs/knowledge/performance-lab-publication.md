@@ -54,6 +54,59 @@ guardrails, not eleven independent claims of proven customer impact. The full
 inactive-project disposition is retained in
 [`artifacts/performance/old-local-projects-results-2026-08-09.md`](../../artifacts/performance/old-local-projects-results-2026-08-09.md).
 
+### Later source-bound local qualification
+
+A separate 2026-08-12 blind qualification re-ran six selected local product
+flows with ten-sample baselines, exact correctness checks, matching runtime
+identities, sealed source-file boundaries, and append-only verification
+receipts. Five flows use TypeScript/Vitest and one uses a Go benchmark:
+
+| Product | Largest encoded input | Baseline | Candidate | Change |
+| --- | ---: | ---: | ---: | ---: |
+| RolePatch | 20,000 | 9.384 ms/op | 1.938 ms/op | -79.348% |
+| LoopTV | 8,760 | 4.768 ms/op | 2.335 ms/op | -51.028% |
+| Email Manager | 50,000 | 7.605 ms/op | 4.147 ms/op | -45.470% |
+| Starboard | 50,000 | 46.900 ms/op | 32.464 ms/op | -30.780% |
+| Reader | 200 | 10.528 ms/op | 7.822 ms/op | -25.703% |
+| App Health Go | UUID + two numeric segments | 428 ns/op | 97.05 ns/op | -77.325% |
+
+CodeVetter's historical qualification portfolio counts six accepted,
+tool-originated experiments out of six accepted experiments, so it meets the
+declared 80% policy for that historical manifest. This is a local
+product-qualification result, not a
+claim that the linked PRs already contain every later change. The accepted
+Go result also reduced the measured benchmark from 144 to 64 B/op and from two
+to one allocation per operation. One accepted Go benchmark does not establish
+broad Go coverage, and the separate unseen GJSON experiment remained an honest
+rejection.
+Canonical evidence and the reproducible command live under
+[`benchmarks/performance-lab/`](../../benchmarks/performance-lab/).
+
+The same manifest now has a separate flow-coverage audit. It discovered 555
+bounded executable declarations, but only ten contained direct benchmark or
+timing evidence. All ten now have qualified runtime measurements; eight have
+experiment records and six have accepted optimizations. The remaining App
+Health outcomes include one materially inconclusive experiment and three
+measured flows where CodeVetter declined to open another qualifying experiment.
+Two early Echo calibration candidates remain immutable history but were
+superseded when alloc_objects evidence showed the direct line was below the 10%
+experiment floor. Six of seven Playwright declarations are now statically eligible
+for owned local browser capture. A separate selected-product trial produced
+normalized traces for all six exact flows, but established zero evaluation-
+valid browser coverage: Email Manager exposed a shared remote-font load
+boundary, while Reader exposed that port reachability does not establish the
+intended Worker runtime.
+The resulting local-server attestation now statically identifies Wrangler for
+both exact 8787 origins and verifies one bounded listener's repository and
+process-family ancestry before a passing trace can count. The first read-only
+selected-product follow-up found no listener and intentionally produced no new
+runtime-coverage claim; it did not start servers or read secret-bearing files.
+Meanwhile, 538 ordinary correctness tests need a representative
+measurement before they can become performance flows. RolePatch, LoopTV, and
+Starboard reached the 128-declaration bound, so even the static inventory is
+incomplete there. The retained product outcomes are in the
+[performance-lab evidence](../../benchmarks/performance-lab/README.md).
+
 ## External open-source work
 
 ### Marked
@@ -137,6 +190,62 @@ optimization laboratory:
 10. **Self-profiling** found and fixed repeated source-offset scans in V8
     function coverage. The representative 91-document replay improved 18.11%;
     the 98.808% number belongs only to the adversarial regression fixture.
+11. **Source-bound experiment receipts** now reject unrelated changed files,
+    refuse cross-runtime Node comparisons, persist compact measurements and
+    decisions, and aggregate a manifest-bound multi-repository involvement
+    denominator.
+12. **Flow-coverage accounting** now inventories supported declarations, joins
+    durable positive and negative measurements, separates measured from
+    experimented and accepted rates, and chooses the next uncovered flow.
+13. **Go allocation precision** now inspects alloc_objects as well as
+    alloc_space, rejects setup-dominated byte profiles, and refuses direct
+    candidates that cannot meet the verifier's 10% materiality policy.
+14. **Autonomous laboratory orchestration** now turns the coverage report's
+    safe next action into sequential supervised measurements, high-signal
+    existing-test screens, and experiment sealing, with an eight-step ceiling,
+    immutable lifecycle history, and an explicit stop before source edits,
+    generic tests, browser traces, or safety-flagged execution.
+15. **Browser finding diagnosis** now turns exact attested Playwright evidence
+    into failed-request, collapsed repeated-request, dominant-local-request,
+    and unexplained-navigation findings. Capture and laboratory receipts retain
+    compact finding references while withholding production, critical-path,
+    caching, and semantic claims.
+16. **Browser main-thread evidence** now captures bounded Chromium renderer
+    tasks, independent JavaScript/style/layout/paint intervals, and
+    repository-contained V8 sample candidates during the owned exact flow.
+    Deterministic long-task and JavaScript CPU findings retain transformed-source
+    and production-impact limits; raw Chromium traces are deleted after
+    normalization. The installed-browser proof is hermetic, while the earlier
+    selected-product receipts remain network-only and cannot be upgraded by
+    replay.
+17. **Browser original-source attribution** now maps leading local V8 candidates
+    through a bounded same-origin module response and Node's built-in Source Map
+    v3 parser. Original TypeScript/JavaScript file and line provenance requires
+    repository containment plus byte-identical embedded source content. Missing,
+    stale, escaping, redirected, oversized, or slow evidence remains transformed;
+    raw modules, maps, source text, URL queries, and machine paths are not
+    durable.
+18. **Owned local Vite lifecycle** now closes the manual-server gap for exact
+    React flows. The autonomous laboratory resolves only a contained installed
+    Vite module, binds the exact qualified loopback origin, reuses only an
+    attested existing listener, and always records owned process-tree cleanup.
+    It disables repository Vite config and automatic environment-file loading;
+    other server families and ambiguous listeners remain explicit stops. A real
+    installed-Vite plus Chromium proof returns with no listener left behind.
+19. **Application-flow inventory** now establishes a package-scoped denominator
+    for supported React/Next routes, Node/Go endpoints, and OpenAPI operations
+    before workload selection. It keeps declaration, static test reference, and
+    validated same-snapshot runtime observation as separate evidence levels and
+    returns one closed evidence-gap action without executing project code or an
+    application request. Qualification across Anime List, Significant Hobbies,
+    App Health, and Polaris found 188 flows and corrected three scanner accuracy
+    faults before publication; zero runtime observations are claimed in that
+    static run.
+20. **Change-cost acceptance** now records files, additions, removals, gross
+    line movement, and JavaScript/Go production dependency additions. The local
+    lab and autonomous campaign reject source-bound candidates above the default
+    three-file, 160-added-line, or 200-gross-line budget before expensive
+    verification. Public proofs pair dated runtime results with this patch cost.
 
 The most important tooling improvements came from false or incomplete early
 results: startup-dominated tests now fail closed, Vitest names must identify one

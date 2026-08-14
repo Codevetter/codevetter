@@ -33,6 +33,8 @@ pub mod observability;
 pub(crate) mod outcome_risk_calibration;
 #[cfg(test)]
 mod perf_bench;
+pub(crate) mod performance_review_evidence;
+pub mod performance_lab;
 pub mod preferences;
 pub mod procedure_events;
 pub mod repo_workspace;

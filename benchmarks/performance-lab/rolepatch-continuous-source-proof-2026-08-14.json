@@ -1,0 +1,99 @@
+{
+  "schema_version": "codevetter-performance-proof/v1",
+  "recorded_at": "2026-08-14",
+  "capability": "continuous_prearmed_main_thread_source_probe",
+  "subject": {
+    "product": "RolePatch",
+    "repository_revision": "a9abcccf1e70e5f6fc130b129b2906ba87ac725a",
+    "source_snapshot_sha256": "92309983f658deaeae69bb5285baa059d1f2b36a832a12c409a33dbbb1087355",
+    "dirty_before": false,
+    "dirty_after": false,
+    "flow": {
+      "adapter": "playwright",
+      "target": "e2e/navigation.spec.ts",
+      "name": "landing page renders",
+      "project": "desktop",
+      "request_ordinal": 1,
+      "method": "GET",
+      "route": "/"
+    }
+  },
+  "observed": {
+    "lower_overhead_route": {
+      "recapture_id": "rolepatch-low-overhead-source-route-20260814a",
+      "correctness": "passed",
+      "evidence_outcome": "evidence_completed",
+      "state": "unresolved",
+      "precommit_wall_ms": 34.57,
+      "main_thread_cpu_ms": 33.35,
+      "native_state": "observed_zero",
+      "next_probe": "inspect_continuous_main_thread_source"
+    },
+    "initial_continuous_attempt": {
+      "recapture_id": "rolepatch-continuous-source-20260814a",
+      "correctness": "passed",
+      "evidence_outcome": "evidence_incomplete",
+      "state": "invalid",
+      "incomplete_reason": "stop_tail_invalid"
+    },
+    "tool_iteration": {
+      "change": "rotate the startup-enabled profiler through one private loopback arm request after warm-up and before the exact browser flow",
+      "accuracy_bound_relaxed": false,
+      "maximum_stop_tail_ms": 100
+    },
+    "final_continuous_attempt": {
+      "recapture_id": "rolepatch-continuous-source-20260814b",
+      "correctness": "passed",
+      "evidence_outcome": "evidence_completed",
+      "state": "unresolved",
+      "response_commit_offset_ms": 35.209,
+      "stop_tail_ms": 17.2,
+      "boundary_uncertainty_ms": 18.2,
+      "profile_duration_ms": 2321.042,
+      "samples": 35,
+      "sampled_time_ms": 34.625,
+      "sample_scope": {
+        "repository": 0,
+        "dependency": 17,
+        "generated": 0,
+        "runtime": 7,
+        "idle": 0,
+        "unresolved": 11
+      },
+      "repository_candidates": 0,
+      "edit_eligible": false
+    }
+  },
+  "inferred": {
+    "summary": "CodeVetter converted a real stop-tail failure into a bounded pre-armed capture and then correctly declined to name a RolePatch source hotspot because the exact interval contained no repository samples.",
+    "confidence": "high",
+    "basis": "The unchanged exact flow passed correctness, the final capture satisfied startup, target, commitment, overlap, profile, and stop-tail contracts, and the output retained no source or edit authority."
+  },
+  "unverified": [
+    "The local cache-free Next.js development flow does not establish production latency, frequency, scale, or user impact.",
+    "Dependency, runtime, and unresolved sample scopes do not identify a causal package or function.",
+    "One complete run is not a stable source diagnosis, and there is no candidate worth repeating here.",
+    "No RolePatch source optimization was identified or verified."
+  ],
+  "durable_evidence": {
+    "source_capture_receipt": ".codevetter/playwright-runs/rolepatch-clean-snapshot-20260813f/receipt.json",
+    "lower_overhead_receipt": ".codevetter/browser-probe-runs/rolepatch-low-overhead-source-route-20260814a/receipt.json",
+    "initial_continuous_receipt": ".codevetter/browser-probe-runs/rolepatch-continuous-source-20260814a/receipt.json",
+    "final_continuous_receipt": ".codevetter/browser-probe-runs/rolepatch-continuous-source-20260814b/receipt.json",
+    "final_capture_result": ".codevetter/playwright-runs/rolepatch-continuous-source-20260814b/result.json",
+    "receipt_sha256": {
+      "lower_overhead": "ba04962549e6c3496369de62ea6edf92f638b3b07ed8e3601e941eadf97d6c4d",
+      "initial_continuous": "90af9487f92b006ef21562991544aa22a2a1d06e9b907d80c802ef9312ec6a29",
+      "final_continuous": "6a128c2e6ff664a37f2ceeef11ecf2801fdfc672054781c36966b00dc6bdd6f4"
+    }
+  },
+  "cost_and_cleanup": {
+    "cloud_calls": 0,
+    "production_calls": 0,
+    "package_registry_calls": 0,
+    "package_installs": 0,
+    "owned_server_processes_remaining": 0,
+    "rolepatch_source_dirty_after": false,
+    "retained_local_evidence_kib": 420
+  }
+}

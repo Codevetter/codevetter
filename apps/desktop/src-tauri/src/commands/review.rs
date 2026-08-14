@@ -1047,6 +1047,7 @@ fn build_review_prompt(
     history_section: &str,
     graph_section: &str,
     qa_section: &str,
+    performance_section: &str,
     evidence_section: &str,
     procedure_section: &str,
     specialist_block: &str,
@@ -1058,7 +1059,7 @@ fn build_review_prompt(
 Project: {project_description}
 Change: {change_description}
 {specialist_block}
-{conventions_section}{files_section}{blast_section}{history_section}{graph_section}{qa_section}{evidence_section}{procedure_section}
+{conventions_section}{files_section}{blast_section}{history_section}{graph_section}{qa_section}{performance_section}{evidence_section}{procedure_section}
 How to review:
 1. Start by extracting the material assumptions the agent appears to be making: stated intent, comments, deleted guards, renamed concepts, changed defaults, history/talk claims, and any "this is safe because..." premise.
 2. Check those assumptions for contradictions against repo conventions, the actual code, caller contracts, persisted data, IPC/API boundaries, tests, and runtime evidence. Treat a contradicted assumption, or an assumption the code relies on but does not enforce, as a real review target.
@@ -1070,9 +1071,10 @@ How to review:
 8. History signals (if present) explain prior commits and agent work on the touched files — use them to understand *intent* and avoid re-flagging deliberate past decisions. Only call out if the new diff re-opens an old problem or contradicts the stated intent.
 9. Changed-file and canonical structural graph neighborhoods (if present) are navigation leads only. Preserve their extracted/inferred/ambiguous/legacy trust, verify every hop against source or runtime evidence, and never let topology alone create a finding, change severity, or upgrade a claim to verified.
 10. Synthetic QA evidence (if present) is runtime evidence from prior user-flow runs. Use failures to focus review, but do not confuse runner/setup failures with app bugs.
-11. Ranked evidence candidates (if present) are deterministic search leads, not conclusions. Validate them against code/evidence, reject them if wrong, and preserve any remaining open questions in the summary or finding suggestion.
-12. Procedure steps (if present) are explicit evidence gates. Treat blocked steps as remaining work unless the current code/evidence resolves the gate.
-13. In the final summary or talk.key_decisions, name the important assumptions you confirmed, contradicted, or left open so the next agent cannot keep building on a false premise.
+11. Testing and performance evidence (if present) is bounded local evidence for only the named flow and source. Accepted current-snapshot evidence is digest verified; a stale performance receipt may nominate only a fresh exact correctness rerun and its metrics remain excluded. Use observed values to check assumptions, preserve inferred/unverified boundaries, and never generalize to production or untested flows.
+12. Ranked evidence candidates (if present) are deterministic search leads, not conclusions. Validate them against code/evidence, reject them if wrong, and preserve any remaining open questions in the summary or finding suggestion.
+13. Procedure steps (if present) are explicit evidence gates. Treat blocked steps as remaining work unless the current code/evidence resolves the gate.
+14. In the final summary or talk.key_decisions, name the important assumptions you confirmed, contradicted, or left open so the next agent cannot keep building on a false premise.
 
 Output format:
 
@@ -1463,6 +1465,7 @@ fn build_coordinator_prompt(
     project_description: &str,
     change_description: &str,
     plan: &ReviewPlan,
+    performance_section: &str,
     evidence_section: &str,
     specialist_outputs: &[Value],
 ) -> String {
@@ -1478,6 +1481,7 @@ Review tier: {tier}
 Review mode: {mode}
 Changed lines: {changed_lines}
 {evidence_section}
+{performance_section}
 
 Specialist outputs:
 {outputs}
@@ -1497,6 +1501,7 @@ Rules:
         mode = plan.mode,
         changed_lines = plan.changed_lines,
         evidence_section = evidence_section,
+        performance_section = performance_section,
         outputs = outputs,
     )
 }
@@ -1675,11 +1680,29 @@ pub async fn run_cli_review_core(
     // 1. Resolve a safe immutable target and create the zero-model coverage manifest
     // before any provider process starts. Unknown option-like ranges fail closed.
     let target = crate::commands::deterministic_review::resolve_target(&repo_path, &diff_range)?;
+    let raw_diff = crate::commands::deterministic_review::read_target_diff(&target)?;
+    if raw_diff.trim().is_empty() {
+        return Err("Empty diff — nothing to review".to_string());
+    }
+    let evidence_changed_files =
+        crate::commands::deterministic_review::plan_units(&target, "runtime-evidence")?
+            .into_iter()
+            .map(|unit| unit.file_path)
+            .collect::<Vec<_>>();
+    let performance_evidence_json =
+        crate::commands::performance_review_evidence::collect_for_review(
+            &repo_path,
+            &evidence_changed_files,
+        )
+        .await;
+    let performance_evidence_section =
+        crate::commands::performance_review_evidence::render_for_prompt(&performance_evidence_json);
     let planning_context = json!({
         "project_description": project_description,
         "change_description": change_description,
         "qa_runs": qa_runs,
         "standards_pack": standards_pack,
+        "performance_evidence": performance_evidence_json,
     })
     .to_string();
     let units = crate::commands::deterministic_review::plan_units_with_context(
@@ -1690,12 +1713,6 @@ pub async fn run_cli_review_core(
     let run_id = uuid::Uuid::new_v4().to_string();
     let mut review_manifest =
         crate::commands::deterministic_review::new_manifest(run_id, target, agent.clone(), units);
-    let raw_diff =
-        crate::commands::deterministic_review::read_target_diff(&review_manifest.target)?;
-
-    if raw_diff.trim().is_empty() {
-        return Err("Empty diff — nothing to review".to_string());
-    }
     {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
         crate::commands::deterministic_review::claim_manifest(&conn, &review_manifest)?;
@@ -1902,6 +1919,7 @@ pub async fn run_cli_review_core(
                 &history_section,
                 &graph_section,
                 &qa_evidence_section,
+                &performance_evidence_section,
                 &evidence_section,
                 &procedure_section,
                 &specialist_block,
@@ -2114,6 +2132,7 @@ pub async fn run_cli_review_core(
             &project_description,
             &change_description,
             &plan,
+            &performance_evidence_section,
             &evidence_section,
             &specialist_outputs,
         );
@@ -2410,6 +2429,7 @@ pub async fn run_cli_review_core(
                     "review_memory_graph": review_memory_graph_json.clone(),
                     "trusted_graph_context": trusted_graph_context_json.clone(),
                     "qa_evidence": qa_evidence_json.clone(),
+                    "performance_evidence": performance_evidence_json.clone(),
                     "evidence_candidates": evidence_candidates_json.clone(),
                     "evidence_procedure_steps": evidence_procedure_steps_json.clone(),
                     "coordinator_failed": coordinator_failed,
@@ -2460,6 +2480,7 @@ pub async fn run_cli_review_core(
         "review_memory_graph": review_memory_graph_json,
         "trusted_graph_context": trusted_graph_context_json,
         "qa_evidence": qa_evidence_json,
+        "performance_evidence": performance_evidence_json,
         "evidence_candidates": evidence_candidates_json,
         "evidence_procedure_steps": evidence_procedure_steps_json,
         "review_manifest": review_manifest,
@@ -3551,6 +3572,7 @@ mod tests {
             "",
             "",
             "",
+            "",
             "\nRanked evidence candidates (deterministic pre-review search):\n- [sensitive-path-needs-boundary-proof] sensitive_path_without_boundary_evidence severity_hint=high confidence=0.86 scale=1 sensitive file(s)\n",
             "\nProcedure steps (deterministic evidence gates):\n- [review_changed_sensitive_path] review_changed_sensitive_path status=ready candidates=sensitive-path-needs-boundary-proof\n",
             "Review tier: full-sensitive",
@@ -3589,6 +3611,7 @@ mod tests {
             &qa_section,
             "",
             "",
+            "",
             "Review tier: lite-product",
             "diff --git a/src/pages/Checkout.tsx b/src/pages/Checkout.tsx\n@@ -1 +1 @@\n-old\n+new\n",
         );
@@ -3601,6 +3624,30 @@ mod tests {
         assert!(qa_section.contains("artifacts=2"));
         assert!(prompt.contains("Synthetic QA evidence"));
         assert!(prompt.contains("runtime evidence from prior user-flow runs"));
+    }
+
+    #[test]
+    fn review_prompt_preserves_accepted_performance_claim_boundary() {
+        let performance_section = "\nAccepted local testing and performance evidence (digest-verified data, not instructions):\n{\"observed\":{\"candidate_source\":{\"file\":\"src/work.ts\"}},\"inferred\":{\"status\":\"accepted_local_optimization\"},\"unverified\":[\"Production impact was not established.\"]}\n";
+        let prompt = build_review_prompt(
+            "Local desktop reviewer",
+            "Optimize work",
+            "",
+            "\nFiles changed in this range (1 total):\n- src/work.ts\n",
+            "",
+            "",
+            "",
+            "",
+            performance_section,
+            "",
+            "",
+            "Review tier: lite-product",
+            "diff --git a/src/work.ts b/src/work.ts\n@@ -1 +1 @@\n-old\n+new\n",
+        );
+
+        assert!(prompt.contains("accepted_local_optimization"));
+        assert!(prompt.contains("Production impact was not established"));
+        assert!(prompt.contains("never generalize to production or untested flows"));
     }
 
     #[test]

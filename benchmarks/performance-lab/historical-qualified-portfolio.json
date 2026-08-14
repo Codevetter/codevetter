@@ -1,0 +1,11 @@
+{
+  "schema_version": "runtime-qualification-portfolio-manifest/v1",
+  "repositories": [
+    { "id": "rolepatch", "path": "../../../rolepatch" },
+    { "id": "looptv", "path": "../../../looptv" },
+    { "id": "email-manager", "path": "../../../email-manager" },
+    { "id": "starboard", "path": "../../../starboard" },
+    { "id": "reader", "path": "../../../reader" },
+    { "id": "app-health-go", "path": "../../../app-health/packages/go" }
+  ]
+}

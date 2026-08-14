@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { lstat, readFile, realpath, stat } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 
@@ -59,6 +60,15 @@ export function analyzeSourcePatterns(lines, startLine = 1) {
         lines: [startLine + index],
         delimiter: '\\n',
         observation: 'A complete split result is created only to retain the first segment.',
+      });
+    }
+    const stringFormat = supportedGoStringFormat(lines[index]);
+    if (stringFormat) {
+      patterns.push({
+        kind: 'go_static_string_format',
+        lines: [lineNumber],
+        string_verbs: stringFormat.stringVerbs,
+        observation: 'fmt.Sprintf constructs one string from literal text and %s verbs only.',
       });
     }
   }
@@ -158,20 +168,62 @@ export function analyzeSourcePatterns(lines, startLine = 1) {
 function sourceCandidates(capsule) {
   const candidates = [];
   for (const finding of capsule?.findings ?? []) {
-    if (finding?.source?.file) candidates.push(finding.source);
+    if (finding?.source?.file) {
+      candidates.push({
+        source: finding.source,
+        priority: sourceFindingPriority(finding),
+        share: sourceFindingShare(finding),
+      });
+    }
   }
   for (const hotspot of capsule?.observed?.hotspots ?? []) {
     if (hotspot?.role === 'application' && hotspot.file) {
-      candidates.push({ file: hotspot.file, line: hotspot.line, function: hotspot.function });
+      candidates.push({
+        source: { file: hotspot.file, line: hotspot.line, function: hotspot.function },
+        priority: hotspot.profile_kind === 'go_alloc_objects' && hotspot.flat > 0 ? 0 : 3,
+        share: hotspot.flat_share ?? hotspot.sample_share ?? 0,
+      });
     }
   }
+  candidates.sort(
+    (left, right) =>
+      left.priority - right.priority ||
+      right.share - left.share ||
+      left.source.file.localeCompare(right.source.file) ||
+      String(left.source.function ?? '').localeCompare(String(right.source.function ?? '')) ||
+      left.source.line - right.source.line
+  );
   const seen = new Set();
-  return candidates.filter((candidate) => {
-    const key = `${candidate.file}:${candidate.line}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return candidates
+    .map((candidate) => candidate.source)
+    .filter((candidate) => {
+      const key =
+        typeof candidate.function === 'string' && candidate.function.length > 0
+          ? `${candidate.file}\0${candidate.function}`
+          : `${candidate.file}:${candidate.line}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function sourceFindingPriority(finding) {
+  if (
+    finding.kind === 'go_allocation_path_candidate' &&
+    finding.profile_kind === 'go_alloc_objects' &&
+    finding.flat_profile_objects > 0
+  ) {
+    return 0;
+  }
+  if (['node_allocation_candidate', 'application_hotspot_candidate'].includes(finding.kind)) {
+    return 1;
+  }
+  if (finding.kind === 'go_allocation_path_candidate') return 2;
+  return 3;
+}
+
+function sourceFindingShare(finding) {
+  return finding.flat_share ?? finding.sample_share ?? finding.cumulative_share ?? 0;
 }
 
 async function readSourceWindow(root, candidate) {
@@ -238,6 +290,7 @@ async function readSourceWindow(root, candidate) {
         start_line: startLine,
         end_line: endLine,
       },
+      source_context_sha256: createHash('sha256').update(analysisLines.join('\n')).digest('hex'),
       excerpt: redacted.text,
       patterns: analyzeSourcePatterns(analysisLines, analysisStartLine),
       redaction_count: redacted.redaction_count,
@@ -248,21 +301,18 @@ async function readSourceWindow(root, candidate) {
 }
 
 function findFunctionAnchor(lines, candidate) {
-  const functionName = candidate.function;
-  if (
-    typeof functionName !== 'string' ||
-    functionName.length === 0 ||
-    !/^[A-Za-z_$][\w$]*$/.test(functionName)
-  ) {
+  const reportedFunction = candidate.function;
+  const functionName = simpleFunctionName(reportedFunction);
+  if (!functionName) {
     const enclosing = findEnclosingFunctionRange(lines, candidate.line);
     return {
       line: enclosing?.start ?? candidate.line,
-      function: enclosing?.function ?? functionName ?? null,
+      function: enclosing?.function ?? reportedFunction ?? null,
     };
   }
   const escaped = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const declaration = new RegExp(
-    `(?:function\\s+${escaped}\\b|(?:const|let|var)\\s+${escaped}\\s*=|\\b${escaped}\\s*\\([^)]*\\)\\s*(?::[^{}]+)?\\{)`
+    `(?:function\\s+${escaped}\\b|(?:const|let|var)\\s+${escaped}\\s*=|\\b${escaped}\\s*\\([^)]*\\)\\s*(?::[^{}]+)?\\{|^\\s*func(?:\\s*\\([^)]*\\))?\\s+${escaped}\\s*\\()`
   );
   const matches = [];
   for (let index = 0; index < lines.length; index += 1) {
@@ -272,6 +322,24 @@ function findFunctionAnchor(lines, candidate) {
     line: matches.length === 1 ? matches[0] : candidate.line,
     function: functionName,
   };
+}
+
+function simpleFunctionName(value) {
+  if (typeof value !== 'string' || value.length === 0) return null;
+  if (/^[A-Za-z_$][\w$]*$/.test(value)) return value;
+  const suffix = /\.([A-Za-z_$][\w$]*)$/.exec(value)?.[1] ?? null;
+  return suffix && /^[A-Za-z_$][\w$]*$/.test(suffix) ? suffix : null;
+}
+
+function supportedGoStringFormat(line) {
+  const match = /\bfmt\.Sprintf\(\s*"((?:\\.|[^"\\])*)"\s*,/.exec(line);
+  if (!match) return null;
+  const verbs = [...match[1].matchAll(/%(?:%|s)/g)].map((entry) => entry[0]);
+  const stringVerbs = verbs.filter((verb) => verb === '%s').length;
+  if (stringVerbs === 0 || match[1].replaceAll('%%', '').replaceAll('%s', '').includes('%')) {
+    return null;
+  }
+  return { stringVerbs };
 }
 
 function findFunctionBodyRange(lines, startLine) {

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { LIMITS, assertProfileAdapter } from './contracts.mjs';
+import { LIMITS, assertPairedAdapter } from './contracts.mjs';
 
 export const CAMPAIGN_MANIFEST_SCHEMA_VERSION = 'optimization-campaign-manifest/v1';
 export const CAMPAIGN_RECORD_SCHEMA_VERSION = 'optimization-campaign-record/v1';
@@ -17,7 +17,7 @@ export const CAMPAIGN_LIMITS = Object.freeze({
   evidenceBytes: 8 * 1024 * 1024,
 });
 
-const CORRECTNESS_ADAPTERS = new Set(['node-test', 'vitest', 'go-test']);
+const CORRECTNESS_ADAPTERS = new Set(['node-test', 'vitest', 'jest', 'go-test']);
 const DECISIONS = new Set([
   'initialized',
   'baseline_ready',
@@ -232,17 +232,23 @@ function validatePerformance(value, errors) {
   }
   closed(
     value,
-    ['adapter', 'target', 'name', 'timeout_ms', 'screening', 'promotion'],
+    ['adapter', 'target', 'name', 'project', 'timeout_ms', 'screening', 'promotion'],
     'performance',
     errors
   );
   try {
-    assertProfileAdapter(value.adapter);
+    assertPairedAdapter(value.adapter);
   } catch (error) {
     errors.push(error.message);
   }
   safePath(value.target, 'performance.target', errors);
   text(value.name, 'performance.name', errors);
+  if (value.project !== null) {
+    text(value.project, 'performance.project', errors, 100);
+    if (value.adapter !== 'playwright') {
+      errors.push('performance.project is supported only for Playwright');
+    }
+  }
   integer(value.timeout_ms, 'performance.timeout_ms', errors, 100, LIMITS.maximumTimeoutMs);
   samplePolicy(value.screening, 'performance.screening', errors, { promotion: false });
   samplePolicy(value.promotion, 'performance.promotion', errors, { promotion: true });

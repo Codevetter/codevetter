@@ -2,6 +2,7 @@ export const SUPERVISED_RUN_SCHEMA_VERSION = 'runtime-performance-supervision/v1
 
 export const SUPERVISION_LIMITS = Object.freeze({
   runIdCharacters: 80,
+  runs: 256,
   receiptBytes: 256 * 1024,
   resultBytes: 8 * 1024 * 1024,
   outputBytes: 128 * 1024,
@@ -91,9 +92,19 @@ export function validateSupervisedRunReceipt(value) {
 }
 
 function validateSubject(value, errors) {
-  if (!objectWithKeys(value, ['repository_revision', 'dirty'], 'subject', errors)) return;
+  if (!plainObject(value)) {
+    errors.push('subject must be an object');
+    return;
+  }
+  closed(value, ['repository_revision', 'source_snapshot_sha256', 'dirty'], 'subject', errors);
   if (typeof value.repository_revision !== 'string' || value.repository_revision.length === 0) {
     errors.push('subject.repository_revision is invalid');
+  }
+  if (
+    value.source_snapshot_sha256 !== undefined &&
+    !/^[0-9a-f]{64}$/.test(value.source_snapshot_sha256 ?? '')
+  ) {
+    errors.push('subject.source_snapshot_sha256 is invalid');
   }
   if (typeof value.dirty !== 'boolean') errors.push('subject.dirty must be boolean');
 }

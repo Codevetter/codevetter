@@ -1,0 +1,91 @@
+{
+  "schema_version": "codevetter-async-creator-source-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter preserves direct repository callsites for allowlisted promise-based Node async creators while refusing to attribute dependency- or framework-created response-linked work to an application ancestor.",
+  "implementation_evidence": {
+    "direct_creator_provenance": "node_async_creator_callsite",
+    "allowlisted_surfaces": [
+      "global timer creators",
+      "node:timers/promises setTimeout and setImmediate",
+      "closed node:fs promise methods"
+    ],
+    "retained_values": [
+      "repository-relative source file",
+      "source line",
+      "bounded function name",
+      "source provenance"
+    ],
+    "discarded_values": [
+      "timer delay",
+      "resolved value",
+      "filesystem path",
+      "resource object",
+      "callback arguments",
+      "raw async identity"
+    ],
+    "focused_tests": {
+      "command": "node --test scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs",
+      "passed": 33,
+      "failed": 0,
+      "proofs": [
+        "A direct node:timers/promises call retains server.mjs with node_async_creator_callsite provenance.",
+        "A direct node:fs/promises read retains server.mjs with the same provenance while preserving the operation result.",
+        "A dependency-owned timer remains source-null even though the application handler is an ancestor.",
+        "No private timer value, filesystem path, dependency label, or raw async identity enters evidence."
+      ]
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "capture_id": "async-creator-high-signal-20260813-a",
+    "receipt": ".codevetter/playwright-runs/async-creator-high-signal-20260813-a/receipt.json",
+    "result": ".codevetter/playwright-runs/async-creator-high-signal-20260813-a/result.json",
+    "receipt_sha256": "db432c513ce36edebfe9076da6517a7cd878538a502436400cee58f686c695f9",
+    "result_sha256": "3f5d1d0ebc8010753c30bed5cbb74d8eb13b60414abd42e0339b47aeb7428fad",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "Next config-disabled development",
+      "owned_ephemeral_port": 50842,
+      "runtime_state": "owned_attested",
+      "cleanup": "force_terminated",
+      "capture_state": "failed",
+      "failure_boundary": "The existing exact assertion failed; runtime evidence remains diagnostic only."
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "duration_ms": 2049.115,
+      "async_resource_total": 16,
+      "async_resource_retained": 8,
+      "async_inventory_complete": false,
+      "response_completion_delay_ms": 22.235,
+      "selected_response_descendant": {
+        "resource_kind": "timer",
+        "wait_ms": 19.345,
+        "source": null
+      },
+      "longest_unknown_resource": {
+        "resource_kind": "timer",
+        "wait_ms": 498.684,
+        "source": null
+      }
+    },
+    "diagnosis": {
+      "detector": "browser_server_async_delay",
+      "relationship": "response_completion_descendant",
+      "confidence": "low",
+      "eligible_experiment_findings": 0,
+      "result": "The framework-created timer stayed unattributed; CodeVetter did not promote the static page owner or another application ancestor as its creator."
+    }
+  },
+  "limitations": [
+    "The real product run used a local config-disabled Next development runtime and does not establish production performance.",
+    "The public async inventory was sampled to eight resources and cannot support absence claims.",
+    "Direct creator attribution identifies the public API callsite, not exclusive wait ownership or optimization safety.",
+    "The failed existing assertion prevents this capture from authorizing a source edit or performance claim."
+  ]
+}

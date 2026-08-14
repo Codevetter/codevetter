@@ -1,0 +1,85 @@
+{
+  "schema_version": "codevetter-main-thread-runtime-probe-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can turn a broad exact-request Node main-thread runtime route into a closed mechanism inventory, preserve correctness independently, and select only a bounded non-causal follow-up.",
+  "implementation_evidence": {
+    "request_cpu_schema": "runtime-node-request-cpu/v3",
+    "browser_server_flow_schema": "runtime-browser-server-flow/v14",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v22",
+    "probe_recapture_schema": "runtime-browser-probe-recapture/v2",
+    "mechanisms": [
+      "module_loading",
+      "compilation",
+      "garbage_collection",
+      "promise_microtasks",
+      "timers_scheduling",
+      "http_streams",
+      "buffer_encoding",
+      "filesystem",
+      "crypto_compression",
+      "inspector",
+      "v8_builtins",
+      "other_runtime"
+    ],
+    "routing_floor": {
+      "minimum_sampled_self_time_ms": 5,
+      "minimum_precommit_runtime_sample_share": 0.2
+    },
+    "raw_identity_retained": false,
+    "source_causal": false,
+    "edit_eligible": false
+  },
+  "legacy_compatibility": {
+    "product": "High Signal",
+    "legacy_capture": "probe-inspection-high-signal-20260813-b-s2",
+    "legacy_recaptures": [
+      "executable-probe-high-signal-20260813-a",
+      "executable-probe-high-signal-20260813-b"
+    ],
+    "legacy_schedule": "stability-schedule-high-signal-20260813-a",
+    "inspection_reloaded": true,
+    "stability_reloaded": true,
+    "schedule_reloaded_idempotently": true,
+    "application_runs_started_for_reload": 0,
+    "fabricated_runtime_mechanisms": false
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "source_capture_id": "executable-probe-high-signal-20260813-a",
+    "recapture_id": "runtime-mechanism-high-signal-20260813-a",
+    "recapture_receipt_sha256": "039dab4231ec857d2df8950b1a8636585668760e8b454f449c7a47144af8ecf7",
+    "capture_receipt_sha256": "5539f35cdae94f87ca482ff36124f767207f68070ea60a92ad2edbe24105b4d1",
+    "capture_result_sha256": "b9539b58cc9ff40b35b26de932c725396a69af84124fbc9628a7d0137e284716",
+    "recapture_receipt_bytes": 2840,
+    "capture_result_bytes": 80579,
+    "flow": "apps/web/e2e/home.spec.ts :: home renders :: GET /",
+    "evidence_outcome": "evidence_completed",
+    "correctness": "failed",
+    "precommit_runtime_samples": 167,
+    "precommit_runtime_sampled_time_ms": 178.457,
+    "dominant_mechanism": {
+      "name": "inspector",
+      "samples": 1,
+      "sampled_self_time_ms": 153.25,
+      "runtime_sample_share": 0.85875
+    },
+    "next_route": {
+      "classification": "observer_effect",
+      "probe": "repeat_with_lower_overhead_cpu_measurement"
+    },
+    "schedule_id": "runtime-mechanism-schedule-high-signal-20260813-a",
+    "schedule_receipt_sha256": "6f85e8ae92572720c348e7b1e28fd0a7ab36fcd91dfc5b77c3eaa84e26b5c8b2",
+    "schedule_state": "correctness_failed",
+    "new_schedule_runs_executed": 0,
+    "cloud_or_production_operations": 0
+  },
+  "interpretation": "The runtime probe did not find an application optimization. It found that one unusually large inspector-attributed sample dominated the retained runtime time, so CodeVetter selected a lower-overhead measurement instead of blaming application code. The failed browser assertion independently blocks follow-up eligibility.",
+  "limitations": [
+    "V8 samples are observer-affected sampled self time, not exact or exclusive CPU.",
+    "One run cannot establish stability; the scheduler reused it only to prove narrowed route loading and then stopped on failed correctness.",
+    "The dominant inspector sample may include profiler start or sampling-boundary cost; it is explicitly not an application bottleneck.",
+    "This local development result makes no production latency, scale, impact, source-cause, or optimization claim."
+  ]
+}

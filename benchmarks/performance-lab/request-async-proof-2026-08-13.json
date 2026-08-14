@@ -1,0 +1,86 @@
+{
+  "schema_version": "codevetter-request-async-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can observe bounded first-callback delay for closed async resource categories inside one capture-scoped owned Node request while refusing to equate async context or temporal overlap with awaited critical-path work.",
+  "runtime_fixture": {
+    "test": "scripts/runtime-failure-capsule/browser-server-flow.test.mjs",
+    "observed": [
+      "An awaited 20 ms timer was retained under its exact captured request without application source changes.",
+      "A timer created by the same handler but completed after the response was excluded.",
+      "Filesystem events normalize to a closed category without filename, resource object, callback arguments, or raw async identity.",
+      "Overlapping delay intervals are unioned rather than summed, public resources are bounded to eight per request, and stream truncation makes the inventory incomplete."
+    ]
+  },
+  "real_product": {
+    "product": "high-signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "dirty": false,
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "owned_config_disabled_next",
+      "browser_binary": "system_chrome"
+    },
+    "capture": {
+      "id": "request-async-high-signal-20260813-a",
+      "state": "failed",
+      "receipt": ".codevetter/playwright-runs/request-async-high-signal-20260813-a/receipt.json",
+      "result": ".codevetter/playwright-runs/request-async-high-signal-20260813-a/result.json",
+      "result_sha256": "c4974a55e95ba60eeb673e15915fd79d9183374cc7c0dd5a9f37c4aa6219ba8b",
+      "correctness": "failed_expected_heading_not_rendered"
+    },
+    "observed": {
+      "request": "GET /",
+      "request_duration_ms": 1091.445,
+      "request_source": "src/app/page.tsx:13",
+      "async_resource_total": 15,
+      "async_resource_retained": 8,
+      "async_inventory_complete": false,
+      "async_overlap_ms": 576.058,
+      "largest_resource": {
+        "kind": "timer",
+        "first_callback_delay_ms": 498.46,
+        "callback_active_ms": 0.094,
+        "request_share": 0.4567,
+        "source": null
+      }
+    },
+    "detector": {
+      "name": "browser_server_async_delay",
+      "status": "ran",
+      "finding_count": 1,
+      "finding_id": "243b954d5a80dd30572ccbd9",
+      "confidence": "low",
+      "eligible_for_experiment": false
+    },
+    "verdict": "The request context contained a 498.46 ms timer callback delay, but no contained creation call site was resolved. CodeVetter retained the observation and refused to authorize an edit because request-context propagation does not prove that the response awaited the timer or that it was on the critical path."
+  },
+  "bounds": {
+    "minimum_callback_delay_ms": 1,
+    "maximum_pending_async_resources": 256,
+    "maximum_public_resources_per_request": 8,
+    "captured_categories": [
+      "connect",
+      "dns",
+      "filesystem",
+      "scheduler",
+      "timer",
+      "worker_pool"
+    ],
+    "excluded_categories": [
+      "generic_promises",
+      "generic_ticks",
+      "sockets_and_handles"
+    ]
+  },
+  "claim_boundaries": [
+    "AsyncLocalStorage context proves propagation from a captured request, not an awaited relationship or critical-path causation.",
+    "First-callback delay is not exclusive wait time and may overlap CPU, I/O, or other callbacks.",
+    "The public inventory is diagnostic and bounded; incomplete evidence cannot support absence claims.",
+    "Resource values, raw async identities, filenames, hosts, addresses, requested delay values, and callback arguments are not retained.",
+    "A config-disabled Next development runtime, failed product assertion, system Chrome, and one local machine do not establish production frequency or impact.",
+    "A source edit still requires a contained candidate plus correctness-passing paired end-to-end improvement."
+  ]
+}

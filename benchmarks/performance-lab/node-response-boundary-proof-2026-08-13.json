@@ -1,0 +1,114 @@
+{
+  "schema_version": "codevetter-node-response-boundary-proof/v1",
+  "recorded_at": "2026-08-13",
+  "claim": "CodeVetter can partition one correlated Node response into preparation, emission, and finish-tail API intervals without inspecting response values or inventing network, framework, or source causation.",
+  "implementation_evidence": {
+    "browser_server_schema": "runtime-browser-server-flow/v7",
+    "playwright_diagnosis_schema": "runtime-playwright-trace-diagnosis/v14",
+    "observed_boundaries": [
+      "first response commitment call",
+      "first body-production call when present",
+      "response.end call",
+      "finish event"
+    ],
+    "public_intervals": [
+      "preparation_ms",
+      "emission_ms",
+      "finish_tail_ms"
+    ],
+    "discarded_values": [
+      "response headers",
+      "response body or chunks",
+      "response argument values",
+      "socket or stream internals",
+      "application values"
+    ],
+    "detector_policy": {
+      "detector": "browser_server_response_interval",
+      "minimum_interval_ms": 5,
+      "minimum_parent_share": 0.5,
+      "tie_order": [
+        "response_preparation",
+        "response_emission",
+        "response_finalization"
+      ],
+      "source": null,
+      "confidence": "low",
+      "edit_eligible": false
+    },
+    "focused_tests": {
+      "command": "node --test scripts/runtime-failure-capsule/browser-server-flow.test.mjs scripts/runtime-failure-capsule/tool-led-performance-diagnosis.test.mjs scripts/runtime-failure-capsule/playwright-capture.test.mjs",
+      "passed": 69,
+      "failed": 0,
+      "skipped": 1,
+      "proofs": [
+        "Explicit headers, implicit headers, streamed responses, empty responses, and an invalid writeHead call preserve Node response behavior.",
+        "Complete ordered boundaries produce one closed request partition outside supported child accounting.",
+        "Malformed, private, out-of-order, and incomplete timing evidence fails closed.",
+        "Preparation, emission, and finalization classifications use fixed thresholds and never authorize a source edit."
+      ]
+    }
+  },
+  "real_product_evidence": {
+    "product": "High Signal",
+    "repository_revision": "88647cf65e6debfb43adff4fffc37c185d06beef",
+    "source_snapshot_sha256": "f9b698c7de86065a62302d30b4d71d14ae19bc7b06e69831a693f237672b18f6",
+    "capture_id": "response-boundaries-high-signal-20260813-a",
+    "receipt": ".codevetter/playwright-runs/response-boundaries-high-signal-20260813-a/receipt.json",
+    "result": ".codevetter/playwright-runs/response-boundaries-high-signal-20260813-a/result.json",
+    "receipt_sha256": "c79071fe17cde527d50e3539c70b8243572f2fae844d1fca0b87570c948ba6e2",
+    "result_sha256": "e223e53a397147171ff480008dc9c8ac89dff16801d751e377edecc73a0ea320",
+    "flow": {
+      "target": "apps/web/e2e/home.spec.ts",
+      "name": "home renders",
+      "browser_project": "chromium",
+      "runtime": "Next config-disabled development",
+      "owned_ephemeral_port": 58799,
+      "capture_state": "failed",
+      "execution_status": "timeout",
+      "execution_duration_ms": 10017,
+      "peak_process_tree_rss_bytes": 1834745856,
+      "failure_boundary": "The existing exact assertion did not pass before the bounded timeout; the response partition remains diagnostic only."
+    },
+    "preflight_comparison": {
+      "classification": "first_preflight_outlier",
+      "first_duration_ms": 2160,
+      "repeat_duration_ms": 972,
+      "browser_duration_ms": 984.979
+    },
+    "root_request": {
+      "method": "GET",
+      "route": "/",
+      "status": 200,
+      "duration_ms": 984.979,
+      "response_timing": {
+        "complete": true,
+        "commit_offset_ms": 954.632,
+        "first_body_offset_ms": 956.906,
+        "end_offset_ms": 984.841,
+        "finish_offset_ms": 984.979,
+        "preparation_ms": 954.632,
+        "emission_ms": 30.209,
+        "finish_tail_ms": 0.138
+      },
+      "preparation_parent_share": 0.9692,
+      "supported_child_ms": 0,
+      "framework_phase_overlap_ms": 1.215,
+      "repository_cpu_samples": 0
+    },
+    "diagnosis": {
+      "detector": "browser_server_response_interval",
+      "classification": "response_preparation",
+      "source": null,
+      "confidence": "low",
+      "eligible_for_experiment": false,
+      "result": "The product localized 96.9% of this request before its first response commitment call, but did not name compilation, rendering, data access, CPU, network delivery, or an application source."
+    }
+  },
+  "limitations": [
+    "Server response API calls are not browser or network TTFB and do not prove when bytes reach a client.",
+    "The preparation interval does not distinguish framework compilation, rendering, data access, waits, or application CPU.",
+    "One local development request is not a latency distribution or production-performance claim.",
+    "The existing browser assertion timed out, so this capture authorizes no source edit or optimization claim."
+  ]
+}
