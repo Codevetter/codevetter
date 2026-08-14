@@ -206,7 +206,3 @@ export const optimizationCaseStudies: OptimizationCaseStudy[] = [
     proofUrl: '/benchmark/optimization-proofs.json',
   },
 ];
-
-export function optimizationCaseStudy(slug: string) {
-  return optimizationCaseStudies.find((study) => study.slug === slug);
-}
