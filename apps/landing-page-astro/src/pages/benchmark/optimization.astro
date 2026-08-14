@@ -1,0 +1,56 @@
+---
+import Footer from '@/components/Footer.astro';
+import Nav from '@/components/Nav.astro';
+import { optimizationCaseStudies } from '@/data/optimization-case-studies';
+import Layout from '@/layouts/Layout.astro';
+
+const tone = {
+  confirmed: 'text-[--color-ok]',
+  retained: 'text-[--color-ok]',
+  rejected: 'text-[--color-danger]',
+};
+---
+
+<Layout
+  title="Optimization benchmarks and case studies — CodeVetter"
+  description="Dated CodeVetter optimization trials with tested flows, repeated measurements, correctness boundaries, patch cost, rejected candidates, and proof JSON."
+  path="/benchmark/optimization"
+>
+  <Nav />
+  <main class="mx-auto min-h-screen max-w-5xl px-6 pb-24 pt-36 text-[--color-text]">
+    <header class="max-w-3xl">
+      <a class="font-mono text-xs text-[#9297a1] hover:text-[--color-accent]" href="/benchmark">← Code-review benchmark</a>
+      <p class="mt-8 font-mono text-xs uppercase tracking-[0.16em] text-[--color-accent]">Optimization proof · observed 2026-08-14</p>
+      <h1 class="mt-4 text-5xl font-bold tracking-[-0.04em] text-white md:text-6xl">Every project gets its own evidence boundary.</h1>
+      <p class="mt-6 max-w-[70ch] text-base leading-8 text-[--color-text-dim]">
+        These are separate local trials, not one blended headline. Each page names the exact flow,
+        revision, source candidate, patch cost, correctness scope, repeated measurement, decision,
+        availability, and limitation. A rejected experiment remains visible.
+      </p>
+      <a class="mt-7 inline-flex h-10 items-center border border-[--color-line-2] px-4 text-sm text-white hover:border-[--color-accent]/50" href="/optimize">How Optimize works</a>
+    </header>
+
+    <section class="mt-20 border-t border-[--color-line]" aria-label="Project case studies">
+      {optimizationCaseStudies.map((study) => (
+        <a class="group grid gap-4 border-b border-[--color-line] py-7 sm:grid-cols-[150px_110px_minmax(0,1fr)_110px] sm:items-start" href={`/benchmark/optimization/${study.slug}`}>
+          <strong class="text-base font-medium text-white group-hover:text-[--color-accent]">{study.project}</strong>
+          <span class:list={['font-mono text-xs uppercase tracking-[0.12em]', tone[study.decision]]}>{study.decision}</span>
+          <span>
+            <span class="block text-lg font-semibold text-white">{study.primaryMetric.value}</span>
+            <span class="mt-2 block text-sm leading-6 text-[--color-text-dim]">{study.summary}</span>
+            <span class="mt-3 block font-mono text-xs text-[#9297a1]">
+              {study.changeCost.files} file{study.changeCost.files === 1 ? '' : 's'} · {study.changeCost.gross} gross lines · net {study.changeCost.net} · {study.changeCost.dependencies} dependencies
+            </span>
+          </span>
+          <time class="font-mono text-xs text-[#9297a1] sm:text-right" datetime={study.date}>{study.date}</time>
+        </a>
+      ))}
+    </section>
+
+    <p class="mt-12 max-w-[72ch] text-sm leading-7 text-[--color-text-dim]">
+      These three receipts are the intentionally small public set. Historical research capability
+      is labeled separately from the compact runtime path currently shipped in CodeVetter.
+    </p>
+  </main>
+  <Footer />
+</Layout>

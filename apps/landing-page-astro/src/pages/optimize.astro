@@ -1,0 +1,91 @@
+---
+import Footer from '@/components/Footer.astro';
+import Nav from '@/components/Nav.astro';
+import Layout from '@/layouts/Layout.astro';
+
+const stages = [
+  ['Discover', 'Select one executable local test or benchmark flow.'],
+  ['Measure', 'Capture repeatable timing, CPU, allocation, and memory evidence supported by that flow.'],
+  ['Diagnose', 'Rank source-backed bottlenecks while separating observation from inference.'],
+  ['Experiment', 'Give the coding agent one bounded candidate and reject disproportionate patches.'],
+  ['Verify', 'Run exact correctness and repeated before/after measurements before retaining anything.'],
+];
+---
+
+<Layout
+  title="Optimize local application flows with runtime evidence — CodeVetter"
+  description="CodeVetter profiles bounded local JavaScript, Node.js, and Go flows and verifies performance candidates with repeated evidence."
+  path="/optimize"
+>
+  <Nav />
+  <main class="mx-auto min-h-screen max-w-6xl px-6 pb-24 pt-36 text-[--color-text]">
+    <header class="max-w-4xl">
+      <p class="font-mono text-xs uppercase tracking-[0.16em] text-[--color-accent]">Local optimization laboratory</p>
+      <h1 class="mt-5 max-w-3xl font-display text-5xl font-bold tracking-[-0.04em] text-white md:text-7xl">
+        Profile a flow. Prove the change.
+      </h1>
+      <p class="mt-6 max-w-[70ch] text-base leading-8 text-[--color-text-dim]">
+        CodeVetter gives a coding agent a bounded loop for finding a local bottleneck, proposing one
+        small experiment, and retaining it only when correctness and repeated before/after evidence
+        agree. The compact current path targets repository-owned JavaScript, Node.js, and Go tests
+        and benchmarks; it does not treat a plausible edit as an optimization.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a class="inline-flex h-11 items-center bg-white px-5 text-sm font-semibold text-black hover:bg-gray-100" href="/#download">Download CodeVetter</a>
+        <a class="inline-flex h-11 items-center border border-[--color-line-2] px-5 text-sm text-white hover:border-[--color-accent]/50" href="/benchmark/optimization">Inspect the case studies</a>
+      </div>
+    </header>
+
+    <section class="mt-24" aria-labelledby="loop-title">
+      <div class="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+        <div>
+          <h2 id="loop-title" class="text-2xl font-semibold text-white">One bounded loop</h2>
+          <p class="mt-4 max-w-[48ch] text-sm leading-7 text-[--color-text-dim]">
+            The machine receipt is authoritative. Every stage records source identity, tested
+            boundary, decision, and limitations so another agent can continue without guessing.
+          </p>
+        </div>
+        <ol class="border-t border-[--color-line]">
+          {stages.map(([title, description], index) => (
+            <li class="grid gap-3 border-b border-[--color-line] py-5 sm:grid-cols-[72px_120px_minmax(0,1fr)]">
+              <span class="font-mono text-xs text-[#9297a1]">{String(index + 1).padStart(2, '0')}</span>
+              <strong class="text-sm font-medium text-white">{title}</strong>
+              <span class="text-sm leading-6 text-[--color-text-dim]">{description}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section class="mt-24 grid gap-px border border-[--color-line] bg-[--color-line] md:grid-cols-2" aria-label="Supported evidence">
+      <div class="bg-[--color-bg-elev] p-7">
+        <h2 class="text-xl font-semibold text-white">JavaScript and Node.js</h2>
+        <p class="mt-3 text-sm leading-7 text-[--color-text-dim]">
+          Exact Node, Vitest, and Jest selections with repeated console metrics, CPU source
+          attribution, sampled allocation evidence, and process-tree memory where observable.
+        </p>
+      </div>
+      <div class="bg-[--color-bg-elev] p-7">
+        <h2 class="text-xl font-semibold text-white">Go</h2>
+        <p class="mt-3 text-sm leading-7 text-[--color-text-dim]">
+          Repository-owned tests and benchmarks with ns/op, bytes/op, allocs/op, bounded profile
+          sources, paired measurements, and explicit evidence gaps.
+        </p>
+      </div>
+    </section>
+
+    <section class="mt-24 grid gap-10 lg:grid-cols-[0.8fr_1.2fr]" aria-labelledby="guardrails-title">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.14em] text-[--color-warn]">Shipping guardrails</p>
+        <h2 id="guardrails-title" class="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">A faster patch still has to earn its size.</h2>
+      </div>
+      <ul class="space-y-5 text-sm leading-7 text-[--color-text-dim]">
+        <li><strong class="text-white">Change cost:</strong> default maximum of 3 files, 160 added lines, 200 gross changed lines, and no new production dependency.</li>
+        <li><strong class="text-white">Correctness first:</strong> exact repository-owned checks run before repeated paired performance verification.</li>
+        <li><strong class="text-white">No confidence is a result:</strong> noisy, incomplete, stale, or externally dominated evidence cannot authorize shipping.</li>
+        <li><strong class="text-white">Local means local:</strong> no production or customer-impact claim is inferred from a development fixture or synthetic benchmark.</li>
+      </ul>
+    </section>
+  </main>
+  <Footer />
+</Layout>

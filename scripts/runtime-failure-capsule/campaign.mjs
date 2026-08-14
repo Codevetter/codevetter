@@ -13,6 +13,7 @@ import {
   sha256,
   stableStringify,
 } from './campaign-contracts.mjs';
+import { assessChangeCost, inspectChangeCost } from './change-cost.mjs';
 import { parseVitestSelection } from './capsule.mjs';
 import { verifyOptimizationCapsules } from './optimization-verification.mjs';
 import { verifyPairedRepositories } from './paired-verification.mjs';
@@ -27,6 +28,7 @@ const ENGINE_FILES = [
   'campaign-contracts.mjs',
   'campaign.mjs',
   'capsule.mjs',
+  'change-cost.mjs',
   'contracts.mjs',
   'optimization-verification.mjs',
   'paired-verification.mjs',
@@ -195,17 +197,30 @@ async function screenCampaign(root, input, dependencies) {
   if (repository.diff_digest === status.incumbent.repository.diff_digest) {
     throw new Error('candidate source identity matches the incumbent');
   }
+  const changeCost = assessChangeCost(
+    await inspectChangeCost(root, repository.changed_files, repository.base_revision),
+    { allowedFiles: campaign.manifest.allowed_files }
+  );
   const attempt = status.experiments + 1;
-  const correctness = await runCorrectness(root, campaign.manifest.correctness, dependencies);
+  const correctness =
+    changeCost.violations.length === 0
+      ? await runCorrectness(root, campaign.manifest.correctness, dependencies)
+      : { status: 'not_run', results: [], limitations: [] };
   const limitations = [...correctness.limitations];
   let evidence = {
     correctness: correctness.results,
     performance_capsule: null,
     verification: null,
+    change_cost: changeCost,
   };
   let decision;
 
-  if (correctness.status !== 'passed') {
+  if (changeCost.violations.length > 0) {
+    decision = {
+      status: 'discard',
+      reason: `Candidate exceeded its change-cost budget: ${changeCost.violations.join(', ')}.`,
+    };
+  } else if (correctness.status !== 'passed') {
     decision = correctnessDecision(correctness.status);
   } else {
     try {
@@ -226,6 +241,7 @@ async function screenCampaign(root, input, dependencies) {
         correctness: correctness.results,
         performance_capsule: current,
         verification,
+        change_cost: changeCost,
       };
       limitations.push(...verification.limitations);
       decision = screeningDecision(verification);
