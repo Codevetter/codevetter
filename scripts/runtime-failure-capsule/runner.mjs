@@ -211,7 +211,7 @@ async function buildCommand({
       'node_modules/@playwright/test/cli.js'
     );
     const runnerArguments = ['test', scope.relative, '--reporter=json'];
-    if (exactPattern) runnerArguments.push('--grep', exactPattern);
+    if (name) runnerArguments.push('--grep', escapeRegExp(name));
     const args = [executable, ...runnerArguments];
     return command(root, process.execPath, args, 'local:playwright', runnerArguments);
   }

@@ -78,11 +78,9 @@ export async function qualifyRepository(repositoryRoot) {
   const discoveredCandidates = discoverCandidates(scan);
   const candidates = rankCandidates(discoveredCandidates).slice(0, QUALIFICATION_LIMITS.candidates);
   const supportedAdapters = new Set(
-    lanes.lanes
-      .flatMap((lane) =>
-        lane.adapters.flatMap((adapter) => (adapter === 'go-test' ? ['go-bench'] : [adapter]))
-      )
-      .filter((adapter) => adapter !== 'playwright')
+    lanes.lanes.flatMap((lane) =>
+      lane.adapters.flatMap((adapter) => (adapter === 'go-test' ? ['go-bench'] : [adapter]))
+    )
   );
   const result = classifyQualification({
     subject: {
@@ -169,7 +167,8 @@ function inaccessibleQualification(reason) {
 function classifyQualification({ subject, lanes, candidates, supportedAdapters, scan }) {
   const usable = candidates.filter((candidate) => supportedAdapters.has(candidate.adapter));
   const safe = usable.filter((candidate) => candidate.safety_flags.length === 0);
-  const automaticallyEligible = safe.filter(hasDirectMeasurementEvidence);
+  const selectableBrowser = usable.filter(isSelectableBrowserCandidate);
+  const automaticallyEligible = safe.filter(isAutomaticallyEligible);
   const top = automaticallyEligible[0] ?? null;
   const runnerUp = automaticallyEligible[1] ?? null;
   const unambiguous =
@@ -195,17 +194,9 @@ function classifyQualification({ subject, lanes, candidates, supportedAdapters, 
     };
   } else if (usable.length > 0) {
     status = 'needs_selection';
-    nextAction = {
-      kind: safe.length === 0 ? 'review_safety_and_select' : 'select_representative_workload',
-      reason:
-        safe.length === 0
-          ? 'Every discovered candidate has a possible external-operation or non-product-scope signal.'
-          : automaticallyEligible.length === 0
-            ? 'Names suggest possible performance relevance, but no candidate contains direct benchmark or timing evidence.'
-            : 'Direct measurement evidence is ambiguous or below the automatic qualification threshold.',
-    };
-    if (safe.length === 0)
-      limitations.push('No candidate was safe enough for automatic profiling.');
+    const selection = selectionRequired({ safe, selectableBrowser, automaticallyEligible });
+    nextAction = selection.nextAction;
+    limitations.push(...selection.limitations);
   } else if (supportedAdapters.size > 0) {
     status = 'no_representative_workload';
     nextAction = {
@@ -241,6 +232,50 @@ function classifyQualification({ subject, lanes, candidates, supportedAdapters, 
     next_action: nextAction,
     limitations,
     scan,
+  };
+}
+
+function isSelectableBrowserCandidate(candidate) {
+  return (
+    candidate.adapter === 'playwright' &&
+    candidate.safety_flags.every((flag) => flag.kind === 'browser_signal')
+  );
+}
+
+function isAutomaticallyEligible(candidate) {
+  return candidate.adapter !== 'playwright' && hasDirectMeasurementEvidence(candidate);
+}
+
+function selectionRequired({ safe, selectableBrowser, automaticallyEligible }) {
+  if (selectableBrowser.length > 0) {
+    return {
+      nextAction: {
+        kind: 'select_representative_browser_flow',
+        reason:
+          'Playwright flows were discovered, but only the caller can declare which exact flow is representative.',
+      },
+      limitations: [],
+    };
+  }
+  if (safe.length === 0) {
+    return {
+      nextAction: {
+        kind: 'review_safety_and_select',
+        reason:
+          'Every discovered candidate has a possible external-operation or non-product-scope signal.',
+      },
+      limitations: ['No candidate was safe enough for automatic profiling.'],
+    };
+  }
+  return {
+    nextAction: {
+      kind: 'select_representative_workload',
+      reason:
+        automaticallyEligible.length === 0
+          ? 'Names suggest possible performance relevance, but no candidate contains direct benchmark or timing evidence.'
+          : 'Direct measurement evidence is ambiguous or below the automatic qualification threshold.',
+    },
+    limitations: [],
   };
 }
 
@@ -421,6 +456,9 @@ function hasRunnerDeclaration(source, adapter) {
   if (adapter === 'vitest') {
     return /(?:from|require\s*\()\s*['"]vitest['"]/m.test(source);
   }
+  if (adapter === 'playwright') {
+    return /(?:from|require\s*\()\s*['"]@playwright\/test['"]/m.test(source);
+  }
   return /['"]node:test(?:\/[^'"]+)?['"]/.test(source);
 }
 
@@ -430,6 +468,9 @@ function nodeAdapter(source, manifest) {
     ...Object.keys(manifest?.devDependencies ?? {}),
     ...Object.keys(manifest?.optionalDependencies ?? {}),
   ]);
+  if (/(?:from|require\s*\()\s*['"]@playwright\/test['"]/m.test(source)) {
+    return 'playwright';
+  }
   if (dependencies.has('vitest') || /(?:from|require\s*\()\s*['"]vitest['"]/m.test(source)) {
     return 'vitest';
   }

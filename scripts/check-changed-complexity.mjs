@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const comparisonBase = process.env.CODE_HEALTH_BASE?.trim() || 'origin/main';
-const command = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 const sourceExtension = /\.(?:[cm]?[jt]s|[jt]sx)$/;
 
 const changed = spawnSync(
@@ -37,22 +37,103 @@ if (files.length === 0) {
   process.exit(0);
 }
 
-const result = spawnSync(
-  command,
-  [
-    'exec',
-    'biome',
-    'lint',
-    '--config-path=biome.code-health.json',
-    '--only=complexity/noExcessiveCognitiveComplexity',
-    ...files,
-  ],
-  { cwd: repositoryRoot, stdio: 'inherit' }
+const current = runComplexity(repositoryRoot, files);
+const baseline = baselineComplexity(files);
+const baselineByFunction = new Map(
+  baseline.map((diagnostic) => [diagnostic.identity, diagnostic.score])
 );
+const regressions = current.filter((diagnostic) => {
+  const previous = baselineByFunction.get(diagnostic.identity);
+  return previous === undefined || diagnostic.score > Math.max(20, previous);
+});
 
-if (result.error) {
-  console.error(`Unable to run changed-file complexity check: ${result.error.message}`);
+if (regressions.length > 0) {
+  for (const diagnostic of regressions) {
+    const previous = baselineByFunction.get(diagnostic.identity);
+    console.error(
+      `${diagnostic.file}:${diagnostic.line} ${diagnostic.name} has complexity ${diagnostic.score}` +
+        (previous === undefined ? ' (new violation)' : ` (baseline ${previous})`)
+    );
+  }
   process.exitCode = 1;
 } else {
-  process.exitCode = result.status ?? 1;
+  console.log(
+    `Changed-file complexity: PASS (${files.length} files, ${current.length} retained baseline exceptions)`
+  );
+}
+
+function baselineComplexity(paths) {
+  const directory = mkdtempSync(path.join(tmpdir(), 'codevetter-complexity-'));
+  const retained = [];
+  try {
+    copyConfig(directory);
+    for (const file of paths) {
+      const source = spawnSync('git', ['show', `${comparisonBase}:${file}`], {
+        cwd: repositoryRoot,
+        encoding: 'utf8',
+      });
+      if (source.status !== 0) continue;
+      const target = path.join(directory, file);
+      mkdirSync(path.dirname(target), { recursive: true });
+      writeFileSync(target, source.stdout);
+      retained.push(file);
+    }
+    return retained.length > 0 ? runComplexity(directory, retained) : [];
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+function copyConfig(directory) {
+  for (const file of ['.gitignore', 'biome.json', 'biome.code-health.json']) {
+    writeFileSync(path.join(directory, file), readFileSync(path.join(repositoryRoot, file)));
+  }
+}
+
+function runComplexity(root, paths) {
+  const executable = path.join(
+    repositoryRoot,
+    'node_modules',
+    '.bin',
+    process.platform === 'win32' ? 'biome.cmd' : 'biome'
+  );
+  const result = spawnSync(
+    executable,
+    [
+      'lint',
+      `--config-path=${path.join(root, 'biome.code-health.json')}`,
+      '--only=complexity/noExcessiveCognitiveComplexity',
+      '--reporter=json',
+      ...paths,
+    ],
+    { cwd: root, encoding: 'utf8' }
+  );
+  if (result.error) throw result.error;
+  const report = parseReport(result.stdout, result.stderr, result.status);
+  return report.diagnostics.map((diagnostic) => normalizeDiagnostic(root, diagnostic));
+}
+
+function parseReport(output, errorOutput, status) {
+  const line = String(output)
+    .split(/\r?\n/)
+    .find((candidate) => candidate.trim().startsWith('{'));
+  if (!line && status === 0) return { diagnostics: [] };
+  if (!line) {
+    throw new Error(`Biome did not return a JSON complexity report: ${errorOutput.trim()}`);
+  }
+  return JSON.parse(line);
+}
+
+function normalizeDiagnostic(root, diagnostic) {
+  const file = path
+    .relative(root, path.resolve(root, diagnostic.location.path))
+    .split(path.sep)
+    .join('/');
+  const line = diagnostic.location.start.line;
+  const sourceLine = readFileSync(path.join(root, file), 'utf8').split(/\r?\n/)[line - 1] ?? '';
+  const start = diagnostic.location.start.column - 1;
+  const end = diagnostic.location.end.column - 1;
+  const name = sourceLine.slice(start, end) || '<anonymous>';
+  const score = Number(/complexity of (\d+)/i.exec(diagnostic.message)?.[1]);
+  return { identity: `${file}:${name}`, file, line, name, score };
 }

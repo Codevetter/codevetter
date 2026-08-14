@@ -22,7 +22,7 @@ export const QUALIFICATION_STATUSES = Object.freeze([
   'inaccessible',
 ]);
 
-const PROFILE_ADAPTERS = new Set(['node-test', 'node-script', 'vitest', 'go-bench']);
+const PROFILE_ADAPTERS = new Set(['node-test', 'node-script', 'vitest', 'playwright', 'go-bench']);
 
 export function assertPortfolioManifest(value) {
   const errors = validatePortfolioManifest(value);
