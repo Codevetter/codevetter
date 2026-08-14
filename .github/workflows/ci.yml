@@ -37,6 +37,7 @@ jobs:
         env:
           CODE_HEALTH_BASE: ${{ github.event.pull_request.base.sha || github.event.before || 'HEAD^' }}
         run: |
+          pnpm run quality:change-size
           pnpm run knip:strict
           pnpm run quality:complexity
           pnpm run quality:cycles
