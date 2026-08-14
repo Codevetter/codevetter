@@ -3,6 +3,10 @@ import results from '@/data/benchmark-results.json';
 import examples from '@/data/xray-examples.json';
 import docsIndexSource from '../../../../docs/index.md?raw';
 import { verificationContent } from '@/data/verification-content';
+import {
+  optimizationCaseStudies,
+  type OptimizationCaseStudy,
+} from '@/data/optimization-case-studies';
 
 const SITE_URL = 'https://codevetter.com';
 
@@ -21,6 +25,34 @@ ${body.trim()}
 - [Documentation](https://codevetter.com/docs/)
 - [Source](https://github.com/Codevetter/codevetter)
 `;
+}
+
+function optimizationCaseStudyBody(study: OptimizationCaseStudy): string {
+  return `${study.summary}
+
+## Result
+
+- Decision: ${study.decision}
+- Observation date: ${study.date}
+- Primary metric: ${study.primaryMetric.label} — ${study.primaryMetric.value}
+- Measurement note: ${study.primaryMetric.note}
+- Availability: ${study.availability}
+
+## Tested boundary
+
+- Flow: ${study.testedFlow}
+- Source: ${study.source}
+- Revision: ${study.revision}
+- Correctness: ${study.correctness}
+- Patch cost: ${study.changeCost.files} file${study.changeCost.files === 1 ? '' : 's'}, ${study.changeCost.gross} gross changed lines, net ${study.changeCost.net}, ${study.changeCost.dependencies} production dependencies
+
+## Decision path
+
+${study.process.map((step) => `- **${step.title} (${step.decision}):** ${step.evidence}`).join('\n')}
+
+## Limitations
+
+${study.limitations.map((limitation) => `- ${limitation}`).join('\n')}`;
 }
 
 const benchmarkResults = results.codevetter.overall;
@@ -99,6 +131,30 @@ Use this result as an inspectable check of known-issue recognition. Use the sepa
 
 [Download the benchmark dataset](${SITE_URL}/benchmark/codevetter-benchmark-v1.json).`
   ),
+  optimize: page(
+    'Optimize local application flows with runtime evidence',
+    '/optimize',
+    `CodeVetter gives a coding agent a bounded loop for finding a local bottleneck, proposing one small experiment, and retaining it only when correctness and repeated before/after evidence agree.
+
+## The bounded loop
+
+1. Discover one executable local test or benchmark flow.
+2. Measure repeatable timing, CPU, allocation, and memory evidence supported by that flow.
+3. Diagnose source-backed bottlenecks while separating observation from inference.
+4. Experiment with one bounded candidate and reject disproportionate patches.
+5. Verify exact correctness and repeated before/after measurements before retaining anything.
+
+The compact current path targets repository-owned JavaScript, Node.js, and Go tests and benchmarks. It does not turn a plausible edit, a noisy measurement, or a synthetic result into a production performance claim.`
+  ),
+  'benchmark/optimization': page(
+    'Optimization benchmarks and case studies',
+    '/benchmark/optimization',
+    `These dated local trials have separate evidence boundaries rather than one blended headline. Each case study names the exact flow, revision, source candidate, patch cost, correctness scope, repeated measurement, decision, availability, and limitations.
+
+${optimizationCaseStudies.map((study) => `- [${study.project}](${SITE_URL}/benchmark/optimization/${study.slug}) — ${study.decision}: ${study.summary}`).join('\n')}
+
+A rejected experiment remains visible. Historical research capability is labeled separately from the compact runtime path currently shipped in CodeVetter.`
+  ),
   changelog: page(
     'CodeVetter changelog',
     '/changelog',
@@ -164,6 +220,15 @@ for (const content of Object.values(verificationContent)) {
     content.title,
     content.path,
     content.markdown
+  );
+}
+
+for (const study of optimizationCaseStudies) {
+  const path = `/benchmark/optimization/${study.slug}`;
+  staticPages[path.slice(1)] = page(
+    `${study.project} optimization case study`,
+    path,
+    optimizationCaseStudyBody(study)
   );
 }
 

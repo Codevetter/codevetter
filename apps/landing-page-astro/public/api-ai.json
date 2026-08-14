@@ -47,6 +47,41 @@
       "description": "Reproducible public review benchmark"
     },
     {
+      "id": "optimize",
+      "url": "https://codevetter.com/optimize",
+      "md": "https://codevetter.com/optimize.md",
+      "kind": "static",
+      "description": "Bounded local performance-optimization workflow"
+    },
+    {
+      "id": "optimization-benchmarks",
+      "url": "https://codevetter.com/benchmark/optimization",
+      "md": "https://codevetter.com/benchmark/optimization.md",
+      "kind": "static",
+      "description": "Index of dated local optimization trials"
+    },
+    {
+      "id": "optimization-anime-list",
+      "url": "https://codevetter.com/benchmark/optimization/anime-list",
+      "md": "https://codevetter.com/benchmark/optimization/anime-list.md",
+      "kind": "static",
+      "description": "Anime List local navigation optimization trial"
+    },
+    {
+      "id": "optimization-free-ai",
+      "url": "https://codevetter.com/benchmark/optimization/free-ai",
+      "md": "https://codevetter.com/benchmark/optimization/free-ai.md",
+      "kind": "static",
+      "description": "Free AI model-selection optimization trial"
+    },
+    {
+      "id": "optimization-starboard",
+      "url": "https://codevetter.com/benchmark/optimization/starboard",
+      "md": "https://codevetter.com/benchmark/optimization/starboard.md",
+      "kind": "static",
+      "description": "Starboard rejected token-scanner optimization trial"
+    },
+    {
       "id": "changelog",
       "url": "https://codevetter.com/changelog",
       "md": "https://codevetter.com/changelog.md",
