@@ -13,7 +13,10 @@ inspection, one hypothesis, and one bounded edit.
    `capture_optimization_baseline`. Do not edit source first.
 4. If the next action is `propose_candidate`, inspect the incumbent evidence and
    relevant source. State one falsifiable hypothesis, edit only allowed source,
-   and call `screen_optimization_candidate` with that exact hypothesis.
+   and call `screen_optimization_candidate` with that exact hypothesis. Before
+   correctness or profiling, CodeVetter rejects candidates that change more
+   than three files, add more than 160 lines, move more than 200 gross lines, or
+   add a production dependency; the evidence receipt records the observed cost.
 5. Treat `discard`, `crash`, and `no_confidence` as negative evidence. Restore
    the independently saved incumbent source using a recoverable branch or
    worktree operation supplied by the host; never use destructive reset.
