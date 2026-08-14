@@ -1,11 +1,11 @@
 ---
 title: CodeVetter docs
 description: The local-first knowledge system for the CodeVetter repository.
+seo:
+  canonical: https://codevetter.com/docs/
 sidebar:
   order: 0
 ---
-
-# CodeVetter docs
 
 This is the canonical knowledge system for the CodeVetter repository. The
 committed Markdown here is the source of truth; [Blume](https://useblume.dev)
