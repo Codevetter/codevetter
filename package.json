@@ -54,6 +54,7 @@
     "deploy": "node scripts/manual-deploy.mjs deploy-landing.yml ci.yml",
     "knip": "knip --no-exit-code --reporter symbols",
     "knip:strict": "knip --reporter symbols",
+    "quality:change-size": "node scripts/check-change-size.mjs",
     "quality:complexity": "node scripts/check-changed-complexity.mjs",
     "quality:cycles": "biome lint --only=suspicious/noImportCycles .",
     "quality:dependencies": "pnpm audit --audit-level high",
