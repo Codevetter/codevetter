@@ -1,0 +1,108 @@
+{
+  "schema_version": "codevetter-local-optimization-proof/v1",
+  "recorded_at": "2026-08-14T16:47:50+05:30",
+  "observation_date": "2026-08-14",
+  "product": "free-ai",
+  "claim": "On one isolated local Free AI checkout, a one-file candidate removed the intermediate eligibility array from model selection. Ten interleaved samples confirmed 29.841% lower largest-input time and 30.139% lower sampled bytes at the selected allocation source, with no material peak-RSS regression.",
+  "subject": {
+    "repository_revision": "23ed8566bb1b1d8d86ee1f9890aa4ad5bba9cd18",
+    "baseline_source_snapshot_sha256": "93b01ba755f1e22c53180e5c21b232b806e3d2302f7b11fc72e71a12c49542f4",
+    "candidate_source_snapshot_sha256": "d30851f91295807b466f6319bb467114225944acf794a8b39b4fe45751e337ce",
+    "isolation": "detached local Git worktree with a copy-on-write dependency tree",
+    "network_or_cloud": false
+  },
+  "flow": {
+    "adapter": "vitest",
+    "target": "test/select-model-performance.spec.ts",
+    "name": "model selection scales across the supported registry size",
+    "largest_input": 79,
+    "iterations_per_input": 5000,
+    "workload_identity": {
+      "algorithm": "sha256",
+      "digest": "08441b9854d61439d7033983fff0aa4526a3ac74f87336993a3d05b7ec661629"
+    }
+  },
+  "diagnosis": {
+    "kind": "application_allocation_hotspot",
+    "source": "src/router/select-model.ts:171",
+    "function": "selectCandidates",
+    "initial_sampled_allocation_share": 0.841449,
+    "hypothesis": "Build the ranked candidate list directly instead of allocating an intermediate filtered array."
+  },
+  "change_cost": {
+    "files_changed": 1,
+    "changed_files": ["src/router/select-model.ts"],
+    "lines_added": 19,
+    "lines_removed": 26,
+    "gross_lines_changed": 45,
+    "net_lines_changed": -7,
+    "production_dependencies_added": [],
+    "policy": {
+      "max_files_changed": 3,
+      "max_lines_added": 160,
+      "max_gross_lines_changed": 200,
+      "max_production_dependencies_added": 0
+    },
+    "violations": []
+  },
+  "paired_verification": {
+    "evidence_mode": "paired_interleaved",
+    "samples_per_side": 10,
+    "warmups_per_side": 1,
+    "scale_points": [
+      {
+        "input": 20,
+        "baseline_ms_per_operation": 0.006524,
+        "candidate_ms_per_operation": 0.004648,
+        "delta_percent": -28.755
+      },
+      {
+        "input": 50,
+        "baseline_ms_per_operation": 0.008153,
+        "candidate_ms_per_operation": 0.005679,
+        "delta_percent": -30.345
+      },
+      {
+        "input": 79,
+        "baseline_ms_per_operation": 0.016568,
+        "candidate_ms_per_operation": 0.011624,
+        "delta_percent": -29.841
+      }
+    ],
+    "sampled_source_bytes": {
+      "baseline_median": 220208512,
+      "candidate_median": 153840808,
+      "delta_bytes": -66367704,
+      "delta_percent": -30.139,
+      "attribution_status": "source_and_application_total_agree"
+    },
+    "peak_process_tree_rss_bytes": {
+      "baseline_median": 227721216,
+      "candidate_median": 227639296,
+      "delta_bytes": -81920,
+      "delta_percent": -0.036,
+      "material": false,
+      "regressed": false
+    },
+    "decision": {
+      "mechanically_confirmed": true,
+      "materially_useful": true,
+      "shipping_recommended": true,
+      "verdict": "confirmed",
+      "reason": "Largest-input time improved by 29.841% without a material smaller-input regression."
+    }
+  },
+  "correctness": {
+    "focused_selection_tests": 27,
+    "full_test_files_passed": 37,
+    "full_tests_passed": 241,
+    "typecheck": "passed",
+    "lint_changed_file": "passed"
+  },
+  "limitations": [
+    "This proves one synthetic local model-registry workload up to the repository's current 79-model registry; it does not establish production request latency or customer impact.",
+    "Sampled heap bytes include allocations that may later be collected and are not retained-heap measurements.",
+    "Peak RSS is sampled process-tree evidence and includes the runtime and test runner.",
+    "No production endpoint, provider API, cloud resource, package installation, deployment, paid model, or secret operation was used."
+  ]
+}
