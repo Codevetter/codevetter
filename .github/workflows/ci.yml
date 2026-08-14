@@ -46,6 +46,11 @@ jobs:
       - name: Type Check
         working-directory: apps/desktop
         run: pnpm exec tsc --noEmit
+      - name: Build and verify public indexing surfaces
+        working-directory: apps/landing-page-astro
+        run: |
+          pnpm run build
+          node scripts/verify-agent-surfaces.mjs
       - name: Install focused browser
         working-directory: apps/desktop
         run: pnpm exec playwright install --with-deps chromium
