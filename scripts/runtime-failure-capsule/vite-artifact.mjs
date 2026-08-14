@@ -16,76 +16,113 @@ export async function inspectExistingViteArtifact(
     'Existing build freshness and source-revision identity are unverified.',
     'Build bytes do not measure production transfer, parsing, rendering, or browser memory.',
   ];
-  const files = [];
-  let rawBytes = 0;
-  let gzipBytes = 0;
   let buildRoot;
   try {
     buildRoot = await containedDirectory(repositoryRoot, buildDirectory);
   } catch (error) {
-    return incomplete(entry, files, rawBytes, gzipBytes, [...limitations, error.message]);
+    return incomplete(entry, [], 0, 0, [...limitations, error.message]);
   }
+  const closure = await readArtifactClosure(buildRoot, entry);
+  limitations.push(...closure.limitations);
+  return artifactResult(entry, closure, limitations);
+}
+
+async function readArtifactClosure(buildRoot, entry) {
+  const files = [];
+  const limitations = [];
+  let rawBytes = 0;
+  let gzipBytes = 0;
   const queue = [{ reference: entry, importer: buildRoot, depth: 0, kind: 'html' }];
   const visited = new Set();
   while (queue.length > 0) {
     const item = queue.shift();
-    if (item.depth > ARTIFACT_LIMITS.depth) {
-      limitations.push(`Initial JavaScript closure exceeded depth ${ARTIFACT_LIMITS.depth}.`);
+    const result = await readClosureItem({ buildRoot, item, visited, files, rawBytes });
+    if (result.stop) {
+      limitations.push(result.limitation);
       break;
     }
-    let path;
-    try {
-      path = await resolveArtifactReference(buildRoot, item.importer, item.reference);
-    } catch (error) {
-      limitations.push(error.message);
-      continue;
-    }
-    const relative = repositoryRelative(buildRoot, path);
-    if (relative === null || visited.has(relative)) continue;
-    if (files.length >= ARTIFACT_LIMITS.files) {
-      limitations.push(`Initial JavaScript closure exceeded ${ARTIFACT_LIMITS.files} files.`);
-      break;
-    }
-    let bytes;
-    try {
-      const metadata = await lstat(path);
-      if (!metadata.isFile()) throw new Error('not a regular file');
-      if (rawBytes + metadata.size > ARTIFACT_LIMITS.bytes) {
-        limitations.push(`Initial JavaScript closure exceeded ${ARTIFACT_LIMITS.bytes} raw bytes.`);
-        break;
-      }
-      bytes = await readFile(path);
-    } catch {
-      limitations.push(`Artifact file ${relative} could not be read.`);
-      continue;
-    }
-    visited.add(relative);
-    const compressed = gzipSync(bytes, { level: 9 }).byteLength;
-    files.push({ file: relative, raw_bytes: bytes.byteLength, gzip_bytes: compressed });
-    rawBytes += bytes.byteLength;
-    gzipBytes += compressed;
-    const source = bytes.toString('utf8');
-    const references = item.kind === 'html' ? htmlModuleScripts(source) : staticImports(source);
-    if (item.kind === 'javascript' && /\bimport\s*\(/.test(source)) {
-      limitations.push(`Dynamic imports in ${relative} were not included in the initial closure.`);
-    }
-    for (const reference of references) {
+    if (result.limitation) limitations.push(result.limitation);
+    if (!result.file) continue;
+    visited.add(result.file.file);
+    files.push(result.file);
+    rawBytes += result.file.raw_bytes;
+    gzipBytes += result.file.gzip_bytes;
+    limitations.push(...result.limitations);
+    for (const reference of result.references) {
       queue.push({
         reference,
-        importer: dirname(path),
+        importer: result.importer,
         depth: item.depth + 1,
         kind: 'javascript',
       });
     }
   }
-  const structuralLimitations = limitations.slice(2);
+  return { files, rawBytes, gzipBytes, limitations };
+}
+
+async function readClosureItem({ buildRoot, item, visited, files, rawBytes }) {
+  if (item.depth > ARTIFACT_LIMITS.depth) {
+    return {
+      stop: true,
+      limitation: `Initial JavaScript closure exceeded depth ${ARTIFACT_LIMITS.depth}.`,
+    };
+  }
+  let path;
+  try {
+    path = await resolveArtifactReference(buildRoot, item.importer, item.reference);
+  } catch (error) {
+    return { limitation: error.message };
+  }
+  const relative = repositoryRelative(buildRoot, path);
+  if (relative === null || visited.has(relative)) return {};
+  if (files.length >= ARTIFACT_LIMITS.files) {
+    return {
+      stop: true,
+      limitation: `Initial JavaScript closure exceeded ${ARTIFACT_LIMITS.files} files.`,
+    };
+  }
+  const content = await readArtifactFile(path, relative, rawBytes);
+  if (content.limitation || content.stop) return content;
+  const source = content.bytes.toString('utf8');
+  return {
+    file: {
+      file: relative,
+      raw_bytes: content.bytes.byteLength,
+      gzip_bytes: gzipSync(content.bytes, { level: 9 }).byteLength,
+    },
+    importer: dirname(path),
+    references: item.kind === 'html' ? htmlModuleScripts(source) : staticImports(source),
+    limitations:
+      item.kind === 'javascript' && /\bimport\s*\(/.test(source)
+        ? [`Dynamic imports in ${relative} were not included in the initial closure.`]
+        : [],
+  };
+}
+
+async function readArtifactFile(path, relative, rawBytes) {
+  try {
+    const metadata = await lstat(path);
+    if (!metadata.isFile()) throw new Error('not a regular file');
+    if (rawBytes + metadata.size > ARTIFACT_LIMITS.bytes) {
+      return {
+        stop: true,
+        limitation: `Initial JavaScript closure exceeded ${ARTIFACT_LIMITS.bytes} raw bytes.`,
+      };
+    }
+    return { bytes: await readFile(path) };
+  } catch {
+    return { limitation: `Artifact file ${relative} could not be read.` };
+  }
+}
+
+function artifactResult(entry, closure, limitations) {
   return {
     entry,
-    complete: structuralLimitations.length === 0,
-    file_count: files.length,
-    raw_bytes: rawBytes,
-    gzip_bytes: gzipBytes,
-    files,
+    complete: closure.limitations.length === 0,
+    file_count: closure.files.length,
+    raw_bytes: closure.rawBytes,
+    gzip_bytes: closure.gzipBytes,
+    files: closure.files,
     limitations: [...new Set(limitations)],
     provenance: 'existing_unverified_vite_artifact',
   };

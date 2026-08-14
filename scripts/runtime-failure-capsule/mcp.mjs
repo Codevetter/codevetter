@@ -21,6 +21,7 @@ import { verifyPairedRepositories } from './paired-verification.mjs';
 
 const PROTOCOL_VERSION = '2025-03-26';
 const SERVER_INFO = { name: 'codevetter-local-runtime', version: '0.1.0' };
+const PERFORMANCE_TOOLS = new Set(['profile_local_performance', 'verify_paired_performance']);
 
 export async function createRuntimeMcpHandler(repositoryRoot, options = {}) {
   const flowService = options.flowService ?? (await createLocalFlowService(repositoryRoot));
@@ -111,48 +112,12 @@ async function callTool(
     closedArguments(args, ['run_id']);
     return inspectSupervisedRun(repositoryRoot, args.run_id);
   }
-  if (name === 'profile_local_performance') {
-    closedArguments(
+  if (PERFORMANCE_TOOLS.has(name)) {
+    return callPerformanceTool({
+      name,
       args,
-      ['adapter', 'target'],
-      ['name', 'vite_build_directory', 'vite_entry'],
-      [],
-      ['samples', 'warmups', 'timeout_ms']
-    );
-    return profileRepository({
       repositoryRoot,
-      adapter: assertProfileAdapter(args.adapter),
-      target: args.target,
-      name: args.name,
-      timeoutMs: boundedTimeout(args.timeout_ms),
-      samples: boundedSamples(args.samples),
-      warmups: boundedWarmups(args.warmups),
-      viteBuildDirectory: args.vite_build_directory,
-      viteEntry: args.vite_entry,
-    });
-  }
-  if (name === 'verify_paired_performance') {
-    closedArguments(
-      args,
-      ['adapter', 'target'],
-      ['name', 'vite_build_directory', 'vite_entry'],
-      [],
-      ['samples', 'warmups', 'timeout_ms']
-    );
-    if (!incumbentRepositoryRoot) {
-      throw new Error('Paired verification requires --incumbent-repo when the MCP server starts');
-    }
-    return verifyPairedRepositories({
-      baselineRepositoryRoot: incumbentRepositoryRoot,
-      currentRepositoryRoot: repositoryRoot,
-      adapter: assertProfileAdapter(args.adapter),
-      target: args.target,
-      name: args.name,
-      timeoutMs: boundedTimeout(args.timeout_ms),
-      samples: boundedSamples(args.samples),
-      warmups: boundedWarmups(args.warmups),
-      viteBuildDirectory: args.vite_build_directory,
-      viteEntry: args.vite_entry,
+      incumbentRepositoryRoot,
     });
   }
   if (name === 'capture_local_flow') {
@@ -220,6 +185,35 @@ async function callTool(
     return contributionService[name.startsWith('inspect') ? 'inspect' : 'refresh'](args);
   }
   throw new Error('Unknown local runtime tool');
+}
+
+async function callPerformanceTool({ name, args, repositoryRoot, incumbentRepositoryRoot }) {
+  closedArguments(
+    args,
+    ['adapter', 'target'],
+    ['name', 'vite_build_directory', 'vite_entry'],
+    [],
+    ['samples', 'warmups', 'timeout_ms']
+  );
+  const input = {
+    currentRepositoryRoot: repositoryRoot,
+    repositoryRoot,
+    adapter: assertProfileAdapter(args.adapter),
+    target: args.target,
+    name: args.name,
+    timeoutMs: boundedTimeout(args.timeout_ms),
+    samples: boundedSamples(args.samples),
+    warmups: boundedWarmups(args.warmups),
+    viteBuildDirectory: args.vite_build_directory,
+    viteEntry: args.vite_entry,
+  };
+  if (name === 'verify_paired_performance') {
+    if (!incumbentRepositoryRoot) {
+      throw new Error('Paired verification requires --incumbent-repo when the MCP server starts');
+    }
+    return verifyPairedRepositories({ ...input, baselineRepositoryRoot: incumbentRepositoryRoot });
+  }
+  return profileRepository(input);
 }
 
 function closedArguments(

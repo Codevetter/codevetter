@@ -45,9 +45,7 @@ export async function profileRepository({
   viteBuildDirectory,
   viteEntry,
 }) {
-  if (adapter === 'playwright' && !name) {
-    throw new Error('playwright performance profiling requires an exact test name');
-  }
+  validateProfileScope(adapter, name);
   const lexicalRoot = resolve(repositoryRoot);
   const root = await realpath(lexicalRoot);
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'codevetter-profile-'));
@@ -136,8 +134,7 @@ export async function profileRepository({
       functionCoverage = await collectV8FunctionCoverage(coverageDirectory, root);
     }
 
-    const profileRunCount =
-      adapter === 'playwright' ? 0 : adapter === 'go-bench' ? 1 : V8_PROFILE_RUNS;
+    const profileRunCount = profileRunsFor(adapter);
     for (let index = 0; index < profileRunCount; index += 1) {
       const profileDirectory = join(temporaryDirectory, `profile-${index}`);
       await mkdir(profileDirectory);
@@ -260,16 +257,7 @@ export function createPerformanceCapsule({
         )
       : [];
   const vitestExecutionShare = summarizeVitestExecutionShare(vitestTests, timing);
-  const playwrightTest =
-    adapter === 'playwright'
-      ? parsePlaywrightTimings(
-          measured.map((entry) => ({
-            stdout: entry.execution.stdout,
-            truncated: entry.execution.truncated,
-          })),
-          name
-        )
-      : null;
+  const playwrightTest = playwrightTimingObservation(adapter, measured, name);
   const metricsExecutions = sanitizedExecutions.filter((entry) => entry.phase === 'metrics');
   const profileExecution = sanitizedExecutions.find((entry) => entry.phase === 'profile');
   const consoleMetrics =
@@ -315,9 +303,7 @@ export function createPerformanceCapsule({
   if (cleanupFailed)
     limitations.push('Owned temporary profiling artifacts could not be completely removed.');
   if (outputTruncated) limitations.push('Runner output was truncated before normalization.');
-  if (adapter === 'playwright' && !playwrightTest.complete) {
-    limitations.push(...playwrightTest.limitations);
-  }
+  limitations.push(...playwrightLimitations(adapter, playwrightTest));
   if (adapter === 'go-bench' && goBenchmarks.length === 0) {
     limitations.push('No matching Go benchmark measurement was captured.');
   }
@@ -366,7 +352,7 @@ export function createPerformanceCapsule({
       `Vitest reported assertion time is ${vitestExecutionShare.assertion_share_percent}% of exact-scope wall time; runner startup dominates and no product bottleneck is attributed.`
     );
   }
-  if (viteArtifact) limitations.push(...viteArtifact.limitations);
+  limitations.push(...viteArtifactLimitations(viteArtifact));
 
   const comparison = baseline
     ? comparePerformanceCapsules(
@@ -388,7 +374,7 @@ export function createPerformanceCapsule({
     executionComplete &&
     !cleanupFailed &&
     timing.count >= LIMITS.minimumSamples &&
-    (adapter !== 'playwright' || playwrightTest.complete) &&
+    playwrightEvidenceComplete(adapter, playwrightTest) &&
     (adapter !== 'go-bench' || goBenchmarks.length > 0) &&
     comparison?.status !== 'incompatible';
   const verdict = !complete
@@ -495,6 +481,12 @@ export function createPerformanceCapsule({
       distance: change.distance,
     });
   }
+  const unverified = buildPerformanceUnverified({
+    adapter,
+    profileEvidence,
+    qualifiedV8Candidate,
+    viteArtifact,
+  });
 
   const capsule = {
     schema_version: PERFORMANCE_SCHEMA_VERSION,
@@ -537,45 +529,7 @@ export function createPerformanceCapsule({
     },
     findings,
     relationships: relevantChanges,
-    unverified: [
-      ...profileEvidence.hotspots
-        .filter(
-          (hotspot) =>
-            hotspot.role === 'application' &&
-            (adapter === 'go-bench' ||
-              (qualifiedV8Candidate &&
-                hotspot.file === qualifiedV8Candidate.file &&
-                hotspot.function === qualifiedV8Candidate.function))
-        )
-        .slice(0, 1)
-        .map((hotspot) => ({
-          kind: 'optimization_hypothesis',
-          summary: `Investigate ${hotspot.file}:${hotspot.line} because it received the largest repository-owned application CPU share.`,
-          verification_required:
-            'Change the candidate, capture a new capsule, and compare it with this baseline.',
-        })),
-      ...(viteArtifact
-        ? [
-            {
-              kind: 'vite_artifact_observation',
-              summary: `Existing initial JavaScript closure contains ${viteArtifact.file_count} files, ${viteArtifact.raw_bytes} raw bytes, and ${viteArtifact.gzip_bytes} gzip bytes.`,
-              verification_required:
-                'Rebuild both identical source snapshots under an attested build contract before comparing artifact movement.',
-            },
-          ]
-        : []),
-      ...(adapter === 'playwright'
-        ? [
-            {
-              kind: 'playwright_coverage_gap',
-              summary:
-                'Exact local test duration does not measure production traffic, representative-device rendering, browser memory, React component attribution, network-scale behavior, or global application optimality.',
-              verification_required:
-                'Use separately authorized production and representative-device evidence for those claims.',
-            },
-          ]
-        : []),
-    ],
+    unverified,
     comparison,
     limitations: [...new Set(limitations)],
     capture: {
@@ -760,52 +714,11 @@ export function parseVitestTimings(outputs, repositoryRoot) {
 }
 
 export function parsePlaywrightTimings(outputs, exactName) {
-  const durations = [];
-  const limitations = [];
-  for (const [index, output] of outputs.entries()) {
-    if (output?.truncated) {
-      limitations.push(`Playwright reporter output for sample ${index + 1} was truncated.`);
-      continue;
-    }
-    let report;
-    try {
-      report = JSON.parse(output?.stdout ?? '');
-    } catch {
-      limitations.push(`Playwright reporter output for sample ${index + 1} was not valid JSON.`);
-      continue;
-    }
-    const matches = [];
-    visitPlaywrightSuites(report?.suites, (spec) => {
-      if (spec?.title === exactName) matches.push(spec);
-    });
-    if (matches.length !== 1) {
-      limitations.push(
-        `Playwright sample ${index + 1} contained ${matches.length} exact matching specs; one was required.`
-      );
-      continue;
-    }
-    const tests = Array.isArray(matches[0].tests) ? matches[0].tests : [];
-    if (tests.length !== 1) {
-      limitations.push(
-        `Playwright sample ${index + 1} contained ${tests.length} matching project tests; one was required.`
-      );
-      continue;
-    }
-    const results = Array.isArray(tests[0].results) ? tests[0].results : [];
-    const result = results[0];
-    if (
-      results.length !== 1 ||
-      result?.status !== 'passed' ||
-      Number(result?.retry ?? 0) !== 0 ||
-      !Number.isFinite(Number(result?.duration))
-    ) {
-      limitations.push(
-        `Playwright sample ${index + 1} did not contain one passing, unretried duration.`
-      );
-      continue;
-    }
-    durations.push(Number(result.duration));
-  }
+  const samples = outputs.map((output, index) =>
+    parsePlaywrightSample(output, exactName, index + 1)
+  );
+  const durations = samples.flatMap((sample) => sample.duration ?? []);
+  const limitations = samples.flatMap((sample) => sample.limitation ?? []);
   const complete = outputs.length > 0 && durations.length === outputs.length;
   return {
     exact_name: exactName ?? null,
@@ -816,6 +729,47 @@ export function parsePlaywrightTimings(outputs, exactName) {
     limitations: complete ? [] : [...new Set(limitations)],
     provenance: 'playwright_json_reporter',
   };
+}
+
+function parsePlaywrightSample(output, exactName, sampleNumber) {
+  if (output?.truncated) {
+    return { limitation: `Playwright reporter output for sample ${sampleNumber} was truncated.` };
+  }
+  let report;
+  try {
+    report = JSON.parse(output?.stdout ?? '');
+  } catch {
+    return {
+      limitation: `Playwright reporter output for sample ${sampleNumber} was not valid JSON.`,
+    };
+  }
+  const matches = [];
+  visitPlaywrightSuites(report?.suites, (spec) => {
+    if (spec?.title === exactName) matches.push(spec);
+  });
+  if (matches.length !== 1) {
+    return {
+      limitation: `Playwright sample ${sampleNumber} contained ${matches.length} exact matching specs; one was required.`,
+    };
+  }
+  const tests = Array.isArray(matches[0].tests) ? matches[0].tests : [];
+  if (tests.length !== 1) {
+    return {
+      limitation: `Playwright sample ${sampleNumber} contained ${tests.length} matching project tests; one was required.`,
+    };
+  }
+  const results = Array.isArray(tests[0].results) ? tests[0].results : [];
+  const result = results[0];
+  const valid =
+    results.length === 1 &&
+    result?.status === 'passed' &&
+    Number(result?.retry ?? 0) === 0 &&
+    Number.isFinite(Number(result?.duration));
+  return valid
+    ? { duration: [Number(result.duration)] }
+    : {
+        limitation: `Playwright sample ${sampleNumber} did not contain one passing, unretried duration.`,
+      };
 }
 
 function visitPlaywrightSuites(suites, visit) {
@@ -1283,6 +1237,82 @@ function sourceRole(file) {
   )
     ? 'test_or_harness'
     : 'application';
+}
+
+function validateProfileScope(adapter, name) {
+  if (adapter === 'playwright' && !name) {
+    throw new Error('playwright performance profiling requires an exact test name');
+  }
+}
+
+function profileRunsFor(adapter) {
+  if (adapter === 'playwright') return 0;
+  return adapter === 'go-bench' ? 1 : V8_PROFILE_RUNS;
+}
+
+function playwrightTimingObservation(adapter, measured, name) {
+  if (adapter !== 'playwright') return null;
+  return parsePlaywrightTimings(
+    measured.map((entry) => ({
+      stdout: entry.execution.stdout,
+      truncated: entry.execution.truncated,
+    })),
+    name
+  );
+}
+
+function playwrightLimitations(adapter, observation) {
+  return adapter === 'playwright' && !observation.complete ? observation.limitations : [];
+}
+
+function viteArtifactLimitations(artifact) {
+  return artifact?.limitations ?? [];
+}
+
+function playwrightEvidenceComplete(adapter, observation) {
+  return adapter !== 'playwright' || observation.complete;
+}
+
+function buildPerformanceUnverified({
+  adapter,
+  profileEvidence,
+  qualifiedV8Candidate,
+  viteArtifact,
+}) {
+  const hypotheses = profileEvidence.hotspots
+    .filter(
+      (hotspot) =>
+        hotspot.role === 'application' &&
+        (adapter === 'go-bench' ||
+          (qualifiedV8Candidate &&
+            hotspot.file === qualifiedV8Candidate.file &&
+            hotspot.function === qualifiedV8Candidate.function))
+    )
+    .slice(0, 1)
+    .map((hotspot) => ({
+      kind: 'optimization_hypothesis',
+      summary: `Investigate ${hotspot.file}:${hotspot.line} because it received the largest repository-owned application CPU share.`,
+      verification_required:
+        'Change the candidate, capture a new capsule, and compare it with this baseline.',
+    }));
+  if (viteArtifact) {
+    hypotheses.push({
+      kind: 'vite_artifact_observation',
+      summary: `Existing initial JavaScript closure contains ${viteArtifact.file_count} files, ${viteArtifact.raw_bytes} raw bytes, and ${viteArtifact.gzip_bytes} gzip bytes.`,
+      verification_required:
+        'Rebuild both identical source snapshots under an attested build contract before comparing artifact movement.',
+    });
+  }
+  if (adapter === 'playwright') {
+    hypotheses.push({
+      kind: 'playwright_coverage_gap',
+      summary:
+        'Exact local test duration does not measure production traffic, representative-device rendering, browser memory, React component attribution, network-scale behavior, or global application optimality.',
+      verification_required:
+        'Use separately authorized production and representative-device evidence for those claims.',
+    });
+  }
+  return hypotheses;
 }
 
 function emptyProfileEvidence(adapter) {
