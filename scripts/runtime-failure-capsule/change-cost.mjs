@@ -1,6 +1,7 @@
-import { spawn } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
+import { promisify } from 'node:util';
 
 import { repositoryRelative } from './contracts.mjs';
 
@@ -12,6 +13,7 @@ export const CHANGE_COST_POLICY = Object.freeze({
 });
 
 const DEPENDENCY_MANIFESTS = new Set(['package.json', 'go.mod']);
+const execFileAsync = promisify(execFile);
 
 export async function inspectChangeCost(repositoryRoot, changedFiles, baseRevision = 'HEAD') {
   const root = resolve(repositoryRoot);
@@ -158,19 +160,13 @@ function manifestDependencies(path, source) {
   return new Set(dependencies);
 }
 
-function git(cwd, args, allowMissing = false) {
-  return new Promise((resolvePromise, reject) => {
-    const child = spawn('git', args, { cwd, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
-    let stdout = '';
-    let stderr = '';
-    child.stdout.setEncoding('utf8');
-    child.stderr.setEncoding('utf8');
-    child.stdout.on('data', (chunk) => (stdout += chunk));
-    child.stderr.on('data', (chunk) => (stderr += chunk));
-    child.once('error', reject);
-    child.once('close', (code) => {
-      if (code === 0 || allowMissing) resolvePromise({ stdout, stderr });
-      else reject(new Error(`git ${args[0]} failed`));
-    });
-  });
+async function git(cwd, args, allowMissing = false) {
+  try {
+    return await execFileAsync('git', args, { cwd, encoding: 'utf8' });
+  } catch (error) {
+    if (allowMissing) {
+      return { stdout: error.stdout ?? '', stderr: error.stderr ?? '' };
+    }
+    throw new Error(`git ${args[0]} failed`, { cause: error });
+  }
 }

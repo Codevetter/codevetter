@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
 import { assessChangeCost, inspectChangeCost } from './change-cost.mjs';
+
+const execFileAsync = promisify(execFile);
 
 test('records and accepts a small source-bounded candidate', async (context) => {
   const root = await fixture(context, { 'src/work.js': 'export const work = () => 1;\n' });
@@ -76,9 +79,9 @@ async function fixture(context, files) {
     await mkdir(join(root, path, '..'), { recursive: true });
     await writeFile(join(root, path), contents);
   }
-  await command('git', ['init', '-q'], root);
-  await command('git', ['add', '.'], root);
-  await command(
+  await execFileAsync('git', ['init', '-q'], { cwd: root });
+  await execFileAsync('git', ['add', '.'], { cwd: root });
+  await execFileAsync(
     'git',
     [
       '-c',
@@ -91,21 +94,7 @@ async function fixture(context, files) {
       '-qm',
       'fixture baseline',
     ],
-    root
+    { cwd: root }
   );
   return root;
-}
-
-function command(program, args, cwd) {
-  return new Promise((resolvePromise, reject) => {
-    const child = spawn(program, args, { cwd, shell: false, stdio: ['ignore', 'ignore', 'pipe'] });
-    let stderr = '';
-    child.stderr.setEncoding('utf8');
-    child.stderr.on('data', (chunk) => (stderr += chunk));
-    child.once('error', reject);
-    child.once('close', (code) => {
-      if (code === 0) resolvePromise();
-      else reject(new Error(`${program} failed: ${stderr.trim() || `exit ${code}`}`));
-    });
-  });
 }
