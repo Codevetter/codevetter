@@ -40,6 +40,10 @@ const sitemapIndex = fs.readFileSync(path.join(dist, 'sitemap-index.xml'), 'utf8
 const indexEntries = [...sitemapIndex.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map(
   (match) => match[1]
 );
+const legacySitemap = fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');
+const legacyEntries = [...legacySitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map(
+  (match) => match[1]
+);
 if (indexEntries.length === 0) {
   failures.push('sitemap-index.xml contains no sitemap entries');
 }
@@ -47,6 +51,9 @@ for (const entry of indexEntries) {
   if (!entry.endsWith('/sitemap-0.xml')) {
     failures.push(`${entry}: sitemap-index entry does not point to sitemap-0.xml`);
   }
+}
+if (JSON.stringify(legacyEntries) !== JSON.stringify(indexEntries)) {
+  failures.push('sitemap.xml does not mirror sitemap-index.xml entries');
 }
 
 for (const route of routes) {
@@ -104,6 +111,7 @@ console.log(`PASS ${routes.length}/${routes.length} sitemap routes have readable
 console.log(
   `PASS ${indexEntries.length} sitemap-index entr${indexEntries.length === 1 ? 'y' : 'ies'} point to sitemap-0.xml`
 );
+console.log(`PASS sitemap.xml mirrors the canonical sitemap index`);
 console.log(
   `PASS ${surfaces.length}/${routes.length} API catalog surfaces cover every sitemap route and are readable`
 );
