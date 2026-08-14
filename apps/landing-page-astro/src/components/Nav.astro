@@ -8,6 +8,7 @@ import Icon from './Icon.astro';
 const links = [
   { href: '/#features', label: 'Features' },
   { href: '/#how', label: 'How it works' },
+  { href: '/benchmark/optimization', label: 'Proof' },
   { href: '/#providers', label: 'Providers' },
   { href: '/#pricing', label: 'Pricing' },
   { href: '/faq', label: 'FAQ' },
@@ -26,11 +27,11 @@ const links = [
       </span>
     </a>
 
-    <nav class="hidden md:flex items-center gap-8">
+    <nav class="hidden lg:flex items-center gap-7">
       {links.map((l) => (
         <a
           href={l.href}
-          class="font-mono text-[11px] uppercase tracking-[0.16em] text-[--color-text-dim] hover:text-white transition-colors"
+          class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#a4a9b2] hover:text-white transition-colors"
         >
           {l.label}
         </a>
