@@ -31,7 +31,7 @@ const jsonLd = {
 };
 ---
 
-<Layout title={`${content.title} — CodeVetter`} description={content.description} path={content.path}>
+<Layout title={content.seoTitle ?? `${content.title} — CodeVetter`} description={content.description} path={content.path}>
   <main class="min-h-screen bg-[--color-bg] text-[--color-text]">
     <Nav />
     <article class="mx-auto max-w-3xl px-6 pb-24 pt-32">

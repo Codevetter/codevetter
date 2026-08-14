@@ -156,10 +156,7 @@ The public examples below use adjudicated synthetic benchmark ground truth. They
 
 ${examples.map((example) => `- [${example.title}](${SITE_URL}/xray/${example.id}) — ${example.finding.summary}`).join('\n')}`
   ),
-  docs: `${docsIndex.trim()}
-
-> Canonical rendered documentation: https://codevetter.com/docs/
-`,
+  docs: page('CodeVetter docs', '/docs/', docsIndex),
 };
 
 for (const content of Object.values(verificationContent)) {
