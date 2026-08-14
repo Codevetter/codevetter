@@ -4,14 +4,24 @@ import { fileURLToPath } from 'node:url';
 
 import { createOptimizationCampaignService } from './campaign.mjs';
 import { createOptimizationContributionService } from './contribution.mjs';
+import {
+  LIMITS,
+  PROFILE_ADAPTERS,
+  assertProfileAdapter,
+  boundedCount,
+  boundedTimeout,
+} from './contracts.mjs';
 import { createLocalFlowService } from './flow-service.mjs';
 import { planFlowOptimizationCampaign } from './flow-campaign-planner.mjs';
 import { qualifyRepository } from './qualification.mjs';
 import { redactText } from './redact.mjs';
 import { inspectSupervisedRun } from './supervision.mjs';
+import { profileRepository } from './performance.mjs';
+import { verifyPairedRepositories } from './paired-verification.mjs';
 
 const PROTOCOL_VERSION = '2025-03-26';
 const SERVER_INFO = { name: 'codevetter-local-runtime', version: '0.1.0' };
+const PERFORMANCE_TOOLS = new Set(['profile_local_performance', 'verify_paired_performance']);
 
 export async function createRuntimeMcpHandler(repositoryRoot, options = {}) {
   const flowService = options.flowService ?? (await createLocalFlowService(repositoryRoot));
@@ -102,6 +112,14 @@ async function callTool(
     closedArguments(args, ['run_id']);
     return inspectSupervisedRun(repositoryRoot, args.run_id);
   }
+  if (PERFORMANCE_TOOLS.has(name)) {
+    return callPerformanceTool({
+      name,
+      args,
+      repositoryRoot,
+      incumbentRepositoryRoot,
+    });
+  }
   if (name === 'capture_local_flow') {
     closedArguments(args, ['adapter', 'target'], ['name', 'samples', 'warmups', 'timeout_ms']);
     return flowService.capture(args);
@@ -169,6 +187,35 @@ async function callTool(
   throw new Error('Unknown local runtime tool');
 }
 
+async function callPerformanceTool({ name, args, repositoryRoot, incumbentRepositoryRoot }) {
+  closedArguments(
+    args,
+    ['adapter', 'target'],
+    ['name', 'vite_build_directory', 'vite_entry'],
+    [],
+    ['samples', 'warmups', 'timeout_ms']
+  );
+  const input = {
+    currentRepositoryRoot: repositoryRoot,
+    repositoryRoot,
+    adapter: assertProfileAdapter(args.adapter),
+    target: args.target,
+    name: args.name,
+    timeoutMs: boundedTimeout(args.timeout_ms),
+    samples: boundedSamples(args.samples),
+    warmups: boundedWarmups(args.warmups),
+    viteBuildDirectory: args.vite_build_directory,
+    viteEntry: args.vite_entry,
+  };
+  if (name === 'verify_paired_performance') {
+    if (!incumbentRepositoryRoot) {
+      throw new Error('Paired verification requires --incumbent-repo when the MCP server starts');
+    }
+    return verifyPairedRepositories({ ...input, baselineRepositoryRoot: incumbentRepositoryRoot });
+  }
+  return profileRepository(input);
+}
+
 function closedArguments(
   value,
   required,
@@ -224,6 +271,20 @@ export function toolDefinitions() {
         additionalProperties: false,
         properties: {},
       },
+    },
+    {
+      name: 'profile_local_performance',
+      description:
+        'Measure one exact local performance scope; Playwright scopes use exact reporter duration and optional unverified existing Vite artifacts.',
+      annotations: executeAnnotations,
+      inputSchema: performanceInputSchema(),
+    },
+    {
+      name: 'verify_paired_performance',
+      description:
+        'Alternately compare one exact performance scope against the incumbent checkout fixed when this MCP server starts.',
+      annotations: executeAnnotations,
+      inputSchema: performanceInputSchema(),
     },
     {
       name: 'inspect_performance_run',
@@ -386,6 +447,44 @@ export function toolDefinitions() {
       executeAnnotations
     ),
   ];
+}
+
+function performanceInputSchema() {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['adapter', 'target'],
+    properties: {
+      adapter: { type: 'string', enum: PROFILE_ADAPTERS },
+      target: { type: 'string', description: 'Repository-relative exact workload file.' },
+      name: { type: 'string', description: 'Exact workload name; required for Playwright.' },
+      samples: { type: 'integer', minimum: 2, maximum: 10 },
+      warmups: { type: 'integer', minimum: 0, maximum: 5 },
+      timeout_ms: { type: 'integer', minimum: 100, maximum: 120000 },
+      vite_build_directory: {
+        type: 'string',
+        description: 'Optional repository-relative existing Vite output; no build is run.',
+      },
+      vite_entry: { type: 'string', description: 'Optional HTML entry, default index.html.' },
+    },
+  };
+}
+
+function boundedSamples(value) {
+  return boundedCount(value, {
+    name: 'samples',
+    defaultValue: LIMITS.defaultSamples,
+    minimum: LIMITS.minimumSamples,
+    maximum: LIMITS.maximumSamples,
+  });
+}
+
+function boundedWarmups(value) {
+  return boundedCount(value, {
+    name: 'warmups',
+    defaultValue: LIMITS.defaultWarmups,
+    maximum: LIMITS.maximumWarmups,
+  });
 }
 
 function campaignTool(name, description, required, annotations) {

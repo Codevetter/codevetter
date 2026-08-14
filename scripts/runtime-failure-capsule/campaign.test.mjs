@@ -31,6 +31,13 @@ test('campaign manifests are closed and protect evaluator trees', () => {
     validateCampaignManifest({ ...manifest, allowed_files: ['../source.js'] }).join('\n'),
     /invalid path segment/
   );
+  assert.deepEqual(
+    validateCampaignManifest({
+      ...manifest,
+      performance: { ...manifest.performance, adapter: 'playwright' },
+    }),
+    []
+  );
 });
 
 test('campaign CLI is closed, emits JSON, and preserves decision exit semantics', async () => {

@@ -45,6 +45,25 @@ test('keeps generic tests selectable but does not call them representative', asy
   assert.equal(result.next_action.kind, 'select_representative_workload');
 });
 
+test('discovers Playwright flows but requires caller selection', async (context) => {
+  const root = await repositoryFixture(context, {
+    'package.json': JSON.stringify({ devDependencies: { '@playwright/test': '1.0.0' } }),
+    'tests/example.spec.ts': [
+      "import { test } from '@playwright/test';",
+      "test('loads the product', async ({ page }) => page.goto('/'));",
+      '',
+    ].join('\n'),
+  });
+
+  const result = await qualifyRepository(root);
+
+  assert.equal(result.status, 'needs_selection');
+  assert.equal(result.recommended, null);
+  assert.equal(result.candidates[0].adapter, 'playwright');
+  assert.equal(result.candidates[0].name, 'loads the product');
+  assert.equal(result.next_action.kind, 'select_representative_browser_flow');
+});
+
 test('blocks automatic readiness when source suggests external operations', async (context) => {
   const root = await repositoryFixture(context, {
     'package.json': JSON.stringify({ devDependencies: { vitest: '1.0.0' } }),

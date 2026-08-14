@@ -16,6 +16,7 @@ import {
   summarizeConsoleBenchmarkMetrics,
   parseGoBenchmarks,
   parseGoPprofTop,
+  parsePlaywrightTimings,
   parseVitestTimings,
   parseV8CpuProfileDocuments,
   profileRepository,
@@ -250,6 +251,67 @@ test('normalizes Vitest durations and console benchmark metrics', () => {
     iterations: 300,
     provenance: 'profile_execution_stdout',
   });
+});
+
+test('normalizes one exact passing unretried Playwright result per sample', () => {
+  const output = (duration) => ({
+    stdout: JSON.stringify({
+      suites: [
+        {
+          title: 'example.spec.ts',
+          specs: [
+            {
+              title: 'loads the chess coach',
+              tests: [{ results: [{ status: 'passed', retry: 0, duration }] }],
+            },
+          ],
+        },
+      ],
+    }),
+    truncated: false,
+  });
+  const result = parsePlaywrightTimings(
+    [output(120), output(100), output(110)],
+    'loads the chess coach'
+  );
+
+  assert.equal(result.complete, true);
+  assert.equal(result.duration_ms.median, 110);
+  assert.equal(result.provenance, 'playwright_json_reporter');
+});
+
+test('fails Playwright timing closed for retries, ambiguity, and truncation', () => {
+  const ambiguous = JSON.stringify({
+    suites: [
+      {
+        specs: [
+          {
+            title: 'target flow',
+            tests: [
+              {
+                results: [
+                  { status: 'failed', retry: 0, duration: 10 },
+                  { status: 'passed', retry: 1, duration: 8 },
+                ],
+              },
+              { results: [{ status: 'passed', retry: 0, duration: 9 }] },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  const result = parsePlaywrightTimings(
+    [
+      { stdout: ambiguous, truncated: false },
+      { stdout: '{}', truncated: true },
+    ],
+    'target flow'
+  );
+
+  assert.equal(result.complete, false);
+  assert.equal(result.captured_samples, 0);
+  assert.equal(result.limitations.length, 2);
 });
 
 test('accepts an exact passed Vitest identity from a truncated JSON report', () => {

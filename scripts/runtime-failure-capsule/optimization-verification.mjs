@@ -12,6 +12,9 @@ const DEFAULT_POLICY = Object.freeze({
   allocation_count_improvement_percent: 10,
   go_latency_improvement_percent: 10,
   maximum_secondary_regression_percent: 20,
+  playwright_duration_improvement_percent: 10,
+  playwright_duration_improvement_ms: 10,
+  playwright_wall_regression_percent: 20,
   shipping_minimum_samples: 10,
 });
 
@@ -50,6 +53,8 @@ export function verifyOptimizationCapsules(baseline, current, policy = {}) {
       ));
     } else if (baseline.adapter.kind === 'go-bench') {
       ({ observed, verdict } = compareGoBenchmarks(baseline, current, resolvedPolicy));
+    } else if (baseline.adapter.kind === 'playwright') {
+      ({ observed, verdict } = comparePlaywrightFlow(baseline, current, resolvedPolicy));
     } else {
       ({ observed, verdict } = compareWallTime(baseline, current));
     }
@@ -83,6 +88,69 @@ export function verifyOptimizationCapsules(baseline, current, policy = {}) {
     throw new Error(`invalid optimization verification: ${errors.join(', ')}`);
   }
   return report;
+}
+
+function comparePlaywrightFlow(baseline, current, policy) {
+  const baselineDuration = baseline.observed.playwright_test?.duration_ms?.median;
+  const currentDuration = current.observed.playwright_test?.duration_ms?.median;
+  const baselineWall = baseline.observed.wall_time_ms?.median;
+  const currentWall = current.observed.wall_time_ms?.median;
+  if (
+    !baseline.observed.playwright_test?.complete ||
+    !current.observed.playwright_test?.complete ||
+    !Number.isFinite(baselineDuration) ||
+    !Number.isFinite(currentDuration) ||
+    !Number.isFinite(baselineWall) ||
+    !Number.isFinite(currentWall) ||
+    baselineDuration <= 0 ||
+    baselineWall <= 0
+  ) {
+    return {
+      observed: [],
+      verdict: outcome('no_confidence', 'Exact Playwright duration evidence is incomplete.'),
+    };
+  }
+  const duration = metricDelta(baselineDuration, currentDuration);
+  const wall = metricDelta(baselineWall, currentWall);
+  const observed = [
+    {
+      kind: 'playwright_flow_comparison',
+      exact_name: current.observed.playwright_test.exact_name,
+      duration_ms: duration,
+      process_wall_ms: wall,
+      provenance: 'playwright_json_reporter_and_owned_process_clock',
+    },
+  ];
+  const durationImproved =
+    duration.delta <= -policy.playwright_duration_improvement_ms &&
+    duration.delta_percent <= -policy.playwright_duration_improvement_percent;
+  const wallRegressed = wall.delta_percent > policy.playwright_wall_regression_percent;
+  if (durationImproved && !wallRegressed) {
+    return {
+      observed,
+      verdict: outcome(
+        'confirmed',
+        'Exact Playwright test duration materially improved without a process-wall regression.'
+      ),
+    };
+  }
+  if (
+    duration.delta >= policy.playwright_duration_improvement_ms ||
+    duration.delta_percent >= policy.playwright_duration_improvement_percent ||
+    wallRegressed
+  ) {
+    return {
+      observed,
+      verdict: outcome(
+        'rejected',
+        'Browser flow duration or process wall time materially regressed.'
+      ),
+    };
+  }
+  return {
+    observed,
+    verdict: outcome('inconclusive', 'Browser flow movement did not cross the recorded policy.'),
+  };
 }
 
 function compareBenchmarkSeries(baseline, current, policy) {

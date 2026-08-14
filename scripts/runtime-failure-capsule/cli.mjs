@@ -145,6 +145,8 @@ export async function main(argv = process.argv.slice(2)) {
           defaultValue: LIMITS.defaultWarmups,
           maximum: LIMITS.maximumWarmups,
         }),
+        viteBuildDirectory: options['vite-build-dir'],
+        viteEntry: options['vite-entry'],
       });
       writeJson(verification);
       if (verification.verdict.status === 'confirmed') return 0;
@@ -210,6 +212,8 @@ export async function main(argv = process.argv.slice(2)) {
           minimum: 0,
           maximum: 60_000,
         }),
+        viteBuildDirectory: options['vite-build-dir'],
+        viteEntry: options['vite-entry'],
       });
       if (operation === 'diagnose-performance') {
         writeJson(await diagnosePerformanceRepository(capsule, repositoryRoot));
@@ -320,6 +324,8 @@ function parseArguments(argv) {
                         'timeout-ms',
                         'samples',
                         'warmups',
+                        'vite-build-dir',
+                        'vite-entry',
                         'json',
                       ]
                     : [
@@ -333,6 +339,8 @@ function parseArguments(argv) {
                         'baseline',
                         'regression-percent',
                         'regression-ms',
+                        'vite-build-dir',
+                        'vite-entry',
                         'json',
                       ]
   );
