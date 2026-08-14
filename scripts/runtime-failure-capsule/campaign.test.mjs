@@ -208,6 +208,37 @@ test('campaign rejects faster incorrect work, promotes paired evidence, resumes,
   }
 });
 
+test('campaign rejects disproportionate source growth before verification', async () => {
+  const fixture = await createFixture();
+  try {
+    let profileCount = 0;
+    const service = await createOptimizationCampaignService(
+      fixture.root,
+      fakeDependencies(() => {
+        profileCount += 1;
+      })
+    );
+    await service.initialize({ campaign_directory: fixture.campaignDirectory });
+    await service.baseline({ campaign_directory: fixture.campaignDirectory });
+    const baselineProfiles = profileCount;
+    await writeFile(
+      join(fixture.root, 'source.js'),
+      Array.from({ length: 170 }, (_, index) => `export const value${index} = ${index};`).join('\n')
+    );
+
+    const result = await service.screen({
+      campaign_directory: fixture.campaignDirectory,
+      hypothesis: 'Add a large shortcut.',
+    });
+
+    assert.equal(result.record.decision.status, 'discard');
+    assert.match(result.record.decision.reason, /change-cost budget: lines_added/);
+    assert.equal(profileCount, baselineProfiles);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test('campaign records crash and no-confidence outcomes and detects evidence or ledger tampering', async () => {
   for (const candidate of [
     { source: 'export const mode = "CRASH";\n', decision: 'crash' },
