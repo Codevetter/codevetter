@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-07
+Last updated: 2026-08-11
 
 ## Why / What
 
@@ -38,11 +38,75 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-11 — Code-health coverage became executable:** Added CI-blocking
+  unused-code, duplication-regression, runtime dependency-cycle, and production
+  vulnerability gates. Removed six unused public type exports, confirmed zero
+  runtime import cycles repository-wide, capped changed-file cognitive
+  complexity at 20, ratcheted duplication at the measured 0.75% baseline, and
+  reduced dependency-audit exposure from 17 high advisories to zero. Historical
+  complexity and the remaining Astro 6 low/moderate advisories are explicitly
+  tracked as dated follow-up instead of being suppressed.
+- **2026-08-11 (shipped in v1.7.4) — Trustworthy Codex evidence ledger:** release
+  qualification found that v1.7.3 still undercounted compact subagent rollouts
+  and presented incomplete historical coverage too confidently. The candidate
+  now separates verified, legacy-estimated, ambiguous, missing, and stale
+  evidence; persists append-only lineage-aware observations; reports
+  API-equivalent pricing as exact, bounded, or unpriced; and imports additional
+  Codex homes without double counting stable session identities. A retained
+  cursor-aligned comparison matches pinned CodexBar 0.46.0 exactly across all
+  12 comparable sessions (1,257,163,311 input, 1,230,980,352 cached, 3,863,267
+  output). A separately frozen 96-source backfill is exactly idempotent across
+  two runs and records 3,147,488,441 verified input tokens while preserving
+  1,260 unrecoverable historical rows as non-verified. CodexBar itself retained
+  two incomplete large-file scans and two stale completed sizes after
+  `--refresh`, so parity is cursor-aligned and CodeVetter exposes its own byte
+  coverage. The candidate now snapshots the prior session/model/v1-observation
+  projections exactly once; `CODEVETTER_CODEX_ACCOUNTING=legacy` restored all
+  three retained-corpus aggregates exactly while preserving v2 evidence.
+  Released after all local qualification and GitHub CI checks passed.
+
+- **2026-08-10 (shipped in v1.7.3) — Deterministic Codex usage accounting:**
+  replaced message-prorated and replay-prone Codex totals with timestamped,
+  content-free usage observations; persisted cumulative counter state handles
+  duplicate snapshots, fork inheritance, copied prefixes, resets, and
+  interleaved lineages across incremental reads. Live usage ingestion is
+  independently serialized from archive/FTS maintenance, and Usage exposes
+  freshness and exclusion diagnostics. The revisioned historical repair is
+  fail-closed: readable transcripts reconcile session/model totals from
+  persisted accepted observations inside each transaction, while missing
+  sources retain their prior totals with explicit unrepaired audits. Frozen
+  qualification at release time reconciled 91 readable sessions twice to an
+  identical 2,742,608,446 accepted tokens and preserved 1,260 missing sources;
+  the 2026-08-11 audit above supersedes that confidence claim. Verified
+  with 913 Rust tests, 665 frontend tests plus the 20-scenario live
+  qualification, lint, typecheck, production build, docs, and strict OpenSpec.
+
+- **2026-08-10 — Revision-bound optimization contribution closeout:** extended
+  the local performance campaign with a mandatory post-promotion candidate
+  challenge and three closed CLI/MCP operations. The new local receipt binds
+  the kept campaign record, baseline, candidate commit, diff, optional T-Rex
+  preview evidence, and one canonical GitHub PR while preserving correctness,
+  performance, patch quality, head freshness, checks, review threads,
+  approvals, and merge authority as independent fail-closed gates. Candidate
+  source must be committed before promotion/challenge; stale heads, missing
+  required T-Rex evidence, unobserved checks, actionable feedback, and
+  symlink/path escapes cannot become ready. GitHub access is one fixed read-only
+  GraphQL query with explicit refresh—no polling, app install, comment, review
+  request, thread resolution, required check, merge, or deploy. Live read-only
+  dogfood against Marked PR #4048 caught and fixed a classifier error: Vercel
+  fork authorization is now `approval_required`, not a code failure; two older
+  inline threads remain visible as outdated. Raw evidence stays local and
+  upstream maintainers receive no additional workflow. Qualified candidate
+  comparisons retain target plus available smaller-input/allocation controls,
+  and the full Marked-shaped fixture proves reviewed-head invalidation,
+  simpler-candidate selection, bounded feedback learning, and regeneration of
+  a current receipt-backed publication projection.
 - **2026-08-09 — Shared lint baseline:** Adopted the Fleet Ultracite baseline
   for core TypeScript, React, and test code. Explicit compatibility exceptions
   preserve current behavior while 662 files pass with zero diagnostics;
   generated, public, HTML, SVG, Astro, and benchmark artifact surfaces remain
   outside the checked surface.
+
 - **2026-08-07 — Grok billing staleness fix + cache-tier pricing audit (largest
   cost-accuracy fix to date):** `check_live_usage_grok` re-served whatever
   billing snapshot Grok CLI last logged to `~/.grok/logs/unified.jsonl`
@@ -240,6 +304,10 @@ Internal (fleet):
 ### Foundation
 
 - Shared Ultracite lint baseline with a clean 662-file check.
+- CI-blocking code-health gates for unused exports/dependencies, changed-file
+  cognitive complexity, runtime import cycles, clone regression, and
+  high/critical production advisories, with generated and fixture boundaries
+  explicit and historical debt tracked in GitHub Issues.
 - Local-first desktop binary: Tauri 2 + React 19, macOS, offline, SQLite, no server.
 - Six-surface nav: Usage, Repo Unpack, Work, Board, Review, Testing. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.

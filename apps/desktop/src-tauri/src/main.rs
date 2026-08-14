@@ -608,6 +608,7 @@ fn main() {
             // History / indexer
             commands::history::trigger_index,
             commands::history::get_live_session_evidence_policy,
+            commands::history::get_codex_usage_reconciliation,
             commands::history::get_token_usage_stats,
             commands::history::get_agent_usage_breakdown,
             commands::history::get_agent_usage_by_day,

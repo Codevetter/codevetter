@@ -1,6 +1,14 @@
-import { Activity, BarChart3, RefreshCw, Terminal } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  Database,
+  RefreshCw,
+  Terminal,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +20,7 @@ import type {
   DayBucket,
   LiveUsageResult,
   LiveSessionEvidencePolicy,
+  CodexUsageReconciliation,
   ModelUsage,
   ProviderAccount,
   ProviderUsageLedgerRow,
@@ -28,6 +37,7 @@ import {
   detectProviderAccounts,
   getAgentUsageBreakdown,
   getAgentUsageByDay,
+  getCodexUsageReconciliation,
   getLiveSessionEvidencePolicy,
   getTokenUsageStats,
   getUsageByModel,
@@ -67,6 +77,15 @@ function formatShortDateTime(value: string | null | undefined): string {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+function formatBytes(value: number): string {
+  return new Intl.NumberFormat(undefined, {
+    style: 'unit',
+    unit: value >= 1_000_000 ? 'megabyte' : 'kilobyte',
+    unitDisplay: 'short',
+    maximumFractionDigits: 1,
+  }).format(value / (value >= 1_000_000 ? 1_000_000 : 1_000));
 }
 
 function planLabel(plan: string | null): string {
@@ -2517,10 +2536,195 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
   );
 }
 
+function CodexEvidenceSummary({
+  report,
+  loading,
+  error,
+  reconciling,
+  onReconcile,
+  onOpenRecovery,
+}: {
+  report: CodexUsageReconciliation | null;
+  loading: boolean;
+  error: string | null;
+  reconciling: boolean;
+  onReconcile: () => void;
+  onOpenRecovery: () => void;
+}) {
+  if (loading && !report) {
+    return (
+      <section
+        className="cv-panel px-4 py-4"
+        aria-label="Loading verified Codex usage"
+        aria-busy="true"
+      >
+        <div className="h-4 w-48 animate-pulse rounded bg-white/[0.08]" />
+        <div className="mt-3 h-8 w-72 max-w-full animate-pulse rounded bg-white/[0.06]" />
+      </section>
+    );
+  }
+
+  if (error || !report) {
+    return (
+      <section className="cv-panel flex flex-col gap-3 border-amber-500/20 bg-amber-500/[0.03] px-4 py-4 sm:flex-row sm:items-center">
+        <AlertTriangle size={17} className="shrink-0 text-amber-300" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-medium text-zinc-100">Verified Codex usage unavailable</h2>
+          <p className="mt-1 text-xs leading-5 text-zinc-400">
+            {error ?? 'The evidence ledger has not produced a reconciliation report yet.'} Legacy
+            estimates below are not a substitute for verified totals.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onReconcile}
+          disabled={reconciling}
+          className="h-9 shrink-0"
+        >
+          <RefreshCw size={14} className={reconciling ? 'animate-spin' : ''} />
+          {reconciling ? 'Reconciling…' : 'Re-index & reconcile'}
+        </Button>
+      </section>
+    );
+  }
+
+  const unresolvedSessions =
+    report.legacy_estimated_sessions +
+    report.ambiguous_sessions +
+    report.missing_unestimated_sessions +
+    report.stale_sessions;
+  const complete = unresolvedSessions === 0 && report.pending_bytes === 0;
+  const totalTokens = report.verified_totals.input_tokens + report.verified_totals.output_tokens;
+  const minCost = (report.verified_cost_min_microusd ?? 0) / 1_000_000;
+  const maxCost = (report.verified_cost_max_microusd ?? 0) / 1_000_000;
+  const hasCostRange = report.verified_cost_min_microusd !== report.verified_cost_max_microusd;
+  const costLabel =
+    report.unpriced_events > 0
+      ? `${formatMoney(minCost)}–${formatMoney(maxCost)} priced portion · ${report.unpriced_events} unpriced`
+      : hasCostRange
+        ? `${formatMoney(minCost)}–${formatMoney(maxCost)}`
+        : formatMoney(minCost);
+
+  return (
+    <section className="cv-panel overflow-hidden" aria-labelledby="codex-evidence-title">
+      <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 id="codex-evidence-title" className="text-sm font-semibold text-zinc-100">
+              Verified Codex compute
+            </h2>
+            <Badge
+              variant="outline"
+              className={cn(
+                'h-6 px-2 text-[11px] font-medium',
+                complete
+                  ? 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300'
+                  : 'border-amber-500/25 bg-amber-500/[0.06] text-amber-300'
+              )}
+            >
+              {complete ? (
+                <CheckCircle2 size={12} aria-hidden="true" />
+              ) : (
+                <AlertTriangle size={12} aria-hidden="true" />
+              )}
+              {complete ? 'Complete coverage' : 'Partial coverage'}
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs leading-5 text-zinc-400">
+            Accepted transcript observations only · scanner revision {report.scanner_revision} ·
+            observed {formatShortDateTime(report.observation_watermark)}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onReconcile}
+          disabled={reconciling}
+          className="h-9 shrink-0"
+        >
+          <RefreshCw size={14} className={reconciling ? 'animate-spin' : ''} />
+          {reconciling ? 'Reconciling…' : 'Re-index & reconcile'}
+        </Button>
+      </div>
+
+      <div className="grid gap-px bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr]">
+        <div className="min-w-0 bg-[var(--cv-surface)] px-4 py-4">
+          <div className="cv-label">Verified tokens</div>
+          <div className="mt-2 text-2xl font-semibold tracking-[-0.025em] text-zinc-100 tabular-nums">
+            {formatTokens(totalTokens)}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-zinc-500">
+            <span>{formatTokens(report.verified_totals.input_tokens)} input</span>
+            <span>{formatTokens(report.verified_totals.cache_read_tokens)} cached</span>
+            <span>{formatTokens(report.verified_totals.output_tokens)} output</span>
+            <span>{formatTokens(report.verified_totals.reasoning_tokens)} reasoning</span>
+          </div>
+        </div>
+        <div className="min-w-0 bg-[var(--cv-surface)] px-4 py-4">
+          <div className="cv-label">API-equivalent cost</div>
+          <div className="mt-2 break-words text-base font-semibold text-zinc-100 tabular-nums">
+            {costLabel}
+          </div>
+          <div className="mt-2 text-[11px] leading-4 text-zinc-500">
+            {report.priced_exact_events} exact · {report.priced_range_events} ranged ·{' '}
+            {report.unpriced_events} unpriced events
+          </div>
+          <p className="mt-1 text-[11px] leading-4 text-zinc-500">
+            Ranges reflect unknown standard vs priority service tier. API-equivalent—not
+            subscription spend.
+          </p>
+        </div>
+        <div className="min-w-0 bg-[var(--cv-surface)] px-4 py-4 sm:col-span-2 lg:col-span-1">
+          <div className="cv-label">Coverage diagnostics</div>
+          <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+            <dt className="text-zinc-500">Verified</dt>
+            <dd className="text-right font-mono text-zinc-300">{report.verified_sessions}</dd>
+            <dt className="text-zinc-500">Legacy estimated</dt>
+            <dd className="text-right font-mono text-amber-300">
+              {report.legacy_estimated_sessions}
+            </dd>
+            <dt className="text-zinc-500">Ambiguous</dt>
+            <dd className="text-right font-mono text-amber-300">{report.ambiguous_sessions}</dd>
+            <dt className="text-zinc-500">Missing</dt>
+            <dd className="text-right font-mono text-amber-300">
+              {report.missing_unestimated_sessions}
+            </dd>
+            <dt className="text-zinc-500">Stale</dt>
+            <dd className="text-right font-mono text-amber-300">{report.stale_sessions}</dd>
+          </dl>
+        </div>
+      </div>
+
+      {(unresolvedSessions > 0 || report.pending_bytes > 0) && (
+        <div className="flex flex-col gap-3 border-t border-amber-500/15 bg-amber-500/[0.025] px-4 py-3 text-xs leading-5 text-amber-100/75 sm:flex-row sm:items-start">
+          <Database size={14} className="mt-0.5 shrink-0 text-amber-300" aria-hidden="true" />
+          <p className="min-w-0 flex-1">
+            {formatTokens(report.legacy_estimated_totals.input_tokens)} historical input tokens
+            remain legacy estimates and are excluded from verified totals.{' '}
+            {formatBytes(report.pending_bytes)} of source data is pending. Restore or import
+            additional history, then reconcile again.
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onOpenRecovery}
+            className="h-8 shrink-0 self-start text-amber-200 hover:text-amber-100"
+          >
+            Open recovery settings
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes
 
 export default function Home() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const isHomeActive = pathname === '/';
   const isInitialLoad = useRef(true);
   const { hidden: hiddenAgents, toggle: toggleAgent, showAll } = useHiddenAgents();
@@ -2556,12 +2760,19 @@ export default function Home() {
   const [liveSessionPolicy, setLiveSessionPolicy] = useState<LiveSessionEvidencePolicy | null>(
     null
   );
+  const [codexReconciliation, setCodexReconciliation] = useState<CodexUsageReconciliation | null>(
+    null
+  );
+  const [codexReconciliationLoading, setCodexReconciliationLoading] = useState(true);
+  const [codexReconciliationError, setCodexReconciliationError] = useState<string | null>(null);
 
   // ─── Load all dashboard data ────────────────────────────────────────────
 
   const loadDashboard = useCallback(async (showSpinner: boolean = true) => {
     if (!isTauriAvailable()) {
       setLoading(false);
+      setCodexReconciliationLoading(false);
+      setCodexReconciliationError('Open the desktop app to read the local evidence ledger.');
       setError('Tauri APIs not available. Run inside the desktop app to see live data.');
       isInitialLoad.current = false;
       return;
@@ -2570,6 +2781,8 @@ export default function Home() {
       setLoading(true);
     }
     setError(null);
+    setCodexReconciliationLoading(true);
+    setCodexReconciliationError(null);
 
     try {
       // Kick off account usage in parallel with the rest of the dashboard.
@@ -2608,6 +2821,15 @@ export default function Home() {
       void getLiveSessionEvidencePolicy()
         .then(setLiveSessionPolicy)
         .catch(() => undefined);
+      void getCodexUsageReconciliation()
+        .then(setCodexReconciliation)
+        .catch((reconciliationError) => {
+          console.error('[CodeVetter] Codex reconciliation failed:', reconciliationError);
+          setCodexReconciliationError(
+            'The latest Codex reconciliation could not be read. Re-index local data and retry.'
+          );
+        })
+        .finally(() => setCodexReconciliationLoading(false));
 
       // Seed usage map with cached-ID results that came back alongside the rest.
       const usageMap: Record<string, AccountUsage> = {};
@@ -2686,7 +2908,22 @@ export default function Home() {
   useEffect(() => {
     if (!isHomeActive) return;
     if (_cachedDashboard && Date.now() - _cachedDashboard.fetchedAt < CACHE_TTL_MS) {
-      // Cache is fresh, no fetch needed
+      // The general dashboard cache predates the revisioned evidence report;
+      // always refresh that report so a cached legacy headline cannot mask it.
+      if (isTauriAvailable()) {
+        setCodexReconciliationLoading(true);
+        void getCodexUsageReconciliation()
+          .then((report) => {
+            setCodexReconciliation(report);
+            setCodexReconciliationError(null);
+          })
+          .catch(() => {
+            setCodexReconciliationError(
+              'The latest Codex reconciliation could not be read. Re-index local data and retry.'
+            );
+          })
+          .finally(() => setCodexReconciliationLoading(false));
+      }
       return;
     }
     const timeout = setTimeout(() => {
@@ -2722,7 +2959,10 @@ export default function Home() {
     void (async () => {
       try {
         const { listen } = await import('@tauri-apps/api/event');
-        const un = await listen('session_archive_updated', () => run());
+        const un = await listen('session_archive_updated', () => {
+          run();
+          refreshDashboard();
+        });
         if (cancelled) un();
         else unlisten = un;
       } catch {
@@ -2734,7 +2974,7 @@ export default function Home() {
       clearInterval(interval);
       unlisten?.();
     };
-  }, [isHomeActive, hiddenAgents, fetchModelUsage]);
+  }, [isHomeActive, hiddenAgents, fetchModelUsage, refreshDashboard]);
 
   // ─── Periodic background sync every 60s ───────────────────────────────
   // Keeps token-usage counters near-realtime. Paused while the window is
@@ -2824,12 +3064,21 @@ export default function Home() {
   return (
     <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
+        <CodexEvidenceSummary
+          report={codexReconciliation}
+          loading={codexReconciliationLoading}
+          error={codexReconciliationError}
+          reconciling={indexing}
+          onReconcile={() => void handleTriggerIndex()}
+          onOpenRecovery={() => navigate('/settings?section=usage')}
+        />
+
         <section className="cv-spotlight-surface overflow-hidden rounded-2xl">
           <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <div className="cv-label text-amber-300/70">Usage</div>
+              <div className="cv-label text-zinc-500">Legacy blended summary</div>
               <h1 className="mt-1 truncate text-lg font-semibold tracking-[-0.015em] text-zinc-100">
-                Usage telemetry
+                All-agent period estimates
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -2837,27 +3086,25 @@ export default function Home() {
                 <Badge
                   variant="outline"
                   className="h-6 border-emerald-500/25 bg-emerald-500/[0.06] px-2 text-[11px] font-medium text-emerald-300/80"
-                  title={`Local-only ${liveSessionPolicy.mode}; full/manual recovery every ${Math.round(liveSessionPolicy.full_index_recovery_interval_secs / 3600)}h; event ${liveSessionPolicy.update_event}`}
+                  title={`Local-only ${liveSessionPolicy.mode}; full/manual recovery every ${Math.round(liveSessionPolicy.full_index_recovery_interval_secs / 3600)}h; ${liveSessionPolicy.incomplete_codex_sources} Codex sources pending (${formatCompactNumber(liveSessionPolicy.pending_codex_bytes)} bytes); ${liveSessionPolicy.excluded_usage_events} excluded usage events; last usage ${liveSessionPolicy.last_usage_observed_at ?? 'unavailable'}`}
                 >
                   live archive · {liveSessionPolicy.incremental_interval_secs}s ·{' '}
                   {liveSessionPolicy.supported_incremental_adapters.join(' + ')}
                 </Badge>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleTriggerIndex}
-                disabled={indexing}
-                className="h-10 shrink-0 justify-center gap-2 px-5"
-              >
-                <RefreshCw size={15} className={indexing ? 'animate-spin' : ''} />
-                {indexing ? 'Indexing...' : 'Re-index local data'}
-              </Button>
+              {liveSessionPolicy && liveSessionPolicy.incomplete_codex_sources > 0 && (
+                <Badge
+                  variant="outline"
+                  className="h-6 border-amber-500/25 bg-amber-500/[0.06] px-2 text-[11px] font-medium text-amber-300/80"
+                >
+                  usage catching up · {liveSessionPolicy.incomplete_codex_sources} sources
+                </Badge>
+              )}
             </div>
           </div>
 
-          {/* Token period cards — API-equivalent USD cost (the headline). Token
-              counts (generated) live in the hover title. */}
+          {/* Historical blended estimates remain available for continuity, but
+              never substitute for the verified Codex evidence panel above. */}
           <div className="grid grid-cols-2 gap-px bg-white/[0.06] lg:grid-cols-4">
             {[
               {
@@ -2888,11 +3135,16 @@ export default function Home() {
               <div
                 key={stat.label}
                 className="flex min-h-20 items-center justify-between bg-[var(--cv-surface)] px-4 py-4"
-                title={`${formatMoney(stat.cost)} API-equivalent · ${formatTokens(stat.gen)} generated tokens`}
+                title={`${formatMoney(stat.cost)} legacy API-equivalent estimate · ${formatTokens(stat.gen)} generated tokens`}
               >
                 <span className="cv-label mr-2 truncate">{stat.label}</span>
-                <span className={`shrink-0 text-base font-semibold tabular-nums ${stat.color}`}>
-                  {loading && !tokenUsage ? '--' : formatMoney(stat.cost)}
+                <span className="shrink-0 text-right">
+                  <span className={`block text-base font-semibold tabular-nums ${stat.color}`}>
+                    {loading && !tokenUsage ? '--' : formatMoney(stat.cost)}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] text-zinc-600 tabular-nums">
+                    {loading && !tokenUsage ? 'loading' : `${formatTokens(stat.gen)} generated`}
+                  </span>
                 </span>
               </div>
             ))}

@@ -1061,6 +1061,792 @@ pub fn set_session_cost(
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+pub struct CodexUsageObservationInput {
+    pub source_line: i64,
+    pub observed_at: Option<String>,
+    pub local_day: Option<String>,
+    pub model: String,
+    pub input_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub output_tokens: i64,
+    pub reasoning_tokens: i64,
+    pub cost_usd: f64,
+    pub cumulative_input_tokens: Option<i64>,
+    pub cumulative_cache_read_tokens: Option<i64>,
+    pub cumulative_output_tokens: Option<i64>,
+    pub cumulative_reasoning_tokens: Option<i64>,
+    pub disposition: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct CodexUsageSourceInput {
+    pub source_id: String,
+    pub session_id: Option<String>,
+    pub source_ref: String,
+    pub source_fingerprint: String,
+    pub scanner_revision: i64,
+    pub parent_session_id: Option<String>,
+    pub fork_timestamp: Option<String>,
+    pub completed_byte_cursor: i64,
+    pub completed_line_cursor: i64,
+    pub source_size_bytes: i64,
+    pub last_observed_at: Option<String>,
+    pub observed_at: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct CodexLedgerObservationInput {
+    pub event_id: String,
+    pub source_line: i64,
+    pub observed_at: Option<String>,
+    pub local_day: Option<String>,
+    pub model: String,
+    pub service_tier: Option<String>,
+    pub input_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub output_tokens: i64,
+    pub reasoning_tokens: i64,
+    pub cumulative_input_tokens: Option<i64>,
+    pub cumulative_cache_read_tokens: Option<i64>,
+    pub cumulative_output_tokens: Option<i64>,
+    pub cumulative_reasoning_tokens: Option<i64>,
+    pub disposition: String,
+    pub pricing_status: String,
+    pub pricing_revision: i64,
+    pub cost_min_microusd: Option<i64>,
+    pub cost_max_microusd: Option<i64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CodexLineageCheckpointInput {
+    pub source_line: i64,
+    pub observed_at: Option<String>,
+    pub counted: [i64; 4],
+    pub watermark: [i64; 4],
+    pub state_json: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct CodexCoverageInput {
+    pub state: String,
+    pub detail: Option<String>,
+    pub pending_bytes: i64,
+    pub observation_watermark: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CodexEvidenceTier {
+    Verified,
+    LegacyEstimated,
+    Ambiguous,
+    MissingUnestimated,
+    Stale,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CodexSessionEvidenceClassification {
+    pub session_id: String,
+    pub tier: CodexEvidenceTier,
+}
+
+pub fn classify_codex_session_evidence(
+    conn: &Connection,
+    scanner_revision: i64,
+) -> Result<Vec<CodexSessionEvidenceClassification>, rusqlite::Error> {
+    let mut statement = conn.prepare(
+        "SELECT session.id,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM codex_usage_sources source
+                        JOIN codex_usage_coverage coverage
+                          ON coverage.source_id=source.source_id
+                         AND coverage.scanner_revision=source.scanner_revision
+                        WHERE source.session_id=session.id
+                          AND source.scanner_revision=?1
+                          AND coverage.coverage_state='ambiguous'
+                    ) THEN 'ambiguous'
+                    WHEN EXISTS (
+                        SELECT 1 FROM codex_usage_sources source
+                        JOIN codex_usage_coverage coverage
+                          ON coverage.source_id=source.source_id
+                         AND coverage.scanner_revision=source.scanner_revision
+                        WHERE source.session_id=session.id
+                          AND source.scanner_revision=?1
+                          AND coverage.coverage_state='stale'
+                    ) THEN 'stale'
+                    WHEN EXISTS (
+                        SELECT 1 FROM codex_usage_sources source
+                        JOIN codex_usage_coverage coverage
+                          ON coverage.source_id=source.source_id
+                         AND coverage.scanner_revision=source.scanner_revision
+                        WHERE source.session_id=session.id
+                          AND source.scanner_revision=?1
+                          AND coverage.coverage_state='verified'
+                    ) THEN 'verified'
+                    WHEN session.total_input_tokens > 0
+                      OR session.total_output_tokens > 0
+                      OR session.cache_read_tokens > 0
+                      OR session.estimated_cost_usd > 0
+                    THEN 'legacy_estimated'
+                    ELSE 'missing_unestimated'
+                END
+         FROM cc_sessions session
+         WHERE session.agent_type='codex'
+         ORDER BY session.id",
+    )?;
+    let rows = statement.query_map(params![scanner_revision], |row| {
+        let raw: String = row.get(1)?;
+        let tier = match raw.as_str() {
+            "verified" => CodexEvidenceTier::Verified,
+            "legacy_estimated" => CodexEvidenceTier::LegacyEstimated,
+            "ambiguous" => CodexEvidenceTier::Ambiguous,
+            "stale" => CodexEvidenceTier::Stale,
+            _ => CodexEvidenceTier::MissingUnestimated,
+        };
+        Ok(CodexSessionEvidenceClassification {
+            session_id: row.get(0)?,
+            tier,
+        })
+    })?;
+    rows.collect()
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CodexReconciliationTokenTotals {
+    pub input_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub output_tokens: i64,
+    pub reasoning_tokens: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CodexReconciliationReport {
+    pub scanner_revision: i64,
+    pub verified_sessions: i64,
+    pub legacy_estimated_sessions: i64,
+    pub ambiguous_sessions: i64,
+    pub missing_unestimated_sessions: i64,
+    pub stale_sessions: i64,
+    pub verified_totals: CodexReconciliationTokenTotals,
+    pub legacy_estimated_totals: CodexReconciliationTokenTotals,
+    pub legacy_estimated_cost_usd: f64,
+    pub priced_exact_events: i64,
+    pub priced_range_events: i64,
+    pub unpriced_events: i64,
+    pub verified_cost_min_microusd: Option<i64>,
+    pub verified_cost_max_microusd: Option<i64>,
+    pub pending_bytes: i64,
+    pub observation_watermark: Option<String>,
+}
+
+pub fn codex_reconciliation_report(
+    conn: &Connection,
+    scanner_revision: i64,
+) -> Result<CodexReconciliationReport, rusqlite::Error> {
+    let classifications = classify_codex_session_evidence(conn, scanner_revision)?;
+    let mut report = CodexReconciliationReport {
+        scanner_revision,
+        verified_sessions: 0,
+        legacy_estimated_sessions: 0,
+        ambiguous_sessions: 0,
+        missing_unestimated_sessions: 0,
+        stale_sessions: 0,
+        verified_totals: CodexReconciliationTokenTotals::default(),
+        legacy_estimated_totals: CodexReconciliationTokenTotals::default(),
+        legacy_estimated_cost_usd: 0.0,
+        priced_exact_events: 0,
+        priced_range_events: 0,
+        unpriced_events: 0,
+        verified_cost_min_microusd: None,
+        verified_cost_max_microusd: None,
+        pending_bytes: 0,
+        observation_watermark: None,
+    };
+    for classification in &classifications {
+        match classification.tier {
+            CodexEvidenceTier::Verified => report.verified_sessions += 1,
+            CodexEvidenceTier::LegacyEstimated => {
+                report.legacy_estimated_sessions += 1;
+                let (input, cache, output, cost): (i64, i64, i64, f64) = conn.query_row(
+                    "SELECT total_input_tokens,cache_read_tokens,total_output_tokens,
+                            estimated_cost_usd FROM cc_sessions WHERE id=?1",
+                    params![classification.session_id],
+                    |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+                )?;
+                report.legacy_estimated_totals.input_tokens += input;
+                report.legacy_estimated_totals.cache_read_tokens += cache;
+                report.legacy_estimated_totals.output_tokens += output;
+                report.legacy_estimated_cost_usd += cost;
+            }
+            CodexEvidenceTier::Ambiguous => report.ambiguous_sessions += 1,
+            CodexEvidenceTier::MissingUnestimated => report.missing_unestimated_sessions += 1,
+            CodexEvidenceTier::Stale => report.stale_sessions += 1,
+        }
+    }
+    report.verified_totals = conn.query_row(
+        "SELECT COALESCE(SUM(ledger.input_tokens),0),
+                COALESCE(SUM(ledger.cache_read_tokens),0),
+                COALESCE(SUM(ledger.output_tokens),0),
+                COALESCE(SUM(ledger.reasoning_tokens),0)
+         FROM codex_usage_ledger ledger
+         JOIN codex_usage_coverage coverage
+           ON coverage.source_id=ledger.source_id
+          AND coverage.scanner_revision=ledger.scanner_revision
+         WHERE ledger.scanner_revision=?1
+           AND ledger.disposition='accepted'
+           AND coverage.coverage_state='verified'",
+        params![scanner_revision],
+        |row| {
+            Ok(CodexReconciliationTokenTotals {
+                input_tokens: row.get(0)?,
+                cache_read_tokens: row.get(1)?,
+                output_tokens: row.get(2)?,
+                reasoning_tokens: row.get(3)?,
+            })
+        },
+    )?;
+    let pricing: (i64, i64, i64, Option<i64>, Option<i64>) = conn.query_row(
+        "SELECT SUM(CASE WHEN ledger.pricing_status='priced_exact' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN ledger.pricing_status='priced_range' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN ledger.pricing_status='unpriced' THEN 1 ELSE 0 END),
+                SUM(ledger.cost_min_microusd),SUM(ledger.cost_max_microusd)
+         FROM codex_usage_ledger ledger
+         JOIN codex_usage_coverage coverage
+           ON coverage.source_id=ledger.source_id
+          AND coverage.scanner_revision=ledger.scanner_revision
+         WHERE ledger.scanner_revision=?1
+           AND ledger.disposition='accepted'
+           AND coverage.coverage_state='verified'",
+        params![scanner_revision],
+        |row| {
+            Ok((
+                row.get::<_, Option<i64>>(0)?.unwrap_or(0),
+                row.get::<_, Option<i64>>(1)?.unwrap_or(0),
+                row.get::<_, Option<i64>>(2)?.unwrap_or(0),
+                row.get(3)?,
+                row.get(4)?,
+            ))
+        },
+    )?;
+    report.priced_exact_events = pricing.0;
+    report.priced_range_events = pricing.1;
+    report.unpriced_events = pricing.2;
+    report.verified_cost_min_microusd = pricing.3;
+    report.verified_cost_max_microusd = pricing.4;
+    let coverage: (i64, Option<String>) = conn.query_row(
+        "SELECT COALESCE(SUM(pending_bytes),0),MAX(observation_watermark)
+         FROM codex_usage_coverage WHERE scanner_revision=?1",
+        params![scanner_revision],
+        |row| Ok((row.get(0)?, row.get(1)?)),
+    )?;
+    report.pending_bytes = coverage.0;
+    report.observation_watermark = coverage.1;
+    Ok(report)
+}
+
+pub fn codex_usage_event_id(
+    source_id: &str,
+    scanner_revision: i64,
+    source_line: i64,
+) -> Result<String, String> {
+    if source_id.trim().is_empty() || scanner_revision <= 0 || source_line <= 0 {
+        return Err("Codex event identity requires source id, positive revision, and line".into());
+    }
+    Ok(format!("v{scanner_revision}:{source_id}:{source_line}"))
+}
+
+pub fn commit_codex_usage_batch(
+    conn: &Connection,
+    source: &CodexUsageSourceInput,
+    observations: &[CodexLedgerObservationInput],
+    checkpoint: Option<&CodexLineageCheckpointInput>,
+    coverage: &CodexCoverageInput,
+) -> Result<usize, rusqlite::Error> {
+    let tx = conn.unchecked_transaction()?;
+    tx.execute(
+        "INSERT INTO codex_usage_sources (
+            source_id,session_id,source_ref,source_fingerprint,scanner_revision,
+            parent_session_id,fork_timestamp,completed_byte_cursor,completed_line_cursor,
+            source_size_bytes,last_observed_at,discovered_at,updated_at
+         ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?12)
+         ON CONFLICT(source_id) DO UPDATE SET
+            session_id=excluded.session_id,
+            source_ref=excluded.source_ref,
+            source_fingerprint=excluded.source_fingerprint,
+            scanner_revision=excluded.scanner_revision,
+            parent_session_id=excluded.parent_session_id,
+            fork_timestamp=excluded.fork_timestamp,
+            completed_byte_cursor=excluded.completed_byte_cursor,
+            completed_line_cursor=excluded.completed_line_cursor,
+            source_size_bytes=excluded.source_size_bytes,
+            last_observed_at=excluded.last_observed_at,
+            updated_at=excluded.updated_at",
+        params![
+            source.source_id,
+            source.session_id,
+            source.source_ref,
+            source.source_fingerprint,
+            source.scanner_revision,
+            source.parent_session_id,
+            source.fork_timestamp,
+            source.completed_byte_cursor,
+            source.completed_line_cursor,
+            source.source_size_bytes,
+            source.last_observed_at,
+            source.observed_at,
+        ],
+    )?;
+
+    let mut inserted = 0;
+    for item in observations {
+        inserted += tx.execute(
+            "INSERT OR IGNORE INTO codex_usage_ledger (
+                source_id,event_id,session_id,scanner_revision,source_line,observed_at,
+                local_day,model,service_tier,input_tokens,cache_read_tokens,output_tokens,
+                reasoning_tokens,cumulative_input_tokens,cumulative_cache_read_tokens,
+                cumulative_output_tokens,cumulative_reasoning_tokens,disposition,
+                pricing_status,pricing_revision,cost_min_microusd,cost_max_microusd,committed_at
+             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,
+                       ?17,?18,?19,?20,?21,?22,?23)",
+            params![
+                source.source_id,
+                item.event_id,
+                source.session_id.as_deref().unwrap_or("unknown"),
+                source.scanner_revision,
+                item.source_line,
+                item.observed_at,
+                item.local_day,
+                item.model,
+                item.service_tier,
+                item.input_tokens,
+                item.cache_read_tokens,
+                item.output_tokens,
+                item.reasoning_tokens,
+                item.cumulative_input_tokens,
+                item.cumulative_cache_read_tokens,
+                item.cumulative_output_tokens,
+                item.cumulative_reasoning_tokens,
+                item.disposition,
+                item.pricing_status,
+                item.pricing_revision,
+                item.cost_min_microusd,
+                item.cost_max_microusd,
+                source.observed_at,
+            ],
+        )?;
+    }
+
+    if let Some(checkpoint) = checkpoint {
+        tx.execute(
+            "INSERT OR REPLACE INTO codex_lineage_checkpoints (
+                source_id,scanner_revision,source_line,observed_at,
+                counted_input_tokens,counted_cache_read_tokens,counted_output_tokens,
+                counted_reasoning_tokens,watermark_input_tokens,watermark_cache_read_tokens,
+                watermark_output_tokens,watermark_reasoning_tokens,state_json
+             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+            params![
+                source.source_id,
+                source.scanner_revision,
+                checkpoint.source_line,
+                checkpoint.observed_at,
+                checkpoint.counted[0],
+                checkpoint.counted[1],
+                checkpoint.counted[2],
+                checkpoint.counted[3],
+                checkpoint.watermark[0],
+                checkpoint.watermark[1],
+                checkpoint.watermark[2],
+                checkpoint.watermark[3],
+                checkpoint.state_json,
+            ],
+        )?;
+    }
+    tx.execute(
+        "INSERT OR REPLACE INTO codex_usage_coverage (
+            source_id,scanner_revision,coverage_state,detail,pending_bytes,
+            observation_watermark,classified_at
+         ) VALUES (?1,?2,?3,?4,?5,?6,?7)",
+        params![
+            source.source_id,
+            source.scanner_revision,
+            coverage.state,
+            coverage.detail,
+            coverage.pending_bytes,
+            coverage.observation_watermark,
+            source.observed_at,
+        ],
+    )?;
+    tx.commit()?;
+    Ok(inserted)
+}
+
+/// Capture the projection that existed before a scanner revision first became
+/// active. INSERT OR IGNORE makes repeated backfills preserve the original
+/// rollback point rather than snapshotting their own rewritten values.
+pub fn backup_codex_legacy_projection(
+    conn: &Connection,
+    session_id: &str,
+    scanner_revision: i64,
+    captured_at: &str,
+) -> Result<(), rusqlite::Error> {
+    let captured = conn.execute(
+        "INSERT OR IGNORE INTO codex_usage_projection_backup (
+            session_id,scanner_revision,total_input_tokens,total_output_tokens,
+            cache_read_tokens,cache_creation_tokens,estimated_cost_usd,captured_at
+         ) SELECT id,?2,total_input_tokens,total_output_tokens,cache_read_tokens,
+                  cache_creation_tokens,estimated_cost_usd,?3
+           FROM cc_sessions WHERE id=?1",
+        params![session_id, scanner_revision, captured_at],
+    )?;
+    if captured == 0 {
+        return Ok(());
+    }
+    conn.execute(
+        "INSERT OR IGNORE INTO codex_model_projection_backup (
+            session_id,scanner_revision,model,message_count,input_tokens,output_tokens,
+            cache_read_tokens,cache_creation_tokens,cache_creation_1h_tokens
+         ) SELECT session_id,?2,model,message_count,input_tokens,output_tokens,
+                  cache_read_tokens,cache_creation_tokens,cache_creation_1h_tokens
+           FROM session_model_usage WHERE session_id=?1",
+        params![session_id, scanner_revision],
+    )?;
+    conn.execute(
+        "INSERT OR IGNORE INTO codex_observation_projection_backup (
+            session_id,scanner_revision,source_line,observed_at,local_day,model,
+            input_tokens,cache_read_tokens,output_tokens,reasoning_tokens,cost_usd,
+            cumulative_input_tokens,cumulative_cache_read_tokens,
+            cumulative_output_tokens,cumulative_reasoning_tokens,disposition
+         ) SELECT session_id,?2,source_line,observed_at,local_day,model,input_tokens,
+                  cache_read_tokens,output_tokens,reasoning_tokens,cost_usd,
+                  cumulative_input_tokens,cumulative_cache_read_tokens,
+                  cumulative_output_tokens,cumulative_reasoning_tokens,disposition
+           FROM codex_usage_observations WHERE session_id=?1",
+        params![session_id, scanner_revision],
+    )?;
+    Ok(())
+}
+
+/// Restore the exact legacy projection captured before a scanner revision was
+/// activated. The immutable v2 ledger remains available for later reactivation.
+pub fn restore_codex_legacy_projections(
+    conn: &Connection,
+    scanner_revision: i64,
+) -> Result<usize, rusqlite::Error> {
+    let tx = conn.unchecked_transaction()?;
+    let restored = tx.execute(
+        "UPDATE cc_sessions AS session SET
+            total_input_tokens=(SELECT total_input_tokens FROM codex_usage_projection_backup backup
+                                WHERE backup.session_id=session.id AND backup.scanner_revision=?1),
+            total_output_tokens=(SELECT total_output_tokens FROM codex_usage_projection_backup backup
+                                 WHERE backup.session_id=session.id AND backup.scanner_revision=?1),
+            cache_read_tokens=(SELECT cache_read_tokens FROM codex_usage_projection_backup backup
+                               WHERE backup.session_id=session.id AND backup.scanner_revision=?1),
+            cache_creation_tokens=(SELECT cache_creation_tokens FROM codex_usage_projection_backup backup
+                                   WHERE backup.session_id=session.id AND backup.scanner_revision=?1),
+            estimated_cost_usd=(SELECT estimated_cost_usd FROM codex_usage_projection_backup backup
+                                WHERE backup.session_id=session.id AND backup.scanner_revision=?1)
+         WHERE EXISTS (SELECT 1 FROM codex_usage_projection_backup backup
+                       WHERE backup.session_id=session.id AND backup.scanner_revision=?1)",
+        params![scanner_revision],
+    )?;
+    tx.execute(
+        "DELETE FROM session_model_usage WHERE session_id IN (
+            SELECT session_id FROM codex_usage_projection_backup WHERE scanner_revision=?1
+         )",
+        params![scanner_revision],
+    )?;
+    tx.execute(
+        "INSERT INTO session_model_usage (
+            session_id,model,message_count,input_tokens,output_tokens,cache_read_tokens,
+            cache_creation_tokens,cache_creation_1h_tokens
+         ) SELECT session_id,model,message_count,input_tokens,output_tokens,cache_read_tokens,
+                  cache_creation_tokens,cache_creation_1h_tokens
+           FROM codex_model_projection_backup WHERE scanner_revision=?1",
+        params![scanner_revision],
+    )?;
+    tx.execute(
+        "DELETE FROM codex_usage_observations WHERE session_id IN (
+            SELECT session_id FROM codex_usage_projection_backup WHERE scanner_revision=?1
+         )",
+        params![scanner_revision],
+    )?;
+    tx.execute(
+        "INSERT INTO codex_usage_observations (
+            session_id,source_line,observed_at,local_day,model,input_tokens,
+            cache_read_tokens,output_tokens,reasoning_tokens,cost_usd,
+            cumulative_input_tokens,cumulative_cache_read_tokens,
+            cumulative_output_tokens,cumulative_reasoning_tokens,disposition
+         ) SELECT session_id,source_line,observed_at,local_day,model,input_tokens,
+                  cache_read_tokens,output_tokens,reasoning_tokens,cost_usd,
+                  cumulative_input_tokens,cumulative_cache_read_tokens,
+                  cumulative_output_tokens,cumulative_reasoning_tokens,disposition
+           FROM codex_observation_projection_backup WHERE scanner_revision=?1",
+        params![scanner_revision],
+    )?;
+    tx.commit()?;
+    Ok(restored)
+}
+
+/// Rebuild the legacy session projections from the immutable ledger for one scanner revision.
+///
+/// Only sessions whose source coverage is `verified` participate. This deliberately leaves
+/// legacy-estimated and unresolved sessions untouched until callers render those evidence tiers
+/// separately. A point cost is projected only when every accepted row has exact pricing; ranges
+/// and unpriced rows project zero rather than inventing false precision.
+pub fn rebuild_codex_verified_projections(
+    conn: &Connection,
+    scanner_revision: i64,
+) -> Result<usize, rusqlite::Error> {
+    let tx = conn.unchecked_transaction()?;
+    let rebuilt = tx.execute(
+        "UPDATE cc_sessions AS session SET
+            total_input_tokens = COALESCE((
+                SELECT SUM(ledger.input_tokens)
+                FROM codex_usage_ledger ledger
+                JOIN codex_usage_coverage coverage
+                  ON coverage.source_id = ledger.source_id
+                 AND coverage.scanner_revision = ledger.scanner_revision
+                WHERE ledger.session_id = session.id
+                  AND ledger.scanner_revision = ?1
+                  AND ledger.disposition = 'accepted'
+                  AND coverage.coverage_state = 'verified'
+            ), 0),
+            total_output_tokens = COALESCE((
+                SELECT SUM(ledger.output_tokens)
+                FROM codex_usage_ledger ledger
+                JOIN codex_usage_coverage coverage
+                  ON coverage.source_id = ledger.source_id
+                 AND coverage.scanner_revision = ledger.scanner_revision
+                WHERE ledger.session_id = session.id
+                  AND ledger.scanner_revision = ?1
+                  AND ledger.disposition = 'accepted'
+                  AND coverage.coverage_state = 'verified'
+            ), 0),
+            cache_read_tokens = COALESCE((
+                SELECT SUM(ledger.cache_read_tokens)
+                FROM codex_usage_ledger ledger
+                JOIN codex_usage_coverage coverage
+                  ON coverage.source_id = ledger.source_id
+                 AND coverage.scanner_revision = ledger.scanner_revision
+                WHERE ledger.session_id = session.id
+                  AND ledger.scanner_revision = ?1
+                  AND ledger.disposition = 'accepted'
+                  AND coverage.coverage_state = 'verified'
+            ), 0),
+            estimated_cost_usd = COALESCE((
+                SELECT CASE
+                    WHEN COUNT(*) = SUM(CASE
+                        WHEN ledger.pricing_status = 'priced_exact'
+                         AND ledger.cost_min_microusd IS NOT NULL
+                         AND ledger.cost_min_microusd = ledger.cost_max_microusd
+                        THEN 1 ELSE 0 END)
+                    THEN SUM(ledger.cost_min_microusd) / 1000000.0
+                    ELSE 0.0
+                END
+                FROM codex_usage_ledger ledger
+                JOIN codex_usage_coverage coverage
+                  ON coverage.source_id = ledger.source_id
+                 AND coverage.scanner_revision = ledger.scanner_revision
+                WHERE ledger.session_id = session.id
+                  AND ledger.scanner_revision = ?1
+                  AND ledger.disposition = 'accepted'
+                  AND coverage.coverage_state = 'verified'
+            ), 0.0)
+         WHERE EXISTS (
+            SELECT 1
+            FROM codex_usage_sources source
+            JOIN codex_usage_coverage coverage
+              ON coverage.source_id = source.source_id
+             AND coverage.scanner_revision = source.scanner_revision
+            WHERE source.session_id = session.id
+              AND source.scanner_revision = ?1
+              AND coverage.coverage_state = 'verified'
+         )",
+        params![scanner_revision],
+    )?;
+
+    tx.execute(
+        "DELETE FROM session_model_usage
+         WHERE session_id IN (
+            SELECT source.session_id
+            FROM codex_usage_sources source
+            JOIN codex_usage_coverage coverage
+              ON coverage.source_id = source.source_id
+             AND coverage.scanner_revision = source.scanner_revision
+            WHERE source.scanner_revision = ?1
+              AND coverage.coverage_state = 'verified'
+              AND source.session_id IS NOT NULL
+         )",
+        params![scanner_revision],
+    )?;
+    tx.execute(
+        "INSERT INTO session_model_usage (
+            session_id, model, message_count, input_tokens, output_tokens,
+            cache_read_tokens, cache_creation_tokens, cache_creation_1h_tokens
+         )
+         SELECT ledger.session_id, ledger.model, COUNT(*),
+                SUM(ledger.input_tokens), SUM(ledger.output_tokens),
+                SUM(ledger.cache_read_tokens), 0, 0
+         FROM codex_usage_ledger ledger
+         JOIN codex_usage_coverage coverage
+           ON coverage.source_id = ledger.source_id
+          AND coverage.scanner_revision = ledger.scanner_revision
+         WHERE ledger.scanner_revision = ?1
+           AND ledger.disposition = 'accepted'
+           AND coverage.coverage_state = 'verified'
+         GROUP BY ledger.session_id, ledger.model",
+        params![scanner_revision],
+    )?;
+    tx.commit()?;
+    Ok(rebuilt)
+}
+
+/// Record that a verified source is no longer present without deleting or demoting its evidence.
+pub fn mark_codex_verified_source_missing(
+    conn: &Connection,
+    source_id: &str,
+    scanner_revision: i64,
+    classified_at: &str,
+) -> Result<bool, rusqlite::Error> {
+    let updated = conn.execute(
+        "UPDATE codex_usage_coverage
+         SET detail = 'source_missing_after_verification',
+             pending_bytes = 0,
+             classified_at = ?3
+         WHERE source_id = ?1
+           AND scanner_revision = ?2
+           AND coverage_state = 'verified'",
+        params![source_id, scanner_revision, classified_at],
+    )?;
+    Ok(updated > 0)
+}
+
+pub fn append_codex_usage_observations(
+    conn: &Connection,
+    session_id: &str,
+    observations: &[CodexUsageObservationInput],
+) -> Result<usize, rusqlite::Error> {
+    let mut inserted = 0;
+    for item in observations {
+        inserted += conn.execute(
+            "INSERT OR IGNORE INTO codex_usage_observations (
+                session_id, source_line, observed_at, local_day, model,
+                input_tokens, cache_read_tokens, output_tokens, reasoning_tokens, cost_usd,
+                cumulative_input_tokens, cumulative_cache_read_tokens,
+                cumulative_output_tokens, cumulative_reasoning_tokens, disposition
+             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+            params![
+                session_id,
+                item.source_line,
+                item.observed_at,
+                item.local_day,
+                item.model,
+                item.input_tokens,
+                item.cache_read_tokens,
+                item.output_tokens,
+                item.reasoning_tokens,
+                item.cost_usd,
+                item.cumulative_input_tokens,
+                item.cumulative_cache_read_tokens,
+                item.cumulative_output_tokens,
+                item.cumulative_reasoning_tokens,
+                item.disposition,
+            ],
+        )?;
+    }
+    Ok(inserted)
+}
+
+pub fn replace_codex_usage_observations(
+    conn: &Connection,
+    session_id: &str,
+    observations: &[CodexUsageObservationInput],
+) -> Result<usize, rusqlite::Error> {
+    conn.execute(
+        "DELETE FROM codex_usage_observations WHERE session_id = ?1",
+        params![session_id],
+    )?;
+    append_codex_usage_observations(conn, session_id, observations)
+}
+
+pub fn reconcile_codex_usage_totals(
+    conn: &Connection,
+    session_id: &str,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "UPDATE cc_sessions SET
+            total_input_tokens = COALESCE((
+                SELECT SUM(input_tokens) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0),
+            total_output_tokens = COALESCE((
+                SELECT SUM(output_tokens) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0),
+            cache_read_tokens = COALESCE((
+                SELECT SUM(cache_read_tokens) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0),
+            estimated_cost_usd = COALESCE((
+                SELECT SUM(cost_usd) FROM codex_usage_observations
+                WHERE session_id = ?1 AND disposition = 'accepted'
+            ), 0)
+         WHERE id = ?1",
+        params![session_id],
+    )?;
+
+    conn.execute(
+        "DELETE FROM session_model_usage WHERE session_id = ?1",
+        params![session_id],
+    )?;
+    conn.execute(
+        "INSERT INTO session_model_usage (
+            session_id, model, message_count, input_tokens, output_tokens,
+            cache_read_tokens, cache_creation_tokens, cache_creation_1h_tokens
+         )
+         SELECT session_id, model, COUNT(*), SUM(input_tokens), SUM(output_tokens),
+                SUM(cache_read_tokens), 0, 0
+         FROM codex_usage_observations
+         WHERE session_id = ?1 AND disposition = 'accepted'
+         GROUP BY session_id, model",
+        params![session_id],
+    )?;
+    Ok(())
+}
+
+pub fn record_codex_usage_repair(
+    conn: &Connection,
+    session_id: &str,
+    revision: i64,
+    status: &str,
+    accepted_events: i64,
+    excluded_events: i64,
+    detail: Option<&str>,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "INSERT INTO codex_usage_repair_audit (
+            session_id, revision, status, accepted_events, excluded_events, repaired_at, detail
+         ) VALUES (?1,?2,?3,?4,?5,?6,?7)
+         ON CONFLICT(session_id) DO UPDATE SET
+            revision=excluded.revision, status=excluded.status,
+            accepted_events=excluded.accepted_events,
+            excluded_events=excluded.excluded_events,
+            repaired_at=excluded.repaired_at, detail=excluded.detail",
+        params![
+            session_id,
+            revision,
+            status,
+            accepted_events,
+            excluded_events,
+            chrono::Utc::now().to_rfc3339(),
+            detail,
+        ],
+    )?;
+    Ok(())
+}
+
 pub fn sync_session_message_archive_fts(conn: &Connection) -> Result<i64, rusqlite::Error> {
     let archive_count: i64 =
         conn.query_row("SELECT COUNT(*) FROM session_message_archive", [], |row| {
@@ -2102,9 +2888,9 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
     //
     // - Magnitude: session-level totals (cc_sessions.total_input_tokens +
     //   total_output_tokens). Same methodology as ccusage; includes cache.
-    // - Day attribution: distribute each session's canonical total across
-    //   days proportionally to per-day message activity (cc_session_days
-    //   bucket counts). Sessions active only on one day attribute fully.
+    // - Codex day attribution: sum accepted timestamped token observations.
+    // - Other adapters: distribute each session's canonical total across days
+    //   proportionally to per-day message activity (legacy approximation).
     //
     // cc_session_days replaced per-message rows in v1.1.9 — same math, but
     // ~50× less storage since we keep `(session, day, count)` not raw rows.
@@ -2115,8 +2901,8 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
              SELECT session_id, SUM(msg_count) AS total_n
              FROM cc_session_days
              GROUP BY session_id
-         )
-         SELECT d.day,
+         ), legacy_days AS (
+             SELECT d.day,
                 SUM(
                     (COALESCE(s.total_input_tokens, 0) + COALESCE(s.total_output_tokens, 0))
                     * d.msg_count * 1.0 / t.total_n
@@ -2137,8 +2923,21 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
          FROM cc_session_days d
          JOIN session_total t ON t.session_id = d.session_id
          JOIN cc_sessions s ON s.id = d.session_id
-         WHERE d.day >= ?1
-         GROUP BY d.day",
+         WHERE d.day >= ?1 AND s.agent_type != 'codex'
+         GROUP BY d.day
+         ), codex_days AS (
+             SELECT local_day AS day,
+                    SUM(input_tokens + output_tokens) AS tokens,
+                    SUM(MAX(input_tokens - cache_read_tokens, 0) + output_tokens) AS generated,
+                    SUM(cache_read_tokens) AS cache,
+                    SUM(cost_usd) AS cost
+             FROM codex_usage_observations
+             WHERE disposition = 'accepted' AND local_day >= ?1
+             GROUP BY local_day
+         )
+         SELECT day, SUM(tokens), SUM(generated), SUM(cache), SUM(cost)
+         FROM (SELECT * FROM legacy_days UNION ALL SELECT * FROM codex_days)
+         GROUP BY day",
     )?;
 
     // day -> (tokens, generated, cache, cost)
@@ -2219,47 +3018,11 @@ pub fn get_token_usage_stats(conn: &Connection) -> Result<TokenUsageStats, rusql
     // Weekly series: last 12 ISO weeks (Monday-starting), zero-filled.
     let twelve_weeks_start = monday - Duration::weeks(11);
     let twelve_str = twelve_weeks_start.format("%Y-%m-%d").to_string();
-    let mut stmt2 = conn.prepare(
-        "WITH session_total AS (
-             SELECT session_id, SUM(msg_count) AS total_n
-             FROM cc_session_days
-             GROUP BY session_id
-         )
-         SELECT d.day,
-                SUM(
-                    (COALESCE(s.total_input_tokens, 0) + COALESCE(s.total_output_tokens, 0))
-                    * d.msg_count * 1.0 / t.total_n
-                ) AS tok,
-                SUM(
-                    (MAX(COALESCE(s.total_input_tokens, 0)
-                         - COALESCE(s.cache_read_tokens, 0)
-                         - COALESCE(s.cache_creation_tokens, 0), 0)
-                     + COALESCE(s.total_output_tokens, 0))
-                    * d.msg_count * 1.0 / t.total_n
-                ) AS gen,
-                SUM(
-                    COALESCE(s.cache_read_tokens, 0) * d.msg_count * 1.0 / t.total_n
-                ) AS cache,
-                SUM(
-                    COALESCE(s.estimated_cost_usd, 0.0) * d.msg_count * 1.0 / t.total_n
-                ) AS cost
-         FROM cc_session_days d
-         JOIN session_total t ON t.session_id = d.session_id
-         JOIN cc_sessions s ON s.id = d.session_id
-         WHERE d.day >= ?1
-         GROUP BY d.day",
-    )?;
-    let day_rows: Vec<(String, f64, f64, f64, f64)> = stmt2
-        .query_map(params![twelve_str], |r| {
-            Ok((
-                r.get::<_, String>(0)?,
-                r.get::<_, f64>(1)?,
-                r.get::<_, f64>(2)?,
-                r.get::<_, f64>(3)?,
-                r.get::<_, f64>(4)?,
-            ))
-        })?
-        .collect::<Result<_, _>>()?;
+    let day_rows: Vec<(String, f64, f64, f64, f64)> = day_map
+        .iter()
+        .filter(|(day, _)| day.as_str() >= twelve_str.as_str())
+        .map(|(day, values)| (day.clone(), values.0, values.1, values.2, values.3))
+        .collect();
 
     let mut weekly_series = Vec::with_capacity(12);
     for i in 0..12 {
@@ -2349,7 +3112,7 @@ pub fn get_agent_usage_by_day(
              SELECT session_id, SUM(msg_count) AS total_n
              FROM cc_session_days
              GROUP BY session_id
-         )
+         ), legacy AS (
          SELECT d.day, s.agent_type,
                 SUM(
                     (MAX(COALESCE(s.total_input_tokens, 0)
@@ -2367,10 +3130,22 @@ pub fn get_agent_usage_by_day(
          FROM cc_session_days d
          JOIN session_total t ON t.session_id = d.session_id
          JOIN cc_sessions s ON s.id = d.session_id
-         WHERE d.day >= ?1
+         WHERE d.day >= ?1 AND s.agent_type != 'codex'
          GROUP BY d.day, s.agent_type
-         HAVING generated > 0 OR cache > 0
-         ORDER BY d.day",
+         ), codex AS (
+             SELECT local_day AS day, 'codex' AS agent_type,
+                    SUM(MAX(input_tokens - cache_read_tokens, 0) + output_tokens) AS generated,
+                    SUM(cache_read_tokens) AS cache,
+                    SUM(cost_usd) AS cost
+             FROM codex_usage_observations
+             WHERE disposition = 'accepted' AND local_day >= ?1
+             GROUP BY local_day
+         )
+         SELECT day, agent_type, SUM(generated), SUM(cache), SUM(cost)
+         FROM (SELECT * FROM legacy UNION ALL SELECT * FROM codex)
+         GROUP BY day, agent_type
+         HAVING SUM(generated) > 0 OR SUM(cache) > 0
+         ORDER BY day",
     )?;
     let rows = stmt
         .query_map(params![since], |r| {
@@ -2553,6 +3328,11 @@ pub fn get_usage_by_model(
                  GROUP BY session_id
                  HAVING SUM(CASE WHEN day >= ?1 THEN msg_count ELSE 0 END) > 0"
     };
+    let codex_date_filter = if day_range.is_some() {
+        "o.local_day >= ?1 AND o.local_day < ?2"
+    } else {
+        "o.local_day >= ?1"
+    };
 
     let sql = if day_range.is_some() || since.is_some() {
         format!(
@@ -2571,7 +3351,7 @@ pub fn get_usage_by_model(
                 FROM session_model_usage u
                 JOIN cc_sessions s ON s.id = u.session_id
                 JOIN frac w ON w.session_id = u.session_id
-                WHERE 1=1{agent_filter}
+                WHERE s.agent_type != 'codex'{agent_filter}
                 UNION ALL
                 SELECT CASE WHEN COALESCE(NULLIF(s.model_used, ''), 'unknown') = '<synthetic>'
                             THEN 'synthetic'
@@ -2581,9 +3361,15 @@ pub fn get_usage_by_model(
                        w.f
                 FROM cc_sessions s
                 JOIN frac w ON w.session_id = s.id
-                WHERE NOT EXISTS (
+                WHERE s.agent_type != 'codex' AND NOT EXISTS (
                     SELECT 1 FROM session_model_usage u WHERE u.session_id = s.id
                 ){agent_filter}
+                UNION ALL
+                SELECT COALESCE(NULLIF(o.model, ''), 'unknown'), o.session_id,
+                       o.input_tokens, o.output_tokens, o.cache_read_tokens, 0, 1.0
+                FROM codex_usage_observations o
+                JOIN cc_sessions s ON s.id = o.session_id
+                WHERE o.disposition = 'accepted' AND {codex_date_filter}{agent_filter}
              )
              GROUP BY model"
         )
@@ -2841,6 +3627,504 @@ mod tests {
     use crate::db::schema;
 
     #[test]
+    fn codex_observations_are_idempotent_and_reconcile_canonical_totals() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        upsert_project(
+            &conn,
+            &ProjectInput {
+                id: "p".into(),
+                display_name: "P".into(),
+                dir_path: "/p".into(),
+                session_count: None,
+                last_activity: None,
+                created_at: "2026-01-01T00:00:00Z".into(),
+            },
+        )
+        .expect("project");
+        upsert_session(
+            &conn,
+            &SessionInput {
+                id: "s".into(),
+                project_id: "p".into(),
+                agent_type: Some("codex".into()),
+                jsonl_path: Some("/p/s.jsonl".into()),
+                git_branch: None,
+                cwd: None,
+                cli_version: None,
+                first_message: None,
+                last_message: None,
+                message_count: Some(1),
+                total_input_tokens: Some(999),
+                total_output_tokens: Some(999),
+                model_used: Some("gpt-5".into()),
+                slug: None,
+                file_size_bytes: None,
+                indexed_at: None,
+                file_mtime: None,
+                cache_read_tokens: Some(999),
+                cache_creation_tokens: Some(0),
+                compaction_count: None,
+                estimated_cost_usd: Some(999.0),
+            },
+        )
+        .expect("session");
+        let observation = CodexUsageObservationInput {
+            source_line: 7,
+            observed_at: Some("2026-01-02T00:00:00Z".into()),
+            local_day: Some("2026-01-02".into()),
+            model: "gpt-5".into(),
+            input_tokens: 100,
+            cache_read_tokens: 80,
+            output_tokens: 20,
+            reasoning_tokens: 5,
+            cost_usd: 0.25,
+            cumulative_input_tokens: Some(100),
+            cumulative_cache_read_tokens: Some(80),
+            cumulative_output_tokens: Some(20),
+            cumulative_reasoning_tokens: Some(5),
+            disposition: "accepted".into(),
+        };
+        assert_eq!(
+            append_codex_usage_observations(&conn, "s", &[observation.clone()]).unwrap(),
+            1
+        );
+        assert_eq!(
+            append_codex_usage_observations(&conn, "s", &[observation.clone()]).unwrap(),
+            0
+        );
+        reconcile_codex_usage_totals(&conn, "s").expect("reconcile");
+        let totals: (i64, i64, i64, f64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd FROM cc_sessions WHERE id='s'",
+            [], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+        ).unwrap();
+        assert_eq!(totals, (100, 20, 80, 0.25));
+        let models = get_session_model_usage(&conn, "s").unwrap();
+        assert_eq!(models.len(), 1);
+        assert_eq!(models[0].input_tokens, 100);
+
+        let mut replacement = observation;
+        replacement.source_line = 8;
+        replacement.input_tokens = 25;
+        replacement.cache_read_tokens = 20;
+        replacement.output_tokens = 5;
+        replacement.cost_usd = 0.05;
+        replace_codex_usage_observations(&conn, "s", &[replacement]).expect("replace");
+        reconcile_codex_usage_totals(&conn, "s").expect("reconcile replacement");
+        let replaced: (i64, i64, i64, f64, i64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
+                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='s')
+             FROM cc_sessions WHERE id='s'",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)),
+        ).unwrap();
+        assert_eq!(replaced, (25, 5, 20, 0.05, 1));
+    }
+
+    #[test]
+    fn codex_usage_batch_commits_ledger_checkpoint_coverage_and_cursor_atomically() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        let mut source = CodexUsageSourceInput {
+            source_id: "source".into(),
+            session_id: Some("session".into()),
+            source_ref: "/fixture/session.jsonl".into(),
+            source_fingerprint: "hash".into(),
+            scanner_revision: 2,
+            parent_session_id: None,
+            fork_timestamp: None,
+            completed_byte_cursor: 10,
+            completed_line_cursor: 1,
+            source_size_bytes: 20,
+            last_observed_at: Some("2026-07-16T12:00:00Z".into()),
+            observed_at: "2026-07-16T12:00:01Z".into(),
+        };
+        let observation = CodexLedgerObservationInput {
+            event_id: "event-1".into(),
+            source_line: 1,
+            observed_at: source.last_observed_at.clone(),
+            local_day: Some("2026-07-16".into()),
+            model: "gpt-5.4".into(),
+            service_tier: None,
+            input_tokens: 100,
+            cache_read_tokens: 80,
+            output_tokens: 10,
+            reasoning_tokens: 2,
+            cumulative_input_tokens: Some(100),
+            cumulative_cache_read_tokens: Some(80),
+            cumulative_output_tokens: Some(10),
+            cumulative_reasoning_tokens: Some(2),
+            disposition: "accepted".into(),
+            pricing_status: "priced_range".into(),
+            pricing_revision: 1,
+            cost_min_microusd: Some(100),
+            cost_max_microusd: Some(500),
+        };
+        let checkpoint = CodexLineageCheckpointInput {
+            source_line: 1,
+            observed_at: source.last_observed_at.clone(),
+            counted: [100, 80, 10, 2],
+            watermark: [100, 80, 10, 2],
+            state_json: "{}".into(),
+        };
+        let coverage = CodexCoverageInput {
+            state: "stale".into(),
+            detail: None,
+            pending_bytes: 10,
+            observation_watermark: source.last_observed_at.clone(),
+        };
+        assert_eq!(
+            commit_codex_usage_batch(
+                &conn,
+                &source,
+                &[observation.clone()],
+                Some(&checkpoint),
+                &coverage,
+            )
+            .expect("commit"),
+            1
+        );
+
+        conn.execute_batch(
+            "CREATE TRIGGER reject_second_ledger_event
+             BEFORE INSERT ON codex_usage_ledger WHEN NEW.event_id='event-2'
+             BEGIN SELECT RAISE(FAIL, 'injected ledger failure'); END;",
+        )
+        .expect("failure trigger");
+        source.completed_byte_cursor = 20;
+        source.completed_line_cursor = 2;
+        let mut rejected = observation;
+        rejected.event_id = "event-2".into();
+        rejected.source_line = 2;
+        assert!(commit_codex_usage_batch(
+            &conn,
+            &source,
+            &[rejected],
+            Some(&CodexLineageCheckpointInput {
+                source_line: 2,
+                ..checkpoint
+            }),
+            &CodexCoverageInput {
+                state: "verified".into(),
+                pending_bytes: 0,
+                ..coverage
+            },
+        )
+        .is_err());
+
+        let state: (i64, i64, i64, String) = conn
+            .query_row(
+                "SELECT s.completed_byte_cursor,
+                        (SELECT COUNT(*) FROM codex_usage_ledger),
+                        (SELECT MAX(source_line) FROM codex_lineage_checkpoints),
+                        (SELECT coverage_state FROM codex_usage_coverage)
+                 FROM codex_usage_sources s WHERE source_id='source'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+            )
+            .expect("atomic state");
+        assert_eq!(state, (10, 1, 1, "stale".into()));
+    }
+
+    #[test]
+    fn codex_ledger_event_identity_and_replay_are_restart_stable() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        let event_id = codex_usage_event_id("source-fingerprint", 2, 42).expect("event id");
+        assert_eq!(
+            event_id,
+            codex_usage_event_id("source-fingerprint", 2, 42).expect("same event id")
+        );
+        assert!(codex_usage_event_id("", 2, 42).is_err());
+        assert!(codex_usage_event_id("source", 0, 42).is_err());
+        assert!(codex_usage_event_id("source", 2, 0).is_err());
+
+        let source = CodexUsageSourceInput {
+            source_id: "source-fingerprint".into(),
+            session_id: Some("session".into()),
+            source_ref: "/fixture/session.jsonl".into(),
+            source_fingerprint: "hash".into(),
+            scanner_revision: 2,
+            parent_session_id: None,
+            fork_timestamp: None,
+            completed_byte_cursor: 100,
+            completed_line_cursor: 42,
+            source_size_bytes: 100,
+            last_observed_at: Some("2026-07-16T12:00:00Z".into()),
+            observed_at: "2026-07-16T12:00:01Z".into(),
+        };
+        let observation = CodexLedgerObservationInput {
+            event_id,
+            source_line: 42,
+            observed_at: source.last_observed_at.clone(),
+            local_day: Some("2026-07-16".into()),
+            model: "gpt-5.4".into(),
+            service_tier: None,
+            input_tokens: 100,
+            cache_read_tokens: 80,
+            output_tokens: 10,
+            reasoning_tokens: 2,
+            cumulative_input_tokens: Some(100),
+            cumulative_cache_read_tokens: Some(80),
+            cumulative_output_tokens: Some(10),
+            cumulative_reasoning_tokens: Some(2),
+            disposition: "accepted".into(),
+            pricing_status: "unpriced".into(),
+            pricing_revision: 1,
+            cost_min_microusd: None,
+            cost_max_microusd: None,
+        };
+        let coverage = CodexCoverageInput {
+            state: "verified".into(),
+            detail: None,
+            pending_bytes: 0,
+            observation_watermark: source.last_observed_at.clone(),
+        };
+        assert_eq!(
+            commit_codex_usage_batch(&conn, &source, &[observation.clone()], None, &coverage)
+                .expect("first commit"),
+            1
+        );
+        assert_eq!(
+            commit_codex_usage_batch(&conn, &source, &[observation], None, &coverage)
+                .expect("restart replay"),
+            0
+        );
+        let totals: (i64, i64) = conn
+            .query_row(
+                "SELECT COUNT(*),SUM(input_tokens) FROM codex_usage_ledger",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .expect("ledger totals");
+        assert_eq!(totals, (1, 100));
+    }
+
+    #[test]
+    fn verified_codex_projections_use_only_active_revision_accepted_ledger_rows() {
+        let conn = Connection::open_in_memory().expect("memory db");
+        schema::run_migrations(&conn).expect("schema");
+        conn.execute(
+            "INSERT INTO cc_projects (id,display_name,dir_path,created_at)
+             VALUES ('p','P','/p','2026-01-01T00:00:00Z')",
+            [],
+        )
+        .expect("project");
+        conn.execute_batch(
+            "INSERT INTO cc_sessions (
+                id,project_id,agent_type,total_input_tokens,total_output_tokens,
+                cache_read_tokens,estimated_cost_usd
+             ) VALUES ('verified','p','codex',999,999,999,999.0);
+             INSERT INTO cc_sessions (
+                id,project_id,agent_type,total_input_tokens,total_output_tokens,
+                cache_read_tokens,estimated_cost_usd
+             ) VALUES ('legacy','p','codex',777,77,700,7.0);
+             INSERT INTO cc_sessions (id,project_id,agent_type)
+             VALUES ('missing','p','codex');
+             INSERT INTO cc_sessions (id,project_id,agent_type,total_input_tokens)
+             VALUES ('ambiguous','p','codex',555);
+             INSERT INTO cc_sessions (id,project_id,agent_type,total_input_tokens)
+             VALUES ('stale','p','codex',444);
+             INSERT INTO session_model_usage (
+                session_id,model,message_count,input_tokens,output_tokens,
+                cache_read_tokens,cache_creation_tokens,cache_creation_1h_tokens
+             ) VALUES ('verified','stale-model',1,999,999,999,0,0);",
+        )
+        .expect("sessions");
+
+        let source = CodexUsageSourceInput {
+            source_id: "verified-source".into(),
+            session_id: Some("verified".into()),
+            source_ref: "/fixture/verified.jsonl".into(),
+            source_fingerprint: "verified-hash".into(),
+            scanner_revision: 2,
+            parent_session_id: None,
+            fork_timestamp: None,
+            completed_byte_cursor: 200,
+            completed_line_cursor: 2,
+            source_size_bytes: 200,
+            last_observed_at: Some("2026-07-16T12:00:00Z".into()),
+            observed_at: "2026-07-16T12:00:01Z".into(),
+        };
+        let observation = |event_id: &str,
+                           line: i64,
+                           model: &str,
+                           disposition: &str,
+                           input: i64,
+                           output: i64,
+                           cache: i64,
+                           cost: i64| CodexLedgerObservationInput {
+            event_id: event_id.into(),
+            source_line: line,
+            observed_at: source.last_observed_at.clone(),
+            local_day: Some("2026-07-16".into()),
+            model: model.into(),
+            service_tier: Some("standard".into()),
+            input_tokens: input,
+            cache_read_tokens: cache,
+            output_tokens: output,
+            reasoning_tokens: 0,
+            cumulative_input_tokens: None,
+            cumulative_cache_read_tokens: None,
+            cumulative_output_tokens: None,
+            cumulative_reasoning_tokens: None,
+            disposition: disposition.into(),
+            pricing_status: "priced_exact".into(),
+            pricing_revision: 1,
+            cost_min_microusd: Some(cost),
+            cost_max_microusd: Some(cost),
+        };
+        commit_codex_usage_batch(
+            &conn,
+            &source,
+            &[
+                observation("accepted-a", 1, "gpt-a", "accepted", 100, 10, 80, 250_000),
+                observation("excluded", 2, "gpt-a", "duplicate", 900, 90, 800, 9_000_000),
+                observation("accepted-b", 3, "gpt-b", "accepted", 40, 5, 30, 100_000),
+            ],
+            None,
+            &CodexCoverageInput {
+                state: "verified".into(),
+                detail: None,
+                pending_bytes: 0,
+                observation_watermark: source.last_observed_at.clone(),
+            },
+        )
+        .expect("ledger batch");
+
+        assert_eq!(rebuild_codex_verified_projections(&conn, 2).unwrap(), 1);
+        assert_eq!(rebuild_codex_verified_projections(&conn, 2).unwrap(), 1);
+        let verified: (i64, i64, i64, f64) = conn
+            .query_row(
+                "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,
+                        estimated_cost_usd FROM cc_sessions WHERE id='verified'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+            )
+            .unwrap();
+        assert_eq!(verified, (140, 15, 110, 0.35));
+        let legacy: (i64, i64, i64, f64) = conn
+            .query_row(
+                "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,
+                        estimated_cost_usd FROM cc_sessions WHERE id='legacy'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+            )
+            .unwrap();
+        assert_eq!(legacy, (777, 77, 700, 7.0));
+        let models = get_session_model_usage(&conn, "verified").unwrap();
+        assert_eq!(models.len(), 2);
+        assert_eq!(models.iter().map(|row| row.input_tokens).sum::<i64>(), 140);
+        assert!(models.iter().all(|row| row.model != "stale-model"));
+
+        assert!(mark_codex_verified_source_missing(
+            &conn,
+            "verified-source",
+            2,
+            "2026-07-17T00:00:00Z"
+        )
+        .unwrap());
+        assert_eq!(rebuild_codex_verified_projections(&conn, 2).unwrap(), 1);
+        let preserved: (i64, i64, String) = conn
+            .query_row(
+                "SELECT (SELECT COUNT(*) FROM codex_usage_ledger WHERE source_id='verified-source'),
+                        (SELECT total_input_tokens FROM cc_sessions WHERE id='verified'),
+                        detail
+                 FROM codex_usage_coverage
+                 WHERE source_id='verified-source' AND scanner_revision=2",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .unwrap();
+        assert_eq!(
+            preserved,
+            (3, 140, "source_missing_after_verification".into())
+        );
+
+        conn.execute_batch(
+            "INSERT INTO codex_usage_sources (
+                source_id,session_id,source_ref,source_fingerprint,scanner_revision,
+                completed_byte_cursor,completed_line_cursor,source_size_bytes,
+                discovered_at,updated_at
+             ) VALUES ('ambiguous-source','ambiguous','/missing/ambiguous.jsonl','hash',2,
+                       0,0,0,'2026-07-17T00:00:00Z','2026-07-17T00:00:00Z');
+             INSERT INTO codex_usage_coverage (
+                source_id,scanner_revision,coverage_state,pending_bytes,classified_at
+             ) VALUES ('ambiguous-source',2,'ambiguous',0,'2026-07-17T00:00:00Z');",
+        )
+        .unwrap();
+        conn.execute_batch(
+            "INSERT INTO codex_usage_sources (
+                source_id,session_id,source_ref,source_fingerprint,scanner_revision,
+                completed_byte_cursor,completed_line_cursor,source_size_bytes,
+                discovered_at,updated_at
+             ) VALUES ('stale-source','stale','/missing/stale.jsonl','hash',2,
+                       10,1,20,'2026-07-17T00:00:00Z','2026-07-17T00:00:00Z');
+             INSERT INTO codex_usage_coverage (
+                source_id,scanner_revision,coverage_state,pending_bytes,classified_at
+             ) VALUES ('stale-source',2,'stale',10,'2026-07-17T00:00:00Z');",
+        )
+        .unwrap();
+        let classifications = classify_codex_session_evidence(&conn, 2).unwrap();
+        let tier = |session_id: &str| {
+            classifications
+                .iter()
+                .find(|row| row.session_id == session_id)
+                .map(|row| row.tier.clone())
+                .expect("classification")
+        };
+        assert_eq!(tier("verified"), CodexEvidenceTier::Verified);
+        assert_eq!(tier("legacy"), CodexEvidenceTier::LegacyEstimated);
+        assert_eq!(tier("ambiguous"), CodexEvidenceTier::Ambiguous);
+        assert_eq!(tier("missing"), CodexEvidenceTier::MissingUnestimated);
+        assert_eq!(tier("stale"), CodexEvidenceTier::Stale);
+
+        let report = codex_reconciliation_report(&conn, 2).unwrap();
+        assert_eq!(report.scanner_revision, 2);
+        assert_eq!(
+            (
+                report.verified_sessions,
+                report.legacy_estimated_sessions,
+                report.ambiguous_sessions,
+                report.missing_unestimated_sessions,
+                report.stale_sessions,
+            ),
+            (1, 1, 1, 1, 1)
+        );
+        assert_eq!(
+            report.verified_totals,
+            CodexReconciliationTokenTotals {
+                input_tokens: 140,
+                cache_read_tokens: 110,
+                output_tokens: 15,
+                reasoning_tokens: 0,
+            }
+        );
+        assert_eq!(report.legacy_estimated_totals.input_tokens, 777);
+        assert_eq!(report.legacy_estimated_totals.cache_read_tokens, 700);
+        assert_eq!(report.legacy_estimated_totals.output_tokens, 77);
+        assert_eq!(report.legacy_estimated_cost_usd, 7.0);
+        assert_eq!(report.priced_exact_events, 2);
+        assert_eq!(report.priced_range_events, 0);
+        assert_eq!(report.unpriced_events, 0);
+        assert_eq!(report.verified_cost_min_microusd, Some(350_000));
+        assert_eq!(report.verified_cost_max_microusd, Some(350_000));
+        assert_eq!(report.pending_bytes, 10);
+        assert_eq!(
+            report.observation_watermark.as_deref(),
+            Some("2026-07-16T12:00:00Z")
+        );
+        let fabricated_legacy_rows: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM codex_usage_ledger WHERE session_id='legacy'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(fabricated_legacy_rows, 0);
+    }
+
+    #[test]
     fn quick_index_zero_tokens_do_not_wipe_full_counts() {
         let conn = Connection::open_in_memory().expect("memory db");
         schema::run_migrations(&conn).expect("schema");
@@ -2976,7 +4260,7 @@ mod tests {
         let today = chrono::Local::now().date_naive();
         let today_str = today.format("%Y-%m-%d").to_string();
         let now = chrono::Utc::now().to_rfc3339();
-        insert_session("current", &now, 10_000, 900, 7_000, 1_000, 2.50);
+        insert_session("current", &now, 10_000, 900, 7_000, 0, 2.50);
         insert_session("old", "2020-01-01T00:00:00Z", 1_000, 700, 300, 200, 1.25);
         conn.execute(
             "INSERT INTO cc_session_days (session_id, day, msg_count)
@@ -2984,6 +4268,27 @@ mod tests {
             params![today_str],
         )
         .expect("day");
+        append_codex_usage_observations(
+            &conn,
+            "current",
+            &[CodexUsageObservationInput {
+                source_line: 1,
+                observed_at: Some(now),
+                local_day: Some(today_str.clone()),
+                model: "gpt-5.5".to_string(),
+                input_tokens: 10_000,
+                cache_read_tokens: 7_000,
+                output_tokens: 900,
+                reasoning_tokens: 0,
+                cost_usd: 2.50,
+                cumulative_input_tokens: Some(10_000),
+                cumulative_cache_read_tokens: Some(7_000),
+                cumulative_output_tokens: Some(900),
+                cumulative_reasoning_tokens: None,
+                disposition: "accepted".to_string(),
+            }],
+        )
+        .expect("observation");
 
         let rows = get_agent_usage_breakdown(&conn).expect("agent usage");
         let codex = rows
@@ -2991,21 +4296,21 @@ mod tests {
             .find(|r| r.agent_type == "codex")
             .expect("codex row");
         assert_eq!(codex.sessions, 2);
-        assert_eq!(codex.real_input_tokens, 2_500);
+        assert_eq!(codex.real_input_tokens, 3_500);
         assert_eq!(codex.cache_read_tokens, 7_300);
         assert_eq!(codex.output_tokens, 1_600);
-        assert_eq!(codex.week_real_input_tokens, 2_000);
+        assert_eq!(codex.week_real_input_tokens, 3_000);
         assert_eq!(codex.week_output_tokens, 900);
         assert_eq!(codex.cost, 3.75);
 
         let by_day = get_agent_usage_by_day(&conn, 1).expect("agent day usage");
         assert_eq!(by_day.len(), 1);
-        assert_eq!(by_day[0].generated, 2_900);
+        assert_eq!(by_day[0].generated, 3_900);
         assert_eq!(by_day[0].cache, 7_000);
         assert_eq!(by_day[0].cost, 2.50);
 
         let stats = get_token_usage_stats(&conn).expect("token usage stats");
-        assert_eq!(stats.today_generated, 2_900);
+        assert_eq!(stats.today_generated, 3_900);
         assert_eq!(stats.today_cost, 2.50);
     }
 
@@ -3064,6 +4369,27 @@ mod tests {
             [],
         )
         .expect("days");
+        append_codex_usage_observations(
+            &conn,
+            "codex",
+            &[CodexUsageObservationInput {
+                source_line: 1,
+                observed_at: Some("2026-01-03T00:00:00Z".to_string()),
+                local_day: Some("2026-01-03".to_string()),
+                model: "gpt-5".to_string(),
+                input_tokens: 2_000,
+                cache_read_tokens: 0,
+                output_tokens: 100,
+                reasoning_tokens: 0,
+                cost_usd: 2.0,
+                cumulative_input_tokens: Some(2_000),
+                cumulative_cache_read_tokens: Some(0),
+                cumulative_output_tokens: Some(100),
+                cumulative_reasoning_tokens: None,
+                disposition: "accepted".to_string(),
+            }],
+        )
+        .expect("observation");
 
         let estimate = |_: &str, input: i64, _: i64, _: i64, _: i64| input as f64 / 1_000.0;
         let exclude_codex = vec!["codex".to_string()];

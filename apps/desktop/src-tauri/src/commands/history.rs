@@ -1,16 +1,20 @@
 use crate::commands::session_adapters::{
-    ClaudeCodeAdapter, CodexAdapter, CursorAdapter, RawSessionAdapterSummary, SessionSourceAdapter,
+    codex_state_with_fork_baseline, codex_state_with_unresolved_fork, ClaudeCodeAdapter,
+    CodexAdapter, CodexLineageMetadata, CodexTokenTotals, CursorAdapter, RawSessionAdapterSummary,
+    SessionSourceAdapter,
 };
 use crate::db::queries;
 use crate::DbState;
 use serde::Serialize;
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, Read};
 use std::sync::{LazyLock, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 static FULL_INDEX_LOCK: Mutex<()> = Mutex::new(());
+static LIVE_TRANSCRIPT_LOCK: Mutex<()> = Mutex::new(());
 
 pub const LIVE_TRANSCRIPT_INITIAL_DELAY_SECS: u64 = 20;
 pub const LIVE_TRANSCRIPT_INTERVAL_SECS: u64 = 10;
@@ -37,13 +41,48 @@ pub struct LiveSessionEvidencePolicy {
     pub update_event: String,
     pub local_only: bool,
     pub last_full_indexed_at: Option<String>,
+    pub last_usage_observed_at: Option<String>,
+    pub incomplete_codex_sources: i64,
+    pub pending_codex_bytes: i64,
+    pub duplicate_usage_events: i64,
+    pub excluded_usage_events: i64,
 }
 
 pub fn live_session_evidence_policy(
     conn: &rusqlite::Connection,
 ) -> Result<LiveSessionEvidencePolicy, String> {
+    let (last_usage_observed_at, duplicate_usage_events, excluded_usage_events) = conn
+        .query_row(
+            "SELECT MAX(CASE WHEN disposition='accepted' THEN observed_at END),
+                    SUM(CASE WHEN disposition='duplicate' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN disposition!='accepted' THEN 1 ELSE 0 END)
+             FROM codex_usage_observations",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .unwrap_or((None, 0, 0));
+    let mut incomplete_codex_sources = 0i64;
+    let mut pending_codex_bytes = 0i64;
+    if let Ok(mut statement) = conn.prepare(
+        "SELECT jsonl_path, last_indexed_byte_offset FROM cc_sessions
+         WHERE agent_type='codex' AND jsonl_path IS NOT NULL",
+    ) {
+        if let Ok(rows) = statement.query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+        }) {
+            for (path, offset) in rows.flatten() {
+                if let Ok(metadata) = std::fs::metadata(path) {
+                    let pending = (metadata.len() as i64 - offset).max(0);
+                    if pending > 0 {
+                        incomplete_codex_sources += 1;
+                        pending_codex_bytes += pending;
+                    }
+                }
+            }
+        }
+    }
     Ok(LiveSessionEvidencePolicy {
-        schema_version: 1,
+        schema_version: 2,
         mode: "incremental_jsonl_poll".to_string(),
         supported_incremental_adapters: vec!["claude-code".to_string(), "codex".to_string()],
         incremental_interval_secs: LIVE_TRANSCRIPT_INTERVAL_SECS,
@@ -54,6 +93,11 @@ pub fn live_session_evidence_policy(
         local_only: true,
         last_full_indexed_at: queries::get_preference(conn, "last_indexed_at")
             .map_err(|error| error.to_string())?,
+        last_usage_observed_at,
+        incomplete_codex_sources,
+        pending_codex_bytes,
+        duplicate_usage_events,
+        excluded_usage_events,
     })
 }
 
@@ -63,6 +107,19 @@ pub async fn get_live_session_evidence_policy(
 ) -> Result<LiveSessionEvidencePolicy, String> {
     let conn = db.0.lock().map_err(|error| error.to_string())?;
     live_session_evidence_policy(&conn)
+}
+
+#[tauri::command]
+pub async fn get_codex_usage_reconciliation(
+    db: State<'_, DbState>,
+    scanner_revision: Option<i64>,
+) -> Result<queries::CodexReconciliationReport, String> {
+    let conn = db.0.lock().map_err(|error| error.to_string())?;
+    queries::codex_reconciliation_report(
+        &conn,
+        scanner_revision.unwrap_or(CODEX_ACCOUNTING_REPAIR_REV),
+    )
+    .map_err(|error| error.to_string())
 }
 
 #[derive(Debug, Clone)]
@@ -201,10 +258,13 @@ fn persist_production_adapter_run(
 pub fn run_full_index_summary_with_conn(
     conn: &rusqlite::Connection,
 ) -> Result<FullIndexSummary, String> {
-    let _index_guard = FULL_INDEX_LOCK
-        .lock()
-        .map_err(|e| format!("full index lock poisoned: {e}"))?;
-    run_full_index_unlocked(conn)
+    let counts = {
+        let _index_guard = FULL_INDEX_LOCK
+            .lock()
+            .map_err(|e| format!("full index lock poisoned: {e}"))?;
+        full_index_impl(conn)?
+    };
+    finish_full_index(conn, counts)
 }
 
 /// Run the full index only if no other full index is active.
@@ -214,15 +274,18 @@ pub fn run_full_index_summary_with_conn(
 pub fn try_run_full_index_summary_with_conn(
     conn: &rusqlite::Connection,
 ) -> Result<Option<FullIndexSummary>, String> {
-    let _index_guard = match FULL_INDEX_LOCK.try_lock() {
-        Ok(guard) => guard,
+    let counts = match FULL_INDEX_LOCK.try_lock() {
+        Ok(_guard) => full_index_impl(conn)?,
         Err(_) => return Ok(None),
     };
-    run_full_index_unlocked(conn).map(Some)
+    finish_full_index(conn, counts).map(Some)
 }
 
-fn run_full_index_unlocked(conn: &rusqlite::Connection) -> Result<FullIndexSummary, String> {
-    let (indexed_sessions, indexed_messages, skipped_sessions) = full_index_impl(conn)?;
+fn finish_full_index(
+    conn: &rusqlite::Connection,
+    counts: (u64, u64, u64),
+) -> Result<FullIndexSummary, String> {
+    let (indexed_sessions, indexed_messages, skipped_sessions) = counts;
     let archive_search_rows_indexed =
         queries::sync_session_message_archive_fts(conn).map_err(|e| e.to_string())?;
 
@@ -268,7 +331,7 @@ fn tail_live_transcript_sessions_inner(
     conn: &rusqlite::Connection,
     discover_new_codex_sessions: bool,
 ) -> Result<TranscriptTailSummary, String> {
-    let _index_guard = match FULL_INDEX_LOCK.try_lock() {
+    let _index_guard = match LIVE_TRANSCRIPT_LOCK.try_lock() {
         Ok(guard) => guard,
         Err(_) => {
             return Ok(TranscriptTailSummary {
@@ -336,7 +399,7 @@ fn tail_live_transcript_sessions_inner(
     let recent_codex_files = if discover_new_codex_sessions
         && tick_started.elapsed() < std::time::Duration::from_millis(LIVE_TRANSCRIPT_TICK_BUDGET_MS)
     {
-        recent_codex_session_files(chrono::Duration::hours(48), 80)
+        recent_codex_session_files(conn, chrono::Duration::hours(48), 80)
     } else {
         Vec::new()
     };
@@ -632,7 +695,8 @@ fn full_index_impl(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), Strin
     persist_production_adapter_run(conn, &claude_run, &index_started_at)?;
 
     // ── Phase 2: Scan Codex sessions ─────────────────────────
-    let codex_roots = resolve_codex_session_roots();
+    let codex_bases = resolve_codex_base_dirs(conn);
+    let codex_roots = resolve_codex_session_roots(&codex_bases);
     let mut codex_run = ProductionAdapterRunStats::new(
         "codex",
         "codex",
@@ -645,7 +709,7 @@ fn full_index_impl(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), Strin
     let mut codex_indexed = 0u64;
     let mut codex_messages = 0u64;
 
-    let codex_files = codex_session_files();
+    let codex_files = codex_session_files(conn);
     for jsonl_path in &codex_files {
         let jsonl_path_str = jsonl_path.to_string_lossy().to_string();
 
@@ -1080,14 +1144,11 @@ fn pricing_table(model: &str) -> (f64, f64, f64, f64) {
         m if m.contains("gpt-5") && m.contains("mini") => (0.25, 2.0, 0.025, 0.0),
         // GPT-5.5 (Codex CLI default, mid-2026): $5/$30, cached input $0.50.
         m if m.contains("gpt-5.5") => (5.0, 30.0, 0.50, 0.0),
-        // GPT-5.6 family (Jul 2026), short-context (<272k) rates from
-        // OpenAI's official pricing page: Sol $5/$30, Terra $2/$12,
-        // Luna $0.20/$1.20; cached input 90% off, cache writes 1.25× input.
-        // Rev 11 fix: Terra/Luna were previously derived by linearly scaling
-        // down Sol's price (÷2 and ÷5) instead of using OpenAI's real
-        // per-tier rates — Luna was overpriced 5×, Terra 1.25×.
-        m if m.contains("gpt-5.6") && m.contains("terra") => (2.0, 12.0, 0.20, 2.5),
-        m if m.contains("gpt-5.6") && m.contains("luna") => (0.20, 1.20, 0.02, 0.25),
+        // GPT-5.6 family, standard short-context rates from OpenAI's official
+        // model pages: Sol $5/$30, Terra $2.50/$15, Luna $1/$6, with cached
+        // input at 10% and cache writes at 1.25x uncached input.
+        m if m.contains("gpt-5.6") && m.contains("terra") => (2.5, 15.0, 0.25, 3.125),
+        m if m.contains("gpt-5.6") && m.contains("luna") => (1.0, 6.0, 0.10, 1.25),
         m if m.contains("gpt-5.6") => (5.0, 30.0, 0.50, 6.25),
         // OpenAI GPT-5.4 standard API: $2.50/$15, cached $0.25.
         m if m.contains("gpt-5.4") => (2.5, 15.0, 0.25, 0.0),
@@ -1141,6 +1202,25 @@ fn estimate_cost_with_cache_tiers(
     cache_creation: i64,
     cache_creation_1h: i64,
 ) -> f64 {
+    let cost = estimate_cost_precise(
+        model,
+        total_input,
+        output_tokens,
+        cache_read,
+        cache_creation,
+        cache_creation_1h,
+    );
+    (cost * 100.0).round() / 100.0 // round stored session totals to cents
+}
+
+fn estimate_cost_precise(
+    model: &str,
+    total_input: i64,
+    output_tokens: i64,
+    cache_read: i64,
+    cache_creation: i64,
+    cache_creation_1h: i64,
+) -> f64 {
     let (input_price, output_price, cache_read_price, cache_write_price) = pricing_table(model);
 
     // total_input already includes cache_read + cache_creation tokens (added
@@ -1153,13 +1233,99 @@ fn estimate_cost_with_cache_tiers(
     let cache_creation_1h = cache_creation_1h.clamp(0, cache_creation.max(0));
     let cache_creation_5m = cache_creation - cache_creation_1h;
 
-    let cost = (base_input as f64 * input_price
+    (base_input as f64 * input_price
         + output_tokens as f64 * output_price
         + cache_read as f64 * cache_read_price
         + cache_creation_5m as f64 * cache_write_price
         + cache_creation_1h as f64 * (input_price * 2.0))
-        / 1_000_000.0;
-    (cost * 100.0).round() / 100.0 // round to cents
+        / 1_000_000.0
+}
+
+const CODEX_LEDGER_PRICING_REVISION: i64 = 13;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CodexLedgerPricing {
+    status: &'static str,
+    revision: i64,
+    min_microusd: Option<i64>,
+    max_microusd: Option<i64>,
+}
+
+fn codex_standard_rates(model: &str) -> Option<(f64, f64, f64)> {
+    match model.to_ascii_lowercase().as_str() {
+        value if value.contains("gpt-5.6-terra") => Some((2.5, 0.25, 15.0)),
+        value if value.contains("gpt-5.6-luna") => Some((1.0, 0.10, 6.0)),
+        value if value.contains("gpt-5.6-sol") || value == "gpt-5.6" => Some((5.0, 0.50, 30.0)),
+        _ => None,
+    }
+}
+
+fn codex_cost_microusd(
+    rates: (f64, f64, f64),
+    input_tokens: i64,
+    cache_read_tokens: i64,
+    output_tokens: i64,
+) -> i64 {
+    let input = input_tokens.max(0);
+    let cache = cache_read_tokens.clamp(0, input);
+    let uncached = input - cache;
+    let output = output_tokens.max(0);
+    let long_context = input > 272_000;
+    let input_multiplier = if long_context { 2.0 } else { 1.0 };
+    let output_multiplier = if long_context { 1.5 } else { 1.0 };
+    ((uncached as f64 * rates.0 * input_multiplier)
+        + (cache as f64 * rates.1 * input_multiplier)
+        + (output as f64 * rates.2 * output_multiplier))
+        .round() as i64
+}
+
+fn price_codex_ledger_observation(
+    model: &str,
+    service_tier: Option<&str>,
+    input_tokens: i64,
+    cache_read_tokens: i64,
+    output_tokens: i64,
+) -> CodexLedgerPricing {
+    let Some(standard) = codex_standard_rates(model) else {
+        return CodexLedgerPricing {
+            status: "unpriced",
+            revision: CODEX_LEDGER_PRICING_REVISION,
+            min_microusd: None,
+            max_microusd: None,
+        };
+    };
+    let standard_cost =
+        codex_cost_microusd(standard, input_tokens, cache_read_tokens, output_tokens);
+    let priority_cost = codex_cost_microusd(
+        (standard.0 * 2.0, standard.1 * 2.0, standard.2 * 2.0),
+        input_tokens,
+        cache_read_tokens,
+        output_tokens,
+    );
+    let normalized_tier = service_tier
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_ascii_lowercase);
+    match normalized_tier.as_deref() {
+        Some("default" | "standard") => CodexLedgerPricing {
+            status: "priced_exact",
+            revision: CODEX_LEDGER_PRICING_REVISION,
+            min_microusd: Some(standard_cost),
+            max_microusd: Some(standard_cost),
+        },
+        Some("priority") => CodexLedgerPricing {
+            status: "priced_exact",
+            revision: CODEX_LEDGER_PRICING_REVISION,
+            min_microusd: Some(priority_cost),
+            max_microusd: Some(priority_cost),
+        },
+        _ => CodexLedgerPricing {
+            status: "priced_range",
+            revision: CODEX_LEDGER_PRICING_REVISION,
+            min_microusd: Some(standard_cost),
+            max_microusd: Some(priority_cost),
+        },
+    }
 }
 
 /// Back-compat wrapper for callers that don't have (or don't need) the 1h
@@ -1173,7 +1339,14 @@ fn estimate_cost(
     cache_read: i64,
     cache_creation: i64,
 ) -> f64 {
-    estimate_cost_with_cache_tiers(model, total_input, output_tokens, cache_read, cache_creation, 0)
+    estimate_cost_with_cache_tiers(
+        model,
+        total_input,
+        output_tokens,
+        cache_read,
+        cache_creation,
+        0,
+    )
 }
 
 /// Bump this whenever the `estimate_cost` price table changes so already-indexed
@@ -1210,7 +1383,9 @@ fn estimate_cost(
 /// systematically underestimated. Requires `MODEL_USAGE_BACKFILL_REV` to have
 /// re-scanned transcripts for the split; sessions without a breakdown (or
 /// whose transcript is gone) keep the conservative all-5m assumption.
-const PRICING_REV: &str = "12";
+/// Rev 13 = correct GPT-5.6 Terra/Luna to the current official standard rates.
+/// Revisioned Codex ledger rows separately preserve exact/range/unpriced status.
+const PRICING_REV: &str = "13";
 
 /// Estimated cost for one session: per-model when a breakdown exists (correct
 /// for multi-model Claude sessions), else session-level `model_used` pricing.
@@ -1553,7 +1728,9 @@ fn scan_claude_model_usage(
     Ok(map)
 }
 
-const CODEX_TOKEN_FIX_REV: &str = "3";
+const CODEX_TOKEN_FIX_REV: &str = "4";
+
+const CODEX_ACCOUNTING_REPAIR_REV: i64 = 4;
 
 struct CodexTokenScan {
     model_used: Option<String>,
@@ -1563,6 +1740,467 @@ struct CodexTokenScan {
     cache_creation: i64,
     observed: bool,
     model_usage: Vec<queries::SessionModelUsageDelta>,
+}
+
+#[derive(Debug, Clone)]
+struct CodexAccountingRepairScan {
+    model_used: Option<String>,
+    total_input: i64,
+    total_output: i64,
+    cache_read: i64,
+    model_usage: Vec<queries::SessionModelUsageDelta>,
+    observations: Vec<queries::CodexUsageObservationInput>,
+    ledger_observations: Vec<crate::commands::session_adapters::CodexUsageObservation>,
+    completed_bytes: i64,
+    completed_lines: i64,
+    source_size_bytes: i64,
+    final_state: Option<String>,
+}
+
+fn scan_codex_lineage_metadata(path: &std::path::Path) -> Result<CodexLineageMetadata, String> {
+    let file = std::fs::File::open(path).map_err(|error| error.to_string())?;
+    let mut lineage = CodexLineageMetadata::default();
+    let mut explicit_parent: Option<String> = None;
+    let mut spawned_parent: Option<String> = None;
+    let mut embedded_ancestor = false;
+    for line in std::io::BufReader::new(file).lines().map_while(Result::ok) {
+        if !line.contains("session_meta") {
+            continue;
+        }
+        let Ok(parsed) = serde_json::from_str::<Value>(line.trim()) else {
+            continue;
+        };
+        if parsed.get("type").and_then(Value::as_str) != Some("session_meta") {
+            continue;
+        }
+        let Some(payload) = parsed.get("payload") else {
+            continue;
+        };
+        let metadata_id = payload
+            .get("id")
+            .or_else(|| payload.get("session_id"))
+            .and_then(Value::as_str)
+            .map(str::to_string);
+        if lineage.source_session_id.is_none() {
+            lineage.source_session_id = metadata_id.clone();
+        } else if metadata_id.is_some() && metadata_id != lineage.source_session_id {
+            embedded_ancestor = true;
+        }
+        let direct_parent = payload.get("forked_from_id").and_then(Value::as_str);
+        let spawned = payload
+            .get("source")
+            .and_then(|source| source.get("subagent"))
+            .and_then(|subagent| subagent.get("thread_spawn"))
+            .and_then(|spawn| spawn.get("parent_thread_id"))
+            .and_then(Value::as_str);
+        if let Some(parent) = direct_parent {
+            explicit_parent = Some(parent.to_string());
+            lineage.fork_timestamp = payload
+                .get("timestamp")
+                .and_then(Value::as_str)
+                .or_else(|| parsed.get("timestamp").and_then(Value::as_str))
+                .map(str::to_string);
+        }
+        if let Some(parent) = spawned {
+            spawned_parent = Some(parent.to_string());
+        }
+    }
+    // A compact subagent marker proves ancestry, not copied counter ownership.
+    // Explicit ancestry alone is still compatible with a compact independent
+    // counter. Embedded ancestor metadata is the proof that a copied prefix
+    // needs a parent snapshot dependency.
+    lineage.parent_session_id = embedded_ancestor
+        .then(|| explicit_parent.or(spawned_parent))
+        .flatten();
+    Ok(lineage)
+}
+
+fn observation_at_or_before(observed_at: Option<&str>, cutoff: &str) -> bool {
+    match (
+        observed_at.and_then(|value| chrono::DateTime::parse_from_rfc3339(value).ok()),
+        chrono::DateTime::parse_from_rfc3339(cutoff).ok(),
+    ) {
+        (Some(observed), Some(cutoff)) => observed <= cutoff,
+        (Some(_), None) => observed_at.is_some_and(|value| value <= cutoff),
+        _ => false,
+    }
+}
+
+fn accepted_totals_at(scan: &CodexAccountingRepairScan, cutoff: &str) -> CodexTokenTotals {
+    let mut totals = CodexTokenTotals::default();
+    for observation in scan.observations.iter().filter(|observation| {
+        observation.disposition == "accepted"
+            && observation_at_or_before(observation.observed_at.as_deref(), cutoff)
+    }) {
+        totals.input += observation.input_tokens;
+        totals.cached += observation.cache_read_tokens;
+        totals.output += observation.output_tokens;
+        totals.reasoning += observation.reasoning_tokens;
+    }
+    totals
+}
+
+fn scan_codex_accounting_corpus(
+    rows: &[(String, String, Option<String>)],
+) -> std::collections::BTreeMap<String, Result<CodexAccountingRepairScan, String>> {
+    let mut metadata = std::collections::BTreeMap::new();
+    let mut session_to_row = std::collections::BTreeMap::new();
+    let mut pending = std::collections::BTreeSet::new();
+    let mut scans = std::collections::BTreeMap::new();
+
+    for (row_id, path, _) in rows {
+        pending.insert(row_id.clone());
+        match scan_codex_lineage_metadata(std::path::Path::new(path)) {
+            Ok(lineage) => {
+                session_to_row.insert(
+                    lineage
+                        .source_session_id
+                        .clone()
+                        .unwrap_or_else(|| row_id.clone()),
+                    row_id.clone(),
+                );
+                metadata.insert(row_id.clone(), lineage);
+            }
+            Err(error) => {
+                scans.insert(row_id.clone(), Err(error));
+            }
+        }
+    }
+    pending.retain(|row_id| !scans.contains_key(row_id));
+
+    while !pending.is_empty() {
+        let mut progressed = false;
+        for row_id in pending.iter().cloned().collect::<Vec<_>>() {
+            let Some((_, path, _)) = rows.iter().find(|row| row.0 == row_id) else {
+                continue;
+            };
+            let lineage = metadata.get(&row_id).cloned().unwrap_or_default();
+            let initial_state = match (
+                lineage.parent_session_id.as_ref(),
+                lineage.fork_timestamp.as_deref(),
+            ) {
+                (None, _) => None,
+                (Some(_), None) => codex_state_with_unresolved_fork(),
+                (Some(parent_session_id), Some(cutoff)) => {
+                    let Some(parent_row_id) = session_to_row.get(parent_session_id) else {
+                        scans.insert(
+                            row_id.clone(),
+                            scan_codex_accounting_usage(
+                                std::path::Path::new(path),
+                                codex_state_with_unresolved_fork().as_deref(),
+                            ),
+                        );
+                        pending.remove(&row_id);
+                        progressed = true;
+                        continue;
+                    };
+                    if pending.contains(parent_row_id) {
+                        continue;
+                    }
+                    match scans.get(parent_row_id) {
+                        Some(Ok(parent_scan)) => {
+                            codex_state_with_fork_baseline(accepted_totals_at(parent_scan, cutoff))
+                        }
+                        _ => codex_state_with_unresolved_fork(),
+                    }
+                }
+            };
+            scans.insert(
+                row_id.clone(),
+                scan_codex_accounting_usage(std::path::Path::new(path), initial_state.as_deref()),
+            );
+            pending.remove(&row_id);
+            progressed = true;
+        }
+        if !progressed {
+            for row_id in std::mem::take(&mut pending) {
+                let Some((_, path, _)) = rows.iter().find(|row| row.0 == row_id) else {
+                    continue;
+                };
+                scans.insert(
+                    row_id,
+                    scan_codex_accounting_usage(
+                        std::path::Path::new(path),
+                        codex_state_with_unresolved_fork().as_deref(),
+                    ),
+                );
+            }
+        }
+    }
+    scans
+}
+
+fn codex_session_id_for_path(path: &std::path::Path) -> Option<String> {
+    let file = std::fs::File::open(path).ok()?;
+    for line in std::io::BufReader::new(file).lines().take(64) {
+        let parsed: Value = serde_json::from_str(line.ok()?.trim()).ok()?;
+        if parsed.get("type").and_then(Value::as_str) == Some("session_meta") {
+            return parsed
+                .get("payload")
+                .and_then(|value| value.get("id"))
+                .and_then(Value::as_str)
+                .map(str::to_string);
+        }
+    }
+    None
+}
+
+fn scan_codex_accounting_usage(
+    path: &std::path::Path,
+    initial_state: Option<&str>,
+) -> Result<CodexAccountingRepairScan, String> {
+    use std::io::BufRead;
+    let file = std::fs::File::open(path).map_err(|error| error.to_string())?;
+    let mut reader = std::io::BufReader::new(file);
+    let mut state: Option<String> = initial_state.map(str::to_string);
+    let mut line_offset = 0i64;
+    let mut observations = Vec::new();
+    let mut ledger_observations = Vec::new();
+    let mut model_used = None;
+    let mut buffer = String::new();
+    let mut chunk = String::new();
+    let mut chunk_lines = 0i64;
+    let mut completed_bytes = 0i64;
+
+    loop {
+        buffer.clear();
+        let read = reader
+            .read_line(&mut buffer)
+            .map_err(|error| error.to_string())?;
+        if read == 0 {
+            break;
+        }
+        if !buffer.ends_with('\n') {
+            break;
+        }
+        completed_bytes += read as i64;
+        chunk.push_str(&buffer);
+        chunk_lines += 1;
+        if chunk_lines < 1_000 && chunk.len() < 4 * 1024 * 1024 {
+            continue;
+        }
+        let summary =
+            CodexAdapter.parse_raw_with_state(&path.to_string_lossy(), &chunk, state.as_deref());
+        observations.extend(codex_observation_inputs(
+            &summary.codex_usage_observations,
+            line_offset,
+        ));
+        ledger_observations.extend(summary.codex_usage_observations.iter().cloned().map(
+            |mut item| {
+                item.source_line += line_offset;
+                item
+            },
+        ));
+        model_used = summary.model_used.or(model_used);
+        state = summary.last_usage_key;
+        line_offset += chunk_lines;
+        chunk.clear();
+        chunk_lines = 0;
+    }
+
+    if !chunk.is_empty() {
+        let summary =
+            CodexAdapter.parse_raw_with_state(&path.to_string_lossy(), &chunk, state.as_deref());
+        observations.extend(codex_observation_inputs(
+            &summary.codex_usage_observations,
+            line_offset,
+        ));
+        ledger_observations.extend(summary.codex_usage_observations.iter().cloned().map(
+            |mut item| {
+                item.source_line += line_offset;
+                item
+            },
+        ));
+        model_used = summary.model_used.or(model_used);
+        state = summary.last_usage_key;
+    }
+
+    let mut by_model: std::collections::BTreeMap<String, queries::SessionModelUsageDelta> =
+        std::collections::BTreeMap::new();
+    let mut total_input = 0;
+    let mut total_output = 0;
+    let mut cache_read = 0;
+    for item in observations
+        .iter()
+        .filter(|item| item.disposition == "accepted")
+    {
+        total_input += item.input_tokens;
+        total_output += item.output_tokens;
+        cache_read += item.cache_read_tokens;
+        let entry =
+            by_model
+                .entry(item.model.clone())
+                .or_insert_with(|| queries::SessionModelUsageDelta {
+                    model: item.model.clone(),
+                    message_count: 0,
+                    input_tokens: 0,
+                    output_tokens: 0,
+                    cache_read_tokens: 0,
+                    cache_creation_tokens: 0,
+                    cache_creation_1h_tokens: 0,
+                });
+        entry.message_count += 1;
+        entry.input_tokens += item.input_tokens;
+        entry.output_tokens += item.output_tokens;
+        entry.cache_read_tokens += item.cache_read_tokens;
+    }
+
+    Ok(CodexAccountingRepairScan {
+        model_used,
+        total_input,
+        total_output,
+        cache_read,
+        model_usage: by_model.into_values().collect(),
+        observations,
+        ledger_observations,
+        completed_bytes,
+        completed_lines: line_offset + chunk_lines,
+        source_size_bytes: std::fs::metadata(path)
+            .map(|metadata| metadata.len() as i64)
+            .unwrap_or(completed_bytes),
+        final_state: state,
+    })
+}
+
+fn persist_codex_accounting_evidence(
+    conn: &rusqlite::Connection,
+    session_id: &str,
+    path: &std::path::Path,
+    scan: &CodexAccountingRepairScan,
+    observed_at: &str,
+) -> Result<(), String> {
+    let source_id = format!("codex-session:{session_id}");
+    let source_fingerprint = format!("sha256:{:x}", Sha256::digest(session_id.as_bytes()));
+    let lineage = scan_codex_lineage_metadata(path)?;
+    let last_observed_at = scan
+        .ledger_observations
+        .iter()
+        .filter_map(|item| item.timestamp.as_deref())
+        .max()
+        .map(str::to_string);
+    let source = queries::CodexUsageSourceInput {
+        source_id: source_id.clone(),
+        session_id: Some(session_id.to_string()),
+        source_ref: path.to_string_lossy().to_string(),
+        source_fingerprint,
+        scanner_revision: CODEX_ACCOUNTING_REPAIR_REV,
+        parent_session_id: lineage.parent_session_id,
+        fork_timestamp: lineage.fork_timestamp,
+        completed_byte_cursor: scan.completed_bytes,
+        completed_line_cursor: scan.completed_lines,
+        source_size_bytes: scan.source_size_bytes,
+        last_observed_at: last_observed_at.clone(),
+        observed_at: observed_at.to_string(),
+    };
+    let ledger = scan
+        .ledger_observations
+        .iter()
+        .map(|item| {
+            let pricing = price_codex_ledger_observation(
+                &item.model,
+                item.service_tier.as_deref(),
+                item.input_tokens,
+                item.cache_read_tokens,
+                item.output_tokens,
+            );
+            Ok(queries::CodexLedgerObservationInput {
+                event_id: queries::codex_usage_event_id(
+                    &source_id,
+                    CODEX_ACCOUNTING_REPAIR_REV,
+                    item.source_line,
+                )?,
+                source_line: item.source_line,
+                observed_at: item.timestamp.clone(),
+                local_day: item.day.clone(),
+                model: item.model.clone(),
+                service_tier: item.service_tier.clone(),
+                input_tokens: item.input_tokens,
+                cache_read_tokens: item.cache_read_tokens,
+                output_tokens: item.output_tokens,
+                reasoning_tokens: item.reasoning_tokens,
+                cumulative_input_tokens: item.total.as_ref().map(|total| total.input),
+                cumulative_cache_read_tokens: item.total.as_ref().map(|total| total.cached),
+                cumulative_output_tokens: item.total.as_ref().map(|total| total.output),
+                cumulative_reasoning_tokens: item.total.as_ref().map(|total| total.reasoning),
+                disposition: item.disposition.clone(),
+                pricing_status: pricing.status.into(),
+                pricing_revision: pricing.revision,
+                cost_min_microusd: pricing.min_microusd,
+                cost_max_microusd: pricing.max_microusd,
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    let ambiguous = scan
+        .ledger_observations
+        .iter()
+        .any(|item| matches!(item.disposition.as_str(), "unresolved_fork" | "unsupported"));
+    let pending_bytes = (scan.source_size_bytes - scan.completed_bytes).max(0);
+    let coverage_state = if ambiguous {
+        "ambiguous"
+    } else if pending_bytes > 0 {
+        "stale"
+    } else {
+        "verified"
+    };
+    let detail = match coverage_state {
+        "ambiguous" => Some("unresolved_usage_ownership".to_string()),
+        "stale" => Some("incomplete_trailing_record".to_string()),
+        _ => None,
+    };
+    let counted = scan
+        .ledger_observations
+        .iter()
+        .filter(|item| item.disposition == "accepted")
+        .fold(CodexTokenTotals::default(), |mut total, item| {
+            total.input += item.input_tokens;
+            total.cached += item.cache_read_tokens;
+            total.output += item.output_tokens;
+            total.reasoning += item.reasoning_tokens;
+            total
+        });
+    let watermark = scan
+        .ledger_observations
+        .iter()
+        .filter_map(|item| item.total.clone())
+        .fold(CodexTokenTotals::default(), |current, item| {
+            CodexTokenTotals {
+                input: current.input.max(item.input),
+                cached: current.cached.max(item.cached),
+                output: current.output.max(item.output),
+                reasoning: current.reasoning.max(item.reasoning),
+            }
+        });
+    let checkpoint = (scan.completed_lines > 0).then(|| queries::CodexLineageCheckpointInput {
+        source_line: scan.completed_lines,
+        observed_at: last_observed_at,
+        counted: [
+            counted.input,
+            counted.cached,
+            counted.output,
+            counted.reasoning,
+        ],
+        watermark: [
+            watermark.input,
+            watermark.cached,
+            watermark.output,
+            watermark.reasoning,
+        ],
+        state_json: scan.final_state.clone().unwrap_or_else(|| "{}".into()),
+    });
+    queries::commit_codex_usage_batch(
+        conn,
+        &source,
+        &ledger,
+        checkpoint.as_ref(),
+        &queries::CodexCoverageInput {
+            state: coverage_state.into(),
+            detail,
+            pending_bytes,
+            observation_watermark: source.last_observed_at.clone(),
+        },
+    )
+    .map_err(|error| error.to_string())?;
+    Ok(())
 }
 
 fn detect_codex_replay_second(path: &std::path::Path) -> Option<String> {
@@ -1795,6 +2433,20 @@ fn scan_codex_token_usage(path: &std::path::Path) -> Result<CodexTokenScan, Stri
 /// archive and message rows were not affected. Parsing happens before the write
 /// transaction so a large transcript corpus does not hold a database lock.
 pub fn fix_codex_token_totals(conn: &rusqlite::Connection) {
+    // One-release rollback: restore the exact v1 projections captured before
+    // revision 4 was first activated while leaving the immutable v2 ledger in
+    // place for diagnosis or reactivation.
+    if std::env::var("CODEVETTER_CODEX_ACCOUNTING")
+        .is_ok_and(|value| value.eq_ignore_ascii_case("legacy"))
+    {
+        match queries::restore_codex_legacy_projections(conn, CODEX_ACCOUNTING_REPAIR_REV) {
+            Ok(restored) => log::warn!(
+                "Codex accounting legacy rollback active: restored {restored} session projections"
+            ),
+            Err(error) => log::error!("Codex accounting legacy rollback failed: {error}"),
+        }
+        return;
+    }
     if let Ok(Some(rev)) = queries::get_preference(conn, "codex_token_fix_rev") {
         if rev == CODEX_TOKEN_FIX_REV {
             return;
@@ -1827,92 +2479,238 @@ pub fn fix_codex_token_totals(conn: &rusqlite::Connection) {
         }
     };
 
-    struct Repair {
-        id: String,
-        total_input: i64,
-        total_output: i64,
-        cache_read: i64,
-        cache_creation: i64,
-        cost: f64,
-        model_usage: Vec<queries::SessionModelUsageDelta>,
+    let mut by_path: std::collections::BTreeMap<String, Vec<(String, String, Option<String>)>> =
+        std::collections::BTreeMap::new();
+    for row in rows {
+        by_path.entry(row.1.clone()).or_default().push(row);
+    }
+    let mut canonical_rows = Vec::new();
+    let mut duplicate_rows = Vec::new();
+    for (path, mut candidates) in by_path {
+        let source_id = codex_session_id_for_path(std::path::Path::new(&path));
+        let canonical_index = source_id
+            .as_ref()
+            .and_then(|source_id| candidates.iter().position(|row| &row.0 == source_id))
+            .unwrap_or(0);
+        canonical_rows.push(candidates.remove(canonical_index));
+        duplicate_rows.extend(candidates);
     }
 
-    let mut repairs = Vec::new();
-    for (id, path, stored_model) in rows {
-        let summary = match scan_codex_token_usage(std::path::Path::new(&path)) {
-            Ok(summary) => summary,
-            Err(_) => continue,
+    let duplicate_target_count = duplicate_rows.len() as u64;
+    let canonical_target_count = canonical_rows.len() as u64;
+    let mut accounting_scans = scan_codex_accounting_corpus(&canonical_rows);
+    let mut failures = 0u64;
+    let mut deduplicated = 0u64;
+    for (id, _, _) in duplicate_rows {
+        let Ok(tx) = conn.unchecked_transaction() else {
+            failures += 1;
+            continue;
         };
-        // A truncated/odd file should not zero a possibly-valid stored value.
-        if !summary.observed {
+        let captured_at = chrono::Utc::now().to_rfc3339();
+        if queries::backup_codex_legacy_projection(
+            &tx,
+            &id,
+            CODEX_ACCOUNTING_REPAIR_REV,
+            &captured_at,
+        )
+        .is_err()
+            || tx
+                .execute(
+                    "UPDATE cc_sessions SET total_input_tokens=0,total_output_tokens=0,
+                        cache_read_tokens=0,cache_creation_tokens=0,estimated_cost_usd=0
+                 WHERE id=?1",
+                    rusqlite::params![&id],
+                )
+                .is_err()
+            || queries::replace_session_model_usage(&tx, &id, &[]).is_err()
+            || queries::replace_codex_usage_observations(&tx, &id, &[]).is_err()
+            || queries::record_codex_usage_repair(
+                &tx,
+                &id,
+                CODEX_ACCOUNTING_REPAIR_REV,
+                "excluded",
+                0,
+                0,
+                Some("duplicate_source_path"),
+            )
+            .is_err()
+        {
+            failures += 1;
             continue;
         }
-        let model = summary.model_used.or(stored_model);
+        if tx.commit().is_ok() {
+            deduplicated += 1;
+        } else {
+            failures += 1;
+        }
+    }
+
+    let mut fixed = 0u64;
+    let mut missing = 0u64;
+    for (id, path, _stored_model) in canonical_rows {
+        let summary = match accounting_scans
+            .remove(&id)
+            .unwrap_or_else(|| Err("accounting scan missing".into()))
+        {
+            Ok(summary) => summary,
+            Err(error) => {
+                if queries::record_codex_usage_repair(
+                    conn,
+                    &id,
+                    CODEX_ACCOUNTING_REPAIR_REV,
+                    "unrepaired",
+                    0,
+                    0,
+                    Some(if error.contains("No such file") {
+                        "source_missing"
+                    } else {
+                        "source_unreadable"
+                    }),
+                )
+                .is_ok()
+                {
+                    missing += 1;
+                } else {
+                    failures += 1;
+                }
+                continue;
+            }
+        };
+        if let Err(error) = persist_codex_accounting_evidence(
+            conn,
+            &id,
+            std::path::Path::new(&path),
+            &summary,
+            &chrono::Utc::now().to_rfc3339(),
+        ) {
+            log::warn!("Codex evidence ledger persist failed for {id}: {error}");
+            failures += 1;
+            continue;
+        }
         let model_usage = summary.model_usage;
-        let cost = if model_usage.is_empty() {
-            estimate_cost(
-                model.as_deref().unwrap_or(""),
+        let accepted = summary
+            .observations
+            .iter()
+            .filter(|item| item.disposition == "accepted")
+            .count() as i64;
+        let excluded = summary.observations.len() as i64 - accepted;
+        let tx = match conn.unchecked_transaction() {
+            Ok(tx) => tx,
+            Err(_) => {
+                failures += 1;
+                continue;
+            }
+        };
+        let captured_at = chrono::Utc::now().to_rfc3339();
+        if queries::backup_codex_legacy_projection(
+            &tx,
+            &id,
+            CODEX_ACCOUNTING_REPAIR_REV,
+            &captured_at,
+        )
+        .is_err()
+            || queries::replace_codex_usage_observations(&tx, &id, &summary.observations).is_err()
+            || queries::reconcile_codex_usage_totals(&tx, &id).is_err()
+            || !codex_reconciliation_matches(
+                &tx,
+                &id,
                 summary.total_input,
                 summary.total_output,
                 summary.cache_read,
-                summary.cache_creation,
+                &model_usage,
             )
+            || queries::record_codex_usage_repair(
+                &tx,
+                &id,
+                CODEX_ACCOUNTING_REPAIR_REV,
+                "repaired",
+                accepted,
+                excluded,
+                None,
+            )
+            .is_err()
+        {
+            failures += 1;
+            continue;
+        }
+        if tx.commit().is_ok() {
+            fixed += 1;
         } else {
-            let total: f64 = model_usage
-                .iter()
-                .map(|usage| {
-                    estimate_cost(
-                        &usage.model,
-                        usage.input_tokens,
-                        usage.output_tokens,
-                        usage.cache_read_tokens,
-                        usage.cache_creation_tokens,
-                    )
-                })
-                .sum();
-            (total * 100.0).round() / 100.0
-        };
-        repairs.push(Repair {
-            id,
-            total_input: summary.total_input,
-            total_output: summary.total_output,
-            cache_read: summary.cache_read,
-            cache_creation: summary.cache_creation,
-            cost,
-            model_usage,
-        });
+            failures += 1;
+        }
+    }
+    let complete = failures == 0
+        && fixed + missing == canonical_target_count
+        && deduplicated == duplicate_target_count;
+    if let Err(error) =
+        queries::rebuild_codex_verified_projections(conn, CODEX_ACCOUNTING_REPAIR_REV)
+    {
+        failures += 1;
+        log::error!("Codex verified projection rebuild failed: {error}");
+    }
+    let complete = complete && failures == 0;
+    if complete {
+        let _ = queries::set_preference(conn, "codex_token_fix_rev", CODEX_TOKEN_FIX_REV);
+        log::info!("Codex accounting backfill: repaired {fixed} sessions, excluded {deduplicated} duplicate source rows, preserved {missing} sessions without readable evidence");
+    } else {
+        log::error!("Codex accounting backfill incomplete: repaired {fixed}/{canonical_target_count} sessions, excluded {deduplicated}/{duplicate_target_count} duplicate source rows, failures={failures}; revision remains pending");
+    }
+}
+
+fn codex_reconciliation_matches(
+    conn: &rusqlite::Connection,
+    session_id: &str,
+    expected_input: i64,
+    expected_output: i64,
+    expected_cache_read: i64,
+    expected_models: &[queries::SessionModelUsageDelta],
+) -> bool {
+    let totals = conn.query_row(
+        "SELECT total_input_tokens,total_output_tokens,cache_read_tokens
+         FROM cc_sessions WHERE id=?1",
+        rusqlite::params![session_id],
+        |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, i64>(1)?,
+                row.get::<_, i64>(2)?,
+            ))
+        },
+    );
+    if totals.ok() != Some((expected_input, expected_output, expected_cache_read)) {
+        return false;
     }
 
-    let tx = match conn.unchecked_transaction() {
-        Ok(t) => t,
-        Err(_) => return,
+    let mut expected = expected_models
+        .iter()
+        .map(|usage| {
+            (
+                usage.model.clone(),
+                usage.message_count,
+                usage.input_tokens,
+                usage.output_tokens,
+                usage.cache_read_tokens,
+            )
+        })
+        .collect::<Vec<_>>();
+    expected.sort();
+    let Ok(actual_rows) = queries::get_session_model_usage(conn, session_id) else {
+        return false;
     };
-    let mut fixed = 0u64;
-    for repair in repairs {
-        let _ = tx.execute(
-            "UPDATE cc_sessions SET
-                total_input_tokens = ?2,
-                total_output_tokens = ?3,
-                cache_read_tokens = ?4,
-                cache_creation_tokens = ?5,
-                estimated_cost_usd = ?6
-            WHERE id = ?1",
-            rusqlite::params![
-                &repair.id,
-                repair.total_input,
-                repair.total_output,
-                repair.cache_read,
-                repair.cache_creation,
-                repair.cost,
-            ],
-        );
-        let _ = queries::replace_session_model_usage(&tx, &repair.id, &repair.model_usage);
-        fixed += 1;
-    }
-    if tx.commit().is_ok() {
-        let _ = queries::set_preference(conn, "codex_token_fix_rev", CODEX_TOKEN_FIX_REV);
-        log::info!("Fixed Codex per-session token attribution for {fixed} sessions");
-    }
+    let mut actual = actual_rows
+        .into_iter()
+        .map(|usage| {
+            (
+                usage.model,
+                usage.message_count,
+                usage.input_tokens,
+                usage.output_tokens,
+                usage.cache_read_tokens,
+            )
+        })
+        .collect::<Vec<_>>();
+    actual.sort();
+    actual == expected
 }
 
 /// Streaming full-file scan of one Claude JSONL with usage dedup. Returns the
@@ -2147,6 +2945,7 @@ fn upsert_adapter_summary_session(
     let day_counts = summary.day_counts.clone();
     let archive_messages = summary.archive_messages.clone();
     let parse_warnings = summary.parse_warnings.clone();
+    let codex_observations = codex_observation_inputs(&summary.codex_usage_observations, 0);
 
     for warning in &summary.parse_warnings {
         log::warn!(
@@ -2233,6 +3032,11 @@ fn upsert_adapter_summary_session(
     // archive rows are replaced. Empty for non-Claude adapters, which clears
     // nothing since such sessions never had rows.
     queries::replace_session_model_usage(conn, &sid, &usage_deltas).map_err(|e| e.to_string())?;
+    if agent_type == "codex" {
+        queries::replace_codex_usage_observations(conn, &sid, &codex_observations)
+            .map_err(|e| e.to_string())?;
+        queries::reconcile_codex_usage_totals(conn, &sid).map_err(|e| e.to_string())?;
+    }
 
     Ok(IndexedAdapterSession {
         session_id: sid,
@@ -2240,6 +3044,38 @@ fn upsert_adapter_summary_session(
         messages_indexed: message_count,
         parse_warnings,
     })
+}
+
+fn codex_observation_inputs(
+    observations: &[crate::commands::session_adapters::CodexUsageObservation],
+    line_offset: i64,
+) -> Vec<queries::CodexUsageObservationInput> {
+    observations
+        .iter()
+        .map(|item| queries::CodexUsageObservationInput {
+            source_line: line_offset + item.source_line,
+            observed_at: item.timestamp.clone(),
+            local_day: item.day.clone(),
+            model: item.model.clone(),
+            input_tokens: item.input_tokens,
+            cache_read_tokens: item.cache_read_tokens,
+            output_tokens: item.output_tokens,
+            reasoning_tokens: item.reasoning_tokens,
+            cost_usd: estimate_cost_precise(
+                &item.model,
+                item.input_tokens,
+                item.output_tokens,
+                item.cache_read_tokens,
+                0,
+                0,
+            ),
+            cumulative_input_tokens: item.total.as_ref().map(|total| total.input),
+            cumulative_cache_read_tokens: item.total.as_ref().map(|total| total.cached),
+            cumulative_output_tokens: item.total.as_ref().map(|total| total.output),
+            cumulative_reasoning_tokens: item.total.as_ref().map(|total| total.reasoning),
+            disposition: item.disposition.clone(),
+        })
+        .collect()
 }
 
 fn model_usage_deltas(
@@ -2543,7 +3379,7 @@ fn index_adapter_session_with_budget<A: SessionSourceAdapter>(
     if chunk.text.is_empty() {
         return Err("session has no complete JSONL row yet".to_string());
     }
-    let summary = adapter.parse_raw(&path_str, &chunk.text);
+    let summary = adapter.parse_raw_with_state(&path_str, &chunk.text, None);
     let last_usage_key = summary.last_usage_key.clone();
     let existing_id = existing.as_ref().map(|m| m.id.as_str());
     let result = upsert_adapter_summary_session(
@@ -2640,6 +3476,8 @@ fn index_session_incremental<A: SessionSourceAdapter>(
 
     let summary =
         adapter.parse_raw_with_state(path_str, &chunk.text, meta.last_usage_key.as_deref());
+    let codex_observations =
+        codex_observation_inputs(&summary.codex_usage_observations, line_count);
 
     // Append archive rows, continuing message_index / source_line past what is stored.
     let start_index = meta.archived_message_count;
@@ -2706,6 +3544,11 @@ fn index_session_incremental<A: SessionSourceAdapter>(
     // Legacy cumulative-only Codex logs leave model_usage empty → no-op.
     queries::add_session_model_usage(conn, &meta.id, &model_usage_deltas(&summary.model_usage))
         .map_err(|e| e.to_string())?;
+    if adapter.agent_type() == "codex" {
+        queries::append_codex_usage_observations(conn, &meta.id, &codex_observations)
+            .map_err(|e| e.to_string())?;
+        queries::reconcile_codex_usage_totals(conn, &meta.id).map_err(|e| e.to_string())?;
+    }
 
     // Recompute cost from the NEW totals so it matches a one-shot full re-index
     // exactly (estimate_cost rounds to cents — a per-delta round would drift).
@@ -2785,9 +3628,38 @@ fn resolve_codex_base_dir() -> std::path::PathBuf {
     std::path::PathBuf::from(home).join(".codex")
 }
 
-fn resolve_codex_session_roots() -> Vec<std::path::PathBuf> {
-    let base = resolve_codex_base_dir();
-    vec![base.join("sessions"), base.join("archived_sessions")]
+fn normalize_codex_base_dir(path: std::path::PathBuf) -> std::path::PathBuf {
+    match path.file_name().and_then(|name| name.to_str()) {
+        Some("sessions" | "archived_sessions") => path
+            .parent()
+            .map(std::path::Path::to_path_buf)
+            .unwrap_or(path),
+        _ => path,
+    }
+}
+
+fn resolve_codex_base_dirs(conn: &rusqlite::Connection) -> Vec<std::path::PathBuf> {
+    let mut bases = vec![normalize_codex_base_dir(resolve_codex_base_dir())];
+    if let Ok(Some(raw)) = queries::get_preference(conn, "codex_usage_import_roots") {
+        if let Ok(configured) = serde_json::from_str::<Vec<String>>(&raw) {
+            for value in configured {
+                let trimmed = value.trim();
+                if !trimmed.is_empty() {
+                    bases.push(normalize_codex_base_dir(std::path::PathBuf::from(trimmed)));
+                }
+            }
+        }
+    }
+    let mut seen = HashSet::new();
+    bases.retain(|base| seen.insert(base.clone()));
+    bases
+}
+
+fn resolve_codex_session_roots(bases: &[std::path::PathBuf]) -> Vec<std::path::PathBuf> {
+    bases
+        .iter()
+        .flat_map(|base| [base.join("sessions"), base.join("archived_sessions")])
+        .collect()
 }
 
 fn codex_session_files_from_base(base: &std::path::Path) -> Vec<std::path::PathBuf> {
@@ -2818,13 +3690,44 @@ fn codex_session_files_from_base(base: &std::path::Path) -> Vec<std::path::PathB
     files
 }
 
-fn codex_session_files() -> Vec<std::path::PathBuf> {
-    codex_session_files_from_base(&resolve_codex_base_dir())
+fn codex_session_files_from_bases(bases: &[std::path::PathBuf]) -> Vec<std::path::PathBuf> {
+    let mut selected: HashMap<String, (bool, usize, std::path::PathBuf)> = HashMap::new();
+    for (base_index, base) in bases.iter().enumerate() {
+        for path in codex_session_files_from_base(base) {
+            let archived = path.starts_with(base.join("archived_sessions"));
+            let identity = codex_session_id_for_path(&path)
+                .unwrap_or_else(|| format!("path:{}", path.to_string_lossy()));
+            let candidate_rank = (archived, base_index);
+            let replace =
+                selected
+                    .get(&identity)
+                    .is_none_or(|(current_archived, current_base, _)| {
+                        candidate_rank < (*current_archived, *current_base)
+                    });
+            if replace {
+                selected.insert(identity, (archived, base_index, path));
+            }
+        }
+    }
+    let mut files = selected
+        .into_values()
+        .map(|(_, _, path)| path)
+        .collect::<Vec<_>>();
+    files.sort();
+    files
 }
 
-fn recent_codex_session_files(max_age: chrono::Duration, limit: usize) -> Vec<std::path::PathBuf> {
+fn codex_session_files(conn: &rusqlite::Connection) -> Vec<std::path::PathBuf> {
+    codex_session_files_from_bases(&resolve_codex_base_dirs(conn))
+}
+
+fn recent_codex_session_files(
+    conn: &rusqlite::Connection,
+    max_age: chrono::Duration,
+    limit: usize,
+) -> Vec<std::path::PathBuf> {
     let cutoff = chrono::Utc::now() - max_age;
-    let mut files: Vec<(std::time::SystemTime, std::path::PathBuf)> = codex_session_files()
+    let mut files: Vec<(std::time::SystemTime, std::path::PathBuf)> = codex_session_files(conn)
         .into_iter()
         .filter_map(|path| {
             let modified = std::fs::metadata(&path).ok()?.modified().ok()?;
@@ -3240,6 +4143,8 @@ fn parse_grok_session_dir(
         tokens_are_cumulative: false,
         model_usage: std::collections::BTreeMap::new(),
         last_usage_key: None,
+        codex_usage_observations: Vec::new(),
+        codex_lineage: Default::default(),
     })
 }
 
@@ -3666,6 +4571,8 @@ fn index_devin_sessions_from_path(
             tokens_are_cumulative: false,
             model_usage: std::collections::BTreeMap::new(),
             last_usage_key: None,
+            codex_usage_observations: Vec::new(),
+            codex_lineage: Default::default(),
         };
 
         match upsert_adapter_summary_session(
@@ -3878,6 +4785,8 @@ fn index_cursor_agent_sessions(conn: &rusqlite::Connection) -> Result<(u64, u64,
                 tokens_are_cumulative: false,
                 model_usage: std::collections::BTreeMap::new(),
                 last_usage_key: None,
+                codex_usage_observations: Vec::new(),
+                codex_lineage: Default::default(),
             };
 
             match upsert_adapter_summary_session(
@@ -4636,7 +5545,7 @@ mod tests {
         let conn = memory_conn_with_project();
         queries::set_preference(&conn, "last_indexed_at", "2026-07-12T12:00:00Z").unwrap();
         let policy = live_session_evidence_policy(&conn).expect("policy");
-        assert_eq!(policy.schema_version, 1);
+        assert_eq!(policy.schema_version, 2);
         assert_eq!(policy.incremental_interval_secs, 10);
         assert_eq!(policy.full_index_recovery_interval_secs, 6 * 60 * 60);
         assert_eq!(
@@ -4649,6 +5558,10 @@ mod tests {
             policy.last_full_indexed_at.as_deref(),
             Some("2026-07-12T12:00:00Z")
         );
+        assert_eq!(policy.incomplete_codex_sources, 0);
+        assert_eq!(policy.pending_codex_bytes, 0);
+        assert_eq!(policy.duplicate_usage_events, 0);
+        assert_eq!(policy.excluded_usage_events, 0);
     }
 
     #[test]
@@ -4656,6 +5569,16 @@ mod tests {
         const { assert!(LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET <= 64 * 1024) };
         const { assert!(LIVE_TRANSCRIPT_TICK_BUDGET_MS <= 200) };
         assert_eq!(LIVE_CODEX_DISCOVERY_SESSION_BUDGET, 1);
+    }
+
+    #[test]
+    fn live_usage_serialization_is_independent_of_full_archive_indexing() {
+        let _full_guard = FULL_INDEX_LOCK.lock().expect("full index lock");
+        let live_guard = LIVE_TRANSCRIPT_LOCK.try_lock();
+        assert!(
+            live_guard.is_ok(),
+            "archive indexing must not suppress eligible live usage work"
+        );
     }
 
     #[test]
@@ -4704,7 +5627,7 @@ mod tests {
         .unwrap();
         std::fs::write(&path, &events).unwrap();
 
-        let guard = FULL_INDEX_LOCK.lock().unwrap();
+        let guard = LIVE_TRANSCRIPT_LOCK.lock().unwrap();
         let skipped = tail_live_transcript_sessions_inner(&conn, false).expect("non-blocking skip");
         assert_eq!(skipped.messages_indexed, 0);
         drop(guard);
@@ -5180,11 +6103,343 @@ mod tests {
     }
 
     #[test]
-    fn codex_rev3_repair_skips_replayed_parent_events() {
+    fn codex_discovery_deduplicates_session_identity_across_configured_roots() {
+        let primary = tempfile::tempdir().expect("primary codex home");
+        let imported = tempfile::tempdir().expect("imported codex home");
+        let primary_archived = primary
+            .path()
+            .join("archived_sessions/2026/07/rollout.jsonl");
+        let imported_active = imported.path().join("sessions/2026/07/rollout.jsonl");
+        let imported_unique = imported.path().join("sessions/2026/07/unique.jsonl");
+        for (path, id) in [
+            (&primary_archived, "shared-session"),
+            (&imported_active, "shared-session"),
+            (&imported_unique, "unique-session"),
+        ] {
+            std::fs::create_dir_all(path.parent().expect("parent")).expect("directory");
+            std::fs::write(
+                path,
+                format!(
+                    "{{\"type\":\"session_meta\",\"payload\":{{\"id\":\"{id}\",\"cwd\":\"/repo\"}}}}\n"
+                ),
+            )
+            .expect("fixture");
+        }
+
+        let files = codex_session_files_from_bases(&[
+            primary.path().to_path_buf(),
+            imported.path().to_path_buf(),
+        ]);
+        assert_eq!(files.len(), 2);
+        assert!(files.contains(&imported_active));
+        assert!(files.contains(&imported_unique));
+        assert!(!files.contains(&primary_archived));
+    }
+
+    #[test]
+    fn codex_corpus_resolves_parent_totals_at_fork_timestamp() {
+        let root = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/codex-accounting-oracle/cases/parent-child"
+        ));
+        let rows = vec![
+            (
+                "oracle-child".to_string(),
+                root.join("child.jsonl").to_string_lossy().to_string(),
+                None,
+            ),
+            (
+                "oracle-parent".to_string(),
+                root.join("parent.jsonl").to_string_lossy().to_string(),
+                None,
+            ),
+        ];
+
+        let scans = scan_codex_accounting_corpus(&rows);
+        let parent = scans["oracle-parent"].as_ref().expect("parent scan");
+        let child = scans["oracle-child"].as_ref().expect("child scan");
+        assert_eq!(
+            (parent.total_input, parent.cache_read, parent.total_output),
+            (1020, 905, 103)
+        );
+        assert_eq!(
+            (child.total_input, child.cache_read, child.total_output),
+            (50, 10, 5)
+        );
+        assert!(child
+            .observations
+            .iter()
+            .all(|observation| observation.disposition != "unresolved_fork"));
+    }
+
+    #[test]
+    fn sanitized_fixed_corpus_matches_pinned_codexbar_token_result() {
+        let root = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/codex-accounting-oracle/cases"
+        ));
+        let rows = [
+            ("oracle-parent", "parent-child/parent.jsonl"),
+            ("oracle-child", "parent-child/child.jsonl"),
+            ("late-child", "late-lineage/child.jsonl"),
+            ("rate-limit-duplicate", "rate-limit-duplicate/session.jsonl"),
+            ("interleaved-reset", "interleaved-reset/session.jsonl"),
+            ("incremental-boundary", "incremental-boundary/session.jsonl"),
+        ]
+        .into_iter()
+        .map(|(id, relative)| {
+            (
+                id.to_string(),
+                root.join(relative).to_string_lossy().to_string(),
+                None,
+            )
+        })
+        .collect::<Vec<_>>();
+        let scans = scan_codex_accounting_corpus(&rows);
+        let totals = scans.values().fold((0, 0, 0), |mut totals, scan| {
+            let scan = scan.as_ref().expect("fixed corpus scan");
+            totals.0 += scan.total_input;
+            totals.1 += scan.cache_read;
+            totals.2 += scan.total_output;
+            totals
+        });
+        assert_eq!(totals, (1495, 1230, 149));
+        assert_eq!(totals.0 + totals.2, 1644);
+    }
+
+    #[test]
+    fn codex_accounting_scan_persists_replay_safe_verified_evidence() {
+        let conn = rusqlite::Connection::open_in_memory().expect("memory db");
+        crate::db::schema::run_migrations(&conn).expect("schema");
+        conn.execute_batch(
+            "INSERT INTO cc_projects (id,display_name,dir_path,created_at)
+             VALUES ('p','P','/repo','2026-01-01T00:00:00Z');
+             INSERT INTO cc_sessions (id,project_id,agent_type,total_input_tokens)
+             VALUES ('oracle-parent','p','codex',999999);",
+        )
+        .expect("seed session");
+        let path = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/codex-accounting-oracle/cases/parent-child/parent.jsonl"
+        ));
+        let scan = scan_codex_accounting_usage(path, None).expect("scan");
+        for observed_at in ["2026-08-10T00:00:00Z", "2026-08-10T00:00:01Z"] {
+            persist_codex_accounting_evidence(&conn, "oracle-parent", path, &scan, observed_at)
+                .expect("idempotent persist");
+        }
+        queries::rebuild_codex_verified_projections(&conn, CODEX_ACCOUNTING_REPAIR_REV)
+            .expect("projection");
+
+        let durable: (i64, i64, i64, String, i64, i64) = conn
+            .query_row(
+                "SELECT COUNT(*),SUM(input_tokens),SUM(output_tokens),
+                        (SELECT coverage_state FROM codex_usage_coverage
+                         WHERE source_id='codex-session:oracle-parent'),
+                        (SELECT completed_byte_cursor FROM codex_usage_sources
+                         WHERE source_id='codex-session:oracle-parent'),
+                        (SELECT source_size_bytes FROM codex_usage_sources
+                         WHERE source_id='codex-session:oracle-parent')
+                 FROM codex_usage_ledger
+                 WHERE source_id='codex-session:oracle-parent'",
+                [],
+                |row| {
+                    Ok((
+                        row.get(0)?,
+                        row.get(1)?,
+                        row.get(2)?,
+                        row.get(3)?,
+                        row.get(4)?,
+                        row.get(5)?,
+                    ))
+                },
+            )
+            .expect("durable evidence");
+        assert_eq!(durable.1, 1020);
+        assert_eq!(durable.2, 103);
+        assert_eq!(durable.3, "verified");
+        assert_eq!(durable.4, durable.5);
+        assert!(durable.0 > 0);
+        let projected: (i64, i64, i64) = conn
+            .query_row(
+                "SELECT total_input_tokens,total_output_tokens,cache_read_tokens
+                 FROM cc_sessions WHERE id='oracle-parent'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .expect("projection totals");
+        assert_eq!(projected, (1020, 103, 905));
+    }
+
+    #[test]
+    fn codex_projection_backup_restores_exact_legacy_read_revision() {
+        let conn = memory_conn_with_project();
+        conn.execute(
+            "INSERT INTO cc_sessions (
+                id,project_id,agent_type,total_input_tokens,total_output_tokens,
+                cache_read_tokens,cache_creation_tokens,estimated_cost_usd
+             ) VALUES ('rollback','project','codex',11,22,33,44,5.5)",
+            [],
+        )
+        .expect("legacy session");
+        conn.execute(
+            "INSERT INTO session_model_usage (
+                session_id,model,message_count,input_tokens,output_tokens,
+                cache_read_tokens,cache_creation_tokens,cache_creation_1h_tokens
+             ) VALUES ('rollback','legacy-model',1,11,22,33,44,0)",
+            [],
+        )
+        .expect("legacy model");
+        conn.execute(
+            "INSERT INTO codex_usage_observations (
+                session_id,source_line,model,input_tokens,output_tokens,disposition
+             ) VALUES ('rollback',7,'legacy-model',11,22,'accepted')",
+            [],
+        )
+        .expect("legacy observation");
+
+        queries::backup_codex_legacy_projection(&conn, "rollback", 4, "2026-08-11T00:00:00Z")
+            .expect("backup");
+        conn.execute_batch(
+            "UPDATE cc_sessions SET total_input_tokens=100,estimated_cost_usd=99 WHERE id='rollback';
+             DELETE FROM session_model_usage WHERE session_id='rollback';
+             INSERT INTO session_model_usage (
+                session_id,model,message_count,input_tokens,output_tokens,
+                cache_read_tokens,cache_creation_tokens,cache_creation_1h_tokens
+             ) VALUES ('rollback','new-model',2,100,200,300,400,0);
+             DELETE FROM codex_usage_observations WHERE session_id='rollback';
+             INSERT INTO codex_usage_observations (
+                session_id,source_line,model,input_tokens,output_tokens,disposition
+             ) VALUES ('rollback',8,'new-model',100,200,'accepted');",
+        )
+        .expect("activate new projection");
+        queries::backup_codex_legacy_projection(&conn, "rollback", 4, "2026-08-11T00:01:00Z")
+            .expect("repeat backup keeps original snapshot");
+        assert_eq!(
+            queries::restore_codex_legacy_projections(&conn, 4).expect("restore"),
+            1
+        );
+
+        let restored: (i64, i64, i64, i64, f64) = conn
+            .query_row(
+                "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,
+                        cache_creation_tokens,estimated_cost_usd
+                 FROM cc_sessions WHERE id='rollback'",
+                [],
+                |row| {
+                    Ok((
+                        row.get(0)?,
+                        row.get(1)?,
+                        row.get(2)?,
+                        row.get(3)?,
+                        row.get(4)?,
+                    ))
+                },
+            )
+            .expect("restored projection");
+        assert_eq!(restored, (11, 22, 33, 44, 5.5));
+        assert_eq!(
+            queries::get_session_model_usage(&conn, "rollback")
+                .expect("restored model")
+                .len(),
+            1
+        );
+        assert_eq!(
+            conn.query_row(
+                "SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='rollback'",
+                [],
+                |row| row.get::<_, i64>(0),
+            )
+            .expect("restored observations"),
+            1
+        );
+    }
+
+    #[test]
+    fn codex_corpus_fails_closed_when_parent_is_missing() {
+        let root = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/codex-accounting-oracle/cases/parent-child"
+        ));
+        let rows = vec![(
+            "oracle-child".to_string(),
+            root.join("child.jsonl").to_string_lossy().to_string(),
+            None,
+        )];
+
+        let scans = scan_codex_accounting_corpus(&rows);
+        let child = scans["oracle-child"].as_ref().expect("child scan");
+        assert_eq!(
+            (child.total_input, child.cache_read, child.total_output),
+            (0, 0, 0)
+        );
+        assert!(child
+            .observations
+            .iter()
+            .all(|observation| observation.disposition != "accepted"));
+        let final_state: serde_json::Value =
+            serde_json::from_str(child.final_state.as_deref().expect("accounting state"))
+                .expect("valid accounting state");
+        assert_eq!(final_state["fork_resolution"], "unresolved");
+    }
+
+    #[test]
+    fn codex_lineage_corpus_is_order_and_restart_stable() {
+        let root = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/codex-accounting-oracle/cases/parent-child"
+        ));
+        let parent = (
+            "oracle-parent".to_string(),
+            root.join("parent.jsonl").to_string_lossy().to_string(),
+            None,
+        );
+        let child = (
+            "oracle-child".to_string(),
+            root.join("child.jsonl").to_string_lossy().to_string(),
+            None,
+        );
+        let snapshot = |rows: &[(String, String, Option<String>)]| {
+            scan_codex_accounting_corpus(rows)
+                .into_iter()
+                .map(|(id, scan)| {
+                    let scan = scan.expect("scan");
+                    (
+                        id,
+                        (
+                            scan.total_input,
+                            scan.cache_read,
+                            scan.total_output,
+                            scan.observations
+                                .iter()
+                                .filter(|observation| observation.disposition == "accepted")
+                                .count(),
+                        ),
+                    )
+                })
+                .collect::<std::collections::BTreeMap<_, _>>()
+        };
+
+        let parent_first = snapshot(&[parent.clone(), child.clone()]);
+        let child_first = snapshot(&[child.clone(), parent.clone()]);
+        let after_restart = snapshot(&[parent, child]);
+        assert_eq!(
+            parent_first, child_first,
+            "input discovery order must not matter"
+        );
+        assert_eq!(
+            parent_first, after_restart,
+            "cold restart must be deterministic"
+        );
+    }
+
+    #[test]
+    fn codex_repair_preserves_owned_suffix_when_parent_evidence_is_missing() {
         let dir = tempfile::tempdir().expect("session directory");
         let path = dir.path().join("child.jsonl");
         let raw = concat!(
             r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"session_meta","payload":{"id":"child","cwd":"/repo/codevetter","model_provider":"openai","source":{"subagent":{"thread_spawn":{"parent_thread_id":"parent"}}}}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"session_meta","payload":{"id":"parent","cwd":"/repo/codevetter"}}"#,
             "\n",
             r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"turn_context","payload":{"model":"gpt-5.6-sol","effort":"high"}}"#,
             "\n",
@@ -5246,9 +6501,82 @@ mod tests {
             Some(CODEX_TOKEN_FIX_REV)
         );
         let model_usage = queries::get_session_model_usage(&conn, "child").expect("model usage");
-        assert_eq!(model_usage.len(), 1);
-        assert_eq!(model_usage[0].model, "gpt-5.6-sol");
-        assert_eq!(model_usage[0].input_tokens, 150);
+        assert_eq!(
+            model_usage
+                .iter()
+                .map(|usage| usage.input_tokens)
+                .sum::<i64>(),
+            150
+        );
+
+        let first: (i64, i64, i64, f64, i64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
+                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='child')
+             FROM cc_sessions WHERE id='child'", [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+        ).unwrap();
+        queries::set_preference(&conn, "codex_token_fix_rev", "1").unwrap();
+        fix_codex_token_totals(&conn);
+        let second: (i64, i64, i64, f64, i64) = conn.query_row(
+            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
+                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='child')
+             FROM cc_sessions WHERE id='child'", [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+        ).unwrap();
+        assert_eq!(first, second, "fixed transcript repair is idempotent");
+    }
+
+    #[test]
+    fn codex_repair_does_not_complete_revision_after_reconciliation_failure() {
+        let dir = tempfile::tempdir().expect("session directory");
+        let path = dir.path().join("session.jsonl");
+        let raw = concat!(
+            r#"{"timestamp":"2026-07-20T08:03:00Z","type":"session_meta","payload":{"id":"guarded","cwd":"/repo"}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:01Z","type":"turn_context","payload":{"model":"gpt-5.6-sol"}}"#,
+            "\n",
+            r#"{"timestamp":"2026-07-20T08:03:02Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20},"total_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20}}}}"#,
+            "\n",
+        );
+        std::fs::write(&path, raw).expect("fixture");
+        let conn = memory_conn_with_project();
+        let summary = CodexAdapter.parse_raw(path.to_string_lossy().as_ref(), raw);
+        upsert_adapter_summary_session(
+            &conn,
+            "project",
+            summary,
+            raw.len() as i64,
+            Some("2026-07-20T08:03:02Z".to_string()),
+            "2026-07-20T08:03:02Z",
+            None,
+        )
+        .expect("index fixture");
+        queries::set_preference(&conn, "codex_token_fix_rev", "3").expect("old revision");
+        conn.execute_batch(
+            "CREATE TRIGGER reject_guarded_reconciliation
+             BEFORE UPDATE ON cc_sessions WHEN OLD.id='guarded'
+             BEGIN SELECT RAISE(FAIL, 'injected reconciliation failure'); END;",
+        )
+        .expect("failure trigger");
+
+        fix_codex_token_totals(&conn);
+
+        assert_eq!(
+            queries::get_preference(&conn, "codex_token_fix_rev")
+                .expect("revision")
+                .as_deref(),
+            Some("3")
+        );
+        assert_eq!(
+            conn.query_row(
+                "SELECT COUNT(*) FROM codex_usage_repair_audit WHERE session_id='guarded'",
+                [],
+                |row| row.get::<_, i64>(0),
+            )
+            .expect("audit count"),
+            0,
+            "a failed transaction must not leave a success audit"
+        );
     }
 
     // Diagnostic (not a CI eval): runs the real indexer against a COPY of the
@@ -5257,46 +6585,205 @@ mod tests {
     #[test]
     #[ignore]
     fn diag_codex_fix_cost() {
-        // Runs the Codex token repair against a copy of the live DB and reports
-        // before/after totals. Run with:
-        // cargo test --bin codevetter-desktop diag_codex_fix_cost -- --ignored --nocapture
-        let path = "/tmp/cv_live_copy.db";
-        if !std::path::Path::new(path).exists() {
+        // Runs the Codex accounting repair twice against an explicit disposable
+        // DB copy. The second pass must not change totals or observation counts.
+        let path = std::env::var("CV_CODEX_ACCOUNTING_DRYRUN_DB")
+            .unwrap_or_else(|_| "/tmp/cv_live_copy.db".to_string());
+        if !std::path::Path::new(&path).exists() {
             eprintln!("SKIP: {path} not present");
             return;
         }
-        let conn = Connection::open(path).expect("open");
-        let total = |c: &Connection| -> f64 {
-            c.query_row(
-                "SELECT COALESCE(SUM(estimated_cost_usd),0) FROM cc_sessions",
-                [],
-                |r| r.get(0),
+        let conn = Connection::open(&path).expect("open");
+        schema::run_migrations(&conn).expect("migrate copy");
+        let frozen_root = std::path::Path::new(&path)
+            .parent()
+            .expect("dry-run parent")
+            .join("frozen-transcripts");
+        std::fs::create_dir_all(&frozen_root).expect("frozen transcript directory");
+        let source_paths = {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT DISTINCT jsonl_path FROM cc_sessions
+                     WHERE agent_type='codex' AND jsonl_path IS NOT NULL",
+                )
+                .expect("source paths");
+            stmt.query_map([], |row| row.get::<_, String>(0))
+                .expect("source path rows")
+                .filter_map(Result::ok)
+                .collect::<Vec<_>>()
+        };
+        let mut frozen_sources = 0usize;
+        for (index, source) in source_paths.into_iter().enumerate() {
+            let frozen = frozen_root.join(format!("{index}.jsonl"));
+            if std::fs::copy(&source, &frozen).is_err() {
+                continue;
+            }
+            conn.execute(
+                "UPDATE cc_sessions SET jsonl_path=?1 WHERE jsonl_path=?2",
+                rusqlite::params![frozen.to_string_lossy().as_ref(), source],
             )
-            .unwrap_or(0.0)
-        };
-        let codex = |c: &Connection| -> f64 {
-            c.query_row("SELECT COALESCE(SUM(estimated_cost_usd),0) FROM cc_sessions WHERE agent_type='codex'", [], |r| r.get(0)).unwrap_or(0.0)
-        };
-        eprintln!(
-            "BEFORE: total=${:.0} codex=${:.0}",
-            total(&conn),
-            codex(&conn)
-        );
-        fix_codex_token_totals(&conn);
-        eprintln!(
-            "AFTER:  total=${:.0} codex=${:.0}",
-            total(&conn),
-            codex(&conn)
-        );
-        let mut stmt = conn.prepare("SELECT agent_type, ROUND(estimated_cost_usd,2), total_input_tokens FROM cc_sessions ORDER BY estimated_cost_usd DESC LIMIT 5").unwrap();
-        let rows: Vec<(String, f64, i64)> = stmt
-            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
-            .unwrap()
-            .filter_map(Result::ok)
-            .collect();
-        for (a, c, t) in rows {
-            eprintln!("  top: {a} ${c} ({t} input tok)");
+            .expect("redirect frozen source");
+            frozen_sources += 1;
         }
+        eprintln!("FROZEN_SOURCES={frozen_sources}");
+        let snapshot = |c: &Connection| -> (f64, i64, i64, i64) {
+            c.query_row(
+                "SELECT COALESCE(SUM(estimated_cost_usd),0),
+                        COALESCE(SUM(total_input_tokens + total_output_tokens),0),
+                        (SELECT COUNT(*) FROM codex_usage_observations),
+                        (SELECT COUNT(*) FROM codex_usage_repair_audit WHERE status='unrepaired')
+                 FROM cc_sessions WHERE agent_type='codex'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+            )
+            .unwrap()
+        };
+        queries::set_preference(&conn, "codex_token_fix_rev", "0").expect("force repair");
+        let before = snapshot(&conn);
+        fix_codex_token_totals(&conn);
+        let first = snapshot(&conn);
+        queries::set_preference(&conn, "codex_token_fix_rev", "0").expect("force second repair");
+        fix_codex_token_totals(&conn);
+        let second = snapshot(&conn);
+        eprintln!("BEFORE={before:?}\nFIRST={first:?}\nSECOND={second:?}");
+        assert_eq!(
+            first, second,
+            "a frozen database backfill must be exactly idempotent on pass two"
+        );
+    }
+
+    // Diagnostic release gate: compare CodeVetter with CodexBar only over the
+    // exact byte prefix CodexBar committed. This prevents an incomplete or
+    // stale oracle cache from being mistaken for a parser disagreement.
+    #[test]
+    #[ignore]
+    fn diag_codexbar_cursor_aligned_parity() {
+        use std::io::Read as _;
+
+        let codevetter_db = std::env::var("CV_CODEVETTER_DB")
+            .expect("CV_CODEVETTER_DB must point to a read-only database snapshot");
+        let codexbar_db = std::env::var("CV_CODEXBAR_DB")
+            .expect("CV_CODEXBAR_DB must point to a CodexBar cache snapshot");
+        let conn =
+            Connection::open_with_flags(codevetter_db, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+                .expect("open CodeVetter snapshot read-only");
+        conn.execute("ATTACH DATABASE ?1 AS oracle", params![codexbar_db])
+            .expect("attach CodexBar snapshot");
+
+        let source_rows = {
+            let mut stmt = conn
+                .prepare(
+                    "WITH ranked_files AS (
+                        SELECT file.*,ROW_NUMBER() OVER (
+                            PARTITION BY session_id ORDER BY updated_at_ms DESC,id DESC
+                        ) AS rank
+                        FROM oracle.files file WHERE session_id IS NOT NULL
+                     )
+                     SELECT session.id,session.jsonl_path,
+                            COALESCE(file.parsed_bytes,file.size),
+                            COALESCE(SUM(day.input_tokens),0),
+                            COALESCE(SUM(day.cached_tokens),0),
+                            COALESCE(SUM(day.output_tokens),0)
+                     FROM cc_sessions session
+                     JOIN ranked_files file ON file.session_id=session.id AND file.rank=1
+                     LEFT JOIN oracle.file_day_aggregates day ON day.file_id=file.id
+                     WHERE session.agent_type='codex'
+                       AND session.jsonl_path IS NOT NULL
+                       AND COALESCE(file.parsed_bytes,file.size)>0
+                     GROUP BY session.id,session.jsonl_path,file.id,
+                              COALESCE(file.parsed_bytes,file.size)
+                     ORDER BY session.id",
+                )
+                .expect("cursor-aligned sources");
+            stmt.query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, i64>(2)?,
+                    row.get::<_, i64>(3)?,
+                    row.get::<_, i64>(4)?,
+                    row.get::<_, i64>(5)?,
+                ))
+            })
+            .expect("cursor-aligned rows")
+            .filter_map(Result::ok)
+            .collect::<Vec<_>>()
+        };
+
+        let prefixes = tempfile::tempdir().expect("prefix directory");
+        let mut scan_rows = Vec::new();
+        let mut expected = std::collections::BTreeMap::new();
+        let mut unreadable = 0usize;
+        for (index, (id, source_path, parsed_bytes, input, cache, output)) in
+            source_rows.into_iter().enumerate()
+        {
+            let Ok(source) = std::fs::File::open(source_path) else {
+                unreadable += 1;
+                continue;
+            };
+            let prefix_path = prefixes.path().join(format!("{index}.jsonl"));
+            let mut prefix = std::fs::File::create(&prefix_path).expect("prefix file");
+            std::io::copy(&mut source.take(parsed_bytes as u64), &mut prefix)
+                .expect("copy committed prefix");
+            scan_rows.push((id.clone(), prefix_path.to_string_lossy().to_string(), None));
+            expected.insert(id, (input, cache, output));
+        }
+        let dependency_rows = {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT id,jsonl_path FROM cc_sessions
+                     WHERE agent_type='codex' AND jsonl_path IS NOT NULL ORDER BY id",
+                )
+                .expect("dependency sources");
+            stmt.query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .expect("dependency rows")
+            .filter_map(Result::ok)
+            .collect::<Vec<_>>()
+        };
+        let mut dependency_sources = 0usize;
+        for (id, source_path) in dependency_rows {
+            if expected.contains_key(&id) || !std::path::Path::new(&source_path).is_file() {
+                continue;
+            }
+            scan_rows.push((id, source_path, None));
+            dependency_sources += 1;
+        }
+
+        let scans = scan_codex_accounting_corpus(&scan_rows);
+        let mut oracle_totals = (0i64, 0i64, 0i64);
+        let mut codevetter_totals = (0i64, 0i64, 0i64);
+        let mut mismatched_sessions = 0usize;
+        for (id, oracle) in &expected {
+            let scan = scans
+                .get(id)
+                .and_then(|scan| scan.as_ref().ok())
+                .expect("cursor-aligned scan");
+            let actual = (scan.total_input, scan.cache_read, scan.total_output);
+            oracle_totals.0 += oracle.0;
+            oracle_totals.1 += oracle.1;
+            oracle_totals.2 += oracle.2;
+            codevetter_totals.0 += actual.0;
+            codevetter_totals.1 += actual.1;
+            codevetter_totals.2 += actual.2;
+            if actual != *oracle {
+                mismatched_sessions += 1;
+                eprintln!(
+                    "CURSOR_MISMATCH session={} oracle={oracle:?} codevetter={actual:?}",
+                    id
+                );
+            }
+        }
+        eprintln!(
+            "CURSOR_ALIGNED compared={} dependencies={} unreadable={} mismatched={} oracle={oracle_totals:?} codevetter={codevetter_totals:?}",
+            expected.len(), dependency_sources, unreadable, mismatched_sessions
+        );
+        assert_eq!(
+            codevetter_totals, oracle_totals,
+            "cursor-aligned retained corpus must match CodexBar exactly"
+        );
+        assert_eq!(mismatched_sessions, 0);
     }
 
     #[test]
@@ -5529,27 +7016,24 @@ mod tests {
             0.50
         ));
         assert!(near(estimate_cost("gpt-5", 1_000_000, 0, 0, 0), 1.25));
-        // GPT-5.6 tiers (Jul 2026, OpenAI's official short-context rates):
-        // Sol $5/$30 cached $0.50, Terra $2/$12 cached $0.20, Luna
-        // $0.20/$1.20 cached $0.02 — none may fall through to the generic
-        // GPT-5 family arm (5.6-sol previously booked at ~1/4 its real price
-        // that way). Terra/Luna were previously derived by linearly scaling
-        // Sol's price rather than using OpenAI's real per-tier rates (Terra
-        // 1.25× overpriced, Luna 5× overpriced) — this guards against that
-        // regressing.
+        // GPT-5.6 official standard short-context rates: Sol $5/$30 cached
+        // $0.50, Terra $2.50/$15 cached $0.25, Luna $1/$6 cached $0.10.
         assert!(near(estimate_cost("gpt-5.6-sol", 1_000_000, 0, 0, 0), 5.0));
         assert!(near(estimate_cost("gpt-5.6-sol", 0, 1_000_000, 0, 0), 30.0));
         assert!(near(
             estimate_cost("gpt-5.6-sol", 1_000_000, 0, 1_000_000, 0),
             0.50
         ));
-        assert!(near(estimate_cost("gpt-5.6-terra", 1_000_000, 0, 0, 0), 2.0));
-        assert!(near(estimate_cost("gpt-5.6-terra", 0, 1_000_000, 0, 0), 12.0));
         assert!(near(
-            estimate_cost("gpt-5.6-luna", 1_000_000, 0, 0, 0),
-            0.20
+            estimate_cost("gpt-5.6-terra", 1_000_000, 0, 0, 0),
+            2.5
         ));
-        assert!(near(estimate_cost("gpt-5.6-luna", 0, 1_000_000, 0, 0), 1.20));
+        assert!(near(
+            estimate_cost("gpt-5.6-terra", 0, 1_000_000, 0, 0),
+            15.0
+        ));
+        assert!(near(estimate_cost("gpt-5.6-luna", 1_000_000, 0, 0, 0), 1.0));
+        assert!(near(estimate_cost("gpt-5.6-luna", 0, 1_000_000, 0, 0), 6.0));
         // GPT-5.4 must beat the generic GPT-5 family arm.
         assert!(near(estimate_cost("gpt-5.4", 1_000_000, 0, 0, 0), 2.50));
         assert!(near(estimate_cost("gpt-5.4", 0, 1_000_000, 0, 0), 15.0));
@@ -5583,20 +7067,88 @@ mod tests {
     }
 
     #[test]
+    fn codex_ledger_pricing_is_exact_only_when_service_tier_is_known() {
+        let standard = price_codex_ledger_observation(
+            "gpt-5.6-terra",
+            Some("standard"),
+            200_000,
+            20_000,
+            10_000,
+        );
+        assert_eq!(standard.status, "priced_exact");
+        assert_eq!(standard.revision, CODEX_LEDGER_PRICING_REVISION);
+        assert_eq!(standard.min_microusd, Some(605_000));
+        assert_eq!(standard.max_microusd, Some(605_000));
+
+        let priority = price_codex_ledger_observation(
+            "gpt-5.6-terra",
+            Some("priority"),
+            200_000,
+            20_000,
+            10_000,
+        );
+        assert_eq!(priority.status, "priced_exact");
+        assert_eq!(priority.min_microusd, Some(1_210_000));
+        assert_eq!(priority.max_microusd, Some(1_210_000));
+
+        let unknown_tier =
+            price_codex_ledger_observation("gpt-5.6-terra", None, 200_000, 20_000, 10_000);
+        assert_eq!(unknown_tier.status, "priced_range");
+        assert_eq!(unknown_tier.min_microusd, standard.min_microusd);
+        assert_eq!(unknown_tier.max_microusd, priority.max_microusd);
+
+        let unpriced = price_codex_ledger_observation("future-model", None, 1_000, 0, 100);
+        assert_eq!(unpriced.status, "unpriced");
+        assert_eq!(unpriced.min_microusd, None);
+        assert_eq!(unpriced.max_microusd, None);
+    }
+
+    #[test]
+    fn codex_ledger_pricing_covers_every_gpt_5_6_model_and_long_context_boundary() {
+        for (model, expected_input_microusd) in [
+            ("gpt-5.6-sol", 500_000),
+            ("gpt-5.6-terra", 250_000),
+            ("gpt-5.6-luna", 100_000),
+        ] {
+            let priced = price_codex_ledger_observation(model, Some("standard"), 100_000, 0, 0);
+            assert_eq!(priced.min_microusd, Some(expected_input_microusd));
+            assert_eq!(priced.max_microusd, Some(expected_input_microusd));
+        }
+        let short =
+            price_codex_ledger_observation("gpt-5.6-sol", Some("standard"), 272_000, 0, 100);
+        let long = price_codex_ledger_observation("gpt-5.6-sol", Some("standard"), 272_001, 0, 100);
+        assert_eq!(short.min_microusd, Some(1_363_000));
+        assert_eq!(long.min_microusd, Some(2_724_510));
+    }
+
+    #[test]
     fn eval_cache_tier_split_prices_1h_writes_at_2x_input() {
         let near = |a: f64, b: f64| (a - b).abs() < 1e-6;
         // Sonnet: $3/M input, so 5m cache writes are $3.75/M (1.25x) and 1h
         // writes are $6/M (2x) — Anthropic's real pricing ratio. All 1M
         // cache-creation tokens as 1h should cost double the all-5m case.
-        let all_5m = estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 0);
-        let all_1h =
-            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 1_000_000);
+        let all_5m =
+            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 0);
+        let all_1h = estimate_cost_with_cache_tiers(
+            "claude-sonnet-4-5",
+            1_000_000,
+            0,
+            0,
+            1_000_000,
+            1_000_000,
+        );
         assert!(near(all_5m, 3.75));
         assert!(near(all_1h, 6.0));
         // A half/half split lands between the two pure cases (within a cent
         // of rounding, since costs are rounded to cents).
-        let half_half =
-            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 500_000);
+        let half_half = estimate_cost_with_cache_tiers(
+            "claude-sonnet-4-5",
+            1_000_000,
+            0,
+            0,
+            1_000_000,
+            500_000,
+        );
         assert!((half_half - (all_5m + all_1h) / 2.0).abs() < 0.01);
         // estimate_cost (no split info) matches the conservative all-5m case —
         // this is the fallback used when a session has no per-model breakdown.
@@ -5607,8 +7159,14 @@ mod tests {
         // A 1h count larger than the total cache-creation tokens (shouldn't
         // happen, but guard against it) is clamped rather than going negative
         // or over-crediting the 5m bucket.
-        let clamped =
-            estimate_cost_with_cache_tiers("claude-sonnet-4-5", 1_000_000, 0, 0, 1_000_000, 5_000_000);
+        let clamped = estimate_cost_with_cache_tiers(
+            "claude-sonnet-4-5",
+            1_000_000,
+            0,
+            0,
+            1_000_000,
+            5_000_000,
+        );
         assert!(near(clamped, all_1h));
     }
 

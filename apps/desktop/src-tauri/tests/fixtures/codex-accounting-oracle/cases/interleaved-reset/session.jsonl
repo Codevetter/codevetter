@@ -1,0 +1,5 @@
+{"timestamp":"2026-07-16T15:00:00Z","type":"session_meta","payload":{"id":"interleaved-reset","cwd":"/fixture"}}
+{"timestamp":"2026-07-16T15:00:00Z","type":"turn_context","payload":{"model":"gpt-5.4"}}
+{"timestamp":"2026-07-16T15:00:01Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":10},"total_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":10}}}}
+{"timestamp":"2026-07-16T15:00:02Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":40,"cached_input_tokens":30,"output_tokens":4},"total_token_usage":{"input_tokens":40,"cached_input_tokens":30,"output_tokens":4}}}}
+{"timestamp":"2026-07-16T15:00:03Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":80,"cached_input_tokens":60,"output_tokens":8},"total_token_usage":{"input_tokens":120,"cached_input_tokens":90,"output_tokens":12}}}}

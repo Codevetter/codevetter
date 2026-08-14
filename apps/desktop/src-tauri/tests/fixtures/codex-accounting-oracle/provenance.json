@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/steipete/CodexBar",
+    "revision": "4f0ac0680cd2f3cce36ed02b8a1e1fbc20bfee76",
+    "license_file": "LICENSE-CodexBar.txt"
+  },
+  "privacy": {
+    "synthetic": true,
+    "contains_prompts": false,
+    "contains_responses": false,
+    "contains_user_paths": false
+  },
+  "cases": [
+    {
+      "id": "parent-child",
+      "files": ["cases/parent-child/parent.jsonl", "cases/parent-child/child.jsonl"],
+      "recreates": "CodexSubagentAccountingIntegrationTests.copied parent prefix keeps the inherited baseline after late lineage metadata",
+      "invariant": "parent prefix is excluded and only child growth after the fork is accepted"
+    },
+    {
+      "id": "late-lineage",
+      "files": ["cases/late-lineage/child.jsonl"],
+      "recreates": "CodexSubagentAccountingIntegrationTests copied-prefix and late-lineage metadata cases",
+      "invariant": "lineage metadata discovered after replay still controls ownership"
+    },
+    {
+      "id": "rate-limit-duplicate",
+      "files": ["cases/rate-limit-duplicate/session.jsonl"],
+      "recreates": "OpenAI Codex issue 14489 and CodexBar exact re-emission suppression",
+      "invariant": "unchanged cumulative totals with repeated last usage add zero"
+    },
+    {
+      "id": "interleaved-reset",
+      "files": ["cases/interleaved-reset/session.jsonl"],
+      "recreates": "CostUsageScanner.CodexTotalsTracker interleaved watermark behavior",
+      "invariant": "a component drop permanently latches containment and never creates gap recounting"
+    },
+    {
+      "id": "incremental-boundary",
+      "files": ["cases/incremental-boundary/session.jsonl"],
+      "split_after_lines": [3, 4],
+      "recreates": "CostUsagePerformanceGateTests incremental append and checkpoint cases",
+      "invariant": "full scan and persisted prefix plus appended tail produce identical totals"
+    },
+    {
+      "id": "fork-replay-existing",
+      "files": ["../codex-accounting/fork-replay.jsonl", "../codex-accounting/fork-direct.jsonl"],
+      "recreates": "direct and copied-history fork formats",
+      "invariant": "inherited history is excluded for both supported fork encodings"
+    },
+    {
+      "id": "duplicate-existing",
+      "files": ["../codex-accounting/duplicate.jsonl"],
+      "recreates": "duplicate token-count event handling",
+      "invariant": "identical usage evidence is counted once"
+    }
+  ]
+}

@@ -29,29 +29,32 @@ pull request is not itself evidence that an optimization works.
 
 ## Fleet product pull requests
 
-All PRs below are drafts. They were created from dedicated branches without a
-deployment, migration, production database, hosted-product load test, or paid
-model call.
+Nine PRs below are merged. Three remain open because merge would cross a
+recorded safety or verification boundary. The campaign used dedicated branches
+without a deployment, migration, production database, hosted-product load
+test, or paid model call.
 
 | Product | Pull request | Publication status | Runtime result |
 | --- | --- | --- | --- |
-| Web Playables | [#3](https://github.com/sarthakagrawal927/web-playables/pull/3) | Confirmed | Reusing the already-computed net revenue improved the 50,000-tick workload from 104.190 to 57.964 ms/op, or 44.37%; the shipping recommendation stayed withheld because the retained baseline had only three samples. |
-| Anime List | [#59](https://github.com/Significant-Hobbies/anime-list/pull/59) | Confirmed | Stable bounded ranking improved the 35,000-item workload from 20.575 to 10.386 ms/op, or 49.521%. |
-| Significant Hobbies | [#74](https://github.com/Significant-Hobbies/significanthobbies/pull/74) | Confirmed | Indexed category lookup improved the 35,000-phase workload from 9.116 to 1.810 ms/op, or 80.145%. |
-| App Health | [#34](https://github.com/sass-maker/app-health/pull/34) | Confirmed, small | Reusing the Go response-writer wrapper reduced 30 to 29 allocs/op and 7,361 to 7,334 B/op; latency moved +9.253%, below the recorded rejection threshold. |
-| Email Manager | [#30](https://github.com/Significant-Hobbies/email-manager/pull/30) | Directional | Weekly digest generation measured 16.181 ms/op before the experiment and 7.266/7.534 ms/op afterward, but the original paired capsule was not retained. |
-| Starboard | [#74](https://github.com/Codevetter/starboard/pull/74) | Unverified | The 50,000-row recommendation flow measured 48.167 ms/op. The PR preserves traversal cleanup; two later experiments regressed and were reverted. |
-| LoopTV | [#35](https://github.com/Significant-Hobbies/looptv/pull/35) | Unverified | The 8,760-row Smart Mix flow measured 4.230 ms/op; the PR caches favorite membership and adds a permanent scale guard. |
-| Reader | [#36](https://github.com/Significant-Hobbies/reader/pull/36) | Unverified | RSS parsing measured 8.767 ms/op, but independent profiles disagreed on the source candidate. The PR is a narrow sanitization experiment with markup correctness coverage. |
-| RolePatch | [#47](https://github.com/Significant-Hobbies/rolepatch/pull/47) | Unverified | Two profiles repeated `calculateATSScore` as the owned CPU candidate at 9.345 ms/op; no paired percentage is claimed. |
-| Free AI | [#51](https://github.com/sass-maker/free-ai/pull/51) | Guardrail | Model selection across all 79 models measured 0.016231 ms/op. CodeVetter refused source optimization and the PR adds only a regression guard. |
-| Reddit Insights | [#3](https://github.com/High-Signal-App/research-subreddit/pull/3) | Stacked, unverified | The bounded topic summarizer is based on collector [PR #2](https://github.com/High-Signal-App/research-subreddit/pull/2); no paired speedup is claimed. |
+| Web Playables | [#3](https://github.com/sarthakagrawal927/web-playables/pull/3) | Open · Confirmed | Reusing the already-computed net revenue improved the 50,000-tick workload from 104.190 to 57.964 ms/op, or 44.37%; the shipping recommendation stayed withheld because the retained baseline had only three samples. Merge remains separate because the connected Cloudflare Pages check may publish `main`. |
+| Anime List | [#59](https://github.com/Significant-Hobbies/anime-list/pull/59) | Merged · Confirmed | Stable bounded ranking improved the 35,000-item workload from 20.575 to 10.386 ms/op, or 49.521%. |
+| Significant Hobbies | [#74](https://github.com/Significant-Hobbies/significanthobbies/pull/74) | Merged · Confirmed | Indexed category lookup improved the 35,000-phase workload from 9.116 to 1.810 ms/op, or 80.145%. |
+| App Health | [#34](https://github.com/sass-maker/app-health/pull/34) | Merged · Confirmed, small | Reusing the Go response-writer wrapper reduced 30 to 29 allocs/op and 7,361 to 7,334 B/op; latency moved +9.253%, below the recorded rejection threshold. |
+| Email Manager | [#30](https://github.com/Significant-Hobbies/email-manager/pull/30) | Merged · Directional | Weekly digest generation measured 16.181 ms/op before the experiment and 7.266/7.534 ms/op afterward, but the original paired capsule was not retained. |
+| Starboard | [#74](https://github.com/Codevetter/starboard/pull/74) | Open · Unverified | The 50,000-row recommendation flow measured 48.167 ms/op. All 201 CI tests pass, but the changed branches lowered branch coverage below the required 100%; merge is blocked pending focused tests. |
+| LoopTV | [#35](https://github.com/Significant-Hobbies/looptv/pull/35) | Merged · Unverified | The 8,760-row Smart Mix flow measured 4.230 ms/op; the PR caches favorite membership and adds a permanent scale guard. |
+| Reader | [#36](https://github.com/Significant-Hobbies/reader/pull/36) | Merged · Unverified | RSS parsing measured 8.767 ms/op, but independent profiles disagreed on the source candidate. The PR is a narrow sanitization experiment with markup correctness coverage. |
+| RolePatch | [#47](https://github.com/Significant-Hobbies/rolepatch/pull/47) | Merged · Unverified | Two profiles repeated `calculateATSScore` as the owned CPU candidate at 9.345 ms/op; no paired percentage is claimed. |
+| Free AI | [#51](https://github.com/sass-maker/free-ai/pull/51) | Merged · Guardrail | Model selection across all 79 models measured 0.016231 ms/op. CodeVetter refused source optimization and the PR adds only a regression guard. |
+| Calorie | [#12](https://github.com/Significant-Hobbies/calorie/pull/12) | Merged · Confirmed synthetic stress | A one-pass exercise-history scan improved the 35,000-entry synthetic workload from 1.203 to 0.162 ms/op. The absolute saving was 1.041 ms at that stress input; no typical-user or customer-visible latency claim is made. |
+| Reddit Insights | [#3](https://github.com/High-Signal-App/research-subreddit/pull/3) | Open · Stacked, unverified | The bounded topic summarizer is based on collector [PR #2](https://github.com/High-Signal-App/research-subreddit/pull/2); no paired speedup is claimed and no PR checks are configured. |
 
 The strongest product results are Significant Hobbies, Anime List, and Web
 Playables. App Health is mechanically real but too small to represent the
-product's end game. The remaining drafts are useful reviewable experiments and
-guardrails, not eleven independent claims of proven customer impact. The full
-inactive-project disposition is retained in
+product's end game. Merge status does not upgrade evidence strength: the
+directional, unverified, guardrail, and synthetic-stress entries are not
+independent claims of proven customer impact. The full inactive-project
+disposition is retained in
 [`artifacts/performance/old-local-projects-results-2026-08-09.md`](../../artifacts/performance/old-local-projects-results-2026-08-09.md).
 
 ### Later source-bound local qualification
@@ -113,23 +116,26 @@ incomplete there. The retained product outcomes are in the
 
 [markedjs/marked#4048](https://github.com/markedjs/marked/pull/4048) was the
 first external upstream PR created by this campaign. It optimizes reference-link
-membership during the normal post-block inline phase while retaining the
-dynamic direct-call path and clearing temporary state in `finally`.
+membership by checking the existing link table directly instead of rebuilding
+and linearly searching its keys for every queued inline source. The revised
+patch contains no duplicate lexer state.
 
-Five-sample paired verification measured:
+Thirty alternating fresh-process pairs with per-process warmup measured:
 
-| References | Baseline | Candidate | Change |
+| References | Baseline | Candidate | Paired median change (95% interval) |
 | ---: | ---: | ---: | ---: |
-| 100 | 1.577 ms/op | 0.869 ms/op | -44.9% |
-| 500 | 15.472 ms/op | 3.326 ms/op | -78.5% |
-| 2,000 | 217.253 ms/op | 12.761 ms/op | -94.126% |
+| 100 | 0.805 ms/op | 0.489 ms/op | -39.2% (-40.3, -38.8) |
+| 500 | 11.512 ms/op | 2.265 ms/op | -80.4% (-80.5, -80.2) |
+| 2,000 | 164.115 ms/op | 10.095 ms/op | -93.8% (-93.9, -93.8) |
 
-The endpoint exponent fell from 1.644 to 0.897. A representative Markdown
-control moved +2.722%, below the 10% materiality threshold. Marked's complete
-`npm test` passed: 190 unit tests, 1,779 specification tests, ESM/UMD/CJS and
-type builds, lint, and generated-output checks. The PR is open and no longer a
-draft as of this record. Snyk passed; the visible Vercel failure is an external
-contributor authorization requirement, not a repository test failure.
+A 2,000-paragraph no-definition control moved +1.3% with a +0.3% to +2.3%
+interval. Reintroducing `Object.keys` or using `for...in` restored that fast path
+but re-enumerated the full link table and erased most of the target improvement,
+so neither experiment was retained. Marked's complete `npm test` passed: 190
+unit tests, 1,779 specification tests, ESM/UMD/CJS and type builds, lint, and
+generated-output checks. The PR is open and no longer a draft. Two maintainer
+threads on the earlier implementation are outdated. Snyk passes; Vercel's fork
+preview requires upstream authorization and is not a code-test failure.
 
 ### qs
 
@@ -141,7 +147,8 @@ measured 41.706 to 23.183 ms/op at 40,000 parameters, or 44.413%, and returned
 
 All 1,045 upstream tests passed with 100% statement and line coverage. The PR
 also documents the two unsafe broader candidates that the correctness suite
-rejected before the final fallback boundary was retained.
+rejected before the final fallback boundary was retained. It is ready for
+review; upstream maintainers still own the merge decision.
 
 ### No upstream PR submitted
 
@@ -158,10 +165,12 @@ the evidence does not justify one.
 
 ## What CodeVetter gained
 
-The implementation and all qualification artifacts are published together in
-[CodeVetter PR #108](https://github.com/Codevetter/codevetter/pull/108). The PR
-is a draft because the runtime, evaluator, campaign, challenge, and receipt
-surfaces deserve architecture review as one coherent system before merge.
+The implementation and all qualification artifacts merged through
+[CodeVetter PR #108](https://github.com/Codevetter/codevetter/pull/108).
+[Follow-up PR #109](https://github.com/Codevetter/codevetter/pull/109) retains
+paired Vitest domain metrics, source-anchors campaign hotspot lines while
+preserving raw coordinates, and records the Calorie evidence boundary. Both
+post-merge CI runs passed the complete desktop, CLI, MCP, and browser pipeline.
 
 The campaign expanded CodeVetter from a one-shot profiler into a bounded local
 optimization laboratory:
@@ -246,6 +255,10 @@ optimization laboratory:
     lab and autonomous campaign reject source-bound candidates above the default
     three-file, 160-added-line, or 200-gross-line budget before expensive
     verification. Public proofs pair dated runtime results with this patch cost.
+21. **Contribution closeout** now challenges retained patch complexity, binds
+    local and optional T-Rex evidence to the pull-request head, reads current
+    and outdated review threads, distinguishes failed checks from fork approval,
+    and stops at upstream ownership without posting or assigning maintainer work.
 
 The most important tooling improvements came from false or incomplete early
 results: startup-dominated tests now fail closed, Vitest names must identify one

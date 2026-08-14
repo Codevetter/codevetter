@@ -29,6 +29,7 @@ import {
   isTauriAvailable,
   previewNativeAgentIsland,
   planSessionRetention,
+  pickDirectory,
   setPreference,
   startLinearOAuth,
   syncGitHubToken,
@@ -148,6 +149,17 @@ function TextInputSetting({
 
 function Divider() {
   return <Separator className="bg-[#1a1a1a]" />;
+}
+
+function parseCodexImportRoots(raw: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === 'string' && value.trim() !== '')
+      : [];
+  } catch {
+    return [];
+  }
 }
 
 // ─── Preference hook ────────────────────────────────────────────────────────
@@ -684,6 +696,48 @@ export default function Settings() {
   const [retentionPlan, setRetentionPlan] = useState<SessionRetentionPlan | null>(null);
   const [retentionBusy, setRetentionBusy] = useState(false);
   const [retentionMessage, setRetentionMessage] = useState<string | null>(null);
+  const [codexImportRootsRaw, setCodexImportRootsRaw] = useState('[]');
+  const [codexImportMessage, setCodexImportMessage] = useState<string | null>(null);
+  const codexImportRoots = parseCodexImportRoots(codexImportRootsRaw);
+
+  useEffect(() => {
+    if (!isTauriAvailable()) return;
+    void getPreference('codex_usage_import_roots')
+      .then((value) => setCodexImportRootsRaw(value ?? '[]'))
+      .catch(() => setCodexImportMessage('Could not read additional Codex history roots.'));
+  }, []);
+
+  const saveCodexImportRoots = useCallback(async (roots: string[]) => {
+    const serialized = JSON.stringify(roots);
+    setCodexImportRootsRaw(serialized);
+    setCodexImportMessage('Saving additional history roots…');
+    try {
+      await setPreference('codex_usage_import_roots', serialized);
+      setCodexImportMessage(
+        roots.length === 0
+          ? 'Additional history roots cleared.'
+          : 'History roots saved. Re-index from Usage to reconcile them.'
+      );
+    } catch {
+      setCodexImportMessage('Could not save history roots. No reconciliation was started.');
+    }
+  }, []);
+
+  const addCodexImportRoot = useCallback(async () => {
+    const selected = await pickDirectory('Import a Codex home or sessions directory');
+    if (!selected) return;
+    const roots = [...new Set([...parseCodexImportRoots(codexImportRootsRaw), selected])];
+    await saveCodexImportRoots(roots);
+  }, [codexImportRootsRaw, saveCodexImportRoots]);
+
+  const removeCodexImportRoot = useCallback(
+    async (root: string) => {
+      await saveCodexImportRoots(
+        parseCodexImportRoots(codexImportRootsRaw).filter((value) => value !== root)
+      );
+    },
+    [codexImportRootsRaw, saveCodexImportRoots]
+  );
 
   const createRetentionPlan = useCallback(async () => {
     setRetentionBusy(true);
@@ -1349,6 +1403,71 @@ export default function Settings() {
               description="Token usage and cost breakdown across sessions."
             />
             <p className="text-sm text-slate-500 px-1">Usage data is shown on the Home page.</p>
+
+            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Codex history recovery
+            </h3>
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-200">Additional Codex homes</p>
+                  <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
+                    Import a Codex home, sessions folder, or archived sessions folder when older
+                    transcripts live outside the active CODEX_HOME. Matching session identities are
+                    deduplicated before reconciliation.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!isTauriAvailable()}
+                  onClick={() => void addCodexImportRoot()}
+                  className="shrink-0"
+                >
+                  Import Codex history…
+                </Button>
+              </div>
+              {codexImportRoots.length === 0 ? (
+                <p className="mt-4 text-xs text-slate-600">
+                  No additional roots configured. The active and archived folders under CODEX_HOME
+                  are scanned automatically.
+                </p>
+              ) : (
+                <ul className="mt-4 space-y-2" aria-label="Additional Codex history roots">
+                  {codexImportRoots.map((root) => (
+                    <li
+                      key={root}
+                      className="flex min-w-0 items-center gap-3 rounded-lg border border-[var(--cv-line)] bg-black/10 px-3 py-2"
+                    >
+                      <span
+                        className="min-w-0 flex-1 truncate font-mono text-xs text-slate-300"
+                        title={root}
+                      >
+                        {root}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCodexImportRoot(root)}
+                        className="h-8 shrink-0 text-slate-400"
+                        aria-label={`Remove Codex history root ${root}`}
+                      >
+                        Remove
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {codexImportMessage && (
+                <p className="mt-3 text-xs text-slate-400" aria-live="polite">
+                  {codexImportMessage}
+                </p>
+              )}
+              <p className="mt-3 text-xs leading-5 text-amber-200/70">
+                Return to Usage and choose Reconcile now after adding or restoring history.
+              </p>
+            </div>
 
             <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Session archive retention

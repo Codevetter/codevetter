@@ -15,8 +15,46 @@ Format matches [new-things.md](new-things.md); roadmap in [README.md](README.md)
 ## Cumulative vs delta token counters
 - What: some CLIs report per-message token deltas (Claude), others a session-cumulative running total in every event (Codex `total_token_usage`).
 - Why here: adding a cumulative total on each incremental pass compounds — one Codex session reached 61.5B tokens / $35k before the v1.1.99 fix.
-- Gotcha (from code): `SessionAppendDelta.tokens_absolute` switches the UPDATE between SET and ADD per adapter. (`db/queries.rs::apply_session_append_delta`)
-- Source: — (project-specific; see the field's doc comment)
+- Gotcha (from code): a rate-limit-only Codex event can repeat an unchanged
+  `total_token_usage` alongside the previous non-zero `last_token_usage`.
+  Blindly summing `last` double-counts it. Codex now persists cumulative
+  watermarks and exact seen totals, emits accepted/excluded observations, and
+  reconciles canonical totals from accepted rows. (`session_adapters.rs`;
+  `db/queries.rs::reconcile_codex_usage_totals`)
+- Source: https://github.com/openai/codex/issues/14489
+
+## Historical Codex accounting repair
+- What: revisioned streaming replay of readable Codex JSONL sources into
+  `codex_usage_observations`, followed by session/model reconciliation.
+- Why here: old rows can contain both missed live tails and duplicate snapshots;
+  changing only the display query cannot recover or safely correct either.
+- Gotcha (from code): the repair reads bounded chunks, writes each session in a
+  transaction, and is idempotent for a fixed transcript. Missing/unreadable
+  sources retain their previous totals and receive an `unrepaired` audit row;
+  they are never silently zeroed. A transcript that grows between repair passes
+  can legitimately produce a larger second result. (`history.rs::fix_codex_token_totals`)
+- Privacy: observation and audit tables contain timestamps, token counts, model,
+  disposition, and aggregate diagnostics only—never prompts or responses.
+- Qualification: run the repair twice on a frozen database/transcript copy,
+  require byte-for-byte-stable aggregates on pass two, and compare readable
+  sessions with an independent event scanner. Treat a standalone fork scanner's
+  inherited cumulative prefix as replay, not paid child usage. Missing sources
+  remain explicitly unrepaired; they cannot be truthfully reconstructed from
+  the summary row alone.
+- Completion is fail-closed: canonical session/model totals are derived from
+  the persisted accepted observations and checked against the streaming parse
+  inside each transaction. Any mismatch, failed write, or missing audit keeps
+  the accounting revision pending so it retries instead of claiming success.
+- A nested subagent parent marker proves lineage, not counter ownership. Compact
+  subagent rollouts whose first cumulative total equals their first per-event
+  usage have independently reset counters and must be counted. Embedded
+  ancestor metadata proves a copied prefix; a later counter reset can still
+  establish a trustworthy child-owned suffix even when the parent file is gone.
+- Compare independent scanners at the same committed byte cursor. CodexBar
+  0.46.0 can retain `scan_complete=0` large files and stale completed sizes
+  after `--refresh`; comparing its partial cache with a complete CodeVetter scan
+  creates a false disagreement. CodeVetter must publish pending bytes and never
+  label partial coverage complete.
 
 ## Incremental indexing with byte-offset cursors
 - What: re-reading only the appended tail of a growing file, from a persisted byte offset, instead of re-parsing the whole file.
@@ -27,7 +65,10 @@ Format matches [new-things.md](new-things.md); roadmap in [README.md](README.md)
 ## Local-day bucketing and window boundaries
 - What: attributing usage to calendar days in the user's timezone, and converting local midnight to UTC instants for window queries.
 - Why here: "today/this week" panels; comparing local-date strings with `Z`-suffix timestamps started weeks 5.5h early in IST (fixed v1.2.9).
-- Gotcha (from code): `cc_session_days` holds per-day message counts; the headline day/dollar numbers PRORATE whole-session cost by message share — close, but a midnight-spanning session smears. `timeutil::local_day_start_utc` is the one boundary helper. (`db/queries.rs` day_map query)
+- Gotcha (from code): Codex uses accepted observation timestamps directly.
+  Other adapters still use `cc_session_days` message-share proration, so a
+  midnight-spanning non-Codex session can smear. `timeutil::local_day_start_utc`
+  is the one boundary helper. (`db/queries.rs` day-map query)
 - Source: https://docs.rs/chrono/latest/chrono/
 
 ## API-equivalent pricing tables (pricing revs)

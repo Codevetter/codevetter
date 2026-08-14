@@ -1,7 +1,7 @@
 import type { AgentProvider } from './tauri-ipc';
 
-export type AgentAttentionKind = 'approval' | 'question' | 'confirmation' | 'setup';
-export type AgentAttentionConfidence = 'confirmed' | 'possible';
+type AgentAttentionKind = 'approval' | 'question' | 'confirmation' | 'setup';
+type AgentAttentionConfidence = 'confirmed' | 'possible';
 
 export interface AgentAttention {
   kind: AgentAttentionKind;

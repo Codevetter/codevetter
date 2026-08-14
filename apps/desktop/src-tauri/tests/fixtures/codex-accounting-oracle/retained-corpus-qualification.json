@@ -1,0 +1,53 @@
+{
+  "observed_at": "2026-08-11T00:33:21+05:30",
+  "privacy": "aggregate-only; no transcript content, paths, or session identifiers",
+  "oracle": {
+    "name": "CodexBar",
+    "version": "0.46.0",
+    "revision": "4f0ac0680cd2f3cce36ed02b8a1e1fbc20bfee76"
+  },
+  "cursor_aligned_parity": {
+    "compared_sessions": 12,
+    "dependency_only_sessions": 84,
+    "unreadable_compared_sessions": 0,
+    "mismatched_sessions": 0,
+    "tokens": {
+      "input": 1257163311,
+      "cache_read": 1230980352,
+      "output": 3863267
+    }
+  },
+  "frozen_backfill": {
+    "readable_sources": 96,
+    "unrepaired_historical_sessions": 1260,
+    "before_projected_input_plus_output_tokens": 94337327803,
+    "first_projected_input_plus_output_tokens": 94662060441,
+    "second_projected_input_plus_output_tokens": 94662060441,
+    "first_ledger_rows": 28215,
+    "second_ledger_rows": 28215,
+    "idempotent": true
+  },
+  "legacy_projection_rollback": {
+    "control": "CODEVETTER_CODEX_ACCOUNTING=legacy",
+    "restored_projected_input_plus_output_tokens": 94337327803,
+    "restored_projected_cost_usd": 61935.331221,
+    "restored_v1_observation_rows": 25903,
+    "matches_pre_activation_snapshot": true,
+    "v2_ledger_preserved": true
+  },
+  "verified_evidence": {
+    "sessions": 96,
+    "accepted_observations": 25476,
+    "duplicate_observations": 2699,
+    "inherited_replay_observations": 40,
+    "input_tokens": 3147488441,
+    "cache_read_tokens": 3080025728,
+    "output_tokens": 8882175,
+    "pricing": {
+      "state": "priced_range",
+      "events": 25476,
+      "minimum_usd": 2141.35259,
+      "maximum_usd": 4282.705159
+    }
+  }
+}

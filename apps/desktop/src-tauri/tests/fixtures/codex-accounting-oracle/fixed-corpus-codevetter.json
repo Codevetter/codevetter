@@ -1,0 +1,19 @@
+{
+  "totals": {
+    "input_tokens": 1495,
+    "cache_read_tokens": 1230,
+    "output_tokens": 149,
+    "total_tokens": 1644,
+    "api_equivalent_cost_usd": 0.003205
+  },
+  "daily": [
+    {
+      "date": "2026-07-16",
+      "input_tokens": 1495,
+      "cache_read_tokens": 1230,
+      "output_tokens": 149,
+      "total_tokens": 1644,
+      "api_equivalent_cost_usd": 0.003205
+    }
+  ]
+}

@@ -58,6 +58,7 @@ export async function createOptimizationCampaignService(repositoryRoot, override
     promote: (input) => promoteCampaign(root, input, dependencies),
     inspect: (input) => inspectCampaign(root, input, dependencies),
     status: (input) => statusCampaign(root, input, dependencies),
+    evidence: (input) => inspectCampaignEvidence(root, input),
   };
 }
 
@@ -475,6 +476,16 @@ async function inspectCampaign(root, input, dependencies) {
 async function statusCampaign(root, input, dependencies) {
   const campaign = await loadCampaign(root, requiredDirectory(input));
   return deriveCampaignStatus(campaign.manifest, campaign.records, dependencies.now());
+}
+
+async function inspectCampaignEvidence(root, input) {
+  const campaign = await loadCampaign(root, requiredDirectory(input));
+  if (!Number.isInteger(input.record_sequence) || input.record_sequence < 0) {
+    throw new Error('record_sequence must be a non-negative integer');
+  }
+  const record = campaign.records[input.record_sequence];
+  if (!record?.performance) throw new Error('campaign record has no performance evidence');
+  return { record, evidence: await loadEvidence(campaign, record.performance) };
 }
 
 export function deriveCampaignStatus(manifest, records, now = new Date()) {
@@ -909,7 +920,7 @@ function correctnessDecision(status) {
   };
 }
 
-async function inspectRepositoryState(root, manifest) {
+export async function inspectRepositoryState(root, manifest) {
   const baseRevision = (
     await runGit(root, ['rev-parse', `${manifest.repository_revision}^{commit}`])
   ).stdout.trim();

@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
@@ -31,6 +33,15 @@ jobs:
       - name: Lint
         working-directory: apps/desktop
         run: pnpm run lint
+      - name: Code health
+        env:
+          CODE_HEALTH_BASE: ${{ github.event.pull_request.base.sha || github.event.before || 'HEAD^' }}
+        run: |
+          pnpm run knip:strict
+          pnpm run quality:complexity
+          pnpm run quality:cycles
+          pnpm run quality:duplication
+          pnpm run quality:dependencies
       - name: Type Check
         working-directory: apps/desktop
         run: pnpm exec tsc --noEmit

@@ -2,7 +2,7 @@ export const WORK_ITEM_STATUSES = ['plan', 'build', 'review', 'verify', 'done'] 
 
 export type WorkItemStatus = (typeof WORK_ITEM_STATUSES)[number];
 export type WorkItemProvider = 'codex' | 'claude';
-export type WorkItemVerificationStatus = 'missing' | 'running' | 'passed' | 'failed' | 'stale';
+type WorkItemVerificationStatus = 'missing' | 'running' | 'passed' | 'failed' | 'stale';
 export type WorkItemCompletionDisposition = 'verified' | 'waived' | 'legacy';
 
 export interface WorkItem {
@@ -107,7 +107,7 @@ export function groupWorkItems(items: readonly WorkItem[]): Record<WorkItemStatu
   return grouped;
 }
 
-export type WorkEvidenceTone = 'neutral' | 'active' | 'attention' | 'success';
+type WorkEvidenceTone = 'neutral' | 'active' | 'attention' | 'success';
 
 export interface WorkEvidenceSummary {
   label: string;

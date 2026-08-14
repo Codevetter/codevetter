@@ -1,0 +1,47 @@
+[
+  {
+    "file": "ordinary.jsonl",
+    "model": "gpt-5.5",
+    "local_day": "2026-08-10",
+    "input": 150,
+    "cached": 120,
+    "output": 15,
+    "dispositions": ["accepted", "accepted"]
+  },
+  {
+    "file": "duplicate.jsonl",
+    "model": "gpt-5.5",
+    "local_day": "2026-08-10",
+    "input": 100,
+    "cached": 80,
+    "output": 10,
+    "dispositions": ["accepted", "duplicate"]
+  },
+  {
+    "file": "fork-direct.jsonl",
+    "model": "gpt-5.5",
+    "local_day": "2026-08-10",
+    "input": 150,
+    "cached": 120,
+    "output": 15,
+    "dispositions": ["accepted", "accepted"]
+  },
+  {
+    "file": "fork-replay.jsonl",
+    "model": "gpt-5.5",
+    "local_day": "2026-08-10",
+    "input": 150,
+    "cached": 120,
+    "output": 15,
+    "dispositions": ["inherited_replay", "inherited_replay", "accepted", "accepted"]
+  },
+  {
+    "file": "interleaved.jsonl",
+    "model": "gpt-5.5",
+    "local_day": "2026-08-10",
+    "input": 120,
+    "cached": 90,
+    "output": 12,
+    "dispositions": ["accepted", "accepted", "accepted"]
+  }
+]
