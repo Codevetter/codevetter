@@ -6,7 +6,7 @@
 const faqs = [
   {
     q: 'What is CodeVetter?',
-    a: 'CodeVetter is a desktop-first AI code review tool built for agent-generated code. It runs locally as a Tauri binary, reviews diffs through pluggable LLM providers, and focuses on finding bugs that normal AI review misses.',
+    a: 'CodeVetter is a local verification platform for agent-written code. It reviews diffs, runs tests, profiles representative flows, and preserves executable evidence so coding agents can fix correctness and performance problems instead of relying on another model’s opinion.',
   },
   {
     q: 'Is CodeVetter free?',
@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: 'Can CodeVetter review code from AI agents?',
-    a: 'Yes, it is specifically designed for agent output. It verifies agent-written code by running reviews, emitting verification handoff proofs with per-finding evidence, and re-checking that issues are resolved.',
+    a: 'Yes. CodeVetter is designed for agent output: it reviews changed code, exercises behavior, measures representative performance, emits evidence for each finding, and re-checks the result after an agent makes a fix.',
   },
   {
     q: 'What LLM providers does CodeVetter support?',
@@ -63,7 +63,7 @@ const faqJsonLd = {
         Questions, <span class="text-gradient">answered.</span>
       </h2>
       <p class="mt-6 text-[18px] text-gray-400 leading-relaxed max-w-2xl mx-auto">
-        Everything you need to know about how CodeVetter vets agent-generated code.
+        How CodeVetter reviews, tests, and optimizes agent-generated code.
       </p>
     </div>
 
