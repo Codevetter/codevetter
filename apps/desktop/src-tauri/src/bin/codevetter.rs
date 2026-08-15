@@ -386,7 +386,10 @@ mod tests {
     fn output_and_exit_codes_preserve_receipt_meaning() {
         let config: serde_json::Value =
             serde_json::from_str(include_str!("../../tauri.conf.json")).expect("Tauri config");
-        assert_eq!(app_version(), config["version"].as_str().expect("app version"));
+        assert_eq!(
+            app_version(),
+            config["version"].as_str().expect("app version")
+        );
         let passed = fixture_receipt(TrexPreviewVerdict::PassedWithLimits);
         let failed = fixture_receipt(TrexPreviewVerdict::Failed);
         let uncertain = fixture_receipt(TrexPreviewVerdict::NoConfidence);

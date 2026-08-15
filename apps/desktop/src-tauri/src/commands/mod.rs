@@ -14,6 +14,7 @@ pub mod deterministic_review;
 pub mod differential_verification;
 pub mod dora;
 pub mod evidence_pattern;
+pub mod evidence_scope;
 pub mod files;
 pub mod git;
 pub mod git_metadata;
@@ -33,6 +34,7 @@ pub mod observability;
 pub(crate) mod outcome_risk_calibration;
 #[cfg(test)]
 mod perf_bench;
+pub mod performance_bridge;
 pub mod preferences;
 pub mod procedure_events;
 pub mod repo_workspace;

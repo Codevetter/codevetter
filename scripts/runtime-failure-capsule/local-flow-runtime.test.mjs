@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -326,6 +326,55 @@ test('runtime MCP exposes product capabilities and fails closed on unknown captu
   });
   assert.equal(invalidPlan.result.isError, true);
   assert.match(invalidPlan.result.structuredContent.error.message, /Unknown tool argument/);
+});
+
+test('CLI and MCP performance plans are contract-equivalent for the same exact scope', async (context) => {
+  const root = await gitFixture(context, {
+    'package.json': JSON.stringify({ type: 'module' }),
+    'cart.test.js': "import test from 'node:test'; test('cart total', () => {});\n",
+  });
+  const scope = {
+    adapter: 'node-test',
+    target: 'cart.test.js',
+    name: 'cart total',
+    samples: 2,
+    warmups: 0,
+    timeout_ms: 5_000,
+  };
+  const cli = spawnSync(
+    process.execPath,
+    [
+      fileURLToPath(new URL('./cli.mjs', import.meta.url)),
+      'plan-performance',
+      '--repo',
+      root,
+      '--adapter',
+      scope.adapter,
+      '--target',
+      scope.target,
+      '--name',
+      scope.name,
+      '--samples',
+      String(scope.samples),
+      '--warmups',
+      String(scope.warmups),
+      '--timeout-ms',
+      String(scope.timeout_ms),
+      '--json',
+    ],
+    { cwd: root, encoding: 'utf8' }
+  );
+  assert.equal(cli.status, 0, cli.stderr);
+
+  const handle = await createRuntimeMcpHandler(root);
+  const mcp = await handle({
+    jsonrpc: '2.0',
+    id: 41,
+    method: 'tools/call',
+    params: { name: 'plan_local_performance', arguments: scope },
+  });
+  assert.equal(mcp.result.isError, false);
+  assert.deepEqual(JSON.parse(cli.stdout), mcp.result.structuredContent.result);
 });
 
 test('runtime MCP process speaks line-delimited JSON-RPC without network setup', async (context) => {

@@ -310,6 +310,7 @@ fn main() {
             .collect();
             app.manage(DbState(Arc::new(Mutex::new(conn))));
             app.manage(commands::trex_watcher::WatcherHandles::new());
+            app.manage(commands::performance_bridge::PerformanceRunRegistry::default());
             app.manage(commands::resources::ResourceState::new());
             commands::native_agent_island::hydrate_preferences(
                 app.handle(),
@@ -615,6 +616,9 @@ fn main() {
             commands::history::get_usage_by_model,
             commands::local_qualification::benchmark_dashboard_ipc,
             commands::local_qualification::account_local_caches,
+            commands::performance_bridge::run_local_performance,
+            commands::performance_bridge::cancel_local_performance,
+            commands::evidence_scope::resolve_evidence_scope,
             // Repo activity intelligence (shown inside Repo -> Activity)
             // T-Rex sandbox (/review → Test branch)
             commands::sandbox::run_branch_sandbox,

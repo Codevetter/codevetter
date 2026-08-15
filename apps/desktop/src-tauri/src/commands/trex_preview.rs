@@ -658,6 +658,17 @@ async fn resolve_pull_request(repo_path: &str, value: &str) -> Result<TrexSource
     })
 }
 
+pub(crate) async fn resolve_scope_change(
+    repo_path: &str,
+    value: &str,
+) -> Result<TrexSourceReceipt, String> {
+    if value.starts_with("https://") {
+        resolve_pull_request(repo_path, value).await
+    } else {
+        resolve_range(repo_path, value).await
+    }
+}
+
 async fn resolve_range(repo_path: &str, value: &str) -> Result<TrexSourceReceipt, String> {
     let parsed = parse_range(value)?;
     let base_sha = resolve_revision(repo_path, &parsed.base).await?;
