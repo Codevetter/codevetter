@@ -18,8 +18,10 @@ import {
   Terminal as TerminalIcon,
 } from 'lucide-react';
 import {
+  type Dispatch,
   type FormEvent,
   type KeyboardEvent,
+  type SetStateAction,
   useCallback,
   useEffect,
   useId,
@@ -41,7 +43,11 @@ import {
   type AgentLifecyclePayload,
 } from '@/lib/agent-lifecycle-events';
 import { boundAgentLiveOutput } from '@/lib/agent-live-output';
-import { attentionFromOutput, attentionFromStructuredEvent } from '@/lib/agent-attention';
+import {
+  attentionFromOutput,
+  attentionFromStructuredEvent,
+  type AgentAttention,
+} from '@/lib/agent-attention';
 import { recommendAgentTeam, type AgentRoleRecommendation } from '@/lib/agent-team-recommendation';
 import { presentAgentTerminalExit } from '@/lib/agent-terminal-exit';
 import {
@@ -306,6 +312,1107 @@ const statusMeta: Record<
   },
 };
 
+function applyTerminalEvent(terminal: AgentTerminal, event: AgentTerminalEvent): AgentTerminal {
+  if (terminal.id !== event.session_id) return terminal;
+  const providerName = providerLabel(terminal.provider);
+  if (event.kind === 'output') return applyOutputEvent(terminal, event, providerName);
+  if (event.kind === 'started') return applyStartedEvent(terminal, event, providerName);
+  if (event.kind === 'heartbeat') return applyHeartbeatEvent(terminal, event, providerName);
+  if (event.kind === 'agent_event') return applyAgentEvent(terminal, event, providerName);
+  if (event.kind === 'error') return applyErrorEvent(terminal, event, providerName);
+  if (event.kind === 'exit') return applyExitEvent(terminal, event, providerName);
+  return terminal;
+}
+
+function applyOutputEvent(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string
+): AgentTerminal {
+  if (isDuplicateTerminalOutput(event.session_id, event.seq ?? null)) {
+    return terminal;
+  }
+  const chunk = event.data ?? '';
+  const outputTail = appendTerminalOutput(event.session_id, chunk);
+  if (terminal.structuredEventsActive) {
+    if (terminal.running && terminal.started && terminal.idleMs === 0) {
+      return terminal;
+    }
+    return {
+      ...terminal,
+      running: true,
+      started: true,
+      idleMs: 0,
+      lastOutputAt: Date.now(),
+    };
+  }
+  const blockedReason = agentOutputAttentionReason(terminal.provider, chunk);
+  if (
+    !blockedReason &&
+    terminal.running &&
+    terminal.started &&
+    terminal.status === 'green' &&
+    terminal.updatedAt === 'running'
+  ) {
+    return terminal;
+  }
+  const next = {
+    ...terminal,
+    outputTail,
+    status: (blockedReason ? 'yellow' : 'green') as AgentStatus,
+    running: true,
+    started: true,
+    updatedAt: blockedReason ?? 'running',
+    statusReason: blockedReason ?? 'active output',
+    idleMs: 0,
+    lastOutputAt: Date.now(),
+    waitingSince: blockedReason ? (terminal.waitingSince ?? Date.now()) : null,
+  };
+  return blockedReason && terminal.status !== 'yellow'
+    ? appendActivity(
+        appendBlock(next, {
+          kind: 'attention',
+          status: 'yellow',
+          title: blockedReason,
+          detail: 'Detected from terminal output fallback',
+        }),
+        {
+          kind: 'attention',
+          label: blockedReason,
+          detail: 'Detected from terminal output fallback',
+        }
+      )
+    : next;
+}
+
+function applyStartedEvent(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string
+): AgentTerminal {
+  return appendActivity(
+    {
+      ...terminal,
+      running: true,
+      started: true,
+      pid: event.pid ?? terminal.pid,
+      status: 'green',
+      updatedAt: 'running',
+      statusReason: `${providerName} process started`,
+      idleMs: 0,
+      lastOutputAt: Date.now(),
+      lastHeartbeatAt: Date.now(),
+      waitingSince: null,
+      structuredEventsActive: false,
+      lastAgentEvent: null,
+      lastAgentEventSource: null,
+      lastAgentEventAt: null,
+      lastStructuredEventSeq: null,
+      structuredEventLog: [],
+    },
+    {
+      kind: 'info',
+      label: `${providerName} process started`,
+      detail: event.pid ? `pid ${event.pid}` : undefined,
+    }
+  );
+}
+
+function applyHeartbeatEvent(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string
+): AgentTerminal {
+  const idleMs = event.idle_ms ?? terminal.idleMs ?? 0;
+  if (terminal.structuredEventsActive) {
+    return applyStructuredHeartbeat(terminal, event, providerName, idleMs);
+  }
+  return applyLegacyHeartbeat(terminal, event, providerName, idleMs);
+}
+
+function applyStructuredHeartbeat(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string,
+  idleMs: number
+): AgentTerminal {
+  if (terminal.status === 'yellow') {
+    return {
+      ...terminal,
+      pid: event.pid ?? terminal.pid,
+      idleMs,
+      lastHeartbeatAt: Date.now(),
+    };
+  }
+  const stalled =
+    idleMs >= STALL_AFTER_MS &&
+    terminal.lastAgentEvent !== 'stop' &&
+    terminal.lastAgentEvent !== 'idle_prompt';
+  return {
+    ...terminal,
+    pid: event.pid ?? terminal.pid,
+    status: terminal.status === 'red' ? 'red' : 'green',
+    updatedAt: stalled ? `quiet ${formatDuration(idleMs)}` : terminal.updatedAt,
+    statusReason: stalled
+      ? `${providerName} is still running; waiting only changes on explicit structured events`
+      : terminal.statusReason,
+    idleMs,
+    lastHeartbeatAt: Date.now(),
+    waitingSince: null,
+  };
+}
+
+function applyLegacyHeartbeat(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string,
+  idleMs: number
+): AgentTerminal {
+  const blockedReason = agentOutputAttentionReason(
+    terminal.provider,
+    getTerminalOutputTail(event.session_id)
+  );
+  if (blockedReason) {
+    return applyHeartbeatBlocked(terminal, event, blockedReason, idleMs);
+  }
+  if (terminal.lastAgentEvent === 'stop') {
+    return {
+      ...terminal,
+      pid: event.pid ?? terminal.pid,
+      status: terminal.status === 'red' ? 'red' : 'green',
+      updatedAt: terminal.updatedAt === 'turn done' ? terminal.updatedAt : 'turn done',
+      statusReason: terminal.statusReason || `${providerName} completed its turn`,
+      idleMs,
+      lastHeartbeatAt: Date.now(),
+      waitingSince: null,
+    };
+  }
+  if (idleMs >= STALL_AFTER_MS) {
+    return {
+      ...terminal,
+      pid: event.pid ?? terminal.pid,
+      idleMs,
+      lastHeartbeatAt: Date.now(),
+      status: 'green' as AgentStatus,
+      updatedAt: `quiet ${formatDuration(idleMs)}`,
+      statusReason: 'Process is healthy and has no recent activity',
+      waitingSince: null,
+    };
+  }
+  return {
+    ...terminal,
+    pid: event.pid ?? terminal.pid,
+    status: 'green',
+    updatedAt: `idle ${formatDuration(idleMs)}`,
+    statusReason: 'Process heartbeat is healthy',
+    idleMs,
+    lastHeartbeatAt: Date.now(),
+    waitingSince: null,
+  };
+}
+
+function applyHeartbeatBlocked(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  blockedReason: string,
+  idleMs: number
+): AgentTerminal {
+  const next = {
+    ...terminal,
+    pid: event.pid ?? terminal.pid,
+    idleMs,
+    lastHeartbeatAt: Date.now(),
+    status: 'yellow' as AgentStatus,
+    updatedAt: blockedReason,
+    statusReason: blockedReason,
+    waitingSince: terminal.waitingSince ?? Date.now(),
+  };
+  return terminal.status === 'yellow'
+    ? next
+    : appendActivity(
+        appendBlock(next, {
+          kind: 'attention',
+          status: 'yellow',
+          title: blockedReason,
+          detail: 'Detected from terminal output fallback',
+        }),
+        {
+          kind: 'attention',
+          label: blockedReason,
+          detail: 'Detected from terminal output fallback',
+        }
+      );
+}
+
+function applyAgentEvent(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string
+): AgentTerminal {
+  const payload = parseAgentLifecyclePayload(event.data);
+  if (!payload || payload.agent !== terminal.provider) return terminal;
+  const eventSeq = typeof event.seq === 'number' ? event.seq : null;
+  if (eventSeq != null && !isNewStructuredEvent(terminal.lastStructuredEventSeq, eventSeq)) {
+    return terminal;
+  }
+  if (payload.event === 'idle_prompt' && terminal.lastAgentEvent === 'stop') {
+    return terminal;
+  }
+  const patch = terminalPatchForAgentEvent(payload);
+  const now = Date.now();
+  const blockKind = agentBlockKindForStatus(patch.status);
+  const activityKind = agentActivityKindForStatus(patch.status);
+  const eventSource = agentPayloadEventSource(payload);
+  return appendActivity(
+    appendBlock(
+      {
+        ...terminal,
+        ...patch,
+        running: true,
+        started: true,
+        structuredEventsActive:
+          terminal.structuredEventsActive || isConfirmedAgentEventSource(eventSource),
+        pid: event.pid ?? terminal.pid,
+        lastHeartbeatAt: now,
+        lastAgentEventSource: eventSource,
+        lastAgentEventAt: now,
+        lastStructuredEventSeq: maxStructuredEventSeq(terminal.lastStructuredEventSeq, eventSeq),
+        structuredEventLog: appendStructuredEventLog(terminal.structuredEventLog, {
+          terminalId: terminal.id,
+          payload,
+          source: eventSource,
+          seq: eventSeq,
+          at: now,
+          status: patch.status ?? terminal.status,
+          detail: patch.statusReason,
+        }),
+        waitingSince: patch.status === 'yellow' ? (terminal.waitingSince ?? Date.now()) : null,
+      },
+      {
+        kind: blockKind,
+        status: patch.status ?? terminal.status,
+        title: agentEventBlockTitle(payload, patch),
+        detail: agentEventBlockDetail(payload, patch),
+        at: now,
+      }
+    ),
+    {
+      kind: activityKind,
+      label: payload.event ?? `${providerName} event`,
+      detail: patch.statusReason,
+    }
+  );
+}
+
+function applyErrorEvent(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string
+): AgentTerminal {
+  const message = `\r\n${event.data ?? `${providerName} terminal error`}\r\n`;
+  const outputTail = appendTerminalOutput(event.session_id, message);
+  return appendActivity(
+    appendBlock(
+      {
+        ...terminal,
+        outputTail,
+        running: false,
+        started: true,
+        status: 'red',
+        updatedAt: 'error',
+        statusReason: event.data ?? `${providerName} terminal error`,
+        lastAgentEvent: terminal.lastAgentEvent,
+        lastAgentEventSource: terminal.lastAgentEventSource,
+      },
+      {
+        kind: 'exit',
+        status: 'red',
+        title: 'Terminal error',
+        detail: event.data ?? `${providerName} terminal error`,
+      }
+    ),
+    {
+      kind: 'error',
+      label: 'Terminal error',
+      detail: event.data ?? `${providerName} terminal error`,
+    }
+  );
+}
+
+function applyExitEvent(
+  terminal: AgentTerminal,
+  event: AgentTerminalEvent,
+  providerName: string
+): AgentTerminal {
+  const presentation = presentAgentTerminalExit(
+    event,
+    providerName,
+    Boolean(terminal.codexSessionId)
+  );
+  const outputTail = appendTerminalOutput(event.session_id, `\r\n${presentation.detail}\r\n`);
+  return appendActivity(
+    appendBlock(
+      {
+        ...terminal,
+        outputTail,
+        running: false,
+        started: true,
+        status: presentation.status,
+        updatedAt: presentation.updatedAt,
+        statusReason: presentation.statusReason,
+        idleMs: null,
+        waitingSince: null,
+      },
+      {
+        kind: 'exit',
+        status: presentation.status,
+        title: presentation.title,
+        detail: presentation.detail,
+      }
+    ),
+    {
+      kind: presentation.activityKind,
+      label: presentation.title,
+      detail: presentation.detail,
+    }
+  );
+}
+
+function notifyBackgroundAttention(
+  terminals: AgentTerminal[],
+  notified: Map<string, string>
+): void {
+  for (const terminal of terminals) {
+    if (!terminal.background || (terminal.status !== 'yellow' && terminal.status !== 'red')) {
+      notified.delete(terminal.id);
+      continue;
+    }
+
+    const notificationKey = `${terminal.status}:${terminal.statusReason}`;
+    if (notified.get(terminal.id) === notificationKey) continue;
+    notified.set(terminal.id, notificationKey);
+
+    const providerName = providerLabel(terminal.provider);
+    const title =
+      terminal.status === 'red'
+        ? `${providerName} agent failed`
+        : `${providerName} agent needs attention`;
+    void sendTrayNotification(title, `${terminal.name}: ${terminal.statusReason}`).catch(() => {
+      // Notifications are best-effort; sidebar and header attention remain authoritative.
+    });
+  }
+}
+
+function mergeSnapshotsIntoTerminals(
+  current: AgentTerminal[],
+  snapshots: AgentTerminalSnapshot[]
+): AgentTerminal[] {
+  const snapshotById = new Map(
+    snapshots.map((snapshot) => [snapshot.session_id, snapshot] as const)
+  );
+  const updated = current.map((terminal) => {
+    const snapshot = snapshotById.get(terminal.id);
+    return snapshot ? mergeTerminalSnapshot(terminal, snapshot) : terminal;
+  });
+  const known = new Set(updated.map((terminal) => terminal.id));
+  const reattached = snapshots
+    .filter((snapshot) => !known.has(snapshot.session_id))
+    .map((snapshot, index) => terminalFromSnapshot(snapshot, updated.length + index + 1));
+  if (reattached.length === 0) return updated;
+  return [...updated, ...reattached];
+}
+
+function createLaunchTerminals(
+  seeds: ConversationSeed[],
+  terminalCount: number,
+  defaultCwd: string
+): AgentTerminal[] {
+  return seeds.map((seed, index) => {
+    const id = newAgentRunId();
+    const terminal = appendBlock(
+      {
+        ...createAgentTerminal({
+          id,
+          index: terminalCount + index + 1,
+          cwd: seed.cwd || defaultCwd,
+          provider: seed.provider,
+          prompt: seed.prompt,
+          roleLabel: seed.roleLabel,
+          teamId: seed.teamId,
+          name: seed.roleLabel || undefined,
+        }),
+        model: seed.model,
+        sandbox: seed.sandbox ?? 'workspace-write',
+        workItemId: seed.workItemId,
+        profilePath: seed.profilePath ?? null,
+        managedRunId: seed.managedRunId ?? null,
+      },
+      {
+        kind: 'prompt',
+        status: seed.launchNow === false ? 'white' : 'green',
+        title: seed.launchNow === false ? 'Queued instructions' : 'Prompt',
+        detail: seed.prompt,
+      }
+    );
+    return seed.launchNow === false
+      ? {
+          ...terminal,
+          updatedAt: 'queued',
+          statusReason: 'Recommended after implementation; start only when you choose',
+        }
+      : terminal;
+  });
+}
+
+function createIndexedSessionTerminal(
+  session: SessionRow,
+  nextId: string,
+  mode: 'resume' | 'fork',
+  codexSessionId: string,
+  fallbackIndex: number,
+  defaultCwd: string
+): AgentTerminal {
+  const provider = sessionAgentProvider(session);
+  return {
+    ...terminalFromSaved({
+      id: nextId,
+      provider,
+      name: indexedSessionPaneName(session, fallbackIndex, mode),
+      cwd: session.cwd || defaultCwd,
+      prompt: '',
+      model: session.model_used ?? '',
+      sandbox: 'workspace-write',
+      approvalPolicy: 'on-request',
+      size: 'compact',
+      background: false,
+    }),
+    codexSessionId: mode === 'resume' ? codexSessionId : null,
+    transcriptPath: session.jsonl_path,
+    updatedAt: mode,
+    statusReason:
+      mode === 'resume'
+        ? `Resuming ${compactSessionId(codexSessionId)}`
+        : `Forking ${compactSessionId(codexSessionId)}`,
+    activities: [
+      {
+        id: `${nextId}-indexed-session-${Date.now()}`,
+        at: Date.now(),
+        kind: 'info' as const,
+        label: mode === 'resume' ? 'Indexed session resume' : 'Indexed session fork',
+        detail: indexedSessionTitle(session),
+      },
+    ],
+  };
+}
+
+function shouldSkipRepoStatusRefresh(
+  path: string,
+  force: boolean,
+  repoStatusByPath: RepoStatusByPath,
+  pendingRequests: Set<string>
+): boolean {
+  if (!isTauriAvailable()) return true;
+  if (!isConcreteRepoPath(path)) return true;
+  if (!force && (path in repoStatusByPath || pendingRequests.has(path))) return true;
+  return false;
+}
+
+function loadRepoProjectsEffect(
+  setRepoProjects: Dispatch<SetStateAction<RepoProject[]>>,
+  setDefaultCwd: (cwd: string) => void
+): () => void {
+  if (!isTauriAvailable()) return () => {};
+  let cancelled = false;
+  void listRepoProjects()
+    .then((projects) => {
+      if (cancelled) return;
+      setRepoProjects(projects);
+      setDefaultCwd(projects[0]?.repo_path ?? '~');
+    })
+    .catch(() => {
+      // Repo registry is a convenience for new agents; manual cwd entry still works.
+    });
+  return () => {
+    cancelled = true;
+  };
+}
+
+function verifySessionDirectoriesEffect(
+  indexedDirectorySignature: string,
+  setVerifiedSessionDirectories: Dispatch<SetStateAction<Set<string>>>,
+  setIsVerifyingSessionDirectories: (value: boolean) => void
+): () => void {
+  const paths = indexedDirectorySignature ? indexedDirectorySignature.split('\n') : [];
+  if (!isTauriAvailable() || paths.length === 0) {
+    setVerifiedSessionDirectories(new Set());
+    setIsVerifyingSessionDirectories(false);
+    return () => {};
+  }
+
+  let cancelled = false;
+  setIsVerifyingSessionDirectories(true);
+  void checkDirectoriesExist(paths)
+    .then((results) => {
+      if (cancelled) return;
+      setVerifiedSessionDirectories(
+        new Set(
+          results
+            .filter((result) => result.exists)
+            .map((result) => normalizeProjectPath(result.path))
+            .filter(Boolean)
+        )
+      );
+    })
+    .catch(() => {
+      if (!cancelled) setVerifiedSessionDirectories(new Set());
+    })
+    .finally(() => {
+      if (!cancelled) setIsVerifyingSessionDirectories(false);
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}
+
+function refreshIndexedSessionsEffect(
+  setRecentCodexSessions: Dispatch<SetStateAction<SessionRow[]>>
+): () => void {
+  if (!isTauriAvailable()) return () => {};
+  let cancelled = false;
+  let unlisten: (() => void) | null = null;
+  const refresh = async () => {
+    try {
+      const [codexSessions, claudeSessions] = await Promise.all([
+        listSessions(undefined, undefined, 30, 0, 'codex'),
+        listSessions(undefined, undefined, 30, 0, 'claude-code'),
+      ]);
+      if (cancelled) return;
+      setRecentCodexSessions(
+        [...codexSessions, ...claudeSessions]
+          .filter((session) => Boolean(session.id.trim()))
+          .sort((left, right) => (right.file_mtime ?? '').localeCompare(left.file_mtime ?? ''))
+          .slice(0, 40)
+      );
+    } catch {
+      if (!cancelled) setRecentCodexSessions([]);
+    }
+  };
+
+  void refresh();
+  void listenToSessionArchiveUpdates(() => void refresh())
+    .then((fn) => {
+      if (cancelled) fn();
+      else unlisten = fn;
+    })
+    .catch(() => {
+      // Indexed session history is optional; live terminals still work.
+    });
+
+  return () => {
+    cancelled = true;
+    unlisten?.();
+  };
+}
+
+function reattachTerminalsEffect(
+  setTerminals: Dispatch<SetStateAction<AgentTerminal[]>>
+): () => void {
+  if (!isTauriAvailable()) return () => {};
+  let cancelled = false;
+  void listAgentTerminals()
+    .then((snapshots) => {
+      if (cancelled || snapshots.length === 0) return;
+      setTerminals((current) => mergeSnapshotsIntoTerminals(current, snapshots));
+    })
+    .catch(() => {
+      // Reattach is best-effort; event listening still works for terminals created in this view.
+    });
+  return () => {
+    cancelled = true;
+  };
+}
+
+function appendRestartState(
+  item: AgentTerminal,
+  id: string,
+  label: string,
+  outputTail: string
+): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendActivity(
+    {
+      ...item,
+      outputTail,
+      status: 'white',
+      running: false,
+      started: false,
+      updatedAt: 'restart',
+      statusReason: `Restarting ${label} process`,
+      idleMs: null,
+      lastOutputAt: null,
+      lastHeartbeatAt: null,
+      waitingSince: null,
+      structuredEventsActive: false,
+      lastAgentEvent: null,
+      lastAgentEventSource: null,
+      lastAgentEventAt: null,
+      lastStructuredEventSeq: null,
+      structuredEventLog: [],
+      codexSessionId: null,
+      transcriptPath: null,
+      blocks: [
+        ...appendBlock(item, {
+          kind: 'launch',
+          status: 'white',
+          title: 'Restart',
+          detail: `Restarting in ${item.cwd || '~'}`,
+        }).blocks,
+      ],
+      pid: null,
+    },
+    {
+      kind: 'info',
+      label: 'Restart requested',
+      detail: 'Preserved terminal transcript and starting again',
+    }
+  );
+}
+
+function archiveStopErrorPatch(terminal: AgentTerminal, error: unknown): Partial<AgentTerminal> {
+  const providerName = providerLabel(terminal.provider);
+  return {
+    status: 'red',
+    updatedAt: 'archive failed',
+    statusReason:
+      error instanceof Error
+        ? `Could not stop ${providerName}: ${error.message}`
+        : `Could not stop ${providerName} before archiving`,
+  };
+}
+
+function resolveStartTerminalSource(
+  terminals: AgentTerminal[],
+  id: string,
+  options: {
+    resume?: boolean;
+    forkSessionId?: string | null;
+    terminalOverride?: AgentTerminal;
+  }
+): AgentTerminal | null {
+  const sourceTerminal = options.terminalOverride ?? terminals.find((item) => item.id === id);
+  if (!sourceTerminal) return null;
+  if (sourceTerminal.running && !isDetachedTerminal(sourceTerminal)) return null;
+  const terminal = prepareLaunchTerminal(sourceTerminal);
+  const resumeSessionId = options.resume ? terminal.codexSessionId?.trim() : null;
+  if (options.resume && !resumeSessionId) return null;
+  return terminal;
+}
+
+function startAgentTerminalParams(
+  id: string,
+  terminal: AgentTerminal,
+  resumeSessionId: string | null,
+  forkSessionId: string | null
+) {
+  return {
+    provider: terminal.provider,
+    sessionId: id,
+    roleLabel: terminal.roleLabel,
+    teamId: terminal.teamId,
+    profilePath: terminal.profilePath,
+    cwd: terminal.cwd,
+    prompt: terminal.prompt,
+    model: terminal.model,
+    sandbox: terminal.sandbox,
+    approvalPolicy: terminal.approvalPolicy,
+    resumeSessionId,
+    forkSessionId,
+    cols: terminal.size === 'wide' ? 140 : 100,
+    rows: terminal.size === 'tall' ? 34 : 24,
+  };
+}
+
+async function stopTerminalById(
+  id: string,
+  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>,
+  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void
+) {
+  try {
+    await stopAgentTerminal(id);
+    setTerminals((current) =>
+      current.map((terminal) =>
+        terminal.id === id && terminal.running
+          ? {
+              ...terminal,
+              updatedAt: 'stopping',
+              statusReason: `Sent /exit to ${providerLabel(terminal.provider)}`,
+            }
+          : terminal
+      )
+    );
+  } catch (error) {
+    const outputTail = appendTerminalOutput(
+      id,
+      `\r\n${error instanceof Error ? error.message : String(error)}\r\n`
+    );
+    updateTerminal(id, {
+      outputTail,
+      status: 'red',
+      running: false,
+      updatedAt: 'stop failed',
+      statusReason: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function runPaneShellCommandById(
+  id: string,
+  terminal: AgentTerminal,
+  command: string,
+  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>,
+  setDefaultCwd: React.Dispatch<React.SetStateAction<string>>
+) {
+  const startedAt = Date.now();
+  const blockId = `${id}-shell-${startedAt}`;
+  const startOutput = `\r\n$ ${command}\r\n`;
+  const outputTail = appendTerminalOutput(id, startOutput);
+  setTerminals((current) =>
+    current.map((item) =>
+      appendShellStartedState(item, id, outputTail, command, terminal, blockId, startedAt)
+    )
+  );
+
+  if (!isTauriAvailable()) {
+    const message = 'Desktop runtime is required to run shell commands';
+    const nextTail = appendTerminalOutput(id, `${message}\r\n`);
+    setTerminals((current) =>
+      current.map((item) =>
+        appendShellBlockedState(item, id, message, blockId, startedAt, nextTail)
+      )
+    );
+    return;
+  }
+
+  try {
+    const result = await runAgentTerminalCommand({
+      command,
+      cwd: terminal.cwd,
+      timeoutMs: 120_000,
+    });
+    const cwdChanged = result.success && result.cwd !== terminal.cwd;
+    const output = `${formatShellCommandOutput(result)}${
+      cwdChanged ? `[cwd ${result.cwd}]\r\n` : ''
+    }`;
+    const nextTail = appendTerminalOutput(id, output);
+    if (cwdChanged) {
+      setDefaultCwd(result.cwd);
+    }
+    setTerminals((current) =>
+      current.map((item) =>
+        appendShellResultState(item, id, result, output, nextTail, cwdChanged, blockId)
+      )
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const nextTail = appendTerminalOutput(id, `\r\n${message}\r\n`);
+    setTerminals((current) =>
+      current.map((item) => appendShellErrorState(item, id, message, blockId, startedAt, nextTail))
+    );
+  }
+}
+
+async function restartTerminalById(
+  id: string,
+  terminals: AgentTerminal[],
+  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>,
+  startTerminal: (
+    id: string,
+    options?: { resume?: boolean; forkSessionId?: string | null; terminalOverride?: AgentTerminal }
+  ) => Promise<void>
+) {
+  const terminal = terminals.find((item) => item.id === id);
+  if (!terminal || (terminal.running && !isDetachedTerminal(terminal))) return;
+  const label = providerLabel(terminal.provider);
+  const marker = `\r\n--- Restarting ${label} in ${terminal.cwd || '~'} ---\r\n`;
+  const outputTail = appendTerminalOutput(id, marker);
+  setTerminals((current) => current.map((item) => appendRestartState(item, id, label, outputTail)));
+  await startTerminal(id);
+}
+
+async function startTerminalById(
+  id: string,
+  options: {
+    resume?: boolean;
+    forkSessionId?: string | null;
+    terminalOverride?: AgentTerminal;
+  },
+  terminals: AgentTerminal[],
+  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void,
+  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>
+) {
+  const terminal = resolveStartTerminalSource(terminals, id, options);
+  if (!terminal) return;
+  const providerName = providerLabel(terminal.provider);
+  const resumeSessionId = options.resume ? (terminal.codexSessionId?.trim() ?? null) : null;
+  const forkSessionId = options.forkSessionId?.trim() || null;
+  const launchMode = resolveLaunchMode(forkSessionId, Boolean(options.resume));
+
+  if (!isTauriAvailable()) {
+    handleLaunchBlocked(id, providerName, updateTerminal, setTerminals);
+    return;
+  }
+
+  const startLine =
+    getTerminalOutput(id) ||
+    `${launchVerb(launchMode)} ${agentLaunchCommand(terminal, { includeEnv: false, resume: launchMode === 'resume', forkSessionId })}\r\n`;
+  if (!getTerminalOutput(id)) appendTerminalOutput(id, startLine);
+  outputSequences.delete(id);
+
+  updateTerminal(id, launchStartingPatch(terminal, providerName, launchMode, startLine));
+  setTerminals((current) =>
+    current.map((item) =>
+      appendLaunchBlock(item, id, launchMode, providerName, terminal, forkSessionId)
+    )
+  );
+
+  try {
+    const started = await startAgentTerminal(
+      startAgentTerminalParams(id, terminal, resumeSessionId, forkSessionId)
+    );
+    updateTerminal(id, {
+      cwd: started.cwd,
+      pid: started.pid ?? null,
+      status: 'green',
+      updatedAt: 'running',
+      statusReason: launchStatusReason(launchMode, providerName),
+    });
+    await handleLaunchSuccess(id, terminal, started, setTerminals);
+  } catch (error) {
+    handleLaunchFailed(id, error, updateTerminal, setTerminals);
+  }
+}
+
+async function attachExistingSessionById(
+  item: WorkItem,
+  session: WorkSessionLink,
+  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void
+): Promise<WorkItem> {
+  const updated = await attachWorkItemSession(item.id, {
+    provider: session.provider,
+    terminal_id: session.terminal_id,
+    session_id: session.session_id,
+    project_path: session.project_path,
+  });
+  if (session.terminal_id) {
+    updateTerminal(session.terminal_id, { workItemId: item.id });
+  }
+  return updated;
+}
+
+function AgentPanelHeader({
+  isBoardRoute,
+  attentionTerminals,
+  orderedTerminals,
+  selected,
+  previewSession,
+  hasStartedTerminals,
+  onAttentionClick,
+  onSelectChange,
+  onNewClick,
+}: {
+  isBoardRoute: boolean;
+  attentionTerminals: AgentTerminal[];
+  orderedTerminals: AgentTerminal[];
+  selected: AgentTerminal | null;
+  previewSession: SessionRow | null;
+  hasStartedTerminals: boolean;
+  onAttentionClick: () => void;
+  onSelectChange: (id: string) => void;
+  onNewClick: () => void;
+}) {
+  return (
+    <header className="mx-auto flex w-full max-w-7xl shrink-0 items-center justify-between gap-4 px-6 pb-4 pt-6">
+      <div className="flex items-center gap-3">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300/20 bg-amber-300/[0.07] text-amber-200">
+          {isBoardRoute ? <Columns3 size={16} /> : <Bot size={16} />}
+        </span>
+        <div>
+          <h1 className="text-base font-semibold text-slate-100">
+            {isBoardRoute ? 'Board' : 'Work'}
+          </h1>
+          <p className="text-xs text-zinc-400">
+            {isBoardRoute
+              ? 'Move outcomes from plan to proof'
+              : 'Turn an outcome into a clear, user-confirmed agent team'}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        {attentionTerminals.length > 0 ? (
+          <button
+            type="button"
+            onClick={onAttentionClick}
+            className="flex h-9 items-center gap-2 rounded-lg border border-amber-200/20 bg-amber-200/[0.06] px-2 text-xs font-medium text-amber-100 hover:bg-amber-200/[0.1] sm:px-3"
+            aria-label={`${attentionTerminals.length} agent ${attentionTerminals.length === 1 ? 'run needs' : 'runs need'} attention`}
+          >
+            <span className="h-2 w-2 animate-pulse rounded-full bg-amber-300" />
+            <span>{attentionTerminals.length}</span>
+            <span className="hidden sm:inline">
+              need{attentionTerminals.length === 1 ? 's' : ''} attention
+            </span>
+          </button>
+        ) : null}
+        {!isBoardRoute && hasStartedTerminals ? (
+          <label className="relative hidden sm:block lg:hidden">
+            <span className="sr-only">Active agent run</span>
+            <select
+              aria-label="Active agent run"
+              value={selected?.id ?? ''}
+              onChange={(event) => onSelectChange(event.target.value)}
+              className="h-9 max-w-48 appearance-none rounded-lg border border-white/[0.08] bg-black/20 py-0 pl-3 pr-8 text-xs text-zinc-300 outline-none hover:border-white/[0.14] focus:border-amber-300/30"
+            >
+              <option value="">New conversation</option>
+              {orderedTerminals.map((terminal) => (
+                <option key={terminal.id} value={terminal.id}>
+                  {terminalStatusLabel(terminal)} · {terminal.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              aria-hidden="true"
+              size={13}
+              className="pointer-events-none absolute right-2.5 top-3 text-zinc-500"
+            />
+          </label>
+        ) : null}
+        {!isBoardRoute && (selected || previewSession) ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onNewClick}
+            className="gap-2 lg:hidden"
+          >
+            <Plus size={14} /> New
+          </Button>
+        ) : null}
+      </div>
+    </header>
+  );
+}
+
+function AgentPanelContent({
+  repoProjects,
+  sessionLinks,
+  orderedTerminals,
+  availableIndexedSessions,
+  isVerifyingSessionDirectories,
+  selected,
+  previewSession,
+  conversationSeed,
+  defaultCwd,
+  repoStatusByPath,
+  onBuild,
+  onManagedBuild,
+  onAttachSession,
+  onSelect,
+  onArchive,
+  onNew,
+  onPreviewSession,
+  onResumeSession,
+  onForkSession,
+  onStartConversations,
+  onStartTerminal,
+  onDiscardTerminal,
+  onStop,
+  onRestart,
+  onResume,
+  onPromptSubmit,
+}: {
+  repoProjects: RepoProject[];
+  sessionLinks: WorkSessionLink[];
+  orderedTerminals: AgentTerminal[];
+  availableIndexedSessions: SessionRow[];
+  isVerifyingSessionDirectories: boolean;
+  selected: AgentTerminal | null;
+  previewSession: SessionRow | null;
+  conversationSeed: ConversationSeed | null;
+  defaultCwd: string;
+  repoStatusByPath: RepoStatusByPath;
+  onBuild: (item: WorkItem) => void;
+  onManagedBuild: (item: WorkItem, run: ManagedWorkRun) => Promise<void>;
+  onAttachSession: (item: WorkItem, session: WorkSessionLink) => Promise<WorkItem>;
+  onSelect: (id: string) => void;
+  onArchive: (id: string) => void;
+  onNew: () => void;
+  onPreviewSession: (session: SessionRow) => void;
+  onResumeSession: (session: SessionRow) => void;
+  onForkSession: (session: SessionRow) => void;
+  onStartConversations: (seeds: ConversationSeed[]) => Promise<void>;
+  onStartTerminal: (id: string) => Promise<void>;
+  onDiscardTerminal: (id: string) => void;
+  onStop: (id: string) => void;
+  onRestart: (id: string) => void;
+  onResume: (id: string) => void;
+  onPromptSubmit: (id: string, prompt: string) => void;
+}) {
+  return (
+    <section aria-label="Agent conversation" className="min-h-0 flex-1 overflow-hidden px-6 py-5">
+      <div className="flex h-full w-full gap-5">
+        <WorkConversationSidebar
+          terminals={orderedTerminals}
+          indexedSessions={availableIndexedSessions}
+          isVerifyingIndexedDirectories={isVerifyingSessionDirectories}
+          selectedId={selected?.id ?? ''}
+          selectedSessionKey={previewSession ? indexedSessionKey(previewSession) : ''}
+          onSelect={onSelect}
+          onArchive={onArchive}
+          onNew={onNew}
+          onPreviewSession={onPreviewSession}
+        />
+        <div className="min-w-0 flex-1 overflow-hidden">
+          {previewSession ? (
+            <PreviousConversationPreview
+              key={indexedSessionKey(previewSession)}
+              session={previewSession}
+              onResume={() => onResumeSession(previewSession)}
+              onFork={() => onForkSession(previewSession)}
+            />
+          ) : !selected ? (
+            <ConversationStart
+              key={`${conversationSeed?.workItemId ?? 'new'}-${conversationSeed?.provider ?? 'codex'}-${conversationSeed?.cwd ?? defaultCwd}`}
+              repoProjects={repoProjects}
+              defaultCwd={conversationSeed?.cwd ?? defaultCwd}
+              defaultProvider={conversationSeed?.provider ?? 'codex'}
+              defaultPrompt={conversationSeed?.prompt ?? ''}
+              workItemId={conversationSeed?.workItemId ?? null}
+              recentSessions={availableIndexedSessions}
+              onStart={onStartConversations}
+            />
+          ) : !selected.started ? (
+            <QueuedAgentStart
+              terminal={selected}
+              onStart={() => onStartTerminal(selected.id)}
+              onDiscard={() => onDiscardTerminal(selected.id)}
+            />
+          ) : (
+            <WorkSessionView
+              key={selected.id}
+              terminal={selected}
+              repoStatus={repoStatusByPath[selected.cwd] ?? null}
+              onStop={() => onStop(selected.id)}
+              onRestart={() => onRestart(selected.id)}
+              onResume={() => onResume(selected.id)}
+              onPromptSubmit={(prompt) => onPromptSubmit(selected.id, prompt)}
+            />
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function AgentPanel() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -386,10 +1493,9 @@ export default function AgentPanel() {
 
   const refreshRepoStatus = useCallback(
     (repoPath: string, force = false) => {
-      if (!isTauriAvailable()) return;
       const path = repoPath.trim();
-      if (!isConcreteRepoPath(path)) return;
-      if (!force && (path in repoStatusByPath || repoStatusRequestsRef.current.has(path))) return;
+      if (shouldSkipRepoStatusRefresh(path, force, repoStatusByPath, repoStatusRequestsRef.current))
+        return;
 
       repoStatusRequestsRef.current.add(path);
       void getRepoProjectGitStatus(path)
@@ -405,92 +1511,19 @@ export default function AgentPanel() {
   );
 
   useEffect(() => {
-    if (!isTauriAvailable()) return;
-    let cancelled = false;
-    void listRepoProjects()
-      .then((projects) => {
-        if (cancelled) return;
-        setRepoProjects(projects);
-        setDefaultCwd(projects[0]?.repo_path ?? '~');
-      })
-      .catch(() => {
-        // Repo registry is a convenience for new agents; manual cwd entry still works.
-      });
-    return () => {
-      cancelled = true;
-    };
+    return loadRepoProjectsEffect(setRepoProjects, setDefaultCwd);
   }, []);
 
   useEffect(() => {
-    const paths = indexedDirectorySignature ? indexedDirectorySignature.split('\n') : [];
-    if (!isTauriAvailable() || paths.length === 0) {
-      setVerifiedSessionDirectories(new Set());
-      setIsVerifyingSessionDirectories(false);
-      return;
-    }
-
-    let cancelled = false;
-    setIsVerifyingSessionDirectories(true);
-    void checkDirectoriesExist(paths)
-      .then((results) => {
-        if (cancelled) return;
-        setVerifiedSessionDirectories(
-          new Set(
-            results
-              .filter((result) => result.exists)
-              .map((result) => normalizeProjectPath(result.path))
-              .filter(Boolean)
-          )
-        );
-      })
-      .catch(() => {
-        if (!cancelled) setVerifiedSessionDirectories(new Set());
-      })
-      .finally(() => {
-        if (!cancelled) setIsVerifyingSessionDirectories(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    return verifySessionDirectoriesEffect(
+      indexedDirectorySignature,
+      setVerifiedSessionDirectories,
+      setIsVerifyingSessionDirectories
+    );
   }, [indexedDirectorySignature]);
 
   useEffect(() => {
-    if (!isTauriAvailable()) return;
-    let cancelled = false;
-    let unlisten: (() => void) | null = null;
-    const refresh = async () => {
-      try {
-        const [codexSessions, claudeSessions] = await Promise.all([
-          listSessions(undefined, undefined, 30, 0, 'codex'),
-          listSessions(undefined, undefined, 30, 0, 'claude-code'),
-        ]);
-        if (cancelled) return;
-        setRecentCodexSessions(
-          [...codexSessions, ...claudeSessions]
-            .filter((session) => Boolean(session.id.trim()))
-            .sort((left, right) => (right.file_mtime ?? '').localeCompare(left.file_mtime ?? ''))
-            .slice(0, 40)
-        );
-      } catch {
-        if (!cancelled) setRecentCodexSessions([]);
-      }
-    };
-
-    void refresh();
-    void listenToSessionArchiveUpdates(() => void refresh())
-      .then((fn) => {
-        if (cancelled) fn();
-        else unlisten = fn;
-      })
-      .catch(() => {
-        // Indexed session history is optional; live terminals still work.
-      });
-
-    return () => {
-      cancelled = true;
-      unlisten?.();
-    };
+    return refreshIndexedSessionsEffect(setRecentCodexSessions);
   }, []);
 
   useEffect(() => {
@@ -523,361 +1556,11 @@ export default function AgentPanel() {
   }, [hasRunningTerminals]);
 
   useEffect(() => {
-    if (!isTauriAvailable()) return;
-    let cancelled = false;
-    void listAgentTerminals()
-      .then((snapshots) => {
-        if (cancelled || snapshots.length === 0) return;
-        setTerminals((current) => {
-          const snapshotById = new Map(
-            snapshots.map((snapshot) => [snapshot.session_id, snapshot] as const)
-          );
-          const updated = current.map((terminal) => {
-            const snapshot = snapshotById.get(terminal.id);
-            return snapshot ? mergeTerminalSnapshot(terminal, snapshot) : terminal;
-          });
-          const known = new Set(updated.map((terminal) => terminal.id));
-          const reattached = snapshots
-            .filter((snapshot) => !known.has(snapshot.session_id))
-            .map((snapshot, index) => terminalFromSnapshot(snapshot, updated.length + index + 1));
-          if (reattached.length === 0) return updated;
-          return [...updated, ...reattached];
-        });
-      })
-      .catch(() => {
-        // Reattach is best-effort; event listening still works for terminals created in this view.
-      });
-    return () => {
-      cancelled = true;
-    };
+    return reattachTerminalsEffect(setTerminals);
   }, []);
 
   const handleTerminalEvent = useCallback((event: AgentTerminalEvent) => {
-    setTerminals((current) =>
-      current.map((terminal) => {
-        if (terminal.id !== event.session_id) return terminal;
-        const providerName = providerLabel(terminal.provider);
-
-        if (event.kind === 'output') {
-          if (isDuplicateTerminalOutput(event.session_id, event.seq ?? null)) {
-            return terminal;
-          }
-          const chunk = event.data ?? '';
-          const outputTail = appendTerminalOutput(event.session_id, chunk);
-          if (terminal.structuredEventsActive) {
-            if (terminal.running && terminal.started && terminal.idleMs === 0) {
-              return terminal;
-            }
-            return {
-              ...terminal,
-              running: true,
-              started: true,
-              idleMs: 0,
-              lastOutputAt: Date.now(),
-            };
-          }
-          const blockedReason = agentOutputAttentionReason(terminal.provider, chunk);
-          if (
-            !blockedReason &&
-            terminal.running &&
-            terminal.started &&
-            terminal.status === 'green' &&
-            terminal.updatedAt === 'running'
-          ) {
-            return terminal;
-          }
-          const next = {
-            ...terminal,
-            outputTail,
-            status: (blockedReason ? 'yellow' : 'green') as AgentStatus,
-            running: true,
-            started: true,
-            updatedAt: blockedReason ?? 'running',
-            statusReason: blockedReason ?? 'active output',
-            idleMs: 0,
-            lastOutputAt: Date.now(),
-            waitingSince: blockedReason ? (terminal.waitingSince ?? Date.now()) : null,
-          };
-          return blockedReason && terminal.status !== 'yellow'
-            ? appendActivity(
-                appendBlock(next, {
-                  kind: 'attention',
-                  status: 'yellow',
-                  title: blockedReason,
-                  detail: 'Detected from terminal output fallback',
-                }),
-                {
-                  kind: 'attention',
-                  label: blockedReason,
-                  detail: 'Detected from terminal output fallback',
-                }
-              )
-            : next;
-        }
-
-        if (event.kind === 'started') {
-          return appendActivity(
-            {
-              ...terminal,
-              running: true,
-              started: true,
-              pid: event.pid ?? terminal.pid,
-              status: 'green',
-              updatedAt: 'running',
-              statusReason: `${providerName} process started`,
-              idleMs: 0,
-              lastOutputAt: Date.now(),
-              lastHeartbeatAt: Date.now(),
-              waitingSince: null,
-              structuredEventsActive: false,
-              lastAgentEvent: null,
-              lastAgentEventSource: null,
-              lastAgentEventAt: null,
-              lastStructuredEventSeq: null,
-              structuredEventLog: [],
-            },
-            {
-              kind: 'info',
-              label: `${providerName} process started`,
-              detail: event.pid ? `pid ${event.pid}` : undefined,
-            }
-          );
-        }
-
-        if (event.kind === 'heartbeat') {
-          const idleMs = event.idle_ms ?? terminal.idleMs ?? 0;
-          if (terminal.structuredEventsActive) {
-            if (terminal.status === 'yellow') {
-              return {
-                ...terminal,
-                pid: event.pid ?? terminal.pid,
-                idleMs,
-                lastHeartbeatAt: Date.now(),
-              };
-            }
-            return {
-              ...terminal,
-              pid: event.pid ?? terminal.pid,
-              status: terminal.status === 'red' ? 'red' : 'green',
-              updatedAt:
-                idleMs >= STALL_AFTER_MS &&
-                terminal.lastAgentEvent !== 'stop' &&
-                terminal.lastAgentEvent !== 'idle_prompt'
-                  ? `quiet ${formatDuration(idleMs)}`
-                  : terminal.updatedAt,
-              statusReason:
-                idleMs >= STALL_AFTER_MS &&
-                terminal.lastAgentEvent !== 'stop' &&
-                terminal.lastAgentEvent !== 'idle_prompt'
-                  ? `${providerName} is still running; waiting only changes on explicit structured events`
-                  : terminal.statusReason,
-              idleMs,
-              lastHeartbeatAt: Date.now(),
-              waitingSince: null,
-            };
-          }
-          const blockedReason = agentOutputAttentionReason(
-            terminal.provider,
-            getTerminalOutputTail(event.session_id)
-          );
-          if (blockedReason) {
-            const next = {
-              ...terminal,
-              pid: event.pid ?? terminal.pid,
-              idleMs,
-              lastHeartbeatAt: Date.now(),
-              status: 'yellow' as AgentStatus,
-              updatedAt: blockedReason,
-              statusReason: blockedReason,
-              waitingSince: terminal.waitingSince ?? Date.now(),
-            };
-            return terminal.status === 'yellow'
-              ? next
-              : appendActivity(
-                  appendBlock(next, {
-                    kind: 'attention',
-                    status: 'yellow',
-                    title: blockedReason,
-                    detail: 'Detected from terminal output fallback',
-                  }),
-                  {
-                    kind: 'attention',
-                    label: blockedReason,
-                    detail: 'Detected from terminal output fallback',
-                  }
-                );
-          }
-          if (terminal.lastAgentEvent === 'stop') {
-            return {
-              ...terminal,
-              pid: event.pid ?? terminal.pid,
-              status: terminal.status === 'red' ? 'red' : 'green',
-              updatedAt: terminal.updatedAt === 'turn done' ? terminal.updatedAt : 'turn done',
-              statusReason: terminal.statusReason || `${providerName} completed its turn`,
-              idleMs,
-              lastHeartbeatAt: Date.now(),
-              waitingSince: null,
-            };
-          }
-          if (idleMs >= STALL_AFTER_MS) {
-            return {
-              ...terminal,
-              pid: event.pid ?? terminal.pid,
-              idleMs,
-              lastHeartbeatAt: Date.now(),
-              status: 'green' as AgentStatus,
-              updatedAt: `quiet ${formatDuration(idleMs)}`,
-              statusReason: 'Process is healthy and has no recent activity',
-              waitingSince: null,
-            };
-          }
-          return {
-            ...terminal,
-            pid: event.pid ?? terminal.pid,
-            status: 'green',
-            updatedAt: `idle ${formatDuration(idleMs)}`,
-            statusReason: 'Process heartbeat is healthy',
-            idleMs,
-            lastHeartbeatAt: Date.now(),
-            waitingSince: null,
-          };
-        }
-
-        if (event.kind === 'agent_event') {
-          const payload = parseAgentLifecyclePayload(event.data);
-          if (!payload || payload.agent !== terminal.provider) return terminal;
-          const eventSeq = typeof event.seq === 'number' ? event.seq : null;
-          if (
-            eventSeq != null &&
-            !isNewStructuredEvent(terminal.lastStructuredEventSeq, eventSeq)
-          ) {
-            return terminal;
-          }
-          if (payload.event === 'idle_prompt' && terminal.lastAgentEvent === 'stop') {
-            return terminal;
-          }
-          const patch = terminalPatchForAgentEvent(payload);
-          const now = Date.now();
-          const blockKind = agentBlockKindForStatus(patch.status);
-          const activityKind = agentActivityKindForStatus(patch.status);
-          const eventSource = agentPayloadEventSource(payload);
-          return appendActivity(
-            appendBlock(
-              {
-                ...terminal,
-                ...patch,
-                running: true,
-                started: true,
-                structuredEventsActive:
-                  terminal.structuredEventsActive || isConfirmedAgentEventSource(eventSource),
-                pid: event.pid ?? terminal.pid,
-                lastHeartbeatAt: now,
-                lastAgentEventSource: eventSource,
-                lastAgentEventAt: now,
-                lastStructuredEventSeq: maxStructuredEventSeq(
-                  terminal.lastStructuredEventSeq,
-                  eventSeq
-                ),
-                structuredEventLog: appendStructuredEventLog(terminal.structuredEventLog, {
-                  terminalId: terminal.id,
-                  payload,
-                  source: eventSource,
-                  seq: eventSeq,
-                  at: now,
-                  status: patch.status ?? terminal.status,
-                  detail: patch.statusReason,
-                }),
-                waitingSince:
-                  patch.status === 'yellow' ? (terminal.waitingSince ?? Date.now()) : null,
-              },
-              {
-                kind: blockKind,
-                status: patch.status ?? terminal.status,
-                title: agentEventBlockTitle(payload, patch),
-                detail: agentEventBlockDetail(payload, patch),
-                at: now,
-              }
-            ),
-            {
-              kind: activityKind,
-              label: payload.event ?? `${providerName} event`,
-              detail: patch.statusReason,
-            }
-          );
-        }
-
-        if (event.kind === 'error') {
-          const message = `\r\n${event.data ?? `${providerName} terminal error`}\r\n`;
-          const outputTail = appendTerminalOutput(event.session_id, message);
-          return appendActivity(
-            appendBlock(
-              {
-                ...terminal,
-                outputTail,
-                running: false,
-                started: true,
-                status: 'red',
-                updatedAt: 'error',
-                statusReason: event.data ?? `${providerName} terminal error`,
-                lastAgentEvent: terminal.lastAgentEvent,
-                lastAgentEventSource: terminal.lastAgentEventSource,
-              },
-              {
-                kind: 'exit',
-                status: 'red',
-                title: 'Terminal error',
-                detail: event.data ?? `${providerName} terminal error`,
-              }
-            ),
-            {
-              kind: 'error',
-              label: 'Terminal error',
-              detail: event.data ?? `${providerName} terminal error`,
-            }
-          );
-        }
-
-        if (event.kind === 'exit') {
-          const presentation = presentAgentTerminalExit(
-            event,
-            providerName,
-            Boolean(terminal.codexSessionId)
-          );
-          const outputTail = appendTerminalOutput(
-            event.session_id,
-            `\r\n${presentation.detail}\r\n`
-          );
-          return appendActivity(
-            appendBlock(
-              {
-                ...terminal,
-                outputTail,
-                running: false,
-                started: true,
-                status: presentation.status,
-                updatedAt: presentation.updatedAt,
-                statusReason: presentation.statusReason,
-                idleMs: null,
-                waitingSince: null,
-              },
-              {
-                kind: 'exit',
-                status: presentation.status,
-                title: presentation.title,
-                detail: presentation.detail,
-              }
-            ),
-            {
-              kind: presentation.activityKind,
-              label: presentation.title,
-              detail: presentation.detail,
-            }
-          );
-        }
-
-        return terminal;
-      })
-    );
+    setTerminals((current) => current.map((terminal) => applyTerminalEvent(terminal, event)));
   }, []);
 
   useEffect(() => {
@@ -908,25 +1591,7 @@ export default function AgentPanel() {
   }, [navigate]);
 
   useEffect(() => {
-    for (const terminal of terminals) {
-      if (!terminal.background || (terminal.status !== 'yellow' && terminal.status !== 'red')) {
-        notifiedAttentionRef.current.delete(terminal.id);
-        continue;
-      }
-
-      const notificationKey = `${terminal.status}:${terminal.statusReason}`;
-      if (notifiedAttentionRef.current.get(terminal.id) === notificationKey) continue;
-      notifiedAttentionRef.current.set(terminal.id, notificationKey);
-
-      const providerName = providerLabel(terminal.provider);
-      const title =
-        terminal.status === 'red'
-          ? `${providerName} agent failed`
-          : `${providerName} agent needs attention`;
-      void sendTrayNotification(title, `${terminal.name}: ${terminal.statusReason}`).catch(() => {
-        // Notifications are best-effort; sidebar and header attention remain authoritative.
-      });
-    }
+    notifyBackgroundAttention(terminals, notifiedAttentionRef.current);
   }, [terminals]);
 
   async function startConversation(seed: ConversationSeed) {
@@ -935,41 +1600,7 @@ export default function AgentPanel() {
 
   async function startConversations(seeds: ConversationSeed[]) {
     if (seeds.length === 0) return;
-    const launchTerminals = seeds.map((seed, index) => {
-      const id = newAgentRunId();
-      const terminal = appendBlock(
-        {
-          ...createAgentTerminal({
-            id,
-            index: terminals.length + index + 1,
-            cwd: seed.cwd || defaultCwd,
-            provider: seed.provider,
-            prompt: seed.prompt,
-            roleLabel: seed.roleLabel,
-            teamId: seed.teamId,
-            name: seed.roleLabel || undefined,
-          }),
-          model: seed.model,
-          sandbox: seed.sandbox ?? 'workspace-write',
-          workItemId: seed.workItemId,
-          profilePath: seed.profilePath ?? null,
-          managedRunId: seed.managedRunId ?? null,
-        },
-        {
-          kind: 'prompt',
-          status: seed.launchNow === false ? 'white' : 'green',
-          title: seed.launchNow === false ? 'Queued instructions' : 'Prompt',
-          detail: seed.prompt,
-        }
-      );
-      return seed.launchNow === false
-        ? {
-            ...terminal,
-            updatedAt: 'queued',
-            statusReason: 'Recommended after implementation; start only when you choose',
-          }
-        : terminal;
-    });
+    const launchTerminals = createLaunchTerminals(seeds, terminals.length, defaultCwd);
     setTerminals((current) => [...current, ...launchTerminals]);
     setPreviewSession(null);
     setSelectedId(launchTerminals[0].id);
@@ -1024,68 +1655,11 @@ export default function AgentPanel() {
     item: WorkItem,
     session: WorkSessionLink
   ): Promise<WorkItem> {
-    const updated = await attachWorkItemSession(item.id, {
-      provider: session.provider,
-      terminal_id: session.terminal_id,
-      session_id: session.session_id,
-      project_path: session.project_path,
-    });
-    if (session.terminal_id) {
-      updateTerminal(session.terminal_id, { workItemId: item.id });
-    }
-    return updated;
+    return attachExistingSessionById(item, session, updateTerminal);
   }
 
   async function restartTerminal(id: string) {
-    const terminal = terminals.find((item) => item.id === id);
-    if (!terminal || (terminal.running && !isDetachedTerminal(terminal))) return;
-    const label = providerLabel(terminal.provider);
-    const marker = `\r\n--- Restarting ${label} in ${terminal.cwd || '~'} ---\r\n`;
-    const outputTail = appendTerminalOutput(id, marker);
-    setTerminals((current) =>
-      current.map((item) =>
-        item.id === id
-          ? appendActivity(
-              {
-                ...item,
-                outputTail,
-                status: 'white',
-                running: false,
-                started: false,
-                updatedAt: 'restart',
-                statusReason: `Restarting ${label} process`,
-                idleMs: null,
-                lastOutputAt: null,
-                lastHeartbeatAt: null,
-                waitingSince: null,
-                structuredEventsActive: false,
-                lastAgentEvent: null,
-                lastAgentEventSource: null,
-                lastAgentEventAt: null,
-                lastStructuredEventSeq: null,
-                structuredEventLog: [],
-                codexSessionId: null,
-                transcriptPath: null,
-                blocks: [
-                  ...appendBlock(item, {
-                    kind: 'launch',
-                    status: 'white',
-                    title: 'Restart',
-                    detail: `Restarting in ${item.cwd || '~'}`,
-                  }).blocks,
-                ],
-                pid: null,
-              },
-              {
-                kind: 'info',
-                label: 'Restart requested',
-                detail: 'Preserved terminal transcript and starting again',
-              }
-            )
-          : item
-      )
-    );
-    await startTerminal(id);
+    await restartTerminalById(id, terminals, setTerminals, startTerminal);
   }
 
   async function resumeTerminal(id: string) {
@@ -1097,37 +1671,14 @@ export default function AgentPanel() {
     if (!codexSessionId) return;
     const nextId = `agent-${Date.now()}`;
     const shouldSplit = layout === 'focus' && foregroundTerminals.length >= 1;
-    const provider = sessionAgentProvider(session);
-    const sessionTerminal = {
-      ...terminalFromSaved({
-        id: nextId,
-        provider,
-        name: indexedSessionPaneName(session, terminals.length + 1, mode),
-        cwd: session.cwd || defaultCwd,
-        prompt: '',
-        model: session.model_used ?? '',
-        sandbox: 'workspace-write',
-        approvalPolicy: 'on-request',
-        size: 'compact',
-        background: false,
-      }),
-      codexSessionId: mode === 'resume' ? codexSessionId : null,
-      transcriptPath: session.jsonl_path,
-      updatedAt: mode,
-      statusReason:
-        mode === 'resume'
-          ? `Resuming ${compactSessionId(codexSessionId)}`
-          : `Forking ${compactSessionId(codexSessionId)}`,
-      activities: [
-        {
-          id: `${nextId}-indexed-session-${Date.now()}`,
-          at: Date.now(),
-          kind: 'info' as const,
-          label: mode === 'resume' ? 'Indexed session resume' : 'Indexed session fork',
-          detail: indexedSessionTitle(session),
-        },
-      ],
-    };
+    const sessionTerminal = createIndexedSessionTerminal(
+      session,
+      nextId,
+      mode,
+      codexSessionId,
+      terminals.length + 1,
+      defaultCwd
+    );
     setTerminals((current) => [...current, sessionTerminal]);
     setPreviewSession(null);
     setSelectedId(nextId);
@@ -1147,206 +1698,11 @@ export default function AgentPanel() {
       terminalOverride?: AgentTerminal;
     } = {}
   ) {
-    const sourceTerminal = options.terminalOverride ?? terminals.find((item) => item.id === id);
-    if (!sourceTerminal) return;
-    const detached = isDetachedTerminal(sourceTerminal);
-    if (sourceTerminal.running && !detached) return;
-    const terminal = detached
-      ? {
-          ...sourceTerminal,
-          running: false,
-          pid: null,
-          updatedAt: 'detached',
-          statusReason: 'Recovering a pane whose backend heartbeat stopped',
-        }
-      : sourceTerminal;
-    const providerName = providerLabel(terminal.provider);
-    const resumeSessionId = options.resume ? terminal.codexSessionId?.trim() : null;
-    if (options.resume && !resumeSessionId) return;
-    const forkSessionId = options.forkSessionId?.trim() || null;
-    const launchMode: AgentLaunchMode = forkSessionId
-      ? 'fork'
-      : options.resume
-        ? 'resume'
-        : 'start';
-
-    if (!isTauriAvailable()) {
-      const outputTail = appendTerminalOutput(
-        id,
-        `\r\nDesktop runtime is required to start ${providerName}.\r\n`
-      );
-      updateTerminal(id, {
-        outputTail,
-        status: 'red',
-        updatedAt: 'not run',
-        statusReason: `Desktop runtime is required to start ${providerName}`,
-      });
-      setTerminals((current) =>
-        current.map((item) =>
-          item.id === id
-            ? appendBlock(item, {
-                kind: 'exit',
-                status: 'red',
-                title: 'Launch blocked',
-                detail: `Desktop runtime is required to start ${providerName}`,
-              })
-            : item
-        )
-      );
-      return;
-    }
-
-    const startLine =
-      getTerminalOutput(id) ||
-      `${launchVerb(launchMode)} ${agentLaunchCommand(terminal, { includeEnv: false, resume: launchMode === 'resume', forkSessionId })}\r\n`;
-    if (!getTerminalOutput(id)) appendTerminalOutput(id, startLine);
-    outputSequences.delete(id);
-
-    updateTerminal(id, {
-      prompt: terminal.prompt,
-      status: 'green',
-      running: true,
-      started: true,
-      updatedAt: 'starting',
-      statusReason: `Starting ${providerName} process`,
-      idleMs: 0,
-      lastOutputAt: Date.now(),
-      lastHeartbeatAt: null,
-      waitingSince: null,
-      structuredEventsActive: false,
-      lastAgentEvent: null,
-      lastAgentEventSource: null,
-      lastAgentEventAt: null,
-      lastStructuredEventSeq: null,
-      structuredEventLog: [],
-      codexSessionId: launchMode === 'resume' ? terminal.codexSessionId : null,
-      transcriptPath: launchMode === 'resume' ? terminal.transcriptPath : null,
-      outputTail: startLine.slice(-OUTPUT_TAIL_CHARS),
-    });
-    setTerminals((current) =>
-      current.map((item) =>
-        item.id === id
-          ? appendBlock(item, {
-              kind: 'launch',
-              status: 'green',
-              title: launchBlockTitle(launchMode, providerName),
-              detail: agentLaunchCommand(terminal, {
-                includeEnv: false,
-                resume: launchMode === 'resume',
-                forkSessionId,
-              }),
-            })
-          : item
-      )
-    );
-
-    try {
-      const started = await startAgentTerminal({
-        provider: terminal.provider,
-        sessionId: id,
-        roleLabel: terminal.roleLabel,
-        teamId: terminal.teamId,
-        profilePath: terminal.profilePath,
-        cwd: terminal.cwd,
-        prompt: terminal.prompt,
-        model: terminal.model,
-        sandbox: terminal.sandbox,
-        approvalPolicy: terminal.approvalPolicy,
-        resumeSessionId,
-        forkSessionId,
-        cols: terminal.size === 'wide' ? 140 : 100,
-        rows: terminal.size === 'tall' ? 34 : 24,
-      });
-      updateTerminal(id, {
-        cwd: started.cwd,
-        pid: started.pid ?? null,
-        status: 'green',
-        updatedAt: 'running',
-        statusReason: launchStatusReason(launchMode, providerName),
-      });
-      if (terminal.managedRunId && started.pid != null) {
-        await attachManagedWorkProcess({
-          runId: terminal.managedRunId,
-          terminalId: id,
-          providerSessionId: null,
-          processId: started.pid,
-        });
-      }
-      if (terminal.workItemId) {
-        try {
-          await attachWorkItemSession(terminal.workItemId, {
-            provider: terminal.provider,
-            terminal_id: id,
-            project_path: started.cwd,
-          });
-          await transitionWorkItem(terminal.workItemId, 'build');
-        } catch (error) {
-          setTerminals((current) =>
-            current.map((item) =>
-              item.id === id
-                ? appendActivity(item, {
-                    kind: 'error',
-                    label: 'Work item link failed',
-                    detail: error instanceof Error ? error.message : String(error),
-                  })
-                : item
-            )
-          );
-        }
-      }
-    } catch (error) {
-      const message = `\r\n${error instanceof Error ? error.message : String(error)}\r\n`;
-      const outputTail = appendTerminalOutput(id, message);
-      updateTerminal(id, {
-        outputTail,
-        running: false,
-        started: true,
-        status: 'red',
-        updatedAt: 'failed',
-        statusReason: error instanceof Error ? error.message : String(error),
-      });
-      setTerminals((current) =>
-        current.map((item) =>
-          item.id === id
-            ? appendBlock(item, {
-                kind: 'exit',
-                status: 'red',
-                title: 'Launch failed',
-                detail: error instanceof Error ? error.message : String(error),
-              })
-            : item
-        )
-      );
-    }
+    await startTerminalById(id, options, terminals, updateTerminal, setTerminals);
   }
 
   async function stopTerminal(id: string) {
-    try {
-      await stopAgentTerminal(id);
-      setTerminals((current) =>
-        current.map((terminal) =>
-          terminal.id === id && terminal.running
-            ? {
-                ...terminal,
-                updatedAt: 'stopping',
-                statusReason: `Sent /exit to ${providerLabel(terminal.provider)}`,
-              }
-            : terminal
-        )
-      );
-    } catch (error) {
-      const outputTail = appendTerminalOutput(
-        id,
-        `\r\n${error instanceof Error ? error.message : String(error)}\r\n`
-      );
-      updateTerminal(id, {
-        outputTail,
-        status: 'red',
-        running: false,
-        updatedAt: 'stop failed',
-        statusReason: error instanceof Error ? error.message : String(error),
-      });
-    }
+    await stopTerminalById(id, setTerminals, updateTerminal);
   }
 
   async function archiveTerminal(id: string) {
@@ -1357,14 +1713,7 @@ export default function AgentPanel() {
       try {
         await stopAgentTerminal(id);
       } catch (error) {
-        updateTerminal(id, {
-          status: 'red',
-          updatedAt: 'archive failed',
-          statusReason:
-            error instanceof Error
-              ? `Could not stop ${providerLabel(terminal.provider)}: ${error.message}`
-              : `Could not stop ${providerLabel(terminal.provider)} before archiving`,
-        });
+        updateTerminal(id, archiveStopErrorPatch(terminal, error));
         return;
       }
     }
@@ -1381,11 +1730,10 @@ export default function AgentPanel() {
     const terminal = terminals.find((item) => item.id === id);
     const message = prompt.trim();
     if (!terminal || !message) return;
-    const shellCommand = message.startsWith('!');
-    if (shellCommand) {
+    if (message.startsWith('!')) {
       const command = message.slice(1).trim();
       if (!command) return;
-      await runPaneShellCommand(id, terminal, command);
+      await runPaneShellCommandById(id, terminal, command, setTerminals, setDefaultCwd);
       return;
     }
     if (!terminal.running) {
@@ -1398,290 +1746,45 @@ export default function AgentPanel() {
       });
       return;
     }
-    const blockTitle = 'Prompt';
-    const activityLabel = 'Prompt sent';
-    setTerminals((current) =>
-      current.map((item) => {
-        if (item.id !== id) return item;
-        return appendActivity(
-          appendBlock(
-            {
-              ...item,
-              ...agentInputLifecyclePatch(
-                item,
-                'prompt sent',
-                `Prompt sent to ${providerLabel(item.provider)}`
-              ),
-            },
-            {
-              kind: 'prompt',
-              status: 'green',
-              title: blockTitle,
-              detail: message,
-            }
-          ),
-          { kind: 'input', label: activityLabel, detail: truncateText(message, 120) }
-        );
-      })
-    );
+    setTerminals((current) => current.map((item) => appendPromptSentState(item, id, message)));
     try {
       await sendAgentTerminalInput(id, `${BRACKETED_PASTE_START}${message}${BRACKETED_PASTE_END}`);
       await sendAgentTerminalInput(id, '\r');
     } catch (error) {
-      const outputTail = appendTerminalOutput(
-        id,
-        `\r\n${error instanceof Error ? error.message : String(error)}\r\n`
-      );
-      updateTerminal(id, {
-        outputTail,
-        status: 'red',
-        running: false,
-        updatedAt: 'input failed',
-        statusReason: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
-
-  async function runPaneShellCommand(id: string, terminal: AgentTerminal, command: string) {
-    const startedAt = Date.now();
-    const blockId = `${id}-shell-${startedAt}`;
-    const startOutput = `\r\n$ ${command}\r\n`;
-    const outputTail = appendTerminalOutput(id, startOutput);
-    setTerminals((current) =>
-      current.map((item) =>
-        item.id === id
-          ? appendActivity(
-              appendBlock(
-                {
-                  ...item,
-                  outputTail,
-                  status: 'green',
-                  updatedAt: 'shell running',
-                  statusReason: 'Running local shell command',
-                },
-                {
-                  kind: 'shell',
-                  status: 'green',
-                  title: 'Shell command',
-                  detail: command,
-                  cwd: terminal.cwd,
-                  id: blockId,
-                  at: startedAt,
-                }
-              ),
-              { kind: 'input', label: 'Shell command started', detail: truncateText(command, 120) }
-            )
-          : item
-      )
-    );
-
-    if (!isTauriAvailable()) {
-      const message = 'Desktop runtime is required to run shell commands';
-      const nextTail = appendTerminalOutput(id, `${message}\r\n`);
-      setTerminals((current) =>
-        current.map((item) =>
-          item.id === id
-            ? appendActivity(
-                updateAgentBlock(
-                  {
-                    ...item,
-                    outputTail: nextTail,
-                    status: 'red',
-                    updatedAt: 'shell blocked',
-                    statusReason: message,
-                  },
-                  blockId,
-                  {
-                    status: 'red',
-                    title: 'Shell blocked',
-                    output: message,
-                    durationMs: Date.now() - startedAt,
-                  }
-                ),
-                { kind: 'error', label: 'Shell blocked', detail: message }
-              )
-            : item
-        )
-      );
-      return;
-    }
-
-    try {
-      const result = await runAgentTerminalCommand({
-        command,
-        cwd: terminal.cwd,
-        timeoutMs: 120_000,
-      });
-      const cwdChanged = result.success && result.cwd !== terminal.cwd;
-      const output = `${formatShellCommandOutput(result)}${
-        cwdChanged ? `[cwd ${result.cwd}]\r\n` : ''
-      }`;
-      const nextTail = appendTerminalOutput(id, output);
-      if (cwdChanged) {
-        setDefaultCwd(result.cwd);
-      }
-      setTerminals((current) =>
-        current.map((item) =>
-          item.id === id
-            ? appendActivity(
-                updateAgentBlock(
-                  {
-                    ...item,
-                    cwd: result.success ? result.cwd : item.cwd,
-                    outputTail: nextTail,
-                    status: result.success ? 'green' : 'red',
-                    updatedAt: result.success ? 'shell done' : 'shell failed',
-                    statusReason: result.success
-                      ? cwdChanged
-                        ? `cwd ${compactPathLabel(result.cwd)}`
-                        : `Command exited ${result.exit_code}`
-                      : shellCommandFailureReason(result),
-                  },
-                  blockId,
-                  {
-                    status: result.success ? 'green' : 'red',
-                    title: result.success
-                      ? cwdChanged
-                        ? 'Working directory changed'
-                        : 'Shell complete'
-                      : 'Shell failed',
-                    output,
-                    cwd: result.cwd,
-                    exitCode: result.exit_code,
-                    durationMs: result.duration_ms,
-                  }
-                ),
-                {
-                  kind: result.success ? 'info' : 'error',
-                  label: result.success
-                    ? cwdChanged
-                      ? 'Working directory changed'
-                      : 'Shell command complete'
-                    : 'Shell command failed',
-                  detail: shellCommandBlockDetail(result),
-                }
-              )
-            : item
-        )
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      const nextTail = appendTerminalOutput(id, `\r\n${message}\r\n`);
-      setTerminals((current) =>
-        current.map((item) =>
-          item.id === id
-            ? appendActivity(
-                updateAgentBlock(
-                  {
-                    ...item,
-                    outputTail: nextTail,
-                    status: 'red',
-                    updatedAt: 'shell failed',
-                    statusReason: message,
-                  },
-                  blockId,
-                  {
-                    status: 'red',
-                    title: 'Shell failed',
-                    output: message,
-                    durationMs: Date.now() - startedAt,
-                  }
-                ),
-                { kind: 'error', label: 'Shell command failed', detail: message }
-              )
-            : item
-        )
-      );
+      handleSendPromptError(id, error, updateTerminal);
     }
   }
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-transparent text-slate-100">
-      <header className="mx-auto flex w-full max-w-7xl shrink-0 items-center justify-between gap-4 px-6 pb-4 pt-6">
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300/20 bg-amber-300/[0.07] text-amber-200">
-            {isBoardRoute ? <Columns3 size={16} /> : <Bot size={16} />}
-          </span>
-          <div>
-            <h1 className="text-base font-semibold text-slate-100">
-              {isBoardRoute ? 'Board' : 'Work'}
-            </h1>
-            <p className="text-xs text-zinc-400">
-              {isBoardRoute
-                ? 'Move outcomes from plan to proof'
-                : 'Turn an outcome into a clear, user-confirmed agent team'}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {attentionTerminals.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => {
-                const next = orderedTerminals.find(
-                  (terminal) => terminal.status === 'yellow' || terminal.status === 'red'
-                );
-                if (!next) return;
-                setConversationSeed(null);
-                setPreviewSession(null);
-                setSelectedId(next.id);
-                navigate('/agents');
-              }}
-              className="flex h-9 items-center gap-2 rounded-lg border border-amber-200/20 bg-amber-200/[0.06] px-2 text-xs font-medium text-amber-100 hover:bg-amber-200/[0.1] sm:px-3"
-              aria-label={`${attentionTerminals.length} agent ${attentionTerminals.length === 1 ? 'run needs' : 'runs need'} attention`}
-            >
-              <span className="h-2 w-2 animate-pulse rounded-full bg-amber-300" />
-              <span>{attentionTerminals.length}</span>
-              <span className="hidden sm:inline">
-                need{attentionTerminals.length === 1 ? 's' : ''} attention
-              </span>
-            </button>
-          ) : null}
-          {!isBoardRoute && terminals.some((terminal) => terminal.started) ? (
-            <label className="relative hidden sm:block lg:hidden">
-              <span className="sr-only">Active agent run</span>
-              <select
-                aria-label="Active agent run"
-                value={selected?.id ?? ''}
-                onChange={(event) => {
-                  setConversationSeed(null);
-                  setPreviewSession(null);
-                  setSelectedId(event.target.value);
-                }}
-                className="h-9 max-w-48 appearance-none rounded-lg border border-white/[0.08] bg-black/20 py-0 pl-3 pr-8 text-xs text-zinc-300 outline-none hover:border-white/[0.14] focus:border-amber-300/30"
-              >
-                <option value="">New conversation</option>
-                {orderedTerminals.map((terminal) => (
-                  <option key={terminal.id} value={terminal.id}>
-                    {terminalStatusLabel(terminal)} · {terminal.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                aria-hidden="true"
-                size={13}
-                className="pointer-events-none absolute right-2.5 top-3 text-zinc-500"
-              />
-            </label>
-          ) : null}
-          {!isBoardRoute && (selected || previewSession) ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setConversationSeed(null);
-                setPreviewSession(null);
-                setSelectedId('');
-              }}
-              className="gap-2 lg:hidden"
-            >
-              <Plus size={14} /> New
-            </Button>
-          ) : null}
-        </div>
-      </header>
-
+      <AgentPanelHeader
+        isBoardRoute={isBoardRoute}
+        attentionTerminals={attentionTerminals}
+        orderedTerminals={orderedTerminals}
+        selected={selected}
+        previewSession={previewSession}
+        hasStartedTerminals={terminals.some((terminal) => terminal.started)}
+        onAttentionClick={() => {
+          const next = orderedTerminals.find(
+            (terminal) => terminal.status === 'yellow' || terminal.status === 'red'
+          );
+          if (!next) return;
+          setConversationSeed(null);
+          setPreviewSession(null);
+          setSelectedId(next.id);
+          navigate('/agents');
+        }}
+        onSelectChange={(id) => {
+          setConversationSeed(null);
+          setPreviewSession(null);
+          setSelectedId(id);
+        }}
+        onNewClick={() => {
+          setConversationSeed(null);
+          setPreviewSession(null);
+          setSelectedId('');
+        }}
+      />
       {isBoardRoute ? (
         <WorkBoard
           repoProjects={repoProjects}
@@ -1691,75 +1794,193 @@ export default function AgentPanel() {
           onAttachSession={attachExistingSession}
         />
       ) : (
-        <section
-          aria-label="Agent conversation"
-          className="min-h-0 flex-1 overflow-hidden px-6 py-5"
-        >
-          <div className="flex h-full w-full gap-5">
-            <WorkConversationSidebar
-              terminals={orderedTerminals}
-              indexedSessions={availableIndexedSessions}
-              isVerifyingIndexedDirectories={isVerifyingSessionDirectories}
-              selectedId={selected?.id ?? ''}
-              selectedSessionKey={previewSession ? indexedSessionKey(previewSession) : ''}
-              onSelect={(id) => {
-                setConversationSeed(null);
-                setPreviewSession(null);
-                setSelectedId(id);
-              }}
-              onArchive={(id) => void archiveTerminal(id)}
-              onNew={() => {
-                setConversationSeed(null);
-                setPreviewSession(null);
-                setSelectedId('');
-              }}
-              onPreviewSession={(session) => {
-                setConversationSeed(null);
-                setSelectedId('');
-                setPreviewSession(session);
-              }}
-            />
-            <div className="min-w-0 flex-1 overflow-hidden">
-              {previewSession ? (
-                <PreviousConversationPreview
-                  key={indexedSessionKey(previewSession)}
-                  session={previewSession}
-                  onResume={() => void launchIndexedSession(previewSession, 'resume')}
-                  onFork={() => void launchIndexedSession(previewSession, 'fork')}
-                />
-              ) : !selected ? (
-                <ConversationStart
-                  key={`${conversationSeed?.workItemId ?? 'new'}-${conversationSeed?.provider ?? 'codex'}-${conversationSeed?.cwd ?? defaultCwd}`}
-                  repoProjects={repoProjects}
-                  defaultCwd={conversationSeed?.cwd ?? defaultCwd}
-                  defaultProvider={conversationSeed?.provider ?? 'codex'}
-                  defaultPrompt={conversationSeed?.prompt ?? ''}
-                  workItemId={conversationSeed?.workItemId ?? null}
-                  recentSessions={availableIndexedSessions}
-                  onStart={startConversations}
-                />
-              ) : !selected.started ? (
-                <QueuedAgentStart
-                  terminal={selected}
-                  onStart={() => void startTerminal(selected.id)}
-                  onDiscard={() => void archiveTerminal(selected.id)}
-                />
-              ) : (
-                <WorkSessionView
-                  key={selected.id}
-                  terminal={selected}
-                  repoStatus={repoStatusByPath[selected.cwd] ?? null}
-                  onStop={() => void stopTerminal(selected.id)}
-                  onRestart={() => void restartTerminal(selected.id)}
-                  onResume={() => void resumeTerminal(selected.id)}
-                  onPromptSubmit={(prompt) => void sendPrompt(selected.id, prompt)}
-                />
-              )}
-            </div>
-          </div>
-        </section>
+        <AgentPanelContent
+          repoProjects={repoProjects}
+          sessionLinks={sessionLinks}
+          orderedTerminals={orderedTerminals}
+          availableIndexedSessions={availableIndexedSessions}
+          isVerifyingSessionDirectories={isVerifyingSessionDirectories}
+          selected={selected}
+          previewSession={previewSession}
+          conversationSeed={conversationSeed}
+          defaultCwd={defaultCwd}
+          repoStatusByPath={repoStatusByPath}
+          onBuild={openWorkItemConversation}
+          onManagedBuild={startManagedWorkConversation}
+          onAttachSession={attachExistingSession}
+          onSelect={(id) => {
+            setConversationSeed(null);
+            setPreviewSession(null);
+            setSelectedId(id);
+          }}
+          onArchive={(id) => void archiveTerminal(id)}
+          onNew={() => {
+            setConversationSeed(null);
+            setPreviewSession(null);
+            setSelectedId('');
+          }}
+          onPreviewSession={(session) => {
+            setConversationSeed(null);
+            setSelectedId('');
+            setPreviewSession(session);
+          }}
+          onResumeSession={(session) => void launchIndexedSession(session, 'resume')}
+          onForkSession={(session) => void launchIndexedSession(session, 'fork')}
+          onStartConversations={startConversations}
+          onStartTerminal={(id) => startTerminal(id)}
+          onDiscardTerminal={(id) => void archiveTerminal(id)}
+          onStop={(id) => void stopTerminal(id)}
+          onRestart={(id) => void restartTerminal(id)}
+          onResume={(id) => void resumeTerminal(id)}
+          onPromptSubmit={(id, prompt) => void sendPrompt(id, prompt)}
+        />
       )}
     </div>
+  );
+}
+
+function terminalStatusDotClass(terminal: AgentTerminal): string {
+  if (terminal.status === 'yellow') return 'bg-amber-300';
+  if (terminal.status === 'red') return 'bg-red-300';
+  return terminal.running ? 'bg-emerald-300' : 'bg-zinc-600';
+}
+
+function conversationStateTextClass(state: string): string | undefined {
+  if (state === 'Needs help') return 'text-amber-300/80';
+  if (state === 'Failed' || state === 'Disconnected') return 'text-red-300/80';
+  if (state === 'Working') return 'text-emerald-300/80';
+  return undefined;
+}
+
+function emptyNavigatorMessage(isVerifyingIndexedDirectories: boolean, query: string): string {
+  if (isVerifyingIndexedDirectories && !query) return 'Checking local run history…';
+  return query ? 'No matching runs.' : 'Your runs will appear here.';
+}
+
+function SidebarTerminalRow({
+  terminal,
+  selectedId,
+  onSelect,
+  onArchive,
+}: {
+  terminal: AgentTerminal;
+  selectedId: string;
+  onSelect: (id: string) => void;
+  onArchive: (id: string) => void;
+}) {
+  const selected = terminal.id === selectedId;
+  const title = terminal.roleLabel || terminal.prompt.trim() || terminal.name;
+  const state = conversationStateLabel(terminal);
+
+  return (
+    <div
+      className={cn(
+        'group relative rounded-lg transition-colors',
+        selected
+          ? 'bg-white/[0.065] text-zinc-100 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.035)]'
+          : 'text-zinc-400 hover:bg-white/[0.035] hover:text-zinc-200'
+      )}
+    >
+      {selected ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-amber-300/80"
+        />
+      ) : null}
+      <button
+        type="button"
+        onClick={() => onSelect(terminal.id)}
+        aria-label={`Open ${terminal.roleLabel ? `${terminal.roleLabel} ` : ''}${providerLabel(terminal.provider)} run ${terminal.name}`}
+        aria-current={selected ? 'page' : undefined}
+        title={title}
+        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 pr-8 text-left outline-none focus-visible:ring-1 focus-visible:ring-amber-300/40"
+      >
+        <span
+          aria-hidden="true"
+          className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.065] bg-black/20 text-[10px] font-semibold text-zinc-400"
+        >
+          <AgentProviderMark provider={terminal.provider} />
+          <span
+            className={cn(
+              'absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-[#0d0e10]',
+              terminalStatusDotClass(terminal)
+            )}
+          />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[11px] font-medium leading-4">{title}</span>
+          <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[10px] text-zinc-400">
+            <span className="truncate">{providerLabel(terminal.provider)}</span>
+            <span aria-hidden="true">·</span>
+            <span className={cn('shrink-0', conversationStateTextClass(state))}>{state}</span>
+          </span>
+          <span className="mt-0.5 block truncate text-[10px] text-zinc-400">
+            {compactPathLabel(terminal.cwd)}
+          </span>
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onArchive(terminal.id)}
+        aria-label={`Archive ${providerLabel(terminal.provider)} run ${terminal.name}`}
+        title="Archive conversation"
+        className="absolute right-1.5 top-2 flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 opacity-0 transition hover:bg-black/30 hover:text-zinc-300 focus:opacity-100 focus-visible:ring-1 focus-visible:ring-amber-300/40 group-hover:opacity-100"
+      >
+        <Archive size={12} />
+      </button>
+    </div>
+  );
+}
+
+function SidebarSessionRow({
+  session,
+  selectedSessionKey,
+  onPreviewSession,
+}: {
+  session: SessionRow;
+  selectedSessionKey: string;
+  onPreviewSession: (session: SessionRow) => void;
+}) {
+  const provider = sessionAgentProvider(session);
+  const title = indexedSessionTitle(session);
+  const selected = indexedSessionKey(session) === selectedSessionKey;
+  return (
+    <button
+      key={`${provider}:${session.id}`}
+      type="button"
+      onClick={() => onPreviewSession(session)}
+      aria-label={`Open ${providerLabel(provider)} previous conversation ${title}`}
+      aria-current={selected ? 'page' : undefined}
+      title={`Open ${title}`}
+      className={cn(
+        'flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left outline-none transition-colors focus-visible:ring-1 focus-visible:ring-amber-300/40',
+        selected
+          ? 'bg-white/[0.065] text-zinc-100 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.035)]'
+          : 'text-zinc-400 hover:bg-white/[0.035] hover:text-zinc-200'
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.065] bg-black/20 text-[10px] font-semibold text-zinc-400"
+      >
+        <AgentProviderMark provider={provider} />
+        <MessageSquare
+          className="absolute -bottom-1 -right-1 rounded-full bg-[#0d0e10] p-0.5"
+          size={11}
+        />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[11px] font-medium leading-4">{title}</span>
+        <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[10px] text-zinc-400">
+          <span>{providerLabel(provider)}</span>
+          <span aria-hidden="true">·</span>
+          <span>Previous</span>
+        </span>
+        <span className="mt-0.5 block truncate text-[10px] text-zinc-400">
+          {compactPathLabel(session.cwd ?? '')}
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -1961,139 +2182,23 @@ function WorkConversationSidebar({
                   </button>
                   {expanded ? (
                     <div id={regionId} className="mt-0.5 space-y-0.5">
-                      {group.terminals.map((terminal) => {
-                        const selected = terminal.id === selectedId;
-                        const title = terminal.roleLabel || terminal.prompt.trim() || terminal.name;
-                        const state = conversationStateLabel(terminal);
-
-                        return (
-                          <div
-                            key={terminal.id}
-                            className={cn(
-                              'group relative rounded-lg transition-colors',
-                              selected
-                                ? 'bg-white/[0.065] text-zinc-100 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.035)]'
-                                : 'text-zinc-400 hover:bg-white/[0.035] hover:text-zinc-200'
-                            )}
-                          >
-                            {selected ? (
-                              <span
-                                aria-hidden="true"
-                                className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-amber-300/80"
-                              />
-                            ) : null}
-                            <button
-                              type="button"
-                              onClick={() => onSelect(terminal.id)}
-                              aria-label={`Open ${terminal.roleLabel ? `${terminal.roleLabel} ` : ''}${providerLabel(terminal.provider)} run ${terminal.name}`}
-                              aria-current={selected ? 'page' : undefined}
-                              title={title}
-                              className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 pr-8 text-left outline-none focus-visible:ring-1 focus-visible:ring-amber-300/40"
-                            >
-                              <span
-                                aria-hidden="true"
-                                className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.065] bg-black/20 text-[10px] font-semibold text-zinc-400"
-                              >
-                                <AgentProviderMark provider={terminal.provider} />
-                                <span
-                                  className={cn(
-                                    'absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-[#0d0e10]',
-                                    terminal.status === 'yellow'
-                                      ? 'bg-amber-300'
-                                      : terminal.status === 'red'
-                                        ? 'bg-red-300'
-                                        : terminal.running
-                                          ? 'bg-emerald-300'
-                                          : 'bg-zinc-600'
-                                  )}
-                                />
-                              </span>
-                              <span className="min-w-0 flex-1">
-                                <span className="block truncate text-[11px] font-medium leading-4">
-                                  {title}
-                                </span>
-                                <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[10px] text-zinc-400">
-                                  <span className="truncate">
-                                    {providerLabel(terminal.provider)}
-                                  </span>
-                                  <span aria-hidden="true">·</span>
-                                  <span
-                                    className={cn(
-                                      'shrink-0',
-                                      state === 'Needs help'
-                                        ? 'text-amber-300/80'
-                                        : state === 'Failed' || state === 'Disconnected'
-                                          ? 'text-red-300/80'
-                                          : state === 'Working'
-                                            ? 'text-emerald-300/80'
-                                            : undefined
-                                    )}
-                                  >
-                                    {state}
-                                  </span>
-                                </span>
-                                <span className="mt-0.5 block truncate text-[10px] text-zinc-400">
-                                  {compactPathLabel(terminal.cwd)}
-                                </span>
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => onArchive(terminal.id)}
-                              aria-label={`Archive ${providerLabel(terminal.provider)} run ${terminal.name}`}
-                              title="Archive conversation"
-                              className="absolute right-1.5 top-2 flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 opacity-0 transition hover:bg-black/30 hover:text-zinc-300 focus:opacity-100 focus-visible:ring-1 focus-visible:ring-amber-300/40 group-hover:opacity-100"
-                            >
-                              <Archive size={12} />
-                            </button>
-                          </div>
-                        );
-                      })}
-                      {group.indexedSessions.map((session) => {
-                        const provider = sessionAgentProvider(session);
-                        const title = indexedSessionTitle(session);
-                        const selected = indexedSessionKey(session) === selectedSessionKey;
-                        return (
-                          <button
-                            key={`${provider}:${session.id}`}
-                            type="button"
-                            onClick={() => onPreviewSession(session)}
-                            aria-label={`Open ${providerLabel(provider)} previous conversation ${title}`}
-                            aria-current={selected ? 'page' : undefined}
-                            title={`Open ${title}`}
-                            className={cn(
-                              'flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left outline-none transition-colors focus-visible:ring-1 focus-visible:ring-amber-300/40',
-                              selected
-                                ? 'bg-white/[0.065] text-zinc-100 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.035)]'
-                                : 'text-zinc-400 hover:bg-white/[0.035] hover:text-zinc-200'
-                            )}
-                          >
-                            <span
-                              aria-hidden="true"
-                              className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.065] bg-black/20 text-[10px] font-semibold text-zinc-400"
-                            >
-                              <AgentProviderMark provider={provider} />
-                              <MessageSquare
-                                className="absolute -bottom-1 -right-1 rounded-full bg-[#0d0e10] p-0.5"
-                                size={11}
-                              />
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[11px] font-medium leading-4">
-                                {title}
-                              </span>
-                              <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[10px] text-zinc-400">
-                                <span>{providerLabel(provider)}</span>
-                                <span aria-hidden="true">·</span>
-                                <span>Previous</span>
-                              </span>
-                              <span className="mt-0.5 block truncate text-[10px] text-zinc-400">
-                                {compactPathLabel(session.cwd ?? '')}
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })}
+                      {group.terminals.map((terminal) => (
+                        <SidebarTerminalRow
+                          key={terminal.id}
+                          terminal={terminal}
+                          selectedId={selectedId}
+                          onSelect={onSelect}
+                          onArchive={onArchive}
+                        />
+                      ))}
+                      {group.indexedSessions.map((session) => (
+                        <SidebarSessionRow
+                          key={`${sessionAgentProvider(session)}:${session.id}`}
+                          session={session}
+                          selectedSessionKey={selectedSessionKey}
+                          onPreviewSession={onPreviewSession}
+                        />
+                      ))}
                     </div>
                   ) : null}
                 </div>
@@ -2102,11 +2207,7 @@ function WorkConversationSidebar({
           </div>
         ) : (
           <p className="px-2.5 py-2 text-[11px] leading-5 text-zinc-400">
-            {isVerifyingIndexedDirectories && !query
-              ? 'Checking local run history…'
-              : query
-                ? 'No matching runs.'
-                : 'Your runs will appear here.'}
+            {emptyNavigatorMessage(isVerifyingIndexedDirectories, query)}
           </p>
         )}
       </nav>
@@ -2320,6 +2421,168 @@ function QueuedAgentStart({
   );
 }
 
+function sessionStatusText(
+  quietProcess: boolean,
+  attention: AgentAttention | null,
+  isThinking: boolean,
+  terminal: AgentTerminal
+): string {
+  if (quietProcess) return 'Running';
+  if (attention) return 'Needs your input';
+  if (isThinking) return 'Thinking';
+  return terminalStatusLabel(terminal);
+}
+
+function sessionDescriptionText(
+  quietProcess: boolean,
+  attention: AgentAttention | null,
+  lifecycle: string,
+  terminal: AgentTerminal,
+  providerName: string
+): string {
+  if (quietProcess) return 'Process is healthy and waiting for work.';
+  if (attention) return attention.detail;
+  if (lifecycle === 'resumable') {
+    return terminal.statusReason.toLowerCase().includes('resum')
+      ? terminal.statusReason
+      : `${providerName} is paused and can be resumed.`;
+  }
+  if (lifecycle === 'stopped') return `${providerName} is stopped.`;
+  if (terminal.lastAgentEvent === 'stop') return `${providerName} is ready for your next message.`;
+  return terminal.statusReason || `${providerName} is preparing this work.`;
+}
+
+function attentionButtonText(attention: AgentAttention): string {
+  if (attention.confidence === 'possible') return 'Review prompt';
+  return attention.primaryAction === 'review-output' ? 'Review request' : 'Reply';
+}
+
+function composerPlaceholder(
+  terminal: AgentTerminal,
+  attention: AgentAttention | null,
+  providerName: string
+): string {
+  if (!terminal.running) return 'This run is not active';
+  if (attention?.kind === 'question') return `Answer ${providerName}…`;
+  return attention ? `Respond to ${providerName}…` : `Message ${providerName}…`;
+}
+
+function computeIsThinking(
+  terminal: AgentTerminal,
+  attention: AgentAttention | null,
+  quietProcess: boolean,
+  latestPromptAt: number,
+  latestSettledAt: number
+): boolean {
+  return (
+    terminal.running &&
+    !attention &&
+    !quietProcess &&
+    terminal.status !== 'red' &&
+    terminal.lastAgentEvent !== 'stop' &&
+    terminal.lastAgentEvent !== 'idle_prompt' &&
+    (latestPromptAt > latestSettledAt || Boolean(terminal.prompt.trim()))
+  );
+}
+
+function ConversationBlockView({
+  block,
+  providerName,
+}: {
+  block: AgentBlockEntry;
+  providerName: string;
+}) {
+  if (isUserConversationBlock(block)) {
+    return (
+      <article key={block.id} className="flex justify-end">
+        <div className="max-w-[82%] rounded-2xl rounded-br-md bg-white/[0.07] px-4 py-3">
+          <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-100">{block.detail}</p>
+        </div>
+      </article>
+    );
+  }
+  if (block.status === 'red') {
+    return (
+      <article
+        key={block.id}
+        className="rounded-xl border border-red-300/20 bg-red-300/[0.035] px-4 py-3"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-medium text-red-100">{block.title}</span>
+          <time className="text-[10px] tabular-nums text-red-100/40">
+            {formatActivityTime(block.at)}
+          </time>
+        </div>
+        {block.detail ? (
+          <p className="mt-1 text-sm leading-6 text-red-100/60">{block.detail}</p>
+        ) : null}
+      </article>
+    );
+  }
+  return (
+    <article key={block.id} className="flex items-start gap-3">
+      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-300">
+        <Bot size={14} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 text-xs">
+          <span className="font-medium text-zinc-300">{providerName}</span>
+          <time className="tabular-nums text-zinc-600">{formatActivityTime(block.at)}</time>
+        </div>
+        {block.title !== 'Turn complete' ? (
+          <p className="mt-1 text-xs font-medium text-zinc-500">{block.title}</p>
+        ) : null}
+        {block.detail ? (
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-200">
+            {block.detail}
+          </p>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function SessionActionButton({
+  terminal,
+  lifecycle,
+  providerName,
+  onStop,
+  onRestart,
+  onResume,
+}: {
+  terminal: AgentTerminal;
+  lifecycle: string;
+  providerName: string;
+  onStop: () => void;
+  onRestart: () => void;
+  onResume: () => void;
+}) {
+  if (terminal.running) {
+    return (
+      <Button type="button" variant="outline" size="sm" onClick={onStop}>
+        <Square size={13} className="mr-2" /> Stop
+      </Button>
+    );
+  }
+  if (lifecycle === 'resumable') {
+    return (
+      <Button type="button" size="sm" onClick={onResume}>
+        <Play size={13} className="mr-2" /> Resume
+      </Button>
+    );
+  }
+  return (
+    <Button
+      type="button"
+      size="sm"
+      onClick={onRestart}
+      aria-label={`Restart ${providerName} agent`}
+    >
+      <RotateCcw size={13} className="mr-2" /> Try again
+    </Button>
+  );
+}
+
 function WorkSessionView({
   terminal,
   repoStatus,
@@ -2370,14 +2633,13 @@ function WorkSessionView({
       )
       .map((block) => block.at)
   );
-  const isThinking =
-    terminal.running &&
-    !attention &&
-    !quietProcess &&
-    terminal.status !== 'red' &&
-    terminal.lastAgentEvent !== 'stop' &&
-    terminal.lastAgentEvent !== 'idle_prompt' &&
-    (latestPromptAt > latestSettledAt || Boolean(terminal.prompt.trim()));
+  const isThinking = computeIsThinking(
+    terminal,
+    attention,
+    quietProcess,
+    latestPromptAt,
+    latestSettledAt
+  );
 
   useEffect(() => {
     const refresh = () => {
@@ -2417,13 +2679,7 @@ function WorkSessionView({
           <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
             <span className={cn('h-2 w-2 rounded-full', statusMeta[displayStatus].dot)} />
             <span className={cn('font-medium', statusMeta[displayStatus].text)}>
-              {quietProcess
-                ? 'Running'
-                : attention
-                  ? 'Needs your input'
-                  : isThinking
-                    ? 'Thinking'
-                    : terminalStatusLabel(terminal)}
+              {sessionStatusText(quietProcess, attention, isThinking, terminal)}
             </span>
             <span aria-hidden="true">·</span>
             <span>{repoStatus ? repoGitStatusLabel(repoStatus) : 'Checking repository…'}</span>
@@ -2436,40 +2692,18 @@ function WorkSessionView({
             <span className="font-normal text-zinc-500">in {compactPathLabel(terminal.cwd)}</span>
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
-            {quietProcess
-              ? 'Process is healthy and waiting for work.'
-              : attention
-                ? attention.detail
-                : lifecycle === 'resumable'
-                  ? terminal.statusReason.toLowerCase().includes('resum')
-                    ? terminal.statusReason
-                    : `${providerName} is paused and can be resumed.`
-                  : lifecycle === 'stopped'
-                    ? `${providerName} is stopped.`
-                    : terminal.lastAgentEvent === 'stop'
-                      ? `${providerName} is ready for your next message.`
-                      : terminal.statusReason || `${providerName} is preparing this work.`}
+            {sessionDescriptionText(quietProcess, attention, lifecycle, terminal, providerName)}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {terminal.running ? (
-            <Button type="button" variant="outline" size="sm" onClick={onStop}>
-              <Square size={13} className="mr-2" /> Stop
-            </Button>
-          ) : lifecycle === 'resumable' ? (
-            <Button type="button" size="sm" onClick={onResume}>
-              <Play size={13} className="mr-2" /> Resume
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="sm"
-              onClick={onRestart}
-              aria-label={`Restart ${providerName} agent`}
-            >
-              <RotateCcw size={13} className="mr-2" /> Try again
-            </Button>
-          )}
+          <SessionActionButton
+            terminal={terminal}
+            lifecycle={lifecycle}
+            providerName={providerName}
+            onStop={onStop}
+            onRestart={onRestart}
+            onResume={onResume}
+          />
         </div>
       </header>
 
@@ -2502,11 +2736,7 @@ function WorkSessionView({
                 else composerRef.current?.focus();
               }}
             >
-              {attention.confidence === 'possible'
-                ? 'Review prompt'
-                : attention.primaryAction === 'review-output'
-                  ? 'Review request'
-                  : 'Reply'}
+              {attentionButtonText(attention)}
             </Button>
           </div>
         </section>
@@ -2527,54 +2757,9 @@ function WorkSessionView({
       <section aria-label="Agent conversation" className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-1">
           <div className="flex-1 space-y-7 py-5">
-            {conversationBlocks.map((block) =>
-              isUserConversationBlock(block) ? (
-                <article key={block.id} className="flex justify-end">
-                  <div className="max-w-[82%] rounded-2xl rounded-br-md bg-white/[0.07] px-4 py-3">
-                    <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-100">
-                      {block.detail}
-                    </p>
-                  </div>
-                </article>
-              ) : block.status === 'red' ? (
-                <article
-                  key={block.id}
-                  className="rounded-xl border border-red-300/20 bg-red-300/[0.035] px-4 py-3"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-medium text-red-100">{block.title}</span>
-                    <time className="text-[10px] tabular-nums text-red-100/40">
-                      {formatActivityTime(block.at)}
-                    </time>
-                  </div>
-                  {block.detail ? (
-                    <p className="mt-1 text-sm leading-6 text-red-100/60">{block.detail}</p>
-                  ) : null}
-                </article>
-              ) : (
-                <article key={block.id} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-300">
-                    <Bot size={14} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="font-medium text-zinc-300">{providerName}</span>
-                      <time className="tabular-nums text-zinc-600">
-                        {formatActivityTime(block.at)}
-                      </time>
-                    </div>
-                    {block.title !== 'Turn complete' ? (
-                      <p className="mt-1 text-xs font-medium text-zinc-500">{block.title}</p>
-                    ) : null}
-                    {block.detail ? (
-                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-200">
-                        {block.detail}
-                      </p>
-                    ) : null}
-                  </div>
-                </article>
-              )
-            )}
+            {conversationBlocks.map((block) => (
+              <ConversationBlockView key={block.id} block={block} providerName={providerName} />
+            ))}
 
             {isThinking ? (
               <div
@@ -2669,15 +2854,7 @@ function WorkSessionView({
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={submitComposerOnEnter}
-          placeholder={
-            terminal.running
-              ? attention?.kind === 'question'
-                ? `Answer ${providerName}…`
-                : attention
-                  ? `Respond to ${providerName}…`
-                  : `Message ${providerName}…`
-              : 'This run is not active'
-          }
+          placeholder={composerPlaceholder(terminal, attention, providerName)}
           aria-label={`Message ${providerName}`}
           disabled={!terminal.running}
           rows={2}
@@ -2689,6 +2866,51 @@ function WorkSessionView({
       </form>
     </div>
   );
+}
+
+function canSubmitConversation(
+  prompt: string,
+  submitInFlight: boolean,
+  confirmedRoles: AgentRoleRecommendation[],
+  teamNeedsRepository: boolean,
+  hasConcreteTeamRepository: boolean
+): boolean {
+  return Boolean(
+    prompt.trim() &&
+      !submitInFlight &&
+      confirmedRoles.length > 0 &&
+      (!teamNeedsRepository || hasConcreteTeamRepository)
+  );
+}
+
+function buildConversationSeeds(
+  confirmedRoles: AgentRoleRecommendation[],
+  roleChoices: Record<string, { included: boolean; provider: AgentProvider; model: string }>,
+  cwd: string,
+  teamId: string | null,
+  workItemId: string | null
+): ConversationSeed[] {
+  return confirmedRoles.map((item, index) => {
+    const choice = roleChoices[item.role];
+    return {
+      provider: choice?.provider ?? item.defaultProvider,
+      roleLabel: item.label,
+      teamId,
+      sandbox: item.sandbox,
+      cwd: cwd.trim() || '~',
+      prompt: item.instructions,
+      model: choice?.model.trim() ?? '',
+      workItemId: index === 0 ? workItemId : null,
+      launchNow: item.phase === 'now',
+    };
+  });
+}
+
+function submitButtonText(startingRoles: number, queuedRoles: number): string {
+  if (startingRoles === 1) {
+    return queuedRoles > 0 ? `Start 1, queue ${queuedRoles}` : 'Start agent';
+  }
+  return `Start ${startingRoles} agents`;
 }
 
 function ConversationStart({
@@ -2745,10 +2967,13 @@ function ConversationStart({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (
-      !prompt.trim() ||
-      submitInFlightRef.current ||
-      confirmedRoles.length === 0 ||
-      (teamNeedsRepository && !hasConcreteTeamRepository)
+      !canSubmitConversation(
+        prompt,
+        submitInFlightRef.current,
+        confirmedRoles,
+        teamNeedsRepository,
+        hasConcreteTeamRepository
+      )
     ) {
       return;
     }
@@ -2756,22 +2981,7 @@ function ConversationStart({
     setIsSubmitting(true);
     const teamId = confirmedRoles.length > 1 ? newAgentTeamId() : null;
     try {
-      await onStart(
-        confirmedRoles.map((item, index) => {
-          const choice = roleChoices[item.role];
-          return {
-            provider: choice?.provider ?? item.defaultProvider,
-            roleLabel: item.label,
-            teamId,
-            sandbox: item.sandbox,
-            cwd: cwd.trim() || '~',
-            prompt: item.instructions,
-            model: choice?.model.trim() ?? '',
-            workItemId: index === 0 ? workItemId : null,
-            launchNow: item.phase === 'now',
-          };
-        })
-      );
+      await onStart(buildConversationSeeds(confirmedRoles, roleChoices, cwd, teamId, workItemId));
     } finally {
       submitInFlightRef.current = false;
       setIsSubmitting(false);
@@ -2971,11 +3181,7 @@ function ConversationStart({
                 className="gap-2"
               >
                 {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-                {startingRoles.length === 1
-                  ? queuedRoles.length > 0
-                    ? `Start 1, queue ${queuedRoles.length}`
-                    : 'Start agent'
-                  : `Start ${startingRoles.length} agents`}
+                {submitButtonText(startingRoles.length, queuedRoles.length)}
               </Button>
             </div>
           </section>
@@ -3256,40 +3462,72 @@ function formatShortDate(value: string): string {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+const CLAUDE_ENV_PREFIX = [
+  'env',
+  'TERM=xterm-256color',
+  'COLORTERM=truecolor',
+  'TERM_PROGRAM=CodeVetter',
+  'TERM_PROGRAM_VERSION=codevetter-agent-panel-0.1',
+  'CODEVETTER_AGENT_PANEL=1',
+];
+
+const CODEX_ENV_PREFIX = [
+  'env',
+  'TERM=xterm-256color',
+  'COLORTERM=truecolor',
+  'TERM_PROGRAM=CodeVetter',
+  'TERM_PROGRAM_VERSION=codevetter-agent-panel-0.1',
+  'CODEVETTER_AGENT_PANEL=1',
+  'WARP_CLI_AGENT_PROTOCOL_VERSION=1',
+  'WARP_CLIENT_VERSION=codevetter-agent-panel-0.1',
+];
+
 function agentLaunchCommand(
   terminal: AgentTerminal,
   options: { includeEnv?: boolean; resume?: boolean; forkSessionId?: string | null } = {}
 ): string {
-  const resumeSessionId = options.resume ? terminal.codexSessionId?.trim() : '';
+  const resumeSessionId = options.resume ? (terminal.codexSessionId?.trim() ?? '') : '';
   const forkSessionId = options.forkSessionId?.trim() ?? '';
-  if (terminal.provider === 'claude') {
-    const args = [
-      'claude',
-      '--permission-mode',
-      claudePermissionMode(terminal.sandbox, terminal.approvalPolicy),
-    ];
-    const model = terminal.model.trim();
-    if (model) args.push('--model', model);
-    if (resumeSessionId) args.push('--resume', resumeSessionId);
-    if (forkSessionId) args.push('--resume', forkSessionId, '--fork-session');
-    const prompt = terminal.prompt.trim();
-    if (prompt) args.push(prompt);
+  return terminal.provider === 'claude'
+    ? claudeLaunchCommand(terminal, options, resumeSessionId, forkSessionId)
+    : codexLaunchCommand(terminal, options, resumeSessionId, forkSessionId);
+}
 
-    const command = `cd ${shellQuote(terminal.cwd.trim() || '~')} && ${args
-      .map(shellQuote)
-      .join(' ')}`;
-    if (options.includeEnv === false) return command;
-    return [
-      'env',
-      'TERM=xterm-256color',
-      'COLORTERM=truecolor',
-      'TERM_PROGRAM=CodeVetter',
-      'TERM_PROGRAM_VERSION=codevetter-agent-panel-0.1',
-      'CODEVETTER_AGENT_PANEL=1',
-      command,
-    ].join(' ');
-  }
+function withEnvPrefix(prefix: string[], command: string, includeEnv: boolean | undefined): string {
+  if (includeEnv === false) return command;
+  return [...prefix, command].join(' ');
+}
 
+function claudeLaunchCommand(
+  terminal: AgentTerminal,
+  options: { includeEnv?: boolean },
+  resumeSessionId: string,
+  forkSessionId: string
+): string {
+  const args = [
+    'claude',
+    '--permission-mode',
+    claudePermissionMode(terminal.sandbox, terminal.approvalPolicy),
+  ];
+  const model = terminal.model.trim();
+  if (model) args.push('--model', model);
+  if (resumeSessionId) args.push('--resume', resumeSessionId);
+  if (forkSessionId) args.push('--resume', forkSessionId, '--fork-session');
+  const prompt = terminal.prompt.trim();
+  if (prompt) args.push(prompt);
+
+  const command = `cd ${shellQuote(terminal.cwd.trim() || '~')} && ${args
+    .map(shellQuote)
+    .join(' ')}`;
+  return withEnvPrefix(CLAUDE_ENV_PREFIX, command, options.includeEnv);
+}
+
+function codexLaunchCommand(
+  terminal: AgentTerminal,
+  options: { includeEnv?: boolean },
+  resumeSessionId: string,
+  forkSessionId: string
+): string {
   const args = [
     'codex',
     ...(forkSessionId ? ['fork'] : resumeSessionId ? ['resume'] : []),
@@ -3309,18 +3547,7 @@ function agentLaunchCommand(
   if (prompt) args.push(prompt);
 
   const command = args.map(shellQuote).join(' ');
-  if (options.includeEnv === false) return command;
-  return [
-    'env',
-    'TERM=xterm-256color',
-    'COLORTERM=truecolor',
-    'TERM_PROGRAM=CodeVetter',
-    'TERM_PROGRAM_VERSION=codevetter-agent-panel-0.1',
-    'CODEVETTER_AGENT_PANEL=1',
-    'WARP_CLI_AGENT_PROTOCOL_VERSION=1',
-    'WARP_CLIENT_VERSION=codevetter-agent-panel-0.1',
-    command,
-  ].join(' ');
+  return withEnvPrefix(CODEX_ENV_PREFIX, command, options.includeEnv);
 }
 
 function claudePermissionMode(
@@ -3396,6 +3623,366 @@ function shellQuote(value: string): string {
 function isConcreteRepoPath(path: string): boolean {
   const trimmed = path.trim();
   return Boolean(trimmed && trimmed !== '~' && !trimmed.startsWith('~'));
+}
+
+function handleSendPromptError(
+  id: string,
+  error: unknown,
+  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void
+): void {
+  const outputTail = appendTerminalOutput(
+    id,
+    `\r\n${error instanceof Error ? error.message : String(error)}\r\n`
+  );
+  updateTerminal(id, {
+    outputTail,
+    status: 'red',
+    running: false,
+    updatedAt: 'input failed',
+    statusReason: error instanceof Error ? error.message : String(error),
+  });
+}
+
+function appendPromptSentState(item: AgentTerminal, id: string, message: string): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendActivity(
+    appendBlock(
+      {
+        ...item,
+        ...agentInputLifecyclePatch(
+          item,
+          'prompt sent',
+          `Prompt sent to ${providerLabel(item.provider)}`
+        ),
+      },
+      {
+        kind: 'prompt',
+        status: 'green',
+        title: 'Prompt',
+        detail: message,
+      }
+    ),
+    { kind: 'input', label: 'Prompt sent', detail: truncateText(message, 120) }
+  );
+}
+
+function appendLaunchBlock(
+  item: AgentTerminal,
+  id: string,
+  launchMode: AgentLaunchMode,
+  providerName: string,
+  terminal: AgentTerminal,
+  forkSessionId: string | null
+): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendBlock(item, {
+    kind: 'launch',
+    status: 'green',
+    title: launchBlockTitle(launchMode, providerName),
+    detail: agentLaunchCommand(terminal, {
+      includeEnv: false,
+      resume: launchMode === 'resume',
+      forkSessionId,
+    }),
+  });
+}
+
+function appendLaunchExitBlock(
+  item: AgentTerminal,
+  id: string,
+  title: string,
+  detail: string
+): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendBlock(item, {
+    kind: 'exit',
+    status: 'red',
+    title,
+    detail,
+  });
+}
+
+function appendWorkItemLinkError(item: AgentTerminal, id: string, error: unknown): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendActivity(item, {
+    kind: 'error',
+    label: 'Work item link failed',
+    detail: error instanceof Error ? error.message : String(error),
+  });
+}
+
+function prepareLaunchTerminal(sourceTerminal: AgentTerminal): AgentTerminal {
+  if (!isDetachedTerminal(sourceTerminal)) return sourceTerminal;
+  return {
+    ...sourceTerminal,
+    running: false,
+    pid: null,
+    updatedAt: 'detached',
+    statusReason: 'Recovering a pane whose backend heartbeat stopped',
+  };
+}
+
+function resolveLaunchMode(forkSessionId: string | null, resume: boolean): AgentLaunchMode {
+  if (forkSessionId) return 'fork';
+  return resume ? 'resume' : 'start';
+}
+
+function launchStartingPatch(
+  terminal: AgentTerminal,
+  providerName: string,
+  launchMode: AgentLaunchMode,
+  startLine: string
+): Partial<AgentTerminal> {
+  return {
+    prompt: terminal.prompt,
+    status: 'green',
+    running: true,
+    started: true,
+    updatedAt: 'starting',
+    statusReason: `Starting ${providerName} process`,
+    idleMs: 0,
+    lastOutputAt: Date.now(),
+    lastHeartbeatAt: null,
+    waitingSince: null,
+    structuredEventsActive: false,
+    lastAgentEvent: null,
+    lastAgentEventSource: null,
+    lastAgentEventAt: null,
+    lastStructuredEventSeq: null,
+    structuredEventLog: [],
+    codexSessionId: launchMode === 'resume' ? terminal.codexSessionId : null,
+    transcriptPath: launchMode === 'resume' ? terminal.transcriptPath : null,
+    outputTail: startLine.slice(-OUTPUT_TAIL_CHARS),
+  };
+}
+
+async function handleLaunchSuccess(
+  id: string,
+  terminal: AgentTerminal,
+  started: { pid?: number | null; cwd: string },
+  setTerminals: Dispatch<SetStateAction<AgentTerminal[]>>
+): Promise<void> {
+  if (terminal.managedRunId && started.pid != null) {
+    await attachManagedWorkProcess({
+      runId: terminal.managedRunId,
+      terminalId: id,
+      providerSessionId: null,
+      processId: started.pid,
+    });
+  }
+  if (!terminal.workItemId) return;
+  try {
+    await attachWorkItemSession(terminal.workItemId, {
+      provider: terminal.provider,
+      terminal_id: id,
+      project_path: started.cwd,
+    });
+    await transitionWorkItem(terminal.workItemId, 'build');
+  } catch (error) {
+    setTerminals((current) => current.map((item) => appendWorkItemLinkError(item, id, error)));
+  }
+}
+
+function handleLaunchBlocked(
+  id: string,
+  providerName: string,
+  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void,
+  setTerminals: Dispatch<SetStateAction<AgentTerminal[]>>
+): void {
+  const outputTail = appendTerminalOutput(
+    id,
+    `\r\nDesktop runtime is required to start ${providerName}.\r\n`
+  );
+  updateTerminal(id, {
+    outputTail,
+    status: 'red',
+    updatedAt: 'not run',
+    statusReason: `Desktop runtime is required to start ${providerName}`,
+  });
+  setTerminals((current) =>
+    current.map((item) =>
+      appendLaunchExitBlock(
+        item,
+        id,
+        'Launch blocked',
+        `Desktop runtime is required to start ${providerName}`
+      )
+    )
+  );
+}
+
+function handleLaunchFailed(
+  id: string,
+  error: unknown,
+  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void,
+  setTerminals: Dispatch<SetStateAction<AgentTerminal[]>>
+): void {
+  const message = `\r\n${error instanceof Error ? error.message : String(error)}\r\n`;
+  const outputTail = appendTerminalOutput(id, message);
+  updateTerminal(id, {
+    outputTail,
+    running: false,
+    started: true,
+    status: 'red',
+    updatedAt: 'failed',
+    statusReason: error instanceof Error ? error.message : String(error),
+  });
+  setTerminals((current) =>
+    current.map((item) =>
+      appendLaunchExitBlock(
+        item,
+        id,
+        'Launch failed',
+        error instanceof Error ? error.message : String(error)
+      )
+    )
+  );
+}
+
+function appendShellStartedState(
+  item: AgentTerminal,
+  id: string,
+  outputTail: string,
+  command: string,
+  terminal: AgentTerminal,
+  blockId: string,
+  startedAt: number
+): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendActivity(
+    appendBlock(
+      {
+        ...item,
+        outputTail,
+        status: 'green',
+        updatedAt: 'shell running',
+        statusReason: 'Running local shell command',
+      },
+      {
+        kind: 'shell',
+        status: 'green',
+        title: 'Shell command',
+        detail: command,
+        cwd: terminal.cwd,
+        id: blockId,
+        at: startedAt,
+      }
+    ),
+    { kind: 'input', label: 'Shell command started', detail: truncateText(command, 120) }
+  );
+}
+
+function appendShellBlockedState(
+  item: AgentTerminal,
+  id: string,
+  message: string,
+  blockId: string,
+  startedAt: number,
+  nextTail: string
+): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendActivity(
+    updateAgentBlock(
+      {
+        ...item,
+        outputTail: nextTail,
+        status: 'red',
+        updatedAt: 'shell blocked',
+        statusReason: message,
+      },
+      blockId,
+      {
+        status: 'red',
+        title: 'Shell blocked',
+        output: message,
+        durationMs: Date.now() - startedAt,
+      }
+    ),
+    { kind: 'error', label: 'Shell blocked', detail: message }
+  );
+}
+
+function shellResultStatusReason(result: AgentTerminalCommandResult, cwdChanged: boolean): string {
+  if (!result.success) return shellCommandFailureReason(result);
+  return cwdChanged ? `cwd ${compactPathLabel(result.cwd)}` : `Command exited ${result.exit_code}`;
+}
+
+function shellResultBlockTitle(result: AgentTerminalCommandResult, cwdChanged: boolean): string {
+  if (!result.success) return 'Shell failed';
+  return cwdChanged ? 'Working directory changed' : 'Shell complete';
+}
+
+function shellResultActivityLabel(result: AgentTerminalCommandResult, cwdChanged: boolean): string {
+  if (!result.success) return 'Shell command failed';
+  return cwdChanged ? 'Working directory changed' : 'Shell command complete';
+}
+
+function appendShellResultState(
+  item: AgentTerminal,
+  id: string,
+  result: AgentTerminalCommandResult,
+  output: string,
+  nextTail: string,
+  cwdChanged: boolean,
+  blockId: string
+): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendActivity(
+    updateAgentBlock(
+      {
+        ...item,
+        cwd: result.success ? result.cwd : item.cwd,
+        outputTail: nextTail,
+        status: result.success ? 'green' : 'red',
+        updatedAt: result.success ? 'shell done' : 'shell failed',
+        statusReason: shellResultStatusReason(result, cwdChanged),
+      },
+      blockId,
+      {
+        status: result.success ? 'green' : 'red',
+        title: shellResultBlockTitle(result, cwdChanged),
+        output,
+        cwd: result.cwd,
+        exitCode: result.exit_code,
+        durationMs: result.duration_ms,
+      }
+    ),
+    {
+      kind: result.success ? 'info' : 'error',
+      label: shellResultActivityLabel(result, cwdChanged),
+      detail: shellCommandBlockDetail(result),
+    }
+  );
+}
+
+function appendShellErrorState(
+  item: AgentTerminal,
+  id: string,
+  message: string,
+  blockId: string,
+  startedAt: number,
+  nextTail: string
+): AgentTerminal {
+  if (item.id !== id) return item;
+  return appendActivity(
+    updateAgentBlock(
+      {
+        ...item,
+        outputTail: nextTail,
+        status: 'red',
+        updatedAt: 'shell failed',
+        statusReason: message,
+      },
+      blockId,
+      {
+        status: 'red',
+        title: 'Shell failed',
+        output: message,
+        durationMs: Date.now() - startedAt,
+      }
+    ),
+    { kind: 'error', label: 'Shell command failed', detail: message }
+  );
 }
 
 function appendActivity(
@@ -3629,6 +4216,46 @@ function createAgentTerminal({
   };
 }
 
+function restoredTerminalStatus(saved: SavedAgentTerminal) {
+  return {
+    status: saved.status ?? 'white',
+    started: saved.started ?? false,
+    updatedAt: saved.updatedAt ?? 'restored',
+    statusReason: saved.statusReason ?? 'Ready to start',
+  };
+}
+
+function restoredTerminalEvents(saved: SavedAgentTerminal) {
+  return {
+    structuredEventsActive: saved.structuredEventsActive ?? false,
+    lastAgentEvent: saved.lastAgentEvent ?? null,
+    lastAgentEventSource: saved.lastAgentEventSource ?? null,
+    lastAgentEventAt: saved.lastAgentEventAt ?? null,
+    lastStructuredEventSeq: saved.lastStructuredEventSeq ?? null,
+    structuredEventLog: saved.structuredEventLog ?? [],
+  };
+}
+
+function restoredTerminalContent(saved: SavedAgentTerminal) {
+  return {
+    activities: saved.activities ?? [],
+    blocks: saved.blocks ?? [],
+    composerDraft: saved.composerDraft ?? '',
+    composerMode: saved.composerMode ?? 'prompt',
+    composerHistory: saved.composerHistory ?? [],
+  };
+}
+
+function restoredTerminalSession(saved: SavedAgentTerminal) {
+  return {
+    codexSessionId: saved.codexSessionId ?? null,
+    transcriptPath: saved.transcriptPath ?? null,
+    workItemId: saved.workItemId ?? null,
+    profilePath: saved.profilePath ?? null,
+    managedRunId: saved.managedRunId ?? null,
+  };
+}
+
 function terminalFromSaved(saved: SavedAgentTerminal): AgentTerminal {
   return {
     id: saved.id,
@@ -3641,35 +4268,19 @@ function terminalFromSaved(saved: SavedAgentTerminal): AgentTerminal {
     model: saved.model,
     sandbox: saved.sandbox,
     approvalPolicy: saved.approvalPolicy,
-    status: saved.status ?? 'white',
     size: saved.size,
     background: saved.background,
     running: false,
-    started: saved.started ?? false,
-    updatedAt: saved.updatedAt ?? 'restored',
-    statusReason: saved.statusReason ?? 'Ready to start',
+    ...restoredTerminalStatus(saved),
     idleMs: null,
     lastOutputAt: null,
     lastHeartbeatAt: null,
     waitingSince: null,
-    structuredEventsActive: saved.structuredEventsActive ?? false,
-    lastAgentEvent: saved.lastAgentEvent ?? null,
-    lastAgentEventSource: saved.lastAgentEventSource ?? null,
-    lastAgentEventAt: saved.lastAgentEventAt ?? null,
-    lastStructuredEventSeq: saved.lastStructuredEventSeq ?? null,
-    structuredEventLog: saved.structuredEventLog ?? [],
-    activities: saved.activities ?? [],
-    blocks: saved.blocks ?? [],
-    composerDraft: saved.composerDraft ?? '',
-    composerMode: saved.composerMode ?? 'prompt',
-    composerHistory: saved.composerHistory ?? [],
+    ...restoredTerminalEvents(saved),
+    ...restoredTerminalContent(saved),
     outputTail: '',
     pid: null,
-    codexSessionId: saved.codexSessionId ?? null,
-    transcriptPath: saved.transcriptPath ?? null,
-    workItemId: saved.workItemId ?? null,
-    profilePath: saved.profilePath ?? null,
-    managedRunId: saved.managedRunId ?? null,
+    ...restoredTerminalSession(saved),
   };
 }
 
@@ -4078,16 +4689,25 @@ function isSavedAgentTerminal(value: unknown): value is SavedAgentTerminal {
   );
 }
 
+function normalizeStringOrNull(value: unknown): string | null | undefined {
+  return typeof value === 'string' || value === null ? (value as string | null) : undefined;
+}
+
+function normalizeString(value: unknown): string | undefined {
+  return typeof value === 'string' ? (value as string) : undefined;
+}
+
+function normalizeBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
 function normalizeSavedAgentTerminal(saved: SavedAgentTerminal): SavedAgentTerminal {
   const record = saved as unknown as Record<string, unknown>;
   return {
     id: saved.id,
     provider: record.provider === 'claude' ? 'claude' : 'codex',
-    roleLabel:
-      typeof record.roleLabel === 'string' || record.roleLabel === null
-        ? record.roleLabel
-        : undefined,
-    teamId: typeof record.teamId === 'string' || record.teamId === null ? record.teamId : undefined,
+    roleLabel: normalizeStringOrNull(record.roleLabel),
+    teamId: normalizeStringOrNull(record.teamId),
     name: saved.name,
     cwd: saved.cwd,
     prompt: saved.prompt,
@@ -4097,17 +4717,11 @@ function normalizeSavedAgentTerminal(saved: SavedAgentTerminal): SavedAgentTermi
     size: saved.size,
     background: saved.background,
     status: isAgentStatus(record.status) ? record.status : undefined,
-    started: typeof record.started === 'boolean' ? record.started : undefined,
-    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
-    statusReason: typeof record.statusReason === 'string' ? record.statusReason : undefined,
-    structuredEventsActive:
-      typeof record.structuredEventsActive === 'boolean'
-        ? record.structuredEventsActive
-        : undefined,
-    lastAgentEvent:
-      typeof record.lastAgentEvent === 'string' || record.lastAgentEvent === null
-        ? record.lastAgentEvent
-        : undefined,
+    started: normalizeBoolean(record.started),
+    updatedAt: normalizeString(record.updatedAt),
+    statusReason: normalizeString(record.statusReason),
+    structuredEventsActive: normalizeBoolean(record.structuredEventsActive),
+    lastAgentEvent: normalizeStringOrNull(record.lastAgentEvent),
     lastAgentEventSource:
       isAgentEventSource(record.lastAgentEventSource) || record.lastAgentEventSource === null
         ? record.lastAgentEventSource
@@ -4117,29 +4731,14 @@ function normalizeSavedAgentTerminal(saved: SavedAgentTerminal): SavedAgentTermi
     structuredEventLog: normalizeSavedStructuredEventLog(record.structuredEventLog),
     activities: normalizeSavedActivities(record.activities),
     blocks: normalizeSavedBlocks(record.blocks),
-    composerDraft: typeof record.composerDraft === 'string' ? record.composerDraft : undefined,
+    composerDraft: normalizeString(record.composerDraft),
     composerMode: isComposerMode(record.composerMode) ? record.composerMode : undefined,
     composerHistory: normalizeSavedComposerHistory(record.composerHistory),
-    codexSessionId:
-      typeof record.codexSessionId === 'string' || record.codexSessionId === null
-        ? record.codexSessionId
-        : undefined,
-    transcriptPath:
-      typeof record.transcriptPath === 'string' || record.transcriptPath === null
-        ? record.transcriptPath
-        : undefined,
-    workItemId:
-      typeof record.workItemId === 'string' || record.workItemId === null
-        ? record.workItemId
-        : undefined,
-    profilePath:
-      typeof record.profilePath === 'string' || record.profilePath === null
-        ? record.profilePath
-        : undefined,
-    managedRunId:
-      typeof record.managedRunId === 'string' || record.managedRunId === null
-        ? record.managedRunId
-        : undefined,
+    codexSessionId: normalizeStringOrNull(record.codexSessionId),
+    transcriptPath: normalizeStringOrNull(record.transcriptPath),
+    workItemId: normalizeStringOrNull(record.workItemId),
+    profilePath: normalizeStringOrNull(record.profilePath),
+    managedRunId: normalizeStringOrNull(record.managedRunId),
   };
 }
 
