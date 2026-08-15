@@ -26,6 +26,7 @@ const TOUR_ITEMS: { icon: string; label: string; desc: string }[] = [
   { icon: '\u25A3', label: 'Repo Unpack', desc: 'Understand structure, history, and risk' },
   { icon: '\u2714', label: 'Review', desc: 'Inspect the exact change and evidence gaps' },
   { icon: '\u25CE', label: 'Testing', desc: 'Run executable checks and inspect receipts' },
+  { icon: '\u223F', label: 'Performance', desc: 'Measure one flow and verify an improvement' },
 ];
 
 export default function Onboarding({ onComplete }: OnboardingProps) {
@@ -121,8 +122,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   Evidence for shipping decisions
                 </p>
                 <p className="mt-3 text-sm text-slate-400 leading-relaxed">
-                  {VERIFICATION_COPY.workflow} Keep repository context, agent work, and usage in one
-                  local workbench.
+                  {VERIFICATION_COPY.workflow} Keep repository context, test and performance
+                  evidence, and usage in one local workbench.
                 </p>
               </div>
               <Button

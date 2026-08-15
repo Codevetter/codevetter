@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const Home = lazy(() => import('@/pages/Home'));
-const AgentPanel = lazy(() => import('@/pages/AgentPanel'));
+const Performance = lazy(() => import('@/pages/Performance'));
 const QuickReview = lazy(() => import('@/pages/QuickReview'));
 const RepoPage = lazy(() => import('@/pages/RepoPage'));
 const TRex = lazy(() => import('@/pages/TRex'));
@@ -29,18 +29,14 @@ const PERSISTENT_PAGES: PersistentPage[] = [
     Component: RepoPage,
   },
   {
-    id: 'agents',
-    match: (pathname) =>
-      pathname === '/agents' ||
-      pathname.startsWith('/agents/') ||
-      pathname === '/board' ||
-      pathname.startsWith('/board/'),
-    Component: AgentPanel,
-  },
-  {
     id: 'trex',
     match: (pathname) => pathname === '/trex' || pathname.startsWith('/trex/'),
     Component: TRex,
+  },
+  {
+    id: 'performance',
+    match: (pathname) => pathname === '/performance' || pathname.startsWith('/performance/'),
+    Component: Performance,
   },
   {
     id: 'settings',

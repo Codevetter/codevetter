@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -14,7 +13,6 @@ interface CommandItem {
   label: string;
   description?: string;
   icon: string;
-  shortcut?: string;
   group: string;
   action: () => void;
 }
@@ -80,7 +78,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         id: 'nav-home',
         label: 'Go to Usage',
         icon: '\u2302',
-        shortcut: 'g h',
         group: 'Navigation',
         action: go('/'),
       },
@@ -89,7 +86,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Repo Unpack',
         description: 'Snapshots, analysis, activity, graph, and handoff',
         icon: '\u25A3',
-        shortcut: 'g p',
         group: 'Navigation',
         action: go('/unpack'),
       },
@@ -98,33 +94,13 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Repo Activity',
         description: 'Git attribution, churn, authors, and release health',
         icon: '\u25C7',
-        shortcut: 'g i',
         group: 'Navigation',
         action: go('/unpack?section=activity'),
-      },
-      {
-        id: 'nav-agents',
-        label: 'Go to Work',
-        description: 'Build with local agent terminals and track work',
-        icon: 'A',
-        shortcut: 'g a',
-        group: 'Navigation',
-        action: go('/agents'),
-      },
-      {
-        id: 'nav-board',
-        label: 'Go to Board',
-        description: 'Move outcomes from plan to proof',
-        icon: '\u25A6',
-        shortcut: 'g b',
-        group: 'Navigation',
-        action: go('/board'),
       },
       {
         id: 'nav-review',
         label: 'Go to Review',
         icon: '\u2714',
-        shortcut: 'g r',
         group: 'Navigation',
         action: go('/review'),
       },
@@ -133,15 +109,21 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
         label: 'Go to Testing',
         description: 'Runtime evidence, scenarios, and pull request checks',
         icon: '\u25CE',
-        shortcut: 'g t',
         group: 'Navigation',
         action: go('/trex'),
+      },
+      {
+        id: 'nav-performance',
+        label: 'Go to Performance',
+        description: 'Measure an exact flow and verify an improvement',
+        icon: '\u223F',
+        group: 'Navigation',
+        action: go('/performance'),
       },
       {
         id: 'nav-settings',
         label: 'Go to Settings',
         icon: '\u2638',
-        shortcut: 'g ,',
         group: 'Navigation',
         action: go('/settings'),
       },
@@ -252,12 +234,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
               setSelectedIndex(0);
             }}
           />
-          <Badge
-            variant="outline"
-            className="text-[10px] font-mono text-slate-600 bg-[#1a1a1a] rounded px-1.5 py-0.5"
-          >
-            ESC
-          </Badge>
         </div>
 
         {/* Results */}
@@ -292,14 +268,6 @@ export default function CommandPalette({ isOpen, onClose, onCloseAutoFocus }: Co
                       <span className="text-[11px] text-slate-600 truncate max-w-[160px]">
                         {item.description}
                       </span>
-                    )}
-                    {item.shortcut && (
-                      <Badge
-                        variant="outline"
-                        className="text-[11px] text-slate-600 font-mono shrink-0 rounded px-1 py-0"
-                      >
-                        {item.shortcut}
-                      </Badge>
                     )}
                   </Button>
                 );
