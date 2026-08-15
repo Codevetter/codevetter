@@ -79,10 +79,19 @@ function waitForReviewState(request: VerificationRequest): Promise<void> {
 
 const codevetterStates: Readonly<Record<string, StateInstaller>> = Object.freeze({
   'shell-navigation-ready': () => undefined,
+  'shell-crash-recovery': () => undefined,
   'review-partial-ready': waitForReviewState,
   'review-completed-ready': waitForReviewState,
   'review-keyboard-focused': waitForReviewState,
   'review-reduced-motion': waitForReviewState,
+  'performance-empty': () => undefined,
+  'performance-blocked': () => undefined,
+  'performance-planned': () => undefined,
+  'performance-running': () => undefined,
+  'performance-failed': () => undefined,
+  'performance-no-confidence': () => undefined,
+  'performance-diagnosed': () => undefined,
+  'performance-paired-proof': () => undefined,
 });
 
 export function getReviewQualificationRequest(
