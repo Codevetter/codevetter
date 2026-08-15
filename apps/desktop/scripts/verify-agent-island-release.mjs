@@ -72,7 +72,7 @@ function verifyHelper(helper) {
 
 function verifyRollbackContract() {
   const settings = readFileSync(join(desktopRoot, 'src', 'pages', 'Settings.tsx'), 'utf8');
-  const work = readFileSync(join(desktopRoot, 'src', 'pages', 'AgentPanel.tsx'), 'utf8');
+  const app = readFileSync(join(desktopRoot, 'src', 'App.tsx'), 'utf8');
   const nativeRuntime = readFileSync(
     join(desktopRoot, 'src-tauri', 'src', 'commands', 'native_agent_island.rs'),
     'utf8'
@@ -86,8 +86,11 @@ function verifyRollbackContract() {
   if (!nativeRuntime.includes('if !enabled {\n        stop_helper')) {
     throw new Error('disabled Agent Island does not stop its helper');
   }
-  if (!work.includes('sendTrayNotification(')) {
-    throw new Error('existing Work notification fallback is missing');
+  if (
+    !app.includes('<Route path="/agents/*" element={<Navigate to="/" replace />} />') ||
+    !app.includes('<Route path="/board/*" element={<Navigate to="/" replace />} />')
+  ) {
+    throw new Error('retired Work and Board routes do not return to Usage');
   }
 }
 
