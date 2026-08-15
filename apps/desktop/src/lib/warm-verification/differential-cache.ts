@@ -452,34 +452,69 @@ export class DifferentialPreparationCache {
     roots: readonly string[];
     signal?: AbortSignal;
   }): Promise<PreparedDifferentialDependencyEntry> {
-    return this.#exclusive(async () => {
-      validateDependencyIdentity(input.identity);
-      const currentIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
-      if (!sameDependencyPreparationIdentity(input.identity, currentIdentity)) {
+    return this.#exclusive(() => this.#prepareDependenciesUnlocked(input));
+  }
+
+  async #prepareDependenciesUnlocked(input: {
+    identity: DifferentialDependencyPreparationIdentity;
+    roots: readonly string[];
+    signal?: AbortSignal;
+  }): Promise<PreparedDifferentialDependencyEntry> {
+    validateDependencyIdentity(input.identity);
+    const currentIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
+    if (!sameDependencyPreparationIdentity(input.identity, currentIdentity)) {
+      throw new DifferentialCacheError(
+        'incompatible_snapshot',
+        'Dependency identity changed before preparation'
+      );
+    }
+    const dependencyRoots = validateDependencyRoots(input.roots);
+    const key = hashJson({ version: VERSION, identity: currentIdentity, roots: dependencyRoots });
+    const existing = await readEntry(
+      this.#roots.dependencies,
+      'dependencies',
+      this.#lease.repo_id,
+      key
+    );
+    if (existing) {
+      const returnIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
+      if (!sameDependencyPreparationIdentity(currentIdentity, returnIdentity)) {
         throw new DifferentialCacheError(
           'incompatible_snapshot',
-          'Dependency identity changed before preparation'
+          'Dependency identity changed before cache reuse'
         );
       }
-      const dependencyRoots = validateDependencyRoots(input.roots);
-      const key = hashJson({ version: VERSION, identity: currentIdentity, roots: dependencyRoots });
-      const existing = await readEntry(
-        this.#roots.dependencies,
-        'dependencies',
-        this.#lease.repo_id,
-        key
+      return (await this.#leaseBounded(existing, true)) as PreparedDifferentialDependencyEntry;
+    }
+    const before = await inspectDependencyLayout(
+      this.#repositoryRoot,
+      dependencyRoots,
+      this.#retention.dependencies.maxBytes,
+      true,
+      input.signal,
+      this.#repositoryRoot
+    );
+    if (before.usage.files === 0) {
+      throw new DifferentialCacheError(
+        'copy_on_write_unavailable',
+        'No dependency file can prove copy-on-write support'
       );
-      if (existing) {
-        const returnIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
-        if (!sameDependencyPreparationIdentity(currentIdentity, returnIdentity)) {
-          throw new DifferentialCacheError(
-            'incompatible_snapshot',
-            'Dependency identity changed before cache reuse'
-          );
-        }
-        return (await this.#leaseBounded(existing, true)) as PreparedDifferentialDependencyEntry;
-      }
-      const before = await inspectDependencyLayout(
+    }
+    await this.#ensureCapacity('dependencies', before.usage, 1);
+    const staging = await this.#createStaging('dependencies', key);
+    const payload = path.join(staging, 'payload');
+    await mkdir(payload, { mode: 0o700 });
+    try {
+      await cloneLayout(
+        this.#repositoryRoot,
+        payload,
+        dependencyRoots,
+        before.entries,
+        this.#cloneTree,
+        input.signal
+      );
+      await applyLayoutModes(payload, before.entries, input.signal);
+      const after = await inspectDependencyLayout(
         this.#repositoryRoot,
         dependencyRoots,
         this.#retention.dependencies.maxBytes,
@@ -487,100 +522,71 @@ export class DifferentialPreparationCache {
         input.signal,
         this.#repositoryRoot
       );
-      if (before.usage.files === 0) {
+      if (
+        before.materialHash !== after.materialHash ||
+        !sameLogicalUsage(before.usage, after.usage)
+      ) {
+        throw new DifferentialCacheError(
+          'incompatible_snapshot',
+          'Installed dependencies changed during preparation'
+        );
+      }
+      const finalIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
+      if (!sameDependencyPreparationIdentity(currentIdentity, finalIdentity)) {
+        throw new DifferentialCacheError(
+          'incompatible_snapshot',
+          'Dependency identity changed during preparation'
+        );
+      }
+      const snapshot = await inspectDependencyLayout(
+        payload,
+        dependencyRoots,
+        this.#retention.dependencies.maxBytes,
+        true,
+        input.signal
+      );
+      if (
+        before.materialHash !== snapshot.materialHash ||
+        !sameLogicalUsage(before.usage, snapshot.usage)
+      ) {
+        throw new DifferentialCacheError(
+          'incompatible_snapshot',
+          'Dependency snapshot was not exact'
+        );
+      }
+      await setTreeImmutable(payload, true, input.signal);
+      const manifest: EntryManifest = {
+        ...rootManifest(this.#lease.repo_id, 'dependencies'),
+        key,
+        created_at: this.#now().toISOString(),
+        snapshot_hash: snapshot.materialHash,
+        dependency_identity: { ...currentIdentity },
+        dependency_roots: dependencyRoots,
+        usage: snapshot.usage,
+        complete: true,
+      };
+      await writePrivateJson(path.join(staging, ENTRY_MANIFEST), manifest);
+      await setTreeImmutable(path.join(staging, ENTRY_MANIFEST), true, input.signal);
+      const publishIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
+      if (!sameDependencyPreparationIdentity(currentIdentity, publishIdentity)) {
+        throw new DifferentialCacheError(
+          'incompatible_snapshot',
+          'Dependency identity changed before cache publication'
+        );
+      }
+      return (await this.#publish(staging, manifest)) as PreparedDifferentialDependencyEntry;
+    } catch (error) {
+      this.#staging.delete(path.basename(staging));
+      await removeTree(staging).catch(() => undefined);
+      if (copyOnWriteUnavailable(error)) {
         throw new DifferentialCacheError(
           'copy_on_write_unavailable',
-          'No dependency file can prove copy-on-write support'
+          'APFS copy-on-write dependency snapshots are unavailable on this volume',
+          { cause: error }
         );
       }
-      await this.#ensureCapacity('dependencies', before.usage, 1);
-      const staging = await this.#createStaging('dependencies', key);
-      const payload = path.join(staging, 'payload');
-      await mkdir(payload, { mode: 0o700 });
-      try {
-        await cloneLayout(
-          this.#repositoryRoot,
-          payload,
-          dependencyRoots,
-          before.entries,
-          this.#cloneTree,
-          input.signal
-        );
-        await applyLayoutModes(payload, before.entries, input.signal);
-        const after = await inspectDependencyLayout(
-          this.#repositoryRoot,
-          dependencyRoots,
-          this.#retention.dependencies.maxBytes,
-          true,
-          input.signal,
-          this.#repositoryRoot
-        );
-        if (
-          before.materialHash !== after.materialHash ||
-          !sameLogicalUsage(before.usage, after.usage)
-        ) {
-          throw new DifferentialCacheError(
-            'incompatible_snapshot',
-            'Installed dependencies changed during preparation'
-          );
-        }
-        const finalIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
-        if (!sameDependencyPreparationIdentity(currentIdentity, finalIdentity)) {
-          throw new DifferentialCacheError(
-            'incompatible_snapshot',
-            'Dependency identity changed during preparation'
-          );
-        }
-        const snapshot = await inspectDependencyLayout(
-          payload,
-          dependencyRoots,
-          this.#retention.dependencies.maxBytes,
-          true,
-          input.signal
-        );
-        if (
-          before.materialHash !== snapshot.materialHash ||
-          !sameLogicalUsage(before.usage, snapshot.usage)
-        ) {
-          throw new DifferentialCacheError(
-            'incompatible_snapshot',
-            'Dependency snapshot was not exact'
-          );
-        }
-        await setTreeImmutable(payload, true, input.signal);
-        const manifest: EntryManifest = {
-          ...rootManifest(this.#lease.repo_id, 'dependencies'),
-          key,
-          created_at: this.#now().toISOString(),
-          snapshot_hash: snapshot.materialHash,
-          dependency_identity: { ...currentIdentity },
-          dependency_roots: dependencyRoots,
-          usage: snapshot.usage,
-          complete: true,
-        };
-        await writePrivateJson(path.join(staging, ENTRY_MANIFEST), manifest);
-        await setTreeImmutable(path.join(staging, ENTRY_MANIFEST), true, input.signal);
-        const publishIdentity = await this.#dependencyIdentity(this.#repositoryRoot);
-        if (!sameDependencyPreparationIdentity(currentIdentity, publishIdentity)) {
-          throw new DifferentialCacheError(
-            'incompatible_snapshot',
-            'Dependency identity changed before cache publication'
-          );
-        }
-        return (await this.#publish(staging, manifest)) as PreparedDifferentialDependencyEntry;
-      } catch (error) {
-        this.#staging.delete(path.basename(staging));
-        await removeTree(staging).catch(() => undefined);
-        if (copyOnWriteUnavailable(error)) {
-          throw new DifferentialCacheError(
-            'copy_on_write_unavailable',
-            'APFS copy-on-write dependency snapshots are unavailable on this volume',
-            { cause: error }
-          );
-        }
-        throw error;
-      }
-    });
+      throw error;
+    }
   }
 
   lookupDependencies(input: {
@@ -628,213 +634,217 @@ export class DifferentialPreparationCache {
     source: PreparedDifferentialSourceEntry,
     options: { selectionIdentity: string; signal?: AbortSignal }
   ): Promise<PreparedDifferentialTarget> {
-    return this.#exclusive(async () => {
-      const { signal, selectionIdentity } = options;
-      if (side !== 'reference' && side !== 'candidate') {
-        throw new DifferentialCacheError(
-          'invalid_identity',
-          'Differential target side was invalid'
-        );
-      }
-      if (!HASH.test(selectionIdentity)) {
-        throw new DifferentialCacheError(
-          'invalid_identity',
-          'Differential target selection identity was invalid'
-        );
-      }
-      const leaseToken = this.#handles.get(base);
-      if (!leaseToken || !this.#leases.has(leaseToken) || base.kind !== 'dependencies') {
-        throw new DifferentialCacheError(
-          'invalid_identity',
-          'A live dependency-template lease is required'
-        );
-      }
-      const sourceToken = this.#handles.get(source);
-      if (!sourceToken || !this.#leases.has(sourceToken) || source.kind !== 'source') {
-        throw new DifferentialCacheError('invalid_identity', 'A live source lease is required');
-      }
-      const [owned, ownedSource] = await Promise.all([
-        readEntry(this.#roots.dependencies, 'dependencies', this.#lease.repo_id, base.key),
-        readEntry(this.#roots.source, 'source', this.#lease.repo_id, source.key),
-      ]);
-      if (!owned?.manifest.dependency_roots || !owned.manifest.dependency_identity) {
-        throw new DifferentialCacheError('invalid_identity', 'Dependency template was unavailable');
-      }
-      if (!ownedSource?.manifest.source_identity) {
-        throw new DifferentialCacheError('invalid_identity', 'Source snapshot was unavailable');
-      }
-      const token = safeToken(this.#token());
-      await this.#ensureCapacity(
-        'dependencies',
-        sumUsage([ownedSource.manifest.usage, owned.manifest.usage]),
-        1
+    return this.#exclusive(() => this.#createWritableTargetUnlocked(base, side, source, options));
+  }
+
+  async #createWritableTargetUnlocked(
+    base: PreparedDifferentialDependencyEntry,
+    side: 'reference' | 'candidate',
+    source: PreparedDifferentialSourceEntry,
+    options: { selectionIdentity: string; signal?: AbortSignal }
+  ): Promise<PreparedDifferentialTarget> {
+    const { signal, selectionIdentity } = options;
+    if (side !== 'reference' && side !== 'candidate') {
+      throw new DifferentialCacheError('invalid_identity', 'Differential target side was invalid');
+    }
+    if (!HASH.test(selectionIdentity)) {
+      throw new DifferentialCacheError(
+        'invalid_identity',
+        'Differential target selection identity was invalid'
       );
-      const targetRoot = path.join(this.#roots.dependencies, 'targets', `${side}-${token}`);
-      const payload = path.join(targetRoot, 'payload');
-      await mkdir(payload, { recursive: true, mode: 0o700 });
-      const transient = await this.#transient('dependencies', 'target', token, base.key);
-      await writePrivateJson(path.join(targetRoot, TRANSIENT_MANIFEST), transient, 'wx');
-      try {
-        const layout = await inspectDependencyLayout(
-          path.join(owned.directory, 'payload'),
+    }
+    const leaseToken = this.#handles.get(base);
+    if (!leaseToken || !this.#leases.has(leaseToken) || base.kind !== 'dependencies') {
+      throw new DifferentialCacheError(
+        'invalid_identity',
+        'A live dependency-template lease is required'
+      );
+    }
+    const sourceToken = this.#handles.get(source);
+    if (!sourceToken || !this.#leases.has(sourceToken) || source.kind !== 'source') {
+      throw new DifferentialCacheError('invalid_identity', 'A live source lease is required');
+    }
+    const [owned, ownedSource] = await Promise.all([
+      readEntry(this.#roots.dependencies, 'dependencies', this.#lease.repo_id, base.key),
+      readEntry(this.#roots.source, 'source', this.#lease.repo_id, source.key),
+    ]);
+    if (!owned?.manifest.dependency_roots || !owned.manifest.dependency_identity) {
+      throw new DifferentialCacheError('invalid_identity', 'Dependency template was unavailable');
+    }
+    if (!ownedSource?.manifest.source_identity) {
+      throw new DifferentialCacheError('invalid_identity', 'Source snapshot was unavailable');
+    }
+    const token = safeToken(this.#token());
+    await this.#ensureCapacity(
+      'dependencies',
+      sumUsage([ownedSource.manifest.usage, owned.manifest.usage]),
+      1
+    );
+    const targetRoot = path.join(this.#roots.dependencies, 'targets', `${side}-${token}`);
+    const payload = path.join(targetRoot, 'payload');
+    await mkdir(payload, { recursive: true, mode: 0o700 });
+    const transient = await this.#transient('dependencies', 'target', token, base.key);
+    await writePrivateJson(path.join(targetRoot, TRANSIENT_MANIFEST), transient, 'wx');
+    try {
+      const layout = await inspectDependencyLayout(
+        path.join(owned.directory, 'payload'),
+        owned.manifest.dependency_roots,
+        this.#retention.dependencies.maxBytes,
+        false,
+        signal
+      );
+      await validateWorkspaceTargets(layout.entries, source.directory);
+      await cloneSourceTree(source.directory, payload, this.#cloneSource, signal);
+      await setTreeImmutable(payload, false, signal);
+      for (const dependencyRoot of owned.manifest.dependency_roots) {
+        await requireMissing(path.join(payload, ...dependencyRoot.split('/')));
+      }
+      await cloneLayout(
+        path.join(owned.directory, 'payload'),
+        payload,
+        owned.manifest.dependency_roots,
+        layout.entries,
+        this.#cloneTree,
+        signal,
+        payload
+      );
+      await setTreeImmutable(payload, false, signal);
+      await applyLayoutModes(payload, layout.entries, signal);
+      await inspectDependencyLayout(
+        payload,
+        owned.manifest.dependency_roots,
+        this.#retention.dependencies.maxBytes,
+        false,
+        signal,
+        payload
+      );
+      const [sourceApplicationHash, targetApplicationHash] = await Promise.all([
+        hashApplicationPayload(
+          source.directory,
           owned.manifest.dependency_roots,
-          this.#retention.dependencies.maxBytes,
-          false,
+          this.#retention.source.maxBytes,
           signal
-        );
-        await validateWorkspaceTargets(layout.entries, source.directory);
-        await cloneSourceTree(source.directory, payload, this.#cloneSource, signal);
-        await setTreeImmutable(payload, false, signal);
-        for (const dependencyRoot of owned.manifest.dependency_roots) {
-          await requireMissing(path.join(payload, ...dependencyRoot.split('/')));
-        }
-        await cloneLayout(
-          path.join(owned.directory, 'payload'),
+        ),
+        hashApplicationPayload(
           payload,
           owned.manifest.dependency_roots,
-          layout.entries,
-          this.#cloneTree,
-          signal,
-          payload
+          this.#retention.source.maxBytes,
+          signal
+        ),
+      ]);
+      if (sourceApplicationHash !== targetApplicationHash) {
+        throw new DifferentialCacheError(
+          'incompatible_snapshot',
+          'Writable target application source did not match its prepared source'
         );
-        await setTreeImmutable(payload, false, signal);
-        await applyLayoutModes(payload, layout.entries, signal);
-        await inspectDependencyLayout(
-          payload,
-          owned.manifest.dependency_roots,
-          this.#retention.dependencies.maxBytes,
-          false,
-          signal,
-          payload
-        );
-        const [sourceApplicationHash, targetApplicationHash] = await Promise.all([
-          hashApplicationPayload(
-            source.directory,
-            owned.manifest.dependency_roots,
-            this.#retention.source.maxBytes,
-            signal
-          ),
-          hashApplicationPayload(
-            payload,
-            owned.manifest.dependency_roots,
-            this.#retention.source.maxBytes,
-            signal
-          ),
-        ]);
-        if (sourceApplicationHash !== targetApplicationHash) {
-          throw new DifferentialCacheError(
-            'incompatible_snapshot',
-            'Writable target application source did not match its prepared source'
-          );
-        }
-        const usage = await measureTree(payload);
-        const [targetMetadata, payloadMetadata] = await Promise.all([
-          requirePrivateDirectory(targetRoot),
-          requirePrivateDirectory(payload),
-        ]);
-        const sourceProof = Object.freeze({
-          key: ownedSource.manifest.key,
-          identity: ownedSource.manifest.source_identity,
-          snapshotHash: ownedSource.manifest.snapshot_hash,
-          device: ownedSource.device,
-          inode: ownedSource.inode,
-        });
-        const dependencyProof = Object.freeze({
-          key: owned.manifest.key,
-          identity: owned.manifest.key,
-          snapshotHash: owned.manifest.snapshot_hash,
-          device: owned.device,
-          inode: owned.inode,
-        });
-        const targetIdentity = hashJson({
-          version: VERSION,
-          repoId: this.#lease.repo_id,
-          side,
-          token,
-          selectionIdentity,
-          owner: hashJson(transient),
-          target: {
-            device: Number(targetMetadata.dev),
-            inode: Number(targetMetadata.ino),
-            payloadDevice: Number(payloadMetadata.dev),
-            payloadInode: Number(payloadMetadata.ino),
-          },
-          source: sourceProof,
-          dependency: dependencyProof,
-          applicationSnapshotHash: sourceApplicationHash,
-        });
-        const complete = {
-          ...transient,
-          selection_identity: selectionIdentity,
-          target_identity: targetIdentity,
-          usage,
-          complete: true,
-        } satisfies TransientManifest;
-        await writePrivateJson(path.join(targetRoot, TRANSIENT_MANIFEST), complete);
-        const proof: PreparedTargetProof = Object.freeze({
-          side,
-          selectionIdentity,
-          token,
-          targetRoot,
-          payload,
-          targetDevice: Number(targetMetadata.dev),
-          targetInode: Number(targetMetadata.ino),
+      }
+      const usage = await measureTree(payload);
+      const [targetMetadata, payloadMetadata] = await Promise.all([
+        requirePrivateDirectory(targetRoot),
+        requirePrivateDirectory(payload),
+      ]);
+      const sourceProof = Object.freeze({
+        key: ownedSource.manifest.key,
+        identity: ownedSource.manifest.source_identity,
+        snapshotHash: ownedSource.manifest.snapshot_hash,
+        device: ownedSource.device,
+        inode: ownedSource.inode,
+      });
+      const dependencyProof = Object.freeze({
+        key: owned.manifest.key,
+        identity: owned.manifest.key,
+        snapshotHash: owned.manifest.snapshot_hash,
+        device: owned.device,
+        inode: owned.inode,
+      });
+      const targetIdentity = hashJson({
+        version: VERSION,
+        repoId: this.#lease.repo_id,
+        side,
+        token,
+        selectionIdentity,
+        owner: hashJson(transient),
+        target: {
+          device: Number(targetMetadata.dev),
+          inode: Number(targetMetadata.ino),
           payloadDevice: Number(payloadMetadata.dev),
           payloadInode: Number(payloadMetadata.ino),
-          targetIdentity,
-          applicationSnapshotHash: sourceApplicationHash,
-          dependencyRoots: Object.freeze([...owned.manifest.dependency_roots]),
-          maxSourceBytes: this.#retention.source.maxBytes,
-          source: sourceProof,
-          dependency: dependencyProof,
-          ownerManifest: Object.freeze(complete),
-        });
-        this.#targets.set(token, { ...proof, kind: 'dependencies', directory: targetRoot, usage });
-        const bounded = await this.#cleanupUnlocked('dependencies');
-        if (!bounded.withinPolicy) {
-          this.#targets.delete(token);
-          await removeOwnedTransient(targetRoot, complete);
-          throw new DifferentialCacheError(
-            'quota_exceeded',
-            'Writable runtime target exceeded retention'
-          );
-        }
-        const preparedTarget: PreparedDifferentialTarget = Object.freeze({
-          side,
-          selectionIdentity,
-          sourceIdentity: sourceProof.identity,
-          sourceSnapshotHash: sourceProof.snapshotHash,
-          dependencyIdentity: dependencyProof.identity,
-          dependencySnapshotHash: dependencyProof.snapshotHash,
-          applicationSnapshotHash: sourceApplicationHash,
-          targetIdentity,
-          directory: payload,
-          usage,
-          cleanup: () =>
-            this.#exclusive(async () => {
-              if (!(await this.#ownsPreparedTarget(proof))) return false;
-              const removed = await removeOwnedTransient(targetRoot, complete);
-              if (removed) this.#targets.delete(token);
-              return removed;
-            }),
-        });
-        preparedTargetValidators.set(preparedTarget, () =>
-          this.#exclusive(() => this.#validatePreparedTarget(proof))
-        );
-        return preparedTarget;
-      } catch (error) {
+        },
+        source: sourceProof,
+        dependency: dependencyProof,
+        applicationSnapshotHash: sourceApplicationHash,
+      });
+      const complete = {
+        ...transient,
+        selection_identity: selectionIdentity,
+        target_identity: targetIdentity,
+        usage,
+        complete: true,
+      } satisfies TransientManifest;
+      await writePrivateJson(path.join(targetRoot, TRANSIENT_MANIFEST), complete);
+      const proof: PreparedTargetProof = Object.freeze({
+        side,
+        selectionIdentity,
+        token,
+        targetRoot,
+        payload,
+        targetDevice: Number(targetMetadata.dev),
+        targetInode: Number(targetMetadata.ino),
+        payloadDevice: Number(payloadMetadata.dev),
+        payloadInode: Number(payloadMetadata.ino),
+        targetIdentity,
+        applicationSnapshotHash: sourceApplicationHash,
+        dependencyRoots: Object.freeze([...owned.manifest.dependency_roots]),
+        maxSourceBytes: this.#retention.source.maxBytes,
+        source: sourceProof,
+        dependency: dependencyProof,
+        ownerManifest: Object.freeze(complete),
+      });
+      this.#targets.set(token, { ...proof, kind: 'dependencies', directory: targetRoot, usage });
+      const bounded = await this.#cleanupUnlocked('dependencies');
+      if (!bounded.withinPolicy) {
         this.#targets.delete(token);
-        await removeTree(targetRoot).catch(() => undefined);
-        if (copyOnWriteUnavailable(error)) {
-          throw new DifferentialCacheError(
-            'copy_on_write_unavailable',
-            'A writable copy-on-write runtime target could not be created',
-            { cause: error }
-          );
-        }
-        throw error;
+        await removeOwnedTransient(targetRoot, complete);
+        throw new DifferentialCacheError(
+          'quota_exceeded',
+          'Writable runtime target exceeded retention'
+        );
       }
-    });
+      const preparedTarget: PreparedDifferentialTarget = Object.freeze({
+        side,
+        selectionIdentity,
+        sourceIdentity: sourceProof.identity,
+        sourceSnapshotHash: sourceProof.snapshotHash,
+        dependencyIdentity: dependencyProof.identity,
+        dependencySnapshotHash: dependencyProof.snapshotHash,
+        applicationSnapshotHash: sourceApplicationHash,
+        targetIdentity,
+        directory: payload,
+        usage,
+        cleanup: () =>
+          this.#exclusive(async () => {
+            if (!(await this.#ownsPreparedTarget(proof))) return false;
+            const removed = await removeOwnedTransient(targetRoot, complete);
+            if (removed) this.#targets.delete(token);
+            return removed;
+          }),
+      });
+      preparedTargetValidators.set(preparedTarget, () =>
+        this.#exclusive(() => this.#validatePreparedTarget(proof))
+      );
+      return preparedTarget;
+    } catch (error) {
+      this.#targets.delete(token);
+      await removeTree(targetRoot).catch(() => undefined);
+      if (copyOnWriteUnavailable(error)) {
+        throw new DifferentialCacheError(
+          'copy_on_write_unavailable',
+          'A writable copy-on-write runtime target could not be created',
+          { cause: error }
+        );
+      }
+      throw error;
+    }
   }
 
   async #validatePreparedTarget(proof: PreparedTargetProof): Promise<boolean> {
@@ -1187,6 +1197,18 @@ async function inspectSourcePayload(
   return usage;
 }
 
+interface ApplicationFileEntry {
+  relative: string;
+  executableMode: number;
+  size: number;
+  contentHash: string;
+}
+
+interface ApplicationWalkResult {
+  directories: string[];
+  files: ApplicationFileEntry[];
+}
+
 async function hashApplicationPayload(
   root: string,
   dependencyRoots: readonly string[],
@@ -1196,80 +1218,121 @@ async function hashApplicationPayload(
   await requirePrivateDirectory(root);
   const normalizedRoots = normalizedDependencyRoots(dependencyRoots) ?? [];
   const excluded = new Set(normalizedRoots);
-  const dependencyAncestors = new Set<string>();
-  for (const dependencyRoot of normalizedRoots) {
-    let ancestor = path.posix.dirname(dependencyRoot);
+  const dependencyAncestors = collectAncestors(normalizedRoots);
+  const { directories, files } = await collectApplicationEntries(root, excluded, maxBytes, signal);
+  const keptDirectories = filterApplicationDirectories(directories, files, dependencyAncestors);
+  return hashApplicationRecords(keptDirectories, files);
+}
+
+function collectAncestors(roots: readonly string[]): Set<string> {
+  const ancestors = new Set<string>();
+  for (const root of roots) {
+    let ancestor = path.posix.dirname(root);
     while (ancestor !== '.') {
-      dependencyAncestors.add(ancestor);
+      ancestors.add(ancestor);
       ancestor = path.posix.dirname(ancestor);
     }
   }
+  return ancestors;
+}
+
+type ApplicationEntryResult =
+  | { kind: 'skip' }
+  | { kind: 'directory'; directory: string; relative: string }
+  | { kind: 'file'; file: ApplicationFileEntry };
+
+async function collectApplicationEntries(
+  root: string,
+  excluded: Set<string>,
+  maxBytes: number,
+  signal?: AbortSignal
+): Promise<ApplicationWalkResult> {
   const directories: string[] = [];
-  const files: Array<{
-    relative: string;
-    executableMode: number;
-    size: number;
-    contentHash: string;
-  }> = [];
+  const files: ApplicationFileEntry[] = [];
   const pending: Array<{ directory: string; relative: string }> = [
     { directory: root, relative: '' },
   ];
+  const state = { entries: 0, bytes: 0 };
   let cursor = 0;
-  let entries = 0;
-  let bytes = 0;
   while (cursor < pending.length) {
     throwIfAborted(signal);
     const current = pending[cursor];
     cursor += 1;
     if (!current) break;
     for (const entry of await sortedEntries(current.directory)) {
-      const relative = current.relative ? `${current.relative}/${entry.name}` : entry.name;
-      if (excluded.has(relative)) continue;
-      entries += 1;
-      if (entries > MAX_TREE_ENTRIES) {
-        throw new DifferentialCacheError(
-          'incompatible_snapshot',
-          'Application source exceeded its entry limit'
-        );
+      const result = await processApplicationEntry(current, entry, excluded, maxBytes, state);
+      if (result.kind === 'skip') continue;
+      if (result.kind === 'directory') {
+        directories.push(result.relative);
+        pending.push({ directory: result.directory, relative: result.relative });
+      } else {
+        files.push(result.file);
       }
-      const target = path.join(current.directory, entry.name);
-      const metadata = await lstat(target);
-      if (metadata.isSymbolicLink()) {
-        throw new DifferentialCacheError(
-          'incompatible_snapshot',
-          'Application source contained an unsupported link'
-        );
-      }
-      if (metadata.isDirectory()) {
-        directories.push(relative);
-        pending.push({ directory: target, relative });
-        continue;
-      }
-      if (!metadata.isFile()) {
-        throw new DifferentialCacheError(
-          'incompatible_snapshot',
-          'Application source contained a special file'
-        );
-      }
-      bytes += metadata.size;
-      if (bytes > maxBytes) {
-        throw new DifferentialCacheError(
-          'incompatible_snapshot',
-          'Application source exceeded its byte limit'
-        );
-      }
-      const content = createHash('sha256');
-      await hashFile(target, content);
-      files.push({
-        relative,
-        // Writable targets intentionally differ in owner write bits. Preserve
-        // the executable contract while normalizing expected permission changes.
-        executableMode: mode(metadata) & 0o111,
-        size: metadata.size,
-        contentHash: content.digest('hex'),
-      });
     }
   }
+  return { directories, files };
+}
+
+async function processApplicationEntry(
+  current: { directory: string; relative: string },
+  entry: Dirent,
+  excluded: Set<string>,
+  maxBytes: number,
+  state: { entries: number; bytes: number }
+): Promise<ApplicationEntryResult> {
+  const relative = current.relative ? `${current.relative}/${entry.name}` : entry.name;
+  if (excluded.has(relative)) return { kind: 'skip' };
+  state.entries += 1;
+  if (state.entries > MAX_TREE_ENTRIES) {
+    throw new DifferentialCacheError(
+      'incompatible_snapshot',
+      'Application source exceeded its entry limit'
+    );
+  }
+  const target = path.join(current.directory, entry.name);
+  const metadata = await lstat(target);
+  if (metadata.isSymbolicLink()) {
+    throw new DifferentialCacheError(
+      'incompatible_snapshot',
+      'Application source contained an unsupported link'
+    );
+  }
+  if (metadata.isDirectory()) {
+    return { kind: 'directory', directory: target, relative };
+  }
+  if (!metadata.isFile()) {
+    throw new DifferentialCacheError(
+      'incompatible_snapshot',
+      'Application source contained a special file'
+    );
+  }
+  state.bytes += metadata.size;
+  if (state.bytes > maxBytes) {
+    throw new DifferentialCacheError(
+      'incompatible_snapshot',
+      'Application source exceeded its byte limit'
+    );
+  }
+  const content = createHash('sha256');
+  await hashFile(target, content);
+  return {
+    kind: 'file',
+    file: {
+      relative,
+      // Writable targets intentionally differ in owner write bits. Preserve
+      // the executable contract while normalizing expected permission changes.
+      executableMode: mode(metadata) & 0o111,
+      size: metadata.size,
+      contentHash: content.digest('hex'),
+    },
+  };
+}
+
+function filterApplicationDirectories(
+  directories: string[],
+  files: ApplicationFileEntry[],
+  dependencyAncestors: Set<string>
+): Set<string> {
   // Mounting a nested dependency root may create otherwise-empty parents in the
   // writable target. Retain an ancestor only when it contains application data;
   // all other directories (including genuine empty application directories) stay
@@ -1292,6 +1355,13 @@ async function hashApplicationPayload(
       markAncestors(directory);
     }
   }
+  return keptDirectories;
+}
+
+function hashApplicationRecords(
+  keptDirectories: Set<string>,
+  files: ApplicationFileEntry[]
+): string {
   const records = [
     ...[...keptDirectories].map((relative) => `d\0${relative}\0`),
     ...files.map(
@@ -1331,87 +1401,172 @@ async function inspectDependencyLayout(
         `Dependency root was unsafe: ${dependencyRoot}`
       );
     }
-    const pending: Array<{ directory: string; relative: string }> = [
-      { directory: absoluteRoot, relative: '' },
-    ];
     hash.update(`r\0${dependencyRoot}\0`);
-    while (pending.length > 0) {
-      throwIfAborted(signal);
-      const current = pending.pop();
-      if (!current) break;
-      for (const child of await sortedEntries(current.directory)) {
-        throwIfAborted(signal);
-        const source = path.join(current.directory, child.name);
-        const relative = current.relative ? `${current.relative}/${child.name}` : child.name;
-        const metadata = await lstat(source);
-        addEntry(usage, metadata, maxBytes);
-        if (metadata.isDirectory() && !metadata.isSymbolicLink()) {
-          entries.push({
-            root: dependencyRoot,
-            relative,
-            type: 'directory',
-            mode: mode(metadata),
-          });
-          hash.update(`d\0${relative}\0${mode(metadata)}\0`);
-          pending.push({ directory: source, relative });
-        } else if (metadata.isFile() && !metadata.isSymbolicLink()) {
-          entries.push({
-            root: dependencyRoot,
-            relative,
-            type: 'file',
-            mode: mode(metadata),
-          });
-          hash.update(`f\0${relative}\0${mode(metadata)}\0${metadata.size}\0`);
-          if (hashContents) await hashFile(source, hash);
-        } else if (metadata.isSymbolicLink()) {
-          const link = await readlink(source);
-          if (path.isAbsolute(link)) {
-            throw new DifferentialCacheError(
-              'incompatible_snapshot',
-              'Dependency link was absolute'
-            );
-          }
-          const resolved = path.resolve(path.dirname(source), link);
-          const internalLink = isWithin(root, resolved);
-          if (!internalLink && !(externalLinkRoot && isWithin(externalLinkRoot, resolved))) {
-            throw new DifferentialCacheError(
-              'incompatible_snapshot',
-              'Dependency link escaped the repository snapshot'
-            );
-          }
-          if (linkBoundaryRoot) {
-            const canonicalTarget = await realpath(source);
-            if (!isWithin(linkBoundaryRoot, canonicalTarget)) {
-              throw new DifferentialCacheError(
-                'incompatible_snapshot',
-                'Dependency link resolved outside the repository'
-              );
-            }
-          }
-          const workspacePath = !internalLink
-            ? undefined
-            : allowedRoots.some((allowed) => isWithin(allowed, resolved))
-              ? undefined
-              : path.relative(root, resolved).split(path.sep).join('/');
-          entries.push({
-            root: dependencyRoot,
-            relative,
-            type: 'link',
-            mode: mode(metadata),
-            link,
-            ...(workspacePath ? { workspacePath } : {}),
-          });
-          hash.update(`l\0${relative}\0${link}\0`);
-        } else {
-          throw new DifferentialCacheError(
-            'incompatible_snapshot',
-            'Dependency tree contained a special file'
-          );
-        }
-      }
-    }
+    await walkDependencyRoot(
+      absoluteRoot,
+      dependencyRoot,
+      root,
+      allowedRoots,
+      maxBytes,
+      hashContents,
+      signal,
+      linkBoundaryRoot,
+      externalLinkRoot,
+      usage,
+      hash,
+      entries
+    );
   }
   return { usage, materialHash: hash.digest('hex'), entries };
+}
+
+async function walkDependencyRoot(
+  absoluteRoot: string,
+  dependencyRoot: string,
+  root: string,
+  allowedRoots: readonly string[],
+  maxBytes: number,
+  hashContents: boolean,
+  signal: AbortSignal | undefined,
+  linkBoundaryRoot: string | undefined,
+  externalLinkRoot: string | undefined,
+  usage: DifferentialCacheUsage,
+  hash: ReturnType<typeof createHash>,
+  entries: TreeEntry[]
+): Promise<void> {
+  const pending: Array<{ directory: string; relative: string }> = [
+    { directory: absoluteRoot, relative: '' },
+  ];
+  while (pending.length > 0) {
+    throwIfAborted(signal);
+    const current = pending.pop();
+    if (!current) break;
+    for (const child of await sortedEntries(current.directory)) {
+      throwIfAborted(signal);
+      const descend = await processDependencyChild(
+        current,
+        child,
+        dependencyRoot,
+        root,
+        allowedRoots,
+        maxBytes,
+        hashContents,
+        linkBoundaryRoot,
+        externalLinkRoot,
+        usage,
+        hash,
+        entries
+      );
+      if (descend) pending.push(descend);
+    }
+  }
+}
+
+async function processDependencyChild(
+  current: { directory: string; relative: string },
+  child: Dirent,
+  dependencyRoot: string,
+  root: string,
+  allowedRoots: readonly string[],
+  maxBytes: number,
+  hashContents: boolean,
+  linkBoundaryRoot: string | undefined,
+  externalLinkRoot: string | undefined,
+  usage: DifferentialCacheUsage,
+  hash: ReturnType<typeof createHash>,
+  entries: TreeEntry[]
+): Promise<{ directory: string; relative: string } | undefined> {
+  const source = path.join(current.directory, child.name);
+  const relative = current.relative ? `${current.relative}/${child.name}` : child.name;
+  const metadata = await lstat(source);
+  addEntry(usage, metadata, maxBytes);
+  if (metadata.isDirectory() && !metadata.isSymbolicLink()) {
+    entries.push({
+      root: dependencyRoot,
+      relative,
+      type: 'directory',
+      mode: mode(metadata),
+    });
+    hash.update(`d\0${relative}\0${mode(metadata)}\0`);
+    return { directory: source, relative };
+  }
+  if (metadata.isFile() && !metadata.isSymbolicLink()) {
+    entries.push({
+      root: dependencyRoot,
+      relative,
+      type: 'file',
+      mode: mode(metadata),
+    });
+    hash.update(`f\0${relative}\0${mode(metadata)}\0${metadata.size}\0`);
+    if (hashContents) await hashFile(source, hash);
+    return undefined;
+  }
+  if (metadata.isSymbolicLink()) {
+    const { entry, hashRecord } = await inspectDependencyLink(
+      source,
+      relative,
+      dependencyRoot,
+      metadata,
+      root,
+      allowedRoots,
+      linkBoundaryRoot,
+      externalLinkRoot
+    );
+    entries.push(entry);
+    hash.update(hashRecord);
+    return undefined;
+  }
+  throw new DifferentialCacheError(
+    'incompatible_snapshot',
+    'Dependency tree contained a special file'
+  );
+}
+
+async function inspectDependencyLink(
+  source: string,
+  relative: string,
+  dependencyRoot: string,
+  metadata: Stats,
+  root: string,
+  allowedRoots: readonly string[],
+  linkBoundaryRoot?: string,
+  externalLinkRoot?: string
+): Promise<{ entry: TreeEntry; hashRecord: string }> {
+  const link = await readlink(source);
+  if (path.isAbsolute(link)) {
+    throw new DifferentialCacheError('incompatible_snapshot', 'Dependency link was absolute');
+  }
+  const resolved = path.resolve(path.dirname(source), link);
+  const internalLink = isWithin(root, resolved);
+  if (!internalLink && !(externalLinkRoot && isWithin(externalLinkRoot, resolved))) {
+    throw new DifferentialCacheError(
+      'incompatible_snapshot',
+      'Dependency link escaped the repository snapshot'
+    );
+  }
+  if (linkBoundaryRoot) {
+    const canonicalTarget = await realpath(source);
+    if (!isWithin(linkBoundaryRoot, canonicalTarget)) {
+      throw new DifferentialCacheError(
+        'incompatible_snapshot',
+        'Dependency link resolved outside the repository'
+      );
+    }
+  }
+  const workspacePath = !internalLink
+    ? undefined
+    : allowedRoots.some((allowed) => isWithin(allowed, resolved))
+      ? undefined
+      : path.relative(root, resolved).split(path.sep).join('/');
+  const entry: TreeEntry = {
+    root: dependencyRoot,
+    relative,
+    type: 'link',
+    mode: mode(metadata),
+    link,
+    ...(workspacePath ? { workspacePath } : {}),
+  };
+  return { entry, hashRecord: `l\0${relative}\0${link}\0` };
 }
 
 async function cloneSourceTree(
@@ -1604,34 +1759,14 @@ async function cleanupRoot(input: CleanupInput): Promise<DifferentialCacheCleanu
       left.manifest.created_at.localeCompare(right.manifest.created_at) ||
       left.manifest.key.localeCompare(right.manifest.key)
   );
-  const removed = new Set<string>();
-  for (const entry of owned) {
-    const created = exactTimestamp(entry.manifest.created_at);
-    if (
-      created !== undefined &&
-      !input.leasedKeys.has(entry.manifest.key) &&
-      input.now.getTime() - created > input.retention.maxAgeDays * 86_400_000
-    ) {
-      removed.add(entry.manifest.key);
-    }
-  }
+  const removed = collectExpiredEntries(owned, input.leasedKeys, input.now, input.retention);
   const survivors = () => owned.filter((entry) => !removed.has(entry.manifest.key));
   const removable = () => survivors().find((entry) => !input.leasedKeys.has(entry.manifest.key));
   const transient = await cleanupTransients(input);
   const activeTargets = [...input.activeTargets.values()].filter(
     (target) => target.kind === input.kind
   );
-  const measuredTargets: DifferentialCacheUsage[] = [];
-  let targetMeasureFailures = 0;
-  for (const target of activeTargets) {
-    try {
-      measuredTargets.push(await measureTree(path.join(target.directory, 'payload')));
-    } catch {
-      measuredTargets.push(target.usage);
-      targetMeasureFailures += 1;
-    }
-  }
-  const targetUsage = sumUsage(measuredTargets);
+  const { targetUsage, targetMeasureFailures } = await measureActiveTargets(activeTargets);
   const activeTargetCount = activeTargets.length;
   const overPolicy = () => {
     const usage = sumUsage([
@@ -1686,6 +1821,50 @@ async function cleanupRoot(input: CleanupInput): Promise<DifferentialCacheCleanu
   };
 }
 
+function collectExpiredEntries(
+  owned: OwnedEntry[],
+  leasedKeys: ReadonlySet<string>,
+  now: Date,
+  retention: DifferentialCacheRetention
+): Set<string> {
+  const removed = new Set<string>();
+  for (const entry of owned) {
+    const created = exactTimestamp(entry.manifest.created_at);
+    if (
+      created !== undefined &&
+      !leasedKeys.has(entry.manifest.key) &&
+      now.getTime() - created > retention.maxAgeDays * 86_400_000
+    ) {
+      removed.add(entry.manifest.key);
+    }
+  }
+  return removed;
+}
+
+async function measureActiveTargets(
+  activeTargets: Array<{ directory: string; usage: DifferentialCacheUsage }>
+): Promise<{ targetUsage: DifferentialCacheUsage; targetMeasureFailures: number }> {
+  const measuredTargets: DifferentialCacheUsage[] = [];
+  let targetMeasureFailures = 0;
+  for (const target of activeTargets) {
+    try {
+      measuredTargets.push(await measureTree(path.join(target.directory, 'payload')));
+    } catch {
+      measuredTargets.push(target.usage);
+      targetMeasureFailures += 1;
+    }
+  }
+  return { targetUsage: sumUsage(measuredTargets), targetMeasureFailures };
+}
+
+interface TransientRoleResult {
+  removedTargets: number;
+  removedStaging: number;
+  retainedTargets: number;
+  retainedUsage: DifferentialCacheUsage[];
+  skipped: number;
+}
+
 async function cleanupTransients(input: CleanupInput): Promise<{
   removedTargets: number;
   removedStaging: number;
@@ -1699,47 +1878,123 @@ async function cleanupTransients(input: CleanupInput): Promise<{
   let skipped = 0;
   const retained: DifferentialCacheUsage[] = [];
   for (const role of ['staging', 'targets'] as const) {
-    const root = path.join(input.root, role);
-    for (const entry of await sortedEntries(root)) {
-      if (!entry.isDirectory() || entry.isSymbolicLink()) {
-        skipped += 1;
-        continue;
-      }
-      const directory = path.join(root, entry.name);
-      const manifest = await readPrivateJson<TransientManifest>(
-        path.join(directory, TRANSIENT_MANIFEST)
-      );
-      if (!validTransient(manifest, input.kind, input.repoId)) {
-        if (provablyOwnedTransientName(role, entry.name)) {
-          if (!input.dryRun) await removeTree(directory);
-          if (role === 'targets') removedTargets += 1;
-          else removedStaging += 1;
-        } else skipped += 1;
-        continue;
-      }
-      const activeTarget = role === 'targets' && input.activeTargets.has(manifest.token);
-      const activeStaging = role === 'staging' && input.activeStaging.has(entry.name);
-      const identity = await input.processIdentity(manifest.pid);
-      const ownedStale =
-        manifest.daemon_owner_token === input.daemonOwnerToken && !activeTarget && !activeStaging;
-      const provenDead = identity !== undefined && identity !== manifest.process_start_identity;
-      const exited = identity === undefined && !input.processAlive(manifest.pid);
-      if (ownedStale || provenDead || exited) {
-        const removed = input.dryRun ? true : await removeOwnedTransient(directory, manifest);
-        if (removed && role === 'targets') removedTargets += 1;
-        else if (removed) removedStaging += 1;
-        else skipped += 1;
-      } else if (role === 'targets' && !activeTarget) {
-        retainedTargets += 1;
-        try {
-          retained.push(await measureTree(path.join(directory, 'payload')));
-        } catch {
-          if (manifest.usage) retained.push(manifest.usage);
-          skipped += 1;
-        }
-      } else if (role === 'staging' && !activeStaging) skipped += 1;
+    const result = await cleanupTransientRole(role, input);
+    removedTargets += result.removedTargets;
+    removedStaging += result.removedStaging;
+    retainedTargets += result.retainedTargets;
+    skipped += result.skipped;
+    retained.push(...result.retainedUsage);
+  }
+  skipped += await cleanupTrash(input);
+  return {
+    removedTargets,
+    removedStaging,
+    retainedTargets,
+    retainedUsage: sumUsage(retained),
+    skipped,
+  };
+}
+
+type TransientEntryResult =
+  | { kind: 'skip' }
+  | { kind: 'removedTarget' }
+  | { kind: 'removedStaging' }
+  | { kind: 'retainedTarget'; usage: DifferentialCacheUsage | undefined }
+  | { kind: 'noop' };
+
+async function cleanupTransientRole(
+  role: 'staging' | 'targets',
+  input: CleanupInput
+): Promise<TransientRoleResult> {
+  let removedTargets = 0;
+  let removedStaging = 0;
+  let retainedTargets = 0;
+  let skipped = 0;
+  const retainedUsage: DifferentialCacheUsage[] = [];
+  const root = path.join(input.root, role);
+  for (const entry of await sortedEntries(root)) {
+    if (!entry.isDirectory() || entry.isSymbolicLink()) {
+      skipped += 1;
+      continue;
+    }
+    const result = await processTransientEntry(role, entry, root, input);
+    if (result.kind === 'skip') skipped += 1;
+    else if (result.kind === 'removedTarget') removedTargets += 1;
+    else if (result.kind === 'removedStaging') removedStaging += 1;
+    else if (result.kind === 'retainedTarget') {
+      retainedTargets += 1;
+      if (result.usage) retainedUsage.push(result.usage);
+      else skipped += 1;
     }
   }
+  return { removedTargets, removedStaging, retainedTargets, retainedUsage, skipped };
+}
+
+async function processTransientEntry(
+  role: 'staging' | 'targets',
+  entry: Dirent,
+  root: string,
+  input: CleanupInput
+): Promise<TransientEntryResult> {
+  const directory = path.join(root, entry.name);
+  const manifest = await readPrivateJson<TransientManifest>(
+    path.join(directory, TRANSIENT_MANIFEST)
+  );
+  if (!validTransient(manifest, input.kind, input.repoId)) {
+    return await handleInvalidTransient(role, entry.name, directory, input);
+  }
+  const activeTarget = role === 'targets' && input.activeTargets.has(manifest.token);
+  const activeStaging = role === 'staging' && input.activeStaging.has(entry.name);
+  const identity = await input.processIdentity(manifest.pid);
+  const ownedStale =
+    manifest.daemon_owner_token === input.daemonOwnerToken && !activeTarget && !activeStaging;
+  const provenDead = identity !== undefined && identity !== manifest.process_start_identity;
+  const exited = identity === undefined && !input.processAlive(manifest.pid);
+  if (ownedStale || provenDead || exited) {
+    return handleStaleTransient(role, directory, manifest, input);
+  }
+  if (role === 'targets' && !activeTarget) {
+    return measureRetainedTarget(directory, manifest);
+  }
+  if (role === 'staging' && !activeStaging) return { kind: 'skip' };
+  return { kind: 'noop' };
+}
+
+async function handleInvalidTransient(
+  role: 'staging' | 'targets',
+  name: string,
+  directory: string,
+  input: CleanupInput
+): Promise<TransientEntryResult> {
+  if (!provablyOwnedTransientName(role, name)) return { kind: 'skip' };
+  if (!input.dryRun) await removeTree(directory);
+  return role === 'targets' ? { kind: 'removedTarget' } : { kind: 'removedStaging' };
+}
+
+async function handleStaleTransient(
+  role: 'staging' | 'targets',
+  directory: string,
+  manifest: TransientManifest,
+  input: CleanupInput
+): Promise<TransientEntryResult> {
+  const removed = input.dryRun ? true : await removeOwnedTransient(directory, manifest);
+  if (!removed) return { kind: 'skip' };
+  return role === 'targets' ? { kind: 'removedTarget' } : { kind: 'removedStaging' };
+}
+
+async function measureRetainedTarget(
+  directory: string,
+  manifest: TransientManifest
+): Promise<TransientEntryResult> {
+  try {
+    return { kind: 'retainedTarget', usage: await measureTree(path.join(directory, 'payload')) };
+  } catch {
+    return { kind: 'retainedTarget', usage: manifest.usage };
+  }
+}
+
+async function cleanupTrash(input: CleanupInput): Promise<number> {
+  let skipped = 0;
   const trashRoot = path.join(input.root, 'trash');
   for (const entry of await sortedEntries(trashRoot)) {
     if (!entry.isDirectory() || entry.isSymbolicLink()) {
@@ -1758,13 +2013,7 @@ async function cleanupTransients(input: CleanupInput): Promise<{
     }
     if (!input.dryRun) await removeTree(directory);
   }
-  return {
-    removedTargets,
-    removedStaging,
-    retainedTargets,
-    retainedUsage: sumUsage(retained),
-    skipped,
-  };
+  return skipped;
 }
 
 async function removeOwnedEntry(root: string, entry: OwnedEntry): Promise<void> {
