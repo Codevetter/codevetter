@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-15
+Last updated: 2026-08-16
 
 ## Why / What
 
@@ -53,6 +53,20 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-08-16 — Focused desktop performance workbench (release candidate):**
+  Retired Work and Board from the visible product shell and redirected their
+  routes to Usage without deleting local historical records or backend lifecycle
+  code. Added a persistent Performance surface backed by the existing local
+  runtime engine for closed Node test/script, Vitest, Playwright, and Go benchmark
+  scopes. The desktop bridge validates contained inputs, clears inherited secret
+  environment variables, supervises one owned process with cancellation and
+  timeout, bounds and sanitizes output, and packages the existing engine as a
+  Tauri resource. The UI separates observed evidence, inference, unverified
+  hypotheses, and limitations; its illustrative browser fixture is explicitly
+  labelled and is not product-impact evidence. Focused Rust, runtime, TypeScript,
+  and rendered-state checks pass; Playwright execution remains locally blocked by
+  its missing pinned browser binary and is not represented as passing.
 
 - **2026-08-15 — Local performance execution became zero-egress by default
   (release candidate):** Added immutable dry-run plans and cost/egress receipts
@@ -345,14 +359,12 @@ Internal (fleet):
   high/critical production advisories, with generated and fixture boundaries
   explicit and historical debt tracked in GitHub Issues.
 - Local-first desktop binary: Tauri 2 + React 19, macOS, offline, SQLite, no server.
-- Six-surface nav: Usage, Repo Unpack, Work, Board, Review, Testing. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences.
+- Five-surface nav: Usage, Repo Unpack, Review, Testing, Performance. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences. Retired Work/Board routes redirect to Usage while their local records and backend lifecycle code remain available for separately reviewed cleanup.
+- Testing and Performance now share a local deterministic scope planner for a human-described function/flow, an exact PR or Git change, or a bounded whole-codebase portfolio. Every plan exposes its revision, dirty state, concrete adapters/targets, uncovered paths, and limitations and requires confirmation before execution; human text is discovery input and is never run as a command.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.
 
-### Local agent work
-- Focused conversation-only Work surface for real installed Codex and Claude CLIs through a provider-aware pseudo-terminal, with safe permission mapping, direct repository entry, bounded honest output, intentional stop handling, and provider-native resume/fork where supported.
-- Expandable project groups combine open conversations with indexed Codex and Claude history. One bounded local directory check removes stale history for deleted checkouts, and live provider identities supersede indexed duplicates.
-- Top-level local evidence-aware Board with Plan, Build, Review, Verify, and Done stages; work items persist in SQLite and link to authoritative agent sessions, review evidence, warm verification, and Repo context without fabricating pass state.
-- Live and indexed sessions can be attached without restarting the provider process; repository/provider/session identity is checked at the backend boundary.
+### Retained local work history
+- The former Work and Board UI is no longer mounted or navigable. Existing local session/work-item records and backend lifecycle code are retained to avoid destructive migration and to support separately reviewed cleanup.
 
 ### Code review and bug finding
 - AI code review from diff or PR branch with multi-LLM provider support (Anthropic, OpenAI, OpenRouter).
