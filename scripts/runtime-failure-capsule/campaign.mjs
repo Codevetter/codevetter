@@ -15,6 +15,10 @@ import {
 } from './campaign-contracts.mjs';
 import { assessChangeCost, inspectChangeCost } from './change-cost.mjs';
 import { parseVitestSelection } from './capsule.mjs';
+import {
+  createPerformanceExecutionReceipt,
+  planPerformanceExecution,
+} from './execution-governance.mjs';
 import { verifyOptimizationCapsules } from './optimization-verification.mjs';
 import { verifyPairedRepositories } from './paired-verification.mjs';
 import { profileRepository } from './performance.mjs';
@@ -30,6 +34,8 @@ const ENGINE_FILES = [
   'capsule.mjs',
   'change-cost.mjs',
   'contracts.mjs',
+  'execution-governance.mjs',
+  'node-egress-preload.mjs',
   'optimization-verification.mjs',
   'paired-verification.mjs',
   'performance-diagnosis.mjs',
@@ -109,11 +115,22 @@ async function baselineCampaign(root, input, dependencies) {
   if (priorStatus.status === 'stopped')
     throw new Error(`campaign stopped: ${priorStatus.stop_reason}`);
 
+  const admission = await admitCampaignScopes(root, campaign.manifest, 'screening');
   const repository = await inspectRepositoryState(root, campaign.manifest);
   assertAllowedChanges(campaign.manifest, repository.changed_files);
-  const correctness = await runCorrectness(root, campaign.manifest.correctness, dependencies);
+  const correctness = await runCorrectness(
+    root,
+    campaign.manifest.correctness,
+    dependencies,
+    'candidate',
+    admission.correctness
+  );
   let performance = null;
-  let evidence = { correctness: correctness.results, performance_capsule: null };
+  let evidence = {
+    correctness: correctness.results,
+    correctness_execution_governance: correctness.executionGovernance,
+    performance_capsule: null,
+  };
   let decision;
   const limitations = [...correctness.limitations];
 
@@ -129,7 +146,11 @@ async function baselineCampaign(root, input, dependencies) {
         samples: scope.screening.samples,
         warmups: scope.screening.warmups,
       });
-      evidence = { correctness: correctness.results, performance_capsule: capsule };
+      evidence = {
+        correctness: correctness.results,
+        correctness_execution_governance: correctness.executionGovernance,
+        performance_capsule: capsule,
+      };
       if (capsule.verdict.status === 'no_confidence') {
         limitations.push(...capsule.limitations);
         decision = {
@@ -191,6 +212,7 @@ async function screenCampaign(root, input, dependencies) {
   if (status.next_action?.kind === 'promote_candidate') {
     throw new Error('the latest promising candidate must be promoted or discarded first');
   }
+  const admission = await admitCampaignScopes(root, campaign.manifest, 'screening');
   const hypothesis = sanitizeHypothesis(input?.hypothesis, root);
   const repository = await inspectRepositoryState(root, campaign.manifest);
   assertAllowedChanges(campaign.manifest, repository.changed_files);
@@ -204,11 +226,18 @@ async function screenCampaign(root, input, dependencies) {
   const attempt = status.experiments + 1;
   const correctness =
     changeCost.violations.length === 0
-      ? await runCorrectness(root, campaign.manifest.correctness, dependencies)
-      : { status: 'not_run', results: [], limitations: [] };
+      ? await runCorrectness(
+          root,
+          campaign.manifest.correctness,
+          dependencies,
+          'candidate',
+          admission.correctness
+        )
+      : { status: 'not_run', results: [], limitations: [], executionGovernance: [] };
   const limitations = [...correctness.limitations];
   let evidence = {
     correctness: correctness.results,
+    correctness_execution_governance: correctness.executionGovernance,
     performance_capsule: null,
     verification: null,
     change_cost: changeCost,
@@ -239,6 +268,7 @@ async function screenCampaign(root, input, dependencies) {
       const verification = dependencies.verifyOptimizationCapsules(baseline, current);
       evidence = {
         correctness: correctness.results,
+        correctness_execution_governance: correctness.executionGovernance,
         performance_capsule: current,
         verification,
         change_cost: changeCost,
@@ -294,6 +324,10 @@ async function promoteCampaign(root, input, dependencies) {
   }
   const incumbentRoot = await realpath(resolve(input.incumbent_repository));
   if (incumbentRoot === root) throw new Error('incumbent and candidate repositories must differ');
+  const [candidateAdmission, incumbentAdmission] = await Promise.all([
+    admitCampaignScopes(root, campaign.manifest, 'promotion'),
+    admitCampaignScopes(incumbentRoot, campaign.manifest, 'promotion'),
+  ]);
   const [candidateRepository, incumbentRepository] = await Promise.all([
     inspectRepositoryState(root, campaign.manifest),
     inspectRepositoryState(incumbentRoot, campaign.manifest),
@@ -308,12 +342,31 @@ async function promoteCampaign(root, input, dependencies) {
   }
 
   const [incumbentCorrectness, candidateCorrectness] = await Promise.all([
-    runCorrectness(incumbentRoot, campaign.manifest.correctness, dependencies, 'incumbent'),
-    runCorrectness(root, campaign.manifest.correctness, dependencies, 'candidate'),
+    runCorrectness(
+      incumbentRoot,
+      campaign.manifest.correctness,
+      dependencies,
+      'incumbent',
+      incumbentAdmission.correctness
+    ),
+    runCorrectness(
+      root,
+      campaign.manifest.correctness,
+      dependencies,
+      'candidate',
+      candidateAdmission.correctness
+    ),
   ]);
   const correctness = [...incumbentCorrectness.results, ...candidateCorrectness.results];
   const limitations = [...incumbentCorrectness.limitations, ...candidateCorrectness.limitations];
-  let evidence = { correctness, verification: null };
+  let evidence = {
+    correctness,
+    correctness_execution_governance: [
+      ...incumbentCorrectness.executionGovernance,
+      ...candidateCorrectness.executionGovernance,
+    ],
+    verification: null,
+  };
   let decision;
 
   if (incumbentCorrectness.status !== 'passed') {
@@ -336,7 +389,14 @@ async function promoteCampaign(root, input, dependencies) {
         samples: scope.promotion.samples,
         warmups: scope.promotion.warmups,
       });
-      evidence = { correctness, verification };
+      evidence = {
+        correctness,
+        correctness_execution_governance: [
+          ...incumbentCorrectness.executionGovernance,
+          ...candidateCorrectness.executionGovernance,
+        ],
+        verification,
+      };
       limitations.push(...verification.limitations);
       decision = promotionDecision(verification);
     } catch (error) {
@@ -477,19 +537,30 @@ export function deriveCampaignStatus(manifest, records, now = new Date()) {
   };
 }
 
-async function runCorrectness(root, scopes, dependencies, role = 'candidate') {
+async function runCorrectness(root, scopes, dependencies, role = 'candidate', executionPlans = []) {
   const results = [];
   const limitations = [];
-  for (const scope of scopes) {
+  const executionGovernance = [];
+  for (const [index, scope] of scopes.entries()) {
     const execution = await dependencies.runClosedAdapter({
       repositoryRoot: root,
       adapter: scope.adapter,
       target: scope.target,
       name: scope.name,
       timeoutMs: scope.timeout_ms,
+      executionPlan: executionPlans[index] ?? null,
     });
     const normalized = normalizeCorrectnessExecution(scope, execution, role);
     results.push(normalized);
+    if (executionPlans[index]) {
+      executionGovernance.push({
+        role,
+        plan: executionPlans[index],
+        receipt: createPerformanceExecutionReceipt(executionPlans[index], [
+          { phase: 'correctness', index, execution },
+        ]),
+      });
+    }
     if (normalized.limitation) limitations.push(normalized.limitation);
   }
   const statuses = new Set(results.map((result) => result.status));
@@ -500,7 +571,45 @@ async function runCorrectness(root, scopes, dependencies, role = 'candidate') {
       : statuses.has('no_confidence')
         ? 'no_confidence'
         : 'passed';
-  return { status, results, limitations };
+  return { status, results, limitations, executionGovernance };
+}
+
+async function admitCampaignScopes(root, manifest, phase) {
+  const correctness = await Promise.all(
+    manifest.correctness.map((scope) =>
+      planPerformanceExecution({
+        repositoryRoot: root,
+        adapter: scope.adapter,
+        target: scope.target,
+        name: scope.name,
+        timeoutMs: scope.timeout_ms,
+        processCount: 1,
+      })
+    )
+  );
+  const samplePolicy = manifest.performance[phase];
+  const profileRuns = manifest.performance.adapter === 'go-bench' ? 1 : 2;
+  const metricRuns = ['node-test', 'node-script', 'vitest'].includes(manifest.performance.adapter)
+    ? samplePolicy.samples
+    : 0;
+  const performance = await planPerformanceExecution({
+    repositoryRoot: root,
+    adapter: manifest.performance.adapter,
+    target: manifest.performance.target,
+    name: manifest.performance.name,
+    timeoutMs: manifest.performance.timeout_ms,
+    processCount: samplePolicy.samples + samplePolicy.warmups + metricRuns + profileRuns,
+  });
+  const blocked = [...correctness, performance].filter(
+    (plan) => plan.decision.status === 'blocked'
+  );
+  if (blocked.length > 0) {
+    const reasons = blocked.flatMap((plan) => plan.decision.blockers);
+    throw new Error(
+      `campaign execution blocked before project code: ${[...new Set(reasons)].join(' ')}`
+    );
+  }
+  return { correctness, performance };
 }
 
 export function normalizeCorrectnessExecution(scope, execution, role = 'candidate') {

@@ -12,6 +12,10 @@ import {
   validatePerformanceCapsule,
 } from './contracts.mjs';
 import { inspectGitDiff, rankRelevantChanges } from './git-diff.mjs';
+import {
+  createPerformanceExecutionReceipt,
+  planPerformanceExecution,
+} from './execution-governance.mjs';
 import { collectV8FunctionCoverage, emptyFunctionCoverage } from './function-coverage.mjs';
 import { redactText } from './redact.mjs';
 import { inspectGoProfile, runClosedAdapter } from './runner.mjs';
@@ -48,6 +52,28 @@ export async function profileRepository({
   validateProfileScope(adapter, name);
   const lexicalRoot = resolve(repositoryRoot);
   const root = await realpath(lexicalRoot);
+  const processCount = plannedProfileProcessCount({ adapter, samples, warmups, captureFlow });
+  const executionPlan = await planPerformanceExecution({
+    repositoryRoot: root,
+    adapter,
+    target,
+    name,
+    timeoutMs,
+    processCount,
+  });
+  if (executionPlan.decision.status === 'blocked') {
+    return createBlockedPerformanceCapsule({
+      root,
+      lexicalRoot,
+      git: await inspectGitDiff(root),
+      adapter,
+      target,
+      name,
+      samples,
+      warmups,
+      executionPlan,
+    });
+  }
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'codevetter-profile-'));
   const executions = [];
   let profileEvidence = emptyProfileEvidence(adapter);
@@ -67,6 +93,7 @@ export async function profileRepository({
           target,
           name,
           timeoutMs,
+          executionPlan,
         }),
       });
     }
@@ -80,6 +107,7 @@ export async function profileRepository({
           target,
           name,
           timeoutMs,
+          executionPlan,
         }),
       });
     }
@@ -95,6 +123,7 @@ export async function profileRepository({
             name,
             timeoutMs,
             vitestReporter: adapter === 'vitest' ? 'verbose' : undefined,
+            executionPlan,
           }),
         });
       }
@@ -112,6 +141,7 @@ export async function profileRepository({
           name,
           timeoutMs,
           flowDirectory,
+          executionPlan,
         }),
       });
       flowEvidence = await collectNodeFlowEvents(flowDirectory);
@@ -129,6 +159,7 @@ export async function profileRepository({
           timeoutMs,
           coverageDirectory,
           vitestReporter: adapter === 'vitest' ? 'dot' : undefined,
+          executionPlan,
         }),
       });
       functionCoverage = await collectV8FunctionCoverage(coverageDirectory, root);
@@ -148,6 +179,7 @@ export async function profileRepository({
           name,
           timeoutMs,
           profileDirectory,
+          executionPlan,
         }),
       });
       profileRuns.push(
@@ -187,6 +219,8 @@ export async function profileRepository({
     regressionPercent,
     regressionMs,
     viteArtifact,
+    executionPlan,
+    executionReceipt: createPerformanceExecutionReceipt(executionPlan, executions),
   });
 }
 
@@ -209,6 +243,8 @@ export function createPerformanceCapsule({
   regressionPercent = 20,
   regressionMs = 25,
   viteArtifact = null,
+  executionPlan = null,
+  executionReceipt = null,
 }) {
   let redactionCount = 0;
   let outputTruncated = false;
@@ -303,6 +339,7 @@ export function createPerformanceCapsule({
   if (cleanupFailed)
     limitations.push('Owned temporary profiling artifacts could not be completely removed.');
   if (outputTruncated) limitations.push('Runner output was truncated before normalization.');
+  limitations.push(...executionGovernanceLimitations(executionReceipt));
   limitations.push(...playwrightLimitations(adapter, playwrightTest));
   if (adapter === 'go-bench' && goBenchmarks.length === 0) {
     limitations.push('No matching Go benchmark measurement was captured.');
@@ -547,6 +584,7 @@ export function createPerformanceCapsule({
       coverage_bytes: functionCoverage.coverage_bytes,
       coverage_functions: functionCoverage.functions.length,
     },
+    execution_governance: executionGovernance(executionPlan, executionReceipt),
     verdict: {
       status: verdict,
       reason:
@@ -560,6 +598,57 @@ export function createPerformanceCapsule({
   const errors = validatePerformanceCapsule(capsule);
   if (errors.length > 0) throw new Error(`invalid performance capsule: ${errors.join(', ')}`);
   return capsule;
+}
+
+function executionGovernance(plan, receipt) {
+  if (!plan || !receipt) return null;
+  return { plan, receipt };
+}
+
+function executionGovernanceLimitations(receipt) {
+  return receipt?.status === 'policy_violation'
+    ? ['The zero-egress boundary blocked a remote network attempt.']
+    : [];
+}
+
+function createBlockedPerformanceCapsule({
+  root,
+  lexicalRoot,
+  git,
+  adapter,
+  target,
+  name,
+  samples,
+  warmups,
+  executionPlan,
+}) {
+  const executionReceipt = createPerformanceExecutionReceipt(executionPlan);
+  return createPerformanceCapsule({
+    root,
+    lexicalRoot,
+    git,
+    adapter,
+    target,
+    name,
+    samples,
+    warmups,
+    executions: [],
+    profileEvidence: emptyProfileEvidence(adapter),
+    profileRuns: [],
+    flowEvidence: emptyFlowEvidence(),
+    functionCoverage: emptyFunctionCoverage(),
+    cleanupFailed: false,
+    baseline: null,
+    viteArtifact: null,
+    executionPlan,
+    executionReceipt,
+  });
+}
+
+export function plannedProfileProcessCount({ adapter, samples, warmups, captureFlow = false }) {
+  const metrics = ['node-test', 'node-script', 'vitest'].includes(adapter) ? samples : 0;
+  const flows = captureFlow && ['node-test', 'vitest'].includes(adapter) ? 2 : 0;
+  return warmups + samples + metrics + flows + profileRunsFor(adapter);
 }
 
 function summarizeExecution(entry, adapter, name) {
