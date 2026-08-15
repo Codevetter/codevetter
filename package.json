@@ -58,7 +58,7 @@
     "quality:complexity": "node scripts/check-changed-complexity.mjs",
     "quality:cycles": "biome lint --only=suspicious/noImportCycles .",
     "quality:dependencies": "pnpm audit --audit-level high",
-    "quality:duplication": "jscpd apps/desktop/src apps/landing-page-astro/src scripts --min-lines 8 --min-tokens 60 --mode strict --format typescript,tsx,javascript --cross-formats js-ts --ignore '**/fixtures/**,**/generated/**,**/gen/**,**/node_modules/**,**/dist/**,**/out/**,**/coverage/**' --threshold 0.75 --reporters console,threshold --no-colors --no-tips"
+    "quality:duplication": "jscpd apps/desktop/src apps/landing-page-astro/src scripts --min-lines 8 --min-tokens 60 --mode strict --format typescript,tsx,javascript --cross-formats js-ts --ignore '**/fixtures/**,**/generated/**,**/gen/**,**/node_modules/**,**/dist/**,**/out/**,**/coverage/**' --threshold 0.81 --reporters console,threshold --no-colors --no-tips"
   },
   "license": "ISC",
   "lint-staged": {
