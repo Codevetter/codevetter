@@ -7,7 +7,13 @@ import {
 } from '@tauri-apps/plugin-notification';
 
 import { buildActiveStandardsContext, getActiveStandardsPackId } from '@/lib/review-service';
+import type { EvidenceScopeInput, EvidenceScopePlan } from '@/lib/evidence-scope';
 import type { DaemonHealth, VerifyResult } from '@/lib/warm-verification/contracts';
+import type {
+  PerformanceRunInput,
+  PerformanceRunProgress,
+  PerformanceRunReceipt,
+} from '@/lib/performance-workbench';
 import type {
   ArchaeologyCleanupCommandInput,
   ArchaeologyCleanupCommandResult,
@@ -70,6 +76,29 @@ export function isTauriAvailable(): boolean {
     typeof window !== 'undefined' &&
     typeof (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ !== 'undefined'
   );
+}
+
+export async function runLocalPerformance(
+  input: PerformanceRunInput
+): Promise<PerformanceRunReceipt> {
+  return safeInvoke('run_local_performance', { input });
+}
+
+export async function resolveEvidenceScope(input: EvidenceScopeInput): Promise<EvidenceScopePlan> {
+  return safeInvoke('resolve_evidence_scope', { input });
+}
+
+export async function cancelLocalPerformance(requestId: string): Promise<boolean> {
+  return safeInvoke('cancel_local_performance', { requestId });
+}
+
+export async function listenPerformanceRunProgress(
+  handler: (progress: PerformanceRunProgress) => void
+): Promise<UnlistenFn> {
+  if (!isTauriAvailable()) return () => undefined;
+  return listen<PerformanceRunProgress>('performance-run-progress', (event) => {
+    handler(event.payload);
+  });
 }
 
 export async function setCurrentWindowTitle(title: string): Promise<void> {
@@ -426,38 +455,6 @@ export interface CodexWarpPluginStatus {
   marketplace_output: string;
   plugin_output: string;
   error?: string | null;
-}
-
-export async function startCodexAgentTerminal(input: {
-  sessionId: string;
-  profilePath?: string | null;
-  cwd?: string | null;
-  prompt?: string | null;
-  model?: string | null;
-  sandbox?: string | null;
-  approvalPolicy?: string | null;
-  resumeSessionId?: string | null;
-  forkSessionId?: string | null;
-  roleLabel?: string | null;
-  teamId?: string | null;
-  cols?: number | null;
-  rows?: number | null;
-}): Promise<CodexAgentTerminalStartResult> {
-  return safeInvoke('start_codex_agent_terminal', {
-    sessionId: input.sessionId,
-    profilePath: input.profilePath ?? null,
-    cwd: input.cwd ?? null,
-    prompt: input.prompt ?? null,
-    model: input.model ?? null,
-    sandbox: input.sandbox ?? null,
-    approvalPolicy: input.approvalPolicy ?? null,
-    resumeSessionId: input.resumeSessionId ?? null,
-    forkSessionId: input.forkSessionId ?? null,
-    roleLabel: input.roleLabel ?? null,
-    teamId: input.teamId ?? null,
-    cols: input.cols ?? null,
-    rows: input.rows ?? null,
-  });
 }
 
 export async function startAgentTerminal(input: {
