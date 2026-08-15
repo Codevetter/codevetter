@@ -112,7 +112,6 @@ machine paths from portable evidence.
 #### Scenario: Unknown campaign argument
 - **WHEN** an MCP or CLI caller supplies an unknown field, escaping artifact path, or unsupported operation
 - **THEN** the system fails closed without running a workload or mutating campaign state
-
 ### Requirement: Campaign execution requires current local admission
 The system SHALL derive and validate a current performance-execution plan before
 running campaign correctness or performance scopes. A blocked, stale, or
