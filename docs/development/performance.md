@@ -829,7 +829,7 @@ The self-trial is also an accuracy fixture. CodeVetter's first inference blamed
 a bounded coverage-filename sort even though the workload held file count at
 one. That hypothesis was rejected from the captured workload identity before
 the observed offset helper was optimized. The active OpenSpec
-[qualification](../../openspec/changes/add-runtime-performance-capsules/qualification.md)
+[qualification](../../openspec/changes/archive/2026-08-15-add-runtime-performance-capsules/qualification.md)
 records the complete evidence, the conservative shipping limitation, and the
 decision-explanation bug found and fixed during the loop.
 
