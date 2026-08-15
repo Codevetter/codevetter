@@ -79,6 +79,8 @@
         "additionalProperties": false,
         "required": [
           "provider_id",
+          "provider_version",
+          "configuration_sha256",
           "probe_sha256",
           "role",
           "context_kind",
@@ -88,10 +90,13 @@
           "cost_posture",
           "max_usd_per_attempt",
           "environment_names",
-          "snapshot"
+          "allowed_tools",
+          "snapshots"
         ],
         "properties": {
           "provider_id": { "$ref": "common.schema.json#/$defs/id" },
+          "provider_version": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "configuration_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
           "probe_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
           "role": { "enum": ["baseline", "treatment"] },
           "context_kind": { "enum": ["baseline", "graph", "search", "wiki-rag", "hybrid"] },
@@ -106,18 +111,39 @@
             "uniqueItems": true,
             "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,79}$" }
           },
-          "snapshot": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["status", "snapshot_id", "indexed_revision"],
-            "properties": {
-              "status": { "enum": ["not-required", "pending", "ready", "stale"] },
-              "snapshot_id": {
-                "anyOf": [{ "$ref": "common.schema.json#/$defs/id" }, { "type": "null" }]
-              },
-              "indexed_revision": {
-                "type": ["string", "null"],
-                "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
+          "allowed_tools": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+          },
+          "snapshots": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "task_id",
+                "source_sha256",
+                "status",
+                "snapshot_id",
+                "indexed_revision"
+              ],
+              "properties": {
+                "task_id": { "$ref": "common.schema.json#/$defs/id" },
+                "source_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+                "status": { "enum": ["pending", "ready", "stale"] },
+                "snapshot_id": {
+                  "anyOf": [
+                    { "$ref": "common.schema.json#/$defs/snapshotId" },
+                    { "type": "null" }
+                  ]
+                },
+                "indexed_revision": {
+                  "type": ["string", "null"],
+                  "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
+                }
               }
             }
           }
@@ -133,6 +159,7 @@
         "required": [
           "task_id",
           "manifest_sha256",
+          "fixture_sha256",
           "repository_revision",
           "lane",
           "runtime",
@@ -141,6 +168,7 @@
         "properties": {
           "task_id": { "$ref": "common.schema.json#/$defs/id" },
           "manifest_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+          "fixture_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
           "repository_revision": { "type": "string", "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$" },
           "lane": { "enum": ["api", "browser"] },
           "runtime": { "enum": ["node", "typescript"] },

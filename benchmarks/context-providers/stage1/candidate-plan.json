@@ -9,14 +9,17 @@
   "corpus_id": "codevetter-agent-task-contract-sample",
   "corpus_version": "0.3.0",
   "agent_profile": {
-    "status": "unselected",
-    "agent": null,
-    "model": null,
-    "adapter": null,
-    "configuration_sha256": null,
-    "environment_sha256": null,
-    "cost_posture": "unknown",
-    "max_usd_per_attempt": null
+    "status": "selected",
+    "agent": "CodeVetter local context experiment adapter",
+    "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit@50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+    "adapter": {
+      "path": "benchmarks/context-providers/adapters/local-qwen-context.json",
+      "sha256": "eaacb10e8d305416fd91e2a5df17330042febf01cc23b68e97377098a3c4699e"
+    },
+    "configuration_sha256": "eaacb10e8d305416fd91e2a5df17330042febf01cc23b68e97377098a3c4699e",
+    "environment_sha256": "c48e7c6e65827ad143c8b8ddc6ec762bf6fa82f50d5bb582f86bac679268b5c4",
+    "cost_posture": "free",
+    "max_usd_per_attempt": 0
   },
   "provider_probes": [
     {
@@ -47,30 +50,30 @@
       ],
       "snapshots": [
         {
-          "status": "pending",
-          "snapshot_id": null,
-          "indexed_revision": null,
+          "status": "ready",
+          "snapshot_id": "snapshot:69e5a735a9fdf1fd",
+          "indexed_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
           "task_id": "accept-zero-duration",
           "source_sha256": "1e282709e1f71ed2663dc0696bcfa5f9ce1041137bf3a101210398d99bb0a316"
         },
         {
-          "status": "pending",
-          "snapshot_id": null,
-          "indexed_revision": null,
+          "status": "ready",
+          "snapshot_id": "snapshot:404e574b7280c177",
+          "indexed_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
           "task_id": "await-transaction-commit",
           "source_sha256": "32947bf9422aa91c938a5aa5a6ebe78ffdec2aae84b5de4d766c6dd863a88922"
         },
         {
-          "status": "pending",
-          "snapshot_id": null,
-          "indexed_revision": null,
+          "status": "ready",
+          "snapshot_id": "snapshot:6d77475bc9609b9a",
+          "indexed_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
           "task_id": "deduplicate-visible-items",
           "source_sha256": "e5e53e72734c3ce5d65933566eae3b67a24ed2f4b7cb032bb8a7364c33ea47aa"
         },
         {
-          "status": "pending",
-          "snapshot_id": null,
-          "indexed_revision": null,
+          "status": "ready",
+          "snapshot_id": "snapshot:43fb6593e8fab42d",
+          "indexed_revision": "7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3",
           "task_id": "ignore-stale-search-response",
           "source_sha256": "222332005de577e469d2bda16cbfc8b2aab96540f392ddd15b6b99b1b600cddf"
         }
@@ -253,27 +256,25 @@
     "attempts": 16
   },
   "cost": {
-    "posture": "unknown",
+    "posture": "free",
     "context_max_usd": 0,
-    "agent_max_usd": null,
-    "total_max_usd": null
+    "agent_max_usd": 0,
+    "total_max_usd": 0
   },
-  "environment": [],
+  "environment": [
+    {
+      "name": "CODEVETTER_LOCAL_MODEL_URL",
+      "available": true
+    }
+  ],
   "approvals": {
     "execution_required": true,
-    "paid_required": true,
+    "paid_required": false,
     "hosted_required": false,
     "data_egress_required": false,
-    "approval_id": "approval-d93a016990bd2085815fb70293ab3c64"
+    "approval_id": "approval-0bd3cf8c18706ffd739bcff4d8aa4acf"
   },
-  "blocked_reasons": [
-    "agent-profile-unselected",
-    "provider-snapshot-pending-codevetter-structural-context-accept-zero-duration",
-    "provider-snapshot-pending-codevetter-structural-context-await-transaction-commit",
-    "provider-snapshot-pending-codevetter-structural-context-deduplicate-visible-items",
-    "provider-snapshot-pending-codevetter-structural-context-ignore-stale-search-response",
-    "unknown-cost-bound"
-  ],
+  "blocked_reasons": [],
   "diagnostics": [
     "agent-cost",
     "context-tool-calls",
@@ -287,5 +288,5 @@
     "A provider capability probe is not evidence of agent-quality improvement.",
     "Hidden executable checks remain the outcome authority for any later execution."
   ],
-  "plan_id": "plan-d7e1df5ff11481d9040c43fadae7a72f"
+  "plan_id": "plan-fd924b482cd13928579a84eebacf36b2"
 }

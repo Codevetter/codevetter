@@ -192,6 +192,13 @@ function validateReceiptChecks(receipt, task, label) {
   if (!checksStarted && observed.length > 0) {
     throw new Error(`run receipt "${label}" reports checks before checks_started`);
   }
+  if (
+    checksStarted &&
+    observed.length === 0 &&
+    ['check_error', 'timeout'].includes(receipt.terminal_status)
+  ) {
+    return;
+  }
   if (checksStarted && JSON.stringify(observed) !== JSON.stringify(expected)) {
     throw new Error(`run receipt "${label}" is missing or adds acceptance checks`);
   }
@@ -247,9 +254,10 @@ function projectRun({ descriptor, receipt, adapter }, tasks) {
     outcome: {
       status: projectTerminalStatus(receipt.terminal_status),
       regression_count: receipt.regression_count,
-      checks: receipt.lifecycle.includes('checks_started')
-        ? receipt.checks.map((check) => ({ id: check.id, status: check.status }))
-        : allAcceptanceChecks(task).map((check) => ({ id: check.id, status: 'skipped' })),
+      checks:
+        receipt.checks.length > 0
+          ? receipt.checks.map((check) => ({ id: check.id, status: check.status }))
+          : allAcceptanceChecks(task).map((check) => ({ id: check.id, status: 'skipped' })),
     },
     ...(diagnostics === undefined ? {} : { diagnostics }),
   };

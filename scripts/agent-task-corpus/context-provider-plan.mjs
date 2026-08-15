@@ -87,9 +87,11 @@ export async function planContextProviderExperiment({
     .sort((left, right) => left.task_id.localeCompare(right.task_id));
   const repetitions = stage === 'probe' ? 0 : stage === 'feasibility' ? 2 : 3;
   const providers = probes.map(({ artifact, value }) => {
-    const snapshot = contextSnapshot(value, stage, providerSnapshots[value.provider_id]);
+    const snapshots = contextSnapshots(value, stage, tasks, providerSnapshots[value.provider_id]);
     return {
       provider_id: value.provider_id,
+      provider_version: value.provider_version,
+      configuration_sha256: value.configuration_sha256,
       probe_sha256: artifact.sha256,
       role: value.context_kind === 'baseline' ? 'baseline' : 'treatment',
       context_kind: value.context_kind,
@@ -99,7 +101,8 @@ export async function planContextProviderExperiment({
       cost_posture: value.cost.posture,
       max_usd_per_attempt: value.cost.max_usd_per_attempt,
       environment_names: [...value.environment_names],
-      snapshot,
+      allowed_tools: [...value.tools.allowed],
+      snapshots,
     };
   });
   const schedule = buildBalancedSchedule(tasks, providers, repetitions);
@@ -256,6 +259,7 @@ function taskPlanEntry(corpusRoot, corpusIndex, row) {
   return {
     task_id: row.task_id,
     manifest_sha256: row.manifest_sha256,
+    fixture_sha256: manifest.artifacts.fixture.sha256,
     repository_revision: manifest.provenance.revision,
     lane: row.lane,
     runtime: row.runtime,
@@ -263,14 +267,19 @@ function taskPlanEntry(corpusRoot, corpusIndex, row) {
   };
 }
 
-function contextSnapshot(probe, stage, supplied) {
+function contextSnapshots(probe, stage, tasks, supplied = {}) {
   if (stage === 'probe' || probe.context_kind === 'baseline') {
-    return { status: 'not-required', snapshot_id: null, indexed_revision: null };
+    return [];
   }
-  if (supplied === undefined) {
-    return { status: 'pending', snapshot_id: null, indexed_revision: null };
-  }
-  return { ...supplied };
+  return tasks.map((task) => ({
+    ...(supplied[task.task_id] ?? {
+      status: 'pending',
+      snapshot_id: null,
+      indexed_revision: null,
+    }),
+    task_id: task.task_id,
+    source_sha256: task.fixture_sha256,
+  }));
 }
 
 function calculateCost({ providers, agentProfile, tasks, repetitions, attempts }) {
@@ -307,10 +316,12 @@ function buildBlockedReasons({ stage, agentProfile, providers, environment, cost
       reasons.push(`missing-environment-${entry.name.toLowerCase().replaceAll('_', '-')}`);
   }
   for (const provider of providers) {
-    if (provider.snapshot.status === 'pending')
-      reasons.push(`provider-snapshot-pending-${provider.provider_id}`);
-    if (provider.snapshot.status === 'stale')
-      reasons.push(`provider-snapshot-stale-${provider.provider_id}`);
+    for (const snapshot of provider.snapshots) {
+      if (snapshot.status === 'pending')
+        reasons.push(`provider-snapshot-pending-${provider.provider_id}-${snapshot.task_id}`);
+      if (snapshot.status === 'stale')
+        reasons.push(`provider-snapshot-stale-${provider.provider_id}-${snapshot.task_id}`);
+    }
   }
   return [...new Set(reasons)].sort();
 }

@@ -292,6 +292,24 @@ test('rejects missing checks after check execution', async (t) => {
   );
 });
 
+test('projects an errored verifier with no results as skipped checks', async (t) => {
+  const context = await fixture(t);
+  await mutateReceipt(context, 'ab-control', (value) => {
+    value.terminal_status = 'check_error';
+    value.checks = [];
+  });
+
+  const result = await evaluateReceiptBundle({
+    bundlePath: context.bundlePath,
+    root: context.root,
+  });
+  const control = result.manifest.runs.find(
+    (run) => run.pair_id === 'ab-pair' && run.arm === 'control'
+  );
+  assert.equal(control.outcome.status, 'check_error');
+  assert.ok(control.outcome.checks.every((check) => check.status === 'skipped'));
+});
+
 test('rejects incomplete, misordered, stale, and contaminated pairs', async (t) => {
   const incomplete = await fixture(t);
   incomplete.bundle.runs.pop();

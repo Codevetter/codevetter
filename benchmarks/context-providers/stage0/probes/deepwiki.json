@@ -1,0 +1,41 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "deepwiki",
+  "provider_name": "DeepWiki MCP",
+  "provider_version": "hosted-2026-08-15",
+  "configuration_sha256": "12b95513153b43ac967c0108f11184ca84e7a27745b4c19c8d06478dfa335546",
+  "context_kind": "wiki-rag",
+  "interface_kind": "mcp",
+  "operating_mode": "hosted",
+  "indexing": {
+    "mode": "prebuilt",
+    "exact_revision_supported": false,
+    "snapshot_identity_supported": false,
+    "freshness_check": "unknown"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": ["ask_question", "read_wiki_contents", "read_wiki_structure"]
+  },
+  "data_egress": "source-content",
+  "authentication": "none",
+  "environment_names": [],
+  "cost": { "posture": "free", "max_usd_per_attempt": 0 },
+  "setup": {
+    "status": "excluded",
+    "duration_ms": null,
+    "evidence": [
+      "https://docs.devin.ai/release-notes/2025:DeepWiki-MCP-announcement",
+      "https://mcp.deepwiki.com/mcp:hosted-public-MCP-endpoint"
+    ],
+    "exclusion_reasons": [
+      "The hosted wiki cannot index the experiment's fresh isolated workspaces.",
+      "The inspected interface does not prove exact task-revision freshness or immutable snapshot identity."
+    ]
+  },
+  "publication": "unknown",
+  "limitations": [
+    "The endpoint was not sent repository content or queried during this probe.",
+    "Public repository documentation is not equivalent to context for the mutated task workspace."
+  ]
+}
