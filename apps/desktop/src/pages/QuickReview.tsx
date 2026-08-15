@@ -107,14 +107,18 @@ import type {
   BlastRadiusReport,
   CliReviewFinding,
   CliReviewResult,
+  EvidenceCandidate,
+  EvidenceProcedureStep,
   FileLineData,
   FindingDisposition,
   FixFindingsResult,
+  LocalReviewFindingRow,
   LocalReviewRow,
   PlaywrightSpecCandidate,
   PullRequest,
   RawSessionContextItem,
   RepoHistoryContext,
+  ReviewManifest,
   ReviewProcedureEvent,
   ReviewVerificationCommandSuggestion,
   StoredDifferentialVerificationRun,
@@ -175,6 +179,1677 @@ import {
 } from '@/lib/warm-verification/adapters';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function pickBaseBranch(branches: string[]): string {
+  if (branches.includes('main')) return 'main';
+  if (branches.includes('master')) return 'master';
+  if (branches.length > 0) return branches[0];
+  return '';
+}
+
+interface TaskContextSetters {
+  setTaskGoal: (v: string) => void;
+  setTaskAcceptance: (v: string) => void;
+  setTaskNonGoals: (v: string) => void;
+  setTaskSourceLabel: (v: string) => void;
+}
+
+function resetTaskContext(setters: TaskContextSetters): void {
+  setters.setTaskGoal('');
+  setters.setTaskAcceptance('');
+  setters.setTaskNonGoals('');
+  setters.setTaskSourceLabel('');
+}
+
+async function loadPersistedTaskContext(dir: string, setters: TaskContextSetters): Promise<void> {
+  try {
+    const savedTask = await getPreference(`quick_review_task_${repoPrefKey(dir)}`);
+    if (savedTask) {
+      const parsed = JSON.parse(savedTask) as Partial<TaskContext>;
+      setters.setTaskGoal(parsed.goal ?? '');
+      setters.setTaskAcceptance(parsed.acceptanceCriteria ?? '');
+      setters.setTaskNonGoals(parsed.nonGoals ?? '');
+      setters.setTaskSourceLabel(parsed.sourceLabel ?? '');
+    } else {
+      resetTaskContext(setters);
+    }
+  } catch {
+    resetTaskContext(setters);
+  }
+}
+
+interface QaWorkflowSetters {
+  setQaBaseUrl: (v: string) => void;
+  setQaLoopId: (v: string) => void;
+  setQaRunnerType: (v: QaRunnerType) => void;
+  setQaGoal: (v: string) => void;
+  setQaTargetRoute: (v: string) => void;
+  setQaExternalCommand: (v: string) => void;
+  setQaRepoSpecPath: (v: string) => void;
+  setQaRepoTraceMode: (v: QaRepoTraceMode) => void;
+  setQaAuthMode: (v: QaAuthMode) => void;
+  setQaStorageStatePath: (v: string) => void;
+  setQaAllowRemoteTarget: (v: boolean) => void;
+  setQaTargets: (v: QaTargetPreset[]) => void;
+  setQaActiveTargetId: (v: string) => void;
+  setQaTargetName: (v: string) => void;
+  setQaWorkflowName: (v: string) => void;
+}
+
+function buildSyntheticQaRunConfig(
+  request: QaPreset,
+  runRepoPath: string
+): Parameters<typeof runSyntheticQa>[2] {
+  return {
+    runnerType: request.runnerType,
+    goal: request.goal,
+    externalCommand: request.runnerType === 'external_skill' ? request.externalCommand : undefined,
+    repoPath: runRepoPath,
+    specPath: request.runnerType === 'repo_playwright' ? request.repoSpecPath : undefined,
+    repoTraceMode: request.runnerType === 'repo_playwright' ? request.repoTraceMode : undefined,
+    authMode: request.authMode,
+    storageStatePath: request.authMode === 'storage_state' ? request.storageStatePath : undefined,
+    targetRoute: request.targetRoute,
+    allowRemoteTarget: request.allowRemoteTarget,
+  };
+}
+
+function resolveAudienceDefaultArtifact(
+  qaLastRun: SyntheticQaRunResult | null,
+  qaBaseUrl: string
+): string {
+  return qaLastRun?.screenshot_path ?? qaLastRun?.route ?? qaBaseUrl;
+}
+
+function BlastRadiusSection({
+  blastReport,
+  blastLoading,
+  blastError,
+  deepGraphImpact,
+  deepGraphImpactLoading,
+  handleJumpToCaller,
+}: {
+  blastReport: BlastRadiusReport | null;
+  blastLoading: boolean;
+  blastError: string | null;
+  deepGraphImpact: UnpackDeepGraphDetectChanges | null;
+  deepGraphImpactLoading: boolean;
+  handleJumpToCaller: (file: string, line: number) => Promise<void>;
+}) {
+  if (!blastReport && !blastLoading && !blastError && !deepGraphImpact && !deepGraphImpactLoading) {
+    return null;
+  }
+  return (
+    <div className="shrink-0 border-b border-[var(--cv-line)]">
+      <BlastRadiusPanel
+        report={blastReport}
+        loading={blastLoading}
+        error={blastError}
+        deepGraphImpact={deepGraphImpact}
+        deepGraphImpactLoading={deepGraphImpactLoading}
+        onJump={handleJumpToCaller}
+      />
+    </div>
+  );
+}
+
+function MemoryGraphPanels({
+  reviewMemoryGraph,
+  focusedReviewMemoryGraph,
+}: {
+  reviewMemoryGraph: CliReviewResult['review_memory_graph'];
+  focusedReviewMemoryGraph: ReturnType<typeof buildFocusedReviewMemoryGraph>;
+}) {
+  return (
+    <>
+      {reviewMemoryGraph && reviewMemoryGraph.nodes.length > 0 && (
+        <ReviewMemoryGraphPanel
+          graph={reviewMemoryGraph}
+          title="Review memory graph"
+          accent="cyan"
+          nodeLimit={5}
+        />
+      )}
+      {focusedReviewMemoryGraph && focusedReviewMemoryGraph.nodes.length > 0 && (
+        <ReviewMemoryGraphPanel
+          graph={focusedReviewMemoryGraph}
+          title="Finding graph focus"
+          accent="emerald"
+          nodeLimit={4}
+        />
+      )}
+    </>
+  );
+}
+
+function SelectedFindingDetail({
+  activeFinding,
+  selectedFindingIdx,
+  repoPath,
+  selectedBranch,
+  baseBranch,
+  reviewId,
+  qaWorkflowScopeLabel,
+  qaActiveWorkflowId,
+  qaWorkflows,
+  qaWorkflowName,
+  setQaWorkflowName,
+  handleSelectQaWorkflow,
+  handleSaveQaWorkflow,
+  handleDeleteQaWorkflow,
+  qaActiveTargetId,
+  qaTargets,
+  handleSelectQaTarget,
+  qaBaseUrl,
+  setQaBaseUrl,
+  qaAllowRemoteTarget,
+  setQaAllowRemoteTarget,
+  qaTargetName,
+  setQaTargetName,
+  qaTargetRoute,
+  setQaTargetRoute,
+  qaAuthMode,
+  setQaAuthMode,
+  qaStorageStatePath,
+  setQaStorageStatePath,
+  qaLoopId,
+  setQaLoopId,
+  setQaGoal,
+  qaGoal,
+  qaRunnerType,
+  setQaRunnerType,
+  qaRepoSpecPath,
+  setQaRepoSpecPath,
+  qaSpecLoading,
+  qaSpecCandidates,
+  qaSpecError,
+  handleDiscoverQaSpecs,
+  qaRepoTraceMode,
+  setQaRepoTraceMode,
+  qaExternalCommand,
+  setQaExternalCommand,
+  handleSaveQaTarget,
+  handleDeleteQaTarget,
+  handleRunSyntheticQa,
+  qaRunning,
+  qaError,
+  qaLastRun,
+  qaArtifactPreview,
+  qaArtifactPreviewLoading,
+  handlePreviewQaArtifact,
+  handleOpenQaArtifact,
+  setQaArtifactPreview,
+  applyQaToSelectedFinding,
+  addQaFailureFinding,
+  qaEvidenceHistory,
+  qaPostFixComparison,
+  postFixQaRunning,
+  handleRunPostFixQa,
+  activeEvidence,
+  updateFindingEvidence,
+  activeBrowserEvidence,
+  updateBrowserEvidence,
+  verificationCommand,
+  setVerificationCommand,
+  verificationCommandSuggestions,
+  verificationCommandSuggestionsLoading,
+  verificationCommandTimeoutMs,
+  setVerificationCommandTimeoutMs,
+  verificationCommandRunning,
+  handleRunVerificationCommand,
+  verificationCommandRunId,
+  verificationCommandCanceling,
+  handleCancelVerificationCommand,
+  verificationCommandError,
+  handleRecordTestCommandEvent,
+  toggleRevalidationItem,
+}: {
+  activeFinding: CliReviewFinding;
+  selectedFindingIdx: number | null;
+  repoPath: string;
+  selectedBranch: string;
+  baseBranch: string;
+  reviewId: string;
+  qaWorkflowScopeLabel: string;
+  qaActiveWorkflowId: string;
+  qaWorkflows: QaWorkflowPreset[];
+  qaWorkflowName: string;
+  setQaWorkflowName: (v: string) => void;
+  handleSelectQaWorkflow: (id: string) => void;
+  handleSaveQaWorkflow: () => void;
+  handleDeleteQaWorkflow: () => void;
+  qaActiveTargetId: string;
+  qaTargets: QaTargetPreset[];
+  handleSelectQaTarget: (id: string) => void;
+  qaBaseUrl: string;
+  setQaBaseUrl: (v: string) => void;
+  qaAllowRemoteTarget: boolean;
+  setQaAllowRemoteTarget: (v: boolean) => void;
+  qaTargetName: string;
+  setQaTargetName: (v: string) => void;
+  qaTargetRoute: string;
+  setQaTargetRoute: (v: string) => void;
+  qaAuthMode: QaAuthMode;
+  setQaAuthMode: (v: QaAuthMode) => void;
+  qaStorageStatePath: string;
+  setQaStorageStatePath: (v: string) => void;
+  qaLoopId: string;
+  setQaLoopId: (v: string) => void;
+  setQaGoal: (v: string) => void;
+  qaGoal: string;
+  qaRunnerType: QaRunnerType;
+  setQaRunnerType: (v: QaRunnerType) => void;
+  qaRepoSpecPath: string;
+  setQaRepoSpecPath: (v: string) => void;
+  qaSpecLoading: boolean;
+  qaSpecCandidates: PlaywrightSpecCandidate[];
+  qaSpecError: string | null;
+  handleDiscoverQaSpecs: () => Promise<void>;
+  qaRepoTraceMode: QaRepoTraceMode;
+  setQaRepoTraceMode: (v: QaRepoTraceMode) => void;
+  qaExternalCommand: string;
+  setQaExternalCommand: (v: string) => void;
+  handleSaveQaTarget: () => void;
+  handleDeleteQaTarget: () => void;
+  handleRunSyntheticQa: () => Promise<void>;
+  qaRunning: boolean;
+  qaError: string | null;
+  qaLastRun: SyntheticQaRunResult | null;
+  qaArtifactPreview: { path: string; content: string; language: string; totalLines: number } | null;
+  qaArtifactPreviewLoading: boolean;
+  handlePreviewQaArtifact: (artifact: string) => Promise<void>;
+  handleOpenQaArtifact: (artifact: string) => Promise<void>;
+  setQaArtifactPreview: (
+    v: { path: string; content: string; language: string; totalLines: number } | null
+  ) => void;
+  applyQaToSelectedFinding: () => void;
+  addQaFailureFinding: () => void;
+  qaEvidenceHistory: QaRunHistoryEntry[];
+  qaPostFixComparison: ReturnType<typeof buildQaPostFixComparison>;
+  postFixQaRunning: boolean;
+  handleRunPostFixQa: () => Promise<void>;
+  activeEvidence: FindingEvidence;
+  updateFindingEvidence: (idx: number, patch: Partial<FindingEvidence>) => void;
+  activeBrowserEvidence: BrowserEvidenceRef;
+  updateBrowserEvidence: (idx: number, patch: Partial<BrowserEvidenceRef>) => void;
+  verificationCommand: string;
+  setVerificationCommand: (v: string) => void;
+  verificationCommandSuggestions: ReviewVerificationCommandSuggestion[];
+  verificationCommandSuggestionsLoading: boolean;
+  verificationCommandTimeoutMs: number;
+  setVerificationCommandTimeoutMs: (v: number) => void;
+  verificationCommandRunning: boolean;
+  handleRunVerificationCommand: () => Promise<void>;
+  verificationCommandRunId: string | null;
+  verificationCommandCanceling: boolean;
+  handleCancelVerificationCommand: () => Promise<void>;
+  verificationCommandError: string | null;
+  handleRecordTestCommandEvent: () => void;
+  toggleRevalidationItem: (idx: number, itemId: string) => void;
+}) {
+  return (
+    <>
+      <Badge
+        variant="outline"
+        className={cn(
+          'rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
+          severityColor(activeFinding.severity)
+        )}
+      >
+        {severityIcon(activeFinding.severity)}
+        <span className="ml-1">{activeFinding.severity}</span>
+      </Badge>
+      <h2 className="mt-5 text-lg font-semibold leading-6 text-white">{activeFinding.title}</h2>
+      <p className="mt-3 text-sm leading-6 text-slate-400">{activeFinding.summary}</p>
+      {activeFinding.filePath && (
+        <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate-600">
+          {activeFinding.filePath}
+          {activeFinding.line != null && `:${activeFinding.line}`}
+        </div>
+      )}
+      {activeFinding.suggestion && (
+        <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
+          <div className="cv-label mb-3">Suggested action</div>
+          <p className="font-mono text-[12px] leading-6 text-slate-300">
+            {activeFinding.suggestion}
+          </p>
+        </div>
+      )}
+      <div className="mt-6 border-t border-[var(--cv-line)] pt-5" data-testid="trex-sandbox-panel">
+        <SandboxRunner
+          repoPath={repoPath}
+          branch={selectedBranch || ''}
+          baseBranch={baseBranch || null}
+          reviewId={reviewId || null}
+          onComplete={() => {
+            // Refresh findings so the via-execution rows attach
+            // to the existing list; QuickReview's history list
+            // re-fetches when reviewId changes — bumping it is
+            // enough here.
+          }}
+        />
+      </div>
+      <SyntheticQaPanel
+        qaWorkflowScopeLabel={qaWorkflowScopeLabel}
+        qaActiveWorkflowId={qaActiveWorkflowId}
+        qaWorkflows={qaWorkflows}
+        qaWorkflowName={qaWorkflowName}
+        setQaWorkflowName={setQaWorkflowName}
+        handleSelectQaWorkflow={handleSelectQaWorkflow}
+        handleSaveQaWorkflow={handleSaveQaWorkflow}
+        handleDeleteQaWorkflow={handleDeleteQaWorkflow}
+        qaActiveTargetId={qaActiveTargetId}
+        qaTargets={qaTargets}
+        handleSelectQaTarget={handleSelectQaTarget}
+        qaBaseUrl={qaBaseUrl}
+        setQaBaseUrl={setQaBaseUrl}
+        qaAllowRemoteTarget={qaAllowRemoteTarget}
+        setQaAllowRemoteTarget={setQaAllowRemoteTarget}
+        qaTargetName={qaTargetName}
+        setQaTargetName={setQaTargetName}
+        qaTargetRoute={qaTargetRoute}
+        setQaTargetRoute={setQaTargetRoute}
+        qaAuthMode={qaAuthMode}
+        setQaAuthMode={setQaAuthMode}
+        qaStorageStatePath={qaStorageStatePath}
+        setQaStorageStatePath={setQaStorageStatePath}
+        qaLoopId={qaLoopId}
+        setQaLoopId={setQaLoopId}
+        setQaGoal={setQaGoal}
+        qaGoal={qaGoal}
+        qaRunnerType={qaRunnerType}
+        setQaRunnerType={setQaRunnerType}
+        qaRepoSpecPath={qaRepoSpecPath}
+        setQaRepoSpecPath={setQaRepoSpecPath}
+        qaSpecLoading={qaSpecLoading}
+        qaSpecCandidates={qaSpecCandidates}
+        qaSpecError={qaSpecError}
+        handleDiscoverQaSpecs={handleDiscoverQaSpecs}
+        qaRepoTraceMode={qaRepoTraceMode}
+        setQaRepoTraceMode={setQaRepoTraceMode}
+        qaExternalCommand={qaExternalCommand}
+        setQaExternalCommand={setQaExternalCommand}
+        handleSaveQaTarget={handleSaveQaTarget}
+        handleDeleteQaTarget={handleDeleteQaTarget}
+        handleRunSyntheticQa={handleRunSyntheticQa}
+        qaRunning={qaRunning}
+        qaError={qaError}
+        qaLastRun={qaLastRun}
+        qaArtifactPreview={qaArtifactPreview}
+        qaArtifactPreviewLoading={qaArtifactPreviewLoading}
+        handlePreviewQaArtifact={handlePreviewQaArtifact}
+        handleOpenQaArtifact={handleOpenQaArtifact}
+        setQaArtifactPreview={setQaArtifactPreview}
+        selectedFindingIdx={selectedFindingIdx}
+        applyQaToSelectedFinding={applyQaToSelectedFinding}
+        addQaFailureFinding={addQaFailureFinding}
+        qaRunHistory={qaEvidenceHistory}
+        qaPostFixComparison={qaPostFixComparison}
+        postFixQaRunning={postFixQaRunning}
+        handleRunPostFixQa={handleRunPostFixQa}
+        repoPath={repoPath}
+      />
+      {selectedFindingIdx !== null && (
+        <VerificationEvidencePanel
+          selectedFindingIdx={selectedFindingIdx}
+          activeFinding={activeFinding}
+          activeEvidence={activeEvidence}
+          updateFindingEvidence={updateFindingEvidence}
+          activeBrowserEvidence={activeBrowserEvidence}
+          updateBrowserEvidence={updateBrowserEvidence}
+          verificationCommand={verificationCommand}
+          setVerificationCommand={setVerificationCommand}
+          verificationCommandSuggestions={verificationCommandSuggestions}
+          verificationCommandSuggestionsLoading={verificationCommandSuggestionsLoading}
+          verificationCommandTimeoutMs={verificationCommandTimeoutMs}
+          setVerificationCommandTimeoutMs={setVerificationCommandTimeoutMs}
+          verificationCommandRunning={verificationCommandRunning}
+          repoPath={repoPath}
+          handleRunVerificationCommand={handleRunVerificationCommand}
+          verificationCommandRunId={verificationCommandRunId}
+          verificationCommandCanceling={verificationCommandCanceling}
+          handleCancelVerificationCommand={handleCancelVerificationCommand}
+          verificationCommandError={verificationCommandError}
+          handleRecordTestCommandEvent={handleRecordTestCommandEvent}
+          toggleRevalidationItem={toggleRevalidationItem}
+        />
+      )}
+    </>
+  );
+}
+
+interface ViewModeLocals {
+  activeFinding: CliReviewFinding | null;
+  activeCodePath: string;
+  activeEvidence: FindingEvidence;
+  activeBrowserEvidence: BrowserEvidenceRef;
+  evidenceCandidates: EvidenceCandidate[];
+  evidenceProcedureSteps: EvidenceProcedureStep[];
+  reviewMemoryGraph: CliReviewResult['review_memory_graph'];
+  reviewManifest: CliReviewResult['review_manifest'];
+  coverageCounts: Record<string, number> | null;
+  focusedReviewMemoryGraph: ReturnType<typeof buildFocusedReviewMemoryGraph>;
+  procedureEventsByStep: Record<string, ProcedureExecutionEvent[]>;
+}
+
+function computeViewModeLocals(
+  result: CliReviewResult,
+  selectedFindingIdx: number | null,
+  sortedFindings: CliReviewFinding[],
+  codeFilePath: string,
+  evidenceByFinding: Record<string, FindingEvidence>,
+  browserEvidenceByFinding: Record<string, BrowserEvidenceRef>,
+  procedureExecutionEvents: ProcedureExecutionEvent[]
+): ViewModeLocals {
+  const activeFinding = selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
+  const activeCodePath = codeFilePath || activeFinding?.filePath || '';
+  const activeEvidence =
+    activeFinding && selectedFindingIdx !== null
+      ? {
+          ...defaultFindingEvidence,
+          ...evidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
+        }
+      : defaultFindingEvidence;
+  const activeBrowserEvidence =
+    activeFinding && selectedFindingIdx !== null
+      ? {
+          ...emptyBrowserEvidence(),
+          ...browserEvidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
+        }
+      : emptyBrowserEvidence();
+  const evidenceCandidates = result.evidence_candidates ?? [];
+  const evidenceProcedureSteps = result.evidence_procedure_steps ?? [];
+  const reviewMemoryGraph = result.review_memory_graph;
+  const reviewManifest = result.review_manifest;
+  const coverageCounts =
+    reviewManifest && !('coverage_kind' in reviewManifest)
+      ? reviewManifest.units.reduce(
+          (counts, unit) => {
+            counts[unit.coverage_state] += 1;
+            return counts;
+          },
+          { reviewed: 0, reused: 0, skipped: 0, failed: 0, cancelled: 0 }
+        )
+      : null;
+  const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(reviewMemoryGraph, activeFinding);
+  const procedureEventsByStep = procedureExecutionEvents.reduce<
+    Record<string, ProcedureExecutionEvent[]>
+  >((acc, event) => {
+    acc[event.stepId] = [...(acc[event.stepId] ?? []), event];
+    return acc;
+  }, {});
+  return {
+    activeFinding,
+    activeCodePath,
+    activeEvidence,
+    activeBrowserEvidence,
+    evidenceCandidates,
+    evidenceProcedureSteps,
+    reviewMemoryGraph,
+    reviewManifest,
+    coverageCounts,
+    focusedReviewMemoryGraph,
+    procedureEventsByStep,
+  };
+}
+
+async function applyFixAndPostFixQa(
+  repoPath: string,
+  result: CliReviewResult,
+  fixPacketFindings: Array<CliReviewFinding & Record<string, unknown>>,
+  qaRunHistory: QaRunHistoryEntry[],
+  qaActiveWorkflowId: string,
+  currentQaWorkflow: (id: string) => QaWorkflowPreset,
+  activeProcedureSteps: EvidenceProcedureStep[],
+  recordProcedureExecutionEvents: (
+    events: ProcedureExecutionEvent[],
+    metadata?: Record<string, unknown>
+  ) => void,
+  runSyntheticQaFlow: (
+    request: QaPreset,
+    options?: { repoPathOverride?: string | null }
+  ) => Promise<QaRunHistoryEntry>,
+  setIsFixing: (v: string | null) => void,
+  setFixResult: (v: FixFindingsResult | null) => void,
+  setFixCompletedAt: (v: string | null) => void,
+  setFixProgress: React.Dispatch<React.SetStateAction<string[]>>,
+  setError: (v: string | null) => void,
+  setPostFixQaRunning: (v: boolean) => void,
+  setQaError: (v: string | null) => void,
+  fixLogRef: React.RefObject<HTMLDivElement | null>
+): Promise<void> {
+  const preFixQaRun = qaRunHistory[0] ?? null;
+  const currentQaRequest = currentQaWorkflow(qaActiveWorkflowId || 'manual');
+  setIsFixing('selected');
+  setFixResult(null);
+  setFixCompletedAt(null);
+  setFixProgress([]);
+  setError(null);
+
+  // Listen for streaming progress events
+  const unlisten = await setupFixProgressListener(setFixProgress, fixLogRef);
+
+  try {
+    const res = await fixFindings(repoPath, fixPacketFindings, result.agent);
+    const completedAt = new Date().toISOString();
+    setFixResult(res);
+    setFixCompletedAt(completedAt);
+    void notifyIfEnabled(
+      'notify_task_complete',
+      false,
+      'Fix complete',
+      buildFixCompleteMessage(res)
+    );
+    recordProcedureExecutionEvents(procedureEventsForFixResult(activeProcedureSteps, res), {
+      agent: res.agent,
+      changedFiles: res.changed_files.length,
+      findingsFixed: res.findings_fixed,
+      usingWorktree: res.using_worktree ?? null,
+    });
+    if (preFixQaRun) {
+      setPostFixQaRunning(true);
+      setQaError(null);
+      try {
+        await runSyntheticQaFlow(qaRequestFromHistory(preFixQaRun, currentQaRequest), {
+          repoPathOverride: res.worktree_path,
+        });
+      } catch (qaErr) {
+        setQaError(
+          `Post-fix QA rerun failed: ${qaErr instanceof Error ? qaErr.message : String(qaErr)}`
+        );
+      } finally {
+        setPostFixQaRunning(false);
+      }
+    }
+  } catch (e) {
+    setError(`Fix failed: ${String(e)}`);
+    void notifyIfEnabled(
+      'notify_agent_error',
+      true,
+      'Fix failed',
+      'The AI agent failed while applying the selected fixes.'
+    );
+  } finally {
+    setIsFixing(null);
+    unlisten?.();
+  }
+}
+
+async function setFindingDispositionWithRollback(
+  idx: number,
+  disposition: FindingDisposition,
+  sortedFindings: CliReviewFinding[],
+  setResult: (updater: (prev: CliReviewResult | null) => CliReviewResult | null) => void,
+  setSelectedFindings: (updater: (prev: Set<number>) => Set<number>) => void,
+  setError: (v: string | null) => void
+): Promise<void> {
+  const target = sortedFindings[idx];
+  const findingId = target?.id;
+  if (!findingId) return;
+  const next: FindingDisposition | null = target.disposition === disposition ? null : disposition;
+  // Optimistic local update; matched by persisted id.
+  setResult((prev) =>
+    prev
+      ? {
+          ...prev,
+          findings: prev.findings.map((finding) =>
+            finding.id === findingId ? { ...finding, disposition: next } : finding
+          ),
+        }
+      : prev
+  );
+  // Drop a dismissed finding from the fix selection so bulk patches skip it;
+  // it stays individually selectable afterward.
+  if (next === 'dismissed') {
+    setSelectedFindings((prev) => {
+      if (!prev.has(idx)) return prev;
+      const updated = new Set(prev);
+      updated.delete(idx);
+      return updated;
+    });
+  }
+  try {
+    await setFindingDisposition(findingId, next);
+  } catch (e) {
+    console.error('[CodeVetter] Failed to set finding disposition:', e);
+    setError("Couldn't save that finding verdict. Try again.");
+    // Roll back the optimistic change.
+    setResult((prev) =>
+      prev
+        ? {
+            ...prev,
+            findings: prev.findings.map((finding) =>
+              finding.id === findingId
+                ? { ...finding, disposition: target.disposition ?? null }
+                : finding
+            ),
+          }
+        : prev
+    );
+  }
+}
+
+async function copyTimelineSegmentPacket(
+  item: VerificationTimelineItem,
+  timelineSegmentFindingIndexes: (segmentId: string) => number[],
+  sortedFindings: CliReviewFinding[],
+  evidenceByFinding: Record<string, FindingEvidence>,
+  browserEvidenceByFinding: Record<string, BrowserEvidenceRef>,
+  currentTaskContext: TaskContext,
+  repoPath: string,
+  resultDiffRange: string | undefined,
+  diffRange: string,
+  resultAgent: string | undefined,
+  setSelectedFindings: (v: Set<number>) => void,
+  setTimelinePacketCopiedId: (v: string | null) => void
+): Promise<void> {
+  const indexes = timelineSegmentFindingIndexes(item.id);
+  if (indexes.length === 0) return;
+
+  const findings = indexes
+    .map((idx) => sortedFindings[idx])
+    .filter((finding): finding is CliReviewFinding => Boolean(finding));
+  const evidence = mapSelectedEvidence(indexes, sortedFindings, evidenceByFinding);
+  const browserEvidence = mapSelectedBrowserEvidence(
+    indexes,
+    sortedFindings,
+    browserEvidenceByFinding
+  );
+
+  const sourceLabel = [
+    currentTaskContext.sourceLabel,
+    `Timeline segment: ${item.label} (${item.status})`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const packet = buildAgentFixPacket({
+    repoPath,
+    diffRange: resultDiffRange || diffRange,
+    agent: resultAgent ?? 'claude',
+    task: {
+      ...currentTaskContext,
+      sourceLabel,
+    },
+    findings,
+    evidence,
+    browserEvidence,
+    timelineReplay: {
+      segmentId: item.id,
+      label: item.label,
+      phase: item.phase,
+      status: item.status,
+      detail: item.detail,
+      jumpKind: item.jump?.kind ?? null,
+      jumpPath: item.jump?.path ?? null,
+      jumpLine: item.jump?.line ?? null,
+      anchors: mapTimelineAnchors(item.anchors ?? []),
+    },
+  });
+
+  try {
+    await navigator.clipboard.writeText(renderAgentFixPacketMarkdown(packet));
+    setSelectedFindings(new Set(indexes));
+    setTimelinePacketCopiedId(item.id);
+    setTimeout(() => setTimelinePacketCopiedId(null), 2000);
+  } catch {
+    // clipboard unavailable — fail silently
+  }
+}
+
+async function loadQaWorkflowsFromPrefs(
+  qaWorkflowPreferenceKey: string,
+  qaPresetPreferenceKey: string,
+  setQaWorkflows: (v: QaWorkflowPreset[]) => void,
+  setQaActiveWorkflowId: (v: string) => void,
+  applyQaWorkflow: (workflow: Partial<QaWorkflowPreset>) => void,
+  setQaPreferenceLoadedKey: (v: string) => void,
+  setQaPresetLoaded: (v: boolean) => void
+): Promise<void> {
+  try {
+    const [scopedWorkflowsRaw, globalWorkflowsRaw, scopedPresetRaw, legacyRaw] = await Promise.all([
+      getPreference(qaWorkflowPreferenceKey),
+      getPreference('quick_review_qa_workflows'),
+      getPreference(qaPresetPreferenceKey),
+      getPreference('quick_review_qa_preset'),
+    ]);
+
+    const workflowsRaw = scopedWorkflowsRaw || globalWorkflowsRaw;
+    if (workflowsRaw) {
+      const workflows = JSON.parse(workflowsRaw) as QaWorkflowPreset[];
+      if (Array.isArray(workflows) && workflows.length > 0) {
+        setQaWorkflows(workflows);
+        setQaActiveWorkflowId(workflows[0].id);
+        applyQaWorkflow(workflows[0]);
+        return;
+      }
+    }
+
+    const presetRaw = scopedPresetRaw || legacyRaw;
+    if (presetRaw) {
+      const legacy = JSON.parse(presetRaw) as Partial<QaPreset>;
+      setQaWorkflows([]);
+      setQaActiveWorkflowId('');
+      applyQaWorkflow({ ...legacy, name: CODEVETTER_REVIEW_SHELL.label });
+      return;
+    }
+    setQaWorkflows([]);
+    setQaActiveWorkflowId('');
+  } catch {
+    // Keep defaults if local preferences are unavailable or malformed.
+  } finally {
+    setQaPreferenceLoadedKey(qaWorkflowPreferenceKey);
+    setQaPresetLoaded(true);
+  }
+}
+
+async function copyReviewerProof(
+  result: CliReviewResult,
+  sortedFindings: CliReviewFinding[],
+  selectedFindingIdx: number | null,
+  evidenceByFinding: Record<string, FindingEvidence>,
+  evidenceCounts: { reproduced: number; fixed: number; notReproduced: number },
+  evidenceCandidateStatuses: Record<string, EvidenceCandidateStatus>,
+  reviewTimeline: VerificationTimelineItem[],
+  qaPostFixComparison: ReturnType<typeof buildQaPostFixComparison>,
+  historyExplanations: ReturnType<typeof buildCodebaseHistoryExplanations>,
+  historyContext: RepoHistoryContext | null,
+  procedureExecutionEvents: ProcedureExecutionEvent[],
+  intentReport: ReturnType<typeof buildReviewIntentReport> | null,
+  historyFindingSummaries: Map<number, HistoryFindingSummary>,
+  audienceBundle: AudienceValidationBundle | null,
+  setProofCopied: (v: boolean) => void
+): Promise<void> {
+  const evidence = sortedFindings.map((finding, idx) => ({
+    ...defaultFindingEvidence,
+    ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+  }));
+  const activeFindingForProof =
+    selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
+  const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(
+    result.review_memory_graph,
+    activeFindingForProof
+  );
+  const reviewerProof = buildReviewerProofMarkdown({
+    diffRange: result.diff_range,
+    score: result.score,
+    agent: result.agent,
+    findings: sortedFindings,
+    evidence,
+    evidenceCounts,
+    evidenceCandidates: result.evidence_candidates,
+    evidenceCandidateStatuses,
+    evidenceProcedureSteps: result.evidence_procedure_steps,
+    reviewMemoryGraph: result.review_memory_graph,
+    focusedReviewMemoryGraph,
+    trustedGraphContext: result.trusted_graph_context,
+    verificationTimeline: reviewTimeline,
+    qaPostFixComparison,
+    historyExplanations,
+    temporalHistory: historyContext?.temporal_slice,
+    procedureExecutionEvents,
+    intentReport,
+    historyFindingSummaries,
+  });
+  const markdown = audienceBundle
+    ? `${reviewerProof}\n\n${renderAudienceValidationProof(audienceBundle)}`
+    : reviewerProof;
+
+  try {
+    await navigator.clipboard.writeText(markdown);
+    setProofCopied(true);
+    setTimeout(() => setProofCopied(false), 2000);
+  } catch {
+    // clipboard unavailable — fail silently
+  }
+}
+
+function buildIntentReport(
+  result: CliReviewResult,
+  diffRange: string,
+  changeDesc: string,
+  sortedFindings: CliReviewFinding[],
+  evidenceByFinding: Record<string, FindingEvidence>,
+  historyContext: RepoHistoryContext | null,
+  qaRunHistory: QaRunHistoryEntry[],
+  fixResult: FixFindingsResult | null,
+  blastReport: BlastRadiusReport | null
+) {
+  return buildReviewIntentReport({
+    reviewId: result.review_id,
+    diffRange: result.diff_range || diffRange,
+    changeDescription: changeDesc,
+    findings: sortedFindings.map((finding) => ({
+      severity: finding.severity,
+      title: finding.title,
+      filePath: finding.filePath,
+    })),
+    evidence: sortedFindings.map((finding, idx) => ({
+      ...defaultFindingEvidence,
+      ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+    })),
+    history: historyContext ? buildIntentReportHistory(historyContext) : null,
+    qaRuns: qaRunHistory,
+    fix: fixResult
+      ? {
+          changedFiles: fixResult.changed_files.length,
+          findingsFixed: fixResult.findings_fixed,
+        }
+      : null,
+    reviewMode: result.review_mode,
+    riskTier: result.risk_tier,
+    changedLines: result.changed_lines,
+    sensitivePaths: result.sensitive_paths,
+    blast: blastReport
+      ? {
+          totalCallers: blastReport.totalCallers,
+          totalSymbols: blastReport.totalSymbols,
+          changedFiles: blastReport.changedFiles,
+        }
+      : null,
+  });
+}
+
+function parseJsonOrDefault<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+async function loadReviewEvidence(
+  reviewId: string,
+  setEvidenceByFinding: (v: Record<string, FindingEvidence>) => void,
+  setBrowserEvidenceByFinding: (v: Record<string, BrowserEvidenceRef>) => void,
+  setEvidenceCandidateStatuses: (v: Record<string, EvidenceCandidateStatus>) => void,
+  setStoredProcedureEvents: (v: ReviewProcedureEvent[]) => void
+): Promise<void> {
+  if (!reviewId) {
+    setEvidenceByFinding({});
+    setBrowserEvidenceByFinding({});
+    setEvidenceCandidateStatuses({});
+    setStoredProcedureEvents([]);
+    return;
+  }
+  const [raw, browserRaw, candidateRaw] = await Promise.all([
+    getPreference(`quick_review_evidence_${reviewId}`),
+    getPreference(`quick_review_browser_evidence_${reviewId}`),
+    getPreference(`quick_review_candidate_statuses_${reviewId}`),
+  ]);
+  setEvidenceByFinding(parseJsonOrDefault(raw, {}));
+  setBrowserEvidenceByFinding(parseJsonOrDefault(browserRaw, {}));
+  setEvidenceCandidateStatuses(parseJsonOrDefault(candidateRaw, {}));
+}
+
+function sortFindingsBySeverity(findings: CliReviewFinding[]): CliReviewFinding[] {
+  return [...findings].sort(
+    (a, b) => (severityOrder[a.severity] ?? 99) - (severityOrder[b.severity] ?? 99)
+  );
+}
+
+function countFindingsBySeverity(findings: CliReviewFinding[]): Record<string, number> {
+  return findings.reduce<Record<string, number>>((acc, finding) => {
+    acc[finding.severity] = (acc[finding.severity] ?? 0) + 1;
+    return acc;
+  }, {});
+}
+
+function groupUncheckedBySeverity(
+  uncheckedFindings: CliReviewFinding[]
+): Array<[string, CliReviewFinding[]]> {
+  const buckets = new Map<string, CliReviewFinding[]>();
+  for (const finding of uncheckedFindings) {
+    const arr = buckets.get(finding.severity) ?? [];
+    arr.push(finding);
+    buckets.set(finding.severity, arr);
+  }
+  return Array.from(buckets.entries()).sort(
+    ([a], [b]) => (severityOrder[a] ?? 99) - (severityOrder[b] ?? 99)
+  );
+}
+
+function mapSelectedEvidence(
+  indexes: number[],
+  sortedFindings: CliReviewFinding[],
+  evidenceByFinding: Record<string, FindingEvidence>
+): FindingEvidence[] {
+  return indexes.map((idx) => {
+    const finding = sortedFindings[idx];
+    return finding
+      ? {
+          ...defaultFindingEvidence,
+          ...evidenceByFinding[findingEvidenceKey(finding, idx)],
+        }
+      : defaultFindingEvidence;
+  });
+}
+
+function mapSelectedBrowserEvidence(
+  indexes: number[],
+  sortedFindings: CliReviewFinding[],
+  browserEvidenceByFinding: Record<string, BrowserEvidenceRef>
+): BrowserEvidenceRef[] {
+  return indexes.map((idx) => {
+    const finding = sortedFindings[idx];
+    return finding
+      ? {
+          ...emptyBrowserEvidence(),
+          ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
+        }
+      : emptyBrowserEvidence();
+  });
+}
+
+function computeEvidenceCounts(evidenceByFinding: Record<string, FindingEvidence>): {
+  reproduced: number;
+  fixed: number;
+  notReproduced: number;
+} {
+  return Object.values(evidenceByFinding).reduce(
+    (acc, evidence) => {
+      if (evidence.status === 'reproduced') acc.reproduced += 1;
+      if (evidence.status === 'fixed') acc.fixed += 1;
+      if (evidence.status === 'not_reproduced') acc.notReproduced += 1;
+      return acc;
+    },
+    { reproduced: 0, fixed: 0, notReproduced: 0 }
+  );
+}
+
+function mapTimelineAnchors(anchors: NonNullable<VerificationTimelineItem['anchors']>) {
+  return (anchors ?? []).slice(0, 4).map((anchor) => ({
+    label: anchor.label,
+    source: anchor.source,
+    status: anchor.status,
+    contextExcerpt: anchor.contextExcerpt?.slice(0, 2) ?? [],
+    conversationContext: anchor.conversationContext,
+    sourcePath: anchor.sourcePath ?? null,
+    sourceLine: anchor.sourceLine ?? null,
+    eventId: anchor.eventId ?? null,
+    sessionId: anchor.sessionId ?? null,
+    artifact: anchor.artifact ?? null,
+    jumpKind: anchor.jump?.kind ?? null,
+    jumpPath: anchor.jump?.path ?? null,
+  }));
+}
+
+function buildReviewTimeline(
+  reviewId: string,
+  result: CliReviewResult | null,
+  sortedFindings: CliReviewFinding[],
+  selectedFindingIdx: number | null,
+  taskGoal: string,
+  isReviewing: boolean,
+  qaRunning: boolean,
+  postFixQaRunning: boolean,
+  qaRunHistory: QaRunHistoryEntry[],
+  qaPostFixComparison: ReturnType<typeof buildQaPostFixComparison>,
+  evidenceCounts: { reproduced: number; fixed: number; notReproduced: number },
+  fixPacket: { findings: unknown[]; routeAdvice: string },
+  selectedFindingIndexes: number[],
+  isFixing: string | null,
+  fixResult: FixFindingsResult | null,
+  historyContext: RepoHistoryContext | null,
+  warmVerificationProjections: WarmVerificationProjection[],
+  differentialTimelineHistory: VerificationTimelineItem[]
+): VerificationTimelineItem[] {
+  const timeline = buildVerificationTimeline({
+    runId: reviewId || result?.review_id || null,
+    taskGoal,
+    review: result
+      ? {
+          findingsCount: sortedFindings.length,
+          mode: result.review_mode,
+          riskTier: result.risk_tier,
+          selectedFindingIndex: selectedFindingIdx,
+          firstFindingPath: sortedFindings[0]?.filePath ?? null,
+          firstFindingLine: sortedFindings[0]?.line ?? null,
+          findingPaths: sortedFindings.flatMap((finding) =>
+            finding.filePath ? [finding.filePath] : []
+          ),
+        }
+      : null,
+    isReviewing,
+    qa: {
+      running: qaRunning || postFixQaRunning,
+      latest: qaRunHistory[0] ?? null,
+      comparison: qaPostFixComparison,
+    },
+    evidenceCounts,
+    fixPacket: {
+      selectedFindings: fixPacket.findings.length,
+      routeAdvice: fixPacket.routeAdvice,
+      selectedFindingIndex: selectedFindingIndexes[0] ?? null,
+    },
+    isFixing: Boolean(isFixing),
+    fixResult: fixResult
+      ? {
+          success: fixResult.success,
+          agent: fixResult.agent,
+          usingWorktree: fixResult.using_worktree,
+          worktreePath: fixResult.worktree_path ?? null,
+          changedFiles: fixResult.changed_files.length,
+          changedFileOrigins: fixResult.changed_files,
+          findingsFixed: fixResult.findings_fixed,
+        }
+      : null,
+    history: historyContext,
+  });
+  return [
+    ...timeline,
+    ...warmVerificationProjections.map((projection) => ({
+      ...projection.timelineProof,
+      label: 'Warm verification history',
+      detail: `recorded ${projection.provenance.finished_at} · ${projection.timelineProof.detail}`,
+      status: 'idle' as const,
+    })),
+    ...differentialTimelineHistory,
+  ];
+}
+
+function computeHistoryFileSummaries(ctx: RepoHistoryContext): Array<{
+  file: string;
+  commits: number;
+  decisions: number;
+  agents: number;
+  recurring: number;
+}> {
+  const summaries = new Map<
+    string,
+    { commits: number; decisions: number; agents: number; recurring: number }
+  >();
+  const ensure = (file: string) => {
+    const existing = summaries.get(file);
+    if (existing) return existing;
+    const next = { commits: 0, decisions: 0, agents: 0, recurring: 0 };
+    summaries.set(file, next);
+    return next;
+  };
+
+  for (const file of ctx.files_analyzed) ensure(file);
+  for (const commit of ctx.recent_commits) ensure(commit.file).commits += 1;
+  for (const decision of ctx.prior_decisions ?? []) {
+    ensure(decision.file).decisions += 1;
+  }
+  for (const recurring of ctx.recurring_failures) {
+    ensure(recurring.file).recurring += recurring.count;
+  }
+  for (const activity of ctx.prior_agent_activity) {
+    for (const file of activity.files ?? []) {
+      ensure(file).agents += 1;
+    }
+  }
+
+  return Array.from(summaries.entries())
+    .map(([file, counts]) => ({ file, ...counts }))
+    .filter(
+      (summary) => summary.commits + summary.decisions + summary.agents + summary.recurring > 0
+    )
+    .sort(
+      (a, b) =>
+        b.decisions +
+        b.recurring +
+        b.agents +
+        b.commits -
+        (a.decisions + a.recurring + a.agents + a.commits)
+    )
+    .slice(0, 5);
+}
+
+function computeHistoryFindingSummaries(
+  ctx: RepoHistoryContext,
+  sortedFindings: CliReviewFinding[]
+): Map<number, HistoryFindingSummary> {
+  const map = new Map<number, HistoryFindingSummary>();
+  sortedFindings.forEach((finding, findingIdx) => {
+    const file = finding.filePath;
+    if (!file) return;
+
+    const commits = ctx.recent_commits.filter((commit) => sameHistoryFile(commit.file, file));
+    const decisions = (ctx.prior_decisions ?? []).filter((decision) =>
+      sameHistoryFile(decision.file, file)
+    );
+    const recurring = ctx.recurring_failures.filter((failure) =>
+      sameHistoryFile(failure.file, file)
+    );
+    const commands = ctx.command_signals ?? [];
+    const claims = ctx.agent_claims ?? [];
+    const signalCount =
+      commits.length + decisions.length + recurring.length + commands.length + claims.length;
+    if (signalCount === 0) return;
+
+    map.set(findingIdx, {
+      findingIdx,
+      file,
+      commits: commits.length,
+      decisions: decisions.length,
+      recurring: recurring.reduce((sum, item) => sum + item.count, 0),
+      commands: commands.length,
+      claims: claims.length,
+      topDecision: decisions[0]?.text,
+      topCommit: commits[0]?.subject,
+      topClaim: claims[0]?.claim,
+      topCommands: commands.slice(0, 2).map(formatHistoryCommandEvidence),
+    });
+  });
+  return map;
+}
+
+function buildCliReviewResultFromStored(
+  review: LocalReviewRow,
+  findings: CliReviewFinding[],
+  reviewManifest: ReviewManifest
+): CliReviewResult {
+  return {
+    review_id: review.id,
+    score: review.score_composite ?? 0,
+    findings,
+    summary: review.summary_markdown ?? '',
+    agent: review.agent_used ?? 'claude',
+    duration_ms: 0,
+    diff_range: diffRangeFromSourceLabel(review.source_label),
+    findings_count: findings.length,
+    review_manifest: reviewManifest,
+  };
+}
+
+function mapStoredFindings(raw: LocalReviewFindingRow[]): CliReviewFinding[] {
+  return (raw ?? []).map((f) => ({
+    id: f.id,
+    severity: f.severity ?? 'info',
+    title: f.title ?? '',
+    summary: f.summary ?? '',
+    suggestion: f.suggestion ?? undefined,
+    filePath: f.file_path ?? undefined,
+    line: f.line ?? undefined,
+    confidence: f.confidence ?? undefined,
+    discovery_method: (f.discovery_method as 'inspection' | 'execution' | null) ?? undefined,
+    disposition: f.disposition,
+  }));
+}
+
+function extractDeepGraphBaseRef(diffRange: string): string | null {
+  if (diffRange.includes('...')) return diffRange.split('...')[0];
+  if (diffRange.includes('..')) return diffRange.split('..')[0];
+  return null;
+}
+
+function buildReviewCompleteMessage(res: CliReviewResult, diffRange: string): string {
+  const count = res.findings_count ?? res.findings.length;
+  return `${count} finding${count === 1 ? '' : 's'} · score ${Math.round(res.score)}/100 · ${res.diff_range || diffRange}`;
+}
+
+function describeReviewError(msg: string): string {
+  if (msg.includes('TAURI_NOT_AVAILABLE')) {
+    return 'Not running in Tauri — run inside the desktop app to start a review.';
+  }
+  return "The review couldn't finish. The AI agent may have failed or timed out — check the agent is installed and try again.";
+}
+
+function ResultHeader({
+  result,
+  diffRange,
+  sortedFindings,
+  evidenceCounts,
+  handleNewReview,
+}: {
+  result: CliReviewResult;
+  diffRange: string;
+  sortedFindings: CliReviewFinding[];
+  evidenceCounts: { reproduced: number; fixed: number };
+  handleNewReview: () => void;
+}) {
+  return (
+    <div className="cv-frame mb-3 flex h-12 shrink-0 items-center gap-3 overflow-hidden px-3">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 gap-1 text-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
+        onClick={handleNewReview}
+      >
+        <ArrowLeft size={14} />
+        Back
+      </Button>
+      <div className="h-6 w-px bg-[var(--cv-line)]" />
+      <div className="min-w-0 flex-1">
+        <div className="cv-label truncate text-slate-300">
+          change review · {result.agent}
+          {result.risk_tier ? ` · ${result.risk_tier}` : ''}
+        </div>
+        <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
+          {result.review_mode
+            ? `${result.review_mode} · ${result.diff_range || diffRange || 'local diff'}`
+            : result.diff_range || diffRange || 'local diff'}
+        </div>
+      </div>
+      <ScoreBadge score={Math.round(result.score)} size="sm" />
+      <div className="cv-label hidden sm:block">
+        {result.findings_count ?? sortedFindings.length} findings
+      </div>
+      <div className="cv-label hidden lg:block">
+        {evidenceCounts.reproduced} reproduced · {evidenceCounts.fixed} fixed
+      </div>
+    </div>
+  );
+}
+
+function FixFooter({
+  selectableFindingCount,
+  selectedFindings,
+  isFixing,
+  viewHasRepoPath,
+  toggleSelectAll,
+  handleFixSelected,
+}: {
+  selectableFindingCount: number;
+  selectedFindings: Set<number>;
+  isFixing: string | null;
+  viewHasRepoPath: boolean;
+  toggleSelectAll: () => void;
+  handleFixSelected: () => void;
+}) {
+  return (
+    <div className="shrink-0 border-t border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={toggleSelectAll}
+          title="Select all findings for fix (dismissed excluded)"
+          className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
+        >
+          {selectableFindingCount > 0 && selectedFindings.size >= selectableFindingCount ? (
+            <CheckSquare2 size={14} className="text-[var(--cv-accent)]" />
+          ) : (
+            <Square size={14} />
+          )}
+          All
+        </button>
+        <div className="relative ml-auto group">
+          <Button
+            size="sm"
+            onClick={handleFixSelected}
+            disabled={isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath}
+            className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
+          >
+            {isFixing === 'selected' ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Zap size={14} />
+            )}
+            {isFixing === 'selected'
+              ? 'Fixing...'
+              : `Fix${selectedFindings.size > 0 ? ` (${selectedFindings.size})` : ''}`}
+          </Button>
+          {!viewHasRepoPath && (
+            <div className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block">
+              No repo path — can't apply fixes
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CoverageBanner({
+  reviewManifest,
+  coverageCounts,
+}: {
+  reviewManifest: NonNullable<CliReviewResult['review_manifest']>;
+  coverageCounts: Record<string, number> | null;
+}) {
+  return (
+    <div
+      className={cn(
+        'mb-3 flex shrink-0 items-center justify-between gap-4 rounded-xl border px-4 py-2.5 text-xs',
+        reviewManifest.complete_coverage && !('coverage_kind' in reviewManifest)
+          ? 'border-emerald-400/15 bg-emerald-400/[0.035] text-slate-400'
+          : 'border-amber-400/20 bg-amber-400/[0.045] text-slate-400'
+      )}
+      data-testid="review-coverage"
+    >
+      {'coverage_kind' in reviewManifest ? (
+        <>
+          <span>
+            <span className="font-medium text-amber-200">Coverage unknown</span>
+            {' — '}
+            {reviewManifest.limitation}
+          </span>
+          <span className="shrink-0 text-slate-600">Legacy review</span>
+        </>
+      ) : (
+        <>
+          <span>
+            <span
+              className={cn(
+                'font-medium',
+                reviewManifest.complete_coverage ? 'text-emerald-200' : 'text-amber-200'
+              )}
+            >
+              {reviewManifest.complete_coverage ? 'Complete coverage' : 'Partial coverage'}
+            </span>
+            {' — '}
+            {(coverageCounts?.reviewed ?? 0) + (coverageCounts?.reused ?? 0)} reviewed
+            {coverageCounts?.reused ? ` (${coverageCounts.reused} reused)` : ''}
+            {coverageCounts?.skipped ? ` · ${coverageCounts.skipped} policy-skipped` : ''}
+            {coverageCounts?.failed ? ` · ${coverageCounts.failed} failed` : ''}
+            {coverageCounts?.cancelled ? ` · ${coverageCounts.cancelled} cancelled` : ''}
+            {reviewManifest.stale ? ' · target changed during review' : ''}
+          </span>
+          <span className="shrink-0 text-slate-600">
+            {reviewManifest.qualification_counts.rejected} rejected ·{' '}
+            {reviewManifest.qualification_counts.unresolved} unresolved ·{' '}
+            {reviewManifest.qualification_counts.stale} stale
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function buildFixCompleteMessage(res: FixFindingsResult): string {
+  return `${res.findings_fixed} finding${res.findings_fixed === 1 ? '' : 's'} fixed across ${res.changed_files.length} file${res.changed_files.length === 1 ? '' : 's'}.`;
+}
+
+async function setupFixProgressListener(
+  setFixProgress: (updater: (prev: string[]) => string[]) => void,
+  fixLogRef: React.RefObject<HTMLDivElement | null>
+): Promise<(() => void) | undefined> {
+  try {
+    const { listen } = await import('@tauri-apps/api/event');
+    return await listen<string>('fix-progress', (event) => {
+      setFixProgress((prev) => {
+        const next = [...prev, event.payload];
+        return next.length > 50 ? next.slice(-50) : next;
+      });
+      if (fixLogRef.current) {
+        fixLogRef.current.scrollTop = fixLogRef.current.scrollHeight;
+      }
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+function buildQaRunHistoryEntry(request: QaPreset, run: SyntheticQaRunResult): QaRunHistoryEntry {
+  return {
+    createdAt: new Date().toISOString(),
+    loopId: run.loop_id,
+    runnerType: run.runner_type ?? request.runnerType,
+    baseUrl: request.baseUrl,
+    goal: run.goal || request.goal,
+    route: run.route || request.targetRoute,
+    authMode: request.authMode,
+    pass: run.pass,
+    durationMs: run.duration_ms,
+    notes: run.notes,
+    screenshotPath: run.screenshot_path,
+    artifacts: run.artifacts ?? [],
+    consoleErrors: run.trace?.console_errors?.length ?? 0,
+    externalCommand: request.externalCommand,
+    repoSpecPath: request.repoSpecPath,
+    repoTraceMode: request.repoTraceMode,
+    storageStatePath: request.storageStatePath,
+    allowRemoteTarget: request.allowRemoteTarget,
+  };
+}
+
+async function handleTimelineFileJump(
+  jump: VerificationTimelineJumpTarget,
+  repoPath: string | null,
+  setSelectedFindingIdx: (v: number | null) => void,
+  setCodeLines: (v: FileLineData[]) => void,
+  setCodeFilePath: (v: string) => void,
+  setCodeLanguage: (v: string) => void
+): Promise<void> {
+  if (!jump.path) return;
+  setSelectedFindingIdx(null);
+  const targetPath =
+    jump.path.startsWith('/') || !repoPath ? jump.path : `${repoPath}/${jump.path}`;
+  try {
+    const res = await readFileAroundLine(targetPath, Math.max(1, jump.line ?? 1), 15, 15);
+    setCodeLines(res.lines);
+    setCodeFilePath(res.file_path);
+    setCodeLanguage(res.language);
+  } catch (e) {
+    console.error('[Review] failed to load timeline file:', e);
+    setCodeLines([]);
+    setCodeFilePath(jump.path);
+    setCodeLanguage('');
+  }
+}
+
+async function handleTimelineArtifactJump(
+  jump: VerificationTimelineJumpTarget,
+  handlePreviewQaArtifact: (path: string) => Promise<void>,
+  handleOpenQaArtifact: (path: string) => Promise<void>
+): Promise<void> {
+  if (!jump.path) return;
+  if (canPreviewQaArtifact(jump.path)) {
+    await handlePreviewQaArtifact(jump.path);
+  } else {
+    await handleOpenQaArtifact(jump.path);
+  }
+}
+
+async function handleTimelineCommandSourceJump(
+  jump: VerificationTimelineJumpTarget,
+  setError: (v: string | null) => void,
+  setCommandSourcePreviewLoading: (v: string | null) => void,
+  setCommandSourcePreview: (
+    v: {
+      key: string;
+      path: string;
+      line: number;
+      language: string;
+      items?: RawSessionContextItem[];
+      lines?: FileLineData[];
+    } | null
+  ) => void
+): Promise<void> {
+  if (!jump.path) return;
+  if (!isTauriAvailable()) {
+    setError('Previewing command sources requires the CodeVetter desktop app (Tauri).');
+    return;
+  }
+  const key = `timeline:${jump.path}:${jump.line ?? 1}`;
+  const line = Math.max(1, jump.line ?? 1);
+  setCommandSourcePreviewLoading(key);
+  setError(null);
+  try {
+    if (jump.source === 'raw_session') {
+      const preview = await readRawSessionContext(jump.path, line, 8, 12);
+      setCommandSourcePreview({
+        key,
+        path: preview.file_path,
+        line: preview.target_line,
+        language: 'transcript',
+        items: preview.items,
+      });
+    } else {
+      const preview = await readFileAroundLine(jump.path, line, 2, 2);
+      setCommandSourcePreview({
+        key,
+        path: preview.file_path,
+        line: preview.target_line,
+        language: preview.language,
+        lines: preview.lines,
+      });
+    }
+  } catch (err) {
+    setCommandSourcePreview(null);
+    setError(err instanceof Error ? err.message : String(err));
+  } finally {
+    setCommandSourcePreviewLoading(null);
+  }
+}
+
+function buildVerificationCommandNotes(
+  existingNotes: string,
+  command: string,
+  run: {
+    passed: boolean;
+    canceled: boolean;
+    timed_out: boolean;
+    duration_ms: number;
+    exit_code: number | null;
+    artifact: string | null;
+    stderr_tail: string;
+  }
+): string {
+  return [
+    existingNotes.trim(),
+    '',
+    `Command: ${command}`,
+    `Result: ${
+      run.passed ? 'PASS' : run.canceled ? 'CANCELED' : run.timed_out ? 'TIMEOUT' : 'FAIL'
+    } (${run.duration_ms}ms, exit ${run.exit_code})`,
+    `Artifact: ${run.artifact}`,
+    run.stderr_tail.trim() ? `stderr:\n${run.stderr_tail.trim()}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .trim();
+}
+
+async function runReviewQualification(
+  stateName: string,
+  reviewId: string,
+  handleLoadPastReview: (id: string) => Promise<void>
+): Promise<void> {
+  await handleLoadPastReview(reviewId);
+  await nextPaint();
+  const expectedDecision =
+    stateName === 'review-partial-ready'
+      ? 'Hold'
+      : stateName === 'review-completed-ready'
+        ? 'Ship candidate'
+        : undefined;
+  const summary = await waitForDecisionSummary(expectedDecision);
+  await nextPaint();
+  if (stateName === 'review-keyboard-focused') {
+    const target = summary.querySelector<HTMLAnchorElement>('a[href="/trex"]');
+    target?.focus();
+    await nextPaint();
+    if (!target || document.activeElement !== target) {
+      throw new Error('Native Review focus target was unavailable');
+    }
+  }
+  if (stateName === 'review-reduced-motion') {
+    document.documentElement.classList.add('cv-verify-reduced-motion');
+    await nextPaint();
+  }
+
+  const host = window as unknown as VerificationWindow;
+  const runtimeErrorCount = host.__CODEVETTER_VERIFY_RUNTIME_ERRORS__?.length ?? 0;
+  const horizontalOverflow =
+    document.documentElement.scrollWidth > document.documentElement.clientWidth;
+  if (runtimeErrorCount > 0) throw new Error('Native Review emitted a runtime error');
+  if (horizontalOverflow) throw new Error('Native Review has document-level overflow');
+
+  host.__CODEVETTER_VERIFY_REPORT__ = {
+    stateName,
+    reviewId,
+    runtimeErrorCount,
+    horizontalOverflow,
+    activeElementText: document.activeElement?.textContent?.trim().slice(0, 80) ?? '',
+    reducedMotionForced: document.documentElement.classList.contains('cv-verify-reduced-motion'),
+  };
+  const readyTitle = `CodeVetter · ${stateName} · ready`;
+  document.title = readyTitle;
+  await setCurrentWindowTitle(readyTitle);
+}
+
+function applyQaWorkflowPreset(
+  workflow: Partial<QaWorkflowPreset>,
+  setters: QaWorkflowSetters
+): void {
+  if (workflow.baseUrl) setters.setQaBaseUrl(workflow.baseUrl);
+  if (workflow.loopId) setters.setQaLoopId(workflow.loopId);
+  if (
+    workflow.runnerType === 'playwright_builtin' ||
+    workflow.runnerType === 'external_skill' ||
+    workflow.runnerType === 'repo_playwright'
+  ) {
+    setters.setQaRunnerType(workflow.runnerType);
+  }
+  if (workflow.goal) setters.setQaGoal(workflow.goal);
+  if (typeof workflow.targetRoute === 'string') {
+    setters.setQaTargetRoute(workflow.targetRoute || CODEVETTER_REVIEW_SHELL.route);
+  }
+  if (typeof workflow.externalCommand === 'string') {
+    setters.setQaExternalCommand(workflow.externalCommand);
+  }
+  if (typeof workflow.repoSpecPath === 'string') {
+    setters.setQaRepoSpecPath(workflow.repoSpecPath);
+  }
+  if (
+    workflow.repoTraceMode === 'off' ||
+    workflow.repoTraceMode === 'retain-on-failure' ||
+    workflow.repoTraceMode === 'on'
+  ) {
+    setters.setQaRepoTraceMode(workflow.repoTraceMode);
+  }
+  if (workflow.authMode === 'none' || workflow.authMode === 'storage_state') {
+    setters.setQaAuthMode(workflow.authMode);
+  }
+  if (typeof workflow.storageStatePath === 'string') {
+    setters.setQaStorageStatePath(workflow.storageStatePath);
+  }
+  if (typeof workflow.allowRemoteTarget === 'boolean') {
+    setters.setQaAllowRemoteTarget(workflow.allowRemoteTarget);
+  }
+  if (Array.isArray(workflow.targets)) {
+    setters.setQaTargets(workflow.targets);
+    const firstTarget = workflow.targets[0];
+    if (firstTarget) {
+      setters.setQaActiveTargetId(firstTarget.id);
+      setters.setQaTargetName(firstTarget.name);
+      setters.setQaTargetRoute(firstTarget.route);
+      setters.setQaGoal(firstTarget.goal);
+    } else {
+      setters.setQaActiveTargetId('');
+    }
+  }
+  if (workflow.name) setters.setQaWorkflowName(workflow.name);
+}
+
+function buildIntentReportHistory(ctx: RepoHistoryContext): {
+  recentCommits: number;
+  priorDecisions: number;
+  priorAgentRuns: number;
+  recurringFailures: number;
+  commands: number;
+  claims: number;
+  commandStatus: { passed: number; failed: number; stale: number; unknown: number };
+  commandArtifacts: number;
+  rawSessionCommands: number;
+  structuredCommands: number;
+  latestCommand: string | null;
+  latestClaim: string | null;
+} {
+  const signals = ctx.command_signals ?? [];
+  return {
+    recentCommits: ctx.recent_commits.length,
+    priorDecisions: ctx.prior_decisions?.length ?? 0,
+    priorAgentRuns: ctx.prior_agent_activity.length,
+    recurringFailures: ctx.recurring_failures.length,
+    commands: signals.length,
+    claims: ctx.agent_claims?.length ?? 0,
+    commandStatus: {
+      passed: signals.filter((signal) => signal.status === 'passed').length,
+      failed: signals.filter((signal) => signal.status === 'failed').length,
+      stale: signals.filter((signal) => signal.status === 'stale').length,
+      unknown: signals.filter((signal) => signal.status == null || signal.status === 'unknown')
+        .length,
+    },
+    commandArtifacts: signals.reduce((sum, signal) => sum + (signal.artifacts?.length ?? 0), 0),
+    rawSessionCommands: signals.filter((signal) => signal.source === 'raw_session').length,
+    structuredCommands: signals.filter((signal) => signal.source === 'output_structured').length,
+    latestCommand: signals[0]?.command ?? null,
+    latestClaim: ctx.agent_claims?.[0]?.claim ?? null,
+  };
+}
 
 function nextPaint(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
@@ -306,10 +1981,13 @@ export default function QuickReview() {
   const [timelinePacketCopiedId, setTimelinePacketCopiedId] = useState<string | null>(null);
   const [expandedTimelineItems, setExpandedTimelineItems] = useState<Set<string>>(new Set());
   const reviewId = result?.review_id ?? '';
+  const resultAgent = result?.agent;
+  const resultDiffRange = result?.diff_range;
+  const resultEvidenceProcedureSteps = result?.evidence_procedure_steps;
   const [audienceBundle, setAudienceBundle] = useState<AudienceValidationBundle | null>(null);
   const activeProcedureSteps = useMemo(
-    () => result?.evidence_procedure_steps ?? [],
-    [result?.evidence_procedure_steps]
+    () => resultEvidenceProcedureSteps ?? [],
+    [resultEvidenceProcedureSteps]
   );
   const [verificationCommand, setVerificationCommand] = useState('');
   const [verificationCommandTimeoutMs, setVerificationCommandTimeoutMs] = useState(120_000);
@@ -454,46 +2132,25 @@ export default function QuickReview() {
       const { branches: brList, current } = branchResult.value;
       setBranches(brList);
       setCurrentBranch(current ?? '');
-      if (brList.includes('main')) setBaseBranch('main');
-      else if (brList.includes('master')) setBaseBranch('master');
-      else if (brList.length > 0) setBaseBranch(brList[0]);
+      setBaseBranch(pickBaseBranch(brList));
     } else {
       setBranches([]);
       setCurrentBranch('');
     }
-    if (prs.status === 'fulfilled') {
-      setPullRequests(prs.value);
-    } else {
-      setPullRequests([]);
-    }
+    setPullRequests(prs.status === 'fulfilled' ? prs.value : []);
     // Load persisted project description
     try {
       const saved = await getPreference(`quick_review_desc_${repoPrefKey(dir)}`);
-      if (saved != null) setProjectDesc(saved);
-      else setProjectDesc('');
+      setProjectDesc(saved ?? '');
     } catch {
       setProjectDesc('');
     }
-    try {
-      const savedTask = await getPreference(`quick_review_task_${repoPrefKey(dir)}`);
-      if (savedTask) {
-        const parsed = JSON.parse(savedTask) as Partial<TaskContext>;
-        setTaskGoal(parsed.goal ?? '');
-        setTaskAcceptance(parsed.acceptanceCriteria ?? '');
-        setTaskNonGoals(parsed.nonGoals ?? '');
-        setTaskSourceLabel(parsed.sourceLabel ?? '');
-      } else {
-        setTaskGoal('');
-        setTaskAcceptance('');
-        setTaskNonGoals('');
-        setTaskSourceLabel('');
-      }
-    } catch {
-      setTaskGoal('');
-      setTaskAcceptance('');
-      setTaskNonGoals('');
-      setTaskSourceLabel('');
-    }
+    await loadPersistedTaskContext(dir, {
+      setTaskGoal,
+      setTaskAcceptance,
+      setTaskNonGoals,
+      setTaskSourceLabel,
+    });
   }, []);
 
   // ─── History context loader (for review-input panel; read-only, per AC) ─────
@@ -550,18 +2207,7 @@ export default function QuickReview() {
       try {
         const [data, reviewManifest] = await Promise.all([getReview(id), getReviewManifest(id)]);
         const review = data.review;
-        const findings = (data.findings ?? []).map((f) => ({
-          id: f.id,
-          severity: f.severity ?? 'info',
-          title: f.title ?? '',
-          summary: f.summary ?? '',
-          suggestion: f.suggestion ?? undefined,
-          filePath: f.file_path ?? undefined,
-          line: f.line ?? undefined,
-          confidence: f.confidence ?? undefined,
-          discovery_method: (f.discovery_method as 'inspection' | 'execution' | null) ?? undefined,
-          disposition: f.disposition,
-        }));
+        const findings = mapStoredFindings(data.findings ?? []);
         setFixResult(null);
         setFixCompletedAt(null);
         setSelectedFindings(new Set());
@@ -572,17 +2218,7 @@ export default function QuickReview() {
         setDiffRange('');
         setEvidenceByFinding({});
         setBrowserEvidenceByFinding({});
-        setResult({
-          review_id: review.id,
-          score: review.score_composite ?? 0,
-          findings,
-          summary: review.summary_markdown ?? '',
-          agent: review.agent_used ?? 'claude',
-          duration_ms: 0,
-          diff_range: diffRangeFromSourceLabel(review.source_label),
-          findings_count: findings.length,
-          review_manifest: reviewManifest,
-        });
+        setResult(buildCliReviewResultFromStored(review, findings, reviewManifest));
         setSelectedBranch('');
         setDiffRange(diffRangeFromSourceLabel(review.source_label));
         setViewHasRepoPath(!!review.repo_path);
@@ -612,49 +2248,11 @@ export default function QuickReview() {
     reviewQualificationStarted.current = true;
 
     void (async () => {
-      await handleLoadPastReview(reviewQualificationRequest.reviewId);
-      await nextPaint();
-      const expectedDecision =
-        reviewQualificationRequest.stateName === 'review-partial-ready'
-          ? 'Hold'
-          : reviewQualificationRequest.stateName === 'review-completed-ready'
-            ? 'Ship candidate'
-            : undefined;
-      const summary = await waitForDecisionSummary(expectedDecision);
-      await nextPaint();
-      if (reviewQualificationRequest.stateName === 'review-keyboard-focused') {
-        const target = summary.querySelector<HTMLAnchorElement>('a[href="/trex"]');
-        target?.focus();
-        await nextPaint();
-        if (!target || document.activeElement !== target) {
-          throw new Error('Native Review focus target was unavailable');
-        }
-      }
-      if (reviewQualificationRequest.stateName === 'review-reduced-motion') {
-        document.documentElement.classList.add('cv-verify-reduced-motion');
-        await nextPaint();
-      }
-
-      const host = window as unknown as VerificationWindow;
-      const runtimeErrorCount = host.__CODEVETTER_VERIFY_RUNTIME_ERRORS__?.length ?? 0;
-      const horizontalOverflow =
-        document.documentElement.scrollWidth > document.documentElement.clientWidth;
-      if (runtimeErrorCount > 0) throw new Error('Native Review emitted a runtime error');
-      if (horizontalOverflow) throw new Error('Native Review has document-level overflow');
-
-      host.__CODEVETTER_VERIFY_REPORT__ = {
-        stateName: reviewQualificationRequest.stateName,
-        reviewId: reviewQualificationRequest.reviewId,
-        runtimeErrorCount,
-        horizontalOverflow,
-        activeElementText: document.activeElement?.textContent?.trim().slice(0, 80) ?? '',
-        reducedMotionForced: document.documentElement.classList.contains(
-          'cv-verify-reduced-motion'
-        ),
-      };
-      const readyTitle = `CodeVetter · ${reviewQualificationRequest.stateName} · ready`;
-      document.title = readyTitle;
-      await setCurrentWindowTitle(readyTitle);
+      await runReviewQualification(
+        reviewQualificationRequest.stateName,
+        reviewQualificationRequest.reviewId,
+        handleLoadPastReview
+      );
       if (!completeReviewQualificationState(reviewQualificationRequest)) {
         throw new Error('Native Review qualification bridge was not awaiting completion');
       }
@@ -679,7 +2277,7 @@ export default function QuickReview() {
         setError("Couldn't delete that review. Try again.");
       }
     },
-    [result?.review_id]
+    [reviewId]
   );
 
   // ─── Branch/PR selection ─────────────────────────────────────────────────
@@ -739,11 +2337,7 @@ export default function QuickReview() {
     setDeepGraphImpact(null);
     setDeepGraphImpactLoading(true);
 
-    const deepGraphBaseRef = diffRange.includes('...')
-      ? diffRange.split('...')[0]
-      : diffRange.includes('..')
-        ? diffRange.split('..')[0]
-        : null;
+    const deepGraphBaseRef = extractDeepGraphBaseRef(diffRange);
     void unpackDeepGraphStatus(repoPath)
       .then((status) => {
         if (!status.indexed) return null;
@@ -779,23 +2373,18 @@ export default function QuickReview() {
       setSelectedFindings(new Set());
       // Core action: a code review run completed (also fires `activated` once).
       trackCoreAction('review_run');
-      const count = res.findings_count ?? res.findings.length;
       void notifyIfEnabled(
         'notify_review_done',
         true,
         'Review complete',
-        `${count} finding${count === 1 ? '' : 's'} · score ${Math.round(res.score)}/100 · ${res.diff_range || diffRange}`
+        buildReviewCompleteMessage(res, diffRange)
       );
       await blastPromise;
     } catch (e) {
       console.error('[CodeVetter] CLI review failed:', e);
       const msg = String(e);
-      if (msg.includes('TAURI_NOT_AVAILABLE')) {
-        setError('Not running in Tauri — run inside the desktop app to start a review.');
-      } else {
-        setError(
-          "The review couldn't finish. The AI agent may have failed or timed out — check the agent is installed and try again."
-        );
+      setError(describeReviewError(msg));
+      if (!msg.includes('TAURI_NOT_AVAILABLE')) {
         void notifyIfEnabled(
           'notify_agent_error',
           true,
@@ -831,13 +2420,8 @@ export default function QuickReview() {
 
   // ─── Sorted findings ────────────────────────────────────────────────────
 
-  const sortedFindings = useMemo(
-    () =>
-      result
-        ? [...result.findings].sort(
-            (a, b) => (severityOrder[a.severity] ?? 99) - (severityOrder[b.severity] ?? 99)
-          )
-        : [],
+  const sortedFindings = useMemo<CliReviewFinding[]>(
+    () => (result ? sortFindingsBySeverity(result.findings) : []),
     [result]
   );
 
@@ -852,14 +2436,7 @@ export default function QuickReview() {
     [sortedFindings]
   );
 
-  const patchQueueSeverityCounts = useMemo(
-    () =>
-      patchQueue.reduce<Record<string, number>>((acc, finding) => {
-        acc[finding.severity] = (acc[finding.severity] ?? 0) + 1;
-        return acc;
-      }, {}),
-    [patchQueue]
-  );
+  const patchQueueSeverityCounts = useMemo(() => countFindingsBySeverity(patchQueue), [patchQueue]);
 
   const selectedFindingIndexes = useMemo(
     () => Array.from(selectedFindings).sort((a, b) => a - b),
@@ -867,30 +2444,13 @@ export default function QuickReview() {
   );
 
   const selectedEvidence = useMemo(
-    () =>
-      selectedFindingIndexes.map((idx) => {
-        const finding = sortedFindings[idx];
-        return finding
-          ? {
-              ...defaultFindingEvidence,
-              ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-            }
-          : defaultFindingEvidence;
-      }),
+    () => mapSelectedEvidence(selectedFindingIndexes, sortedFindings, evidenceByFinding),
     [evidenceByFinding, selectedFindingIndexes, sortedFindings]
   );
 
   const selectedBrowserEvidence = useMemo(
     () =>
-      selectedFindingIndexes.map((idx) => {
-        const finding = sortedFindings[idx];
-        return finding
-          ? {
-              ...emptyBrowserEvidence(),
-              ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
-            }
-          : emptyBrowserEvidence();
-      }),
+      mapSelectedBrowserEvidence(selectedFindingIndexes, sortedFindings, browserEvidenceByFinding),
     [browserEvidenceByFinding, selectedFindingIndexes, sortedFindings]
   );
 
@@ -935,8 +2495,8 @@ export default function QuickReview() {
       currentTaskContext,
       diffRange,
       repoPath,
-      result?.agent,
-      result?.diff_range,
+      resultAgent,
+      resultDiffRange,
       selectedBrowserEvidence,
       selectedEvidence,
       selectedFindingIndexes,
@@ -945,16 +2505,7 @@ export default function QuickReview() {
   );
 
   const evidenceCounts = useMemo(
-    () =>
-      Object.values(evidenceByFinding).reduce(
-        (acc, evidence) => {
-          if (evidence.status === 'reproduced') acc.reproduced += 1;
-          if (evidence.status === 'fixed') acc.fixed += 1;
-          if (evidence.status === 'not_reproduced') acc.notReproduced += 1;
-          return acc;
-        },
-        { reproduced: 0, fixed: 0, notReproduced: 0 }
-      ),
+    () => computeEvidenceCounts(evidenceByFinding),
     [evidenceByFinding]
   );
 
@@ -994,80 +2545,50 @@ export default function QuickReview() {
     [fixCompletedAt, qaEvidenceHistory]
   );
 
-  const reviewTimeline = useMemo(() => {
-    const timeline = buildVerificationTimeline({
-      runId: reviewId || result?.review_id || null,
-      taskGoal,
-      review: result
-        ? {
-            findingsCount: sortedFindings.length,
-            mode: result.review_mode,
-            riskTier: result.risk_tier,
-            selectedFindingIndex: selectedFindingIdx,
-            firstFindingPath: sortedFindings[0]?.filePath ?? null,
-            firstFindingLine: sortedFindings[0]?.line ?? null,
-            findingPaths: sortedFindings.flatMap((finding) =>
-              finding.filePath ? [finding.filePath] : []
-            ),
-          }
-        : null,
-      isReviewing,
-      qa: {
-        running: qaRunning || postFixQaRunning,
-        latest: qaRunHistory[0] ?? null,
-        comparison: qaPostFixComparison,
-      },
+  const reviewTimeline = useMemo(
+    () =>
+      buildReviewTimeline(
+        reviewId,
+        result,
+        sortedFindings,
+        selectedFindingIdx,
+        taskGoal,
+        isReviewing,
+        qaRunning,
+        postFixQaRunning,
+        qaRunHistory,
+        qaPostFixComparison,
+        evidenceCounts,
+        fixPacket,
+        selectedFindingIndexes,
+        isFixing,
+        fixResult,
+        historyContext,
+        warmVerificationProjections,
+        differentialTimelineHistory
+      ),
+    [
       evidenceCounts,
-      fixPacket: {
-        selectedFindings: fixPacket.findings.length,
-        routeAdvice: fixPacket.routeAdvice,
-        selectedFindingIndex: selectedFindingIndexes[0] ?? null,
-      },
-      isFixing: Boolean(isFixing),
-      fixResult: fixResult
-        ? {
-            success: fixResult.success,
-            agent: fixResult.agent,
-            usingWorktree: fixResult.using_worktree,
-            worktreePath: fixResult.worktree_path ?? null,
-            changedFiles: fixResult.changed_files.length,
-            changedFileOrigins: fixResult.changed_files,
-            findingsFixed: fixResult.findings_fixed,
-          }
-        : null,
-      history: historyContext,
-    });
-    return [
-      ...timeline,
-      ...warmVerificationProjections.map((projection) => ({
-        ...projection.timelineProof,
-        label: 'Warm verification history',
-        detail: `recorded ${projection.provenance.finished_at} · ${projection.timelineProof.detail}`,
-        status: 'idle' as const,
-      })),
-      ...differentialTimelineHistory,
-    ];
-  }, [
-    evidenceCounts,
-    fixPacket,
-    fixResult,
-    isFixing,
-    isReviewing,
-    postFixQaRunning,
-    qaPostFixComparison,
-    qaRunHistory,
-    qaRunning,
-    result,
-    historyContext,
-    reviewId,
-    selectedFindingIdx,
-    selectedFindingIndexes,
-    sortedFindings,
-    sortedFindings.length,
-    taskGoal,
-    differentialTimelineHistory,
-    warmVerificationProjections,
-  ]);
+      fixPacket,
+      fixResult,
+      isFixing,
+      isReviewing,
+      postFixQaRunning,
+      qaPostFixComparison,
+      qaRunHistory,
+      qaRunning,
+      result,
+      historyContext,
+      reviewId,
+      selectedFindingIdx,
+      selectedFindingIndexes,
+      sortedFindings,
+      sortedFindings.length,
+      taskGoal,
+      differentialTimelineHistory,
+      warmVerificationProjections,
+    ]
+  );
 
   const uncheckedFindings = useMemo(
     () =>
@@ -1078,103 +2599,21 @@ export default function QuickReview() {
     [sortedFindings, evidenceByFinding]
   );
 
-  const uncheckedBySeverity = useMemo(() => {
-    const buckets = new Map<string, CliReviewFinding[]>();
-    for (const finding of uncheckedFindings) {
-      const arr = buckets.get(finding.severity) ?? [];
-      arr.push(finding);
-      buckets.set(finding.severity, arr);
-    }
-    return Array.from(buckets.entries()).sort(
-      ([a], [b]) => (severityOrder[a] ?? 99) - (severityOrder[b] ?? 99)
-    );
-  }, [uncheckedFindings]);
+  const uncheckedBySeverity = useMemo(
+    () => groupUncheckedBySeverity(uncheckedFindings),
+    [uncheckedFindings]
+  );
 
-  const historyFileSummaries = useMemo(() => {
-    if (!historyContext) return [];
+  const historyFileSummaries = useMemo(
+    () => (historyContext ? computeHistoryFileSummaries(historyContext) : []),
+    [historyContext]
+  );
 
-    const summaries = new Map<
-      string,
-      { commits: number; decisions: number; agents: number; recurring: number }
-    >();
-    const ensure = (file: string) => {
-      const existing = summaries.get(file);
-      if (existing) return existing;
-      const next = { commits: 0, decisions: 0, agents: 0, recurring: 0 };
-      summaries.set(file, next);
-      return next;
-    };
-
-    for (const file of historyContext.files_analyzed) ensure(file);
-    for (const commit of historyContext.recent_commits) ensure(commit.file).commits += 1;
-    for (const decision of historyContext.prior_decisions ?? []) {
-      ensure(decision.file).decisions += 1;
-    }
-    for (const recurring of historyContext.recurring_failures) {
-      ensure(recurring.file).recurring += recurring.count;
-    }
-    for (const activity of historyContext.prior_agent_activity) {
-      for (const file of activity.files ?? []) {
-        ensure(file).agents += 1;
-      }
-    }
-
-    return Array.from(summaries.entries())
-      .map(([file, counts]) => ({ file, ...counts }))
-      .filter(
-        (summary) => summary.commits + summary.decisions + summary.agents + summary.recurring > 0
-      )
-      .sort(
-        (a, b) =>
-          b.decisions +
-          b.recurring +
-          b.agents +
-          b.commits -
-          (a.decisions + a.recurring + a.agents + a.commits)
-      )
-      .slice(0, 5);
-  }, [historyContext]);
-
-  const historyFindingSummaries = useMemo(() => {
-    const map = new Map<number, HistoryFindingSummary>();
-    if (!historyContext) return map;
-
-    sortedFindings.forEach((finding, findingIdx) => {
-      const file = finding.filePath;
-      if (!file) return;
-
-      const commits = historyContext.recent_commits.filter((commit) =>
-        sameHistoryFile(commit.file, file)
-      );
-      const decisions = (historyContext.prior_decisions ?? []).filter((decision) =>
-        sameHistoryFile(decision.file, file)
-      );
-      const recurring = historyContext.recurring_failures.filter((failure) =>
-        sameHistoryFile(failure.file, file)
-      );
-      const commands = historyContext.command_signals ?? [];
-      const claims = historyContext.agent_claims ?? [];
-      const signalCount =
-        commits.length + decisions.length + recurring.length + commands.length + claims.length;
-      if (signalCount === 0) return;
-
-      map.set(findingIdx, {
-        findingIdx,
-        file,
-        commits: commits.length,
-        decisions: decisions.length,
-        recurring: recurring.reduce((sum, item) => sum + item.count, 0),
-        commands: commands.length,
-        claims: claims.length,
-        topDecision: decisions[0]?.text,
-        topCommit: commits[0]?.subject,
-        topClaim: claims[0]?.claim,
-        topCommands: commands.slice(0, 2).map(formatHistoryCommandEvidence),
-      });
-    });
-
-    return map;
-  }, [historyContext, sortedFindings]);
+  const historyFindingSummaries = useMemo(
+    () =>
+      historyContext ? computeHistoryFindingSummaries(historyContext, sortedFindings) : new Map(),
+    [historyContext, sortedFindings]
+  );
 
   const historyExplanations = useMemo(
     () => buildCodebaseHistoryExplanations(historyContext),
@@ -1191,87 +2630,33 @@ export default function QuickReview() {
     return queryCodebaseHistoryExplanationForFile(historyContext, filePath);
   }, [historyContext, historyExplanations, selectedFindingIdx, sortedFindings]);
 
-  const intentReport = useMemo(() => {
-    if (!result) return null;
-    return buildReviewIntentReport({
-      reviewId: result.review_id,
-      diffRange: result.diff_range || diffRange,
-      changeDescription: changeDesc,
-      findings: sortedFindings.map((finding) => ({
-        severity: finding.severity,
-        title: finding.title,
-        filePath: finding.filePath,
-      })),
-      evidence: sortedFindings.map((finding, idx) => ({
-        ...defaultFindingEvidence,
-        ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-      })),
-      history: historyContext
-        ? {
-            recentCommits: historyContext.recent_commits.length,
-            priorDecisions: historyContext.prior_decisions?.length ?? 0,
-            priorAgentRuns: historyContext.prior_agent_activity.length,
-            recurringFailures: historyContext.recurring_failures.length,
-            commands: historyContext.command_signals?.length ?? 0,
-            claims: historyContext.agent_claims?.length ?? 0,
-            commandStatus: {
-              passed: (historyContext.command_signals ?? []).filter(
-                (signal) => signal.status === 'passed'
-              ).length,
-              failed: (historyContext.command_signals ?? []).filter(
-                (signal) => signal.status === 'failed'
-              ).length,
-              stale: (historyContext.command_signals ?? []).filter(
-                (signal) => signal.status === 'stale'
-              ).length,
-              unknown: (historyContext.command_signals ?? []).filter(
-                (signal) => signal.status == null || signal.status === 'unknown'
-              ).length,
-            },
-            commandArtifacts: (historyContext.command_signals ?? []).reduce(
-              (sum, signal) => sum + (signal.artifacts?.length ?? 0),
-              0
-            ),
-            rawSessionCommands: (historyContext.command_signals ?? []).filter(
-              (signal) => signal.source === 'raw_session'
-            ).length,
-            structuredCommands: (historyContext.command_signals ?? []).filter(
-              (signal) => signal.source === 'output_structured'
-            ).length,
-            latestCommand: historyContext.command_signals?.[0]?.command ?? null,
-            latestClaim: historyContext.agent_claims?.[0]?.claim ?? null,
-          }
+  const intentReport = useMemo(
+    () =>
+      result
+        ? buildIntentReport(
+            result,
+            diffRange,
+            changeDesc,
+            sortedFindings,
+            evidenceByFinding,
+            historyContext,
+            qaRunHistory,
+            fixResult,
+            blastReport
+          )
         : null,
-      qaRuns: qaRunHistory,
-      fix: fixResult
-        ? {
-            changedFiles: fixResult.changed_files.length,
-            findingsFixed: fixResult.findings_fixed,
-          }
-        : null,
-      reviewMode: result.review_mode,
-      riskTier: result.risk_tier,
-      changedLines: result.changed_lines,
-      sensitivePaths: result.sensitive_paths,
-      blast: blastReport
-        ? {
-            totalCallers: blastReport.totalCallers,
-            totalSymbols: blastReport.totalSymbols,
-            changedFiles: blastReport.changedFiles,
-          }
-        : null,
-    });
-  }, [
-    blastReport,
-    changeDesc,
-    diffRange,
-    evidenceByFinding,
-    fixResult,
-    historyContext,
-    qaRunHistory,
-    result,
-    sortedFindings,
-  ]);
+    [
+      blastReport,
+      changeDesc,
+      diffRange,
+      evidenceByFinding,
+      fixResult,
+      historyContext,
+      qaRunHistory,
+      result,
+      sortedFindings,
+    ]
+  );
 
   const updateFindingEvidence = useCallback(
     (idx: number, patch: Partial<FindingEvidence>) => {
@@ -1338,59 +2723,17 @@ export default function QuickReview() {
   );
 
   useEffect(() => {
-    if (!reviewId) {
+    void loadReviewEvidence(
+      reviewId,
+      setEvidenceByFinding,
+      setBrowserEvidenceByFinding,
+      setEvidenceCandidateStatuses,
+      setStoredProcedureEvents
+    ).catch(() => {
       setEvidenceByFinding({});
       setBrowserEvidenceByFinding({});
       setEvidenceCandidateStatuses({});
-      setStoredProcedureEvents([]);
-      return;
-    }
-    void Promise.all([
-      getPreference(`quick_review_evidence_${reviewId}`),
-      getPreference(`quick_review_browser_evidence_${reviewId}`),
-      getPreference(`quick_review_candidate_statuses_${reviewId}`),
-    ])
-      .then(([raw, browserRaw, candidateRaw]) => {
-        if (!raw) {
-          setEvidenceByFinding({});
-        } else {
-          try {
-            setEvidenceByFinding(JSON.parse(raw) as Record<string, FindingEvidence>);
-          } catch {
-            setEvidenceByFinding({});
-          }
-        }
-
-        if (!browserRaw) {
-          setBrowserEvidenceByFinding({});
-        } else {
-          try {
-            setBrowserEvidenceByFinding(
-              JSON.parse(browserRaw) as Record<string, BrowserEvidenceRef>
-            );
-          } catch {
-            setBrowserEvidenceByFinding({});
-          }
-        }
-
-        if (!candidateRaw) {
-          setEvidenceCandidateStatuses({});
-        } else {
-          try {
-            setEvidenceCandidateStatuses(
-              JSON.parse(candidateRaw) as Record<string, EvidenceCandidateStatus>
-            );
-          } catch {
-            setEvidenceCandidateStatuses({});
-          }
-        }
-        return;
-      })
-      .catch(() => {
-        setEvidenceByFinding({});
-        setBrowserEvidenceByFinding({});
-        setEvidenceCandidateStatuses({});
-      });
+    });
   }, [reviewId]);
 
   useEffect(() => {
@@ -1446,54 +2789,23 @@ export default function QuickReview() {
   );
 
   const applyQaWorkflow = useCallback((workflow: Partial<QaWorkflowPreset>) => {
-    if (workflow.baseUrl) setQaBaseUrl(workflow.baseUrl);
-    if (workflow.loopId) setQaLoopId(workflow.loopId);
-    if (
-      workflow.runnerType === 'playwright_builtin' ||
-      workflow.runnerType === 'external_skill' ||
-      workflow.runnerType === 'repo_playwright'
-    ) {
-      setQaRunnerType(workflow.runnerType);
-    }
-    if (workflow.goal) setQaGoal(workflow.goal);
-    if (typeof workflow.targetRoute === 'string') {
-      setQaTargetRoute(workflow.targetRoute || CODEVETTER_REVIEW_SHELL.route);
-    }
-    if (typeof workflow.externalCommand === 'string') {
-      setQaExternalCommand(workflow.externalCommand);
-    }
-    if (typeof workflow.repoSpecPath === 'string') {
-      setQaRepoSpecPath(workflow.repoSpecPath);
-    }
-    if (
-      workflow.repoTraceMode === 'off' ||
-      workflow.repoTraceMode === 'retain-on-failure' ||
-      workflow.repoTraceMode === 'on'
-    ) {
-      setQaRepoTraceMode(workflow.repoTraceMode);
-    }
-    if (workflow.authMode === 'none' || workflow.authMode === 'storage_state') {
-      setQaAuthMode(workflow.authMode);
-    }
-    if (typeof workflow.storageStatePath === 'string') {
-      setQaStorageStatePath(workflow.storageStatePath);
-    }
-    if (typeof workflow.allowRemoteTarget === 'boolean') {
-      setQaAllowRemoteTarget(workflow.allowRemoteTarget);
-    }
-    if (Array.isArray(workflow.targets)) {
-      setQaTargets(workflow.targets);
-      const firstTarget = workflow.targets[0];
-      if (firstTarget) {
-        setQaActiveTargetId(firstTarget.id);
-        setQaTargetName(firstTarget.name);
-        setQaTargetRoute(firstTarget.route);
-        setQaGoal(firstTarget.goal);
-      } else {
-        setQaActiveTargetId('');
-      }
-    }
-    if (workflow.name) setQaWorkflowName(workflow.name);
+    applyQaWorkflowPreset(workflow, {
+      setQaBaseUrl,
+      setQaLoopId,
+      setQaRunnerType,
+      setQaGoal,
+      setQaTargetRoute,
+      setQaExternalCommand,
+      setQaRepoSpecPath,
+      setQaRepoTraceMode,
+      setQaAuthMode,
+      setQaStorageStatePath,
+      setQaAllowRemoteTarget,
+      setQaTargets,
+      setQaActiveTargetId,
+      setQaTargetName,
+      setQaWorkflowName,
+    });
   }, []);
 
   const currentQaWorkflow = useCallback(
@@ -1534,46 +2846,15 @@ export default function QuickReview() {
   useEffect(() => {
     setQaPresetLoaded(false);
     setQaPreferenceLoadedKey('');
-    async function loadQaWorkflows() {
-      try {
-        const [scopedWorkflowsRaw, globalWorkflowsRaw, scopedPresetRaw, legacyRaw] =
-          await Promise.all([
-            getPreference(qaWorkflowPreferenceKey),
-            getPreference('quick_review_qa_workflows'),
-            getPreference(qaPresetPreferenceKey),
-            getPreference('quick_review_qa_preset'),
-          ]);
-
-        const workflowsRaw = scopedWorkflowsRaw || globalWorkflowsRaw;
-        if (workflowsRaw) {
-          const workflows = JSON.parse(workflowsRaw) as QaWorkflowPreset[];
-          if (Array.isArray(workflows) && workflows.length > 0) {
-            setQaWorkflows(workflows);
-            setQaActiveWorkflowId(workflows[0].id);
-            applyQaWorkflow(workflows[0]);
-            return;
-          }
-        }
-
-        const presetRaw = scopedPresetRaw || legacyRaw;
-        if (presetRaw) {
-          const legacy = JSON.parse(presetRaw) as Partial<QaPreset>;
-          setQaWorkflows([]);
-          setQaActiveWorkflowId('');
-          applyQaWorkflow({ ...legacy, name: CODEVETTER_REVIEW_SHELL.label });
-          return;
-        }
-        setQaWorkflows([]);
-        setQaActiveWorkflowId('');
-      } catch {
-        // Keep defaults if local preferences are unavailable or malformed.
-      } finally {
-        setQaPreferenceLoadedKey(qaWorkflowPreferenceKey);
-        setQaPresetLoaded(true);
-      }
-    }
-
-    void loadQaWorkflows();
+    void loadQaWorkflowsFromPrefs(
+      qaWorkflowPreferenceKey,
+      qaPresetPreferenceKey,
+      setQaWorkflows,
+      setQaActiveWorkflowId,
+      applyQaWorkflow,
+      setQaPreferenceLoadedKey,
+      setQaPresetLoaded
+    );
   }, [applyQaWorkflow, qaPresetPreferenceKey, qaWorkflowPreferenceKey]);
 
   useEffect(() => {
@@ -1862,20 +3143,11 @@ export default function QuickReview() {
         throw new Error('Synthetic QA requires the CodeVetter desktop app (Tauri).');
       }
       const runRepoPath = options?.repoPathOverride || repoPath;
-      const run = await runSyntheticQa(request.baseUrl, request.loopId, {
-        runnerType: request.runnerType,
-        goal: request.goal,
-        externalCommand:
-          request.runnerType === 'external_skill' ? request.externalCommand : undefined,
-        repoPath: runRepoPath,
-        specPath: request.runnerType === 'repo_playwright' ? request.repoSpecPath : undefined,
-        repoTraceMode: request.runnerType === 'repo_playwright' ? request.repoTraceMode : undefined,
-        authMode: request.authMode,
-        storageStatePath:
-          request.authMode === 'storage_state' ? request.storageStatePath : undefined,
-        targetRoute: request.targetRoute,
-        allowRemoteTarget: request.allowRemoteTarget,
-      });
+      const run = await runSyntheticQa(
+        request.baseUrl,
+        request.loopId,
+        buildSyntheticQaRunConfig(request, runRepoPath)
+      );
       setQaLastRun(run);
       const configFields = {
         externalCommand: request.externalCommand,
@@ -1884,22 +3156,7 @@ export default function QuickReview() {
         storageStatePath: request.storageStatePath,
         allowRemoteTarget: request.allowRemoteTarget,
       };
-      let entry: QaRunHistoryEntry = {
-        createdAt: new Date().toISOString(),
-        loopId: run.loop_id,
-        runnerType: run.runner_type ?? request.runnerType,
-        baseUrl: request.baseUrl,
-        goal: run.goal || request.goal,
-        route: run.route || request.targetRoute,
-        authMode: request.authMode,
-        pass: run.pass,
-        durationMs: run.duration_ms,
-        notes: run.notes,
-        screenshotPath: run.screenshot_path,
-        artifacts: run.artifacts ?? [],
-        consoleErrors: run.trace?.console_errors?.length ?? 0,
-        ...configFields,
-      };
+      let entry: QaRunHistoryEntry = buildQaRunHistoryEntry(request, run);
       if (reviewId) {
         try {
           const storedRun = await recordSyntheticQaRun({
@@ -2135,19 +3392,7 @@ export default function QuickReview() {
         runId,
       });
       setStoredProcedureEvents((prev) => [run.event, ...prev]);
-      const notes = [
-        currentEvidence.notes.trim(),
-        '',
-        `Command: ${command}`,
-        `Result: ${
-          run.passed ? 'PASS' : run.canceled ? 'CANCELED' : run.timed_out ? 'TIMEOUT' : 'FAIL'
-        } (${run.duration_ms}ms, exit ${run.exit_code})`,
-        `Artifact: ${run.artifact}`,
-        run.stderr_tail.trim() ? `stderr:\n${run.stderr_tail.trim()}` : '',
-      ]
-        .filter(Boolean)
-        .join('\n')
-        .trim();
+      const notes = buildVerificationCommandNotes(currentEvidence.notes, command, run);
       updateFindingEvidence(selectedFindingIdx, {
         level: run.canceled ? currentEvidence.level : 'test',
         status: run.passed ? 'not_reproduced' : run.canceled ? 'not_checked' : 'reproduced',
@@ -2204,51 +3449,14 @@ export default function QuickReview() {
   // can be dispositioned; fresh in-webview findings have no row to write.
   const handleSetDisposition = useCallback(
     async (idx: number, disposition: FindingDisposition) => {
-      const target = sortedFindings[idx];
-      const findingId = target?.id;
-      if (!findingId) return;
-      const next: FindingDisposition | null =
-        target.disposition === disposition ? null : disposition;
-      // Optimistic local update; matched by persisted id.
-      setResult((prev) =>
-        prev
-          ? {
-              ...prev,
-              findings: prev.findings.map((finding) =>
-                finding.id === findingId ? { ...finding, disposition: next } : finding
-              ),
-            }
-          : prev
+      await setFindingDispositionWithRollback(
+        idx,
+        disposition,
+        sortedFindings,
+        setResult,
+        setSelectedFindings,
+        setError
       );
-      // Drop a dismissed finding from the fix selection so bulk patches skip it;
-      // it stays individually selectable afterward.
-      if (next === 'dismissed') {
-        setSelectedFindings((prev) => {
-          if (!prev.has(idx)) return prev;
-          const updated = new Set(prev);
-          updated.delete(idx);
-          return updated;
-        });
-      }
-      try {
-        await setFindingDisposition(findingId, next);
-      } catch (e) {
-        console.error('[CodeVetter] Failed to set finding disposition:', e);
-        setError("Couldn't save that finding verdict. Try again.");
-        // Roll back the optimistic change.
-        setResult((prev) =>
-          prev
-            ? {
-                ...prev,
-                findings: prev.findings.map((finding) =>
-                  finding.id === findingId
-                    ? { ...finding, disposition: target.disposition ?? null }
-                    : finding
-                ),
-              }
-            : prev
-        );
-      }
     },
     [sortedFindings]
   );
@@ -2268,77 +3476,25 @@ export default function QuickReview() {
 
   const handleFixSelected = useCallback(async () => {
     if (!repoPath || !result || selectedFindings.size === 0) return;
-    const preFixQaRun = qaRunHistory[0] ?? null;
-    const currentQaRequest = currentQaWorkflow(qaActiveWorkflowId || 'manual');
-    setIsFixing('selected');
-    setFixResult(null);
-    setFixCompletedAt(null);
-    setFixProgress([]);
-    setError(null);
-
-    // Listen for streaming progress events
-    let unlisten: (() => void) | undefined;
-    try {
-      const { listen } = await import('@tauri-apps/api/event');
-      unlisten = await listen<string>('fix-progress', (event) => {
-        setFixProgress((prev) => {
-          const next = [...prev, event.payload];
-          // Keep last 50 lines
-          return next.length > 50 ? next.slice(-50) : next;
-        });
-        // Auto-scroll
-        if (fixLogRef.current) {
-          fixLogRef.current.scrollTop = fixLogRef.current.scrollHeight;
-        }
-      });
-    } catch {
-      // Event listening not available, continue without streaming
-    }
-
-    try {
-      const res = await fixFindings(repoPath, fixPacket.findings, result.agent);
-      const completedAt = new Date().toISOString();
-      setFixResult(res);
-      setFixCompletedAt(completedAt);
-      void notifyIfEnabled(
-        'notify_task_complete',
-        false,
-        'Fix complete',
-        `${res.findings_fixed} finding${res.findings_fixed === 1 ? '' : 's'} fixed across ${res.changed_files.length} file${res.changed_files.length === 1 ? '' : 's'}.`
-      );
-      recordProcedureExecutionEvents(procedureEventsForFixResult(activeProcedureSteps, res), {
-        agent: res.agent,
-        changedFiles: res.changed_files.length,
-        findingsFixed: res.findings_fixed,
-        usingWorktree: res.using_worktree ?? null,
-      });
-      if (preFixQaRun) {
-        setPostFixQaRunning(true);
-        setQaError(null);
-        try {
-          await runSyntheticQaFlow(qaRequestFromHistory(preFixQaRun, currentQaRequest), {
-            repoPathOverride: res.worktree_path,
-          });
-        } catch (qaErr) {
-          setQaError(
-            `Post-fix QA rerun failed: ${qaErr instanceof Error ? qaErr.message : String(qaErr)}`
-          );
-        } finally {
-          setPostFixQaRunning(false);
-        }
-      }
-    } catch (e) {
-      setError(`Fix failed: ${String(e)}`);
-      void notifyIfEnabled(
-        'notify_agent_error',
-        true,
-        'Fix failed',
-        'The AI agent failed while applying the selected fixes.'
-      );
-    } finally {
-      setIsFixing(null);
-      unlisten?.();
-    }
+    await applyFixAndPostFixQa(
+      repoPath,
+      result,
+      fixPacket.findings,
+      qaRunHistory,
+      qaActiveWorkflowId,
+      currentQaWorkflow,
+      activeProcedureSteps,
+      recordProcedureExecutionEvents,
+      runSyntheticQaFlow,
+      setIsFixing,
+      setFixResult,
+      setFixCompletedAt,
+      setFixProgress,
+      setError,
+      setPostFixQaRunning,
+      setQaError,
+      fixLogRef
+    );
   }, [
     activeProcedureSteps,
     currentQaWorkflow,
@@ -2419,48 +3575,23 @@ export default function QuickReview() {
 
   const handleCopyProof = useCallback(async () => {
     if (!result) return;
-    const evidence = sortedFindings.map((finding, idx) => ({
-      ...defaultFindingEvidence,
-      ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-    }));
-    const activeFindingForProof =
-      selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
-    const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(
-      result.review_memory_graph,
-      activeFindingForProof
-    );
-    const reviewerProof = buildReviewerProofMarkdown({
-      diffRange: result.diff_range,
-      score: result.score,
-      agent: result.agent,
-      findings: sortedFindings,
-      evidence,
+    await copyReviewerProof(
+      result,
+      sortedFindings,
+      selectedFindingIdx,
+      evidenceByFinding,
       evidenceCounts,
-      evidenceCandidates: result.evidence_candidates,
       evidenceCandidateStatuses,
-      evidenceProcedureSteps: result.evidence_procedure_steps,
-      reviewMemoryGraph: result.review_memory_graph,
-      focusedReviewMemoryGraph,
-      trustedGraphContext: result.trusted_graph_context,
-      verificationTimeline: reviewTimeline,
+      reviewTimeline,
       qaPostFixComparison,
       historyExplanations,
-      temporalHistory: historyContext?.temporal_slice,
+      historyContext,
       procedureExecutionEvents,
       intentReport,
       historyFindingSummaries,
-    });
-    const markdown = audienceBundle
-      ? `${reviewerProof}\n\n${renderAudienceValidationProof(audienceBundle)}`
-      : reviewerProof;
-
-    try {
-      await navigator.clipboard.writeText(markdown);
-      setProofCopied(true);
-      setTimeout(() => setProofCopied(false), 2000);
-    } catch {
-      // clipboard unavailable — fail silently
-    }
+      audienceBundle,
+      setProofCopied
+    );
   }, [
     result,
     sortedFindings,
@@ -2474,7 +3605,7 @@ export default function QuickReview() {
     reviewTimeline,
     historyFindingSummaries,
     historyExplanations,
-    historyContext?.temporal_slice,
+    historyContext,
     audienceBundle,
   ]);
 
@@ -2521,82 +3652,20 @@ export default function QuickReview() {
 
   const handleCopyTimelineSegmentPacket = useCallback(
     async (item: VerificationTimelineItem) => {
-      const indexes = timelineSegmentFindingIndexes(item.id);
-      if (indexes.length === 0) return;
-
-      const findings = indexes
-        .map((idx) => sortedFindings[idx])
-        .filter((finding): finding is CliReviewFinding => Boolean(finding));
-      const evidence = indexes.map((idx) => {
-        const finding = sortedFindings[idx];
-        return finding
-          ? {
-              ...defaultFindingEvidence,
-              ...evidenceByFinding[findingEvidenceKey(finding, idx)],
-            }
-          : defaultFindingEvidence;
-      });
-      const browserEvidence = indexes.map((idx) => {
-        const finding = sortedFindings[idx];
-        return finding
-          ? {
-              ...emptyBrowserEvidence(),
-              ...browserEvidenceByFinding[findingEvidenceKey(finding, idx)],
-            }
-          : emptyBrowserEvidence();
-      });
-
-      const sourceLabel = [
-        currentTaskContext.sourceLabel,
-        `Timeline segment: ${item.label} (${item.status})`,
-      ]
-        .filter(Boolean)
-        .join(' · ');
-      const packet = buildAgentFixPacket({
+      await copyTimelineSegmentPacket(
+        item,
+        timelineSegmentFindingIndexes,
+        sortedFindings,
+        evidenceByFinding,
+        browserEvidenceByFinding,
+        currentTaskContext,
         repoPath,
-        diffRange: result?.diff_range || diffRange,
-        agent: result?.agent ?? 'claude',
-        task: {
-          ...currentTaskContext,
-          sourceLabel,
-        },
-        findings,
-        evidence,
-        browserEvidence,
-        timelineReplay: {
-          segmentId: item.id,
-          label: item.label,
-          phase: item.phase,
-          status: item.status,
-          detail: item.detail,
-          jumpKind: item.jump?.kind ?? null,
-          jumpPath: item.jump?.path ?? null,
-          jumpLine: item.jump?.line ?? null,
-          anchors: (item.anchors ?? []).slice(0, 4).map((anchor) => ({
-            label: anchor.label,
-            source: anchor.source,
-            status: anchor.status,
-            contextExcerpt: anchor.contextExcerpt?.slice(0, 2) ?? [],
-            conversationContext: anchor.conversationContext,
-            sourcePath: anchor.sourcePath ?? null,
-            sourceLine: anchor.sourceLine ?? null,
-            eventId: anchor.eventId ?? null,
-            sessionId: anchor.sessionId ?? null,
-            artifact: anchor.artifact ?? null,
-            jumpKind: anchor.jump?.kind ?? null,
-            jumpPath: anchor.jump?.path ?? null,
-          })),
-        },
-      });
-
-      try {
-        await navigator.clipboard.writeText(renderAgentFixPacketMarkdown(packet));
-        setSelectedFindings(new Set(indexes));
-        setTimelinePacketCopiedId(item.id);
-        setTimeout(() => setTimelinePacketCopiedId(null), 2000);
-      } catch {
-        // clipboard unavailable — fail silently
-      }
+        resultDiffRange,
+        diffRange,
+        resultAgent,
+        setSelectedFindings,
+        setTimelinePacketCopiedId
+      );
     },
     [
       browserEvidenceByFinding,
@@ -2604,8 +3673,8 @@ export default function QuickReview() {
       diffRange,
       evidenceByFinding,
       repoPath,
-      result?.agent,
-      result?.diff_range,
+      resultAgent,
+      resultDiffRange,
       sortedFindings,
       timelineSegmentFindingIndexes,
     ]
@@ -2767,70 +3836,29 @@ export default function QuickReview() {
       }
 
       if (jump.kind === 'file') {
-        if (!jump.path) return;
-        setSelectedFindingIdx(null);
-        const targetPath =
-          jump.path.startsWith('/') || !repoPath ? jump.path : `${repoPath}/${jump.path}`;
-        try {
-          const res = await readFileAroundLine(targetPath, Math.max(1, jump.line ?? 1), 15, 15);
-          setCodeLines(res.lines);
-          setCodeFilePath(res.file_path);
-          setCodeLanguage(res.language);
-        } catch (e) {
-          console.error('[Review] failed to load timeline file:', e);
-          setCodeLines([]);
-          setCodeFilePath(jump.path);
-          setCodeLanguage('');
-        }
+        await handleTimelineFileJump(
+          jump,
+          repoPath,
+          setSelectedFindingIdx,
+          setCodeLines,
+          setCodeFilePath,
+          setCodeLanguage
+        );
         return;
       }
 
       if (jump.kind === 'artifact') {
-        if (!jump.path) return;
-        if (canPreviewQaArtifact(jump.path)) {
-          await handlePreviewQaArtifact(jump.path);
-        } else {
-          await handleOpenQaArtifact(jump.path);
-        }
+        await handleTimelineArtifactJump(jump, handlePreviewQaArtifact, handleOpenQaArtifact);
         return;
       }
 
       if (jump.kind === 'command_source') {
-        if (!jump.path) return;
-        if (!isTauriAvailable()) {
-          setError('Previewing command sources requires the CodeVetter desktop app (Tauri).');
-          return;
-        }
-        const key = `timeline:${jump.path}:${jump.line ?? 1}`;
-        const line = Math.max(1, jump.line ?? 1);
-        setCommandSourcePreviewLoading(key);
-        setError(null);
-        try {
-          if (jump.source === 'raw_session') {
-            const preview = await readRawSessionContext(jump.path, line, 8, 12);
-            setCommandSourcePreview({
-              key,
-              path: preview.file_path,
-              line: preview.target_line,
-              language: 'transcript',
-              items: preview.items,
-            });
-          } else {
-            const preview = await readFileAroundLine(jump.path, line, 2, 2);
-            setCommandSourcePreview({
-              key,
-              path: preview.file_path,
-              line: preview.target_line,
-              language: preview.language,
-              lines: preview.lines,
-            });
-          }
-        } catch (err) {
-          setCommandSourcePreview(null);
-          setError(err instanceof Error ? err.message : String(err));
-        } finally {
-          setCommandSourcePreviewLoading(null);
-        }
+        await handleTimelineCommandSourceJump(
+          jump,
+          setError,
+          setCommandSourcePreviewLoading,
+          setCommandSourcePreview
+        );
       }
     },
     [handleFindingClick, handleOpenQaArtifact, handlePreviewQaArtifact, repoPath]
@@ -2838,84 +3866,51 @@ export default function QuickReview() {
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
+  const audienceDefaultArtifact = resolveAudienceDefaultArtifact(qaLastRun, qaBaseUrl);
+  const editorPanelSize = compactReviewLayout ? 58 : 60;
+  const editorPanelMin = compactReviewLayout ? 42 : 45;
+  const sidebarPanelSize = compactReviewLayout ? 42 : 40;
+  const sidebarPanelMin = compactReviewLayout ? 30 : 32;
+  const panelOrientation = compactReviewLayout ? 'vertical' : 'horizontal';
+  const resizeHandleClass = compactReviewLayout
+    ? 'h-1.5 cursor-row-resize'
+    : 'w-1.5 cursor-col-resize';
+
   // ─── View mode layout ────────────────────────────────────────────────────
 
   if (mode === 'view' && result) {
-    const activeFinding = selectedFindingIdx !== null ? sortedFindings[selectedFindingIdx] : null;
-    const activeCodePath = codeFilePath || activeFinding?.filePath || '';
-    const activeEvidence =
-      activeFinding && selectedFindingIdx !== null
-        ? {
-            ...defaultFindingEvidence,
-            ...evidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
-          }
-        : defaultFindingEvidence;
-    const activeBrowserEvidence =
-      activeFinding && selectedFindingIdx !== null
-        ? {
-            ...emptyBrowserEvidence(),
-            ...browserEvidenceByFinding[findingEvidenceKey(activeFinding, selectedFindingIdx)],
-          }
-        : emptyBrowserEvidence();
-    const evidenceCandidates = result.evidence_candidates ?? [];
-    const evidenceProcedureSteps = result.evidence_procedure_steps ?? [];
-    const reviewMemoryGraph = result.review_memory_graph;
-    const reviewManifest = result.review_manifest;
-    const coverageCounts =
-      reviewManifest && !('coverage_kind' in reviewManifest)
-        ? reviewManifest.units.reduce(
-            (counts, unit) => {
-              counts[unit.coverage_state] += 1;
-              return counts;
-            },
-            { reviewed: 0, reused: 0, skipped: 0, failed: 0, cancelled: 0 }
-          )
-        : null;
-    const focusedReviewMemoryGraph = buildFocusedReviewMemoryGraph(
+    const {
+      activeFinding,
+      activeCodePath,
+      activeEvidence,
+      activeBrowserEvidence,
+      evidenceCandidates,
+      evidenceProcedureSteps,
       reviewMemoryGraph,
-      activeFinding
+      reviewManifest,
+      coverageCounts,
+      focusedReviewMemoryGraph,
+      procedureEventsByStep,
+    } = computeViewModeLocals(
+      result,
+      selectedFindingIdx,
+      sortedFindings,
+      codeFilePath,
+      evidenceByFinding,
+      browserEvidenceByFinding,
+      procedureExecutionEvents
     );
-    const procedureEventsByStep = procedureExecutionEvents.reduce<
-      Record<string, ProcedureExecutionEvent[]>
-    >((acc, event) => {
-      acc[event.stepId] = [...(acc[event.stepId] ?? []), event];
-      return acc;
-    }, {});
 
     return (
       <ProjectWorkspaceShell mainClassName="overflow-hidden" showProjectSidebar={false}>
         <div className="flex h-full flex-col px-4 pb-4">
-          {/* Result header */}
-          <div className="cv-frame mb-3 flex h-12 shrink-0 items-center gap-3 overflow-hidden px-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 gap-1 text-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
-              onClick={handleNewReview}
-            >
-              <ArrowLeft size={14} />
-              Back
-            </Button>
-            <div className="h-6 w-px bg-[var(--cv-line)]" />
-            <div className="min-w-0 flex-1">
-              <div className="cv-label truncate text-slate-300">
-                change review · {result.agent}
-                {result.risk_tier ? ` · ${result.risk_tier}` : ''}
-              </div>
-              <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
-                {result.review_mode
-                  ? `${result.review_mode} · ${result.diff_range || diffRange || 'local diff'}`
-                  : result.diff_range || diffRange || 'local diff'}
-              </div>
-            </div>
-            <ScoreBadge score={Math.round(result.score)} size="sm" />
-            <div className="cv-label hidden sm:block">
-              {result.findings_count ?? sortedFindings.length} findings
-            </div>
-            <div className="cv-label hidden lg:block">
-              {evidenceCounts.reproduced} reproduced · {evidenceCounts.fixed} fixed
-            </div>
-          </div>
+          <ResultHeader
+            result={result}
+            diffRange={diffRange}
+            sortedFindings={sortedFindings}
+            evidenceCounts={evidenceCounts}
+            handleNewReview={handleNewReview}
+          />
 
           {/* Error banner */}
           {error && (
@@ -2923,62 +3918,15 @@ export default function QuickReview() {
           )}
 
           {reviewManifest && (
-            <div
-              className={cn(
-                'mb-3 flex shrink-0 items-center justify-between gap-4 rounded-xl border px-4 py-2.5 text-xs',
-                reviewManifest.complete_coverage && !('coverage_kind' in reviewManifest)
-                  ? 'border-emerald-400/15 bg-emerald-400/[0.035] text-slate-400'
-                  : 'border-amber-400/20 bg-amber-400/[0.045] text-slate-400'
-              )}
-              data-testid="review-coverage"
-            >
-              {'coverage_kind' in reviewManifest ? (
-                <>
-                  <span>
-                    <span className="font-medium text-amber-200">Coverage unknown</span>
-                    {' — '}
-                    {reviewManifest.limitation}
-                  </span>
-                  <span className="shrink-0 text-slate-600">Legacy review</span>
-                </>
-              ) : (
-                <>
-                  <span>
-                    <span
-                      className={cn(
-                        'font-medium',
-                        reviewManifest.complete_coverage ? 'text-emerald-200' : 'text-amber-200'
-                      )}
-                    >
-                      {reviewManifest.complete_coverage ? 'Complete coverage' : 'Partial coverage'}
-                    </span>
-                    {' — '}
-                    {(coverageCounts?.reviewed ?? 0) + (coverageCounts?.reused ?? 0)} reviewed
-                    {coverageCounts?.reused ? ` (${coverageCounts.reused} reused)` : ''}
-                    {coverageCounts?.skipped ? ` · ${coverageCounts.skipped} policy-skipped` : ''}
-                    {coverageCounts?.failed ? ` · ${coverageCounts.failed} failed` : ''}
-                    {coverageCounts?.cancelled ? ` · ${coverageCounts.cancelled} cancelled` : ''}
-                    {reviewManifest.stale ? ' · target changed during review' : ''}
-                  </span>
-                  <span className="shrink-0 text-slate-600">
-                    {reviewManifest.qualification_counts.rejected} rejected ·{' '}
-                    {reviewManifest.qualification_counts.unresolved} unresolved ·{' '}
-                    {reviewManifest.qualification_counts.stale} stale
-                  </span>
-                </>
-              )}
-            </div>
+            <CoverageBanner reviewManifest={reviewManifest} coverageCounts={coverageCounts} />
           )}
 
           {/* Editor + verdict body */}
           <PanelGroup
-            orientation={compactReviewLayout ? 'vertical' : 'horizontal'}
+            orientation={panelOrientation}
             className="min-h-0 flex-1 cv-frame overflow-hidden"
           >
-            <Panel
-              defaultSize={compactReviewLayout ? 58 : 60}
-              minSize={compactReviewLayout ? 42 : 45}
-            >
+            <Panel defaultSize={editorPanelSize} minSize={editorPanelMin}>
               <ReviewEditorPanel
                 fixResult={fixResult}
                 diffFiles={diffFiles}
@@ -3010,14 +3958,11 @@ export default function QuickReview() {
             <PanelResizeHandle
               className={cn(
                 'bg-[var(--cv-line)] transition-colors hover:bg-amber-400/30',
-                compactReviewLayout ? 'h-1.5 cursor-row-resize' : 'w-1.5 cursor-col-resize'
+                resizeHandleClass
               )}
             />
 
-            <Panel
-              defaultSize={compactReviewLayout ? 42 : 40}
-              minSize={compactReviewLayout ? 30 : 32}
-            >
+            <Panel defaultSize={sidebarPanelSize} minSize={sidebarPanelMin}>
               <aside className="flex h-full flex-col overflow-y-auto bg-white/[0.015]">
                 <VerificationSummaryPanel
                   sortedFindings={sortedFindings}
@@ -3045,142 +3990,88 @@ export default function QuickReview() {
                     {activeFinding ? 'Selected finding' : 'Review findings'}
                   </div>
                   {activeFinding ? (
-                    <>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          'rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
-                          severityColor(activeFinding.severity)
-                        )}
-                      >
-                        {severityIcon(activeFinding.severity)}
-                        <span className="ml-1">{activeFinding.severity}</span>
-                      </Badge>
-                      <h2 className="mt-5 text-lg font-semibold leading-6 text-white">
-                        {activeFinding.title}
-                      </h2>
-                      <p className="mt-3 text-sm leading-6 text-slate-400">
-                        {activeFinding.summary}
-                      </p>
-                      {activeFinding.filePath && (
-                        <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate-600">
-                          {activeFinding.filePath}
-                          {activeFinding.line != null && `:${activeFinding.line}`}
-                        </div>
-                      )}
-                      {activeFinding.suggestion && (
-                        <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
-                          <div className="cv-label mb-3">Suggested action</div>
-                          <p className="font-mono text-[12px] leading-6 text-slate-300">
-                            {activeFinding.suggestion}
-                          </p>
-                        </div>
-                      )}
-                      <div
-                        className="mt-6 border-t border-[var(--cv-line)] pt-5"
-                        data-testid="trex-sandbox-panel"
-                      >
-                        <SandboxRunner
-                          repoPath={repoPath}
-                          branch={selectedBranch || ''}
-                          baseBranch={baseBranch || null}
-                          reviewId={reviewId || null}
-                          onComplete={() => {
-                            // Refresh findings so the via-execution rows attach
-                            // to the existing list; QuickReview's history list
-                            // re-fetches when reviewId changes — bumping it is
-                            // enough here.
-                          }}
-                        />
-                      </div>
-                      <SyntheticQaPanel
-                        qaWorkflowScopeLabel={qaWorkflowScopeLabel}
-                        qaActiveWorkflowId={qaActiveWorkflowId}
-                        qaWorkflows={qaWorkflows}
-                        qaWorkflowName={qaWorkflowName}
-                        setQaWorkflowName={setQaWorkflowName}
-                        handleSelectQaWorkflow={handleSelectQaWorkflow}
-                        handleSaveQaWorkflow={handleSaveQaWorkflow}
-                        handleDeleteQaWorkflow={handleDeleteQaWorkflow}
-                        qaActiveTargetId={qaActiveTargetId}
-                        qaTargets={qaTargets}
-                        handleSelectQaTarget={handleSelectQaTarget}
-                        qaBaseUrl={qaBaseUrl}
-                        setQaBaseUrl={setQaBaseUrl}
-                        qaAllowRemoteTarget={qaAllowRemoteTarget}
-                        setQaAllowRemoteTarget={setQaAllowRemoteTarget}
-                        qaTargetName={qaTargetName}
-                        setQaTargetName={setQaTargetName}
-                        qaTargetRoute={qaTargetRoute}
-                        setQaTargetRoute={setQaTargetRoute}
-                        qaAuthMode={qaAuthMode}
-                        setQaAuthMode={setQaAuthMode}
-                        qaStorageStatePath={qaStorageStatePath}
-                        setQaStorageStatePath={setQaStorageStatePath}
-                        qaLoopId={qaLoopId}
-                        setQaLoopId={setQaLoopId}
-                        setQaGoal={setQaGoal}
-                        qaGoal={qaGoal}
-                        qaRunnerType={qaRunnerType}
-                        setQaRunnerType={setQaRunnerType}
-                        qaRepoSpecPath={qaRepoSpecPath}
-                        setQaRepoSpecPath={setQaRepoSpecPath}
-                        qaSpecLoading={qaSpecLoading}
-                        qaSpecCandidates={qaSpecCandidates}
-                        qaSpecError={qaSpecError}
-                        handleDiscoverQaSpecs={handleDiscoverQaSpecs}
-                        qaRepoTraceMode={qaRepoTraceMode}
-                        setQaRepoTraceMode={setQaRepoTraceMode}
-                        qaExternalCommand={qaExternalCommand}
-                        setQaExternalCommand={setQaExternalCommand}
-                        handleSaveQaTarget={handleSaveQaTarget}
-                        handleDeleteQaTarget={handleDeleteQaTarget}
-                        handleRunSyntheticQa={handleRunSyntheticQa}
-                        qaRunning={qaRunning}
-                        qaError={qaError}
-                        qaLastRun={qaLastRun}
-                        qaArtifactPreview={qaArtifactPreview}
-                        qaArtifactPreviewLoading={qaArtifactPreviewLoading}
-                        handlePreviewQaArtifact={handlePreviewQaArtifact}
-                        handleOpenQaArtifact={handleOpenQaArtifact}
-                        setQaArtifactPreview={setQaArtifactPreview}
-                        selectedFindingIdx={selectedFindingIdx}
-                        applyQaToSelectedFinding={applyQaToSelectedFinding}
-                        addQaFailureFinding={addQaFailureFinding}
-                        qaRunHistory={qaEvidenceHistory}
-                        qaPostFixComparison={qaPostFixComparison}
-                        postFixQaRunning={postFixQaRunning}
-                        handleRunPostFixQa={handleRunPostFixQa}
-                        repoPath={repoPath}
-                      />
-                      {selectedFindingIdx !== null && (
-                        <VerificationEvidencePanel
-                          selectedFindingIdx={selectedFindingIdx}
-                          activeFinding={activeFinding}
-                          activeEvidence={activeEvidence}
-                          updateFindingEvidence={updateFindingEvidence}
-                          activeBrowserEvidence={activeBrowserEvidence}
-                          updateBrowserEvidence={updateBrowserEvidence}
-                          verificationCommand={verificationCommand}
-                          setVerificationCommand={setVerificationCommand}
-                          verificationCommandSuggestions={verificationCommandSuggestions}
-                          verificationCommandSuggestionsLoading={
-                            verificationCommandSuggestionsLoading
-                          }
-                          verificationCommandTimeoutMs={verificationCommandTimeoutMs}
-                          setVerificationCommandTimeoutMs={setVerificationCommandTimeoutMs}
-                          verificationCommandRunning={verificationCommandRunning}
-                          repoPath={repoPath}
-                          handleRunVerificationCommand={handleRunVerificationCommand}
-                          verificationCommandRunId={verificationCommandRunId}
-                          verificationCommandCanceling={verificationCommandCanceling}
-                          handleCancelVerificationCommand={handleCancelVerificationCommand}
-                          verificationCommandError={verificationCommandError}
-                          handleRecordTestCommandEvent={handleRecordTestCommandEvent}
-                          toggleRevalidationItem={toggleRevalidationItem}
-                        />
-                      )}
-                    </>
+                    <SelectedFindingDetail
+                      activeFinding={activeFinding}
+                      selectedFindingIdx={selectedFindingIdx}
+                      repoPath={repoPath}
+                      selectedBranch={selectedBranch}
+                      baseBranch={baseBranch}
+                      reviewId={reviewId}
+                      qaWorkflowScopeLabel={qaWorkflowScopeLabel}
+                      qaActiveWorkflowId={qaActiveWorkflowId}
+                      qaWorkflows={qaWorkflows}
+                      qaWorkflowName={qaWorkflowName}
+                      setQaWorkflowName={setQaWorkflowName}
+                      handleSelectQaWorkflow={handleSelectQaWorkflow}
+                      handleSaveQaWorkflow={handleSaveQaWorkflow}
+                      handleDeleteQaWorkflow={handleDeleteQaWorkflow}
+                      qaActiveTargetId={qaActiveTargetId}
+                      qaTargets={qaTargets}
+                      handleSelectQaTarget={handleSelectQaTarget}
+                      qaBaseUrl={qaBaseUrl}
+                      setQaBaseUrl={setQaBaseUrl}
+                      qaAllowRemoteTarget={qaAllowRemoteTarget}
+                      setQaAllowRemoteTarget={setQaAllowRemoteTarget}
+                      qaTargetName={qaTargetName}
+                      setQaTargetName={setQaTargetName}
+                      qaTargetRoute={qaTargetRoute}
+                      setQaTargetRoute={setQaTargetRoute}
+                      qaAuthMode={qaAuthMode}
+                      setQaAuthMode={setQaAuthMode}
+                      qaStorageStatePath={qaStorageStatePath}
+                      setQaStorageStatePath={setQaStorageStatePath}
+                      qaLoopId={qaLoopId}
+                      setQaLoopId={setQaLoopId}
+                      setQaGoal={setQaGoal}
+                      qaGoal={qaGoal}
+                      qaRunnerType={qaRunnerType}
+                      setQaRunnerType={setQaRunnerType}
+                      qaRepoSpecPath={qaRepoSpecPath}
+                      setQaRepoSpecPath={setQaRepoSpecPath}
+                      qaSpecLoading={qaSpecLoading}
+                      qaSpecCandidates={qaSpecCandidates}
+                      qaSpecError={qaSpecError}
+                      handleDiscoverQaSpecs={handleDiscoverQaSpecs}
+                      qaRepoTraceMode={qaRepoTraceMode}
+                      setQaRepoTraceMode={setQaRepoTraceMode}
+                      qaExternalCommand={qaExternalCommand}
+                      setQaExternalCommand={setQaExternalCommand}
+                      handleSaveQaTarget={handleSaveQaTarget}
+                      handleDeleteQaTarget={handleDeleteQaTarget}
+                      handleRunSyntheticQa={handleRunSyntheticQa}
+                      qaRunning={qaRunning}
+                      qaError={qaError}
+                      qaLastRun={qaLastRun}
+                      qaArtifactPreview={qaArtifactPreview}
+                      qaArtifactPreviewLoading={qaArtifactPreviewLoading}
+                      handlePreviewQaArtifact={handlePreviewQaArtifact}
+                      handleOpenQaArtifact={handleOpenQaArtifact}
+                      setQaArtifactPreview={setQaArtifactPreview}
+                      applyQaToSelectedFinding={applyQaToSelectedFinding}
+                      addQaFailureFinding={addQaFailureFinding}
+                      qaEvidenceHistory={qaEvidenceHistory}
+                      qaPostFixComparison={qaPostFixComparison}
+                      postFixQaRunning={postFixQaRunning}
+                      handleRunPostFixQa={handleRunPostFixQa}
+                      activeEvidence={activeEvidence}
+                      updateFindingEvidence={updateFindingEvidence}
+                      activeBrowserEvidence={activeBrowserEvidence}
+                      updateBrowserEvidence={updateBrowserEvidence}
+                      verificationCommand={verificationCommand}
+                      setVerificationCommand={setVerificationCommand}
+                      verificationCommandSuggestions={verificationCommandSuggestions}
+                      verificationCommandSuggestionsLoading={verificationCommandSuggestionsLoading}
+                      verificationCommandTimeoutMs={verificationCommandTimeoutMs}
+                      setVerificationCommandTimeoutMs={setVerificationCommandTimeoutMs}
+                      verificationCommandRunning={verificationCommandRunning}
+                      handleRunVerificationCommand={handleRunVerificationCommand}
+                      verificationCommandRunId={verificationCommandRunId}
+                      verificationCommandCanceling={verificationCommandCanceling}
+                      handleCancelVerificationCommand={handleCancelVerificationCommand}
+                      verificationCommandError={verificationCommandError}
+                      handleRecordTestCommandEvent={handleRecordTestCommandEvent}
+                      toggleRevalidationItem={toggleRevalidationItem}
+                    />
                   ) : (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
@@ -3197,28 +4088,20 @@ export default function QuickReview() {
                 <AudienceValidationPanel
                   reviewId={reviewId}
                   repoPath={repoPath}
-                  defaultArtifact={qaLastRun?.screenshot_path ?? qaLastRun?.route ?? qaBaseUrl}
+                  defaultArtifact={audienceDefaultArtifact}
                   onBundleChange={setAudienceBundle}
                 />
 
                 <XrayExportPanel reviewId={reviewId} findings={sortedFindings} />
 
-                {(blastReport ||
-                  blastLoading ||
-                  blastError ||
-                  deepGraphImpact ||
-                  deepGraphImpactLoading) && (
-                  <div className="shrink-0 border-b border-[var(--cv-line)]">
-                    <BlastRadiusPanel
-                      report={blastReport}
-                      loading={blastLoading}
-                      error={blastError}
-                      deepGraphImpact={deepGraphImpact}
-                      deepGraphImpactLoading={deepGraphImpactLoading}
-                      onJump={handleJumpToCaller}
-                    />
-                  </div>
-                )}
+                <BlastRadiusSection
+                  blastReport={blastReport}
+                  blastLoading={blastLoading}
+                  blastError={blastError}
+                  deepGraphImpact={deepGraphImpact}
+                  deepGraphImpactLoading={deepGraphImpactLoading}
+                  handleJumpToCaller={handleJumpToCaller}
+                />
 
                 <FindingsListPanel
                   sortedFindings={sortedFindings}
@@ -3249,23 +4132,10 @@ export default function QuickReview() {
                   handleTimelineJump={handleTimelineJump}
                 />
 
-                {reviewMemoryGraph && reviewMemoryGraph.nodes.length > 0 && (
-                  <ReviewMemoryGraphPanel
-                    graph={reviewMemoryGraph}
-                    title="Review memory graph"
-                    accent="cyan"
-                    nodeLimit={5}
-                  />
-                )}
-
-                {focusedReviewMemoryGraph && focusedReviewMemoryGraph.nodes.length > 0 && (
-                  <ReviewMemoryGraphPanel
-                    graph={focusedReviewMemoryGraph}
-                    title="Finding graph focus"
-                    accent="emerald"
-                    nodeLimit={4}
-                  />
-                )}
+                <MemoryGraphPanels
+                  reviewMemoryGraph={reviewMemoryGraph}
+                  focusedReviewMemoryGraph={focusedReviewMemoryGraph}
+                />
 
                 <EvidenceInsightsPanel
                   historyExplanations={historyExplanations}
@@ -3275,47 +4145,14 @@ export default function QuickReview() {
                   updateEvidenceCandidateStatus={updateEvidenceCandidateStatus}
                 />
 
-                <div className="shrink-0 border-t border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={toggleSelectAll}
-                      title="Select all findings for fix (dismissed excluded)"
-                      className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
-                    >
-                      {selectableFindingCount > 0 &&
-                      selectedFindings.size >= selectableFindingCount ? (
-                        <CheckSquare2 size={14} className="text-[var(--cv-accent)]" />
-                      ) : (
-                        <Square size={14} />
-                      )}
-                      All
-                    </button>
-                    <div className="relative ml-auto group">
-                      <Button
-                        size="sm"
-                        onClick={handleFixSelected}
-                        disabled={
-                          isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath
-                        }
-                        className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
-                      >
-                        {isFixing === 'selected' ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <Zap size={14} />
-                        )}
-                        {isFixing === 'selected'
-                          ? 'Fixing...'
-                          : `Fix${selectedFindings.size > 0 ? ` (${selectedFindings.size})` : ''}`}
-                      </Button>
-                      {!viewHasRepoPath && (
-                        <div className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block">
-                          No repo path — can't apply fixes
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <FixFooter
+                  selectableFindingCount={selectableFindingCount}
+                  selectedFindings={selectedFindings}
+                  isFixing={isFixing}
+                  viewHasRepoPath={viewHasRepoPath}
+                  toggleSelectAll={toggleSelectAll}
+                  handleFixSelected={handleFixSelected}
+                />
               </aside>
             </Panel>
           </PanelGroup>

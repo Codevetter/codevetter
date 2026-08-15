@@ -24,6 +24,7 @@ import { HistoryContributorPanel } from '@/components/unpack-workspace/HistoryCo
 import { HistoryReleaseNavigator } from '@/components/unpack-workspace/HistoryReleaseNavigator';
 import { useHistoryReleaseNavigation } from '@/components/unpack-workspace/useHistoryReleaseNavigation';
 import {
+  type HistoryRevisionMatch,
   deriveHistoryGraphTransition,
   filterHistoryRevisions,
   historyInspectionAriaLabel,
@@ -47,7 +48,10 @@ import {
   onHistoryBackfillProgress,
   openInApp,
   type HistoryBackfillProgress,
+  type HistoryCausalEvent,
+  type HistoryCausalLink,
   type HistoryCausalTrace,
+  type HistoryChangeEpisode,
   type HistoryContributorSummary,
   type HistoryGraphStatus,
   type HistoryFacetPacket,
@@ -55,6 +59,8 @@ import {
   type HistoryEvidenceAdapterDescriptor,
   type HistoryAnnotation,
   type HistoryAnnotationDecision,
+  type HistoryReleaseCatalogEntry,
+  type HistoryRevision,
   type HistoryTimeline,
   type HistoryStructuralState,
   type HistoryStructuralDelta,
@@ -84,6 +90,1023 @@ function viewerGraph(state: HistoryStructuralState | null): UnpackRepoGraph {
       origin: edge.origin,
     })),
   };
+}
+
+// ─── Extracted sub-components ───────────────────────────────────────────────
+
+function CausalEventCard({
+  event,
+  openEvidenceSource,
+}: {
+  event: HistoryCausalEvent;
+  openEvidenceSource: (path: string) => void;
+}) {
+  return (
+    <div
+      key={event.id}
+      className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-main)]/30 p-2.5"
+    >
+      <div className="flex flex-wrap items-center gap-1.5 text-[8px] uppercase tracking-[0.1em] text-[var(--text-muted)]">
+        <Badge className="border border-cyan-400/15 bg-cyan-400/[0.07] text-[8px] text-cyan-100">
+          {event.stage.replace('_', ' ')}
+        </Badge>
+        <span>{event.event_kind.replaceAll('_', ' ')}</span>
+        <span>·</span>
+        <span>{new Date(event.effective_at ?? event.recorded_at).toLocaleString()}</span>
+      </div>
+      <p className="mt-1.5 text-[10px] leading-5 text-[var(--text-secondary)]">{event.summary}</p>
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5 font-mono text-[8px] text-[var(--text-muted)]">
+        <span>{event.trust}</span>
+        <span>· {event.source_id}</span>
+        {event.revision_sha ? <span>· {event.revision_sha.slice(0, 8)}</span> : null}
+        {event.sources.length > 0 && !event.source_available ? (
+          <span className="flex items-center gap-1 text-amber-200">
+            <AlertTriangle size={9} /> source rotated or missing
+          </span>
+        ) : null}
+      </div>
+      {event.sources.length > 0 ? (
+        <div className="mt-1 flex flex-wrap gap-1.5">
+          {event.sources.slice(0, 2).map((source) => (
+            <button
+              key={source.path}
+              type="button"
+              className="flex min-w-0 items-center gap-1 truncate font-mono text-[8px] text-slate-500 hover:text-violet-200"
+              onClick={() => void openEvidenceSource(source.path)}
+            >
+              <ExternalLink size={8} /> {source.path}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CausalEpisodeCard({
+  episode,
+  episodeIndex,
+  openEvidenceSource,
+}: {
+  episode: HistoryChangeEpisode;
+  episodeIndex: number;
+  openEvidenceSource: (path: string) => void;
+}) {
+  return (
+    <article key={episode.id} className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-200">
+          Episode {episodeIndex + 1} · {episode.events.length} evidenced events
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {episode.stages_present.map((stage) => (
+            <Badge
+              key={stage}
+              className="border border-violet-400/15 bg-violet-400/[0.07] text-[8px] text-violet-100"
+            >
+              {stage.replace('_', ' ')}
+            </Badge>
+          ))}
+        </div>
+      </div>
+      <div className="mt-3 grid gap-2 xl:grid-cols-2">
+        {episode.events.slice(0, 24).map((event) => (
+          <CausalEventCard key={event.id} event={event} openEvidenceSource={openEvidenceSource} />
+        ))}
+      </div>
+      {episode.contradictions.length > 0 ? (
+        <div className="mt-2 rounded-md border border-rose-400/20 bg-rose-400/[0.06] px-2.5 py-2 text-[9px] leading-5 text-rose-200">
+          <AlertTriangle size={10} className="mr-1 inline" />
+          {episode.contradictions.join(' · ')}
+        </div>
+      ) : null}
+      {episode.gaps.length > 0 ? (
+        <div className="mt-2 text-[9px] leading-5 text-amber-200/75">
+          Missing: {episode.gaps.join(' · ')}
+        </div>
+      ) : null}
+      {episode.qualified_leads.length > 0 ? (
+        <div className="mt-2 rounded-md border border-dashed border-amber-400/20 p-2.5">
+          <div className="text-[9px] font-medium text-amber-100">Qualified leads · not merged</div>
+          <div className="mt-1 space-y-1">
+            {episode.qualified_leads.slice(0, 8).map((lead) => {
+              const candidate = episode.qualified_lead_events.find(
+                (event) => event.id === lead.to_event_id
+              );
+              return (
+                <div
+                  key={lead.id}
+                  className="text-[9px] leading-4 text-[var(--text-muted)]"
+                  title={lead.evidence}
+                >
+                  {candidate?.summary ?? lead.to_event_id} · {lead.evidence}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function CausalTraceSection({
+  causalTrace,
+  openEvidenceSource,
+}: {
+  causalTrace: HistoryCausalTrace;
+  openEvidenceSource: (path: string) => void;
+}) {
+  return (
+    <section className="mt-3 rounded-lg border border-violet-400/15 bg-violet-400/[0.025] p-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-primary)]">
+            <CircleDotDashed size={13} className="text-violet-300" /> Causal history
+          </div>
+          <p className="mt-1 max-w-3xl text-[10px] leading-5 text-[var(--text-muted)]">
+            Explicit IDs, revisions, entities, and episode keys form threads. Time or path proximity
+            stays a qualified lead until stronger evidence links it.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <Badge
+            className={
+              causalTrace.stale
+                ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
+                : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
+            }
+          >
+            {causalTrace.stale ? 'ledger stale' : 'ledger current'}
+          </Badge>
+          <Badge className="border border-violet-400/20 bg-violet-400/10 text-violet-200">
+            {causalTrace.scanned_events.toLocaleString()} events scanned
+          </Badge>
+        </div>
+      </div>
+      {causalTrace.gaps.length > 0 ? (
+        <div className="mt-2 text-[10px] leading-5 text-amber-200/80">
+          {causalTrace.gaps.join(' · ')}
+        </div>
+      ) : null}
+      {causalTrace.episodes.length === 0 ? (
+        <div className="mt-3 rounded-md border border-dashed border-[var(--cv-line)] px-3 py-4 text-[10px] text-[var(--text-muted)]">
+          No explicit causal episode currently links to this entity. The absence is preserved
+          instead of guessing from nearby activity.
+        </div>
+      ) : (
+        <div className="mt-3 space-y-3">
+          {causalTrace.episodes.slice(0, 3).map((episode, episodeIndex) => (
+            <CausalEpisodeCard
+              key={episode.id}
+              episode={episode}
+              episodeIndex={episodeIndex}
+              openEvidenceSource={openEvidenceSource}
+            />
+          ))}
+        </div>
+      )}
+      {causalTrace.truncated ? (
+        <div className="mt-2 text-[9px] text-amber-200/75">
+          Bounded result. Narrow the selector or request the next ledger page for more evidence.
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function EntityEvolutionPanel({ entityEvolution }: { entityEvolution: HistoryEntityEvolution }) {
+  return (
+    <div className="mt-3 rounded-lg border border-cyan-400/15 bg-cyan-400/[0.03] p-3">
+      <div className="flex flex-wrap gap-x-5 gap-y-2 text-[10px] text-[var(--text-secondary)]">
+        <span>
+          First indexed:{' '}
+          <b className="font-mono text-cyan-100">
+            {entityEvolution.first_seen?.revision_sha.slice(0, 8) ?? 'unknown'}
+          </b>
+        </span>
+        <span>
+          Last changed:{' '}
+          <b className="font-mono text-cyan-100">
+            {entityEvolution.last_changed?.revision_sha.slice(0, 8) ?? 'unknown'}
+          </b>
+        </span>
+        <span>
+          Last present:{' '}
+          <b className="font-mono text-cyan-100">
+            {entityEvolution.last_present?.revision_sha.slice(0, 8) ?? 'unknown'}
+          </b>
+        </span>
+        <span>{entityEvolution.occurrences.length} indexed checkpoints</span>
+      </div>
+      {entityEvolution.lineage.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {entityEvolution.lineage.slice(0, 12).map((edge) => (
+            <Badge
+              key={edge.id}
+              className="border border-cyan-400/20 bg-cyan-400/10 text-[9px] text-cyan-100"
+              title={edge.evidence}
+            >
+              {edge.relation} · {edge.trust}
+              {edge.candidates.length > 0 ? ` · ${edge.candidates.length + 1} candidates` : ''}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
+      {entityEvolution.coverage_gap ? (
+        <div className="mt-2 text-[9px] text-amber-200/80">{entityEvolution.coverage_gap}</div>
+      ) : null}
+    </div>
+  );
+}
+
+function EntityFacetCard({ facet }: { facet: HistoryFacetPacket['facets'][number] }) {
+  return (
+    <div key={facet.name} className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-200">
+          {facet.name}
+        </span>
+        <Badge
+          className={`border text-[9px] ${
+            facet.status === 'evidenced'
+              ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
+              : facet.status === 'qualified_lead'
+                ? 'border-amber-400/25 bg-amber-400/10 text-amber-200'
+                : 'border-slate-600/50 bg-slate-800/50 text-slate-400'
+          }`}
+        >
+          <ShieldCheck size={9} /> {facet.status.replace('_', ' ')}
+        </Badge>
+      </div>
+      <p className="mt-2 text-[11px] leading-5 text-[var(--text-secondary)]">{facet.summary}</p>
+      <div className="mt-2 font-mono text-[9px] text-[var(--text-muted)]">
+        trust: {facet.trust}
+        {facet.sources.length > 0
+          ? ` · ${facet.sources
+              .slice(0, 2)
+              .map((source) => `${source.path}${source.start_line ? `:${source.start_line}` : ''}`)
+              .join(', ')}`
+          : ' · no source anchor'}
+      </div>
+    </div>
+  );
+}
+
+function EntityExplanationAside({
+  entityExplanation,
+  entityEvolution,
+  causalTrace,
+  annotations,
+  revision,
+  openEvidenceSource,
+  annotationAuthor,
+  setAnnotationAuthor,
+  annotationBody,
+  setAnnotationBody,
+  annotationDecision,
+  setAnnotationDecision,
+  annotationSaving,
+  saveAnnotation,
+}: {
+  entityExplanation: HistoryFacetPacket;
+  entityEvolution: HistoryEntityEvolution | null;
+  causalTrace: HistoryCausalTrace | null;
+  annotations: HistoryAnnotation[];
+  revision: HistoryRevision;
+  openEvidenceSource: (path: string) => void;
+  annotationAuthor: string;
+  setAnnotationAuthor: (value: string) => void;
+  annotationBody: string;
+  setAnnotationBody: (value: string) => void;
+  annotationDecision: HistoryAnnotationDecision;
+  setAnnotationDecision: (value: HistoryAnnotationDecision) => void;
+  annotationSaving: boolean;
+  saveAnnotation: () => void;
+}) {
+  return (
+    <aside
+      className="mt-3 rounded-xl border border-violet-400/15 bg-[var(--bg-main)]/35 p-4"
+      aria-label={historyInspectionAriaLabel({
+        entityLabel: entityExplanation.entity_label,
+        stale: entityExplanation.stale,
+        evidenceGaps: entityExplanation.gaps.length,
+        contradictions:
+          entityExplanation.contradictions.length +
+          (causalTrace?.episodes.reduce(
+            (count, episode) => count + episode.contradictions.length,
+            0
+          ) ?? 0),
+        ambiguousLineage:
+          entityEvolution?.lineage.filter((edge) => edge.trust === 'ambiguous').length ?? 0,
+        annotations: annotations.length,
+        truncated:
+          entityExplanation.truncated ||
+          (entityEvolution?.truncated ?? false) ||
+          (causalTrace?.truncated ?? false),
+      })}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-[var(--text-primary)]">
+            {entityExplanation.entity_label}
+          </div>
+          <div className="mt-1 font-mono text-[10px] text-[var(--text-muted)]">
+            {entityExplanation.entity_kind} · as of {revision.short_sha}
+          </div>
+          <div
+            className="mt-1 max-w-xl truncate font-mono text-[9px] text-slate-600"
+            title={entityExplanation.entity_id}
+          >
+            {entityExplanation.entity_id}
+          </div>
+        </div>
+        <Badge
+          className={
+            entityExplanation.stale
+              ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
+              : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
+          }
+        >
+          {entityExplanation.stale ? 'index stale' : 'exact checkpoint'}
+        </Badge>
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {entityExplanation.facets.map((facet) => (
+          <EntityFacetCard key={facet.name} facet={facet} />
+        ))}
+      </div>
+      {entityExplanation.gaps.length > 0 ? (
+        <div className="mt-3 text-[10px] leading-5 text-amber-200/80">
+          Evidence gaps: {entityExplanation.gaps.join(' · ')}
+        </div>
+      ) : null}
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {Object.entries(entityExplanation.trust_summary).map(([trust, count]) => (
+          <Badge
+            key={trust}
+            className="border border-slate-600/40 bg-slate-800/40 text-[9px] text-slate-300"
+          >
+            {trust} · {count}
+          </Badge>
+        ))}
+      </div>
+      {entityExplanation.contradictions.length > 0 ? (
+        <div className="mt-2 rounded-md border border-rose-400/20 bg-rose-400/[0.06] px-2.5 py-2 text-[10px] leading-5 text-rose-200">
+          <AlertTriangle size={10} className="mr-1 inline" />
+          {entityExplanation.contradictions.join(' · ')}
+        </div>
+      ) : null}
+      {entityEvolution ? <EntityEvolutionPanel entityEvolution={entityEvolution} /> : null}
+      {causalTrace ? (
+        <CausalTraceSection causalTrace={causalTrace} openEvidenceSource={openEvidenceSource} />
+      ) : null}
+      <div className="mt-4 grid gap-3 border-t border-[var(--cv-line)] pt-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-primary)]">
+            <MessageSquarePlus size={13} className="text-violet-300" /> Local annotations
+          </div>
+          <p className="mt-1 text-[10px] leading-5 text-[var(--text-muted)]">
+            Append-only human evidence. A confirmation or correction remains separate from extracted
+            Git and source facts and never upgrades them silently.
+          </p>
+          <div className="mt-2 space-y-2">
+            {annotations.length === 0 ? (
+              <div className="text-[10px] text-[var(--text-muted)]">
+                No local annotations for this entity at this revision.
+              </div>
+            ) : (
+              annotations.map((annotation) => (
+                <div
+                  key={annotation.id}
+                  className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-2.5"
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-[9px] text-[var(--text-muted)]">
+                    <Badge className="border border-violet-400/20 bg-violet-400/10 text-violet-200">
+                      {annotation.decision}
+                    </Badge>
+                    <span>{annotation.author}</span>
+                    <span>·</span>
+                    <span>{new Date(annotation.created_at).toLocaleString()}</span>
+                    <span>· {annotation.source}</span>
+                  </div>
+                  <p className="mt-1.5 whitespace-pre-wrap text-[11px] leading-5 text-[var(--text-secondary)]">
+                    {annotation.body}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-3">
+          <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-2">
+            <input
+              value={annotationAuthor}
+              maxLength={120}
+              aria-label="Annotation author"
+              onChange={(event) => setAnnotationAuthor(event.target.value)}
+              className="min-w-0 rounded border border-[var(--cv-line)] bg-[var(--bg-main)] px-2 py-1.5 text-[11px] text-[var(--text-primary)] outline-none focus:border-violet-400/50"
+            />
+            <select
+              value={annotationDecision}
+              aria-label="Annotation decision"
+              onChange={(event) =>
+                setAnnotationDecision(event.target.value as HistoryAnnotationDecision)
+              }
+              className="rounded border border-[var(--cv-line)] bg-[var(--bg-main)] px-2 py-1.5 text-[11px] text-[var(--text-primary)] outline-none focus:border-violet-400/50"
+            >
+              <option value="note">Note</option>
+              <option value="confirm">Confirm</option>
+              <option value="reject">Reject</option>
+              <option value="correction">Correction</option>
+            </select>
+          </div>
+          <textarea
+            value={annotationBody}
+            maxLength={20_000}
+            rows={3}
+            aria-label="Annotation text"
+            placeholder="Add missing intent, evidence context, or a lineage correction…"
+            onChange={(event) => setAnnotationBody(event.target.value)}
+            className="mt-2 w-full resize-y rounded border border-[var(--cv-line)] bg-[var(--bg-main)] px-2 py-1.5 text-[11px] leading-5 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] focus:border-violet-400/50"
+          />
+          <Button
+            type="button"
+            size="sm"
+            className="mt-2"
+            disabled={annotationSaving || !annotationAuthor.trim() || !annotationBody.trim()}
+            onClick={() => void saveAnnotation()}
+          >
+            {annotationSaving ? (
+              <LoaderCircle size={12} className="animate-spin" />
+            ) : (
+              <MessageSquarePlus size={12} />
+            )}
+            Append annotation
+          </Button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function RevisionTracePanel({
+  revisionTrace,
+  openEvidenceSource,
+}: {
+  revisionTrace: HistoryCausalTrace;
+  openEvidenceSource: (path: string) => void;
+}) {
+  return (
+    <div className="mt-3 rounded-lg border border-violet-400/15 bg-violet-400/[0.035] p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-200">
+          Change evidence · {revisionTrace.episodes.length} causal episode(s)
+        </div>
+        <Badge
+          className={
+            revisionTrace.stale
+              ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
+              : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
+          }
+        >
+          {revisionTrace.stale ? 'stale' : 'current'}
+          {revisionTrace.truncated ? ' · bounded' : ''}
+        </Badge>
+      </div>
+      {revisionTrace.episodes.length === 0 ? (
+        <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+          No explicit evidence thread links to this revision in scanned coverage.
+        </div>
+      ) : (
+        <div className="mt-2 space-y-2">
+          {revisionTrace.episodes.slice(0, 3).map((episode) => (
+            <div key={episode.id} className="rounded-md border border-[var(--cv-line)] p-2">
+              <div className="flex flex-wrap gap-1">
+                {episode.stages_present.map((stage) => (
+                  <Badge key={stage} className="text-[8px]">
+                    {stage.replace('_', ' ')}
+                  </Badge>
+                ))}
+              </div>
+              <div className="mt-1.5 space-y-1">
+                {episode.events.slice(0, 8).map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex flex-wrap items-start justify-between gap-2 text-[9px] leading-4 text-[var(--text-secondary)]"
+                  >
+                    <span>
+                      [{event.trust}] {event.summary}
+                    </span>
+                    {event.sources[0] ? (
+                      <button
+                        type="button"
+                        className="flex shrink-0 items-center gap-1 font-mono text-violet-300 hover:text-violet-100"
+                        onClick={() => void openEvidenceSource(event.sources[0].path)}
+                      >
+                        <ExternalLink size={9} /> {event.sources[0].path}
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+              {episode.contradictions.length > 0 ? (
+                <div className="mt-1.5 text-[9px] text-rose-200">
+                  Contradictions: {episode.contradictions.join(' · ')}
+                </div>
+              ) : null}
+              {episode.gaps.length > 0 ? (
+                <div className="mt-1.5 text-[9px] text-amber-200/75">
+                  Gaps: {episode.gaps.join(' · ')}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StructuralDeltaBadges({ structuralDelta }: { structuralDelta: HistoryStructuralDelta }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2 text-[10px]">
+      <Badge className="border border-emerald-400/25 bg-emerald-400/10 text-emerald-200">
+        +{structuralDelta.added_node_ids.length} nodes
+      </Badge>
+      <Badge className="border border-rose-400/25 bg-rose-400/10 text-rose-200">
+        -{structuralDelta.removed_node_ids.length} nodes
+      </Badge>
+      <Badge className="border border-amber-400/25 bg-amber-400/10 text-amber-200">
+        ~{structuralDelta.changed_node_ids.length} nodes
+      </Badge>
+      <Badge className="border border-cyan-400/25 bg-cyan-400/10 text-cyan-200">
+        {structuralDelta.added_edge_ids.length + structuralDelta.removed_edge_ids.length} edge
+        changes
+      </Badge>
+      {structuralDelta.added_community_ids.length + structuralDelta.removed_community_ids.length >
+      0 ? (
+        <Badge className="border border-violet-400/25 bg-violet-400/10 text-violet-200">
+          {structuralDelta.added_community_ids.length +
+            structuralDelta.removed_community_ids.length}{' '}
+          community changes
+        </Badge>
+      ) : null}
+      {structuralDelta.added_hub_ids.length + structuralDelta.removed_hub_ids.length > 0 ? (
+        <Badge className="border border-fuchsia-400/25 bg-fuchsia-400/10 text-fuchsia-200">
+          {structuralDelta.added_hub_ids.length + structuralDelta.removed_hub_ids.length} hub
+          changes
+        </Badge>
+      ) : null}
+      {structuralDelta.added_bridge_ids.length + structuralDelta.removed_bridge_ids.length > 0 ? (
+        <Badge className="border border-sky-400/25 bg-sky-400/10 text-sky-200">
+          {structuralDelta.added_bridge_ids.length + structuralDelta.removed_bridge_ids.length}{' '}
+          bridge changes
+        </Badge>
+      ) : null}
+      {structuralDelta.path_changes
+        .filter((change) => change.old_path)
+        .slice(0, 3)
+        .map((change) => (
+          <Badge key={`${change.old_path}:${change.path}`} className="max-w-full text-[9px]">
+            {change.change_kind}: {change.old_path} → {change.path}
+          </Badge>
+        ))}
+    </div>
+  );
+}
+
+function BackfillProgressBar({ backfillProgress }: { backfillProgress: HistoryBackfillProgress }) {
+  return (
+    <div className="border-b border-violet-400/10 bg-violet-400/[0.04] px-5 py-3">
+      <div className="flex items-center justify-between gap-3 text-[10px] text-violet-100">
+        <span>{backfillProgress.detail}</span>
+        <span className="font-mono">
+          {backfillProgress.completed} / {backfillProgress.total}
+        </span>
+      </div>
+      <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-800">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-violet-400 to-cyan-400 transition-[width] duration-150"
+          style={{
+            width: `${Math.min(100, (backfillProgress.completed / Math.max(1, backfillProgress.total)) * 100)}%`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function HistoryGraphHeader({
+  timeline,
+  releaseCount,
+  historyStatus,
+  evidenceAdapters,
+  historySearch,
+  setHistorySearch,
+  matchingRevisions,
+  scrub,
+  playing,
+  setPlaying,
+  backfilling,
+  startBackfill,
+  importingEvidence,
+  importEvidence,
+  repoPath,
+  index,
+}: {
+  timeline: HistoryTimeline | null;
+  releaseCount: number;
+  historyStatus: HistoryGraphStatus | null;
+  evidenceAdapters: HistoryEvidenceAdapterDescriptor[];
+  historySearch: string;
+  setHistorySearch: (value: string) => void;
+  matchingRevisions: HistoryRevisionMatch[];
+  scrub: (index: number) => void;
+  playing: boolean;
+  setPlaying: (updater: (value: boolean) => boolean) => void;
+  backfilling: boolean;
+  startBackfill: () => void;
+  importingEvidence: boolean;
+  importEvidence: () => void;
+  repoPath: string;
+  index: number;
+}) {
+  return (
+    <header className="flex flex-col gap-3 border-b border-violet-400/15 p-5 xl:flex-row xl:items-start xl:justify-between">
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <History size={18} className="text-violet-300" />
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Git history playback</h3>
+          <Badge className="border border-violet-400/25 bg-violet-400/10 text-violet-200">
+            {timeline?.revisions.length.toLocaleString() ?? 0} loaded
+          </Badge>
+          {releaseCount > 0 ? (
+            <Badge className="border border-amber-400/25 bg-amber-400/10 text-amber-200">
+              <Tag size={10} /> {releaseCount} releases
+            </Badge>
+          ) : null}
+          {historyStatus?.indexed ? (
+            <Badge
+              className={
+                historyStatus.stale
+                  ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
+                  : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
+              }
+            >
+              {historyStatus.checkpoint_count} checkpoints
+              {historyStatus.stale ? ' · refresh needed' : ' · current'}
+            </Badge>
+          ) : null}
+        </div>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
+          Scrub through exact syntax-aware graphs reconstructed from Git objects. Stable entity
+          identities, adjacent-state prefetch, and frame-coalesced input let the code topology
+          assemble smoothly without checkout.
+        </p>
+        <div className="mt-2 flex max-w-3xl flex-wrap gap-1.5">
+          {evidenceAdapters.map((adapter) => (
+            <Badge
+              key={adapter.id}
+              title={`${adapter.freshness}. ${adapter.redaction}`}
+              className={
+                adapter.availability === 'needs_configuration'
+                  ? 'border border-slate-600/50 bg-slate-800/40 text-[9px] text-slate-400'
+                  : 'border border-violet-400/15 bg-violet-400/[0.06] text-[9px] text-violet-200'
+              }
+            >
+              {adapter.label} · {adapter.availability.replace('_', ' ')}
+            </Badge>
+          ))}
+        </div>
+        <div className="relative mt-3 max-w-xl">
+          <Search
+            size={12}
+            className="pointer-events-none absolute left-2.5 top-2.5 text-slate-500"
+          />
+          <input
+            type="search"
+            name="history-search"
+            value={historySearch}
+            onChange={(event) => setHistorySearch(event.target.value)}
+            placeholder="Find a loaded commit, author, or SHA"
+            className="h-8 w-full rounded-md border border-[var(--cv-line)] bg-black/20 pl-8 pr-24 text-[10px] text-[var(--text-primary)] outline-none placeholder:text-slate-600 focus:border-violet-400/35"
+            aria-label="Search Git history"
+          />
+          {historySearch.trim() && (
+            <div className="absolute left-0 right-0 top-9 z-30 max-h-64 overflow-y-auto rounded-md border border-violet-400/20 bg-[#090a0d] p-1 shadow-2xl">
+              {matchingRevisions.length === 0 ? (
+                <div className="px-2 py-3 text-[10px] text-slate-500">No matching revisions.</div>
+              ) : (
+                matchingRevisions.map(({ item, revisionIndex }) => (
+                  <button
+                    key={item.sha}
+                    type="button"
+                    className="flex w-full items-start justify-between gap-3 rounded px-2 py-2 text-left hover:bg-violet-400/[0.07]"
+                    onClick={() => {
+                      scrub(revisionIndex);
+                      setHistorySearch('');
+                    }}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[10px] text-slate-200">
+                        {item.subject}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[9px] text-slate-500">
+                        {item.author} · {new Date(item.committed_at).toLocaleDateString()}
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-mono text-[9px] text-violet-300">
+                      {item.tags[0] ?? item.short_sha}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={!timeline || index >= timeline.revisions.length - 1}
+          onClick={() => setPlaying((value) => !value)}
+        >
+          {playing ? <Pause size={14} /> : <Play size={14} />}
+          {playing ? 'Pause' : 'Play history'}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={backfilling}
+          onClick={() => void startBackfill()}
+        >
+          {backfilling ? (
+            <LoaderCircle size={14} className="animate-spin" />
+          ) : (
+            <History size={14} />
+          )}
+          {backfilling ? 'Indexing history' : 'Index history'}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={importingEvidence}
+          onClick={() => void importEvidence()}
+        >
+          {importingEvidence ? (
+            <LoaderCircle size={14} className="animate-spin" />
+          ) : (
+            <Upload size={14} />
+          )}
+          Import local evidence
+        </Button>
+        {backfilling ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => void cancelHistoryBackfill(repoPath)}
+          >
+            Cancel
+          </Button>
+        ) : null}
+      </div>
+    </header>
+  );
+}
+
+// ─── Foreground queue helpers ───────────────────────────────────────────────
+
+interface ForegroundQueueContext {
+  pendingForeground: React.RefObject<{
+    repoPath: string;
+    revision: string;
+    index: number;
+    serial: number;
+  } | null>;
+  requestSerial: React.RefObject<number>;
+  repoPathRef: React.RefObject<string>;
+  timelineRef: React.RefObject<HistoryTimeline | null>;
+  fetchRevision: (repo: string, rev: string) => Promise<HistoryStructuralState>;
+  setStructuralState: (state: HistoryStructuralState) => void;
+  setError: (err: string | null) => void;
+  foregroundActive: React.RefObject<boolean>;
+  loadingReleaseTimer: React.RefObject<number | null>;
+  loadingVisible: React.RefObject<boolean>;
+  setLoading: (loading: boolean) => void;
+}
+
+async function processForegroundRequest(
+  request: {
+    repoPath: string;
+    revision: string;
+    index: number;
+    serial: number;
+  },
+  ctx: ForegroundQueueContext
+): Promise<void> {
+  try {
+    const result = await ctx.fetchRevision(request.repoPath, request.revision);
+    if (
+      request.serial === ctx.requestSerial.current &&
+      request.repoPath === ctx.repoPathRef.current
+    ) {
+      ctx.setStructuralState(result);
+      const revisions = ctx.timelineRef.current?.revisions ?? [];
+      const adjacent = revisions[request.index + 1] ?? revisions[request.index - 1];
+      if (adjacent && !ctx.pendingForeground.current) {
+        void ctx.fetchRevision(request.repoPath, adjacent.sha);
+      }
+    }
+  } catch (cause) {
+    if (request.serial === ctx.requestSerial.current) {
+      ctx.setError(cause instanceof Error ? cause.message : String(cause));
+    }
+  }
+}
+
+function scheduleLoadingHide(ctx: ForegroundQueueContext): void {
+  ctx.loadingReleaseTimer.current = window.setTimeout(() => {
+    ctx.loadingReleaseTimer.current = null;
+    if (ctx.foregroundActive.current || ctx.pendingForeground.current) return;
+    ctx.loadingVisible.current = false;
+    ctx.setLoading(false);
+  }, 150);
+}
+
+async function saveAnnotationAction(
+  repoPath: string,
+  entityExplanation: HistoryFacetPacket | null,
+  annotationAuthor: string,
+  annotationBody: string,
+  annotationDecision: HistoryAnnotationDecision,
+  setAnnotationSaving: (value: boolean) => void,
+  setEntityError: (value: string | null) => void,
+  setAnnotations: (updater: (current: HistoryAnnotation[]) => HistoryAnnotation[]) => void,
+  setAnnotationBody: (value: string) => void,
+  setAnnotationDecision: (value: HistoryAnnotationDecision) => void
+): Promise<void> {
+  if (!entityExplanation || !annotationAuthor.trim() || !annotationBody.trim()) return;
+  setAnnotationSaving(true);
+  setEntityError(null);
+  try {
+    const saved = await addHistoryAnnotation({
+      repoPath,
+      revisionSha: entityExplanation.as_of_revision,
+      entityId: entityExplanation.entity_id,
+      author: annotationAuthor,
+      body: annotationBody,
+      decision: annotationDecision,
+    });
+    setAnnotations((current) => [saved, ...current]);
+    setAnnotationBody('');
+    setAnnotationDecision('note');
+  } catch (cause) {
+    setEntityError(cause instanceof Error ? cause.message : String(cause));
+  } finally {
+    setAnnotationSaving(false);
+  }
+}
+
+async function importEvidenceAction(
+  repoPath: string,
+  entityExplanation: HistoryFacetPacket | null,
+  revision: HistoryRevision | undefined,
+  setImportingEvidence: (value: boolean) => void,
+  setError: (value: string | null) => void,
+  setEvidenceAdapters: (value: HistoryEvidenceAdapterDescriptor[]) => void,
+  setEntityExplanation: (value: HistoryFacetPacket | null) => void,
+  setCausalTrace: (value: HistoryCausalTrace | null) => void
+): Promise<void> {
+  setImportingEvidence(true);
+  setError(null);
+  try {
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      filters: [{ name: 'CodeVetter history evidence', extensions: ['json'] }],
+    });
+    if (typeof selected !== 'string') return;
+    await importHistoryEvidenceExport(repoPath, selected);
+    setEvidenceAdapters(await getHistoryEvidenceAdapters(repoPath));
+    if (entityExplanation && revision) {
+      const [explanation, causal] = await Promise.all([
+        explainHistoryEntity(repoPath, entityExplanation.entity_id, revision.sha),
+        getHistoryCausalTrace(
+          repoPath,
+          { kind: 'entity', entity_id: entityExplanation.entity_id },
+          { limit: 80 }
+        ),
+      ]);
+      setEntityExplanation(explanation);
+      setCausalTrace(causal);
+    }
+  } catch (cause) {
+    setError(cause instanceof Error ? cause.message : String(cause));
+  } finally {
+    setImportingEvidence(false);
+  }
+}
+
+async function explainEntityAction(
+  repoPath: string,
+  revision: HistoryRevision | undefined,
+  nodeId: string | undefined,
+  setEntityLoading: (value: boolean) => void,
+  setEntityError: (value: string | null) => void,
+  setEntityExplanation: (value: HistoryFacetPacket | null) => void,
+  setEntityEvolution: (value: HistoryEntityEvolution | null) => void,
+  setCausalTrace: (value: HistoryCausalTrace | null) => void
+): Promise<void> {
+  if (!nodeId || !revision) return;
+  setEntityLoading(true);
+  setEntityError(null);
+  try {
+    const [explanation, evolution, causal] = await Promise.all([
+      explainHistoryEntity(repoPath, nodeId, revision.sha),
+      getHistoryEntityEvolution(repoPath, nodeId, revision.sha),
+      getHistoryCausalTrace(repoPath, { kind: 'entity', entity_id: nodeId }, { limit: 80 }),
+    ]);
+    setEntityExplanation(explanation);
+    setEntityEvolution(evolution);
+    setCausalTrace(causal);
+  } catch (cause) {
+    setEntityError(cause instanceof Error ? cause.message : String(cause));
+  } finally {
+    setEntityLoading(false);
+  }
+}
+
+async function inspectRevisionAction(
+  repoPath: string,
+  revision: HistoryRevision | undefined,
+  setRevisionTraceLoading: (value: boolean) => void,
+  setError: (value: string | null) => void,
+  setRevisionTrace: (value: HistoryCausalTrace | null) => void
+): Promise<void> {
+  if (!revision) return;
+  setRevisionTraceLoading(true);
+  setError(null);
+  try {
+    setRevisionTrace(
+      await getHistoryCausalTrace(
+        repoPath,
+        { kind: 'revision', revision: revision.sha },
+        { limit: 80 }
+      )
+    );
+  } catch (cause) {
+    setError(cause instanceof Error ? cause.message : String(cause));
+  } finally {
+    setRevisionTraceLoading(false);
+  }
+}
+
+async function openEvidenceSourceAction(
+  repoPath: string,
+  path: string,
+  setError: (value: string | null) => void
+): Promise<void> {
+  const resolved = path.startsWith('/') ? path : `${repoPath}/${path}`;
+  try {
+    await openInApp('reveal', resolved);
+  } catch (cause) {
+    setError(cause instanceof Error ? cause.message : String(cause));
+  }
+}
+
+function computeRevisionIndex(
+  selectedRevisionSha: string | null,
+  timeline: HistoryTimeline | null
+): number {
+  const revisions = timeline?.revisions ?? [];
+  const selected = selectedRevisionSha
+    ? revisions.findIndex((item) => item.sha === selectedRevisionSha)
+    : -1;
+  return selected >= 0 ? selected : Math.max(0, revisions.length - 1);
+}
+
+function computeActiveRelease(
+  revision: HistoryRevision | undefined,
+  releases: HistoryReleaseCatalogEntry[] | undefined
+): HistoryReleaseCatalogEntry | null {
+  if (!revision) return null;
+  return (
+    (releases ?? [])
+      .filter((release) => release.ordinal <= revision.ordinal)
+      .sort(
+        (left, right) => right.ordinal - left.ordinal || left.tag.localeCompare(right.tag)
+      )[0] ?? null
+  );
+}
+
+function structuralStateSummary(state: HistoryStructuralState | null): string {
+  return `${state?.projection.nodes.length.toLocaleString() ?? 0} visible of ${state?.node_count.toLocaleString() ?? 0} structural nodes · ${state?.changed_paths.length.toLocaleString() ?? 0} files changed here${state?.projection.truncated ? ' · bounded view' : ''}${state?.cached ? ' · cached' : ''}`;
 }
 
 export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
@@ -154,24 +1177,15 @@ export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
   timelineRef.current = timeline;
   selectedRevisionRef.current = selectedRevisionSha;
 
-  const index = useMemo(() => {
-    const revisions = timeline?.revisions ?? [];
-    const selected = selectedRevisionSha
-      ? revisions.findIndex((item) => item.sha === selectedRevisionSha)
-      : -1;
-    return selected >= 0 ? selected : Math.max(0, revisions.length - 1);
-  }, [selectedRevisionSha, timeline]);
+  const index = useMemo(
+    () => computeRevisionIndex(selectedRevisionSha, timeline),
+    [selectedRevisionSha, timeline]
+  );
   const revision = timeline?.revisions[index];
-  const activeRelease = useMemo(() => {
-    if (!revision) return null;
-    return (
-      (releases.catalog?.releases ?? [])
-        .filter((release) => release.ordinal <= revision.ordinal)
-        .sort(
-          (left, right) => right.ordinal - left.ordinal || left.tag.localeCompare(right.tag)
-        )[0] ?? null
-    );
-  }, [releases.catalog?.releases, revision]);
+  const activeRelease = useMemo(
+    () => computeActiveRelease(revision, releases.catalog?.releases),
+    [releases.catalog?.releases, revision]
+  );
 
   const fetchRevision = useCallback(async (targetRepo: string, revision: string) => {
     const key = `${targetRepo}\0${revision}`;
@@ -212,36 +1226,27 @@ export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
         loadingVisible.current = true;
         setLoading(true);
       }
+      const ctx: ForegroundQueueContext = {
+        pendingForeground,
+        requestSerial,
+        repoPathRef,
+        timelineRef,
+        fetchRevision,
+        setStructuralState,
+        setError,
+        foregroundActive,
+        loadingReleaseTimer,
+        loadingVisible,
+        setLoading,
+      };
       void (async () => {
         while (pendingForeground.current) {
           const request = pendingForeground.current;
           pendingForeground.current = null;
-          try {
-            const result = await fetchRevision(request.repoPath, request.revision);
-            if (
-              request.serial === requestSerial.current &&
-              request.repoPath === repoPathRef.current
-            ) {
-              setStructuralState(result);
-              const revisions = timelineRef.current?.revisions ?? [];
-              const adjacent = revisions[request.index + 1] ?? revisions[request.index - 1];
-              if (adjacent && !pendingForeground.current) {
-                void fetchRevision(request.repoPath, adjacent.sha);
-              }
-            }
-          } catch (cause) {
-            if (request.serial === requestSerial.current) {
-              setError(cause instanceof Error ? cause.message : String(cause));
-            }
-          }
+          await processForegroundRequest(request, ctx);
         }
         foregroundActive.current = false;
-        loadingReleaseTimer.current = window.setTimeout(() => {
-          loadingReleaseTimer.current = null;
-          if (foregroundActive.current || pendingForeground.current) return;
-          loadingVisible.current = false;
-          setLoading(false);
-        }, 150);
+        scheduleLoadingHide(ctx);
       })();
     },
     [fetchRevision]
@@ -399,56 +1404,34 @@ export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
   }, [entityExplanation, repoPath]);
 
   const explainEntity = useCallback(
-    async (nodeId?: string) => {
-      if (!nodeId || !revision) return;
-      setEntityLoading(true);
-      setEntityError(null);
-      try {
-        const [explanation, evolution, causal] = await Promise.all([
-          explainHistoryEntity(repoPath, nodeId, revision.sha),
-          getHistoryEntityEvolution(repoPath, nodeId, revision.sha),
-          getHistoryCausalTrace(repoPath, { kind: 'entity', entity_id: nodeId }, { limit: 80 }),
-        ]);
-        setEntityExplanation(explanation);
-        setEntityEvolution(evolution);
-        setCausalTrace(causal);
-      } catch (cause) {
-        setEntityError(cause instanceof Error ? cause.message : String(cause));
-      } finally {
-        setEntityLoading(false);
-      }
-    },
+    (nodeId?: string) =>
+      void explainEntityAction(
+        repoPath,
+        revision,
+        nodeId,
+        setEntityLoading,
+        setEntityError,
+        setEntityExplanation,
+        setEntityEvolution,
+        setCausalTrace
+      ),
     [repoPath, revision]
   );
 
-  const inspectRevision = useCallback(async () => {
-    if (!revision) return;
-    setRevisionTraceLoading(true);
-    setError(null);
-    try {
-      setRevisionTrace(
-        await getHistoryCausalTrace(
-          repoPath,
-          { kind: 'revision', revision: revision.sha },
-          { limit: 80 }
-        )
-      );
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause));
-    } finally {
-      setRevisionTraceLoading(false);
-    }
-  }, [repoPath, revision]);
+  const inspectRevision = useCallback(
+    () =>
+      void inspectRevisionAction(
+        repoPath,
+        revision,
+        setRevisionTraceLoading,
+        setError,
+        setRevisionTrace
+      ),
+    [repoPath, revision]
+  );
 
   const openEvidenceSource = useCallback(
-    async (path: string) => {
-      const resolved = path.startsWith('/') ? path : `${repoPath}/${path}`;
-      try {
-        await openInApp('reveal', resolved);
-      } catch (cause) {
-        setError(cause instanceof Error ? cause.message : String(cause));
-      }
-    },
+    (path: string) => void openEvidenceSourceAction(repoPath, path, setError),
     [repoPath]
   );
 
@@ -505,228 +1488,59 @@ export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
     }
   }
 
-  async function saveAnnotation() {
-    if (!entityExplanation || !annotationAuthor.trim() || !annotationBody.trim()) return;
-    setAnnotationSaving(true);
-    setEntityError(null);
-    try {
-      const saved = await addHistoryAnnotation({
-        repoPath,
-        revisionSha: entityExplanation.as_of_revision,
-        entityId: entityExplanation.entity_id,
-        author: annotationAuthor,
-        body: annotationBody,
-        decision: annotationDecision,
-      });
-      setAnnotations((current) => [saved, ...current]);
-      setAnnotationBody('');
-      setAnnotationDecision('note');
-    } catch (cause) {
-      setEntityError(cause instanceof Error ? cause.message : String(cause));
-    } finally {
-      setAnnotationSaving(false);
-    }
+  function saveAnnotation() {
+    void saveAnnotationAction(
+      repoPath,
+      entityExplanation,
+      annotationAuthor,
+      annotationBody,
+      annotationDecision,
+      setAnnotationSaving,
+      setEntityError,
+      setAnnotations,
+      setAnnotationBody,
+      setAnnotationDecision
+    );
   }
 
-  async function importEvidence() {
-    setImportingEvidence(true);
-    setError(null);
-    try {
-      const selected = await open({
-        multiple: false,
-        directory: false,
-        filters: [{ name: 'CodeVetter history evidence', extensions: ['json'] }],
-      });
-      if (typeof selected !== 'string') return;
-      await importHistoryEvidenceExport(repoPath, selected);
-      setEvidenceAdapters(await getHistoryEvidenceAdapters(repoPath));
-      if (entityExplanation && revision) {
-        const [explanation, causal] = await Promise.all([
-          explainHistoryEntity(repoPath, entityExplanation.entity_id, revision.sha),
-          getHistoryCausalTrace(
-            repoPath,
-            { kind: 'entity', entity_id: entityExplanation.entity_id },
-            { limit: 80 }
-          ),
-        ]);
-        setEntityExplanation(explanation);
-        setCausalTrace(causal);
-      }
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause));
-    } finally {
-      setImportingEvidence(false);
-    }
+  function importEvidence() {
+    void importEvidenceAction(
+      repoPath,
+      entityExplanation,
+      revision,
+      setImportingEvidence,
+      setError,
+      setEvidenceAdapters,
+      setEntityExplanation,
+      setCausalTrace
+    );
   }
 
   if (!isTauriAvailable()) return null;
 
   return (
     <section className="overflow-hidden rounded-xl border border-violet-400/20 bg-[var(--bg-raised)]/40">
-      <header className="flex flex-col gap-3 border-b border-violet-400/15 p-5 xl:flex-row xl:items-start xl:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <History size={18} className="text-violet-300" />
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-              Git history playback
-            </h3>
-            <Badge className="border border-violet-400/25 bg-violet-400/10 text-violet-200">
-              {timeline?.revisions.length.toLocaleString() ?? 0} loaded
-            </Badge>
-            {releaseCount > 0 ? (
-              <Badge className="border border-amber-400/25 bg-amber-400/10 text-amber-200">
-                <Tag size={10} /> {releaseCount} releases
-              </Badge>
-            ) : null}
-            {historyStatus?.indexed ? (
-              <Badge
-                className={
-                  historyStatus.stale
-                    ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
-                    : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
-                }
-              >
-                {historyStatus.checkpoint_count} checkpoints
-                {historyStatus.stale ? ' · refresh needed' : ' · current'}
-              </Badge>
-            ) : null}
-          </div>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
-            Scrub through exact syntax-aware graphs reconstructed from Git objects. Stable entity
-            identities, adjacent-state prefetch, and frame-coalesced input let the code topology
-            assemble smoothly without checkout.
-          </p>
-          <div className="mt-2 flex max-w-3xl flex-wrap gap-1.5">
-            {evidenceAdapters.map((adapter) => (
-              <Badge
-                key={adapter.id}
-                title={`${adapter.freshness}. ${adapter.redaction}`}
-                className={
-                  adapter.availability === 'needs_configuration'
-                    ? 'border border-slate-600/50 bg-slate-800/40 text-[9px] text-slate-400'
-                    : 'border border-violet-400/15 bg-violet-400/[0.06] text-[9px] text-violet-200'
-                }
-              >
-                {adapter.label} · {adapter.availability.replace('_', ' ')}
-              </Badge>
-            ))}
-          </div>
-          <div className="relative mt-3 max-w-xl">
-            <Search
-              size={12}
-              className="pointer-events-none absolute left-2.5 top-2.5 text-slate-500"
-            />
-            <input
-              type="search"
-              name="history-search"
-              value={historySearch}
-              onChange={(event) => setHistorySearch(event.target.value)}
-              placeholder="Find a loaded commit, author, or SHA"
-              className="h-8 w-full rounded-md border border-[var(--cv-line)] bg-black/20 pl-8 pr-24 text-[10px] text-[var(--text-primary)] outline-none placeholder:text-slate-600 focus:border-violet-400/35"
-              aria-label="Search Git history"
-            />
-            {historySearch.trim() && (
-              <div className="absolute left-0 right-0 top-9 z-30 max-h-64 overflow-y-auto rounded-md border border-violet-400/20 bg-[#090a0d] p-1 shadow-2xl">
-                {matchingRevisions.length === 0 ? (
-                  <div className="px-2 py-3 text-[10px] text-slate-500">No matching revisions.</div>
-                ) : (
-                  matchingRevisions.map(({ item, revisionIndex }) => (
-                    <button
-                      key={item.sha}
-                      type="button"
-                      className="flex w-full items-start justify-between gap-3 rounded px-2 py-2 text-left hover:bg-violet-400/[0.07]"
-                      onClick={() => {
-                        scrub(revisionIndex);
-                        setHistorySearch('');
-                      }}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-[10px] text-slate-200">
-                          {item.subject}
-                        </span>
-                        <span className="mt-0.5 block truncate text-[9px] text-slate-500">
-                          {item.author} · {new Date(item.committed_at).toLocaleDateString()}
-                        </span>
-                      </span>
-                      <span className="shrink-0 font-mono text-[9px] text-violet-300">
-                        {item.tags[0] ?? item.short_sha}
-                      </span>
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={!timeline || index >= timeline.revisions.length - 1}
-            onClick={() => setPlaying((value) => !value)}
-          >
-            {playing ? <Pause size={14} /> : <Play size={14} />}
-            {playing ? 'Pause' : 'Play history'}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={backfilling}
-            onClick={() => void startBackfill()}
-          >
-            {backfilling ? (
-              <LoaderCircle size={14} className="animate-spin" />
-            ) : (
-              <History size={14} />
-            )}
-            {backfilling ? 'Indexing history' : 'Index history'}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={importingEvidence}
-            onClick={() => void importEvidence()}
-          >
-            {importingEvidence ? (
-              <LoaderCircle size={14} className="animate-spin" />
-            ) : (
-              <Upload size={14} />
-            )}
-            Import local evidence
-          </Button>
-          {backfilling ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => void cancelHistoryBackfill(repoPath)}
-            >
-              Cancel
-            </Button>
-          ) : null}
-        </div>
-      </header>
+      <HistoryGraphHeader
+        timeline={timeline}
+        releaseCount={releaseCount}
+        historyStatus={historyStatus}
+        evidenceAdapters={evidenceAdapters}
+        historySearch={historySearch}
+        setHistorySearch={setHistorySearch}
+        matchingRevisions={matchingRevisions}
+        scrub={scrub}
+        playing={playing}
+        setPlaying={setPlaying}
+        backfilling={backfilling}
+        startBackfill={startBackfill}
+        importingEvidence={importingEvidence}
+        importEvidence={importEvidence}
+        repoPath={repoPath}
+        index={index}
+      />
 
       {backfillProgress && backfilling ? (
-        <div className="border-b border-violet-400/10 bg-violet-400/[0.04] px-5 py-3">
-          <div className="flex items-center justify-between gap-3 text-[10px] text-violet-100">
-            <span>{backfillProgress.detail}</span>
-            <span className="font-mono">
-              {backfillProgress.completed} / {backfillProgress.total}
-            </span>
-          </div>
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-800">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-violet-400 to-cyan-400 transition-[width] duration-150"
-              style={{
-                width: `${Math.min(100, (backfillProgress.completed / Math.max(1, backfillProgress.total)) * 100)}%`,
-              }}
-            />
-          </div>
-        </div>
+        <BackfillProgressBar backfillProgress={backfillProgress} />
       ) : null}
 
       {error ? <div className="m-4 text-xs text-rose-200">{error}</div> : null}
@@ -773,76 +1587,10 @@ export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
               }}
             />
             {revisionTrace ? (
-              <div className="mt-3 rounded-lg border border-violet-400/15 bg-violet-400/[0.035] p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-200">
-                    Change evidence · {revisionTrace.episodes.length} causal episode(s)
-                  </div>
-                  <Badge
-                    className={
-                      revisionTrace.stale
-                        ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
-                        : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
-                    }
-                  >
-                    {revisionTrace.stale ? 'stale' : 'current'}
-                    {revisionTrace.truncated ? ' · bounded' : ''}
-                  </Badge>
-                </div>
-                {revisionTrace.episodes.length === 0 ? (
-                  <div className="mt-2 text-[10px] text-[var(--text-muted)]">
-                    No explicit evidence thread links to this revision in scanned coverage.
-                  </div>
-                ) : (
-                  <div className="mt-2 space-y-2">
-                    {revisionTrace.episodes.slice(0, 3).map((episode) => (
-                      <div
-                        key={episode.id}
-                        className="rounded-md border border-[var(--cv-line)] p-2"
-                      >
-                        <div className="flex flex-wrap gap-1">
-                          {episode.stages_present.map((stage) => (
-                            <Badge key={stage} className="text-[8px]">
-                              {stage.replace('_', ' ')}
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="mt-1.5 space-y-1">
-                          {episode.events.slice(0, 8).map((event) => (
-                            <div
-                              key={event.id}
-                              className="flex flex-wrap items-start justify-between gap-2 text-[9px] leading-4 text-[var(--text-secondary)]"
-                            >
-                              <span>
-                                [{event.trust}] {event.summary}
-                              </span>
-                              {event.sources[0] ? (
-                                <button
-                                  type="button"
-                                  className="flex shrink-0 items-center gap-1 font-mono text-violet-300 hover:text-violet-100"
-                                  onClick={() => void openEvidenceSource(event.sources[0].path)}
-                                >
-                                  <ExternalLink size={9} /> {event.sources[0].path}
-                                </button>
-                              ) : null}
-                            </div>
-                          ))}
-                        </div>
-                        {episode.contradictions.length > 0 ? (
-                          <div className="mt-1.5 text-[9px] text-rose-200">
-                            Contradictions: {episode.contradictions.join(' · ')}
-                          </div>
-                        ) : null}
-                        {episode.gaps.length > 0 ? (
-                          <div className="mt-1.5 text-[9px] text-amber-200/75">
-                            Gaps: {episode.gaps.join(' · ')}
-                          </div>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <RevisionTracePanel
+                revisionTrace={revisionTrace}
+                openEvidenceSource={openEvidenceSource}
+              />
             ) : null}
           </div>
 
@@ -860,61 +1608,9 @@ export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
               nodeStates={nodeStates}
               highlightPathPrefixes={highlightedContributorAreas}
               onSelectSymbol={(_name, _path, nodeId) => void explainEntity(nodeId)}
-              summary={`${structuralState?.projection.nodes.length.toLocaleString() ?? 0} visible of ${structuralState?.node_count.toLocaleString() ?? 0} structural nodes · ${structuralState?.changed_paths.length.toLocaleString() ?? 0} files changed here${structuralState?.projection.truncated ? ' · bounded view' : ''}${structuralState?.cached ? ' · cached' : ''}`}
+              summary={structuralStateSummary(structuralState)}
             />
-            {structuralDelta ? (
-              <div className="mt-3 flex flex-wrap gap-2 text-[10px]">
-                <Badge className="border border-emerald-400/25 bg-emerald-400/10 text-emerald-200">
-                  +{structuralDelta.added_node_ids.length} nodes
-                </Badge>
-                <Badge className="border border-rose-400/25 bg-rose-400/10 text-rose-200">
-                  -{structuralDelta.removed_node_ids.length} nodes
-                </Badge>
-                <Badge className="border border-amber-400/25 bg-amber-400/10 text-amber-200">
-                  ~{structuralDelta.changed_node_ids.length} nodes
-                </Badge>
-                <Badge className="border border-cyan-400/25 bg-cyan-400/10 text-cyan-200">
-                  {structuralDelta.added_edge_ids.length + structuralDelta.removed_edge_ids.length}{' '}
-                  edge changes
-                </Badge>
-                {structuralDelta.added_community_ids.length +
-                  structuralDelta.removed_community_ids.length >
-                0 ? (
-                  <Badge className="border border-violet-400/25 bg-violet-400/10 text-violet-200">
-                    {structuralDelta.added_community_ids.length +
-                      structuralDelta.removed_community_ids.length}{' '}
-                    community changes
-                  </Badge>
-                ) : null}
-                {structuralDelta.added_hub_ids.length + structuralDelta.removed_hub_ids.length >
-                0 ? (
-                  <Badge className="border border-fuchsia-400/25 bg-fuchsia-400/10 text-fuchsia-200">
-                    {structuralDelta.added_hub_ids.length + structuralDelta.removed_hub_ids.length}{' '}
-                    hub changes
-                  </Badge>
-                ) : null}
-                {structuralDelta.added_bridge_ids.length +
-                  structuralDelta.removed_bridge_ids.length >
-                0 ? (
-                  <Badge className="border border-sky-400/25 bg-sky-400/10 text-sky-200">
-                    {structuralDelta.added_bridge_ids.length +
-                      structuralDelta.removed_bridge_ids.length}{' '}
-                    bridge changes
-                  </Badge>
-                ) : null}
-                {structuralDelta.path_changes
-                  .filter((change) => change.old_path)
-                  .slice(0, 3)
-                  .map((change) => (
-                    <Badge
-                      key={`${change.old_path}:${change.path}`}
-                      className="max-w-full text-[9px]"
-                    >
-                      {change.change_kind}: {change.old_path} → {change.path}
-                    </Badge>
-                  ))}
-              </div>
-            ) : null}
+            {structuralDelta ? <StructuralDeltaBadges structuralDelta={structuralDelta} /> : null}
             {entityLoading ? (
               <div className="mt-3 flex items-center gap-2 rounded-lg border border-violet-400/15 bg-violet-400/[0.04] p-3 text-xs text-violet-100">
                 <LoaderCircle size={13} className="animate-spin" /> Building six-facet evidence
@@ -923,404 +1619,22 @@ export function HistoryGraphSlider({ repoPath }: { repoPath: string }) {
             ) : null}
             {entityError ? <div className="mt-3 text-xs text-rose-200">{entityError}</div> : null}
             {entityExplanation ? (
-              <aside
-                className="mt-3 rounded-xl border border-violet-400/15 bg-[var(--bg-main)]/35 p-4"
-                aria-label={historyInspectionAriaLabel({
-                  entityLabel: entityExplanation.entity_label,
-                  stale: entityExplanation.stale,
-                  evidenceGaps: entityExplanation.gaps.length,
-                  contradictions:
-                    entityExplanation.contradictions.length +
-                    (causalTrace?.episodes.reduce(
-                      (count, episode) => count + episode.contradictions.length,
-                      0
-                    ) ?? 0),
-                  ambiguousLineage:
-                    entityEvolution?.lineage.filter((edge) => edge.trust === 'ambiguous').length ??
-                    0,
-                  annotations: annotations.length,
-                  truncated:
-                    entityExplanation.truncated ||
-                    (entityEvolution?.truncated ?? false) ||
-                    (causalTrace?.truncated ?? false),
-                })}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--text-primary)]">
-                      {entityExplanation.entity_label}
-                    </div>
-                    <div className="mt-1 font-mono text-[10px] text-[var(--text-muted)]">
-                      {entityExplanation.entity_kind} · as of {revision.short_sha}
-                    </div>
-                    <div
-                      className="mt-1 max-w-xl truncate font-mono text-[9px] text-slate-600"
-                      title={entityExplanation.entity_id}
-                    >
-                      {entityExplanation.entity_id}
-                    </div>
-                  </div>
-                  <Badge
-                    className={
-                      entityExplanation.stale
-                        ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
-                        : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
-                    }
-                  >
-                    {entityExplanation.stale ? 'index stale' : 'exact checkpoint'}
-                  </Badge>
-                </div>
-                <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                  {entityExplanation.facets.map((facet) => (
-                    <div
-                      key={facet.name}
-                      className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-3"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-200">
-                          {facet.name}
-                        </span>
-                        <Badge
-                          className={`border text-[9px] ${
-                            facet.status === 'evidenced'
-                              ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
-                              : facet.status === 'qualified_lead'
-                                ? 'border-amber-400/25 bg-amber-400/10 text-amber-200'
-                                : 'border-slate-600/50 bg-slate-800/50 text-slate-400'
-                          }`}
-                        >
-                          <ShieldCheck size={9} /> {facet.status.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                      <p className="mt-2 text-[11px] leading-5 text-[var(--text-secondary)]">
-                        {facet.summary}
-                      </p>
-                      <div className="mt-2 font-mono text-[9px] text-[var(--text-muted)]">
-                        trust: {facet.trust}
-                        {facet.sources.length > 0
-                          ? ` · ${facet.sources
-                              .slice(0, 2)
-                              .map(
-                                (source) =>
-                                  `${source.path}${source.start_line ? `:${source.start_line}` : ''}`
-                              )
-                              .join(', ')}`
-                          : ' · no source anchor'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {entityExplanation.gaps.length > 0 ? (
-                  <div className="mt-3 text-[10px] leading-5 text-amber-200/80">
-                    Evidence gaps: {entityExplanation.gaps.join(' · ')}
-                  </div>
-                ) : null}
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {Object.entries(entityExplanation.trust_summary).map(([trust, count]) => (
-                    <Badge
-                      key={trust}
-                      className="border border-slate-600/40 bg-slate-800/40 text-[9px] text-slate-300"
-                    >
-                      {trust} · {count}
-                    </Badge>
-                  ))}
-                </div>
-                {entityExplanation.contradictions.length > 0 ? (
-                  <div className="mt-2 rounded-md border border-rose-400/20 bg-rose-400/[0.06] px-2.5 py-2 text-[10px] leading-5 text-rose-200">
-                    <AlertTriangle size={10} className="mr-1 inline" />
-                    {entityExplanation.contradictions.join(' · ')}
-                  </div>
-                ) : null}
-                {entityEvolution ? (
-                  <div className="mt-3 rounded-lg border border-cyan-400/15 bg-cyan-400/[0.03] p-3">
-                    <div className="flex flex-wrap gap-x-5 gap-y-2 text-[10px] text-[var(--text-secondary)]">
-                      <span>
-                        First indexed:{' '}
-                        <b className="font-mono text-cyan-100">
-                          {entityEvolution.first_seen?.revision_sha.slice(0, 8) ?? 'unknown'}
-                        </b>
-                      </span>
-                      <span>
-                        Last changed:{' '}
-                        <b className="font-mono text-cyan-100">
-                          {entityEvolution.last_changed?.revision_sha.slice(0, 8) ?? 'unknown'}
-                        </b>
-                      </span>
-                      <span>
-                        Last present:{' '}
-                        <b className="font-mono text-cyan-100">
-                          {entityEvolution.last_present?.revision_sha.slice(0, 8) ?? 'unknown'}
-                        </b>
-                      </span>
-                      <span>{entityEvolution.occurrences.length} indexed checkpoints</span>
-                    </div>
-                    {entityEvolution.lineage.length > 0 ? (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {entityEvolution.lineage.slice(0, 12).map((edge) => (
-                          <Badge
-                            key={edge.id}
-                            className="border border-cyan-400/20 bg-cyan-400/10 text-[9px] text-cyan-100"
-                            title={edge.evidence}
-                          >
-                            {edge.relation} · {edge.trust}
-                            {edge.candidates.length > 0
-                              ? ` · ${edge.candidates.length + 1} candidates`
-                              : ''}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : null}
-                    {entityEvolution.coverage_gap ? (
-                      <div className="mt-2 text-[9px] text-amber-200/80">
-                        {entityEvolution.coverage_gap}
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-                {causalTrace ? (
-                  <section className="mt-3 rounded-lg border border-violet-400/15 bg-violet-400/[0.025] p-3">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-primary)]">
-                          <CircleDotDashed size={13} className="text-violet-300" /> Causal history
-                        </div>
-                        <p className="mt-1 max-w-3xl text-[10px] leading-5 text-[var(--text-muted)]">
-                          Explicit IDs, revisions, entities, and episode keys form threads. Time or
-                          path proximity stays a qualified lead until stronger evidence links it.
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge
-                          className={
-                            causalTrace.stale
-                              ? 'border border-amber-400/25 bg-amber-400/10 text-amber-200'
-                              : 'border border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
-                          }
-                        >
-                          {causalTrace.stale ? 'ledger stale' : 'ledger current'}
-                        </Badge>
-                        <Badge className="border border-violet-400/20 bg-violet-400/10 text-violet-200">
-                          {causalTrace.scanned_events.toLocaleString()} events scanned
-                        </Badge>
-                      </div>
-                    </div>
-                    {causalTrace.gaps.length > 0 ? (
-                      <div className="mt-2 text-[10px] leading-5 text-amber-200/80">
-                        {causalTrace.gaps.join(' · ')}
-                      </div>
-                    ) : null}
-                    {causalTrace.episodes.length === 0 ? (
-                      <div className="mt-3 rounded-md border border-dashed border-[var(--cv-line)] px-3 py-4 text-[10px] text-[var(--text-muted)]">
-                        No explicit causal episode currently links to this entity. The absence is
-                        preserved instead of guessing from nearby activity.
-                      </div>
-                    ) : (
-                      <div className="mt-3 space-y-3">
-                        {causalTrace.episodes.slice(0, 3).map((episode, episodeIndex) => (
-                          <article
-                            key={episode.id}
-                            className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-3"
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-200">
-                                Episode {episodeIndex + 1} · {episode.events.length} evidenced
-                                events
-                              </div>
-                              <div className="flex flex-wrap gap-1">
-                                {episode.stages_present.map((stage) => (
-                                  <Badge
-                                    key={stage}
-                                    className="border border-violet-400/15 bg-violet-400/[0.07] text-[8px] text-violet-100"
-                                  >
-                                    {stage.replace('_', ' ')}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="mt-3 grid gap-2 xl:grid-cols-2">
-                              {episode.events.slice(0, 24).map((event) => (
-                                <div
-                                  key={event.id}
-                                  className="rounded-md border border-[var(--cv-line)] bg-[var(--bg-main)]/30 p-2.5"
-                                >
-                                  <div className="flex flex-wrap items-center gap-1.5 text-[8px] uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                                    <Badge className="border border-cyan-400/15 bg-cyan-400/[0.07] text-[8px] text-cyan-100">
-                                      {event.stage.replace('_', ' ')}
-                                    </Badge>
-                                    <span>{event.event_kind.replaceAll('_', ' ')}</span>
-                                    <span>·</span>
-                                    <span>
-                                      {new Date(
-                                        event.effective_at ?? event.recorded_at
-                                      ).toLocaleString()}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1.5 text-[10px] leading-5 text-[var(--text-secondary)]">
-                                    {event.summary}
-                                  </p>
-                                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5 font-mono text-[8px] text-[var(--text-muted)]">
-                                    <span>{event.trust}</span>
-                                    <span>· {event.source_id}</span>
-                                    {event.revision_sha ? (
-                                      <span>· {event.revision_sha.slice(0, 8)}</span>
-                                    ) : null}
-                                    {event.sources.length > 0 && !event.source_available ? (
-                                      <span className="flex items-center gap-1 text-amber-200">
-                                        <AlertTriangle size={9} /> source rotated or missing
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                  {event.sources.length > 0 ? (
-                                    <div className="mt-1 flex flex-wrap gap-1.5">
-                                      {event.sources.slice(0, 2).map((source) => (
-                                        <button
-                                          key={source.path}
-                                          type="button"
-                                          className="flex min-w-0 items-center gap-1 truncate font-mono text-[8px] text-slate-500 hover:text-violet-200"
-                                          onClick={() => void openEvidenceSource(source.path)}
-                                        >
-                                          <ExternalLink size={8} /> {source.path}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  ) : null}
-                                </div>
-                              ))}
-                            </div>
-                            {episode.contradictions.length > 0 ? (
-                              <div className="mt-2 rounded-md border border-rose-400/20 bg-rose-400/[0.06] px-2.5 py-2 text-[9px] leading-5 text-rose-200">
-                                <AlertTriangle size={10} className="mr-1 inline" />
-                                {episode.contradictions.join(' · ')}
-                              </div>
-                            ) : null}
-                            {episode.gaps.length > 0 ? (
-                              <div className="mt-2 text-[9px] leading-5 text-amber-200/75">
-                                Missing: {episode.gaps.join(' · ')}
-                              </div>
-                            ) : null}
-                            {episode.qualified_leads.length > 0 ? (
-                              <div className="mt-2 rounded-md border border-dashed border-amber-400/20 p-2.5">
-                                <div className="text-[9px] font-medium text-amber-100">
-                                  Qualified leads · not merged
-                                </div>
-                                <div className="mt-1 space-y-1">
-                                  {episode.qualified_leads.slice(0, 8).map((lead) => {
-                                    const candidate = episode.qualified_lead_events.find(
-                                      (event) => event.id === lead.to_event_id
-                                    );
-                                    return (
-                                      <div
-                                        key={lead.id}
-                                        className="text-[9px] leading-4 text-[var(--text-muted)]"
-                                        title={lead.evidence}
-                                      >
-                                        {candidate?.summary ?? lead.to_event_id} · {lead.evidence}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            ) : null}
-                          </article>
-                        ))}
-                      </div>
-                    )}
-                    {causalTrace.truncated ? (
-                      <div className="mt-2 text-[9px] text-amber-200/75">
-                        Bounded result. Narrow the selector or request the next ledger page for more
-                        evidence.
-                      </div>
-                    ) : null}
-                  </section>
-                ) : null}
-                <div className="mt-4 grid gap-3 border-t border-[var(--cv-line)] pt-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-                  <div>
-                    <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-primary)]">
-                      <MessageSquarePlus size={13} className="text-violet-300" /> Local annotations
-                    </div>
-                    <p className="mt-1 text-[10px] leading-5 text-[var(--text-muted)]">
-                      Append-only human evidence. A confirmation or correction remains separate from
-                      extracted Git and source facts and never upgrades them silently.
-                    </p>
-                    <div className="mt-2 space-y-2">
-                      {annotations.length === 0 ? (
-                        <div className="text-[10px] text-[var(--text-muted)]">
-                          No local annotations for this entity at this revision.
-                        </div>
-                      ) : (
-                        annotations.map((annotation) => (
-                          <div
-                            key={annotation.id}
-                            className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-2.5"
-                          >
-                            <div className="flex flex-wrap items-center gap-2 text-[9px] text-[var(--text-muted)]">
-                              <Badge className="border border-violet-400/20 bg-violet-400/10 text-violet-200">
-                                {annotation.decision}
-                              </Badge>
-                              <span>{annotation.author}</span>
-                              <span>·</span>
-                              <span>{new Date(annotation.created_at).toLocaleString()}</span>
-                              <span>· {annotation.source}</span>
-                            </div>
-                            <p className="mt-1.5 whitespace-pre-wrap text-[11px] leading-5 text-[var(--text-secondary)]">
-                              {annotation.body}
-                            </p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-[var(--cv-line)] bg-black/10 p-3">
-                    <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-2">
-                      <input
-                        value={annotationAuthor}
-                        maxLength={120}
-                        aria-label="Annotation author"
-                        onChange={(event) => setAnnotationAuthor(event.target.value)}
-                        className="min-w-0 rounded border border-[var(--cv-line)] bg-[var(--bg-main)] px-2 py-1.5 text-[11px] text-[var(--text-primary)] outline-none focus:border-violet-400/50"
-                      />
-                      <select
-                        value={annotationDecision}
-                        aria-label="Annotation decision"
-                        onChange={(event) =>
-                          setAnnotationDecision(event.target.value as HistoryAnnotationDecision)
-                        }
-                        className="rounded border border-[var(--cv-line)] bg-[var(--bg-main)] px-2 py-1.5 text-[11px] text-[var(--text-primary)] outline-none focus:border-violet-400/50"
-                      >
-                        <option value="note">Note</option>
-                        <option value="confirm">Confirm</option>
-                        <option value="reject">Reject</option>
-                        <option value="correction">Correction</option>
-                      </select>
-                    </div>
-                    <textarea
-                      value={annotationBody}
-                      maxLength={20_000}
-                      rows={3}
-                      aria-label="Annotation text"
-                      placeholder="Add missing intent, evidence context, or a lineage correction…"
-                      onChange={(event) => setAnnotationBody(event.target.value)}
-                      className="mt-2 w-full resize-y rounded border border-[var(--cv-line)] bg-[var(--bg-main)] px-2 py-1.5 text-[11px] leading-5 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] focus:border-violet-400/50"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="mt-2"
-                      disabled={
-                        annotationSaving || !annotationAuthor.trim() || !annotationBody.trim()
-                      }
-                      onClick={() => void saveAnnotation()}
-                    >
-                      {annotationSaving ? (
-                        <LoaderCircle size={12} className="animate-spin" />
-                      ) : (
-                        <MessageSquarePlus size={12} />
-                      )}
-                      Append annotation
-                    </Button>
-                  </div>
-                </div>
-              </aside>
+              <EntityExplanationAside
+                entityExplanation={entityExplanation}
+                entityEvolution={entityEvolution}
+                causalTrace={causalTrace}
+                annotations={annotations}
+                revision={revision}
+                openEvidenceSource={openEvidenceSource}
+                annotationAuthor={annotationAuthor}
+                setAnnotationAuthor={setAnnotationAuthor}
+                annotationBody={annotationBody}
+                setAnnotationBody={setAnnotationBody}
+                annotationDecision={annotationDecision}
+                setAnnotationDecision={setAnnotationDecision}
+                annotationSaving={annotationSaving}
+                saveAnnotation={saveAnnotation}
+              />
             ) : null}
           </div>
         </div>

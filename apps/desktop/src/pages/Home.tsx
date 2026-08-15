@@ -252,6 +252,527 @@ function LocalModelBreakdown({
   );
 }
 
+function buildLiveErrorHint(liveError: string | null): string | null {
+  if (!liveError) return null;
+  if (/401|expired|invalid|re-?authenticate/i.test(liveError)) {
+    return 'Live windows unavailable — stored Claude credential is expired. Re-authenticate Claude Code (run `claude`, then /login).';
+  }
+  return `Live usage unavailable: ${liveError}`;
+}
+
+function resolvePlan(
+  account: ProviderAccount,
+  usage: AccountUsage | null,
+  liveUsage: LiveUsageResult | null
+): string | null {
+  if (account.provider === 'devin' || account.provider === 'grok') {
+    return liveUsage?.quota_plan ?? usage?.plan ?? account.plan;
+  }
+  return usage?.plan ?? account.plan;
+}
+
+function GrokBillingDisplay({
+  grokBilling,
+}: {
+  grokBilling: NonNullable<LiveUsageResult['grok_billing']>;
+}) {
+  return (
+    <div
+      className={`text-[10px] tabular-nums ${
+        grokBilling.stale ? 'text-amber-500' : 'text-slate-600'
+      }`}
+      title={grokBilling.stale_reason ?? undefined}
+    >
+      {formatGrokBillingSummary(grokBilling)}
+      {grokBilling.billing_period_end
+        ? ` · resets ${new Date(grokBilling.billing_period_end).toLocaleDateString()}`
+        : ''}
+      {grokBilling.stale && grokBilling.stale_reason ? ` — ${grokBilling.stale_reason}` : ''}
+    </div>
+  );
+}
+
+function WindowNoteBanner({
+  windowNote,
+  isRateLimited,
+  primaryPct,
+}: {
+  windowNote: string;
+  isRateLimited: boolean;
+  primaryPct: number | null | undefined;
+}) {
+  return (
+    <div
+      className={`rounded border px-2.5 py-1.5 text-[10px] leading-relaxed ${
+        isRateLimited || (primaryPct ?? 0) >= 100
+          ? 'border-red-500/20 bg-red-500/10 text-red-200/80'
+          : 'border-cyan-500/15 bg-cyan-500/10 text-cyan-100/70'
+      }`}
+    >
+      {windowNote}
+    </div>
+  );
+}
+
+function OpenAILiveUsage({ liveUsage }: { liveUsage: LiveUsageResult }) {
+  return (
+    <div className="text-[10px] text-slate-600 tabular-nums">
+      {(liveUsage.reset_credits ?? 0) > 0 && (
+        <span className="text-emerald-400/80">
+          {liveUsage.reset_credits} manual reset credit
+          {liveUsage.reset_credits === 1 ? '' : 's'} available
+        </span>
+      )}
+      {(liveUsage.additional_windows ?? []).map((w) => (
+        <span key={w.name}>
+          {(liveUsage.reset_credits ?? 0) > 0 ? ' · ' : ''}
+          {w.name}: {w.primary_pct ?? 0}% / {w.secondary_pct ?? 0}% (own pool)
+        </span>
+      ))}
+      {liveUsage.checked_at && (
+        <span>
+          {' · as of '}
+          {new Date(liveUsage.checked_at).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function UtilizationBars({
+  account,
+  hasLive,
+  fiveH,
+  sevenD,
+  showPaceProjection,
+}: {
+  account: ProviderAccount;
+  hasLive: boolean;
+  fiveH: LiveUsageResult['five_h'];
+  sevenD: LiveUsageResult['seven_d'];
+  showPaceProjection: boolean;
+}) {
+  function barColor(pct: number): 'amber' | 'red' {
+    return pct >= 90 ? 'red' : 'amber';
+  }
+  return (
+    <>
+      {hasLive && fiveH?.utilization_pct != null && (
+        <UsageBar
+          pct={fiveH.utilization_pct}
+          label={primaryWindowLabel(account.provider)}
+          resetLabel={
+            fiveH.resets_in_secs != null && fiveH.resets_in_secs > 0
+              ? `resets in ${formatDuration(fiveH.resets_in_secs)}`
+              : undefined
+          }
+          color={barColor(fiveH.utilization_pct)}
+          windowTotalSecs={resolveUsageWindowTotalSecs(
+            account.provider,
+            'primary',
+            showPaceProjection ? fiveH.window_total_secs : undefined
+          )}
+          resetsInSecs={showPaceProjection ? (fiveH.resets_in_secs ?? undefined) : undefined}
+        />
+      )}
+      {hasLive && sevenD?.utilization_pct != null && account.provider !== 'grok' && (
+        <UsageBar
+          pct={sevenD.utilization_pct}
+          label={secondaryWindowLabel(account.provider)}
+          resetLabel={
+            sevenD.resets_in_secs != null && sevenD.resets_in_secs > 0
+              ? `resets in ${formatDuration(sevenD.resets_in_secs)}`
+              : undefined
+          }
+          color={barColor(sevenD.utilization_pct)}
+          windowTotalSecs={resolveUsageWindowTotalSecs(
+            account.provider,
+            'secondary',
+            sevenD.window_total_secs
+          )}
+          resetsInSecs={sevenD.resets_in_secs ?? undefined}
+        />
+      )}
+    </>
+  );
+}
+
+function providerDotColor(provider: string, isRateLimited: boolean, hasLive: boolean): string {
+  if (isRateLimited) return 'bg-red-500 animate-pulse';
+  if (hasLive) return 'bg-emerald-500';
+  switch (provider) {
+    case 'anthropic':
+      return 'bg-amber-400';
+    case 'google':
+      return 'bg-blue-400';
+    case 'cursor':
+      return 'bg-violet-400';
+    case 'devin':
+      return 'bg-orange-400';
+    case 'grok':
+      return 'bg-sky-400';
+    default:
+      return 'bg-emerald-400';
+  }
+}
+
+function providerBadgeColor(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return 'bg-amber-500/15 text-amber-400';
+    case 'google':
+      return 'bg-blue-500/15 text-blue-400';
+    case 'cursor':
+      return 'bg-violet-500/15 text-violet-300';
+    case 'devin':
+      return 'bg-orange-500/15 text-orange-400';
+    case 'grok':
+      return 'bg-sky-500/15 text-sky-300';
+    default:
+      return 'bg-emerald-500/15 text-emerald-400';
+  }
+}
+
+function providerButtonColor(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return 'text-amber-400/70 hover:text-amber-400';
+    case 'google':
+      return 'text-blue-400/70 hover:text-blue-400';
+    case 'cursor':
+      return 'text-violet-300/70 hover:text-violet-300';
+    case 'devin':
+      return 'text-orange-400/70 hover:text-orange-400';
+    case 'grok':
+      return 'text-sky-300/70 hover:text-sky-300';
+    default:
+      return 'text-emerald-400/70 hover:text-emerald-400';
+  }
+}
+
+function providerRefreshTitle(provider: string): string {
+  switch (provider) {
+    case 'openai':
+      return 'Check live usage from OpenAI';
+    case 'google':
+      return 'Check live usage from Google';
+    case 'cursor':
+      return 'Check live plan usage from Cursor';
+    case 'devin':
+      return 'Refresh Devin quota from Codeium';
+    case 'grok':
+      return 'Refresh Grok credit usage from CLI logs';
+    default:
+      return 'Check live usage (makes a small API call)';
+  }
+}
+
+function primaryWindowLabel(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return '5-hour window';
+    case 'cursor':
+      return 'Monthly plan';
+    case 'devin':
+      return 'Weekly quota';
+    case 'grok':
+      return 'Monthly credits';
+    default:
+      return 'Primary window';
+  }
+}
+
+function secondaryWindowLabel(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return '7-day window';
+    case 'devin':
+      return 'Daily quota';
+    default:
+      return 'Secondary window';
+  }
+}
+
+function GeminiUsageDisplay({
+  hasLive,
+  geminiToday,
+  quotaBuckets,
+  geminiModels,
+}: {
+  hasLive: boolean;
+  geminiToday: LiveUsageResult['today'];
+  quotaBuckets: GeminiQuotaBucket[] | undefined;
+  geminiModels: LiveUsageResult['models'];
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      {geminiToday && (
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-slate-400">Today</span>
+          <div className="flex items-center gap-3 text-[11px] tabular-nums">
+            <span className="text-slate-500">
+              {geminiToday.sessions} session{geminiToday.sessions !== 1 ? 's' : ''}
+              {' · '}
+              {geminiToday.messages} msg{geminiToday.messages !== 1 ? 's' : ''}
+            </span>
+            <span className="text-blue-400 font-semibold">
+              {formatTokens(geminiToday.tokens.total)}
+            </span>
+          </div>
+        </div>
+      )}
+      {geminiToday && (
+        <div className="flex items-center gap-2 text-[10px] tabular-nums text-slate-600">
+          <span>{formatTokens(geminiToday.tokens.input)} in</span>
+          <span className="text-slate-700">·</span>
+          <span>{formatTokens(geminiToday.tokens.output)} out</span>
+          {geminiToday.tokens.cached > 0 && (
+            <>
+              <span className="text-slate-700">·</span>
+              <span className="text-emerald-500/60">
+                {formatTokens(geminiToday.tokens.cached)} cached
+              </span>
+            </>
+          )}
+          {geminiToday.tokens.thoughts > 0 && (
+            <>
+              <span className="text-slate-700">·</span>
+              <span className="text-purple-400/60">
+                {formatTokens(geminiToday.tokens.thoughts)} thinking
+              </span>
+            </>
+          )}
+        </div>
+      )}
+      {quotaBuckets && quotaBuckets.length > 0 && <GeminiQuotaBars buckets={quotaBuckets} />}
+      {!quotaBuckets && geminiModels && geminiModels.length > 0 && (
+        <GeminiModelBars models={geminiModels} />
+      )}
+    </div>
+  );
+}
+
+type GeminiQuotaBucket = NonNullable<NonNullable<LiveUsageResult['quota_api']>['buckets']>[number];
+
+function GeminiQuotaBars({ buckets }: { buckets: GeminiQuotaBucket[] }) {
+  const proBucket = buckets.find((b) => b.model_id.includes('pro'));
+  const flashBucket = buckets.find(
+    (b) => b.model_id.includes('flash') && !b.model_id.includes('lite')
+  );
+  const dedupedBuckets: GeminiQuotaBucket[] = [
+    proBucket ? { ...proBucket, model_id: 'Pro' } : null,
+    flashBucket ? { ...flashBucket, model_id: 'Flash' } : null,
+  ].filter(Boolean) as GeminiQuotaBucket[];
+  return (
+    <div className="flex flex-col gap-2 mt-0.5">
+      {dedupedBuckets.map((b) => {
+        const pct = b.used_pct ?? 0;
+        const atLimit = b.remaining_fraction === 0;
+        const resetLabel = b.reset_time
+          ? (() => {
+              const resetMs = new Date(b.reset_time).getTime() - Date.now();
+              if (resetMs <= 0) return undefined;
+              return `resets in ${formatDuration(Math.round(resetMs / 1000))}`;
+            })()
+          : undefined;
+        return (
+          <UsageBar
+            key={b.model_id}
+            pct={pct}
+            label={b.model_id}
+            resetLabel={atLimit ? 'Limit' : resetLabel}
+            color={pct >= 90 ? 'red' : 'amber'}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function GeminiModelBars({ models }: { models: NonNullable<LiveUsageResult['models']> }) {
+  const maxTokens = Math.max(...models.map((m) => m.tokens.total));
+  return (
+    <div className="flex flex-col gap-1 mt-0.5">
+      {models.map((m) => {
+        const pct = maxTokens > 0 ? (m.tokens.total / maxTokens) * 100 : 0;
+        return (
+          <div key={m.model} className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] text-slate-400 truncate w-28 shrink-0" title={m.model}>
+              {m.model}
+            </span>
+            <div
+              className="flex-1 h-1 overflow-hidden rounded-full"
+              style={{ backgroundColor: 'rgba(214, 169, 71, 0.11)' }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, pct)}%`,
+                  background: 'linear-gradient(90deg, #8f6b28 0%, #d6a947 60%, #f2c766 100%)',
+                }}
+              />
+            </div>
+            <span className="text-[10px] text-slate-500 tabular-nums shrink-0 w-10 text-right">
+              {formatTokens(m.tokens.total)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CursorUsageDisplay({
+  cursorPlan,
+  cursorTokens,
+  weekSessions,
+}: {
+  cursorPlan: LiveUsageResult['cursor_plan'];
+  cursorTokens: LiveUsageResult['cursor_tokens'];
+  weekSessions: number;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      {cursorTokens && cursorTokens.total > 0 && (
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-slate-400">Tokens this cycle</span>
+          <div className="flex items-center gap-3 tabular-nums">
+            <span className="font-semibold text-violet-300">
+              {formatTokens(cursorTokens.total)}
+            </span>
+          </div>
+        </div>
+      )}
+      {cursorTokens && cursorTokens.total > 0 && (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] tabular-nums text-slate-600">
+          <span>{formatTokens(cursorTokens.input)} in</span>
+          <span className="text-slate-700">·</span>
+          <span>{formatTokens(cursorTokens.output)} out</span>
+          {cursorTokens.cache_read > 0 && (
+            <>
+              <span className="text-slate-700">·</span>
+              <span className="text-violet-400/70">
+                {formatTokens(cursorTokens.cache_read)} cached
+              </span>
+            </>
+          )}
+        </div>
+      )}
+      {cursorPlan && (
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-slate-400">Plan spend</span>
+          <div className="flex items-center gap-2 tabular-nums">
+            {cursorPlan.total_spend_cents != null && cursorPlan.limit_cents != null && (
+              <span className="text-slate-500">
+                ${(cursorPlan.total_spend_cents / 100).toFixed(2)} / $
+                {(cursorPlan.limit_cents / 100).toFixed(2)}
+              </span>
+            )}
+            {cursorPlan.total_pct_used != null && (
+              <span className="font-semibold text-violet-300">
+                {cursorPlan.total_pct_used.toFixed(1)}%
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+      {cursorTokens && cursorTokens.by_model.length > 1 && (
+        <div className="flex flex-col gap-0.5 border-l border-violet-500/20 pl-2">
+          {cursorTokens.by_model.map((m) => {
+            const t = m.input_tokens + m.output_tokens + m.cache_read_tokens;
+            return (
+              <div
+                key={m.model ?? 'unknown'}
+                className="flex items-center justify-between text-[10px] tabular-nums"
+              >
+                <span className="text-slate-500 truncate">{m.model ?? 'unknown'}</span>
+                <span className="text-slate-600">{formatTokens(t)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {cursorPlan?.display_message && (
+        <div className="text-[10px] text-slate-600 italic">{cursorPlan.display_message}</div>
+      )}
+      <div className="text-[10px] text-slate-700">
+        {weekSessions} session{weekSessions === 1 ? '' : 's'} indexed this week
+      </div>
+    </div>
+  );
+}
+
+function LocalIndexedStats({
+  usage,
+  account,
+  weekTokens,
+  weekSessions,
+  hasLive,
+  liveErrorHint,
+  profileBreakdown,
+}: {
+  usage: AccountUsage | null;
+  account: ProviderAccount;
+  weekTokens: number;
+  weekSessions: number;
+  hasLive: boolean;
+  liveErrorHint: string | null;
+  profileBreakdown: AccountUsage['profile_breakdown'];
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
+          {formatTokens(weekTokens)} tokens this week
+        </span>
+        <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
+          {weekSessions} sessions
+        </span>
+        {usage && usage.week_cost > 0 && (
+          <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
+            {formatMoney(usage.week_cost)}
+          </span>
+        )}
+        {!hasLive && !liveErrorHint && (
+          <span className="rounded-full border border-white/[0.04] bg-transparent px-2 py-1 text-[10px] text-slate-700">
+            {localTelemetryQualifier(account.provider)}
+          </span>
+        )}
+      </div>
+      <LocalModelBreakdown usage={usage} provider={account.provider} />
+      {liveErrorHint && (
+        <div className="flex items-start gap-1.5 text-[10px] text-amber-400/90">
+          <span className="shrink-0">⚠</span>
+          <span>{liveErrorHint}</span>
+        </div>
+      )}
+      {profileBreakdown.length > 1 && (
+        <div className="flex flex-col gap-1 border-l border-[var(--cv-line)] pl-2">
+          {profileBreakdown.map((profile) => {
+            const profileTokens = profile.week_input_tokens + profile.week_output_tokens;
+            return (
+              <div
+                key={profile.profile}
+                className="flex items-center justify-between gap-2 min-w-0"
+              >
+                <span className="text-[10px] text-slate-500 truncate" title={profile.profile}>
+                  {profile.profile}
+                </span>
+                <span className="text-[10px] text-slate-600 tabular-nums shrink-0">
+                  {formatTokens(profileTokens)} · {profile.week_sessions} sessions
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AccountUsageRow({
   account,
   usage,
@@ -271,19 +792,11 @@ function AccountUsageRow({
   onDelete: () => void;
   isSharedUsage: boolean;
 }) {
-  // Turn a raw live-usage error into an actionable hint.
-  const liveErrorHint = liveError
-    ? /401|expired|invalid|re-?authenticate/i.test(liveError)
-      ? 'Live windows unavailable — stored Claude credential is expired. Re-authenticate Claude Code (run `claude`, then /login).'
-      : `Live usage unavailable: ${liveError}`
-    : null;
+  const liveErrorHint = buildLiveErrorHint(liveError);
   const weekSessions = usage?.week_sessions ?? 0;
   const weekTokens = (usage?.week_input_tokens ?? 0) + (usage?.week_output_tokens ?? 0);
   const profileBreakdown = usage?.profile_breakdown ?? [];
-  const plan =
-    account.provider === 'devin' || account.provider === 'grok'
-      ? (liveUsage?.quota_plan ?? usage?.plan ?? account.plan)
-      : (usage?.plan ?? account.plan);
+  const plan = resolvePlan(account, usage, liveUsage);
 
   // Live rate limit data — supported for providers with quota APIs or local caches
   const isLiveSupported = ['anthropic', 'openai', 'google', 'cursor', 'devin', 'grok'].includes(
@@ -306,52 +819,18 @@ function AccountUsageRow({
   const windowNote = liveWindowNote(account.provider, fiveH?.utilization_pct);
   const showPaceProjection = account.provider !== 'grok' || fiveH?.window_total_secs != null;
 
-  // Determine bar color based on utilization
-  function barColor(pct: number): 'amber' | 'red' {
-    if (pct >= 90) return 'red';
-    return 'amber';
-  }
-
   return (
     <div className="group px-3 py-3 border-b border-[var(--cv-line)] last:border-b-0 transition-colors hover:bg-[var(--cv-surface-raised)]/50 overflow-hidden">
       {/* Header: name, plan badge, delete, check button */}
       <div className="flex items-center gap-2 mb-2.5 min-w-0">
         <span
-          className={`h-2 w-2 shrink-0 rounded-full ${
-            isRateLimited
-              ? 'bg-red-500 animate-pulse'
-              : hasLive
-                ? 'bg-emerald-500'
-                : account.provider === 'anthropic'
-                  ? 'bg-amber-400'
-                  : account.provider === 'google'
-                    ? 'bg-blue-400'
-                    : account.provider === 'cursor'
-                      ? 'bg-violet-400'
-                      : account.provider === 'devin'
-                        ? 'bg-orange-400'
-                        : account.provider === 'grok'
-                          ? 'bg-sky-400'
-                          : 'bg-emerald-400'
-          }`}
+          className={`h-2 w-2 shrink-0 rounded-full ${providerDotColor(account.provider, isRateLimited, hasLive)}`}
         />
         <span className="text-[13px] font-medium text-slate-200 truncate">{account.name}</span>
         {plan && (
           <Badge
             variant="outline"
-            className={`text-[10px] font-semibold uppercase tracking-wide border-0 ${
-              account.provider === 'anthropic'
-                ? 'bg-amber-500/15 text-amber-400'
-                : account.provider === 'google'
-                  ? 'bg-blue-500/15 text-blue-400'
-                  : account.provider === 'cursor'
-                    ? 'bg-violet-500/15 text-violet-300'
-                    : account.provider === 'devin'
-                      ? 'bg-orange-500/15 text-orange-400'
-                      : account.provider === 'grok'
-                        ? 'bg-sky-500/15 text-sky-300'
-                        : 'bg-emerald-500/15 text-emerald-400'
-            }`}
+            className={`text-[10px] font-semibold uppercase tracking-wide border-0 ${providerBadgeColor(account.provider)}`}
           >
             {planLabel(plan)}
           </Badge>
@@ -363,32 +842,8 @@ function AccountUsageRow({
             size="sm"
             onClick={onCheckLive}
             disabled={checkingLive}
-            className={`h-auto px-1.5 py-0.5 text-[10px] ${
-              account.provider === 'anthropic'
-                ? 'text-amber-400/70 hover:text-amber-400'
-                : account.provider === 'google'
-                  ? 'text-blue-400/70 hover:text-blue-400'
-                  : account.provider === 'cursor'
-                    ? 'text-violet-300/70 hover:text-violet-300'
-                    : account.provider === 'devin'
-                      ? 'text-orange-400/70 hover:text-orange-400'
-                      : account.provider === 'grok'
-                        ? 'text-sky-300/70 hover:text-sky-300'
-                        : 'text-emerald-400/70 hover:text-emerald-400'
-            }`}
-            title={
-              account.provider === 'openai'
-                ? 'Check live usage from OpenAI'
-                : account.provider === 'google'
-                  ? 'Check live usage from Google'
-                  : account.provider === 'cursor'
-                    ? 'Check live plan usage from Cursor'
-                    : account.provider === 'devin'
-                      ? 'Refresh Devin quota from Codeium'
-                      : account.provider === 'grok'
-                        ? 'Refresh Grok credit usage from CLI logs'
-                        : 'Check live usage (makes a small API call)'
-            }
+            className={`h-auto px-1.5 py-0.5 text-[10px] ${providerButtonColor(account.provider)}`}
+            title={providerRefreshTitle(account.provider)}
           >
             {checkingLive ? '...' : 'Refresh'}
           </Button>
@@ -397,312 +852,44 @@ function AccountUsageRow({
 
       <div className="ml-4 flex flex-col gap-2.5">
         {/* ── Utilization bars ──────────────────────────────────── */}
-        {hasLive && fiveH?.utilization_pct != null && (
-          <UsageBar
-            pct={fiveH.utilization_pct}
-            label={
-              account.provider === 'anthropic'
-                ? '5-hour window'
-                : account.provider === 'cursor'
-                  ? 'Monthly plan'
-                  : account.provider === 'devin'
-                    ? 'Weekly quota'
-                    : account.provider === 'grok'
-                      ? 'Monthly credits'
-                      : 'Primary window'
-            }
-            resetLabel={
-              fiveH.resets_in_secs != null && fiveH.resets_in_secs > 0
-                ? `resets in ${formatDuration(fiveH.resets_in_secs)}`
-                : undefined
-            }
-            color={barColor(fiveH.utilization_pct)}
-            windowTotalSecs={resolveUsageWindowTotalSecs(
-              account.provider,
-              'primary',
-              showPaceProjection ? fiveH.window_total_secs : undefined
-            )}
-            resetsInSecs={showPaceProjection ? (fiveH.resets_in_secs ?? undefined) : undefined}
-          />
-        )}
-        {hasLive && sevenD?.utilization_pct != null && account.provider !== 'grok' && (
-          <UsageBar
-            pct={sevenD.utilization_pct}
-            label={
-              account.provider === 'anthropic'
-                ? '7-day window'
-                : account.provider === 'devin'
-                  ? 'Daily quota'
-                  : 'Secondary window'
-            }
-            resetLabel={
-              sevenD.resets_in_secs != null && sevenD.resets_in_secs > 0
-                ? `resets in ${formatDuration(sevenD.resets_in_secs)}`
-                : undefined
-            }
-            color={barColor(sevenD.utilization_pct)}
-            windowTotalSecs={resolveUsageWindowTotalSecs(
-              account.provider,
-              'secondary',
-              sevenD.window_total_secs
-            )}
-            resetsInSecs={sevenD.resets_in_secs ?? undefined}
-          />
-        )}
+        <UtilizationBars
+          account={account}
+          hasLive={hasLive}
+          fiveH={fiveH}
+          sevenD={sevenD}
+          showPaceProjection={showPaceProjection}
+        />
         {account.provider === 'grok' && liveUsage?.grok_billing && (
-          <div
-            className={`text-[10px] tabular-nums ${
-              liveUsage.grok_billing.stale ? 'text-amber-500' : 'text-slate-600'
-            }`}
-            title={liveUsage.grok_billing.stale_reason ?? undefined}
-          >
-            {formatGrokBillingSummary(liveUsage.grok_billing)}
-            {liveUsage.grok_billing.billing_period_end
-              ? ` · resets ${new Date(liveUsage.grok_billing.billing_period_end).toLocaleDateString()}`
-              : ''}
-            {liveUsage.grok_billing.stale && liveUsage.grok_billing.stale_reason
-              ? ` — ${liveUsage.grok_billing.stale_reason}`
-              : ''}
-          </div>
+          <GrokBillingDisplay grokBilling={liveUsage.grok_billing} />
         )}
-        {account.provider === 'openai' && hasLive && (
-          <div className="text-[10px] text-slate-600 tabular-nums">
-            {(liveUsage?.reset_credits ?? 0) > 0 && (
-              <span className="text-emerald-400/80">
-                {liveUsage?.reset_credits} manual reset credit
-                {liveUsage?.reset_credits === 1 ? '' : 's'} available
-              </span>
-            )}
-            {(liveUsage?.additional_windows ?? []).map((w) => (
-              <span key={w.name}>
-                {(liveUsage?.reset_credits ?? 0) > 0 ? ' · ' : ''}
-                {w.name}: {w.primary_pct ?? 0}% / {w.secondary_pct ?? 0}% (own pool)
-              </span>
-            ))}
-            {liveUsage?.checked_at && (
-              <span>
-                {' · as of '}
-                {new Date(liveUsage.checked_at).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            )}
-          </div>
+        {account.provider === 'openai' && hasLive && liveUsage && (
+          <OpenAILiveUsage liveUsage={liveUsage} />
         )}
         {hasLive && windowNote && (
-          <div
-            className={`rounded border px-2.5 py-1.5 text-[10px] leading-relaxed ${
-              isRateLimited || (fiveH?.utilization_pct ?? 0) >= 100
-                ? 'border-red-500/20 bg-red-500/10 text-red-200/80'
-                : 'border-cyan-500/15 bg-cyan-500/10 text-cyan-100/70'
-            }`}
-          >
-            {windowNote}
-          </div>
+          <WindowNoteBanner
+            windowNote={windowNote}
+            isRateLimited={isRateLimited}
+            primaryPct={fiveH?.utilization_pct}
+          />
         )}
 
         {/* ── Gemini-specific usage display ────────────────────── */}
         {account.provider === 'google' && (hasLive || quotaBuckets) && (
-          <div className="flex flex-col gap-2">
-            {/* Today summary — single compact row */}
-            {geminiToday && (
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] text-slate-400">Today</span>
-                <div className="flex items-center gap-3 text-[11px] tabular-nums">
-                  <span className="text-slate-500">
-                    {geminiToday.sessions} session{geminiToday.sessions !== 1 ? 's' : ''}
-                    {' · '}
-                    {geminiToday.messages} msg{geminiToday.messages !== 1 ? 's' : ''}
-                  </span>
-                  <span className="text-blue-400 font-semibold">
-                    {formatTokens(geminiToday.tokens.total)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Token split — inline row */}
-            {geminiToday && (
-              <div className="flex items-center gap-2 text-[10px] tabular-nums text-slate-600">
-                <span>{formatTokens(geminiToday.tokens.input)} in</span>
-                <span className="text-slate-700">·</span>
-                <span>{formatTokens(geminiToday.tokens.output)} out</span>
-                {geminiToday.tokens.cached > 0 && (
-                  <>
-                    <span className="text-slate-700">·</span>
-                    <span className="text-emerald-500/60">
-                      {formatTokens(geminiToday.tokens.cached)} cached
-                    </span>
-                  </>
-                )}
-                {geminiToday.tokens.thoughts > 0 && (
-                  <>
-                    <span className="text-slate-700">·</span>
-                    <span className="text-purple-400/60">
-                      {formatTokens(geminiToday.tokens.thoughts)} thinking
-                    </span>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Per-model quota bars — real usage % from Google API */}
-            {quotaBuckets &&
-              quotaBuckets.length > 0 &&
-              (() => {
-                // Collapse to one Pro + one Flash — variants share the same quota
-                const proBucket = quotaBuckets.find((b) => b.model_id.includes('pro'));
-                const flashBucket = quotaBuckets.find(
-                  (b) => b.model_id.includes('flash') && !b.model_id.includes('lite')
-                );
-                const dedupedBuckets = [
-                  proBucket ? { ...proBucket, model_id: 'Pro' } : null,
-                  flashBucket ? { ...flashBucket, model_id: 'Flash' } : null,
-                ].filter(Boolean) as typeof quotaBuckets;
-                return (
-                  <div className="flex flex-col gap-2 mt-0.5">
-                    {dedupedBuckets.map((b) => {
-                      const pct = b.used_pct ?? 0;
-                      const atLimit = b.remaining_fraction === 0;
-                      const resetLabel = b.reset_time
-                        ? (() => {
-                            const resetMs = new Date(b.reset_time).getTime() - Date.now();
-                            if (resetMs <= 0) return undefined;
-                            return `resets in ${formatDuration(Math.round(resetMs / 1000))}`;
-                          })()
-                        : undefined;
-                      return (
-                        <UsageBar
-                          key={b.model_id}
-                          pct={pct}
-                          label={b.model_id}
-                          resetLabel={atLimit ? 'Limit' : resetLabel}
-                          color={pct >= 90 ? 'red' : 'amber'}
-                        />
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-
-            {/* Fallback: show local model breakdown if no quota API data */}
-            {!quotaBuckets &&
-              geminiModels &&
-              geminiModels.length > 0 &&
-              (() => {
-                const maxTokens = Math.max(...geminiModels.map((m) => m.tokens.total));
-                return (
-                  <div className="flex flex-col gap-1 mt-0.5">
-                    {geminiModels.map((m) => {
-                      const pct = maxTokens > 0 ? (m.tokens.total / maxTokens) * 100 : 0;
-                      return (
-                        <div key={m.model} className="flex items-center gap-2 min-w-0">
-                          <span
-                            className="text-[10px] text-slate-400 truncate w-28 shrink-0"
-                            title={m.model}
-                          >
-                            {m.model}
-                          </span>
-                          <div
-                            className="flex-1 h-1 overflow-hidden rounded-full"
-                            style={{ backgroundColor: 'rgba(214, 169, 71, 0.11)' }}
-                          >
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{
-                                width: `${Math.min(100, pct)}%`,
-                                background:
-                                  'linear-gradient(90deg, #8f6b28 0%, #d6a947 60%, #f2c766 100%)',
-                              }}
-                            />
-                          </div>
-                          <span className="text-[10px] text-slate-500 tabular-nums shrink-0 w-10 text-right">
-                            {formatTokens(m.tokens.total)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-          </div>
+          <GeminiUsageDisplay
+            hasLive={hasLive}
+            geminiToday={geminiToday}
+            quotaBuckets={quotaBuckets}
+            geminiModels={geminiModels}
+          />
         )}
 
         {/* ── Cursor-specific plan usage (live from api2.cursor.sh) ─── */}
         {account.provider === 'cursor' && (cursorPlan || cursorTokens) && (
-          <div className="flex flex-col gap-2">
-            {/* Tokens row — this is the "millions" figure cursor.com shows. */}
-            {cursorTokens && cursorTokens.total > 0 && (
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Tokens this cycle</span>
-                <div className="flex items-center gap-3 tabular-nums">
-                  <span className="font-semibold text-violet-300">
-                    {formatTokens(cursorTokens.total)}
-                  </span>
-                </div>
-              </div>
-            )}
-            {/* Per-token-type split: cache-read dominates on Cursor's pricing. */}
-            {cursorTokens && cursorTokens.total > 0 && (
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] tabular-nums text-slate-600">
-                <span>{formatTokens(cursorTokens.input)} in</span>
-                <span className="text-slate-700">·</span>
-                <span>{formatTokens(cursorTokens.output)} out</span>
-                {cursorTokens.cache_read > 0 && (
-                  <>
-                    <span className="text-slate-700">·</span>
-                    <span className="text-violet-400/70">
-                      {formatTokens(cursorTokens.cache_read)} cached
-                    </span>
-                  </>
-                )}
-              </div>
-            )}
-            {/* Plan spend row — dollar-denominated usage cap. */}
-            {cursorPlan && (
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Plan spend</span>
-                <div className="flex items-center gap-2 tabular-nums">
-                  {cursorPlan.total_spend_cents != null && cursorPlan.limit_cents != null && (
-                    <span className="text-slate-500">
-                      ${(cursorPlan.total_spend_cents / 100).toFixed(2)} / $
-                      {(cursorPlan.limit_cents / 100).toFixed(2)}
-                    </span>
-                  )}
-                  {cursorPlan.total_pct_used != null && (
-                    <span className="font-semibold text-violet-300">
-                      {cursorPlan.total_pct_used.toFixed(1)}%
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            {/* Per-model breakdown — usually just composer-2.5-fast but
-                future-proofed for users running multiple models. */}
-            {cursorTokens && cursorTokens.by_model.length > 1 && (
-              <div className="flex flex-col gap-0.5 border-l border-violet-500/20 pl-2">
-                {cursorTokens.by_model.map((m) => {
-                  const t = m.input_tokens + m.output_tokens + m.cache_read_tokens;
-                  return (
-                    <div
-                      key={m.model ?? 'unknown'}
-                      className="flex items-center justify-between text-[10px] tabular-nums"
-                    >
-                      <span className="text-slate-500 truncate">{m.model ?? 'unknown'}</span>
-                      <span className="text-slate-600">{formatTokens(t)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {cursorPlan?.display_message && (
-              <div className="text-[10px] text-slate-600 italic">{cursorPlan.display_message}</div>
-            )}
-            <div className="text-[10px] text-slate-700">
-              {weekSessions} session{weekSessions === 1 ? '' : 's'} indexed this week
-            </div>
-          </div>
+          <CursorUsageDisplay
+            cursorPlan={cursorPlan}
+            cursorTokens={cursorTokens}
+            weekSessions={weekSessions}
+          />
         )}
 
         {/* ── Local indexed stats ───────────────────────────────── */}
@@ -710,53 +897,15 @@ function AccountUsageRow({
             expose per-message tokens locally, so the live plan-usage block
             above is the source of truth. */}
         {!isSharedUsage && account.provider !== 'cursor' ? (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
-                {formatTokens(weekTokens)} tokens this week
-              </span>
-              <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
-                {weekSessions} sessions
-              </span>
-              {usage && usage.week_cost > 0 && (
-                <span className="rounded-full border border-white/[0.055] bg-white/[0.025] px-2 py-1 text-[10px] text-slate-500 tabular-nums">
-                  {formatMoney(usage.week_cost)}
-                </span>
-              )}
-              {!hasLive && !liveErrorHint && (
-                <span className="rounded-full border border-white/[0.04] bg-transparent px-2 py-1 text-[10px] text-slate-700">
-                  {localTelemetryQualifier(account.provider)}
-                </span>
-              )}
-            </div>
-            <LocalModelBreakdown usage={usage} provider={account.provider} />
-            {liveErrorHint && (
-              <div className="flex items-start gap-1.5 text-[10px] text-amber-400/90">
-                <span className="shrink-0">⚠</span>
-                <span>{liveErrorHint}</span>
-              </div>
-            )}
-            {profileBreakdown.length > 1 && (
-              <div className="flex flex-col gap-1 border-l border-[var(--cv-line)] pl-2">
-                {profileBreakdown.map((profile) => {
-                  const profileTokens = profile.week_input_tokens + profile.week_output_tokens;
-                  return (
-                    <div
-                      key={profile.profile}
-                      className="flex items-center justify-between gap-2 min-w-0"
-                    >
-                      <span className="text-[10px] text-slate-500 truncate" title={profile.profile}>
-                        {profile.profile}
-                      </span>
-                      <span className="text-[10px] text-slate-600 tabular-nums shrink-0">
-                        {formatTokens(profileTokens)} · {profile.week_sessions} sessions
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <LocalIndexedStats
+            usage={usage}
+            account={account}
+            weekTokens={weekTokens}
+            weekSessions={weekSessions}
+            hasLive={hasLive}
+            liveErrorHint={liveErrorHint}
+            profileBreakdown={profileBreakdown}
+          />
         ) : (
           <div className="flex items-center gap-3">
             <span className="text-[10px] text-slate-700 italic">
@@ -982,6 +1131,34 @@ function TelemetryVisibilityEditor({
 // Bars show API-equivalent USD cost per bucket. Hover previews stay inside the
 // chart; clicking pins a bucket and drives the agent/model panels below.
 
+function bucketDate(bucket: DayBucket | WeekBucket | null): string | null {
+  if (!bucket) return null;
+  return 'date' in bucket ? bucket.date : bucket.week_start;
+}
+
+function computeTrendPct(
+  data: DayBucket[] | WeekBucket[],
+  mode: 'daily' | 'weekly'
+): { pct: number | null; label: string } {
+  const n = data.length;
+  const trendWindow = mode === 'daily' ? 7 : 4;
+  const trendPairs = data
+    .slice(Math.max(1, n - trendWindow))
+    .map((bucket, offset) => {
+      const currentIndex = Math.max(1, n - trendWindow) + offset;
+      const previous = data[currentIndex - 1]?.generated ?? 0;
+      if (previous <= 0 || bucket.generated <= 0) return null;
+      return ((bucket.generated - previous) / previous) * 100;
+    })
+    .filter((value): value is number => value !== null && Number.isFinite(value));
+  const pct =
+    trendPairs.length > 0
+      ? trendPairs.reduce((sum, value) => sum + value, 0) / trendPairs.length
+      : null;
+  const label = mode === 'daily' ? 'avg day-over-day, last 7d' : 'avg week-over-week, last 4w';
+  return { pct, label };
+}
+
 function TokenUsageChart({
   daily,
   weekly,
@@ -1038,26 +1215,7 @@ function TokenUsageChart({
   const activeIdx = hover ?? pinned;
   const hovered = activeIdx != null ? data[activeIdx] : null;
 
-  const trendWindow = mode === 'daily' ? 7 : 4;
-  const trendPairs = data
-    .slice(Math.max(1, n - trendWindow))
-    .map((bucket, offset) => {
-      const currentIndex = Math.max(1, n - trendWindow) + offset;
-      const previous = data[currentIndex - 1]?.generated ?? 0;
-      if (previous <= 0 || bucket.generated <= 0) return null;
-      return ((bucket.generated - previous) / previous) * 100;
-    })
-    .filter((value): value is number => value !== null && Number.isFinite(value));
-  const trendPct =
-    trendPairs.length > 0
-      ? trendPairs.reduce((sum, value) => sum + value, 0) / trendPairs.length
-      : null;
-  const trendLabel = mode === 'daily' ? 'avg day-over-day, last 7d' : 'avg week-over-week, last 4w';
-
-  const bucketDate = (bucket: DayBucket | WeekBucket | null): string | null => {
-    if (!bucket) return null;
-    return 'date' in bucket ? bucket.date : bucket.week_start;
-  };
+  const { pct: trendPct, label: trendLabel } = computeTrendPct(data, mode);
 
   useEffect(() => {
     if (pinDate == null) {
@@ -1433,21 +1591,7 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
   );
 }
 
-function WeeklyAgentSplit({
-  hiddenAgents,
-  agentByDay,
-  range,
-  focusDate,
-  focusMode,
-  active,
-}: {
-  hiddenAgents: Set<string>;
-  agentByDay: AgentDayUsage[];
-  range: ModelRangeKey;
-  focusDate?: string | null;
-  focusMode?: 'daily' | 'weekly';
-  active: boolean;
-}) {
+function useAgentUsageRows(active: boolean) {
   const [rows, setRows] = useState<AgentUsageRow[] | null>(null);
   const [cursorLedger, setCursorLedger] = useState<ProviderUsageLedgerRow | null>(null);
 
@@ -1461,8 +1605,6 @@ function WeeklyAgentSplit({
           getAgentUsageBreakdown(),
           listProviderUsageLedger(50).catch(() => [] as ProviderUsageLedgerRow[]),
         ]);
-        // Most-recent cursor billing-cycle row from the live API — the real
-        // Cursor usage. cc_sessions only has the chars÷4 CLI estimate.
         const cursor =
           ledger
             .filter((l) => l.provider === 'cursor')
@@ -1476,12 +1618,8 @@ function WeeklyAgentSplit({
       }
     };
     void fetchRows();
-    // Startup runs a fast *partial* quick-index, then a full index minutes
-    // later. Without refetching, this bar stays frozen on the partial numbers
-    // (e.g. Claude far below its real total). Refresh when the indexer emits
-    // its completion event, plus a periodic fallback.
     const interval = setInterval(() => {
-      if (isWindowHidden()) return; // battery: skip background refetches
+      if (isWindowHidden()) return;
       void fetchRows();
     }, 60_000);
     void (async () => {
@@ -1501,6 +1639,89 @@ function WeeklyAgentSplit({
     };
   }, [active]);
 
+  return { rows, cursorLedger };
+}
+
+function buildAgentSegmentsForFocus(
+  agentByDay: AgentDayUsage[],
+  hiddenAgents: Set<string>,
+  focusDate: string,
+  focusMode: 'daily' | 'weekly'
+): AgentSegment[] {
+  const acc = new Map<string, number>();
+  for (const r of agentByDay) {
+    if (hiddenAgents.has(r.agent_type)) continue;
+    if (!agentDayInFocus(r.date, focusDate, focusMode)) continue;
+    acc.set(r.agent_type, (acc.get(r.agent_type) ?? 0) + r.cost);
+  }
+  return [...acc.entries()].map(([agent, cost]) => ({
+    agent,
+    tokens: cost,
+    estimated: AGENT_PALETTE[agent]?.estimated ?? false,
+  }));
+}
+
+function buildAgentSegmentsForRange(
+  agentByDay: AgentDayUsage[],
+  hiddenAgents: Set<string>,
+  range: ModelRangeKey
+): AgentSegment[] {
+  const days = MODEL_RANGES.find((r) => r.key === range)?.days ?? 30;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+  const since = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+  const acc = new Map<string, number>();
+  for (const r of agentByDay) {
+    if (r.date < since || hiddenAgents.has(r.agent_type)) continue;
+    acc.set(r.agent_type, (acc.get(r.agent_type) ?? 0) + r.cost);
+  }
+  return [...acc.entries()].map(([agent, cost]) => ({
+    agent,
+    tokens: cost,
+    estimated: AGENT_PALETTE[agent]?.estimated ?? false,
+  }));
+}
+
+function buildAgentSegmentsForAll(
+  rows: AgentUsageRow[],
+  hiddenAgents: Set<string>,
+  cursorLedgerCost: number | null
+): AgentSegment[] {
+  const segments = rows
+    .filter((r) => !hiddenAgents.has(r.agent_type))
+    .map((r) => ({
+      agent: r.agent_type,
+      tokens: r.agent_type === 'cursor' && cursorLedgerCost != null ? cursorLedgerCost : r.cost,
+      estimated: AGENT_PALETTE[r.agent_type]?.estimated ?? false,
+    }));
+  if (
+    cursorLedgerCost != null &&
+    !hiddenAgents.has('cursor') &&
+    !rows.some((r) => r.agent_type === 'cursor')
+  ) {
+    segments.push({ agent: 'cursor', tokens: cursorLedgerCost, estimated: false });
+  }
+  return segments;
+}
+
+function WeeklyAgentSplit({
+  hiddenAgents,
+  agentByDay,
+  range,
+  focusDate,
+  focusMode,
+  active,
+}: {
+  hiddenAgents: Set<string>;
+  agentByDay: AgentDayUsage[];
+  range: ModelRangeKey;
+  focusDate?: string | null;
+  focusMode?: 'daily' | 'weekly';
+  active: boolean;
+}) {
+  const { rows, cursorLedger } = useAgentUsageRows(active);
+
   if (!rows) return null;
 
   // API-equivalent USD cost per agent. Cursor's cc_sessions cost is only the
@@ -1510,51 +1731,11 @@ function WeeklyAgentSplit({
     cursorLedger && cursorLedger.cost_usd != null ? cursorLedger.cost_usd : null;
   let segments: AgentSegment[];
   if (focusDate && focusMode) {
-    const acc = new Map<string, number>();
-    for (const r of agentByDay) {
-      if (hiddenAgents.has(r.agent_type)) continue;
-      if (!agentDayInFocus(r.date, focusDate, focusMode)) continue;
-      acc.set(r.agent_type, (acc.get(r.agent_type) ?? 0) + r.cost);
-    }
-    segments = [...acc.entries()].map(([agent, cost]) => ({
-      agent,
-      tokens: cost,
-      estimated: AGENT_PALETTE[agent]?.estimated ?? false,
-    }));
+    segments = buildAgentSegmentsForFocus(agentByDay, hiddenAgents, focusDate, focusMode);
   } else if (range === 'all') {
-    segments = rows
-      .filter((r) => !hiddenAgents.has(r.agent_type))
-      .map((r) => ({
-        agent: r.agent_type,
-        tokens: r.agent_type === 'cursor' && cursorLedgerCost != null ? cursorLedgerCost : r.cost,
-        estimated: AGENT_PALETTE[r.agent_type]?.estimated ?? false,
-      }));
-    if (
-      cursorLedgerCost != null &&
-      !hiddenAgents.has('cursor') &&
-      !rows.some((r) => r.agent_type === 'cursor')
-    ) {
-      segments.push({ agent: 'cursor', tokens: cursorLedgerCost, estimated: false });
-    }
+    segments = buildAgentSegmentsForAll(rows, hiddenAgents, cursorLedgerCost);
   } else {
-    // Rolling window summed client-side from the per-day drill-down (the same
-    // day attribution as the daily chart). Cursor keeps its local estimate
-    // here — the ledger figure is a whole billing cycle, not window-sliceable.
-    const days = MODEL_RANGES.find((r) => r.key === range)?.days ?? 30;
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - (days - 1));
-    const since = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-    const acc = new Map<string, number>();
-    for (const r of agentByDay) {
-      if (r.date < since || hiddenAgents.has(r.agent_type)) continue;
-      acc.set(r.agent_type, (acc.get(r.agent_type) ?? 0) + r.cost);
-    }
-    segments = [...acc.entries()].map(([agent, cost]) => ({
-      agent,
-      tokens: cost,
-      estimated: AGENT_PALETTE[agent]?.estimated ?? false,
-    }));
+    segments = buildAgentSegmentsForRange(agentByDay, hiddenAgents, range);
   }
 
   const rangeLabel = MODEL_RANGES.find((r) => r.key === range)?.label.toLowerCase() ?? 'all time';
@@ -2140,6 +2321,30 @@ const EMPTY_MODEL_USAGE_RANGES: ModelUsageRanges = {
 const MODEL_BREAKDOWN_TOP_N = 8;
 
 /** Usage by model ($) — range synced with the parent panel. */
+function resolveModelData(
+  focusDate: string | null | undefined,
+  focusLoading: boolean | undefined,
+  focusData: ModelUsage[] | null | undefined,
+  ranges: ModelUsageRanges,
+  range: ModelRangeKey
+): ModelUsage[] {
+  if (focusDate != null) {
+    return focusLoading ? [] : (focusData ?? []);
+  }
+  return ranges[range];
+}
+
+function buildModelEmptyMessage(
+  focusDate: string | null | undefined,
+  focusLoading: boolean | undefined,
+  range: ModelRangeKey
+): string {
+  if (focusDate) {
+    return focusLoading ? 'Loading model spend…' : 'No model spend on this day.';
+  }
+  return range === 'all' ? 'No model usage yet.' : 'No model usage in this window.';
+}
+
 function UsageByModel({
   ranges,
   range,
@@ -2156,7 +2361,7 @@ function UsageByModel({
   focusLoading?: boolean;
 }) {
   const focused = Boolean(focusDate && !focusLoading && focusData);
-  const data = focusDate != null ? (focusLoading ? [] : (focusData ?? [])) : ranges[range];
+  const data = resolveModelData(focusDate, focusLoading, focusData, ranges, range);
   const top = data.slice(0, MODEL_BREAKDOWN_TOP_N);
   const rest = data.slice(MODEL_BREAKDOWN_TOP_N);
   const rows = top.map((m) => ({
@@ -2202,15 +2407,7 @@ function UsageByModel({
       <HBarList
         rows={rows}
         max={max}
-        empty={
-          focusDate
-            ? focusLoading
-              ? 'Loading model spend…'
-              : 'No model spend on this day.'
-            : range === 'all'
-              ? 'No model usage yet.'
-              : 'No model usage in this window.'
-        }
+        empty={buildModelEmptyMessage(focusDate, focusLoading, range)}
         format={formatMoney}
       />
     </div>
@@ -2536,6 +2733,19 @@ export function AdapterSourceHealthPanel({ runs }: { runs: SessionAdapterRun[] }
   );
 }
 
+function buildCostLabel(report: CodexUsageReconciliation): string {
+  const minCost = (report.verified_cost_min_microusd ?? 0) / 1_000_000;
+  const maxCost = (report.verified_cost_max_microusd ?? 0) / 1_000_000;
+  const hasCostRange = report.verified_cost_min_microusd !== report.verified_cost_max_microusd;
+  if (report.unpriced_events > 0) {
+    return `${formatMoney(minCost)}–${formatMoney(maxCost)} priced portion · ${report.unpriced_events} unpriced`;
+  }
+  if (hasCostRange) {
+    return `${formatMoney(minCost)}–${formatMoney(maxCost)}`;
+  }
+  return formatMoney(minCost);
+}
+
 function CodexEvidenceSummary({
   report,
   loading,
@@ -2596,15 +2806,7 @@ function CodexEvidenceSummary({
     report.stale_sessions;
   const complete = unresolvedSessions === 0 && report.pending_bytes === 0;
   const totalTokens = report.verified_totals.input_tokens + report.verified_totals.output_tokens;
-  const minCost = (report.verified_cost_min_microusd ?? 0) / 1_000_000;
-  const maxCost = (report.verified_cost_max_microusd ?? 0) / 1_000_000;
-  const hasCostRange = report.verified_cost_min_microusd !== report.verified_cost_max_microusd;
-  const costLabel =
-    report.unpriced_events > 0
-      ? `${formatMoney(minCost)}–${formatMoney(maxCost)} priced portion · ${report.unpriced_events} unpriced`
-      : hasCostRange
-        ? `${formatMoney(minCost)}–${formatMoney(maxCost)}`
-        : formatMoney(minCost);
+  const costLabel = buildCostLabel(report);
 
   return (
     <section className="cv-panel overflow-hidden" aria-labelledby="codex-evidence-title">
@@ -2722,6 +2924,418 @@ function CodexEvidenceSummary({
 
 const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes
 
+function buildUsageMapFromCached(
+  cachedUsagesResult: PromiseSettledResult<readonly [string, AccountUsage]>[]
+): Record<string, AccountUsage> {
+  const usageMap: Record<string, AccountUsage> = {};
+  cachedUsagesResult.forEach((r) => {
+    if (r.status === 'fulfilled') {
+      const [id, usage] = r.value;
+      usageMap[id] = usage;
+    }
+  });
+  return usageMap;
+}
+
+async function fetchMissingAccountUsages(
+  accounts: { id: string }[],
+  cachedIds: Set<string>,
+  usageMap: Record<string, AccountUsage>
+): Promise<void> {
+  const missing = accounts.filter((a) => !cachedIds.has(a.id));
+  if (missing.length === 0) return;
+  const extraResults = await Promise.allSettled(missing.map((a) => checkAccountUsage(a.id)));
+  extraResults.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      usageMap[missing[i].id] = r.value;
+    }
+  });
+}
+
+function describeTokenUsageError(reason: unknown): string {
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  if (msg === 'TAURI_NOT_AVAILABLE') {
+    return 'Tauri APIs not available. Run inside the desktop app to see live data.';
+  }
+  return "Couldn't load your dashboard. Your saved data is safe — try again.";
+}
+
+const LIVE_USAGE_PROVIDERS = ['anthropic', 'openai', 'google', 'cursor', 'devin', 'grok'];
+
+async function refreshLiveUsageForAccounts(
+  accts: ProviderAccount[],
+  setLiveUsages: React.Dispatch<React.SetStateAction<Record<string, LiveUsageResult>>>,
+  setLiveErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>
+): Promise<void> {
+  const supported = accts.filter((a) => LIVE_USAGE_PROVIDERS.includes(a.provider));
+  if (supported.length === 0) return;
+
+  const results = await Promise.allSettled(
+    supported.map((a) => checkLiveUsage(a.provider, a.api_key ?? undefined))
+  );
+  setLiveUsages((prev) => {
+    const next = { ...prev };
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') {
+        next[supported[i].id] = r.value;
+      }
+    });
+    return next;
+  });
+  // Surface live-check failures (e.g. expired Claude token) instead of
+  // silently falling back to "local estimates only".
+  setLiveErrors((prev) => {
+    const next = { ...prev };
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') next[supported[i].id] = String(r.reason);
+      else delete next[supported[i].id];
+    });
+    return next;
+  });
+}
+
+function refreshCachedCodexReconciliation(
+  setCodexReconciliation: (v: CodexUsageReconciliation | null) => void,
+  setCodexReconciliationError: (v: string | null) => void,
+  setCodexReconciliationLoading: (v: boolean) => void
+): void {
+  setCodexReconciliationLoading(true);
+  void getCodexUsageReconciliation()
+    .then((report) => {
+      setCodexReconciliation(report);
+      setCodexReconciliationError(null);
+    })
+    .catch(() => {
+      setCodexReconciliationError(
+        'The latest Codex reconciliation could not be read. Re-index local data and retry.'
+      );
+    })
+    .finally(() => setCodexReconciliationLoading(false));
+}
+
+async function loadDashboardData(
+  showSpinner: boolean,
+  isInitialLoad: React.MutableRefObject<boolean>,
+  setLoading: (v: boolean) => void,
+  setError: (v: string | null) => void,
+  setTokenUsage: (v: TokenUsageStats | null) => void,
+  setAccounts: (v: ProviderAccount[]) => void,
+  setAccountUsages: (v: Record<string, AccountUsage>) => void,
+  setAgentByDay: (v: AgentDayUsage[]) => void,
+  setLiveSessionPolicy: (v: LiveSessionEvidencePolicy | null) => void,
+  setCodexReconciliation: (v: CodexUsageReconciliation | null) => void,
+  setCodexReconciliationLoading: (v: boolean) => void,
+  setCodexReconciliationError: (v: string | null) => void
+): Promise<void> {
+  if (!isTauriAvailable()) {
+    setLoading(false);
+    setCodexReconciliationLoading(false);
+    setCodexReconciliationError('Open the desktop app to read the local evidence ledger.');
+    setError('Tauri APIs not available. Run inside the desktop app to see live data.');
+    isInitialLoad.current = false;
+    return;
+  }
+  if (showSpinner) {
+    setLoading(true);
+  }
+  setError(null);
+  setCodexReconciliationLoading(true);
+  setCodexReconciliationError(null);
+
+  try {
+    const cachedAccounts = _cachedDashboard?.accounts ?? [];
+    const cachedUsagePromise = Promise.allSettled(
+      cachedAccounts.map(async (a) => [a.id, await checkAccountUsage(a.id)] as const)
+    );
+
+    const [tokenUsageResult, accountsResult, cachedUsagesResult] = await Promise.all([
+      getTokenUsageStats().then(
+        (v) => ({ status: 'fulfilled' as const, value: v }),
+        (e) => ({ status: 'rejected' as const, reason: e })
+      ),
+      detectProviderAccounts()
+        .then((v) => v.accounts)
+        .catch(() => listProviderAccounts())
+        .then(
+          (v) => ({ status: 'fulfilled' as const, value: v }),
+          (e) => ({ status: 'rejected' as const, reason: e })
+        ),
+      cachedUsagePromise,
+    ]);
+
+    if (tokenUsageResult.status === 'fulfilled') {
+      setTokenUsage(tokenUsageResult.value);
+    }
+
+    void getAgentUsageByDay(180)
+      .then((v) => setAgentByDay(v))
+      .catch(() => undefined);
+    void getLiveSessionEvidencePolicy()
+      .then(setLiveSessionPolicy)
+      .catch(() => undefined);
+    void getCodexUsageReconciliation()
+      .then(setCodexReconciliation)
+      .catch((reconciliationError) => {
+        console.error('[CodeVetter] Codex reconciliation failed:', reconciliationError);
+        setCodexReconciliationError(
+          'The latest Codex reconciliation could not be read. Re-index local data and retry.'
+        );
+      })
+      .finally(() => setCodexReconciliationLoading(false));
+
+    const usageMap = buildUsageMapFromCached(cachedUsagesResult);
+
+    if (accountsResult.status === 'fulfilled') {
+      const accts = accountsResult.value;
+      setAccounts(accts);
+      const cachedIds = new Set(cachedAccounts.map((a) => a.id));
+      await fetchMissingAccountUsages(accts, cachedIds, usageMap);
+      setAccountUsages(usageMap);
+    } else if (Object.keys(usageMap).length > 0) {
+      setAccountUsages(usageMap);
+    }
+
+    if (tokenUsageResult.status === 'rejected') {
+      console.error('[CodeVetter] Usage load failed:', tokenUsageResult.reason);
+      setError(describeTokenUsageError(tokenUsageResult.reason));
+    }
+  } catch (err) {
+    console.error('[CodeVetter] Dashboard load failed:', err);
+    setError("Couldn't load your dashboard. Your saved data is safe — try again.");
+  } finally {
+    setLoading(false);
+    isInitialLoad.current = false;
+  }
+}
+
+async function handleReDetectAccounts(
+  setAccounts: (v: ProviderAccount[]) => void,
+  setAccountUsages: (v: Record<string, AccountUsage>) => void,
+  refreshDashboard: () => void
+): Promise<void> {
+  try {
+    const [result] = await Promise.all([detectProviderAccounts(), triggerIndex()]);
+    setAccounts(result.accounts);
+    if (result.accounts.length > 0) {
+      const usageResults = await Promise.allSettled(
+        result.accounts.map((a) => checkAccountUsage(a.id))
+      );
+      const usageMap: Record<string, AccountUsage> = {};
+      usageResults.forEach((r, i) => {
+        if (r.status === 'fulfilled') {
+          usageMap[result.accounts[i].id] = r.value;
+        }
+      });
+      setAccountUsages(usageMap);
+    }
+    refreshDashboard();
+  } catch (err) {
+    console.error('Detection failed:', err);
+  }
+}
+
+async function handleCheckLiveUsage(
+  account: ProviderAccount,
+  setCheckingLiveFor: (v: string | null) => void,
+  setLiveUsages: React.Dispatch<React.SetStateAction<Record<string, LiveUsageResult>>>,
+  setLiveErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>
+): Promise<void> {
+  setCheckingLiveFor(account.id);
+  try {
+    const result = await checkLiveUsage(account.provider, account.api_key ?? undefined);
+    setLiveUsages((prev) => ({ ...prev, [account.id]: result }));
+    setLiveErrors((prev) => {
+      const next = { ...prev };
+      delete next[account.id];
+      return next;
+    });
+  } catch (err) {
+    setLiveErrors((prev) => ({ ...prev, [account.id]: String(err) }));
+  } finally {
+    setCheckingLiveFor(null);
+  }
+}
+
+async function handleDeleteAccount(accountId: string, refreshDashboard: () => void): Promise<void> {
+  try {
+    await deleteProviderAccount(accountId);
+    refreshDashboard();
+  } catch (err) {
+    console.error('Failed to delete account:', err);
+  }
+}
+
+function LegacySummaryStats({
+  tokenUsage,
+  loading,
+}: {
+  tokenUsage: TokenUsageStats | null;
+  loading: boolean;
+}) {
+  const stats = [
+    {
+      label: 'Today',
+      cost: tokenUsage?.today_cost ?? 0,
+      gen: tokenUsage?.today_generated ?? 0,
+      color: 'text-zinc-100',
+    },
+    {
+      label: 'This week',
+      cost: tokenUsage?.week_cost ?? 0,
+      gen: tokenUsage?.week_generated ?? 0,
+      color: 'text-zinc-100',
+    },
+    {
+      label: 'This month',
+      cost: tokenUsage?.month_cost ?? 0,
+      gen: tokenUsage?.month_generated ?? 0,
+      color: 'text-amber-300',
+    },
+    {
+      label: 'This year',
+      cost: tokenUsage?.year_cost ?? 0,
+      gen: tokenUsage?.year_generated ?? 0,
+      color: 'text-zinc-100',
+    },
+  ];
+  const showPlaceholder = loading && !tokenUsage;
+  return (
+    <div className="grid grid-cols-2 gap-px bg-white/[0.06] lg:grid-cols-4">
+      {stats.map((stat) => (
+        <div
+          key={stat.label}
+          className="flex min-h-20 items-center justify-between bg-[var(--cv-surface)] px-4 py-4"
+          title={`${formatMoney(stat.cost)} legacy API-equivalent estimate · ${formatTokens(stat.gen)} generated tokens`}
+        >
+          <span className="cv-label mr-2 truncate">{stat.label}</span>
+          <span className="shrink-0 text-right">
+            <span className={`block text-base font-semibold tabular-nums ${stat.color}`}>
+              {showPlaceholder ? '--' : formatMoney(stat.cost)}
+            </span>
+            <span className="mt-0.5 block text-[10px] text-zinc-600 tabular-nums">
+              {showPlaceholder ? 'loading' : `${formatTokens(stat.gen)} generated`}
+            </span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProviderAccountList({
+  accounts,
+  visibleAccounts,
+  accountUsages,
+  liveUsages,
+  liveErrors,
+  checkingLiveFor,
+  setCheckingLiveFor,
+  setLiveUsages,
+  setLiveErrors,
+  refreshDashboard,
+}: {
+  accounts: ProviderAccount[];
+  visibleAccounts: ProviderAccount[];
+  accountUsages: Record<string, AccountUsage>;
+  liveUsages: Record<string, LiveUsageResult>;
+  liveErrors: Record<string, string>;
+  checkingLiveFor: string | null;
+  setCheckingLiveFor: (v: string | null) => void;
+  setLiveUsages: React.Dispatch<React.SetStateAction<Record<string, LiveUsageResult>>>;
+  setLiveErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  refreshDashboard: () => void;
+}) {
+  if (accounts.length === 0) {
+    return (
+      <CardContent className="flex flex-col items-center justify-center py-5 p-5">
+        <Terminal className="mb-2 h-6 w-6 text-slate-600" />
+        <p className="text-[11px] text-slate-500">No CLI accounts detected</p>
+        <p className="text-[11px] text-slate-600 mt-0.5">
+          Log into Claude Code, Codex, Cursor, Devin, or Grok to auto-detect
+        </p>
+      </CardContent>
+    );
+  }
+  if (visibleAccounts.length === 0) {
+    return (
+      <CardContent className="flex flex-col items-center justify-center py-5 p-5">
+        <Terminal className="mb-2 h-6 w-6 text-slate-600" />
+        <p className="text-[11px] text-slate-500">All providers are hidden</p>
+      </CardContent>
+    );
+  }
+  return (
+    <>
+      {visibleAccounts.map((account, idx) => {
+        const isFirstOfProvider =
+          visibleAccounts.findIndex((a) => a.provider === account.provider) === idx;
+        const hasSiblings =
+          visibleAccounts.filter((a) => a.provider === account.provider).length > 1;
+        return (
+          <AccountUsageRow
+            key={account.id}
+            account={account}
+            usage={accountUsages[account.id] ?? null}
+            liveUsage={liveUsages[account.id] ?? null}
+            liveError={liveErrors[account.id] ?? null}
+            checkingLive={checkingLiveFor === account.id}
+            isSharedUsage={hasSiblings && !isFirstOfProvider}
+            onCheckLive={() => {
+              void handleCheckLiveUsage(account, setCheckingLiveFor, setLiveUsages, setLiveErrors);
+            }}
+            onDelete={() => {
+              void handleDeleteAccount(account.id, refreshDashboard);
+            }}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function useModelUsageSync(
+  isHomeActive: boolean,
+  hiddenAgents: Set<string>,
+  fetchModelUsage: (exclude: string[]) => Promise<void>,
+  refreshDashboard: () => void
+): void {
+  useEffect(() => {
+    if (!isHomeActive) return;
+    let cancelled = false;
+    let unlisten: (() => void) | undefined;
+    const run = () => {
+      void fetchModelUsage([...hiddenAgents])
+        .catch(() => undefined)
+        .then(() => {
+          if (cancelled) return;
+        });
+    };
+    run();
+    const interval = setInterval(() => {
+      if (isWindowHidden()) return;
+      run();
+    }, 60_000);
+    void (async () => {
+      try {
+        const { listen } = await import('@tauri-apps/api/event');
+        const un = await listen('session_archive_updated', () => {
+          run();
+          refreshDashboard();
+        });
+        if (cancelled) un();
+        else unlisten = un;
+      } catch {
+        // Event API unavailable (browser preview) — periodic fallback still runs.
+      }
+    })();
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      unlisten?.();
+    };
+  }, [isHomeActive, hiddenAgents, fetchModelUsage, refreshDashboard]);
+}
+
 export default function Home() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -2769,122 +3383,20 @@ export default function Home() {
   // ─── Load all dashboard data ────────────────────────────────────────────
 
   const loadDashboard = useCallback(async (showSpinner: boolean = true) => {
-    if (!isTauriAvailable()) {
-      setLoading(false);
-      setCodexReconciliationLoading(false);
-      setCodexReconciliationError('Open the desktop app to read the local evidence ledger.');
-      setError('Tauri APIs not available. Run inside the desktop app to see live data.');
-      isInitialLoad.current = false;
-      return;
-    }
-    if (showSpinner) {
-      setLoading(true);
-    }
-    setError(null);
-    setCodexReconciliationLoading(true);
-    setCodexReconciliationError(null);
-
-    try {
-      // Kick off account usage in parallel with the rest of the dashboard.
-      // Uses cached account IDs so usage queries don't wait for the
-      // listProviderAccounts roundtrip. Any new accounts discovered below
-      // get their usage fetched in a small second wave.
-      const cachedAccounts = _cachedDashboard?.accounts ?? [];
-      const cachedUsagePromise = Promise.allSettled(
-        cachedAccounts.map(async (a) => [a.id, await checkAccountUsage(a.id)] as const)
-      );
-
-      const [tokenUsageResult, accountsResult, cachedUsagesResult] = await Promise.all([
-        getTokenUsageStats().then(
-          (v) => ({ status: 'fulfilled' as const, value: v }),
-          (e) => ({ status: 'rejected' as const, reason: e })
-        ),
-        detectProviderAccounts()
-          .then((v) => v.accounts)
-          .catch(() => listProviderAccounts())
-          .then(
-            (v) => ({ status: 'fulfilled' as const, value: v }),
-            (e) => ({ status: 'rejected' as const, reason: e })
-          ),
-        cachedUsagePromise,
-      ]);
-
-      if (tokenUsageResult.status === 'fulfilled') {
-        setTokenUsage(tokenUsageResult.value);
-      }
-
-      // Usage breakdowns (day×agent, project, model) — non-critical, so they
-      // load independently and never block or fail the core dashboard.
-      void getAgentUsageByDay(180)
-        .then((v) => setAgentByDay(v))
-        .catch(() => undefined);
-      void getLiveSessionEvidencePolicy()
-        .then(setLiveSessionPolicy)
-        .catch(() => undefined);
-      void getCodexUsageReconciliation()
-        .then(setCodexReconciliation)
-        .catch((reconciliationError) => {
-          console.error('[CodeVetter] Codex reconciliation failed:', reconciliationError);
-          setCodexReconciliationError(
-            'The latest Codex reconciliation could not be read. Re-index local data and retry.'
-          );
-        })
-        .finally(() => setCodexReconciliationLoading(false));
-
-      // Seed usage map with cached-ID results that came back alongside the rest.
-      const usageMap: Record<string, AccountUsage> = {};
-      cachedUsagesResult.forEach((r) => {
-        if (r.status === 'fulfilled') {
-          const [id, usage] = r.value;
-          usageMap[id] = usage;
-        }
-      });
-
-      if (accountsResult.status === 'fulfilled') {
-        const accts = accountsResult.value;
-
-        setAccounts(accts);
-
-        // Fetch usage only for accounts that weren't covered by the cached
-        // parallel fetch (new accounts since last load, or first-ever load).
-        const cachedIds = new Set(cachedAccounts.map((a) => a.id));
-        const missing = accts.filter((a) => !cachedIds.has(a.id));
-        if (missing.length > 0) {
-          const extraResults = await Promise.allSettled(
-            missing.map((a) => checkAccountUsage(a.id))
-          );
-          extraResults.forEach((r, i) => {
-            if (r.status === 'fulfilled') {
-              usageMap[missing[i].id] = r.value;
-            }
-          });
-        }
-        setAccountUsages(usageMap);
-      } else if (Object.keys(usageMap).length > 0) {
-        setAccountUsages(usageMap);
-      }
-
-      // If critical reads failed, surface a friendly message — full detail
-      // goes to the console, never the raw IPC error to the user.
-      if (tokenUsageResult.status === 'rejected') {
-        console.error('[CodeVetter] Usage load failed:', tokenUsageResult.reason);
-        const msg =
-          tokenUsageResult.reason instanceof Error
-            ? tokenUsageResult.reason.message
-            : String(tokenUsageResult.reason);
-        if (msg === 'TAURI_NOT_AVAILABLE') {
-          setError('Tauri APIs not available. Run inside the desktop app to see live data.');
-        } else {
-          setError("Couldn't load your dashboard. Your saved data is safe — try again.");
-        }
-      }
-    } catch (err) {
-      console.error('[CodeVetter] Dashboard load failed:', err);
-      setError("Couldn't load your dashboard. Your saved data is safe — try again.");
-    } finally {
-      setLoading(false);
-      isInitialLoad.current = false;
-    }
+    await loadDashboardData(
+      showSpinner,
+      isInitialLoad,
+      setLoading,
+      setError,
+      setTokenUsage,
+      setAccounts,
+      setAccountUsages,
+      setAgentByDay,
+      setLiveSessionPolicy,
+      setCodexReconciliation,
+      setCodexReconciliationLoading,
+      setCodexReconciliationError
+    );
   }, []);
 
   // Write state to module-level cache whenever data changes
@@ -2911,18 +3423,11 @@ export default function Home() {
       // The general dashboard cache predates the revisioned evidence report;
       // always refresh that report so a cached legacy headline cannot mask it.
       if (isTauriAvailable()) {
-        setCodexReconciliationLoading(true);
-        void getCodexUsageReconciliation()
-          .then((report) => {
-            setCodexReconciliation(report);
-            setCodexReconciliationError(null);
-          })
-          .catch(() => {
-            setCodexReconciliationError(
-              'The latest Codex reconciliation could not be read. Re-index local data and retry.'
-            );
-          })
-          .finally(() => setCodexReconciliationLoading(false));
+        refreshCachedCodexReconciliation(
+          setCodexReconciliation,
+          setCodexReconciliationError,
+          setCodexReconciliationLoading
+        );
       }
       return;
     }
@@ -2940,41 +3445,7 @@ export default function Home() {
     setModelUsage({ d7, d30, d90, all });
   }, []);
 
-  useEffect(() => {
-    if (!isHomeActive) return;
-    let cancelled = false;
-    let unlisten: (() => void) | undefined;
-    const run = () => {
-      void fetchModelUsage([...hiddenAgents])
-        .catch(() => undefined)
-        .then(() => {
-          if (cancelled) return;
-        });
-    };
-    run();
-    const interval = setInterval(() => {
-      if (isWindowHidden()) return;
-      run();
-    }, 60_000);
-    void (async () => {
-      try {
-        const { listen } = await import('@tauri-apps/api/event');
-        const un = await listen('session_archive_updated', () => {
-          run();
-          refreshDashboard();
-        });
-        if (cancelled) un();
-        else unlisten = un;
-      } catch {
-        // Event API unavailable (browser preview) — periodic fallback still runs.
-      }
-    })();
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-      unlisten?.();
-    };
-  }, [isHomeActive, hiddenAgents, fetchModelUsage, refreshDashboard]);
+  useModelUsageSync(isHomeActive, hiddenAgents, fetchModelUsage, refreshDashboard);
 
   // ─── Periodic background sync every 60s ───────────────────────────────
   // Keeps token-usage counters near-realtime. Paused while the window is
@@ -2993,33 +3464,7 @@ export default function Home() {
   // ─── Auto-refresh live usage every 60s ─────────────────────────────────
 
   const refreshLiveUsage = useCallback(async (accts: ProviderAccount[]) => {
-    const supported = accts.filter((a) =>
-      ['anthropic', 'openai', 'google', 'cursor', 'devin', 'grok'].includes(a.provider)
-    );
-    if (supported.length === 0) return;
-
-    const results = await Promise.allSettled(
-      supported.map((a) => checkLiveUsage(a.provider, a.api_key ?? undefined))
-    );
-    setLiveUsages((prev) => {
-      const next = { ...prev };
-      results.forEach((r, i) => {
-        if (r.status === 'fulfilled') {
-          next[supported[i].id] = r.value;
-        }
-      });
-      return next;
-    });
-    // Surface live-check failures (e.g. expired Claude token) instead of
-    // silently falling back to "local estimates only".
-    setLiveErrors((prev) => {
-      const next = { ...prev };
-      results.forEach((r, i) => {
-        if (r.status === 'rejected') next[supported[i].id] = String(r.reason);
-        else delete next[supported[i].id];
-      });
-      return next;
-    });
+    await refreshLiveUsageForAccounts(accts, setLiveUsages, setLiveErrors);
   }, []);
 
   // Fetch live usage immediately once accounts are loaded.
@@ -3105,50 +3550,7 @@ export default function Home() {
 
           {/* Historical blended estimates remain available for continuity, but
               never substitute for the verified Codex evidence panel above. */}
-          <div className="grid grid-cols-2 gap-px bg-white/[0.06] lg:grid-cols-4">
-            {[
-              {
-                label: 'Today',
-                cost: tokenUsage?.today_cost ?? 0,
-                gen: tokenUsage?.today_generated ?? 0,
-                color: 'text-zinc-100',
-              },
-              {
-                label: 'This week',
-                cost: tokenUsage?.week_cost ?? 0,
-                gen: tokenUsage?.week_generated ?? 0,
-                color: 'text-zinc-100',
-              },
-              {
-                label: 'This month',
-                cost: tokenUsage?.month_cost ?? 0,
-                gen: tokenUsage?.month_generated ?? 0,
-                color: 'text-amber-300',
-              },
-              {
-                label: 'This year',
-                cost: tokenUsage?.year_cost ?? 0,
-                gen: tokenUsage?.year_generated ?? 0,
-                color: 'text-zinc-100',
-              },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="flex min-h-20 items-center justify-between bg-[var(--cv-surface)] px-4 py-4"
-                title={`${formatMoney(stat.cost)} legacy API-equivalent estimate · ${formatTokens(stat.gen)} generated tokens`}
-              >
-                <span className="cv-label mr-2 truncate">{stat.label}</span>
-                <span className="shrink-0 text-right">
-                  <span className={`block text-base font-semibold tabular-nums ${stat.color}`}>
-                    {loading && !tokenUsage ? '--' : formatMoney(stat.cost)}
-                  </span>
-                  <span className="mt-0.5 block text-[10px] text-zinc-600 tabular-nums">
-                    {loading && !tokenUsage ? 'loading' : `${formatTokens(stat.gen)} generated`}
-                  </span>
-                </span>
-              </div>
-            ))}
-          </div>
+          <LegacySummaryStats tokenUsage={tokenUsage} loading={loading} />
         </section>
 
         {/* Index result banner */}
@@ -3205,28 +3607,8 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 className="h-auto px-1.5 py-0.5 text-[11px] text-slate-500 hover:text-slate-300"
-                onClick={async () => {
-                  try {
-                    // Re-detect accounts AND re-index sessions
-                    const [result] = await Promise.all([detectProviderAccounts(), triggerIndex()]);
-                    setAccounts(result.accounts);
-                    if (result.accounts.length > 0) {
-                      const usageResults = await Promise.allSettled(
-                        result.accounts.map((a) => checkAccountUsage(a.id))
-                      );
-                      const usageMap: Record<string, AccountUsage> = {};
-                      usageResults.forEach((r, i) => {
-                        if (r.status === 'fulfilled') {
-                          usageMap[result.accounts[i].id] = r.value;
-                        }
-                      });
-                      setAccountUsages(usageMap);
-                    }
-                    // Refresh dashboard data after index
-                    refreshDashboard();
-                  } catch (err) {
-                    console.error('Detection failed:', err);
-                  }
+                onClick={() => {
+                  void handleReDetectAccounts(setAccounts, setAccountUsages, refreshDashboard);
                 }}
               >
                 Re-detect
@@ -3283,51 +3665,18 @@ export default function Home() {
                   </Button>
                 </CardContent>
               ) : (
-                visibleAccounts.map((account, idx) => {
-                  // If multiple accounts share the same provider, only the first shows local stats
-                  const isFirstOfProvider =
-                    visibleAccounts.findIndex((a) => a.provider === account.provider) === idx;
-                  const hasSiblings =
-                    visibleAccounts.filter((a) => a.provider === account.provider).length > 1;
-                  return (
-                    <AccountUsageRow
-                      key={account.id}
-                      account={account}
-                      usage={accountUsages[account.id] ?? null}
-                      liveUsage={liveUsages[account.id] ?? null}
-                      liveError={liveErrors[account.id] ?? null}
-                      checkingLive={checkingLiveFor === account.id}
-                      isSharedUsage={hasSiblings && !isFirstOfProvider}
-                      onCheckLive={async () => {
-                        setCheckingLiveFor(account.id);
-                        try {
-                          const result = await checkLiveUsage(
-                            account.provider,
-                            account.api_key ?? undefined
-                          );
-                          setLiveUsages((prev) => ({ ...prev, [account.id]: result }));
-                          setLiveErrors((prev) => {
-                            const next = { ...prev };
-                            delete next[account.id];
-                            return next;
-                          });
-                        } catch (err) {
-                          setLiveErrors((prev) => ({ ...prev, [account.id]: String(err) }));
-                        } finally {
-                          setCheckingLiveFor(null);
-                        }
-                      }}
-                      onDelete={async () => {
-                        try {
-                          await deleteProviderAccount(account.id);
-                          refreshDashboard();
-                        } catch (err) {
-                          console.error('Failed to delete account:', err);
-                        }
-                      }}
-                    />
-                  );
-                })
+                <ProviderAccountList
+                  accounts={accounts}
+                  visibleAccounts={visibleAccounts}
+                  accountUsages={accountUsages}
+                  liveUsages={liveUsages}
+                  liveErrors={liveErrors}
+                  checkingLiveFor={checkingLiveFor}
+                  setCheckingLiveFor={setCheckingLiveFor}
+                  setLiveUsages={setLiveUsages}
+                  setLiveErrors={setLiveErrors}
+                  refreshDashboard={refreshDashboard}
+                />
               )}
             </Card>
           )}
