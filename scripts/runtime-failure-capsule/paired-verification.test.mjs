@@ -36,7 +36,7 @@ test('alternates two runnable repositories and confirms matching scale evidence'
     ['baseline', 'current', 'current', 'baseline', 'baseline', 'current']
   );
   assert.equal(report.baseline_capsule.observed.console_metrics[0].metrics[0].sample_count, 3);
-  assert.equal(report.limitations.length, 0);
+  assert.equal(report.limitations.length, 0, JSON.stringify(report.limitations));
 });
 
 test('fails closed when one paired workload does not complete', async (context) => {

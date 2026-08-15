@@ -177,6 +177,21 @@ export function validatePerformanceCapsule(capsule) {
   if (!Array.isArray(capsule?.findings)) errors.push('findings must be an array');
   if (!Array.isArray(capsule?.unverified)) errors.push('unverified must be an array');
   if (!Array.isArray(capsule?.limitations)) errors.push('limitations must be an array');
+  if (capsule?.execution_governance !== null && capsule?.execution_governance !== undefined) {
+    if (capsule.execution_governance?.plan?.schema_version !== 'performance-execution-plan/v1') {
+      errors.push('invalid execution_governance.plan');
+    }
+    if (
+      capsule.execution_governance?.receipt?.schema_version !== 'performance-execution-receipt/v1'
+    ) {
+      errors.push('invalid execution_governance.receipt');
+    }
+    if (
+      capsule.execution_governance?.plan?.plan_id !== capsule.execution_governance?.receipt?.plan_id
+    ) {
+      errors.push('execution_governance identity mismatch');
+    }
+  }
   return errors;
 }
 

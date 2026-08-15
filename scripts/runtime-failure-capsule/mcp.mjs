@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createOptimizationCampaignService } from './campaign.mjs';
 import { createOptimizationContributionService } from './contribution.mjs';
+import { planPerformanceExecution } from './execution-governance.mjs';
 import {
   LIMITS,
   PROFILE_ADAPTERS,
@@ -16,12 +17,16 @@ import { planFlowOptimizationCampaign } from './flow-campaign-planner.mjs';
 import { qualifyRepository } from './qualification.mjs';
 import { redactText } from './redact.mjs';
 import { inspectSupervisedRun } from './supervision.mjs';
-import { profileRepository } from './performance.mjs';
+import { plannedProfileProcessCount, profileRepository } from './performance.mjs';
 import { verifyPairedRepositories } from './paired-verification.mjs';
 
 const PROTOCOL_VERSION = '2025-03-26';
 const SERVER_INFO = { name: 'codevetter-local-runtime', version: '0.1.0' };
-const PERFORMANCE_TOOLS = new Set(['profile_local_performance', 'verify_paired_performance']);
+const PERFORMANCE_TOOLS = new Set([
+  'plan_local_performance',
+  'profile_local_performance',
+  'verify_paired_performance',
+]);
 
 export async function createRuntimeMcpHandler(repositoryRoot, options = {}) {
   const flowService = options.flowService ?? (await createLocalFlowService(repositoryRoot));
@@ -188,6 +193,9 @@ async function callTool(
 }
 
 async function callPerformanceTool({ name, args, repositoryRoot, incumbentRepositoryRoot }) {
+  if (name === 'plan_local_performance') {
+    return callPerformancePlan(args, repositoryRoot);
+  }
   closedArguments(
     args,
     ['adapter', 'target'],
@@ -214,6 +222,28 @@ async function callPerformanceTool({ name, args, repositoryRoot, incumbentReposi
     return verifyPairedRepositories({ ...input, baselineRepositoryRoot: incumbentRepositoryRoot });
   }
   return profileRepository(input);
+}
+
+function callPerformancePlan(args, repositoryRoot) {
+  closedArguments(
+    args,
+    ['adapter', 'target'],
+    ['name', 'approval_identity'],
+    [],
+    ['samples', 'warmups', 'timeout_ms']
+  );
+  const adapter = assertProfileAdapter(args.adapter);
+  const samples = boundedSamples(args.samples);
+  const warmups = boundedWarmups(args.warmups);
+  return planPerformanceExecution({
+    repositoryRoot,
+    adapter,
+    target: args.target,
+    name: args.name,
+    timeoutMs: boundedTimeout(args.timeout_ms),
+    processCount: plannedProfileProcessCount({ adapter, samples, warmups }),
+    approvalIdentity: args.approval_identity,
+  });
 }
 
 function closedArguments(
@@ -270,6 +300,22 @@ export function toolDefinitions() {
         type: 'object',
         additionalProperties: false,
         properties: {},
+      },
+    },
+    {
+      name: 'plan_local_performance',
+      description:
+        'Dry-run one exact performance scope and report immutable zero-egress, duration, retry, request, service, and cost bounds without executing project code.',
+      annotations: readAnnotations,
+      inputSchema: {
+        ...performanceInputSchema(),
+        properties: {
+          ...performanceInputSchema().properties,
+          approval_identity: {
+            type: 'string',
+            pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$',
+          },
+        },
       },
     },
     {

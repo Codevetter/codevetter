@@ -192,8 +192,12 @@ function pairedCapsule({
     },
     viteArtifact,
   });
+  const usesWorkloadMetric =
+    capsule.observed.console_metrics.length > 0 || capsule.observed.go_benchmarks.length > 0;
   capsule.limitations = capsule.limitations.filter(
-    (limitation) => !DIAGNOSTIC_ONLY_LIMITATIONS.has(limitation)
+    (limitation) =>
+      !DIAGNOSTIC_ONLY_LIMITATIONS.has(limitation) &&
+      !(usesWorkloadMetric && limitation.startsWith('Wall-time samples varied by'))
   );
   capsule.capture.profile_kind = 'paired_timing_only';
   return capsule;

@@ -4,6 +4,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { LIMITS, boundedTimeout, repositoryRelative } from './contracts.mjs';
+import { assertPerformanceExecutionPlanCurrent } from './execution-governance.mjs';
 
 export async function runClosedAdapter({
   repositoryRoot,
@@ -16,6 +17,7 @@ export async function runClosedAdapter({
   coverageDirectory,
   benchmarkCount = 1,
   vitestReporter,
+  executionPlan = null,
 }) {
   const root = await realpath(resolve(repositoryRoot));
   const scope = await resolveTarget(root, target);
@@ -53,16 +55,35 @@ export async function runClosedAdapter({
       environmentValues: [],
     };
   }
+  if (
+    executionPlan?.decision?.status !== undefined &&
+    executionPlan.decision.status !== 'admitted'
+  ) {
+    throw new Error('performance execution plan is not admitted');
+  }
+  if (executionPlan) {
+    await assertPerformanceExecutionPlanCurrent({
+      plan: executionPlan,
+      repositoryRoot: root,
+      adapter,
+      target: scope.relative,
+      name: name ?? null,
+    });
+  }
+  const zeroEgress = executionPlan !== null;
   const environment = minimalEnvironment({
     profileDirectory:
       profileDirectory && ['node-test', 'node-script'].includes(adapter) ? profileDirectory : null,
     flowDirectory:
       flowDirectory && ['node-test', 'vitest'].includes(adapter) ? flowDirectory : null,
     coverageDirectory: coverageDirectory && adapter === 'node-test' ? coverageDirectory : null,
+    zeroEgress:
+      zeroEgress && ['node-test', 'node-script', 'vitest', 'playwright'].includes(adapter),
   });
+  const ownedCommand = governedCommand(command, executionPlan);
   const execution = await runOwnedProcess({
-    program: command.program,
-    args: command.args,
+    program: ownedCommand.program,
+    args: ownedCommand.args,
     cwd: command.cwd,
     environment,
     timeoutMs: timeout,
@@ -328,6 +349,7 @@ function minimalEnvironment({
   profileDirectory = null,
   flowDirectory = null,
   coverageDirectory = null,
+  zeroEgress = false,
 } = {}) {
   const allowed = ['PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'SYSTEMROOT', 'COMSPEC', 'PATHEXT'];
   const environment = { CI: '1', FORCE_COLOR: '0', NO_COLOR: '1' };
@@ -342,8 +364,27 @@ function minimalEnvironment({
     environment.CODEVETTER_FLOW_DIRECTORY = flowDirectory;
   }
   if (coverageDirectory) environment.NODE_V8_COVERAGE = coverageDirectory;
+  if (zeroEgress) {
+    const preload = fileURLToPath(new URL('./node-egress-preload.mjs', import.meta.url));
+    nodeOptions.push(`--import=${pathToFileURL(preload).href}`);
+    environment.CODEVETTER_NETWORK_POLICY = 'loopback-only';
+  }
   if (nodeOptions.length > 0) environment.NODE_OPTIONS = nodeOptions.join(' ');
   return environment;
+}
+
+function governedCommand(command, executionPlan) {
+  if (!executionPlan || !executionPlan.enforcement?.kind?.startsWith('macos_sandbox')) {
+    return { program: command.program, args: command.args };
+  }
+  const allowLoopback = executionPlan.enforcement.network_scope === 'loopback_only';
+  const policy = allowLoopback
+    ? '(version 1)(allow default)(deny network*)(allow network-inbound (local ip "*:*"))(allow network-outbound (remote ip "localhost:*"))'
+    : '(version 1)(allow default)(deny network*)';
+  return {
+    program: '/usr/bin/sandbox-exec',
+    args: ['-p', policy, command.program, ...command.args],
+  };
 }
 
 function runOwnedProcess({ program, args, cwd, environment, timeoutMs }) {

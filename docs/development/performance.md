@@ -1037,6 +1037,51 @@ workloads. Agents can also call the read-only MCP operation
 `qualify_runtime_repository` before `capture_local_flow` or an explicit
 performance profile.
 
+### Zero-egress execution planning
+
+Qualification ranks a workload; admission decides whether CodeVetter may run
+it. Dry-run the exact profile before execution:
+
+```bash
+pnpm --silent runtime:plan-performance -- \
+  --repo /path/to/repository \
+  --adapter node-script \
+  --target benchmark/parser.mjs \
+  --samples 3 \
+  --warmups 1 \
+  --timeout-ms 30000 \
+  --json
+```
+
+The equivalent read-only MCP operation is `plan_local_performance`. Its stable
+plan identity binds the repository revision and dirty state, target content,
+adapter, exact workload, and bounds. An admitted plan permits one concurrent
+owned process, zero retries, zero external requests, no external services, zero
+monetary cost, and a finite total wall clock. The profiler rechecks that identity immediately
+before each process; a changed revision, dirty state, or target fails closed.
+
+Node-family runs preload a deny guard for remote DNS, sockets, HTTP(S), fetch,
+and WebSocket access. On macOS, the child process tree also runs under a network
+sandbox; loopback remains available for local HTTP flows. Go execution uses the
+macOS sandbox and is blocked on hosts where CodeVetter cannot establish a
+dependable zero-egress boundary. `GOPROXY=off` is not treated as a sandbox.
+
+Remote endpoints, dynamic unknown destinations, hosted/paid service signals,
+and workloads identified as load, soak, stress, or production profiles are
+blocked before project code runs. Supplying an approval identity records the
+caller input but does not enable hosted execution in this version. Unknown cost
+is reported as unknown, never as zero. Admitted, blocked, completed, failed,
+and policy-violation outcomes carry a versioned cost-and-egress receipt in the
+performance capsule.
+
+This boundary separates three activities:
+
+- local profiling is the only executable autonomous mode;
+- a public smoke is a separately initiated, bounded availability check and is
+  not a performance or load test;
+- hosted, production, load, soak, and stress profiling remain unsupported and
+  require future infrastructure outside this local flywheel.
+
 ## 14. Preserving a profiling attempt under failure
 
 Use the outer supervisor when a workload may crash, receive a signal, exceed
@@ -1076,6 +1121,10 @@ application secrets, install dependencies, contact cloud services on its own,
 or alter source control. Child output is byte-bounded and redacted before it can
 become failure evidence; successful JSON is redacted, schema-validated, and
 hashed before preservation.
+
+The supervisor derives the same execution plan before launching its child. A
+blocked plan writes a terminal `blocked` receipt with zero child processes,
+requests, retries, services, and executed cost; project code is not started.
 
 Recovery is deliberately conservative. A killed profiling child, timeout,
 ordinary exit, spawn failure, or malformed result gets a terminal receipt and
