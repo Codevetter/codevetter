@@ -4,9 +4,7 @@
 
 Define reproducible local IPC and disk measurements plus reversible,
 evidence-gated cache consolidation.
-
 ## Requirements
-
 ### Requirement: Dashboard and cache performance is reproducibly measured
 CodeVetter SHALL provide a repository-owned qualification that measures bounded
 p50, p95, maximum latency, result bytes, and error state for dashboard IPC paths
@@ -32,3 +30,26 @@ duplicate evidence, a reversible plan, and before/after receipts.
 - **WHEN** profiling does not show a dashboard IPC or TypeScript/Rust boundary exceeding its budget
 - **THEN** CodeVetter records no service rewrite recommendation
 - **AND** does not add another runtime
+
+### Requirement: External-frontier comparisons are qualified
+CodeVetter SHALL NOT express proximity to an external performance frontier as a
+direct measured gap unless the local and external results share compatible
+input, correctness, timing, resource, and machine conditions. Otherwise it MUST
+identify the arithmetic as an extrapolation and enumerate the incompatible
+conditions.
+
+#### Scenario: Local bounded parser is compared with the 1BRC leaderboard
+- **WHEN** the local result excludes file I/O, uses fewer rows, or runs on different hardware
+- **THEN** CodeVetter labels any projected multiplier as non-comparable
+- **AND** reports the missing end-to-end evidence needed for a direct claim
+
+### Requirement: Large local campaigns require resource qualification
+Before a performance campaign generates or retains a materially large fixture,
+CodeVetter SHALL calculate the requested bytes, confirm available local space,
+record the retention policy, and require explicit authorization above the
+documented default bound.
+
+#### Scenario: Requested fixture is approximately 12 GB
+- **WHEN** an agent requests a full one-billion-row challenge
+- **THEN** CodeVetter does not generate the fixture under default settings
+- **AND** reports the expected local storage and authorization requirement

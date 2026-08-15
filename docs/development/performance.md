@@ -792,7 +792,7 @@ and the identical-scope verifier confirmed a 69.945% improvement. A second
 micro-optimization improved the largest case by only 8.863% and regressed the
 smallest by 4.079%; it was reverted after the verifier returned inconclusive.
 See the active OpenSpec
-[qualification](../../openspec/changes/add-scaled-parsing-challenge/qualification.md)
+[qualification](../../openspec/changes/archive/2026-08-15-add-scaled-parsing-challenge/qualification.md)
 for the complete evidence and limitations.
 
 The challenge is not an official submission and does not claim one- or
