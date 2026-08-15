@@ -16,4 +16,4 @@
 - [x] 3.1 Add hermetic boundary tests for allowed local work, remote attempts, unsupported adapters, unknown cost, stale identity, and bounded receipts
 - [x] 3.2 Document local profiling, public smoke, hosted/load boundaries, dry-run usage, and receipt interpretation
 - [x] 3.3 Run focused runtime tests, lint, docs validation, strict OpenSpec validation, and diff checks
-- [ ] 3.4 Link the shipped change to GitHub issue #105, sync the specification, archive the completed change, and update current product truth
+- [x] 3.4 Link the shipped change to GitHub issue #105, sync the specification, archive the completed change, and update current product truth
