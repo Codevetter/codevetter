@@ -1066,74 +1066,6 @@ async function stopTerminalById(
   }
 }
 
-async function archiveTerminalById(
-  id: string,
-  terminals: AgentTerminal[],
-  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void,
-  notifiedAttentionRef: React.RefObject<Map<string, string>>,
-  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>,
-  setSelectedId: React.Dispatch<React.SetStateAction<string>>
-) {
-  const terminal = terminals.find((item) => item.id === id);
-  if (!terminal) return;
-
-  if (terminal.running) {
-    try {
-      await stopAgentTerminal(id);
-    } catch (error) {
-      updateTerminal(id, archiveStopErrorPatch(terminal, error));
-      return;
-    }
-  }
-
-  outputBuffers.delete(id);
-  outputTails.delete(id);
-  outputSequences.delete(id);
-  notifiedAttentionRef.current.delete(id);
-  setTerminals((current) => current.filter((item) => item.id !== id));
-  setSelectedId((current) => (current === id ? '' : current));
-}
-
-async function sendPromptToTerminal(
-  id: string,
-  prompt: string,
-  terminals: AgentTerminal[],
-  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>,
-  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void,
-  setDefaultCwd: React.Dispatch<React.SetStateAction<string>>,
-  startTerminal: (
-    id: string,
-    options?: { resume?: boolean; forkSessionId?: string | null; terminalOverride?: AgentTerminal }
-  ) => Promise<void>
-) {
-  const terminal = terminals.find((item) => item.id === id);
-  const message = prompt.trim();
-  if (!terminal || !message) return;
-  if (message.startsWith('!')) {
-    const command = message.slice(1).trim();
-    if (!command) return;
-    await runPaneShellCommandById(id, terminal, command, setTerminals, setDefaultCwd);
-    return;
-  }
-  if (!terminal.running) {
-    if (terminal.started) return;
-    await startTerminal(id, {
-      terminalOverride: {
-        ...terminal,
-        prompt: message,
-      },
-    });
-    return;
-  }
-  setTerminals((current) => current.map((item) => appendPromptSentState(item, id, message)));
-  try {
-    await sendAgentTerminalInput(id, `${BRACKETED_PASTE_START}${message}${BRACKETED_PASTE_END}`);
-    await sendAgentTerminalInput(id, '\r');
-  } catch (error) {
-    handleSendPromptError(id, error, updateTerminal);
-  }
-}
-
 async function runPaneShellCommandById(
   id: string,
   terminal: AgentTerminal,
@@ -1188,39 +1120,6 @@ async function runPaneShellCommandById(
       current.map((item) => appendShellErrorState(item, id, message, blockId, startedAt, nextTail))
     );
   }
-}
-
-function openWorkItemConversationById(
-  item: WorkItem,
-  terminals: AgentTerminal[],
-  updateTerminal: (id: string, patch: Partial<AgentTerminal>) => void,
-  defaultCwd: string,
-  navigate: (path: string) => void,
-  setConversationSeed: React.Dispatch<React.SetStateAction<ConversationSeed | null>>,
-  setPreviewSession: React.Dispatch<React.SetStateAction<SessionRow | null>>,
-  setSelectedId: React.Dispatch<React.SetStateAction<string>>
-) {
-  const attached = terminals.find(
-    (terminal) => terminal.id === item.agent_terminal_id && terminal.started
-  );
-  if (attached) {
-    updateTerminal(attached.id, { workItemId: item.id });
-    setConversationSeed(null);
-    setPreviewSession(null);
-    setSelectedId(attached.id);
-    navigate('/agents');
-    return;
-  }
-  setConversationSeed({
-    provider: item.preferred_provider,
-    cwd: item.project_path ?? defaultCwd,
-    prompt: workItemPrompt(item),
-    model: '',
-    workItemId: item.id,
-  });
-  setPreviewSession(null);
-  setSelectedId('');
-  navigate('/agents');
 }
 
 async function restartTerminalById(
@@ -1292,71 +1191,6 @@ async function startTerminalById(
   } catch (error) {
     handleLaunchFailed(id, error, updateTerminal, setTerminals);
   }
-}
-
-async function startConversationsById(
-  seeds: ConversationSeed[],
-  terminals: AgentTerminal[],
-  defaultCwd: string,
-  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>,
-  setPreviewSession: React.Dispatch<React.SetStateAction<SessionRow | null>>,
-  setSelectedId: React.Dispatch<React.SetStateAction<string>>,
-  setConversationSeed: React.Dispatch<React.SetStateAction<ConversationSeed | null>>,
-  startTerminal: (
-    id: string,
-    options?: { resume?: boolean; forkSessionId?: string | null; terminalOverride?: AgentTerminal }
-  ) => Promise<void>
-) {
-  if (seeds.length === 0) return;
-  const launchTerminals = createLaunchTerminals(seeds, terminals.length, defaultCwd);
-  setTerminals((current) => [...current, ...launchTerminals]);
-  setPreviewSession(null);
-  setSelectedId(launchTerminals[0].id);
-  setConversationSeed(null);
-  await Promise.allSettled(
-    launchTerminals
-      .filter((_, index) => seeds[index].launchNow !== false)
-      .map((terminal) => startTerminal(terminal.id, { terminalOverride: terminal }))
-  );
-}
-
-async function launchIndexedSessionById(
-  session: SessionRow,
-  mode: 'resume' | 'fork',
-  layout: AgentLayout,
-  foregroundTerminals: AgentTerminal[],
-  terminals: AgentTerminal[],
-  defaultCwd: string,
-  setTerminals: React.Dispatch<React.SetStateAction<AgentTerminal[]>>,
-  setPreviewSession: React.Dispatch<React.SetStateAction<SessionRow | null>>,
-  setSelectedId: React.Dispatch<React.SetStateAction<string>>,
-  setLayout: React.Dispatch<React.SetStateAction<AgentLayout>>,
-  startTerminal: (
-    id: string,
-    options?: { resume?: boolean; forkSessionId?: string | null; terminalOverride?: AgentTerminal }
-  ) => Promise<void>
-) {
-  const codexSessionId = session.id.trim();
-  if (!codexSessionId) return;
-  const nextId = `agent-${Date.now()}`;
-  const shouldSplit = layout === 'focus' && foregroundTerminals.length >= 1;
-  const sessionTerminal = createIndexedSessionTerminal(
-    session,
-    nextId,
-    mode,
-    codexSessionId,
-    terminals.length + 1,
-    defaultCwd
-  );
-  setTerminals((current) => [...current, sessionTerminal]);
-  setPreviewSession(null);
-  setSelectedId(nextId);
-  if (shouldSplit) setLayout('columns');
-  await startTerminal(nextId, {
-    resume: mode === 'resume',
-    forkSessionId: mode === 'fork' ? codexSessionId : null,
-    terminalOverride: sessionTerminal,
-  });
 }
 
 async function attachExistingSessionById(
@@ -1765,29 +1599,41 @@ export default function AgentPanel() {
   }
 
   async function startConversations(seeds: ConversationSeed[]) {
-    await startConversationsById(
-      seeds,
-      terminals,
-      defaultCwd,
-      setTerminals,
-      setPreviewSession,
-      setSelectedId,
-      setConversationSeed,
-      startTerminal
+    if (seeds.length === 0) return;
+    const launchTerminals = createLaunchTerminals(seeds, terminals.length, defaultCwd);
+    setTerminals((current) => [...current, ...launchTerminals]);
+    setPreviewSession(null);
+    setSelectedId(launchTerminals[0].id);
+    setConversationSeed(null);
+    await Promise.allSettled(
+      launchTerminals
+        .filter((_, index) => seeds[index].launchNow !== false)
+        .map((terminal) => startTerminal(terminal.id, { terminalOverride: terminal }))
     );
   }
 
   function openWorkItemConversation(item: WorkItem) {
-    openWorkItemConversationById(
-      item,
-      terminals,
-      updateTerminal,
-      defaultCwd,
-      navigate,
-      setConversationSeed,
-      setPreviewSession,
-      setSelectedId
+    const attached = terminals.find(
+      (terminal) => terminal.id === item.agent_terminal_id && terminal.started
     );
+    if (attached) {
+      updateTerminal(attached.id, { workItemId: item.id });
+      setConversationSeed(null);
+      setPreviewSession(null);
+      setSelectedId(attached.id);
+      navigate('/agents');
+      return;
+    }
+    setConversationSeed({
+      provider: item.preferred_provider,
+      cwd: item.project_path ?? defaultCwd,
+      prompt: workItemPrompt(item),
+      model: '',
+      workItemId: item.id,
+    });
+    setPreviewSession(null);
+    setSelectedId('');
+    navigate('/agents');
   }
 
   async function startManagedWorkConversation(item: WorkItem, run: ManagedWorkRun) {
@@ -1821,19 +1667,27 @@ export default function AgentPanel() {
   }
 
   async function launchIndexedSession(session: SessionRow, mode: 'resume' | 'fork') {
-    await launchIndexedSessionById(
+    const codexSessionId = session.id.trim();
+    if (!codexSessionId) return;
+    const nextId = `agent-${Date.now()}`;
+    const shouldSplit = layout === 'focus' && foregroundTerminals.length >= 1;
+    const sessionTerminal = createIndexedSessionTerminal(
       session,
+      nextId,
       mode,
-      layout,
-      foregroundTerminals,
-      terminals,
-      defaultCwd,
-      setTerminals,
-      setPreviewSession,
-      setSelectedId,
-      setLayout,
-      startTerminal
+      codexSessionId,
+      terminals.length + 1,
+      defaultCwd
     );
+    setTerminals((current) => [...current, sessionTerminal]);
+    setPreviewSession(null);
+    setSelectedId(nextId);
+    if (shouldSplit) setLayout('columns');
+    await startTerminal(nextId, {
+      resume: mode === 'resume',
+      forkSessionId: mode === 'fork' ? codexSessionId : null,
+      terminalOverride: sessionTerminal,
+    });
   }
 
   async function startTerminal(
@@ -1852,26 +1706,53 @@ export default function AgentPanel() {
   }
 
   async function archiveTerminal(id: string) {
-    await archiveTerminalById(
-      id,
-      terminals,
-      updateTerminal,
-      notifiedAttentionRef,
-      setTerminals,
-      setSelectedId
-    );
+    const terminal = terminals.find((item) => item.id === id);
+    if (!terminal) return;
+
+    if (terminal.running) {
+      try {
+        await stopAgentTerminal(id);
+      } catch (error) {
+        updateTerminal(id, archiveStopErrorPatch(terminal, error));
+        return;
+      }
+    }
+
+    outputBuffers.delete(id);
+    outputTails.delete(id);
+    outputSequences.delete(id);
+    notifiedAttentionRef.current.delete(id);
+    setTerminals((current) => current.filter((item) => item.id !== id));
+    setSelectedId((current) => (current === id ? '' : current));
   }
 
   async function sendPrompt(id: string, prompt: string) {
-    await sendPromptToTerminal(
-      id,
-      prompt,
-      terminals,
-      setTerminals,
-      updateTerminal,
-      setDefaultCwd,
-      startTerminal
-    );
+    const terminal = terminals.find((item) => item.id === id);
+    const message = prompt.trim();
+    if (!terminal || !message) return;
+    if (message.startsWith('!')) {
+      const command = message.slice(1).trim();
+      if (!command) return;
+      await runPaneShellCommandById(id, terminal, command, setTerminals, setDefaultCwd);
+      return;
+    }
+    if (!terminal.running) {
+      if (terminal.started) return;
+      await startTerminal(id, {
+        terminalOverride: {
+          ...terminal,
+          prompt: message,
+        },
+      });
+      return;
+    }
+    setTerminals((current) => current.map((item) => appendPromptSentState(item, id, message)));
+    try {
+      await sendAgentTerminalInput(id, `${BRACKETED_PASTE_START}${message}${BRACKETED_PASTE_END}`);
+      await sendAgentTerminalInput(id, '\r');
+    } catch (error) {
+      handleSendPromptError(id, error, updateTerminal);
+    }
   }
 
   return (
