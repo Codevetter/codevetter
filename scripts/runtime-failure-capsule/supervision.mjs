@@ -13,6 +13,11 @@ import {
   validatePerformanceDiagnosis,
 } from './contracts.mjs';
 import { inspectGitDiff } from './git-diff.mjs';
+import {
+  createPerformanceExecutionReceipt,
+  planPerformanceExecution,
+} from './execution-governance.mjs';
+import { plannedProfileProcessCount } from './performance.mjs';
 import { redactJsonValue, redactText } from './redact.mjs';
 import {
   SUPERVISED_RUN_SCHEMA_VERSION,
@@ -58,6 +63,18 @@ export async function supervisePerformanceRun({
   }
   await assertTarget(root, target);
   const git = await inspectGitDiff(root);
+  const executionPlan = await planPerformanceExecution({
+    repositoryRoot: root,
+    adapter: safeAdapter,
+    target,
+    name,
+    timeoutMs: safeTimeout,
+    processCount: plannedProfileProcessCount({
+      adapter: safeAdapter,
+      samples: safeSamples,
+      warmups: safeWarmups,
+    }),
+  });
   const relativeDirectory = `${RUNS_DIRECTORY}/${safeRunId}`;
   const lexicalRunsDirectory = resolve(root, RUNS_DIRECTORY);
   await mkdir(lexicalRunsDirectory, { recursive: true });
@@ -75,6 +92,10 @@ export async function supervisePerformanceRun({
     state: 'initialized',
     subject: { repository_revision: git.repository_revision, dirty: git.dirty },
     scope: { adapter: safeAdapter, target, name: name ?? null },
+    execution_governance: {
+      plan: executionPlan,
+      receipt: createPerformanceExecutionReceipt(executionPlan),
+    },
     policy: {
       samples: safeSamples,
       warmups: safeWarmups,
@@ -102,6 +123,26 @@ export async function supervisePerformanceRun({
     },
     limitations: ['A supervised run proves only the recorded local performance scope.'],
   };
+  if (executionPlan.decision.status === 'blocked') {
+    const completedAt = new Date().toISOString();
+    receipt = {
+      ...receipt,
+      state: 'blocked',
+      lifecycle: { ...receipt.lifecycle, completed_at: completedAt },
+      failure: {
+        kind: 'blocked',
+        operational_error: executionPlan.decision.blockers.join(' '),
+        stdout: null,
+        stderr: null,
+      },
+      limitations: [
+        ...receipt.limitations,
+        'No project code executed because the performance execution plan was blocked.',
+      ],
+    };
+    await writeReceipt(receiptPath, receipt);
+    return assertSupervisedRunReceipt(receipt);
+  }
   await writeReceipt(receiptPath, receipt);
 
   const command =

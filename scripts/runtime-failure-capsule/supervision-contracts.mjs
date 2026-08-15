@@ -13,6 +13,7 @@ export const SUPERVISION_LIMITS = Object.freeze({
 
 export const SUPERVISED_RUN_STATES = Object.freeze([
   'initialized',
+  'blocked',
   'running',
   'succeeded',
   'failed',
@@ -51,6 +52,7 @@ export function validateSupervisedRunReceipt(value) {
       'state',
       'subject',
       'scope',
+      'execution_governance',
       'policy',
       'supervisor',
       'lifecycle',
@@ -72,6 +74,7 @@ export function validateSupervisedRunReceipt(value) {
   if (!SUPERVISED_RUN_STATES.includes(value.state)) errors.push('invalid state');
   validateSubject(value.subject, errors);
   validateScope(value.scope, errors);
+  validateExecutionGovernance(value.execution_governance, errors);
   validatePolicy(value.policy, errors);
   validateSupervisor(value.supervisor, errors);
   validateLifecycle(value.lifecycle, errors);
@@ -88,6 +91,20 @@ export function validateSupervisedRunReceipt(value) {
   }
   validateStateConsistency(value, errors);
   return errors;
+}
+
+function validateExecutionGovernance(value, errors) {
+  if (value === null || value === undefined) return;
+  if (!objectWithKeys(value, ['plan', 'receipt'], 'execution_governance', errors)) return;
+  if (value.plan?.schema_version !== 'performance-execution-plan/v1') {
+    errors.push('execution_governance.plan is invalid');
+  }
+  if (value.receipt?.schema_version !== 'performance-execution-receipt/v1') {
+    errors.push('execution_governance.receipt is invalid');
+  }
+  if (value.plan?.plan_id !== value.receipt?.plan_id) {
+    errors.push('execution_governance identity mismatch');
+  }
 }
 
 function validateSubject(value, errors) {

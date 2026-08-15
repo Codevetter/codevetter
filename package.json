@@ -25,6 +25,7 @@
     "runtime:detect": "node scripts/runtime-failure-capsule/cli.mjs detect",
     "runtime:qualify": "node scripts/runtime-failure-capsule/cli.mjs qualify",
     "runtime:qualify-portfolio": "node scripts/runtime-failure-capsule/cli.mjs qualify-portfolio",
+    "runtime:plan-performance": "node scripts/runtime-failure-capsule/cli.mjs plan-performance",
     "runtime:plan-flow-campaign": "node scripts/runtime-failure-capsule/cli.mjs plan-flow-campaign",
     "runtime:supervise-performance": "node scripts/runtime-failure-capsule/cli.mjs supervise-performance",
     "runtime:inspect-performance-run": "node scripts/runtime-failure-capsule/cli.mjs inspect-performance-run",

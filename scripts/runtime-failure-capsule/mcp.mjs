@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createOptimizationCampaignService } from './campaign.mjs';
 import { createOptimizationContributionService } from './contribution.mjs';
+import { planPerformanceExecution } from './execution-governance.mjs';
 import {
   LIMITS,
   PROFILE_ADAPTERS,
@@ -16,7 +17,7 @@ import { planFlowOptimizationCampaign } from './flow-campaign-planner.mjs';
 import { qualifyRepository } from './qualification.mjs';
 import { redactText } from './redact.mjs';
 import { inspectSupervisedRun } from './supervision.mjs';
-import { profileRepository } from './performance.mjs';
+import { plannedProfileProcessCount, profileRepository } from './performance.mjs';
 import { verifyPairedRepositories } from './paired-verification.mjs';
 
 const PROTOCOL_VERSION = '2025-03-26';
@@ -111,6 +112,27 @@ async function callTool(
   if (name === 'inspect_performance_run') {
     closedArguments(args, ['run_id']);
     return inspectSupervisedRun(repositoryRoot, args.run_id);
+  }
+  if (name === 'plan_local_performance') {
+    closedArguments(
+      args,
+      ['adapter', 'target'],
+      ['name', 'approval_identity'],
+      [],
+      ['samples', 'warmups', 'timeout_ms']
+    );
+    const adapter = assertProfileAdapter(args.adapter);
+    const samples = boundedSamples(args.samples);
+    const warmups = boundedWarmups(args.warmups);
+    return planPerformanceExecution({
+      repositoryRoot,
+      adapter,
+      target: args.target,
+      name: args.name,
+      timeoutMs: boundedTimeout(args.timeout_ms),
+      processCount: plannedProfileProcessCount({ adapter, samples, warmups }),
+      approvalIdentity: args.approval_identity,
+    });
   }
   if (PERFORMANCE_TOOLS.has(name)) {
     return callPerformanceTool({
@@ -270,6 +292,22 @@ export function toolDefinitions() {
         type: 'object',
         additionalProperties: false,
         properties: {},
+      },
+    },
+    {
+      name: 'plan_local_performance',
+      description:
+        'Dry-run one exact performance scope and report immutable zero-egress, duration, retry, request, service, and cost bounds without executing project code.',
+      annotations: readAnnotations,
+      inputSchema: {
+        ...performanceInputSchema(),
+        properties: {
+          ...performanceInputSchema().properties,
+          approval_identity: {
+            type: 'string',
+            pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$',
+          },
+        },
       },
     },
     {

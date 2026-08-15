@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-11
+Last updated: 2026-08-15
 
 ## Why / What
 
@@ -18,6 +18,22 @@ Core scope starts with TypeScript/Node web applications and browser/API
 behavior. **Core Mode** protects that roadmap. **Side Quest Mode** permits
 explicitly requested non-core work, but it must stay bounded and must not
 silently redefine or displace the core.
+
+## Current investment decision
+
+As of 2026-08-15, CodeVetter remains a maintained local product and empirical
+verification/performance research asset, but broad feature expansion is paused.
+The repository has strong deterministic infrastructure, caught-bug evidence,
+and several measured optimization case studies; it does **not** have the planned
+ten active external users, three team pilots, or complete authenticated
+multi-provider trials. Those missing outcomes must not be inferred from owner
+dogfood, synthetic corpora, or local qualification.
+
+New work should be limited to core verification reliability, regressions,
+security, maintenance, and evidence requested by real users. Agent Island stays
+opt-in, authenticated provider comparisons remain claim-closed, and no hosted
+profiling or production-load system should be added until external pull and a
+separately approved safety design justify renewed investment.
 
 ## Dependencies
 
@@ -37,6 +53,26 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-08-15 — Local performance execution became zero-egress by default
+  (release candidate):** Added immutable dry-run plans and cost/egress receipts
+  for exact performance scopes. Admitted runs bind repository revision, dirty
+  state, and target identity; execute one process at a time with no retries,
+  external requests, services, or monetary cost, and fail closed when evidence is remote, paid,
+  production-like, unknown-cost, or stale. Node-family work gets a runtime
+  network guard; macOS also applies a child-process network sandbox with
+  loopback support. Go is admitted only where CodeVetter can establish an OS
+  zero-egress boundary. CLI/MCP dry-run, durable supervision, direct profiling,
+  and optimization campaigns share the policy. The focused runtime suite passes
+  150 tests, including hermetic loopback, blocked-remote, stale-identity, and
+  zero-process blocked-receipt cases. No hosted endpoint, paid service,
+  production configuration, or new dependency was used.
+- **2026-08-15 — Continuation gate resolved conservatively:** Preserved the
+  released local product, corpus, deterministic graders, runtime lab, and
+  documentation while pausing broad surface expansion. Ten-user validation,
+  team pilots, authenticated provider comparisons, and real Codex/Claude Agent
+  Island qualification were not completed and remain unsupported product-value
+  claims rather than silently passing by proxy.
 
 - **2026-08-11 — Code-health coverage became executable:** Added CI-blocking
   unused-code, duplication-regression, runtime dependency-cycle, and production
