@@ -30,6 +30,95 @@ import { redactText } from './redact.mjs';
 import { runClosedAdapter } from './runner.mjs';
 import { inspectSupervisedRun, supervisePerformanceRun } from './supervision.mjs';
 
+const OPERATIONS = [
+  'detect',
+  'run',
+  'import',
+  'profile',
+  'diagnose-performance',
+  'verify-optimization',
+  'verify-paired-optimization',
+  'capture-flow',
+  'qualify',
+  'qualify-portfolio',
+  'plan-performance',
+  'supervise-performance',
+  'inspect-performance-run',
+  'plan-flow-campaign',
+];
+const PLANNING_OPERATIONS = new Set(['plan-performance', 'plan-flow-campaign']);
+const PROFILE_OPTIONS = [
+  'repo',
+  'adapter',
+  'target',
+  'name',
+  'timeout-ms',
+  'samples',
+  'warmups',
+  'baseline',
+  'regression-percent',
+  'regression-ms',
+  'vite-build-dir',
+  'vite-entry',
+  'json',
+];
+const ALLOWED_OPTIONS = {
+  detect: ['repo', 'json'],
+  qualify: ['repo', 'json'],
+  'qualify-portfolio': ['manifest', 'json'],
+  'plan-performance': [
+    'repo',
+    'adapter',
+    'target',
+    'name',
+    'timeout-ms',
+    'samples',
+    'warmups',
+    'approval-id',
+    'json',
+  ],
+  'plan-flow-campaign': [
+    'repo',
+    'priority-manifest',
+    'max-flows',
+    'timeout-ms',
+    'samples',
+    'warmups',
+    'json',
+  ],
+  'inspect-performance-run': ['repo', 'run-id', 'json'],
+  'supervise-performance': [
+    'repo',
+    'run-id',
+    'adapter',
+    'target',
+    'name',
+    'timeout-ms',
+    'samples',
+    'warmups',
+    'json',
+  ],
+  run: ['repo', 'adapter', 'target', 'name', 'diff', 'timeout-ms', 'json'],
+  import: ['repo', 'kind', 'receipt', 'diff', 'json'],
+  'verify-paired-optimization': [
+    'repo',
+    'baseline-repo',
+    'adapter',
+    'target',
+    'name',
+    'timeout-ms',
+    'samples',
+    'warmups',
+    'vite-build-dir',
+    'vite-entry',
+    'json',
+  ],
+  profile: PROFILE_OPTIONS,
+  'diagnose-performance': PROFILE_OPTIONS,
+  'verify-optimization': PROFILE_OPTIONS,
+  'capture-flow': PROFILE_OPTIONS,
+};
+
 export async function main(argv = process.argv.slice(2)) {
   let repositoryRoot = resolve(process.cwd());
   try {
@@ -48,57 +137,8 @@ export async function main(argv = process.argv.slice(2)) {
       writeJson(await qualifyPortfolioManifest(required(options, 'manifest')));
       return 0;
     }
-    if (operation === 'plan-performance') {
-      const adapter = assertProfileAdapter(required(options, 'adapter'));
-      const samples = boundedCount(options.samples, {
-        name: 'samples',
-        defaultValue: LIMITS.defaultSamples,
-        minimum: LIMITS.minimumSamples,
-        maximum: LIMITS.maximumSamples,
-      });
-      const warmups = boundedCount(options.warmups, {
-        name: 'warmups',
-        defaultValue: LIMITS.defaultWarmups,
-        maximum: LIMITS.maximumWarmups,
-      });
-      const plan = await planPerformanceExecution({
-        repositoryRoot,
-        adapter,
-        target: required(options, 'target'),
-        name: options.name,
-        timeoutMs: boundedTimeout(options['timeout-ms']),
-        processCount: plannedProfileProcessCount({ adapter, samples, warmups }),
-        approvalIdentity: options['approval-id'],
-      });
-      writeJson(plan);
-      return plan.decision.status === 'admitted' ? 0 : 2;
-    }
-    if (operation === 'plan-flow-campaign') {
-      const result = await planFlowOptimizationCampaign({
-        repositoryRoot,
-        priorityManifestPath: options['priority-manifest'],
-        maxFlows: boundedCount(options['max-flows'], {
-          name: 'max flows',
-          defaultValue: 3,
-          minimum: 1,
-          maximum: LIMITS.campaignFlows,
-        }),
-        samples: boundedCount(options.samples, {
-          name: 'samples',
-          defaultValue: LIMITS.defaultSamples,
-          minimum: LIMITS.minimumSamples,
-          maximum: LIMITS.maximumSamples,
-        }),
-        warmups: boundedCount(options.warmups, {
-          name: 'warmups',
-          defaultValue: LIMITS.defaultWarmups,
-          maximum: LIMITS.maximumWarmups,
-        }),
-        timeoutMs: boundedTimeout(options['timeout-ms']),
-      });
-      writeJson(result);
-      return result.verdict.status === 'no_confidence' ? 2 : 0;
-    }
+    if (PLANNING_OPERATIONS.has(operation))
+      return runPlanningOperation(operation, repositoryRoot, options);
     if (operation === 'supervise-performance') {
       const receipt = await supervisePerformanceRun({
         repositoryRoot,
@@ -274,24 +314,7 @@ export async function main(argv = process.argv.slice(2)) {
 
 function parseArguments(argv) {
   const [operation, ...rest] = argv;
-  if (
-    ![
-      'detect',
-      'run',
-      'import',
-      'profile',
-      'diagnose-performance',
-      'verify-optimization',
-      'verify-paired-optimization',
-      'capture-flow',
-      'qualify',
-      'qualify-portfolio',
-      'plan-performance',
-      'supervise-performance',
-      'inspect-performance-run',
-      'plan-flow-campaign',
-    ].includes(operation)
-  ) {
+  if (!OPERATIONS.includes(operation)) {
     throw new Error(
       'usage: cli.mjs <detect|qualify|qualify-portfolio|plan-performance|plan-flow-campaign|supervise-performance|inspect-performance-run|run|import|profile|diagnose-performance|verify-optimization|verify-paired-optimization|capture-flow> [--repo PATH] [operation options] [--json]'
     );
@@ -320,76 +343,61 @@ function parseArguments(argv) {
     options[key] = value;
     index += 1;
   }
-  const allowed = new Set(
-    operation === 'detect' || operation === 'qualify'
-      ? ['repo', 'json']
-      : operation === 'qualify-portfolio'
-        ? ['manifest', 'json']
-        : operation === 'plan-performance'
-          ? [
-              'repo',
-              'adapter',
-              'target',
-              'name',
-              'timeout-ms',
-              'samples',
-              'warmups',
-              'approval-id',
-              'json',
-            ]
-          : operation === 'plan-flow-campaign'
-            ? ['repo', 'priority-manifest', 'max-flows', 'timeout-ms', 'samples', 'warmups', 'json']
-            : operation === 'inspect-performance-run'
-              ? ['repo', 'run-id', 'json']
-              : operation === 'supervise-performance'
-                ? [
-                    'repo',
-                    'run-id',
-                    'adapter',
-                    'target',
-                    'name',
-                    'timeout-ms',
-                    'samples',
-                    'warmups',
-                    'json',
-                  ]
-                : operation === 'run'
-                  ? ['repo', 'adapter', 'target', 'name', 'diff', 'timeout-ms', 'json']
-                  : operation === 'import'
-                    ? ['repo', 'kind', 'receipt', 'diff', 'json']
-                    : operation === 'verify-paired-optimization'
-                      ? [
-                          'repo',
-                          'baseline-repo',
-                          'adapter',
-                          'target',
-                          'name',
-                          'timeout-ms',
-                          'samples',
-                          'warmups',
-                          'vite-build-dir',
-                          'vite-entry',
-                          'json',
-                        ]
-                      : [
-                          'repo',
-                          'adapter',
-                          'target',
-                          'name',
-                          'timeout-ms',
-                          'samples',
-                          'warmups',
-                          'baseline',
-                          'regression-percent',
-                          'regression-ms',
-                          'vite-build-dir',
-                          'vite-entry',
-                          'json',
-                        ]
-  );
+  const allowed = new Set(ALLOWED_OPTIONS[operation]);
   const unknown = Object.keys(options).find((key) => !allowed.has(key));
   if (unknown) throw new Error(`unknown option for ${operation}: --${unknown}`);
   return { operation, options };
+}
+
+async function runPlanningOperation(operation, repositoryRoot, options) {
+  if (operation === 'plan-performance') {
+    const adapter = assertProfileAdapter(required(options, 'adapter'));
+    const samples = profileSamples(options.samples);
+    const warmups = profileWarmups(options.warmups);
+    const plan = await planPerformanceExecution({
+      repositoryRoot,
+      adapter,
+      target: required(options, 'target'),
+      name: options.name,
+      timeoutMs: boundedTimeout(options['timeout-ms']),
+      processCount: plannedProfileProcessCount({ adapter, samples, warmups }),
+      approvalIdentity: options['approval-id'],
+    });
+    writeJson(plan);
+    return plan.decision.status === 'admitted' ? 0 : 2;
+  }
+  const result = await planFlowOptimizationCampaign({
+    repositoryRoot,
+    priorityManifestPath: options['priority-manifest'],
+    maxFlows: boundedCount(options['max-flows'], {
+      name: 'max flows',
+      defaultValue: 3,
+      minimum: 1,
+      maximum: LIMITS.campaignFlows,
+    }),
+    samples: profileSamples(options.samples),
+    warmups: profileWarmups(options.warmups),
+    timeoutMs: boundedTimeout(options['timeout-ms']),
+  });
+  writeJson(result);
+  return result.verdict.status === 'no_confidence' ? 2 : 0;
+}
+
+function profileSamples(value) {
+  return boundedCount(value, {
+    name: 'samples',
+    defaultValue: LIMITS.defaultSamples,
+    minimum: LIMITS.minimumSamples,
+    maximum: LIMITS.maximumSamples,
+  });
+}
+
+function profileWarmups(value) {
+  return boundedCount(value, {
+    name: 'warmups',
+    defaultValue: LIMITS.defaultWarmups,
+    maximum: LIMITS.maximumWarmups,
+  });
 }
 
 function required(options, key) {

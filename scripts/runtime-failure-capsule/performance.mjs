@@ -339,9 +339,7 @@ export function createPerformanceCapsule({
   if (cleanupFailed)
     limitations.push('Owned temporary profiling artifacts could not be completely removed.');
   if (outputTruncated) limitations.push('Runner output was truncated before normalization.');
-  if (executionReceipt?.status === 'policy_violation') {
-    limitations.push('The zero-egress boundary blocked a remote network attempt.');
-  }
+  limitations.push(...executionGovernanceLimitations(executionReceipt));
   limitations.push(...playwrightLimitations(adapter, playwrightTest));
   if (adapter === 'go-bench' && goBenchmarks.length === 0) {
     limitations.push('No matching Go benchmark measurement was captured.');
@@ -586,8 +584,7 @@ export function createPerformanceCapsule({
       coverage_bytes: functionCoverage.coverage_bytes,
       coverage_functions: functionCoverage.functions.length,
     },
-    execution_governance:
-      executionPlan && executionReceipt ? { plan: executionPlan, receipt: executionReceipt } : null,
+    execution_governance: executionGovernance(executionPlan, executionReceipt),
     verdict: {
       status: verdict,
       reason:
@@ -601,6 +598,17 @@ export function createPerformanceCapsule({
   const errors = validatePerformanceCapsule(capsule);
   if (errors.length > 0) throw new Error(`invalid performance capsule: ${errors.join(', ')}`);
   return capsule;
+}
+
+function executionGovernance(plan, receipt) {
+  if (!plan || !receipt) return null;
+  return { plan, receipt };
+}
+
+function executionGovernanceLimitations(receipt) {
+  return receipt?.status === 'policy_violation'
+    ? ['The zero-egress boundary blocked a remote network attempt.']
+    : [];
 }
 
 function createBlockedPerformanceCapsule({

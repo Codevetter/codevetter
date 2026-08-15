@@ -89,54 +89,63 @@ export function createPerformanceExecutionReceipt(plan, executions = []) {
   const markers = executions.flatMap((entry) =>
     blockedEgressMarkers(entry.execution?.stderr ?? '')
   );
-  const ran = executions.length > 0;
-  const completed = executions.every(
-    (entry) => entry.execution?.status === 'exited' && entry.execution?.exitCode === 0
-  );
-  const status =
-    plan.decision.status === 'blocked'
-      ? 'blocked'
-      : markers.length > 0
-        ? 'policy_violation'
-        : completed
-          ? 'completed'
-          : ran
-            ? 'failed'
-            : 'admitted';
+  const outcome = summarizeReceiptOutcome(plan, executions, markers);
   const receipt = {
     schema_version: PERFORMANCE_EXECUTION_RECEIPT_SCHEMA_VERSION,
     plan_id: plan.plan_id,
     decision: plan.decision.status,
-    status,
+    status: outcome.status,
     planned: plan.limits,
-    observed: {
-      wall_time_ms: executions.reduce(
-        (total, entry) => total + Math.max(0, entry.execution?.durationMs ?? 0),
-        0
-      ),
-      processes: executions.length,
-      max_concurrency: executions.length > 0 ? 1 : 0,
-      retries: 0,
-      successful_external_requests: 0,
-      blocked_external_attempts: markers.length,
-      external_services: [],
-      cost_microusd: plan.decision.status === 'admitted' ? 0 : null,
-    },
+    observed: summarizeReceiptObservations(plan, executions, markers),
     enforcement: plan.enforcement,
-    terminal_reason:
-      plan.decision.status === 'blocked'
-        ? plan.decision.blockers.join(' ')
-        : markers.length > 0
-          ? 'The zero-egress boundary blocked a remote network attempt.'
-          : completed
-            ? 'The admitted local workload completed within the execution policy.'
-            : ran
-              ? 'The admitted local workload did not complete successfully.'
-              : 'The workload is admitted but has not executed.',
+    terminal_reason: outcome.reason,
     limitations: [...plan.limitations],
   };
   assertPerformanceExecutionReceipt(receipt);
   return receipt;
+}
+
+function summarizeReceiptOutcome(plan, executions, markers) {
+  if (plan.decision.status === 'blocked') {
+    return { status: 'blocked', reason: plan.decision.blockers.join(' ') };
+  }
+  if (markers.length > 0) {
+    return {
+      status: 'policy_violation',
+      reason: 'The zero-egress boundary blocked a remote network attempt.',
+    };
+  }
+  if (executions.length === 0) {
+    return { status: 'admitted', reason: 'The workload is admitted but has not executed.' };
+  }
+  const completed = executions.every(
+    (entry) => entry.execution?.status === 'exited' && entry.execution?.exitCode === 0
+  );
+  return completed
+    ? {
+        status: 'completed',
+        reason: 'The admitted local workload completed within the execution policy.',
+      }
+    : {
+        status: 'failed',
+        reason: 'The admitted local workload did not complete successfully.',
+      };
+}
+
+function summarizeReceiptObservations(plan, executions, markers) {
+  return {
+    wall_time_ms: executions.reduce(
+      (total, entry) => total + Math.max(0, entry.execution?.durationMs ?? 0),
+      0
+    ),
+    processes: executions.length,
+    max_concurrency: executions.length > 0 ? 1 : 0,
+    retries: 0,
+    successful_external_requests: 0,
+    blocked_external_attempts: markers.length,
+    external_services: [],
+    cost_microusd: plan.decision.status === 'admitted' ? 0 : null,
+  };
 }
 
 export async function assertPerformanceExecutionPlanCurrent({
@@ -195,31 +204,8 @@ export function validatePerformanceExecutionPlan(value) {
   if (value.schema_version !== PERFORMANCE_EXECUTION_PLAN_SCHEMA_VERSION)
     errors.push('invalid schema_version');
   if (!/^[0-9a-f]{64}$/.test(value.plan_id ?? '')) errors.push('plan_id is invalid');
-  closed(
-    value.subject,
-    ['repository_revision', 'diff_identity', 'dirty', 'target_sha256'],
-    'subject',
-    errors
-  );
-  if (
-    !plainObject(value.subject) ||
-    !/^[0-9a-f]{40,64}$/.test(value.subject.repository_revision ?? '') ||
-    typeof value.subject.diff_identity !== 'string' ||
-    value.subject.diff_identity.length === 0 ||
-    value.subject.diff_identity.length > 200 ||
-    typeof value.subject.dirty !== 'boolean' ||
-    !/^[0-9a-f]{64}$/.test(value.subject.target_sha256 ?? '')
-  )
-    errors.push('subject is invalid');
-  closed(value.scope, ['adapter', 'target', 'name'], 'scope', errors);
-  if (
-    !plainObject(value.scope) ||
-    !GOVERNED_ADAPTERS.includes(value.scope.adapter) ||
-    typeof value.scope.target !== 'string' ||
-    value.scope.target.length === 0 ||
-    (value.scope.name !== null && typeof value.scope.name !== 'string')
-  )
-    errors.push('scope is invalid');
+  validatePlanSubject(value.subject, errors);
+  validatePlanScope(value.scope, errors);
   if (value.mode !== 'local_zero_egress') errors.push('mode is invalid');
   validateLimits(value.limits, errors);
   if (!Array.isArray(value.external_services)) errors.push('external_services must be an array');
@@ -228,34 +214,63 @@ export function validatePerformanceExecutionPlan(value) {
     !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value.approval_identity)
   )
     errors.push('approval_identity is invalid');
-  if (
-    !plainObject(value.enforcement) ||
-    !['node_preload', 'macos_sandbox_node_preload', 'macos_sandbox', 'unavailable'].includes(
-      value.enforcement.kind
-    )
-  )
-    errors.push('enforcement is invalid');
-  closed(value.enforcement, ['kind', 'network_scope', 'reason'], 'enforcement', errors);
-  if (
-    plainObject(value.enforcement) &&
-    !['none', 'loopback_only', 'unknown'].includes(value.enforcement.network_scope)
-  )
-    errors.push('enforcement.network_scope is invalid');
-  closed(value.decision, ['status', 'reason', 'blockers'], 'decision', errors);
-  if (
-    !plainObject(value.decision) ||
-    !['admitted', 'blocked'].includes(value.decision.status) ||
-    typeof value.decision.reason !== 'string' ||
-    value.decision.reason.length === 0 ||
-    !stringArray(value.decision.blockers)
-  )
-    errors.push('decision is invalid');
+  validateEnforcement(value.enforcement, errors);
+  validatePlanDecision(value.decision, errors);
   if (!stringArray(value.external_services)) errors.push('external_services must be an array');
   if (!stringArray(value.limitations)) errors.push('limitations must be an array');
   const { plan_id: _planId, ...payload } = value;
   if (value.plan_id && value.plan_id !== sha256(stableStringify(payload)))
     errors.push('plan_id does not match content');
   return errors;
+}
+
+function validatePlanSubject(value, errors) {
+  closed(
+    value,
+    ['repository_revision', 'diff_identity', 'dirty', 'target_sha256'],
+    'subject',
+    errors
+  );
+  if (!plainObject(value)) return errors.push('subject is invalid');
+  const valid =
+    /^[0-9a-f]{40,64}$/.test(value.repository_revision ?? '') &&
+    typeof value.diff_identity === 'string' &&
+    value.diff_identity.length > 0 &&
+    value.diff_identity.length <= 200 &&
+    typeof value.dirty === 'boolean' &&
+    /^[0-9a-f]{64}$/.test(value.target_sha256 ?? '');
+  if (!valid) errors.push('subject is invalid');
+}
+
+function validatePlanScope(value, errors) {
+  closed(value, ['adapter', 'target', 'name'], 'scope', errors);
+  if (!plainObject(value)) return errors.push('scope is invalid');
+  const valid =
+    GOVERNED_ADAPTERS.includes(value.adapter) &&
+    typeof value.target === 'string' &&
+    value.target.length > 0 &&
+    (value.name === null || typeof value.name === 'string');
+  if (!valid) errors.push('scope is invalid');
+}
+
+function validateEnforcement(value, errors) {
+  closed(value, ['kind', 'network_scope', 'reason'], 'enforcement', errors);
+  if (!plainObject(value)) return errors.push('enforcement is invalid');
+  const validKinds = ['node_preload', 'macos_sandbox_node_preload', 'macos_sandbox', 'unavailable'];
+  if (!validKinds.includes(value.kind)) errors.push('enforcement is invalid');
+  if (!['none', 'loopback_only', 'unknown'].includes(value.network_scope))
+    errors.push('enforcement.network_scope is invalid');
+}
+
+function validatePlanDecision(value, errors) {
+  closed(value, ['status', 'reason', 'blockers'], 'decision', errors);
+  if (!plainObject(value)) return errors.push('decision is invalid');
+  const valid =
+    ['admitted', 'blocked'].includes(value.status) &&
+    typeof value.reason === 'string' &&
+    value.reason.length > 0 &&
+    stringArray(value.blockers);
+  if (!valid) errors.push('decision is invalid');
 }
 
 export function assertPerformanceExecutionReceipt(value) {
@@ -291,55 +306,46 @@ export function validatePerformanceExecutionReceipt(value) {
   if (!['admitted', 'blocked', 'completed', 'failed', 'policy_violation'].includes(value.status))
     errors.push('status is invalid');
   validateLimits(value.planned, errors);
-  if (!plainObject(value.observed)) errors.push('observed is invalid');
-  else {
-    closed(
-      value.observed,
-      [
-        'wall_time_ms',
-        'processes',
-        'max_concurrency',
-        'retries',
-        'successful_external_requests',
-        'blocked_external_attempts',
-        'external_services',
-        'cost_microusd',
-      ],
-      'observed',
-      errors
-    );
-    for (const field of [
+  validateReceiptObservations(value.observed, errors);
+  validateEnforcement(value.enforcement, errors);
+  if (typeof value.terminal_reason !== 'string' || value.terminal_reason.length === 0)
+    errors.push('terminal_reason is invalid');
+  if (!stringArray(value.limitations)) errors.push('limitations must be an array');
+  return errors;
+}
+
+function validateReceiptObservations(value, errors) {
+  if (!plainObject(value)) return errors.push('observed is invalid');
+  closed(
+    value,
+    [
       'wall_time_ms',
       'processes',
       'max_concurrency',
       'retries',
       'successful_external_requests',
       'blocked_external_attempts',
-    ]) {
-      if (!Number.isInteger(value.observed[field]) || value.observed[field] < 0)
-        errors.push(`observed.${field} is invalid`);
-    }
-    if (!stringArray(value.observed.external_services))
-      errors.push('observed.external_services is invalid');
-    if (
-      value.observed.cost_microusd !== null &&
-      (!Number.isInteger(value.observed.cost_microusd) || value.observed.cost_microusd < 0)
-    )
-      errors.push('observed.cost_microusd is invalid');
+      'external_services',
+      'cost_microusd',
+    ],
+    'observed',
+    errors
+  );
+  for (const field of [
+    'wall_time_ms',
+    'processes',
+    'max_concurrency',
+    'retries',
+    'successful_external_requests',
+    'blocked_external_attempts',
+  ]) {
+    if (!Number.isInteger(value[field]) || value[field] < 0)
+      errors.push(`observed.${field} is invalid`);
   }
-  closed(value.enforcement, ['kind', 'network_scope', 'reason'], 'enforcement', errors);
-  if (
-    !plainObject(value.enforcement) ||
-    !['node_preload', 'macos_sandbox_node_preload', 'macos_sandbox', 'unavailable'].includes(
-      value.enforcement.kind
-    ) ||
-    !['none', 'loopback_only', 'unknown'].includes(value.enforcement.network_scope)
-  )
-    errors.push('enforcement is invalid');
-  if (typeof value.terminal_reason !== 'string' || value.terminal_reason.length === 0)
-    errors.push('terminal_reason is invalid');
-  if (!stringArray(value.limitations)) errors.push('limitations must be an array');
-  return errors;
+  if (!stringArray(value.external_services)) errors.push('observed.external_services is invalid');
+  if (value.cost_microusd === null) return;
+  if (!Number.isInteger(value.cost_microusd) || value.cost_microusd < 0)
+    errors.push('observed.cost_microusd is invalid');
 }
 
 export function blockedEgressMarkers(stderr) {

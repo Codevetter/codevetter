@@ -22,7 +22,11 @@ import { verifyPairedRepositories } from './paired-verification.mjs';
 
 const PROTOCOL_VERSION = '2025-03-26';
 const SERVER_INFO = { name: 'codevetter-local-runtime', version: '0.1.0' };
-const PERFORMANCE_TOOLS = new Set(['profile_local_performance', 'verify_paired_performance']);
+const PERFORMANCE_TOOLS = new Set([
+  'plan_local_performance',
+  'profile_local_performance',
+  'verify_paired_performance',
+]);
 
 export async function createRuntimeMcpHandler(repositoryRoot, options = {}) {
   const flowService = options.flowService ?? (await createLocalFlowService(repositoryRoot));
@@ -113,27 +117,6 @@ async function callTool(
     closedArguments(args, ['run_id']);
     return inspectSupervisedRun(repositoryRoot, args.run_id);
   }
-  if (name === 'plan_local_performance') {
-    closedArguments(
-      args,
-      ['adapter', 'target'],
-      ['name', 'approval_identity'],
-      [],
-      ['samples', 'warmups', 'timeout_ms']
-    );
-    const adapter = assertProfileAdapter(args.adapter);
-    const samples = boundedSamples(args.samples);
-    const warmups = boundedWarmups(args.warmups);
-    return planPerformanceExecution({
-      repositoryRoot,
-      adapter,
-      target: args.target,
-      name: args.name,
-      timeoutMs: boundedTimeout(args.timeout_ms),
-      processCount: plannedProfileProcessCount({ adapter, samples, warmups }),
-      approvalIdentity: args.approval_identity,
-    });
-  }
   if (PERFORMANCE_TOOLS.has(name)) {
     return callPerformanceTool({
       name,
@@ -210,6 +193,9 @@ async function callTool(
 }
 
 async function callPerformanceTool({ name, args, repositoryRoot, incumbentRepositoryRoot }) {
+  if (name === 'plan_local_performance') {
+    return callPerformancePlan(args, repositoryRoot);
+  }
   closedArguments(
     args,
     ['adapter', 'target'],
@@ -236,6 +222,28 @@ async function callPerformanceTool({ name, args, repositoryRoot, incumbentReposi
     return verifyPairedRepositories({ ...input, baselineRepositoryRoot: incumbentRepositoryRoot });
   }
   return profileRepository(input);
+}
+
+function callPerformancePlan(args, repositoryRoot) {
+  closedArguments(
+    args,
+    ['adapter', 'target'],
+    ['name', 'approval_identity'],
+    [],
+    ['samples', 'warmups', 'timeout_ms']
+  );
+  const adapter = assertProfileAdapter(args.adapter);
+  const samples = boundedSamples(args.samples);
+  const warmups = boundedWarmups(args.warmups);
+  return planPerformanceExecution({
+    repositoryRoot,
+    adapter,
+    target: args.target,
+    name: args.name,
+    timeoutMs: boundedTimeout(args.timeout_ms),
+    processCount: plannedProfileProcessCount({ adapter, samples, warmups }),
+    approvalIdentity: args.approval_identity,
+  });
 }
 
 function closedArguments(
