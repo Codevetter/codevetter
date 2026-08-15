@@ -1,14 +1,7 @@
-import {
-  Component,
-  type ErrorInfo,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 
+import { AppErrorBoundary } from '@/components/app-error-boundary';
 import CommandPalette from '@/components/command-palette';
 import KeyboardShortcuts from '@/components/keyboard-shortcuts';
 import Onboarding from '@/components/onboarding';
@@ -98,42 +91,9 @@ function useOnboarding() {
   return { showOnboarding, setShowOnboarding, ready };
 }
 
-class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  state = { error: null as Error | null };
-
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    // Full detail goes to the console (DevTools) — never to the user.
-    console.error('[CodeVetter] Route error boundary caught:', error, info);
-  }
-
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-          <h2 className="text-lg font-semibold text-red-400 mb-2">Something went wrong</h2>
-          <p className="text-sm text-slate-400 mb-4 max-w-md">
-            This screen hit an unexpected error. Your saved data is safe — try again, and if it
-            keeps happening, restart the app.
-          </p>
-          <button
-            onClick={() => this.setState({ error: null })}
-            className="px-4 py-1.5 text-sm bg-amber-600 text-white rounded hover:bg-amber-500 transition-colors"
-          >
-            Try again
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 /** Main shell: one fixed navigation rail and one shared content inset. */
 function Shell() {
+  const location = useLocation();
   const { showOnboarding, setShowOnboarding, ready } = useOnboarding();
   const { isOpen, open, close, restoreFocus } = useCommandPalette();
   // Freeze CSS animations when the window is hidden/minimized (battery).
@@ -155,9 +115,13 @@ function Shell() {
         {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
         <Sidebar onSearch={open} />
         <main className="cv-content-frame box-border flex h-full min-h-0 min-w-0 flex-1 flex-col">
-          <RouteErrorBoundary>
+          <AppErrorBoundary
+            scope="route"
+            resetKey={location.key}
+            onExit={() => window.location.assign('/')}
+          >
             <Outlet />
-          </RouteErrorBoundary>
+          </AppErrorBoundary>
         </main>
         <CommandPalette isOpen={isOpen} onClose={close} onCloseAutoFocus={restoreFocus} />
         <KeyboardShortcuts />
@@ -181,6 +145,8 @@ export default function App() {
       <Route path="/agent-memories" element={<RedirectToSettings section="memories" />} />
       <Route path="/workbench" element={<Navigate to="/" replace />} />
       <Route path="/fleet" element={<Navigate to="/" replace />} />
+      <Route path="/agents/*" element={<Navigate to="/" replace />} />
+      <Route path="/board/*" element={<Navigate to="/" replace />} />
       <Route element={<Shell />}>
         <Route path="*" element={<PersistentRoutes />} />
       </Route>

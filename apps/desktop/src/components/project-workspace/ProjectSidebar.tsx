@@ -144,6 +144,7 @@ export function ProjectSidebar({ className }: { className?: string }) {
 
   return (
     <aside
+      aria-label="Projects"
       className={cn(
         'flex h-full min-h-0 w-72 shrink-0 flex-col overflow-hidden border-r border-white/[0.07] bg-[var(--cv-surface-translucent)] backdrop-blur-xl',
         className

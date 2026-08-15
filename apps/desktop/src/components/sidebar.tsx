@@ -1,17 +1,6 @@
-import {
-  Activity,
-  ArrowRight,
-  Bot,
-  Columns3,
-  Command,
-  Eye,
-  ScanSearch,
-  Search,
-  Settings,
-  Zap,
-} from 'lucide-react';
-import { type ReactNode, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Activity, ArrowRight, Eye, Gauge, ScanSearch, Search, Settings, Zap } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 import { BrandMark } from '@/components/brand-mark';
 import ResourceChip from '@/components/ResourceChip';
@@ -22,7 +11,6 @@ interface NavItem {
   label: string;
   href: string;
   icon: ReactNode;
-  shortcut: string;
   description: string;
   match?: string[];
 }
@@ -36,14 +24,12 @@ const contextNavItems: NavItem[] = [
     label: 'Usage',
     href: '/',
     icon: <Activity size={17} />,
-    shortcut: 'H',
     description: 'AI usage, cost, and activity',
   },
   {
     label: 'Repo Unpack',
     href: '/unpack',
     icon: <ScanSearch size={17} />,
-    shortcut: 'P',
     description: 'Intel, history, graph, and ownership',
     match: ['/unpack', '/intel'],
   },
@@ -51,32 +37,22 @@ const contextNavItems: NavItem[] = [
 
 const workflowNavItems: NavItem[] = [
   {
-    label: 'Work',
-    href: '/agents',
-    icon: <Bot size={17} />,
-    shortcut: 'A',
-    description: 'Build with Codex and Claude',
-  },
-  {
-    label: 'Board',
-    href: '/board',
-    icon: <Columns3 size={17} />,
-    shortcut: 'B',
-    description: 'Move outcomes from plan to proof',
-  },
-  {
     label: 'Review',
     href: '/review',
     icon: <Zap size={17} />,
-    shortcut: 'R',
     description: 'Inspect the change and identify evidence gaps',
   },
   {
     label: 'Testing',
     href: '/trex',
     icon: <Eye size={17} />,
-    shortcut: 'T',
     description: 'Run executable checks and inspect receipts',
+  },
+  {
+    label: 'Performance',
+    href: '/performance',
+    icon: <Gauge size={17} />,
+    description: 'Measure one flow and verify an improvement',
   },
 ];
 
@@ -84,7 +60,6 @@ const settingsNavItem: NavItem = {
   label: 'Settings',
   href: '/settings',
   icon: <Settings size={17} />,
-  shortcut: ',',
   description: 'Providers and preferences',
 };
 
@@ -93,54 +68,12 @@ const navItems = [...productNavItems, settingsNavItem];
 
 export default function Sidebar({ onSearch }: SidebarProps) {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const pendingG = useRef(false);
-  const gTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function isActive(href: string): boolean {
     if (href === '/') return pathname === '/';
     const item = navItems.find((navItem) => navItem.href === href);
     return (item?.match ?? [href]).some((prefix) => pathname.startsWith(prefix));
   }
-
-  // Global "g then <key>" navigation (Linear-style)
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-      if (e.key === 'g' && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (!pendingG.current) {
-          pendingG.current = true;
-          if (gTimer.current) clearTimeout(gTimer.current);
-          gTimer.current = setTimeout(() => {
-            pendingG.current = false;
-          }, 500);
-          return;
-        }
-      }
-
-      if (pendingG.current) {
-        pendingG.current = false;
-        if (gTimer.current) clearTimeout(gTimer.current);
-
-        const key = e.key.toLowerCase();
-        if (key === 'i') {
-          e.preventDefault();
-          navigate('/unpack?section=activity');
-          return;
-        }
-        const match = navItems.find((item) => item.shortcut.toLowerCase() === key);
-        if (match) {
-          e.preventDefault();
-          navigate(match.href);
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
 
   function renderNavItem(item: NavItem) {
     const active = isActive(item.href);
@@ -169,15 +102,6 @@ export default function Sidebar({ onSearch }: SidebarProps) {
               {item.icon}
             </span>
             <span className="min-w-0 flex-1 truncate font-medium">{item.label}</span>
-            <span
-              className={cn(
-                'font-mono text-[10px] tracking-tight transition-colors duration-150',
-                active ? 'text-amber-200/65' : 'text-zinc-400/75 group-hover:text-zinc-300/80'
-              )}
-              aria-hidden="true"
-            >
-              G {item.shortcut.toUpperCase()}
-            </span>
           </Link>
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-52 text-[11px]">
@@ -191,7 +115,7 @@ export default function Sidebar({ onSearch }: SidebarProps) {
     <TooltipProvider delayDuration={250}>
       <nav
         aria-label="Primary navigation"
-        className="no-drag relative z-40 flex h-full w-64 shrink-0 flex-col overflow-hidden border-r border-white/[0.075] bg-[#0a0b0d]/96 shadow-[16px_0_48px_-42px_rgba(0,0,0,0.95)] backdrop-blur-2xl"
+        className="no-drag relative z-40 hidden h-full w-64 shrink-0 flex-col overflow-hidden border-r border-white/[0.075] bg-[#0a0b0d]/96 shadow-[16px_0_48px_-42px_rgba(0,0,0,0.95)] backdrop-blur-2xl md:flex"
       >
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_20%_0%,rgba(243,173,61,0.11),transparent_62%)]"
@@ -238,9 +162,6 @@ export default function Sidebar({ onSearch }: SidebarProps) {
           >
             <Search size={16} className="shrink-0" />
             <span className="min-w-0 flex-1 truncate">Search commands</span>
-            <kbd className="flex items-center gap-0.5 rounded-md border border-white/[0.07] bg-black/20 px-1.5 py-0.5 font-sans text-[10px] text-zinc-400/75">
-              <Command size={10} aria-hidden="true" /> K
-            </kbd>
           </button>
 
           <div className="mt-6 min-h-0 overflow-y-auto">
