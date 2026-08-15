@@ -1,0 +1,59 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "desktop shell crash recovery and evidence workflow",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [],
+    "probes": [],
+    "selected": "existing-design",
+    "approval": "not-required",
+    "before": "artifacts/design/crash-recovery-before-1440.png"
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/design/crash-recovery-final-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/design/crash-recovery-final-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/design/crash-recovery-final-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "command": "cd apps/desktop && pnpm exec tsc --noEmit && node --import tsx --test src/lib/ui-incident.test.ts && playwright test tests/e2e/visual-system.spec.ts --grep 'renders a local-only recovery surface'",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 19,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner approved the final crash-recovery design with 'go for it'."
+  }
+}
