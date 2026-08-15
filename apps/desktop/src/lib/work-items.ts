@@ -1,7 +1,7 @@
-export const WORK_ITEM_STATUSES = ['plan', 'build', 'review', 'verify', 'done'] as const;
+const WORK_ITEM_STATUSES = ['plan', 'build', 'review', 'verify', 'done'] as const;
 
 export type WorkItemStatus = (typeof WORK_ITEM_STATUSES)[number];
-export type WorkItemProvider = 'codex' | 'claude';
+type WorkItemProvider = 'codex' | 'claude';
 type WorkItemVerificationStatus = 'missing' | 'running' | 'passed' | 'failed' | 'stale';
 export type WorkItemCompletionDisposition = 'verified' | 'waived' | 'legacy';
 
@@ -52,17 +52,6 @@ export interface UpdateWorkItemInput {
   verification_run_id?: string;
   verification_status?: WorkItemVerificationStatus;
   attention?: boolean;
-}
-
-export interface WorkSessionLink {
-  key: string;
-  label: string;
-  detail: string;
-  provider: WorkItemProvider;
-  terminal_id: string | null;
-  session_id: string | null;
-  project_path: string | null;
-  running: boolean;
 }
 
 export interface AttachWorkItemSessionInput {

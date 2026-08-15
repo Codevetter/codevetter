@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { EvidenceScopePlanner } from '@/components/evidence-scope/EvidenceScopePlanner';
+import { EvidenceScopeTestRun } from '@/components/evidence-scope/EvidenceScopeTestRun';
 import { ProjectWorkspaceEmpty } from '@/components/project-workspace/ProjectWorkspaceEmpty';
 import { ProjectWorkspaceHeader } from '@/components/project-workspace/ProjectWorkspaceHeader';
 import { ProjectWorkspaceShell } from '@/components/project-workspace/ProjectWorkspaceShell';
@@ -26,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import type { EvidenceScopeCandidate, EvidenceScopePlan } from '@/lib/evidence-scope';
 import { useProjectWorkspace } from '@/lib/project-workspace';
 import {
   cancelWarmVerificationRun,
@@ -91,6 +94,29 @@ function createWarmRunId(): string {
   return `trex-${Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
 }
 
+interface ResolvedTestingScope {
+  plan: EvidenceScopePlan;
+  candidates: EvidenceScopeCandidate[];
+}
+
+function ResolvedTestingExecution({
+  repoPath,
+  scope,
+}: {
+  repoPath: string;
+  scope: ResolvedTestingScope | null;
+}) {
+  if (!scope) return null;
+  return (
+    <EvidenceScopeTestRun
+      key={scope.plan.plan_id}
+      repoPath={repoPath}
+      plan={scope.plan}
+      candidates={scope.candidates}
+    />
+  );
+}
+
 export default function TRex() {
   const { selectedRepoPath } = useProjectWorkspace();
   const [watchers, setWatchers] = useState<TrexWatcher[]>([]);
@@ -111,6 +137,7 @@ export default function TRex() {
     repoPath: string;
     runId: string;
   } | null>(null);
+  const [resolvedScope, setResolvedScope] = useState<ResolvedTestingScope | null>(null);
   const warmRunPendingRef = useRef(false);
 
   const projectWatcher = useMemo(
@@ -165,6 +192,10 @@ export default function TRex() {
     }
     setWarmError(nextWarmError);
     setWarmLoading(false);
+  }, [selectedRepoPath]);
+
+  useEffect(() => {
+    setResolvedScope(null);
   }, [selectedRepoPath]);
 
   useEffect(() => {
@@ -375,6 +406,18 @@ export default function TRex() {
               </p>
             </div>
           </ProjectWorkspaceHeader>
+
+          <EvidenceScopePlanner
+            key={selectedRepoPath}
+            repoPath={selectedRepoPath}
+            consumer="testing"
+            onConfirm={(plan, candidates) => {
+              setResolvedScope({ plan, candidates });
+              return undefined;
+            }}
+          />
+
+          <ResolvedTestingExecution repoPath={selectedRepoPath} scope={resolvedScope} />
 
           <TrexPreviewRunPanel repoPath={selectedRepoPath} />
 
