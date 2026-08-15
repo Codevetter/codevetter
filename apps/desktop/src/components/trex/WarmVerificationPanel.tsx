@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { DaemonHealth, VerifyOutcome } from '@/lib/warm-verification/contracts';
+import type { DaemonHealth, VerifyOutcome, VerifyResult } from '@/lib/warm-verification/contracts';
 import {
   getQaSupportMatrix,
   previewWarmVerificationArtifact,
@@ -88,6 +88,402 @@ function RuntimeTile({ label, state, detail }: { label: string; state: string; d
   );
 }
 
+function WarmVerificationHeader({
+  health,
+  action,
+  activeRunId,
+  onStart,
+  onStop,
+  onRun,
+  onCancel,
+}: {
+  health: DaemonHealth | null;
+  action: string | null;
+  activeRunId: string | null;
+  onStart: () => void;
+  onStop: () => void;
+  onRun: () => void;
+  onCancel: (runId: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {health ? (
+        <Button variant="ghost" size="sm" disabled={action !== null} onClick={onStop}>
+          {action === 'stop' ? (
+            <Loader2 size={12} className="mr-1 animate-spin" />
+          ) : (
+            <Square size={12} className="mr-1" />
+          )}
+          Stop daemon
+        </Button>
+      ) : (
+        <Button variant="ghost" size="sm" disabled={action !== null} onClick={onStart}>
+          {action === 'start' && <Loader2 size={12} className="mr-1 animate-spin" />}
+          Start daemon
+        </Button>
+      )}
+      {activeRunId ? (
+        <Button
+          variant="destructive"
+          size="sm"
+          disabled={action !== null && action !== 'run'}
+          onClick={() => onCancel(activeRunId)}
+        >
+          {action === 'cancel' ? (
+            <Loader2 size={12} className="mr-1 animate-spin" />
+          ) : (
+            <Square size={12} className="mr-1" />
+          )}
+          Cancel run
+        </Button>
+      ) : (
+        <Button disabled={!health?.warm || action !== null} size="sm" onClick={onRun}>
+          {action === 'run' ? (
+            <Loader2 size={12} className="mr-1 animate-spin" />
+          ) : (
+            <Play size={12} className="mr-1" />
+          )}
+          Verify changed
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function SupportMatrixSection({ supportMatrix }: { supportMatrix: QaSupportMatrix }) {
+  return (
+    <section
+      aria-label="Real product QA support"
+      className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="text-xs font-semibold text-slate-200">Checked app support</h3>
+          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+            React/Vite in owned Chromium ·{' '}
+            {supportMatrix.configPath
+              ? 'selected repository configured'
+              : 'fixture-backed qualification only'}
+          </p>
+        </div>
+        <Badge variant="outline" className="font-mono text-[10px]">
+          {supportMatrix.lane}
+        </Badge>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        {supportMatrix.capabilities.map((capability) => (
+          <div
+            key={capability.id}
+            className="rounded border border-[var(--cv-line)] bg-black/10 px-2 py-2"
+            title={capability.detail}
+          >
+            <p className="text-[10px] font-medium text-slate-300">{capability.label}</p>
+            <p
+              className={`mt-1 text-[9px] ${
+                capability.status === 'real_product_supported'
+                  ? 'text-emerald-300'
+                  : 'text-amber-300'
+              }`}
+            >
+              {capability.status.replaceAll('_', ' ')}
+            </p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-[10px] leading-4 text-[var(--text-secondary)]">
+        {supportMatrix.unsupported[0]}
+      </p>
+    </section>
+  );
+}
+
+function HealthTiles({
+  health,
+  activeRunId,
+}: {
+  health: DaemonHealth;
+  activeRunId: string | null;
+}) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-3">
+      <RuntimeTile
+        label="Daemon"
+        state={health.warm ? 'ready' : 'starting'}
+        detail={`pid ${health.daemon_pid} · ${health.active_run_ids.length} active${activeRunId ? ` · ${activeRunId}` : ''}`}
+      />
+      <RuntimeTile
+        label="Server"
+        state={health.server.state}
+        detail={health.server.pid ? `pid ${health.server.pid}` : 'no owned process'}
+      />
+      <RuntimeTile
+        label="Browser"
+        state={health.browser.state}
+        detail={`Chromium ${health.chromium_revision}`}
+      />
+      <p
+        className="truncate font-mono text-[10px] text-[var(--text-secondary)] sm:col-span-3"
+        title={health.target_root}
+      >
+        {health.target_root} · target {health.target_sha.slice(0, 12)} · config{' '}
+        {health.config_hash.slice(0, 12)} · {formatBytes(health.resources.rss_bytes)} RSS ·{' '}
+        {health.resources.active_contexts} contexts
+      </p>
+    </div>
+  );
+}
+
+function LatestRunSummary({
+  latest,
+  totalTiming,
+}: {
+  latest: VerifyResult;
+  totalTiming: VerifyResult['timings'][number] | undefined;
+}) {
+  const evidenceState = latest.stale
+    ? 'stale'
+    : latest.selection.complete
+      ? 'recorded complete'
+      : 'incomplete';
+  return (
+    <section className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {latest.outcome === 'passed' ? (
+            <CheckCircle2 size={15} className="text-emerald-300" />
+          ) : (
+            <AlertTriangle size={15} className="text-amber-300" />
+          )}
+          <h3 className="text-xs font-semibold text-slate-200">Latest changed run</h3>
+          {outcomeBadge(latest.outcome)}
+        </div>
+        <span className="font-mono text-[10px] text-[var(--text-secondary)]">{latest.run_id}</span>
+      </div>
+      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
+        <div>
+          <dt className="text-[var(--text-secondary)]">Whole invocation</dt>
+          <dd className="mt-0.5 text-slate-200">
+            {totalTiming ? formatDuration(totalTiming.duration_ms) : 'not recorded'}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[var(--text-secondary)]">Runtime</dt>
+          <dd className="mt-0.5 text-slate-200">{latest.warm ? 'warm' : 'cold'}</dd>
+        </div>
+        <div>
+          <dt className="text-[var(--text-secondary)]">Target</dt>
+          <dd className="mt-0.5 truncate font-mono text-slate-200">
+            {latest.source.target_sha.slice(0, 12)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[var(--text-secondary)]">Evidence state</dt>
+          <dd className="mt-0.5 text-slate-200">{evidenceState}</dd>
+        </div>
+      </dl>
+      <div className="mt-3 border-t border-[var(--cv-line)] pt-3">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">
+          Selection explanation
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-300">
+          {latest.selection.explanation}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
+          <Badge variant="outline">{latest.selection.changed_paths.length} paths</Badge>
+          <Badge variant="outline">{latest.selection.selected_scenario_ids.length} scenarios</Badge>
+          {latest.selection.mandatory_smoke_ids.length > 0 && (
+            <Badge variant="outline">{latest.selection.mandatory_smoke_ids.length} smoke</Badge>
+          )}
+          {latest.selection.fallback_scenario_ids.length > 0 && (
+            <Badge variant="outline">
+              {latest.selection.fallback_scenario_ids.length} fallback
+            </Badge>
+          )}
+        </div>
+        <details className="mt-2 text-[10px] text-[var(--text-secondary)]">
+          <summary className="cursor-pointer select-none">Exact selection</summary>
+          <p className="mt-1 break-all font-mono">
+            paths: {latest.selection.changed_paths.join(', ') || 'none'}
+          </p>
+          <p className="mt-1 break-all font-mono">
+            scenarios: {latest.selection.selected_scenario_ids.join(', ') || 'none'}
+          </p>
+        </details>
+      </div>
+    </section>
+  );
+}
+
+function TimingsAndFailures({
+  latest,
+  failures,
+}: {
+  latest: VerifyResult;
+  failures: { id: string; message: string; scenarioId: string | undefined }[];
+}) {
+  return (
+    <section className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3">
+      <h3 className="text-xs font-semibold text-slate-200">Timings</h3>
+      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
+        {latest.timings
+          .filter(({ scenario_id }) => !scenario_id)
+          .slice(0, 12)
+          .map((timing) => (
+            <div
+              key={`${timing.stage}-${timing.duration_ms}`}
+              className="flex justify-between gap-2 text-[11px]"
+            >
+              <span className="text-[var(--text-secondary)]">{timing.stage}</span>
+              <span className="font-mono text-slate-300">{formatDuration(timing.duration_ms)}</span>
+            </div>
+          ))}
+      </div>
+      {failures.length > 0 && (
+        <div className="mt-3 border-t border-[var(--cv-line)] pt-3">
+          <h3 className="text-xs font-semibold text-red-300">
+            Failures and limitations ({failures.length})
+          </h3>
+          <ul className="mt-2 space-y-1.5 text-[11px] text-slate-300">
+            {failures.slice(0, 6).map((failure) => (
+              <li key={failure.id} className="flex gap-2">
+                <span className="text-red-300">•</span>
+                <span>
+                  {failure.scenarioId && (
+                    <span className="mr-1 font-mono text-[10px] text-[var(--text-secondary)]">
+                      {failure.scenarioId}
+                    </span>
+                  )}
+                  {failure.message}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ArtifactRetentionSection({
+  latest,
+  artifactBytes,
+  health,
+  action,
+  cleanupMessage,
+  onCleanup,
+  runs,
+  preview,
+  previewError,
+  previewBusy,
+  setPreview,
+  setPreviewError,
+  setPreviewBusy,
+}: {
+  latest: VerifyResult;
+  artifactBytes: number;
+  health: DaemonHealth | null;
+  action: string | null;
+  cleanupMessage: string | null;
+  onCleanup: () => void;
+  runs: { id: string }[];
+  preview: QaArtifactPreview | null;
+  previewError: string | null;
+  previewBusy: string | null;
+  setPreview: (p: QaArtifactPreview | null) => void;
+  setPreviewError: (e: string | null) => void;
+  setPreviewBusy: (b: string | null) => void;
+}) {
+  return (
+    <section className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3 lg:col-span-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+            <Database size={13} /> Artifact retention
+          </h3>
+          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+            {latest.artifacts.length} retained for this run · {formatBytes(artifactBytes)}; daemon
+            total {formatBytes(health?.resources.retained_artifact_bytes ?? 0)}. Shared Playwright
+            cache is report-only.
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" disabled={action !== null} onClick={onCleanup}>
+          {action === 'cleanup' ? (
+            <Loader2 size={12} className="mr-1 animate-spin" />
+          ) : (
+            <Trash2 size={12} className="mr-1" />
+          )}
+          Clean run artifacts
+        </Button>
+      </div>
+      {cleanupMessage && <p className="mt-2 text-[11px] text-emerald-300">{cleanupMessage}</p>}
+      {latest.artifacts.length > 0 && (
+        <ul className="mt-2 grid gap-1.5 md:grid-cols-2">
+          {latest.artifacts.slice(0, 6).map((artifact) => (
+            <li
+              key={artifact.id}
+              className="flex items-center justify-between gap-3 rounded border border-[var(--cv-line)] px-2 py-1.5 text-[10px]"
+            >
+              <button
+                type="button"
+                className="min-w-0 truncate text-left font-mono text-slate-300 hover:text-amber-200"
+                title={`Preview ${artifact.relative_path}`}
+                disabled={previewBusy !== null}
+                onClick={() => {
+                  const storedRun = runs[0];
+                  if (!storedRun) return;
+                  setPreviewBusy(artifact.id);
+                  setPreviewError(null);
+                  void previewWarmVerificationArtifact(storedRun.id, artifact.id)
+                    .then(setPreview)
+                    .catch((caught) => {
+                      setPreview(null);
+                      setPreviewError(caught instanceof Error ? caught.message : String(caught));
+                    })
+                    .finally(() => setPreviewBusy(null));
+                }}
+              >
+                {previewBusy === artifact.id ? 'Loading… ' : ''}
+                {artifact.relative_path}
+              </button>
+              <span className="shrink-0 text-[var(--text-secondary)]">
+                {artifact.kind} · {formatBytes(artifact.bytes)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {previewError ? (
+        <p role="alert" className="mt-2 text-[11px] text-red-300">
+          Preview blocked: {previewError}
+        </p>
+      ) : null}
+      {preview ? (
+        <div className="mt-3 rounded border border-[var(--cv-line)] bg-black/20 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+            <span className="font-mono text-slate-300">{preview.contentType}</span>
+            <span className="text-[var(--text-secondary)]">
+              {formatBytes(preview.bytes)}
+              {preview.width && preview.height ? ` · ${preview.width}×${preview.height}` : ''} ·
+              redacted evidence
+            </span>
+          </div>
+          {qaArtifactRenderMode(preview) === 'image' ? (
+            <img
+              src={preview.dataUrl ?? undefined}
+              alt={`Verification artifact ${preview.artifactId}`}
+              className="mt-3 max-h-80 max-w-full rounded border border-[var(--cv-line)] object-contain"
+            />
+          ) : qaArtifactRenderMode(preview) === 'text' ? (
+            <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap break-words text-[10px] leading-4 text-slate-300">
+              {preview.text}
+            </pre>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export function WarmVerificationPanel({
   repoPath,
   health,
@@ -154,121 +550,22 @@ export function WarmVerificationPanel({
               Normal execution uses zero model calls.
             </CardDescription>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {health ? (
-              <Button variant="ghost" size="sm" disabled={action !== null} onClick={onStop}>
-                {action === 'stop' ? (
-                  <Loader2 size={12} className="mr-1 animate-spin" />
-                ) : (
-                  <Square size={12} className="mr-1" />
-                )}
-                Stop daemon
-              </Button>
-            ) : (
-              <Button variant="ghost" size="sm" disabled={action !== null} onClick={onStart}>
-                {action === 'start' && <Loader2 size={12} className="mr-1 animate-spin" />}
-                Start daemon
-              </Button>
-            )}
-            {activeRunId ? (
-              <Button
-                variant="destructive"
-                size="sm"
-                disabled={action !== null && action !== 'run'}
-                onClick={() => onCancel(activeRunId)}
-              >
-                {action === 'cancel' ? (
-                  <Loader2 size={12} className="mr-1 animate-spin" />
-                ) : (
-                  <Square size={12} className="mr-1" />
-                )}
-                Cancel run
-              </Button>
-            ) : (
-              <Button disabled={!health?.warm || action !== null} size="sm" onClick={onRun}>
-                {action === 'run' ? (
-                  <Loader2 size={12} className="mr-1 animate-spin" />
-                ) : (
-                  <Play size={12} className="mr-1" />
-                )}
-                Verify changed
-              </Button>
-            )}
-          </div>
+          <WarmVerificationHeader
+            health={health}
+            action={action}
+            activeRunId={activeRunId}
+            onStart={onStart}
+            onStop={onStop}
+            onRun={onRun}
+            onCancel={onCancel}
+          />
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {supportMatrix ? (
-          <section
-            aria-label="Real product QA support"
-            className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h3 className="text-xs font-semibold text-slate-200">Checked app support</h3>
-                <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-                  React/Vite in owned Chromium ·{' '}
-                  {supportMatrix.configPath
-                    ? 'selected repository configured'
-                    : 'fixture-backed qualification only'}
-                </p>
-              </div>
-              <Badge variant="outline" className="font-mono text-[10px]">
-                {supportMatrix.lane}
-              </Badge>
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-              {supportMatrix.capabilities.map((capability) => (
-                <div
-                  key={capability.id}
-                  className="rounded border border-[var(--cv-line)] bg-black/10 px-2 py-2"
-                  title={capability.detail}
-                >
-                  <p className="text-[10px] font-medium text-slate-300">{capability.label}</p>
-                  <p
-                    className={`mt-1 text-[9px] ${
-                      capability.status === 'real_product_supported'
-                        ? 'text-emerald-300'
-                        : 'text-amber-300'
-                    }`}
-                  >
-                    {capability.status.replaceAll('_', ' ')}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-[10px] leading-4 text-[var(--text-secondary)]">
-              {supportMatrix.unsupported[0]}
-            </p>
-          </section>
-        ) : null}
+        {supportMatrix && <SupportMatrixSection supportMatrix={supportMatrix} />}
         {health ? (
-          <div className="grid gap-2 sm:grid-cols-3">
-            <RuntimeTile
-              label="Daemon"
-              state={health.warm ? 'ready' : 'starting'}
-              detail={`pid ${health.daemon_pid} · ${health.active_run_ids.length} active${activeRunId ? ` · ${activeRunId}` : ''}`}
-            />
-            <RuntimeTile
-              label="Server"
-              state={health.server.state}
-              detail={health.server.pid ? `pid ${health.server.pid}` : 'no owned process'}
-            />
-            <RuntimeTile
-              label="Browser"
-              state={health.browser.state}
-              detail={`Chromium ${health.chromium_revision}`}
-            />
-            <p
-              className="truncate font-mono text-[10px] text-[var(--text-secondary)] sm:col-span-3"
-              title={health.target_root}
-            >
-              {health.target_root} · target {health.target_sha.slice(0, 12)} · config{' '}
-              {health.config_hash.slice(0, 12)} · {formatBytes(health.resources.rss_bytes)} RSS ·{' '}
-              {health.resources.active_contexts} contexts
-            </p>
-          </div>
+          <HealthTiles health={health} activeRunId={activeRunId} />
         ) : (
           <div className="flex items-start gap-3 rounded border border-amber-500/30 bg-amber-500/5 px-3 py-3">
             <ShieldQuestion size={17} className="mt-0.5 shrink-0 text-amber-300" />
@@ -313,219 +610,23 @@ export function WarmVerificationPanel({
           </div>
         ) : latest ? (
           <div className="grid gap-3 lg:grid-cols-2">
-            <section className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  {latest.outcome === 'passed' ? (
-                    <CheckCircle2 size={15} className="text-emerald-300" />
-                  ) : (
-                    <AlertTriangle size={15} className="text-amber-300" />
-                  )}
-                  <h3 className="text-xs font-semibold text-slate-200">Latest changed run</h3>
-                  {outcomeBadge(latest.outcome)}
-                </div>
-                <span className="font-mono text-[10px] text-[var(--text-secondary)]">
-                  {latest.run_id}
-                </span>
-              </div>
-              <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
-                <div>
-                  <dt className="text-[var(--text-secondary)]">Whole invocation</dt>
-                  <dd className="mt-0.5 text-slate-200">
-                    {totalTiming ? formatDuration(totalTiming.duration_ms) : 'not recorded'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[var(--text-secondary)]">Runtime</dt>
-                  <dd className="mt-0.5 text-slate-200">{latest.warm ? 'warm' : 'cold'}</dd>
-                </div>
-                <div>
-                  <dt className="text-[var(--text-secondary)]">Target</dt>
-                  <dd className="mt-0.5 truncate font-mono text-slate-200">
-                    {latest.source.target_sha.slice(0, 12)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[var(--text-secondary)]">Evidence state</dt>
-                  <dd className="mt-0.5 text-slate-200">
-                    {latest.stale
-                      ? 'stale'
-                      : latest.selection.complete
-                        ? 'recorded complete'
-                        : 'incomplete'}
-                  </dd>
-                </div>
-              </dl>
-              <div className="mt-3 border-t border-[var(--cv-line)] pt-3">
-                <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">
-                  Selection explanation
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-300">
-                  {latest.selection.explanation}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
-                  <Badge variant="outline">{latest.selection.changed_paths.length} paths</Badge>
-                  <Badge variant="outline">
-                    {latest.selection.selected_scenario_ids.length} scenarios
-                  </Badge>
-                  {latest.selection.mandatory_smoke_ids.length > 0 && (
-                    <Badge variant="outline">
-                      {latest.selection.mandatory_smoke_ids.length} smoke
-                    </Badge>
-                  )}
-                  {latest.selection.fallback_scenario_ids.length > 0 && (
-                    <Badge variant="outline">
-                      {latest.selection.fallback_scenario_ids.length} fallback
-                    </Badge>
-                  )}
-                </div>
-                <details className="mt-2 text-[10px] text-[var(--text-secondary)]">
-                  <summary className="cursor-pointer select-none">Exact selection</summary>
-                  <p className="mt-1 break-all font-mono">
-                    paths: {latest.selection.changed_paths.join(', ') || 'none'}
-                  </p>
-                  <p className="mt-1 break-all font-mono">
-                    scenarios: {latest.selection.selected_scenario_ids.join(', ') || 'none'}
-                  </p>
-                </details>
-              </div>
-            </section>
-
-            <section className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3">
-              <h3 className="text-xs font-semibold text-slate-200">Timings</h3>
-              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
-                {latest.timings
-                  .filter(({ scenario_id }) => !scenario_id)
-                  .slice(0, 12)
-                  .map((timing) => (
-                    <div
-                      key={`${timing.stage}-${timing.duration_ms}`}
-                      className="flex justify-between gap-2 text-[11px]"
-                    >
-                      <span className="text-[var(--text-secondary)]">{timing.stage}</span>
-                      <span className="font-mono text-slate-300">
-                        {formatDuration(timing.duration_ms)}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-              {failures.length > 0 && (
-                <div className="mt-3 border-t border-[var(--cv-line)] pt-3">
-                  <h3 className="text-xs font-semibold text-red-300">
-                    Failures and limitations ({failures.length})
-                  </h3>
-                  <ul className="mt-2 space-y-1.5 text-[11px] text-slate-300">
-                    {failures.slice(0, 6).map((failure) => (
-                      <li key={failure.id} className="flex gap-2">
-                        <span className="text-red-300">•</span>
-                        <span>
-                          {failure.scenarioId && (
-                            <span className="mr-1 font-mono text-[10px] text-[var(--text-secondary)]">
-                              {failure.scenarioId}
-                            </span>
-                          )}
-                          {failure.message}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </section>
-
-            <section className="rounded border border-[var(--cv-line)] bg-[var(--bg-elevated)] p-3 lg:col-span-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-200">
-                    <Database size={13} /> Artifact retention
-                  </h3>
-                  <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-                    {latest.artifacts.length} retained for this run · {formatBytes(artifactBytes)};
-                    daemon total {formatBytes(health?.resources.retained_artifact_bytes ?? 0)}.
-                    Shared Playwright cache is report-only.
-                  </p>
-                </div>
-                <Button variant="ghost" size="sm" disabled={action !== null} onClick={onCleanup}>
-                  {action === 'cleanup' ? (
-                    <Loader2 size={12} className="mr-1 animate-spin" />
-                  ) : (
-                    <Trash2 size={12} className="mr-1" />
-                  )}
-                  Clean run artifacts
-                </Button>
-              </div>
-              {cleanupMessage && (
-                <p className="mt-2 text-[11px] text-emerald-300">{cleanupMessage}</p>
-              )}
-              {latest.artifacts.length > 0 && (
-                <ul className="mt-2 grid gap-1.5 md:grid-cols-2">
-                  {latest.artifacts.slice(0, 6).map((artifact) => (
-                    <li
-                      key={artifact.id}
-                      className="flex items-center justify-between gap-3 rounded border border-[var(--cv-line)] px-2 py-1.5 text-[10px]"
-                    >
-                      <button
-                        type="button"
-                        className="min-w-0 truncate text-left font-mono text-slate-300 hover:text-amber-200"
-                        title={`Preview ${artifact.relative_path}`}
-                        disabled={previewBusy !== null}
-                        onClick={() => {
-                          const storedRun = runs[0];
-                          if (!storedRun) return;
-                          setPreviewBusy(artifact.id);
-                          setPreviewError(null);
-                          void previewWarmVerificationArtifact(storedRun.id, artifact.id)
-                            .then(setPreview)
-                            .catch((caught) => {
-                              setPreview(null);
-                              setPreviewError(
-                                caught instanceof Error ? caught.message : String(caught)
-                              );
-                            })
-                            .finally(() => setPreviewBusy(null));
-                        }}
-                      >
-                        {previewBusy === artifact.id ? 'Loading… ' : ''}
-                        {artifact.relative_path}
-                      </button>
-                      <span className="shrink-0 text-[var(--text-secondary)]">
-                        {artifact.kind} · {formatBytes(artifact.bytes)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {previewError ? (
-                <p role="alert" className="mt-2 text-[11px] text-red-300">
-                  Preview blocked: {previewError}
-                </p>
-              ) : null}
-              {preview ? (
-                <div className="mt-3 rounded border border-[var(--cv-line)] bg-black/20 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
-                    <span className="font-mono text-slate-300">{preview.contentType}</span>
-                    <span className="text-[var(--text-secondary)]">
-                      {formatBytes(preview.bytes)}
-                      {preview.width && preview.height
-                        ? ` · ${preview.width}×${preview.height}`
-                        : ''}{' '}
-                      · redacted evidence
-                    </span>
-                  </div>
-                  {qaArtifactRenderMode(preview) === 'image' ? (
-                    <img
-                      src={preview.dataUrl ?? undefined}
-                      alt={`Verification artifact ${preview.artifactId}`}
-                      className="mt-3 max-h-80 max-w-full rounded border border-[var(--cv-line)] object-contain"
-                    />
-                  ) : qaArtifactRenderMode(preview) === 'text' ? (
-                    <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap break-words text-[10px] leading-4 text-slate-300">
-                      {preview.text}
-                    </pre>
-                  ) : null}
-                </div>
-              ) : null}
-            </section>
+            <LatestRunSummary latest={latest} totalTiming={totalTiming} />
+            <TimingsAndFailures latest={latest} failures={failures} />
+            <ArtifactRetentionSection
+              latest={latest}
+              artifactBytes={artifactBytes}
+              health={health}
+              action={action}
+              cleanupMessage={cleanupMessage}
+              onCleanup={onCleanup}
+              runs={runs}
+              preview={preview}
+              previewError={previewError}
+              previewBusy={previewBusy}
+              setPreview={setPreview}
+              setPreviewError={setPreviewError}
+              setPreviewBusy={setPreviewBusy}
+            />
           </div>
         ) : (
           <p className="rounded border border-dashed border-[var(--cv-line)] py-6 text-center text-xs text-[var(--text-secondary)]">
