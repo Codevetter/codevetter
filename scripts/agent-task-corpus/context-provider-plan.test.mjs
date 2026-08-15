@@ -23,8 +23,21 @@ const PAID_PROBE = 'benchmarks/context-providers/fixtures/paid-provider.json';
 const HOSTED_PROBE = 'benchmarks/context-providers/fixtures/hosted-provider.json';
 const EXCLUDED_PROBE = 'benchmarks/context-providers/fixtures/excluded-provider.json';
 const CONTAMINATED_PROBE = 'benchmarks/context-providers/fixtures/contaminated-provider.json';
+const EXTERNAL_PROBES = [
+  'benchmarks/context-providers/stage0/probes/codegraph.json',
+  'benchmarks/context-providers/stage0/probes/deepwiki.json',
+  'benchmarks/context-providers/stage0/probes/graphify.json',
+  'benchmarks/context-providers/stage0/probes/repowise.json',
+  'benchmarks/context-providers/stage0/probes/sourcegraph.json',
+];
 const REVISION = '7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3';
 const DIGEST = 'a'.repeat(64);
+const FEASIBILITY_TASKS = [
+  'accept-zero-duration',
+  'await-transaction-commit',
+  'deduplicate-visible-items',
+  'ignore-stale-search-response',
+];
 
 test('Stage 0 probes are closed, privacy-safe, and exact about local capabilities', () => {
   const baseline = loadContextProviderProbe(BASELINE_PROBE);
@@ -33,14 +46,21 @@ test('Stage 0 probes are closed, privacy-safe, and exact about local capabilitie
   assert.equal(baseline.value.provider_id, 'plain-repository-tools');
   assert.deepEqual(baseline.value.tools.allowed, []);
   assert.equal(codevetter.value.provider_version, '1.7.0');
-  assert.deepEqual(codevetter.value.tools.allowed, [
-    'graph_get_neighbors',
-    'graph_get_node',
-    'graph_impact',
-    'graph_path',
-    'graph_query',
-  ]);
+  assert.deepEqual(codevetter.value.tools.allowed, ['graph_query']);
+  assert.equal(codevetter.value.interface_kind, 'cli');
   assert.equal(codevetter.value.data_egress, 'none');
+});
+
+test('external capability probes validate but none enter the free local cohort', async () => {
+  for (const path of EXTERNAL_PROBES) {
+    const probe = loadContextProviderProbe(path).value;
+    assert.deepEqual(validateContract('context-provider-probe', probe), []);
+    assert.notEqual(probe.setup.status, 'eligible');
+    await assert.rejects(
+      planContextProviderExperiment({ probePaths: [BASELINE_PROBE, path] }),
+      /ineligible probes/
+    );
+  }
 });
 
 test('probe validation rejects unknown fields, baseline contamination, private data, and oversized input', async () => {
@@ -153,11 +173,7 @@ test('plan identity includes provider snapshots and stale snapshots block execut
   const ready = await planContextProviderExperiment({
     probePaths: [BASELINE_PROBE, CODEVETTER_PROBE],
     providerSnapshots: {
-      'codevetter-structural-context': {
-        status: 'ready',
-        snapshot_id: 'snapshot-fixture',
-        indexed_revision: REVISION,
-      },
+      'codevetter-structural-context': snapshots('snapshot:fixture'),
     },
   });
   const staleSnapshot = JSON.parse(
@@ -165,16 +181,43 @@ test('plan identity includes provider snapshots and stale snapshots block execut
   );
   const stale = await planContextProviderExperiment({
     probePaths: [BASELINE_PROBE, CODEVETTER_PROBE],
-    providerSnapshots: { 'codevetter-structural-context': staleSnapshot },
+    providerSnapshots: {
+      'codevetter-structural-context': Object.fromEntries(
+        FEASIBILITY_TASKS.map((taskId) => [taskId, staleSnapshot])
+      ),
+    },
   });
 
   assert.notEqual(pending.plan_id, ready.plan_id);
   assert.ok(
-    pending.blocked_reasons.includes('provider-snapshot-pending-codevetter-structural-context')
+    pending.blocked_reasons.includes(
+      'provider-snapshot-pending-codevetter-structural-context-accept-zero-duration'
+    )
   );
   assert.ok(!ready.blocked_reasons.some((reason) => reason.includes('provider-snapshot')));
   assert.ok(
-    stale.blocked_reasons.includes('provider-snapshot-stale-codevetter-structural-context')
+    stale.blocked_reasons.includes(
+      'provider-snapshot-stale-codevetter-structural-context-accept-zero-duration'
+    )
+  );
+
+  const missingTaskSnapshot = structuredClone(ready);
+  missingTaskSnapshot.providers[0].snapshots.pop();
+  assert.match(
+    validateContract('context-provider-plan', missingTaskSnapshot).join('\n'),
+    /must cover every planned task exactly/
+  );
+  const wrongTaskSource = structuredClone(ready);
+  wrongTaskSource.providers[0].snapshots[0].source_sha256 = 'f'.repeat(64);
+  assert.match(
+    validateContract('context-provider-plan', wrongTaskSource).join('\n'),
+    /must match the task fixture/
+  );
+  const wrongTaskRevision = structuredClone(ready);
+  wrongTaskRevision.providers[0].snapshots[0].indexed_revision = 'f'.repeat(40);
+  assert.match(
+    validateContract('context-provider-plan', wrongTaskRevision).join('\n'),
+    /must match the task revision/
   );
 });
 
@@ -198,11 +241,7 @@ test('paid, hosted, egress, credential, and unknown-cost inputs produce conserva
     agentProfile: selectedAgent,
     availableEnvironmentNames: ['PROVIDER_TOKEN'],
     providerSnapshots: {
-      'paid-provider': {
-        status: 'ready',
-        snapshot_id: 'paid-snapshot',
-        indexed_revision: REVISION,
-      },
+      'paid-provider': snapshots('paid-snapshot'),
     },
   });
   assert.equal(paid.cost.posture, 'paid');
@@ -215,11 +254,7 @@ test('paid, hosted, egress, credential, and unknown-cost inputs produce conserva
     probePaths: [BASELINE_PROBE, HOSTED_PROBE],
     agentProfile: selectedAgent,
     providerSnapshots: {
-      'hosted-provider': {
-        status: 'ready',
-        snapshot_id: 'hosted-snapshot',
-        indexed_revision: REVISION,
-      },
+      'hosted-provider': snapshots('hosted-snapshot'),
     },
   });
   assert.equal(hosted.approvals.hosted_required, true);
@@ -247,7 +282,34 @@ test('aggregate comparison schema is closed before later-stage aggregation is im
     providers: [
       {
         provider_id: 'codevetter-structural-context',
+        provider_version: '1.7.0',
+        configuration_sha256: DIGEST,
+        context_kind: 'graph',
+        snapshots: [
+          {
+            task_id: 'accept-zero-duration',
+            source_sha256: DIGEST,
+            status: 'ready',
+            snapshot_id: 'snapshot-fixture-accept-zero-duration',
+            indexed_revision: REVISION,
+          },
+        ],
+        allowed_tools: ['graph_query'],
         pairwise_score: { path: 'scores/codevetter.json', sha256: DIGEST },
+        pairwise_bundle: { path: 'bundles/codevetter.json', sha256: DIGEST },
+        scheduled_attempts: 16,
+        complete_attempts: 16,
+        outcomes: {
+          complete_pairs: 8,
+          control_successes: 4,
+          treatment_successes: 4,
+          treatment_wins: 0,
+          control_wins: 0,
+          ties: 8,
+          success_rate_delta: 0,
+          regression_delta: 0,
+        },
+        diagnostics_available: [],
         raw_p_value: null,
         adjusted_p_value: null,
         pairwise_qualified: false,
@@ -266,4 +328,17 @@ test('aggregate comparison schema is closed before later-stage aggregation is im
 
 function loadJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
+}
+
+function snapshots(prefix) {
+  return Object.fromEntries(
+    FEASIBILITY_TASKS.map((taskId) => [
+      taskId,
+      {
+        status: 'ready',
+        snapshot_id: `${prefix}-${taskId}`,
+        indexed_revision: REVISION,
+      },
+    ])
+  );
 }

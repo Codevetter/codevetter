@@ -1,0 +1,42 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "codegraph",
+  "provider_name": "CodeGraph",
+  "provider_version": "unavailable-2026-08-15",
+  "configuration_sha256": "f654cf40cbe211370d89d7654c8104f6b0ebf4651eb9a0490c84685942a07d9d",
+  "context_kind": "graph",
+  "interface_kind": "mcp",
+  "operating_mode": "local",
+  "indexing": {
+    "mode": "on-demand",
+    "exact_revision_supported": false,
+    "snapshot_identity_supported": false,
+    "freshness_check": "unknown"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": ["analyze_impact", "get_ai_context", "get_edit_context"]
+  },
+  "data_egress": "unknown",
+  "authentication": "none",
+  "environment_names": [],
+  "cost": { "posture": "free", "max_usd_per_attempt": 0 },
+  "setup": {
+    "status": "excluded",
+    "duration_ms": null,
+    "evidence": [
+      "https://github.com/codegraph-ai/CodeGraph:Apache-2.0-local-MCP",
+      "https://github.com/codegraph-ai/CodeGraph:workspace-auto-index-and-tool-profiles",
+      "local-command-probe:codegraph-server-not-installed"
+    ],
+    "exclusion_reasons": [
+      "Exact installed version and configuration are unavailable.",
+      "The inspected interface did not prove an immutable snapshot identity tied to each task revision."
+    ]
+  },
+  "publication": "allowed",
+  "limitations": [
+    "No binary, model, repository index, or provider process was installed or started.",
+    "Documentation capability is not execution evidence."
+  ]
+}

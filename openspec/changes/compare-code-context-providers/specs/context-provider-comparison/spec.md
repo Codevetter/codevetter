@@ -33,6 +33,8 @@ qualification policy, and declared provider cohort. Every provider arm SHALL
 also bind its provider version, configuration, context snapshot or index,
 indexed repository revision, context policy, and allowed tool set. Missing,
 duplicated, stale, or mismatched identities MUST invalidate the affected arm.
+Snapshot identity SHALL be task-bound; a provider-wide snapshot MUST NOT stand
+in for several task fixtures that contain different source trees.
 
 #### Scenario: Provider arms differ only in context policy
 - **WHEN** baseline and provider runs share every common identity and each provider arm carries a current provider-specific context identity
@@ -96,6 +98,11 @@ the method used to control multi-provider comparisons. Synthetic, feasibility,
 underpowered, invalid, or excessively noisy evidence MUST remain descriptive.
 The report MUST preserve negative and null results and MUST NOT rank providers
 whose evidence failed qualification.
+
+A feasibility schedule without independent A/A arms MUST remain descriptive.
+Any later plan seeking a qualified comparison SHALL preregister and execute
+independent A/A arms under the same isolation, identity, and completeness
+rules; it MUST NOT derive A/A noise from A/B repetitions after execution.
 
 #### Scenario: One provider has a favorable but underpowered result
 - **WHEN** its descriptive success delta is positive but the declared sample or noise gate is not met

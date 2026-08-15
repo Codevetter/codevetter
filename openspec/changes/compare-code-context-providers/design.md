@@ -100,10 +100,24 @@ observability gates. The planner calculates exact attempts and conservative
 cost bounds before requesting approval. Hosted or paid providers are a
 separate cohort so local/privacy differences are not hidden in one ranking.
 
+The implemented Stage 1 crossover schedule contains A/B arms only. It can test
+adapter feasibility and report descriptive outcomes, but it cannot qualify a
+provider because the existing pairwise policy requires independent A/A noise
+evidence. Before any Stage 2 approval, its plan must therefore add a
+preregistered A/A schedule with fresh workspaces and sessions; repeating or
+relabeling Stage 1 A/B evidence is not sufficient.
+
 Arm order is derived deterministically from the experiment identity using a
 balanced Latin-square schedule where possible and a declared balanced rotation
 otherwise. Fresh workspaces and new agent sessions prevent conversation or
 generated-instruction carryover.
+
+Each treatment binds a separate content snapshot to every task fixture. A
+single provider-wide snapshot is invalid because the compact corpus tasks have
+different source trees even when they share one provenance revision. A
+content-addressed per-task snapshot may be reused read-only across repetitions;
+provider configuration, agent session, and mutable workspace still remain
+fresh for every arm.
 
 Alternative considered: run providers sequentially in a convenient fixed
 order. Rejected because model/provider drift, cache warmth, and learning or

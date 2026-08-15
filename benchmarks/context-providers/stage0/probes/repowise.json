@@ -1,0 +1,42 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "repowise",
+  "provider_name": "RepoWise",
+  "provider_version": "unavailable-2026-08-15",
+  "configuration_sha256": "6878e8858229bb13e645cd22b3b99d4e5aabc67a42ee6e207bc5dfc68009f702",
+  "context_kind": "hybrid",
+  "interface_kind": "mcp",
+  "operating_mode": "hosted",
+  "indexing": {
+    "mode": "continuous",
+    "exact_revision_supported": false,
+    "snapshot_identity_supported": false,
+    "freshness_check": "provider-status"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": ["get_answer", "get_context", "get_overview"]
+  },
+  "data_egress": "source-content",
+  "authentication": "unknown",
+  "environment_names": [],
+  "cost": { "posture": "unknown", "max_usd_per_attempt": 0 },
+  "setup": {
+    "status": "excluded",
+    "duration_ms": null,
+    "evidence": [
+      "https://docs.repowise.ai/:dashboard-account-and-repository-connection",
+      "https://docs.repowise.dev/mcp/overview:agent-readable-MCP-tools",
+      "local-command-probe:repowise-not-installed"
+    ],
+    "exclusion_reasons": [
+      "No account, exact installed version, revision-bound snapshot, or publication permission was available.",
+      "The current cohort is free, local, and zero-egress; RepoWise requires a separate hosted cohort."
+    ]
+  },
+  "publication": "unknown",
+  "limitations": [
+    "No account was created and no repository source was uploaded.",
+    "Free-plan documentation does not establish reproducible experiment eligibility."
+  ]
+}

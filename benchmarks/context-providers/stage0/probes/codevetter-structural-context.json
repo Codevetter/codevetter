@@ -3,9 +3,9 @@
   "provider_id": "codevetter-structural-context",
   "provider_name": "CodeVetter structural context",
   "provider_version": "1.7.0",
-  "configuration_sha256": "d3426aa6ab55c29529cda93502bf45a37eb9c95b25e06bb3b7c4aa6249343938",
+  "configuration_sha256": "98df90f91250dbe8462446ea5096055922e30745afdccefeb412c8d723584336",
   "context_kind": "graph",
-  "interface_kind": "mcp",
+  "interface_kind": "cli",
   "operating_mode": "local",
   "indexing": {
     "mode": "on-demand",
@@ -15,13 +15,7 @@
   },
   "tools": {
     "observable": true,
-    "allowed": [
-      "graph_get_neighbors",
-      "graph_get_node",
-      "graph_impact",
-      "graph_path",
-      "graph_query"
-    ]
+    "allowed": ["graph_query"]
   },
   "data_egress": "none",
   "authentication": "none",
@@ -34,12 +28,15 @@
     "status": "eligible",
     "duration_ms": null,
     "evidence": [
-      "apps/desktop/src-tauri/src/commands/structural_graph/types.rs:snapshot-identity",
-      "apps/desktop/src-tauri/src/mcp/contracts.rs:graph-tools",
+      "apps/desktop/src-tauri/examples/context_provider_fixture.rs:local-cli-adapter",
+      "apps/desktop/src-tauri/src/commands/structural_graph/extract/engine.rs:tree-sitter-engine",
+      "apps/desktop/src-tauri/src/commands/structural_graph/query/search.rs:graph-query",
       "apps/desktop/src-tauri/tauri.conf.json:version-1.7.0"
     ],
     "exclusion_reasons": []
   },
   "publication": "allowed",
-  "limitations": ["Repository contract inspection only; no MCP process or graph index was started."]
+  "limitations": [
+    "The experiment exposes graph_query through a local CLI over the product graph engine; it does not measure MCP transport overhead."
+  ]
 }

@@ -112,7 +112,7 @@
                     "properties": {
                       "engine_id": { "$ref": "./common.schema.json#/$defs/id" },
                       "engine_version": { "type": "string", "minLength": 1, "maxLength": 80 },
-                      "snapshot_id": { "$ref": "./common.schema.json#/$defs/id" },
+                      "snapshot_id": { "$ref": "./common.schema.json#/$defs/snapshotId" },
                       "indexed_revision": {
                         "type": "string",
                         "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"

@@ -1,0 +1,41 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "sourcegraph",
+  "provider_name": "Sourcegraph MCP",
+  "provider_version": "enterprise-2026-08-15",
+  "configuration_sha256": "cd2db48fbcf57a5093ab3f89e89cc7ecb7c0eacce5a937f3abbaeabdfd7f3db5",
+  "context_kind": "hybrid",
+  "interface_kind": "mcp",
+  "operating_mode": "enterprise",
+  "indexing": {
+    "mode": "continuous",
+    "exact_revision_supported": true,
+    "snapshot_identity_supported": false,
+    "freshness_check": "provider-status"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": ["code_finder", "deepsearch", "read_file", "search"]
+  },
+  "data_egress": "source-content",
+  "authentication": "unknown",
+  "environment_names": [],
+  "cost": { "posture": "unknown", "max_usd_per_attempt": 0 },
+  "setup": {
+    "status": "excluded",
+    "duration_ms": null,
+    "evidence": [
+      "https://sourcegraph.com/docs/api/mcp:enterprise-MCP-and-OAuth",
+      "https://sourcegraph.com/docs/api/mcp:revision-aware-read-file"
+    ],
+    "exclusion_reasons": [
+      "No instance, access permission, exact server version, or immutable context snapshot was available.",
+      "Sourcegraph MCP is an enterprise, authenticated cohort outside the approved free/local Stage 1."
+    ]
+  },
+  "publication": "restricted",
+  "limitations": [
+    "No Sourcegraph instance was contacted and no access token was read.",
+    "Enterprise capability documentation is not experiment execution evidence."
+  ]
+}

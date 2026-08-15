@@ -33,6 +33,7 @@ export const CORPUS_LIMITS = Object.freeze({
 });
 
 const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SNAPSHOT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const REVISION_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/;
 const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
@@ -1033,7 +1034,7 @@ function validateEvaluationContext(value, path, errors) {
   if (!closedObject(value.graph, `${path}.graph`, graphFields, graphFields, errors)) return;
   id(value.graph.engine_id, `${path}.graph.engine_id`, errors);
   boundedString(value.graph.engine_version, `${path}.graph.engine_version`, errors, 1, 80);
-  id(value.graph.snapshot_id, `${path}.graph.snapshot_id`, errors);
+  snapshotId(value.graph.snapshot_id, `${path}.graph.snapshot_id`, errors);
   revision(value.graph.indexed_revision, `${path}.graph.indexed_revision`, errors);
 }
 
@@ -1605,83 +1606,7 @@ function validateContextProviderPlan(value, path, errors) {
   validateContextAgentProfile(value.agent_profile, `${path}.agent_profile`, errors);
   artifactArray(value.provider_probes, `${path}.provider_probes`, errors);
   array(value.providers, `${path}.providers`, errors, { min: 1, max: 4 });
-  const providerIds = [];
-  for (const [index, provider] of (Array.isArray(value.providers)
-    ? value.providers
-    : []
-  ).entries()) {
-    const providerPath = `${path}.providers[${index}]`;
-    const providerFields = [
-      'provider_id',
-      'probe_sha256',
-      'role',
-      'context_kind',
-      'interface_kind',
-      'operating_mode',
-      'data_egress',
-      'cost_posture',
-      'max_usd_per_attempt',
-      'environment_names',
-      'snapshot',
-    ];
-    if (!closedObject(provider, providerPath, providerFields, providerFields, errors)) continue;
-    id(provider.provider_id, `${providerPath}.provider_id`, errors);
-    sha256(provider.probe_sha256, `${providerPath}.probe_sha256`, errors);
-    oneOf(provider.role, ['baseline', 'treatment'], `${providerPath}.role`, errors);
-    oneOf(
-      provider.context_kind,
-      ['baseline', 'graph', 'search', 'wiki-rag', 'hybrid'],
-      `${providerPath}.context_kind`,
-      errors
-    );
-    oneOf(
-      provider.interface_kind,
-      ['none', 'cli', 'mcp', 'api'],
-      `${providerPath}.interface_kind`,
-      errors
-    );
-    oneOf(
-      provider.operating_mode,
-      ['local', 'hosted', 'enterprise'],
-      `${providerPath}.operating_mode`,
-      errors
-    );
-    oneOf(
-      provider.data_egress,
-      ['none', 'metadata', 'source-content', 'unknown'],
-      `${providerPath}.data_egress`,
-      errors
-    );
-    oneOf(
-      provider.cost_posture,
-      ['free', 'paid', 'unknown'],
-      `${providerPath}.cost_posture`,
-      errors
-    );
-    finiteNumber(
-      provider.max_usd_per_attempt,
-      `${providerPath}.max_usd_per_attempt`,
-      errors,
-      0,
-      100_000
-    );
-    validateEnvironmentNames(
-      provider.environment_names,
-      `${providerPath}.environment_names`,
-      errors
-    );
-    validateContextSnapshot(provider.snapshot, `${providerPath}.snapshot`, errors);
-    if (
-      provider.role === 'baseline' &&
-      (provider.context_kind !== 'baseline' || provider.interface_kind !== 'none')
-    ) {
-      errors.push(`${providerPath}: baseline role cannot expose a provider interface`);
-    }
-    if (provider.role === 'treatment' && provider.context_kind === 'baseline') {
-      errors.push(`${providerPath}.context_kind: treatment cannot use baseline context`);
-    }
-    if (typeof provider.provider_id === 'string') providerIds.push(provider.provider_id);
-  }
+  const providerIds = validateContextPlanProviders(value.providers, path, errors);
   unique(providerIds, `${path}.providers provider_id`, errors);
   sorted(providerIds, `${path}.providers`, errors);
   const probeHashes = (value.provider_probes ?? []).map((probe) => probe?.sha256).sort();
@@ -1696,28 +1621,10 @@ function validateContextProviderPlan(value, path, errors) {
     errors.push(`${path}.providers: exactly one baseline is required`);
   }
   array(value.tasks, `${path}.tasks`, errors, { max: CORPUS_LIMITS.maxTasks });
-  const taskIds = [];
-  for (const [index, task] of (Array.isArray(value.tasks) ? value.tasks : []).entries()) {
-    const taskPath = `${path}.tasks[${index}]`;
-    const taskFields = [
-      'task_id',
-      'manifest_sha256',
-      'repository_revision',
-      'lane',
-      'runtime',
-      'category',
-    ];
-    if (!closedObject(task, taskPath, taskFields, taskFields, errors)) continue;
-    id(task.task_id, `${taskPath}.task_id`, errors);
-    sha256(task.manifest_sha256, `${taskPath}.manifest_sha256`, errors);
-    revision(task.repository_revision, `${taskPath}.repository_revision`, errors);
-    oneOf(task.lane, ['api', 'browser'], `${taskPath}.lane`, errors);
-    oneOf(task.runtime, ['node', 'typescript'], `${taskPath}.runtime`, errors);
-    id(task.category, `${taskPath}.category`, errors);
-    if (typeof task.task_id === 'string') taskIds.push(task.task_id);
-  }
+  const taskIds = validateContextPlanTasks(value.tasks, path, errors);
   unique(taskIds, `${path}.tasks task_id`, errors);
   sorted(taskIds, `${path}.tasks`, errors);
+  validateProviderSnapshotCoverage(value.providers, value.tasks, path, errors);
   integer(value.repetitions, `${path}.repetitions`, errors, 0, 5);
   validateContextSchedule(
     value.schedule,
@@ -1757,6 +1664,145 @@ function validateContextProviderPlan(value, path, errors) {
   ) {
     errors.push(`${path}.approvals.approval_id: does not match the plan identity`);
   }
+}
+
+function validateContextPlanProviders(providers, path, errors) {
+  const providerIds = [];
+  for (const [index, provider] of (Array.isArray(providers) ? providers : []).entries()) {
+    const providerPath = `${path}.providers[${index}]`;
+    if (!validateContextPlanProvider(provider, providerPath, errors)) continue;
+    if (typeof provider.provider_id === 'string') providerIds.push(provider.provider_id);
+  }
+  return providerIds;
+}
+
+function validateContextPlanProvider(provider, path, errors) {
+  const fields = [
+    'provider_id',
+    'provider_version',
+    'configuration_sha256',
+    'probe_sha256',
+    'role',
+    'context_kind',
+    'interface_kind',
+    'operating_mode',
+    'data_egress',
+    'cost_posture',
+    'max_usd_per_attempt',
+    'environment_names',
+    'allowed_tools',
+    'snapshots',
+  ];
+  if (!closedObject(provider, path, fields, fields, errors)) return false;
+  id(provider.provider_id, `${path}.provider_id`, errors);
+  boundedString(provider.provider_version, `${path}.provider_version`, errors, 1, 120);
+  sha256(provider.configuration_sha256, `${path}.configuration_sha256`, errors);
+  sha256(provider.probe_sha256, `${path}.probe_sha256`, errors);
+  oneOf(provider.role, ['baseline', 'treatment'], `${path}.role`, errors);
+  oneOf(
+    provider.context_kind,
+    ['baseline', 'graph', 'search', 'wiki-rag', 'hybrid'],
+    `${path}.context_kind`,
+    errors
+  );
+  oneOf(provider.interface_kind, ['none', 'cli', 'mcp', 'api'], `${path}.interface_kind`, errors);
+  oneOf(
+    provider.operating_mode,
+    ['local', 'hosted', 'enterprise'],
+    `${path}.operating_mode`,
+    errors
+  );
+  oneOf(
+    provider.data_egress,
+    ['none', 'metadata', 'source-content', 'unknown'],
+    `${path}.data_egress`,
+    errors
+  );
+  oneOf(provider.cost_posture, ['free', 'paid', 'unknown'], `${path}.cost_posture`, errors);
+  finiteNumber(provider.max_usd_per_attempt, `${path}.max_usd_per_attempt`, errors, 0, 100_000);
+  validateEnvironmentNames(provider.environment_names, `${path}.environment_names`, errors);
+  stringArray(provider.allowed_tools, `${path}.allowed_tools`, errors, { max: 100, itemMax: 80 });
+  if (Array.isArray(provider.allowed_tools)) {
+    unique(provider.allowed_tools, `${path}.allowed_tools`, errors);
+    sorted(provider.allowed_tools, `${path}.allowed_tools`, errors);
+  }
+  array(provider.snapshots, `${path}.snapshots`, errors, { max: CORPUS_LIMITS.maxTasks });
+  const snapshotTaskIds = [];
+  for (const [index, snapshot] of (Array.isArray(provider.snapshots)
+    ? provider.snapshots
+    : []
+  ).entries()) {
+    validateContextSnapshot(snapshot, `${path}.snapshots[${index}]`, errors);
+    if (typeof snapshot?.task_id === 'string') snapshotTaskIds.push(snapshot.task_id);
+  }
+  unique(snapshotTaskIds, `${path}.snapshots task_id`, errors);
+  sorted(snapshotTaskIds, `${path}.snapshots`, errors);
+  if (
+    provider.role === 'baseline' &&
+    (provider.context_kind !== 'baseline' || provider.interface_kind !== 'none')
+  ) {
+    errors.push(`${path}: baseline role cannot expose a provider interface`);
+  }
+  if (provider.role === 'treatment' && provider.context_kind === 'baseline') {
+    errors.push(`${path}.context_kind: treatment cannot use baseline context`);
+  }
+  return true;
+}
+
+function validateProviderSnapshotCoverage(providers, tasks, path, errors) {
+  const taskRows = Array.isArray(tasks) ? tasks : [];
+  const taskIds = taskRows.map((task) => task?.task_id);
+  const tasksById = new Map(taskRows.map((task) => [task?.task_id, task]));
+  for (const [index, provider] of (Array.isArray(providers) ? providers : []).entries()) {
+    const snapshotTaskIds = (provider?.snapshots ?? []).map((snapshot) => snapshot?.task_id);
+    const expected = provider?.role === 'baseline' ? [] : taskIds;
+    if (JSON.stringify(snapshotTaskIds) !== JSON.stringify(expected)) {
+      errors.push(`${path}.providers[${index}].snapshots: must cover every planned task exactly`);
+    }
+    for (const [snapshotIndex, snapshot] of (provider?.snapshots ?? []).entries()) {
+      const task = tasksById.get(snapshot?.task_id);
+      if (task && snapshot?.source_sha256 !== task.fixture_sha256) {
+        errors.push(
+          `${path}.providers[${index}].snapshots[${snapshotIndex}].source_sha256: must match the task fixture`
+        );
+      }
+      if (
+        task &&
+        snapshot?.indexed_revision !== null &&
+        snapshot?.indexed_revision !== task.repository_revision
+      ) {
+        errors.push(
+          `${path}.providers[${index}].snapshots[${snapshotIndex}].indexed_revision: must match the task revision`
+        );
+      }
+    }
+  }
+}
+
+function validateContextPlanTasks(tasks, path, errors) {
+  const taskIds = [];
+  for (const [index, task] of (Array.isArray(tasks) ? tasks : []).entries()) {
+    const taskPath = `${path}.tasks[${index}]`;
+    const fields = [
+      'task_id',
+      'manifest_sha256',
+      'fixture_sha256',
+      'repository_revision',
+      'lane',
+      'runtime',
+      'category',
+    ];
+    if (!closedObject(task, taskPath, fields, fields, errors)) continue;
+    id(task.task_id, `${taskPath}.task_id`, errors);
+    sha256(task.manifest_sha256, `${taskPath}.manifest_sha256`, errors);
+    sha256(task.fixture_sha256, `${taskPath}.fixture_sha256`, errors);
+    revision(task.repository_revision, `${taskPath}.repository_revision`, errors);
+    oneOf(task.lane, ['api', 'browser'], `${taskPath}.lane`, errors);
+    oneOf(task.runtime, ['node', 'typescript'], `${taskPath}.runtime`, errors);
+    id(task.category, `${taskPath}.category`, errors);
+    if (typeof task.task_id === 'string') taskIds.push(task.task_id);
+  }
+  return taskIds;
 }
 
 function validateContextAgentProfile(value, path, errors) {
@@ -1800,10 +1846,12 @@ function validateContextAgentProfile(value, path, errors) {
 }
 
 function validateContextSnapshot(value, path, errors) {
-  const fields = ['status', 'snapshot_id', 'indexed_revision'];
+  const fields = ['task_id', 'source_sha256', 'status', 'snapshot_id', 'indexed_revision'];
   if (!closedObject(value, path, fields, fields, errors)) return;
-  oneOf(value.status, ['not-required', 'pending', 'ready', 'stale'], `${path}.status`, errors);
-  if (value.snapshot_id !== null) id(value.snapshot_id, `${path}.snapshot_id`, errors);
+  id(value.task_id, `${path}.task_id`, errors);
+  sha256(value.source_sha256, `${path}.source_sha256`, errors);
+  oneOf(value.status, ['pending', 'ready', 'stale'], `${path}.status`, errors);
+  if (value.snapshot_id !== null) snapshotId(value.snapshot_id, `${path}.snapshot_id`, errors);
   if (value.indexed_revision !== null)
     revision(value.indexed_revision, `${path}.indexed_revision`, errors);
   if (value.status === 'ready' && (value.snapshot_id === null || value.indexed_revision === null)) {
@@ -1971,25 +2019,7 @@ function validateContextProviderComparison(value, path, errors) {
     : []
   ).entries()) {
     const providerPath = `${path}.providers[${index}]`;
-    const providerFields = [
-      'provider_id',
-      'pairwise_score',
-      'raw_p_value',
-      'adjusted_p_value',
-      'pairwise_qualified',
-      'family_qualified',
-    ];
-    if (!closedObject(provider, providerPath, providerFields, providerFields, errors)) continue;
-    id(provider.provider_id, `${providerPath}.provider_id`, errors);
-    artifact(provider.pairwise_score, `${providerPath}.pairwise_score`, errors);
-    for (const field of ['raw_p_value', 'adjusted_p_value']) {
-      if (provider[field] !== null)
-        finiteNumber(provider[field], `${providerPath}.${field}`, errors, 0, 1);
-    }
-    boolean(provider.pairwise_qualified, `${providerPath}.pairwise_qualified`, errors);
-    boolean(provider.family_qualified, `${providerPath}.family_qualified`, errors);
-    if (provider.family_qualified && !provider.pairwise_qualified)
-      errors.push(`${providerPath}.family_qualified: requires pairwise qualification`);
+    if (!validateContextComparisonProvider(provider, providerPath, errors)) continue;
     if (typeof provider.provider_id === 'string') providerIds.push(provider.provider_id);
   }
   unique(providerIds, `${path}.providers provider_id`, errors);
@@ -1998,6 +2028,102 @@ function validateContextProviderComparison(value, path, errors) {
   unique(value.missing_arms, `${path}.missing_arms`, errors);
   sorted(value.missing_arms, `${path}.missing_arms`, errors);
   stringArray(value.limitations, `${path}.limitations`, errors, { max: 50, itemMax: 500 });
+}
+
+function validateContextComparisonProvider(provider, path, errors) {
+  const fields = [
+    'provider_id',
+    'provider_version',
+    'configuration_sha256',
+    'context_kind',
+    'snapshots',
+    'allowed_tools',
+    'pairwise_score',
+    'pairwise_bundle',
+    'scheduled_attempts',
+    'complete_attempts',
+    'outcomes',
+    'diagnostics_available',
+    'raw_p_value',
+    'adjusted_p_value',
+    'pairwise_qualified',
+    'family_qualified',
+  ];
+  if (!closedObject(provider, path, fields, fields, errors)) return false;
+  id(provider.provider_id, `${path}.provider_id`, errors);
+  boundedString(provider.provider_version, `${path}.provider_version`, errors, 1, 120);
+  sha256(provider.configuration_sha256, `${path}.configuration_sha256`, errors);
+  oneOf(
+    provider.context_kind,
+    ['graph', 'search', 'wiki-rag', 'hybrid'],
+    `${path}.context_kind`,
+    errors
+  );
+  array(provider.snapshots, `${path}.snapshots`, errors, { min: 1, max: CORPUS_LIMITS.maxTasks });
+  const snapshotTaskIds = [];
+  for (const [index, snapshot] of (Array.isArray(provider.snapshots)
+    ? provider.snapshots
+    : []
+  ).entries()) {
+    validateContextSnapshot(snapshot, `${path}.snapshots[${index}]`, errors);
+    if (snapshot?.status !== 'ready') {
+      errors.push(`${path}.snapshots[${index}]: comparison snapshots must be ready`);
+    }
+    if (typeof snapshot?.task_id === 'string') snapshotTaskIds.push(snapshot.task_id);
+  }
+  unique(snapshotTaskIds, `${path}.snapshots task_id`, errors);
+  sorted(snapshotTaskIds, `${path}.snapshots`, errors);
+  stringArray(provider.allowed_tools, `${path}.allowed_tools`, errors, { max: 100, itemMax: 80 });
+  validateUniqueSorted(provider.allowed_tools, `${path}.allowed_tools`, errors);
+  artifact(provider.pairwise_score, `${path}.pairwise_score`, errors);
+  artifact(provider.pairwise_bundle, `${path}.pairwise_bundle`, errors);
+  integer(provider.scheduled_attempts, `${path}.scheduled_attempts`, errors, 1, 1000);
+  integer(provider.complete_attempts, `${path}.complete_attempts`, errors, 0, 1000);
+  if (provider.complete_attempts > provider.scheduled_attempts) {
+    errors.push(`${path}.complete_attempts: cannot exceed scheduled attempts`);
+  }
+  validateContextProviderOutcomes(provider.outcomes, `${path}.outcomes`, errors);
+  stringArray(provider.diagnostics_available, `${path}.diagnostics_available`, errors, {
+    max: 20,
+    itemMax: 80,
+  });
+  validateUniqueSorted(provider.diagnostics_available, `${path}.diagnostics_available`, errors);
+  validateNullableProbability(provider.raw_p_value, `${path}.raw_p_value`, errors);
+  validateNullableProbability(provider.adjusted_p_value, `${path}.adjusted_p_value`, errors);
+  boolean(provider.pairwise_qualified, `${path}.pairwise_qualified`, errors);
+  boolean(provider.family_qualified, `${path}.family_qualified`, errors);
+  if (provider.family_qualified && !provider.pairwise_qualified) {
+    errors.push(`${path}.family_qualified: requires pairwise qualification`);
+  }
+  return true;
+}
+
+function validateUniqueSorted(value, path, errors) {
+  if (!Array.isArray(value)) return;
+  unique(value, path, errors);
+  sorted(value, path, errors);
+}
+
+function validateNullableProbability(value, path, errors) {
+  if (value !== null) finiteNumber(value, path, errors, 0, 1);
+}
+
+function validateContextProviderOutcomes(value, path, errors) {
+  const fields = [
+    'complete_pairs',
+    'control_successes',
+    'treatment_successes',
+    'treatment_wins',
+    'control_wins',
+    'ties',
+    'success_rate_delta',
+    'regression_delta',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  for (const field of fields.slice(0, 6))
+    integer(value[field], `${path}.${field}`, errors, 0, 5000);
+  finiteNumber(value.success_rate_delta, `${path}.success_rate_delta`, errors, -1, 1);
+  integer(value.regression_delta, `${path}.regression_delta`, errors, -5000, 5000);
 }
 
 function validatePrivacySafeDocument(value, path, errors) {
@@ -2211,6 +2337,10 @@ function relativePath(value, path, errors) {
 
 function id(value, path, errors) {
   stringPattern(value, ID_PATTERN, path, errors, 80);
+}
+
+function snapshotId(value, path, errors) {
+  stringPattern(value, SNAPSHOT_ID_PATTERN, path, errors, 200);
 }
 
 function sha256(value, path, errors) {

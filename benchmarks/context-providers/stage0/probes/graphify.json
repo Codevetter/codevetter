@@ -1,0 +1,42 @@
+{
+  "schema_version": "codevetter.context-provider-probe.v1",
+  "provider_id": "graphify",
+  "provider_name": "Graphify",
+  "provider_version": "0.9.43",
+  "configuration_sha256": "60fc0ca274826142b0aacb407e24753c8d57e783319502c03c92ba021934addf",
+  "context_kind": "graph",
+  "interface_kind": "mcp",
+  "operating_mode": "local",
+  "indexing": {
+    "mode": "on-demand",
+    "exact_revision_supported": false,
+    "snapshot_identity_supported": false,
+    "freshness_check": "unknown"
+  },
+  "tools": {
+    "observable": true,
+    "allowed": ["get_neighbors", "get_node", "query_graph", "shortest_path"]
+  },
+  "data_egress": "none",
+  "authentication": "none",
+  "environment_names": [],
+  "cost": { "posture": "free", "max_usd_per_attempt": 0 },
+  "setup": {
+    "status": "blocked",
+    "duration_ms": 1100,
+    "evidence": [
+      "https://graphify.com/docs/mcp-tools:local-stdio-graph-server",
+      "local-command-probe:graphify-0.9.43",
+      "local-command-probe:graphify-mcp-available"
+    ],
+    "exclusion_reasons": [
+      "The installed agent skill is version 0.8.47 while the executable is 0.9.43.",
+      "The provider does not expose a task-revision-bound immutable snapshot identity required by this experiment."
+    ]
+  },
+  "publication": "allowed",
+  "limitations": [
+    "The safe probe inspected version and help output only; it did not index private source.",
+    "Local code-only operation avoids model calls but does not satisfy snapshot identity by itself."
+  ]
+}

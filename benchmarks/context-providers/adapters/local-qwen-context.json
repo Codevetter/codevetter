@@ -1,0 +1,25 @@
+{
+  "schema_version": "codevetter.agent-task-adapter.v2",
+  "adapter_id": "local-qwen-context-v1",
+  "agent": "CodeVetter local context experiment adapter",
+  "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit@50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+  "configuration": "mlx-lm-0.31.3-hf-offline-temp-0-seed-20260815",
+  "command": ["{node}", "{adapter_root}/local-qwen-context.mjs", "{workspace}"],
+  "artifacts": [
+    {
+      "path": "local-qwen-context.mjs",
+      "sha256": "5535af296391160817684d366753767dfef9f9dbcc71567818d7b31870e00185"
+    }
+  ],
+  "environment_names": ["CODEVETTER_LOCAL_MODEL_URL"],
+  "timeout_ms": 120000,
+  "cost_posture": "free",
+  "planning": {
+    "prompt_overhead_tokens": 250,
+    "reserved_output_tokens": 1280,
+    "input_usd_per_million": 0,
+    "output_usd_per_million": 0,
+    "max_cost_usd": 0
+  },
+  "diagnostics_path": ".codevetter-agent-diagnostics.json"
+}
