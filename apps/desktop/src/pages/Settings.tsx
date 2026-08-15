@@ -855,6 +855,621 @@ export default function Settings() {
   // Menu-bar tray
   const [trayCadence, setTrayCadence] = usePref('tray_refresh_cadence_secs', '300');
 
+  function renderAboutCategory() {
+    const updateStatusMap: Record<string, string> = {
+      checking: 'Checking for updates…',
+      available: `Update available: v${pendingUpdate?.version}`,
+      latest: "You're on the latest version.",
+      installing: 'Downloading & installing…',
+      error: "Couldn't check — try again.",
+    };
+    const updateStatusText =
+      updateStatusMap[updateState] ?? 'Check GitHub Releases for a newer build.';
+    return (
+      <div className="flex flex-col">
+        <CategoryTitle title="About" description="Application information and links." />
+        <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+          {/* App identity */}
+          <div className="flex items-center gap-4 pb-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
+              <span className="text-2xl font-bold text-amber-400">C</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-100">CodeVetter</h3>
+              <p className="text-sm text-slate-500">
+                AI-powered code review &amp; agent orchestration
+              </p>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Version & build */}
+          <div className="flex flex-col gap-2 py-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-400">Version</span>
+              <span className="mono text-sm text-slate-200">{appVersion || '—'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-400">Build</span>
+              <span className="text-sm text-slate-200">Tauri 2 + React + Rust</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-400">License</span>
+              <span className="text-sm text-slate-200">ISC</span>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Check for updates */}
+          <div className="flex items-center justify-between py-4">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm text-slate-400">Updates</span>
+              <span className="text-xs text-slate-500">{updateStatusText}</span>
+            </div>
+            {updateState === 'available' ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={installUpdate}
+                className="h-auto px-3 py-1 text-xs text-amber-400 hover:text-amber-300"
+              >
+                Install &amp; relaunch
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={checkForUpdates}
+                disabled={updateState === 'checking' || updateState === 'installing'}
+                className="h-auto px-3 py-1 text-xs text-slate-400 hover:text-slate-200"
+              >
+                {updateState === 'checking' ? 'Checking…' : 'Check for updates'}
+              </Button>
+            )}
+          </div>
+
+          <Divider />
+
+          {/* Links */}
+          <div className="flex flex-col gap-2 py-4">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+              Links
+            </h4>
+            <a
+              href="https://github.com/sarthak-codevetter/code-reviewer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+              </svg>
+              GitHub Repository
+            </a>
+            <a
+              href="https://codevetter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.92 17.92 0 0 1-8.716-2.247m0 0A8.966 8.966 0 0 1 3 12c0-1.264.26-2.466.732-3.558"
+                />
+              </svg>
+              Landing Page
+            </a>
+            <a
+              href="https://docs.codevetter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                />
+              </svg>
+              Documentation
+            </a>
+          </div>
+
+          <Divider />
+
+          {/* Credits */}
+          <div className="pt-4">
+            <p className="text-sm text-slate-400">
+              Built by <span className="text-slate-200">Sarthak Agrawal</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderNotificationsCategory() {
+    const previewLabelMap: Record<string, string> = {
+      open: 'Preview opened',
+      error: 'Build the native helper, then try again',
+    };
+    const agentIslandPreviewLabel =
+      previewLabelMap[agentIslandPreview] ?? 'Runs locally and remains off until enabled';
+    const agentIslandStatusLabel = agentIslandStatus?.connected
+      ? `Connected · ${agentIslandStatus.session_count} session${agentIslandStatus.session_count === 1 ? '' : 's'}`
+      : (agentIslandStatus?.last_error ??
+        (nativeAgentIslandEnabled
+          ? 'Ready · launches with the next owned session'
+          : 'Off · existing Work notifications remain active'));
+    return (
+      <div className="flex flex-col">
+        <CategoryTitle
+          title="Notifications"
+          description="Control which events trigger desktop notifications."
+        />
+        <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+          <Toggle
+            label="Review Completed"
+            description="Show a notification when a code review finishes."
+            enabled={notifyReviewDone}
+            onToggle={toggleNotifyReviewDone}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Agent Error"
+            description="Notify when an agent encounters an error or crashes."
+            enabled={notifyAgentError}
+            onToggle={toggleNotifyAgentError}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Task Completed"
+            description="Notify when an agent finishes a task."
+            enabled={notifyTaskComplete}
+            onToggle={toggleNotifyTaskComplete}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Provider Quota Thresholds"
+            description="Notify when provider windows or weekly baselines cross 75%, 90%, 99%, or 100%, and when weekly pace runs hot."
+            enabled={notifyQuotaThresholds}
+            onToggle={toggleNotifyQuotaThresholds}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Session Usage Thresholds"
+            description="Opt in to scan recent indexed sessions and notify when one crosses 90%, 99%, or 100% of its inferred context window."
+            enabled={notifySessionUsageThresholds}
+            onToggle={toggleNotifySessionUsageThresholds}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Notification Sounds"
+            description="Play a short tone for success, error, and info events."
+            enabled={notificationSound}
+            onToggle={toggleNotificationSound}
+          />
+        </div>
+
+        <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Agent Island
+        </h3>
+        <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+          <Toggle
+            label="Native Agent Island"
+            description="Show a compact native Mac surface for active, completed, failed, and blocked Codex and Claude sessions."
+            enabled={nativeAgentIslandEnabled}
+            onToggle={toggleNativeAgentIslandEnabled}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Mute Voice Callouts"
+            description="Keep visual status available without speaking agent updates."
+            enabled={nativeSpeechMuted}
+            onToggle={toggleNativeSpeechMuted}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Speak Completions"
+            description="Announce the provider and project when a turn finishes."
+            enabled={nativeSpeakCompletion}
+            onToggle={toggleNativeSpeakCompletion}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Speak Attention Requests"
+            description="Announce confirmed questions and permission requests."
+            enabled={nativeSpeakAttention}
+            onToggle={toggleNativeSpeakAttention}
+          />
+
+          <Divider />
+
+          <Toggle
+            label="Speak Failures"
+            description="Announce when an owned agent session fails."
+            enabled={nativeSpeakFailure}
+            onToggle={toggleNativeSpeakFailure}
+          />
+
+          <Divider />
+
+          <SelectSetting
+            label="Voice Volume"
+            description="Set the local system voice volume for Agent Island callouts."
+            value={nativeSpeechVolume}
+            options={[
+              { value: '0.5', label: 'Quiet' },
+              { value: '0.8', label: 'Balanced' },
+              { value: '1', label: 'Full' },
+            ]}
+            onChange={setNativeSpeechVolume}
+          />
+
+          <Divider />
+
+          <SelectSetting
+            label="Voice Pace"
+            description="Choose a calm local speech rate."
+            value={nativeSpeechRate}
+            options={[
+              { value: '0.4', label: 'Measured' },
+              { value: '0.48', label: 'Balanced' },
+              { value: '0.56', label: 'Quick' },
+            ]}
+            onChange={setNativeSpeechRate}
+          />
+
+          <Divider />
+
+          <SelectSetting
+            label="Repeat Cooldown"
+            description="Coalesce repeated callouts for the same session and state."
+            value={nativeSpeechCooldown}
+            options={[
+              { value: '15', label: '15 seconds' },
+              { value: '30', label: '30 seconds' },
+              { value: '60', label: '1 minute' },
+            ]}
+            onChange={setNativeSpeechCooldown}
+          />
+
+          <Divider />
+
+          <SelectSetting
+            label="Quiet Hours Start"
+            description="Optional local hour when voice callouts pause."
+            value={nativeQuietStart}
+            options={[
+              { value: '', label: 'Off' },
+              { value: '20', label: '8 PM' },
+              { value: '21', label: '9 PM' },
+              { value: '22', label: '10 PM' },
+              { value: '23', label: '11 PM' },
+            ]}
+            onChange={setNativeQuietStart}
+          />
+
+          <Divider />
+
+          <SelectSetting
+            label="Quiet Hours End"
+            description="Optional local hour when voice callouts resume."
+            value={nativeQuietEnd}
+            options={[
+              { value: '', label: 'Off' },
+              { value: '6', label: '6 AM' },
+              { value: '7', label: '7 AM' },
+              { value: '8', label: '8 AM' },
+              { value: '9', label: '9 AM' },
+            ]}
+            onChange={setNativeQuietEnd}
+          />
+
+          <Divider />
+
+          <TextInputSetting
+            label="Codex Voice"
+            description="Optional macOS voice identifier. Leave blank to use CodeVetter's distinct Codex default."
+            value={nativeCodexVoice}
+            placeholder="System default"
+            onChange={setNativeCodexVoice}
+          />
+
+          <Divider />
+
+          <TextInputSetting
+            label="Claude Voice"
+            description="Optional macOS voice identifier. Leave blank to use CodeVetter's distinct Claude default."
+            value={nativeClaudeVoice}
+            placeholder="System default"
+            onChange={setNativeClaudeVoice}
+          />
+
+          <div className="mt-4 flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!isTauriAvailable() || agentIslandPreview === 'opening'}
+              onClick={() => {
+                setAgentIslandPreview('opening');
+                void previewNativeAgentIsland()
+                  .then((status) => {
+                    setAgentIslandStatus(status);
+                    setAgentIslandPreview('open');
+                  })
+                  .catch(() => setAgentIslandPreview('error'));
+              }}
+            >
+              {agentIslandPreview === 'opening' ? 'Opening…' : 'Preview Agent Island'}
+            </Button>
+            <span className="text-xs text-slate-500" aria-live="polite">
+              {agentIslandPreviewLabel}
+            </span>
+          </div>
+          <p className="mt-4 max-w-2xl text-xs leading-5 text-slate-500">
+            Inline replies and approvals appear only when CodeVetter has an exact,
+            provider-confirmed request channel. Ambiguous prompts stay focus-only and open the
+            matching Work conversation.
+          </p>
+          {agentIslandStatus && (
+            <div
+              className="mt-3 rounded-lg border border-[var(--cv-line)] bg-black/10 px-3 py-2 text-xs text-slate-400"
+              aria-live="polite"
+            >
+              <p>{agentIslandStatusLabel}</p>
+              {agentIslandStatus.receipts.at(-1) && (
+                <p className="mt-1 text-slate-500">
+                  Last action ·{' '}
+                  {[
+                    agentIslandStatus.receipts.at(-1)?.provider,
+                    agentIslandStatus.receipts.at(-1)?.action,
+                    agentIslandStatus.receipts.at(-1)?.disposition,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Menu Bar Tray
+        </h3>
+        <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+          <SelectSetting
+            label="Refresh Cadence"
+            description="How often the menu-bar tray polls each provider for live usage."
+            value={trayCadence}
+            options={[
+              { value: 'manual', label: 'Manual only' },
+              { value: '60', label: 'Every minute' },
+              { value: '120', label: 'Every 2 minutes' },
+              { value: '300', label: 'Every 5 minutes' },
+              { value: '900', label: 'Every 15 minutes' },
+            ]}
+            onChange={setTrayCadence}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  function renderUsageCategory() {
+    return (
+      <div className="flex flex-col">
+        <CategoryTitle
+          title="Usage"
+          description="Token usage and cost breakdown across sessions."
+        />
+        <p className="text-sm text-slate-500 px-1">Usage data is shown on the Home page.</p>
+
+        <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Codex history recovery
+        </h3>
+        <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-200">Additional Codex homes</p>
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
+                Import a Codex home, sessions folder, or archived sessions folder when older
+                transcripts live outside the active CODEX_HOME. Matching session identities are
+                deduplicated before reconciliation.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!isTauriAvailable()}
+              onClick={() => void addCodexImportRoot()}
+              className="shrink-0"
+            >
+              Import Codex history…
+            </Button>
+          </div>
+          {codexImportRoots.length === 0 ? (
+            <p className="mt-4 text-xs text-slate-600">
+              No additional roots configured. The active and archived folders under CODEX_HOME are
+              scanned automatically.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-2" aria-label="Additional Codex history roots">
+              {codexImportRoots.map((root) => (
+                <li
+                  key={root}
+                  className="flex min-w-0 items-center gap-3 rounded-lg border border-[var(--cv-line)] bg-black/10 px-3 py-2"
+                >
+                  <span
+                    className="min-w-0 flex-1 truncate font-mono text-xs text-slate-300"
+                    title={root}
+                  >
+                    {root}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeCodexImportRoot(root)}
+                    className="h-8 shrink-0 text-slate-400"
+                    aria-label={`Remove Codex history root ${root}`}
+                  >
+                    Remove
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {codexImportMessage && (
+            <p className="mt-3 text-xs text-slate-400" aria-live="polite">
+              {codexImportMessage}
+            </p>
+          )}
+          <p className="mt-3 text-xs leading-5 text-amber-200/70">
+            Return to Usage and choose Reconcile now after adding or restoring history.
+          </p>
+        </div>
+
+        <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Session archive retention
+        </h3>
+        <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+          <p className="text-sm font-medium text-slate-200">Dry run first</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            Plans remove only CodeVetter&apos;s indexed archive and FTS rows. Provider transcripts
+            stay untouched. Pinned sessions and evidence referenced by Work, Board, Review, Testing,
+            X-Ray, intent closure, or history remain protected.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="text-xs text-slate-400">
+              Maximum age in days
+              <Input
+                className="mt-1"
+                inputMode="numeric"
+                value={retentionAgeDays}
+                onChange={(event) => {
+                  setRetentionAgeDays(event.target.value);
+                  setRetentionPlan(null);
+                }}
+              />
+            </label>
+            <label className="text-xs text-slate-400">
+              Maximum archive size in MiB
+              <Input
+                className="mt-1"
+                inputMode="numeric"
+                value={retentionMaxMiB}
+                onChange={(event) => {
+                  setRetentionMaxMiB(event.target.value);
+                  setRetentionPlan(null);
+                }}
+              />
+            </label>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={retentionBusy || !isTauriAvailable()}
+              onClick={() => void createRetentionPlan()}
+            >
+              {retentionBusy ? 'Working…' : 'Preview cleanup'}
+            </Button>
+            <Button
+              type="button"
+              disabled={retentionBusy || !retentionPlan || retentionPlan.candidates.length === 0}
+              onClick={() => void applyRetentionPlan()}
+            >
+              Apply reviewed plan
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={retentionBusy || !isTauriAvailable()}
+              onClick={() => void compactArchive(false)}
+            >
+              Checkpoint archive
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={retentionBusy || !isTauriAvailable()}
+              onClick={() => void compactArchive(true)}
+            >
+              Checkpoint + VACUUM
+            </Button>
+          </div>
+          {retentionPlan && (
+            <div className="mt-4 rounded-lg border border-[var(--cv-line)] bg-black/10 p-3 text-xs text-slate-400">
+              <p aria-live="polite">
+                {retentionPlan.candidates.length} removable ·{' '}
+                {retentionPlan.candidateRows.toLocaleString()} rows ·{' '}
+                {formatStorageBytes(retentionPlan.candidateBytes)}
+              </p>
+              <p className="mt-1">
+                {retentionPlan.protected.length} protected · projected archive{' '}
+                {formatStorageBytes(retentionPlan.projectedBytes)}
+              </p>
+              {retentionPlan.protected.length > 0 && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-slate-300">
+                    Why sessions are protected
+                  </summary>
+                  <ul className="mt-2 space-y-1 pl-4">
+                    {retentionPlan.protected.slice(0, 12).map((entry) => (
+                      <li key={entry.sessionId}>
+                        <span className="font-mono">{entry.sessionId.slice(0, 12)}</span> ·{' '}
+                        {entry.reasons.join(', ')}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          )}
+          {retentionMessage && (
+            <p className="mt-3 text-xs text-slate-400" aria-live="polite">
+              {retentionMessage}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   function renderContent() {
     switch (activeCategory) {
       case 'general':
@@ -1113,469 +1728,10 @@ export default function Settings() {
         );
 
       case 'notifications':
-        return (
-          <div className="flex flex-col">
-            <CategoryTitle
-              title="Notifications"
-              description="Control which events trigger desktop notifications."
-            />
-            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
-              <Toggle
-                label="Review Completed"
-                description="Show a notification when a code review finishes."
-                enabled={notifyReviewDone}
-                onToggle={toggleNotifyReviewDone}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Agent Error"
-                description="Notify when an agent encounters an error or crashes."
-                enabled={notifyAgentError}
-                onToggle={toggleNotifyAgentError}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Task Completed"
-                description="Notify when an agent finishes a task."
-                enabled={notifyTaskComplete}
-                onToggle={toggleNotifyTaskComplete}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Provider Quota Thresholds"
-                description="Notify when provider windows or weekly baselines cross 75%, 90%, 99%, or 100%, and when weekly pace runs hot."
-                enabled={notifyQuotaThresholds}
-                onToggle={toggleNotifyQuotaThresholds}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Session Usage Thresholds"
-                description="Opt in to scan recent indexed sessions and notify when one crosses 90%, 99%, or 100% of its inferred context window."
-                enabled={notifySessionUsageThresholds}
-                onToggle={toggleNotifySessionUsageThresholds}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Notification Sounds"
-                description="Play a short tone for success, error, and info events."
-                enabled={notificationSound}
-                onToggle={toggleNotificationSound}
-              />
-            </div>
-
-            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Agent Island
-            </h3>
-            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
-              <Toggle
-                label="Native Agent Island"
-                description="Show a compact native Mac surface for active, completed, failed, and blocked Codex and Claude sessions."
-                enabled={nativeAgentIslandEnabled}
-                onToggle={toggleNativeAgentIslandEnabled}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Mute Voice Callouts"
-                description="Keep visual status available without speaking agent updates."
-                enabled={nativeSpeechMuted}
-                onToggle={toggleNativeSpeechMuted}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Speak Completions"
-                description="Announce the provider and project when a turn finishes."
-                enabled={nativeSpeakCompletion}
-                onToggle={toggleNativeSpeakCompletion}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Speak Attention Requests"
-                description="Announce confirmed questions and permission requests."
-                enabled={nativeSpeakAttention}
-                onToggle={toggleNativeSpeakAttention}
-              />
-
-              <Divider />
-
-              <Toggle
-                label="Speak Failures"
-                description="Announce when an owned agent session fails."
-                enabled={nativeSpeakFailure}
-                onToggle={toggleNativeSpeakFailure}
-              />
-
-              <Divider />
-
-              <SelectSetting
-                label="Voice Volume"
-                description="Set the local system voice volume for Agent Island callouts."
-                value={nativeSpeechVolume}
-                options={[
-                  { value: '0.5', label: 'Quiet' },
-                  { value: '0.8', label: 'Balanced' },
-                  { value: '1', label: 'Full' },
-                ]}
-                onChange={setNativeSpeechVolume}
-              />
-
-              <Divider />
-
-              <SelectSetting
-                label="Voice Pace"
-                description="Choose a calm local speech rate."
-                value={nativeSpeechRate}
-                options={[
-                  { value: '0.4', label: 'Measured' },
-                  { value: '0.48', label: 'Balanced' },
-                  { value: '0.56', label: 'Quick' },
-                ]}
-                onChange={setNativeSpeechRate}
-              />
-
-              <Divider />
-
-              <SelectSetting
-                label="Repeat Cooldown"
-                description="Coalesce repeated callouts for the same session and state."
-                value={nativeSpeechCooldown}
-                options={[
-                  { value: '15', label: '15 seconds' },
-                  { value: '30', label: '30 seconds' },
-                  { value: '60', label: '1 minute' },
-                ]}
-                onChange={setNativeSpeechCooldown}
-              />
-
-              <Divider />
-
-              <SelectSetting
-                label="Quiet Hours Start"
-                description="Optional local hour when voice callouts pause."
-                value={nativeQuietStart}
-                options={[
-                  { value: '', label: 'Off' },
-                  { value: '20', label: '8 PM' },
-                  { value: '21', label: '9 PM' },
-                  { value: '22', label: '10 PM' },
-                  { value: '23', label: '11 PM' },
-                ]}
-                onChange={setNativeQuietStart}
-              />
-
-              <Divider />
-
-              <SelectSetting
-                label="Quiet Hours End"
-                description="Optional local hour when voice callouts resume."
-                value={nativeQuietEnd}
-                options={[
-                  { value: '', label: 'Off' },
-                  { value: '6', label: '6 AM' },
-                  { value: '7', label: '7 AM' },
-                  { value: '8', label: '8 AM' },
-                  { value: '9', label: '9 AM' },
-                ]}
-                onChange={setNativeQuietEnd}
-              />
-
-              <Divider />
-
-              <TextInputSetting
-                label="Codex Voice"
-                description="Optional macOS voice identifier. Leave blank to use CodeVetter's distinct Codex default."
-                value={nativeCodexVoice}
-                placeholder="System default"
-                onChange={setNativeCodexVoice}
-              />
-
-              <Divider />
-
-              <TextInputSetting
-                label="Claude Voice"
-                description="Optional macOS voice identifier. Leave blank to use CodeVetter's distinct Claude default."
-                value={nativeClaudeVoice}
-                placeholder="System default"
-                onChange={setNativeClaudeVoice}
-              />
-
-              <div className="mt-4 flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!isTauriAvailable() || agentIslandPreview === 'opening'}
-                  onClick={() => {
-                    setAgentIslandPreview('opening');
-                    void previewNativeAgentIsland()
-                      .then((status) => {
-                        setAgentIslandStatus(status);
-                        setAgentIslandPreview('open');
-                      })
-                      .catch(() => setAgentIslandPreview('error'));
-                  }}
-                >
-                  {agentIslandPreview === 'opening' ? 'Opening…' : 'Preview Agent Island'}
-                </Button>
-                <span className="text-xs text-slate-500" aria-live="polite">
-                  {agentIslandPreview === 'open'
-                    ? 'Preview opened'
-                    : agentIslandPreview === 'error'
-                      ? 'Build the native helper, then try again'
-                      : 'Runs locally and remains off until enabled'}
-                </span>
-              </div>
-              <p className="mt-4 max-w-2xl text-xs leading-5 text-slate-500">
-                Inline replies and approvals appear only when CodeVetter has an exact,
-                provider-confirmed request channel. Ambiguous prompts stay focus-only and open the
-                matching Work conversation.
-              </p>
-              {agentIslandStatus && (
-                <div
-                  className="mt-3 rounded-lg border border-[var(--cv-line)] bg-black/10 px-3 py-2 text-xs text-slate-400"
-                  aria-live="polite"
-                >
-                  <p>
-                    {agentIslandStatus.connected
-                      ? `Connected · ${agentIslandStatus.session_count} session${agentIslandStatus.session_count === 1 ? '' : 's'}`
-                      : agentIslandStatus.last_error
-                        ? agentIslandStatus.last_error
-                        : nativeAgentIslandEnabled
-                          ? 'Ready · launches with the next owned session'
-                          : 'Off · existing Work notifications remain active'}
-                  </p>
-                  {agentIslandStatus.receipts.at(-1) && (
-                    <p className="mt-1 text-slate-500">
-                      Last action ·{' '}
-                      {[
-                        agentIslandStatus.receipts.at(-1)?.provider,
-                        agentIslandStatus.receipts.at(-1)?.action,
-                        agentIslandStatus.receipts.at(-1)?.disposition,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Menu Bar Tray
-            </h3>
-            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
-              <SelectSetting
-                label="Refresh Cadence"
-                description="How often the menu-bar tray polls each provider for live usage."
-                value={trayCadence}
-                options={[
-                  { value: 'manual', label: 'Manual only' },
-                  { value: '60', label: 'Every minute' },
-                  { value: '120', label: 'Every 2 minutes' },
-                  { value: '300', label: 'Every 5 minutes' },
-                  { value: '900', label: 'Every 15 minutes' },
-                ]}
-                onChange={setTrayCadence}
-              />
-            </div>
-          </div>
-        );
+        return renderNotificationsCategory();
 
       case 'usage':
-        return (
-          <div className="flex flex-col">
-            <CategoryTitle
-              title="Usage"
-              description="Token usage and cost breakdown across sessions."
-            />
-            <p className="text-sm text-slate-500 px-1">Usage data is shown on the Home page.</p>
-
-            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Codex history recovery
-            </h3>
-            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-200">Additional Codex homes</p>
-                  <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
-                    Import a Codex home, sessions folder, or archived sessions folder when older
-                    transcripts live outside the active CODEX_HOME. Matching session identities are
-                    deduplicated before reconciliation.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!isTauriAvailable()}
-                  onClick={() => void addCodexImportRoot()}
-                  className="shrink-0"
-                >
-                  Import Codex history…
-                </Button>
-              </div>
-              {codexImportRoots.length === 0 ? (
-                <p className="mt-4 text-xs text-slate-600">
-                  No additional roots configured. The active and archived folders under CODEX_HOME
-                  are scanned automatically.
-                </p>
-              ) : (
-                <ul className="mt-4 space-y-2" aria-label="Additional Codex history roots">
-                  {codexImportRoots.map((root) => (
-                    <li
-                      key={root}
-                      className="flex min-w-0 items-center gap-3 rounded-lg border border-[var(--cv-line)] bg-black/10 px-3 py-2"
-                    >
-                      <span
-                        className="min-w-0 flex-1 truncate font-mono text-xs text-slate-300"
-                        title={root}
-                      >
-                        {root}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeCodexImportRoot(root)}
-                        className="h-8 shrink-0 text-slate-400"
-                        aria-label={`Remove Codex history root ${root}`}
-                      >
-                        Remove
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {codexImportMessage && (
-                <p className="mt-3 text-xs text-slate-400" aria-live="polite">
-                  {codexImportMessage}
-                </p>
-              )}
-              <p className="mt-3 text-xs leading-5 text-amber-200/70">
-                Return to Usage and choose Reconcile now after adding or restoring history.
-              </p>
-            </div>
-
-            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Session archive retention
-            </h3>
-            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
-              <p className="text-sm font-medium text-slate-200">Dry run first</p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                Plans remove only CodeVetter&apos;s indexed archive and FTS rows. Provider
-                transcripts stay untouched. Pinned sessions and evidence referenced by Work, Board,
-                Review, Testing, X-Ray, intent closure, or history remain protected.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <label className="text-xs text-slate-400">
-                  Maximum age in days
-                  <Input
-                    className="mt-1"
-                    inputMode="numeric"
-                    value={retentionAgeDays}
-                    onChange={(event) => {
-                      setRetentionAgeDays(event.target.value);
-                      setRetentionPlan(null);
-                    }}
-                  />
-                </label>
-                <label className="text-xs text-slate-400">
-                  Maximum archive size in MiB
-                  <Input
-                    className="mt-1"
-                    inputMode="numeric"
-                    value={retentionMaxMiB}
-                    onChange={(event) => {
-                      setRetentionMaxMiB(event.target.value);
-                      setRetentionPlan(null);
-                    }}
-                  />
-                </label>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={retentionBusy || !isTauriAvailable()}
-                  onClick={() => void createRetentionPlan()}
-                >
-                  {retentionBusy ? 'Working…' : 'Preview cleanup'}
-                </Button>
-                <Button
-                  type="button"
-                  disabled={
-                    retentionBusy || !retentionPlan || retentionPlan.candidates.length === 0
-                  }
-                  onClick={() => void applyRetentionPlan()}
-                >
-                  Apply reviewed plan
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={retentionBusy || !isTauriAvailable()}
-                  onClick={() => void compactArchive(false)}
-                >
-                  Checkpoint archive
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={retentionBusy || !isTauriAvailable()}
-                  onClick={() => void compactArchive(true)}
-                >
-                  Checkpoint + VACUUM
-                </Button>
-              </div>
-              {retentionPlan && (
-                <div className="mt-4 rounded-lg border border-[var(--cv-line)] bg-black/10 p-3 text-xs text-slate-400">
-                  <p aria-live="polite">
-                    {retentionPlan.candidates.length} removable ·{' '}
-                    {retentionPlan.candidateRows.toLocaleString()} rows ·{' '}
-                    {formatStorageBytes(retentionPlan.candidateBytes)}
-                  </p>
-                  <p className="mt-1">
-                    {retentionPlan.protected.length} protected · projected archive{' '}
-                    {formatStorageBytes(retentionPlan.projectedBytes)}
-                  </p>
-                  {retentionPlan.protected.length > 0 && (
-                    <details className="mt-2">
-                      <summary className="cursor-pointer text-slate-300">
-                        Why sessions are protected
-                      </summary>
-                      <ul className="mt-2 space-y-1 pl-4">
-                        {retentionPlan.protected.slice(0, 12).map((entry) => (
-                          <li key={entry.sessionId}>
-                            <span className="font-mono">{entry.sessionId.slice(0, 12)}</span> ·{' '}
-                            {entry.reasons.join(', ')}
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
-                  )}
-                </div>
-              )}
-              {retentionMessage && (
-                <p className="mt-3 text-xs text-slate-400" aria-live="polite">
-                  {retentionMessage}
-                </p>
-              )}
-            </div>
-          </div>
-        );
+        return renderUsageCategory();
 
       case 'rubrics':
         return <Rubrics embedded />;
@@ -1589,156 +1745,7 @@ export default function Settings() {
         return <AgentMemories />;
 
       case 'about':
-        return (
-          <div className="flex flex-col">
-            <CategoryTitle title="About" description="Application information and links." />
-            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
-              {/* App identity */}
-              <div className="flex items-center gap-4 pb-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-                  <span className="text-2xl font-bold text-amber-400">C</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-100">CodeVetter</h3>
-                  <p className="text-sm text-slate-500">
-                    AI-powered code review &amp; agent orchestration
-                  </p>
-                </div>
-              </div>
-
-              <Divider />
-
-              {/* Version & build */}
-              <div className="flex flex-col gap-2 py-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Version</span>
-                  <span className="mono text-sm text-slate-200">{appVersion || '—'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Build</span>
-                  <span className="text-sm text-slate-200">Tauri 2 + React + Rust</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">License</span>
-                  <span className="text-sm text-slate-200">ISC</span>
-                </div>
-              </div>
-
-              <Divider />
-
-              {/* Check for updates */}
-              <div className="flex items-center justify-between py-4">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm text-slate-400">Updates</span>
-                  <span className="text-xs text-slate-500">
-                    {updateState === 'checking'
-                      ? 'Checking for updates…'
-                      : updateState === 'available'
-                        ? `Update available: v${pendingUpdate?.version}`
-                        : updateState === 'latest'
-                          ? "You're on the latest version."
-                          : updateState === 'installing'
-                            ? 'Downloading & installing…'
-                            : updateState === 'error'
-                              ? "Couldn't check — try again."
-                              : 'Check GitHub Releases for a newer build.'}
-                  </span>
-                </div>
-                {updateState === 'available' ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={installUpdate}
-                    className="h-auto px-3 py-1 text-xs text-amber-400 hover:text-amber-300"
-                  >
-                    Install &amp; relaunch
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={checkForUpdates}
-                    disabled={updateState === 'checking' || updateState === 'installing'}
-                    className="h-auto px-3 py-1 text-xs text-slate-400 hover:text-slate-200"
-                  >
-                    {updateState === 'checking' ? 'Checking…' : 'Check for updates'}
-                  </Button>
-                )}
-              </div>
-
-              <Divider />
-
-              {/* Links */}
-              <div className="flex flex-col gap-2 py-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                  Links
-                </h4>
-                <a
-                  href="https://github.com/sarthak-codevetter/code-reviewer"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
-                >
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                  </svg>
-                  GitHub Repository
-                </a>
-                <a
-                  href="https://codevetter.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.92 17.92 0 0 1-8.716-2.247m0 0A8.966 8.966 0 0 1 3 12c0-1.264.26-2.466.732-3.558"
-                    />
-                  </svg>
-                  Landing Page
-                </a>
-                <a
-                  href="https://docs.codevetter.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                    />
-                  </svg>
-                  Documentation
-                </a>
-              </div>
-
-              <Divider />
-
-              {/* Credits */}
-              <div className="pt-4">
-                <p className="text-sm text-slate-400">
-                  Built by <span className="text-slate-200">Sarthak Agrawal</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        );
+        return renderAboutCategory();
     }
   }
 
