@@ -582,72 +582,56 @@ function buildReviewedPathSet(review: VerificationTimelineInput['review']): Set<
   return new Set(paths);
 }
 
-function buildClaimCheckTimelineAnchors(
-  input: VerificationTimelineInput,
-  commandAnchors: VerificationTimelineAnchor[],
-  qaComparison: QaPostFixComparison | null | undefined,
-  evidenceTotal: number
+function buildFailedStaleCommandClaimAnchors(
+  commandAnchors: VerificationTimelineAnchor[]
 ): VerificationTimelineAnchor[] {
-  const anchors: VerificationTimelineAnchor[] = [];
-  const runId = input.runId?.trim() || 'active-review';
-  const findingsCount = Math.max(0, input.review?.findingsCount ?? 0);
-  const uncheckedCount = Math.max(0, findingsCount - evidenceTotal);
-  const changedFileOrigins = (input.fixResult?.changedFileOrigins ?? [])
-    .map((file) => ({
-      path: normalizeTimelineRelativePath(file.path),
-      status: file.status ?? 'modified',
-    }))
-    .filter((file) => file.path.length > 0);
-  const changedFileCount = input.fixResult?.changedFiles ?? changedFileOrigins.length;
-  const passedVerificationCommandCount = commandAnchors.filter(
-    (anchor) => anchor.status === 'passed' && isVerificationCommandLabel(anchor.label)
-  ).length;
-  const successfulQaProofCount =
-    (input.qa?.latest?.pass ? 1 : 0) +
-    (qaComparison && qaComparisonStatusToTimelineStatus(qaComparison.status) === 'done' ? 1 : 0);
-
-  commandAnchors
+  return commandAnchors
     .filter((anchor) => anchor.status === 'failed' || anchor.status === 'stale')
-    .forEach((anchor) => {
-      anchors.push({
-        ...anchor,
-        id: `claim:${anchor.id}`,
-        label:
-          anchor.status === 'failed'
-            ? `Claim/test mismatch: ${anchor.label}`
-            : `Stale verification evidence: ${anchor.label}`,
-      });
-    });
+    .map((anchor) => ({
+      ...anchor,
+      id: `claim:${anchor.id}`,
+      label:
+        anchor.status === 'failed'
+          ? `Claim/test mismatch: ${anchor.label}`
+          : `Stale verification evidence: ${anchor.label}`,
+    }));
+}
 
-  commandAnchors
+function buildUnknownCommandClaimAnchors(
+  commandAnchors: VerificationTimelineAnchor[]
+): VerificationTimelineAnchor[] {
+  return commandAnchors
     .filter((anchor) => anchor.status === 'unknown' && isVerificationCommandLabel(anchor.label))
     .slice(0, 2)
-    .forEach((anchor) => {
-      anchors.push({
-        ...anchor,
-        id: `claim:unknown-command:${anchor.id}`,
-        label: `Unverified command outcome: ${anchor.label}`,
-        status: 'unknown',
-        contextExcerpt: anchor.contextExcerpt?.length
-          ? anchor.contextExcerpt
-          : [
-              'Command was observed without a pass/fail status; rerun it or attach its log before trusting the claim.',
-            ],
-      });
-    });
+    .map((anchor) => ({
+      ...anchor,
+      id: `claim:unknown-command:${anchor.id}`,
+      label: `Unverified command outcome: ${anchor.label}`,
+      status: 'unknown' as const,
+      contextExcerpt: anchor.contextExcerpt?.length
+        ? anchor.contextExcerpt
+        : [
+            'Command was observed without a pass/fail status; rerun it or attach its log before trusting the claim.',
+          ],
+    }));
+}
 
+function buildAgentClaimAnchors(
+  input: VerificationTimelineInput,
+  commandAnchors: VerificationTimelineAnchor[],
+  runId: string
+): VerificationTimelineAnchor[] {
   const contradictingCommand = commandAnchors.find(
     (anchor) => anchor.status === 'failed' || anchor.status === 'stale'
   );
-
-  (input.history?.agent_claims ?? []).slice(0, 2).forEach((claim, idx) => {
+  return (input.history?.agent_claims ?? []).slice(0, 2).map((claim, idx) => {
     const id = claim.event_id ?? claim.talk_id ?? claim.session_id ?? `${runId}:agent-claim:${idx}`;
     const hasCommandContradiction = Boolean(
       contradictingCommand && isPositiveVerificationClaim(claim.claim)
     );
     const status: VerificationTimelineAnchor['status'] =
       hasCommandContradiction && contradictingCommand ? contradictingCommand.status : 'unknown';
-    anchors.push({
+    return {
       id: `claim:agent:${id}`,
       label: hasCommandContradiction
         ? `Contradicted agent claim: ${claim.claim}`
@@ -662,23 +646,36 @@ function buildClaimCheckTimelineAnchors(
       eventId: claim.event_id ?? null,
       sessionId: claim.session_id ?? claim.talk_id ?? runId,
       jump: hasCommandContradiction ? (contradictingCommand?.jump ?? null) : null,
-    });
+    };
   });
+}
 
-  if (uncheckedCount > 0) {
-    anchors.push({
+function buildUncheckedEvidenceClaimAnchor(
+  runId: string,
+  uncheckedCount: number
+): VerificationTimelineAnchor[] {
+  if (uncheckedCount <= 0) return [];
+  return [
+    {
       id: `${runId}:claim:unchecked-evidence`,
       label: `${uncheckedCount} finding${uncheckedCount === 1 ? '' : 's'} without verification evidence`,
       source: 'review:evidence',
       status: 'unknown',
       eventId: `${runId}:claim:unchecked-evidence`,
       sessionId: runId,
-    });
-  }
+    },
+  ];
+}
 
-  if (input.qa?.latest && !input.qa.latest.pass && !qaComparison) {
-    const artifact = latestQaArtifact(input.qa.latest);
-    anchors.push({
+function buildLatestQaFailedClaimAnchor(
+  input: VerificationTimelineInput,
+  runId: string,
+  qaComparison: QaPostFixComparison | null | undefined
+): VerificationTimelineAnchor[] {
+  if (!input.qa?.latest || input.qa.latest.pass || qaComparison) return [];
+  const artifact = latestQaArtifact(input.qa.latest);
+  return [
+    {
       id: `${runId}:claim:latest-qa-failed`,
       label: `Latest QA still failing: ${input.qa.latest.route ?? input.qa.latest.goal}`,
       source: `qa:${input.qa.latest.runnerType}`,
@@ -694,50 +691,67 @@ function buildClaimCheckTimelineAnchors(
             path: artifact,
           }
         : null,
-    });
-  }
+    },
+  ];
+}
 
-  const reviewedPaths = buildReviewedPathSet(input.review ?? null);
-  if (input.fixResult && reviewedPaths.size > 0 && changedFileOrigins.length > 0) {
-    const outsideReviewedPaths = changedFileOrigins.filter((file) => !reviewedPaths.has(file.path));
-    if (outsideReviewedPaths.length > 0) {
-      const source = input.fixResult.agent ? `fix:${input.fixResult.agent}` : 'fix';
-      anchors.push({
-        id: `${runId}:claim:scope-drift`,
-        label: `Possible scope drift: ${outsideReviewedPaths.length} edited file${outsideReviewedPaths.length === 1 ? '' : 's'} outside reviewed findings`,
-        source,
-        status: 'unknown',
-        contextExcerpt: [
-          `outside reviewed findings: ${outsideReviewedPaths
-            .slice(0, 3)
-            .map((file) => file.path)
-            .join(', ')}`,
-          `reviewed finding files: ${Array.from(reviewedPaths).slice(0, 3).join(', ')}`,
-        ],
-        sourcePath: input.fixResult.worktreePath ?? null,
-        eventId: `${runId}:claim:scope-drift`,
-        sessionId: runId,
-        artifact: outsideReviewedPaths[0]?.path ?? null,
-        jump:
-          input.fixResult.worktreePath && outsideReviewedPaths[0]
-            ? {
-                kind: 'file',
-                label: 'Open first out-of-scope edit',
-                path: joinTimelinePath(input.fixResult.worktreePath, outsideReviewedPaths[0].path),
-              }
-            : null,
-      });
-    }
-  }
+function buildScopeDriftClaimAnchor(
+  input: VerificationTimelineInput,
+  runId: string,
+  reviewedPaths: Set<string>,
+  changedFileOrigins: { path: string; status: string }[]
+): VerificationTimelineAnchor[] {
+  if (!input.fixResult || reviewedPaths.size === 0 || changedFileOrigins.length === 0) return [];
+  const outsideReviewedPaths = changedFileOrigins.filter((file) => !reviewedPaths.has(file.path));
+  if (outsideReviewedPaths.length === 0) return [];
+  const source = input.fixResult.agent ? `fix:${input.fixResult.agent}` : 'fix';
+  return [
+    {
+      id: `${runId}:claim:scope-drift`,
+      label: `Possible scope drift: ${outsideReviewedPaths.length} edited file${outsideReviewedPaths.length === 1 ? '' : 's'} outside reviewed findings`,
+      source,
+      status: 'unknown',
+      contextExcerpt: [
+        `outside reviewed findings: ${outsideReviewedPaths
+          .slice(0, 3)
+          .map((file) => file.path)
+          .join(', ')}`,
+        `reviewed finding files: ${Array.from(reviewedPaths).slice(0, 3).join(', ')}`,
+      ],
+      sourcePath: input.fixResult.worktreePath ?? null,
+      eventId: `${runId}:claim:scope-drift`,
+      sessionId: runId,
+      artifact: outsideReviewedPaths[0]?.path ?? null,
+      jump:
+        input.fixResult.worktreePath && outsideReviewedPaths[0]
+          ? {
+              kind: 'file',
+              label: 'Open first out-of-scope edit',
+              path: joinTimelinePath(input.fixResult.worktreePath, outsideReviewedPaths[0].path),
+            }
+          : null,
+    },
+  ];
+}
 
+function buildEditsWithoutEvidenceClaimAnchor(
+  input: VerificationTimelineInput,
+  runId: string,
+  changedFileCount: number,
+  evidenceTotal: number,
+  passedVerificationCommandCount: number,
+  successfulQaProofCount: number
+): VerificationTimelineAnchor[] {
   if (
-    input.fixResult &&
-    changedFileCount >= 3 &&
-    evidenceTotal === 0 &&
-    passedVerificationCommandCount + successfulQaProofCount === 0
-  ) {
-    const source = input.fixResult.agent ? `fix:${input.fixResult.agent}` : 'fix';
-    anchors.push({
+    !input.fixResult ||
+    changedFileCount < 3 ||
+    evidenceTotal !== 0 ||
+    passedVerificationCommandCount + successfulQaProofCount !== 0
+  )
+    return [];
+  const source = input.fixResult.agent ? `fix:${input.fixResult.agent}` : 'fix';
+  return [
+    {
       id: `${runId}:claim:edits-without-evidence-progress`,
       label: `Repeated edits without evidence progress: ${changedFileCount} files changed, 0 verified findings`,
       source,
@@ -757,36 +771,49 @@ function buildClaimCheckTimelineAnchors(
             path: input.fixResult.worktreePath,
           }
         : null,
-    });
-  }
+    },
+  ];
+}
 
-  if (qaComparison) {
-    const status = qaComparisonStatusToTimelineStatus(qaComparison.status);
-    if (status !== 'done') {
-      const afterArtifact = qaComparison.after ? qaRunAnchorArtifact(qaComparison.after) : null;
-      const beforeArtifact = qaRunAnchorArtifact(qaComparison.before);
-      const artifact = afterArtifact ?? beforeArtifact;
-      anchors.push({
-        id: `${qaComparison.flowKey}:claim:${qaComparison.status}`,
-        label: `Post-fix QA ${qaComparison.status.replace('_', ' ')}: ${qaComparison.summary}`,
-        source: `qa:${qaComparison.after?.runnerType ?? qaComparison.before.runnerType}`,
-        status: status === 'blocked' ? 'failed' : 'unknown',
-        sourcePath: artifact,
-        eventId: `${qaComparison.flowKey}:claim:${qaComparison.status}`,
-        sessionId: qaComparison.flowKey,
-        artifact,
-        jump: artifact
-          ? {
-              kind: 'artifact',
-              label: 'Open QA comparison artifact',
-              path: artifact,
-            }
-          : null,
-      });
-    }
-  } else if (input.fixResult?.success === true) {
-    const source = input.fixResult.agent ? `fix:${input.fixResult.agent}` : 'fix';
-    anchors.push({
+function buildQaComparisonClaimAnchor(
+  qaComparison: QaPostFixComparison | null | undefined
+): VerificationTimelineAnchor[] {
+  if (!qaComparison) return [];
+  const status = qaComparisonStatusToTimelineStatus(qaComparison.status);
+  if (status === 'done') return [];
+  const afterArtifact = qaComparison.after ? qaRunAnchorArtifact(qaComparison.after) : null;
+  const beforeArtifact = qaRunAnchorArtifact(qaComparison.before);
+  const artifact = afterArtifact ?? beforeArtifact;
+  return [
+    {
+      id: `${qaComparison.flowKey}:claim:${qaComparison.status}`,
+      label: `Post-fix QA ${qaComparison.status.replace('_', ' ')}: ${qaComparison.summary}`,
+      source: `qa:${qaComparison.after?.runnerType ?? qaComparison.before.runnerType}`,
+      status: status === 'blocked' ? 'failed' : 'unknown',
+      sourcePath: artifact,
+      eventId: `${qaComparison.flowKey}:claim:${qaComparison.status}`,
+      sessionId: qaComparison.flowKey,
+      artifact,
+      jump: artifact
+        ? {
+            kind: 'artifact',
+            label: 'Open QA comparison artifact',
+            path: artifact,
+          }
+        : null,
+    },
+  ];
+}
+
+function buildPostFixQaMissingClaimAnchor(
+  input: VerificationTimelineInput,
+  runId: string,
+  qaComparison: QaPostFixComparison | null | undefined
+): VerificationTimelineAnchor[] {
+  if (qaComparison || input.fixResult?.success !== true) return [];
+  const source = input.fixResult.agent ? `fix:${input.fixResult.agent}` : 'fix';
+  return [
+    {
       id: `${runId}:claim:post-fix-qa-missing`,
       label: 'Fix completed without same-flow post-fix QA comparison',
       source,
@@ -802,16 +829,28 @@ function buildClaimCheckTimelineAnchors(
             path: input.fixResult.worktreePath,
           }
         : null,
-    });
-  }
+    },
+  ];
+}
 
+function buildExecutableProofMissingClaimAnchor(
+  input: VerificationTimelineInput,
+  runId: string,
+  priorAnchors: VerificationTimelineAnchor[],
+  findingsCount: number,
+  evidenceTotal: number,
+  passedVerificationCommandCount: number,
+  successfulQaProofCount: number
+): VerificationTimelineAnchor[] {
   if (
-    anchors.length === 0 &&
-    findingsCount > 0 &&
-    evidenceTotal >= findingsCount &&
-    passedVerificationCommandCount + successfulQaProofCount === 0
-  ) {
-    anchors.push({
+    priorAnchors.length !== 0 ||
+    findingsCount <= 0 ||
+    evidenceTotal < findingsCount ||
+    passedVerificationCommandCount + successfulQaProofCount !== 0
+  )
+    return [];
+  return [
+    {
       id: `${runId}:claim:executable-proof-missing`,
       label: `Executable proof missing: ${evidenceTotal} evidence status${evidenceTotal === 1 ? '' : 'es'} for ${findingsCount} finding${findingsCount === 1 ? '' : 's'}`,
       source: 'review:evidence-strength',
@@ -822,10 +861,66 @@ function buildClaimCheckTimelineAnchors(
       ],
       eventId: `${runId}:claim:executable-proof-missing`,
       sessionId: runId,
-    });
-  }
+    },
+  ];
+}
 
-  return anchors.sort((a, b) => statusRank(a.status) - statusRank(b.status)).slice(0, 4);
+function buildClaimCheckTimelineAnchors(
+  input: VerificationTimelineInput,
+  commandAnchors: VerificationTimelineAnchor[],
+  qaComparison: QaPostFixComparison | null | undefined,
+  evidenceTotal: number
+): VerificationTimelineAnchor[] {
+  const runId = input.runId?.trim() || 'active-review';
+  const findingsCount = Math.max(0, input.review?.findingsCount ?? 0);
+  const uncheckedCount = Math.max(0, findingsCount - evidenceTotal);
+  const changedFileOrigins = (input.fixResult?.changedFileOrigins ?? [])
+    .map((file) => ({
+      path: normalizeTimelineRelativePath(file.path),
+      status: file.status ?? 'modified',
+    }))
+    .filter((file) => file.path.length > 0);
+  const changedFileCount = input.fixResult?.changedFiles ?? changedFileOrigins.length;
+  const passedVerificationCommandCount = commandAnchors.filter(
+    (anchor) => anchor.status === 'passed' && isVerificationCommandLabel(anchor.label)
+  ).length;
+  const successfulQaProofCount =
+    (input.qa?.latest?.pass ? 1 : 0) +
+    (qaComparison && qaComparisonStatusToTimelineStatus(qaComparison.status) === 'done' ? 1 : 0);
+  const reviewedPaths = buildReviewedPathSet(input.review ?? null);
+
+  const baseAnchors: VerificationTimelineAnchor[] = [
+    ...buildFailedStaleCommandClaimAnchors(commandAnchors),
+    ...buildUnknownCommandClaimAnchors(commandAnchors),
+    ...buildAgentClaimAnchors(input, commandAnchors, runId),
+    ...buildUncheckedEvidenceClaimAnchor(runId, uncheckedCount),
+    ...buildLatestQaFailedClaimAnchor(input, runId, qaComparison),
+    ...buildScopeDriftClaimAnchor(input, runId, reviewedPaths, changedFileOrigins),
+    ...buildEditsWithoutEvidenceClaimAnchor(
+      input,
+      runId,
+      changedFileCount,
+      evidenceTotal,
+      passedVerificationCommandCount,
+      successfulQaProofCount
+    ),
+    ...buildQaComparisonClaimAnchor(qaComparison),
+    ...buildPostFixQaMissingClaimAnchor(input, runId, qaComparison),
+  ];
+
+  const executableProofMissing = buildExecutableProofMissingClaimAnchor(
+    input,
+    runId,
+    baseAnchors,
+    findingsCount,
+    evidenceTotal,
+    passedVerificationCommandCount,
+    successfulQaProofCount
+  );
+
+  return [...baseAnchors, ...executableProofMissing]
+    .sort((a, b) => statusRank(a.status) - statusRank(b.status))
+    .slice(0, 4);
 }
 
 function boundedUniqueIndexes(indexes: Array<number | null | undefined>, count: number): number[] {
@@ -961,6 +1056,217 @@ export function buildQaPostFixComparison(
   };
 }
 
+function buildReviewTimelineJump(
+  selectedFindingIndex: number | null,
+  firstFindingPath: string | undefined,
+  firstFindingLine: number | null
+): VerificationTimelineJumpTarget | null {
+  if (selectedFindingIndex != null) {
+    return {
+      kind: 'finding',
+      label: `Open finding ${selectedFindingIndex + 1}`,
+      findingIndex: selectedFindingIndex,
+    };
+  }
+  if (firstFindingPath) {
+    return {
+      kind: 'file',
+      label: 'Open first finding file',
+      path: firstFindingPath,
+      line: firstFindingLine,
+    };
+  }
+  return null;
+}
+
+function buildQaTimelineJump(
+  firstQaArtifact: string | null,
+  qaComparisonAnchors: VerificationTimelineAnchor[]
+): VerificationTimelineJumpTarget | null {
+  if (firstQaArtifact) {
+    return {
+      kind: 'artifact',
+      label: 'Open QA artifact',
+      path: firstQaArtifact,
+    };
+  }
+  return qaComparisonAnchors.find((anchor) => anchor.jump)?.jump ?? null;
+}
+
+function computeQaTimelineStatus(
+  input: VerificationTimelineInput,
+  qaComparison: QaPostFixComparison | null,
+  latestQa: NonNullable<VerificationTimelineInput['qa']>['latest']
+): VerificationTimelineStatus {
+  if (input.qa?.running) return 'active';
+  if (qaComparison) return qaComparisonStatusToTimelineStatus(qaComparison.status);
+  if (latestQa) return latestQa.pass ? 'done' : 'blocked';
+  return 'idle';
+}
+
+function computeQaTimelineDetail(
+  qaComparison: QaPostFixComparison | null,
+  latestQa: NonNullable<VerificationTimelineInput['qa']>['latest']
+): string {
+  if (qaComparison) {
+    return `${qaComparison.status.replace('_', ' ')} · ${qaComparison.summary}`;
+  }
+  if (latestQa) {
+    return `${latestQa.runnerType} ${latestQa.pass ? 'passed' : 'failed'} ${latestQa.route ?? latestQa.goal} in ${latestQa.durationMs}ms`;
+  }
+  return 'No user-flow run attached';
+}
+
+function buildFixPacketJump(fixFindingIndex: number | null): VerificationTimelineJumpTarget | null {
+  if (fixFindingIndex == null) return null;
+  return {
+    kind: 'finding',
+    label: `Open selected finding ${fixFindingIndex + 1}`,
+    findingIndex: fixFindingIndex,
+  };
+}
+
+function buildWorktreeJump(
+  worktreePath: string | undefined,
+  editOriginAnchors: VerificationTimelineAnchor[]
+): VerificationTimelineJumpTarget | null {
+  if (worktreePath) {
+    return {
+      kind: 'artifact',
+      label: 'Open fix worktree',
+      path: worktreePath,
+    };
+  }
+  return editOriginAnchors[0]?.jump ?? null;
+}
+
+function computeWorktreeDetail(
+  input: VerificationTimelineInput,
+  worktreeFallback: boolean,
+  worktreePath: string | undefined,
+  editOriginAnchors: VerificationTimelineAnchor[],
+  changedFilesCount: number
+): string {
+  if (worktreeFallback) return 'Agent fell back to primary repo';
+  if (!input.fixResult) return 'No fix run yet';
+  const editOriginText =
+    editOriginAnchors.length > 0
+      ? ` · ${editOriginAnchors.length} edit origin${editOriginAnchors.length === 1 ? '' : 's'}`
+      : '';
+  const worktreeText = worktreePath ? ` · ${worktreePath}` : '';
+  return `${input.fixResult.findingsFixed ?? 0} fixed across ${changedFilesCount} file${changedFilesCount === 1 ? '' : 's'}${editOriginText}${worktreeText}`;
+}
+
+function computeProofSignalDetail(
+  passedVerificationCommandCount: number,
+  successfulQaProofCount: number
+): string {
+  return [
+    passedVerificationCommandCount > 0
+      ? `${passedVerificationCommandCount} passed verification command${passedVerificationCommandCount === 1 ? '' : 's'}`
+      : null,
+    successfulQaProofCount > 0
+      ? `${successfulQaProofCount} QA proof${successfulQaProofCount === 1 ? '' : 's'}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
+
+function computeClaimCheckStatus(
+  claimCheckAnchors: VerificationTimelineAnchor[],
+  input: VerificationTimelineInput,
+  commandAnchors: VerificationTimelineAnchor[],
+  qaComparison: QaPostFixComparison | null,
+  hasFixResult: boolean
+): VerificationTimelineStatus {
+  const blockedClaimCount = claimCheckAnchors.filter((anchor) => anchor.status === 'failed').length;
+  const pendingClaimCount = claimCheckAnchors.filter((anchor) => anchor.status !== 'failed').length;
+  if (blockedClaimCount > 0) return 'blocked';
+  if (pendingClaimCount > 0) return 'active';
+  if (input.review || commandAnchors.length > 0 || qaComparison || hasFixResult) return 'done';
+  return 'idle';
+}
+
+function computeClaimCheckDetail(
+  claimCheckAnchors: VerificationTimelineAnchor[],
+  claimCheckStatus: VerificationTimelineStatus,
+  proofSignalDetail: string
+): string {
+  if (claimCheckAnchors.length > 0) {
+    const blockedClaimCount = claimCheckAnchors.filter(
+      (anchor) => anchor.status === 'failed'
+    ).length;
+    const pendingClaimCount = claimCheckAnchors.filter(
+      (anchor) => anchor.status !== 'failed'
+    ).length;
+    return `${blockedClaimCount} blocking, ${pendingClaimCount} need proof`;
+  }
+  if (claimCheckStatus === 'done') {
+    return `No claim/evidence gaps detected${proofSignalDetail ? ` · ${proofSignalDetail}` : ''}`;
+  }
+  return 'No claims checked yet';
+}
+
+function buildReviewTimelineDetail(review: VerificationTimelineInput['review']): string {
+  if (!review) return 'No review loaded';
+  return `${review.findingsCount} finding${review.findingsCount === 1 ? '' : 's'} · ${review.mode ?? 'standard'} · ${review.riskTier ?? 'unclassified'}`;
+}
+
+function computeReviewTimelineStatus(input: VerificationTimelineInput): VerificationTimelineStatus {
+  if (input.isReviewing) return 'active';
+  return input.review ? 'done' : 'idle';
+}
+
+function buildEvidenceTimelineDetail(
+  evidenceCounts: EvidenceCounts,
+  commandAnchors: VerificationTimelineAnchor[],
+  transcriptReplayAnchors: VerificationTimelineAnchor[],
+  failedCommandCount: number
+): string {
+  const commandText =
+    commandAnchors.length > 0
+      ? ` · ${commandAnchors.length} command anchor${commandAnchors.length === 1 ? '' : 's'}${failedCommandCount > 0 ? `, ${failedCommandCount} failed` : ''}`
+      : '';
+  const replayText =
+    transcriptReplayAnchors.length > 0
+      ? ` · ${transcriptReplayAnchors.length} replay packet${transcriptReplayAnchors.length === 1 ? '' : 's'}`
+      : '';
+  return `${evidenceCounts.reproduced} reproduced, ${evidenceCounts.fixed} fixed, ${evidenceCounts.notReproduced} not reproduced${commandText}${replayText}`;
+}
+
+function computeEvidenceTimelineStatus(
+  input: VerificationTimelineInput,
+  evidenceTotal: number
+): VerificationTimelineStatus {
+  if (input.qa?.running) return 'active';
+  return evidenceTotal > 0 ? 'done' : 'idle';
+}
+
+function buildFixPacketTimelineDetail(
+  fixSelected: number,
+  routeAdvice: string | undefined
+): string {
+  return `${fixSelected} selected${routeAdvice ? ` - ${routeAdvice}` : ''}`;
+}
+
+function computeFixPacketTimelineStatus(
+  input: VerificationTimelineInput,
+  fixSelected: number
+): VerificationTimelineStatus {
+  if (input.isFixing) return 'active';
+  return fixSelected > 0 ? 'done' : 'idle';
+}
+
+function computeWorktreeTimelineStatus(
+  worktreeFallback: boolean,
+  worktreePath: string | undefined,
+  hasFixResult: boolean
+): VerificationTimelineStatus {
+  if (worktreeFallback) return 'blocked';
+  return worktreePath || hasFixResult ? 'done' : 'idle';
+}
+
 export function buildVerificationTimeline(
   input: VerificationTimelineInput
 ): VerificationTimelineItem[] {
@@ -995,96 +1301,47 @@ export function buildVerificationTimeline(
   const successfulQaProofCount =
     (latestQa?.pass ? 1 : 0) +
     (qaComparison && qaComparisonStatusToTimelineStatus(qaComparison.status) === 'done' ? 1 : 0);
-  const proofSignalDetail = [
-    passedVerificationCommandCount > 0
-      ? `${passedVerificationCommandCount} passed verification command${passedVerificationCommandCount === 1 ? '' : 's'}`
-      : null,
-    successfulQaProofCount > 0
-      ? `${successfulQaProofCount} QA proof${successfulQaProofCount === 1 ? '' : 's'}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join(', ');
+  const proofSignalDetail = computeProofSignalDetail(
+    passedVerificationCommandCount,
+    successfulQaProofCount
+  );
   const selectedFindingIndex = input.review?.selectedFindingIndex ?? null;
   const firstFindingPath = input.review?.firstFindingPath?.trim();
   const firstFindingLine = input.review?.firstFindingLine ?? null;
   const firstQaArtifact = latestQa?.screenshotPath ?? latestQa?.artifacts?.[0] ?? null;
   const fixFindingIndex = input.fixPacket?.selectedFindingIndex ?? selectedFindingIndex;
-  const reviewJump: VerificationTimelineJumpTarget | null =
-    selectedFindingIndex != null
-      ? {
-          kind: 'finding',
-          label: `Open finding ${selectedFindingIndex + 1}`,
-          findingIndex: selectedFindingIndex,
-        }
-      : firstFindingPath
-        ? {
-            kind: 'file',
-            label: 'Open first finding file',
-            path: firstFindingPath,
-            line: firstFindingLine,
-          }
-        : null;
-  const qaJump: VerificationTimelineJumpTarget | null = firstQaArtifact
-    ? {
-        kind: 'artifact',
-        label: 'Open QA artifact',
-        path: firstQaArtifact,
-      }
-    : (qaComparisonAnchors.find((anchor) => anchor.jump)?.jump ?? null);
-  const qaStatus: VerificationTimelineStatus = input.qa?.running
-    ? 'active'
-    : qaComparison
-      ? qaComparisonStatusToTimelineStatus(qaComparison.status)
-      : latestQa
-        ? latestQa.pass
-          ? 'done'
-          : 'blocked'
-        : 'idle';
-  const qaDetail = qaComparison
-    ? `${qaComparison.status.replace('_', ' ')} · ${qaComparison.summary}`
-    : latestQa
-      ? `${latestQa.runnerType} ${latestQa.pass ? 'passed' : 'failed'} ${latestQa.route ?? latestQa.goal} in ${latestQa.durationMs}ms`
-      : 'No user-flow run attached';
+  const reviewJump = buildReviewTimelineJump(
+    selectedFindingIndex,
+    firstFindingPath,
+    firstFindingLine
+  );
+  const qaJump = buildQaTimelineJump(firstQaArtifact, qaComparisonAnchors);
+  const qaStatus = computeQaTimelineStatus(input, qaComparison, latestQa);
+  const qaDetail = computeQaTimelineDetail(qaComparison, latestQa);
   const evidenceJump = commandAnchors.find((anchor) => anchor.jump)?.jump ?? null;
-  const fixPacketJump: VerificationTimelineJumpTarget | null =
-    fixFindingIndex != null
-      ? {
-          kind: 'finding',
-          label: `Open selected finding ${fixFindingIndex + 1}`,
-          findingIndex: fixFindingIndex,
-        }
-      : null;
-  const worktreeJump: VerificationTimelineJumpTarget | null = worktreePath
-    ? {
-        kind: 'artifact',
-        label: 'Open fix worktree',
-        path: worktreePath,
-      }
-    : (editOriginAnchors[0]?.jump ?? null);
+  const fixPacketJump = buildFixPacketJump(fixFindingIndex);
+  const worktreeJump = buildWorktreeJump(worktreePath, editOriginAnchors);
   const changedFilesCount =
     input.fixResult?.changedFiles ?? input.fixResult?.changedFileOrigins?.length ?? 0;
-  const worktreeDetail = worktreeFallback
-    ? 'Agent fell back to primary repo'
-    : input.fixResult
-      ? `${input.fixResult.findingsFixed ?? 0} fixed across ${changedFilesCount} file${changedFilesCount === 1 ? '' : 's'}${editOriginAnchors.length > 0 ? ` · ${editOriginAnchors.length} edit origin${editOriginAnchors.length === 1 ? '' : 's'}` : ''}${worktreePath ? ` · ${worktreePath}` : ''}`
-      : 'No fix run yet';
-  const blockedClaimCount = claimCheckAnchors.filter((anchor) => anchor.status === 'failed').length;
-  const pendingClaimCount = claimCheckAnchors.filter((anchor) => anchor.status !== 'failed').length;
-  const claimCheckStatus: VerificationTimelineStatus =
-    blockedClaimCount > 0
-      ? 'blocked'
-      : pendingClaimCount > 0
-        ? 'active'
-        : input.review || commandAnchors.length > 0 || qaComparison || input.fixResult
-          ? 'done'
-          : 'idle';
-  const claimCheckDetail =
-    claimCheckAnchors.length > 0
-      ? `${blockedClaimCount} blocking, ${pendingClaimCount} need proof`
-      : claimCheckStatus === 'done'
-        ? `No claim/evidence gaps detected${proofSignalDetail ? ` · ${proofSignalDetail}` : ''}`
-        : 'No claims checked yet';
+  const worktreeDetail = computeWorktreeDetail(
+    input,
+    worktreeFallback,
+    worktreePath,
+    editOriginAnchors,
+    changedFilesCount
+  );
+  const claimCheckStatus = computeClaimCheckStatus(
+    claimCheckAnchors,
+    input,
+    commandAnchors,
+    qaComparison,
+    Boolean(input.fixResult)
+  );
+  const claimCheckDetail = computeClaimCheckDetail(
+    claimCheckAnchors,
+    claimCheckStatus,
+    proofSignalDetail
+  );
   const claimCheckJump = claimCheckAnchors.find((anchor) => anchor.jump)?.jump ?? null;
 
   return [
@@ -1099,10 +1356,8 @@ export function buildVerificationTimeline(
       id: 'review',
       phase: 'review',
       label: 'Review',
-      detail: input.review
-        ? `${input.review.findingsCount} finding${input.review.findingsCount === 1 ? '' : 's'} · ${input.review.mode ?? 'standard'} · ${input.review.riskTier ?? 'unclassified'}`
-        : 'No review loaded',
-      status: input.isReviewing ? 'active' : input.review ? 'done' : 'idle',
+      detail: buildReviewTimelineDetail(input.review),
+      status: computeReviewTimelineStatus(input),
       jump: reviewJump,
     },
     {
@@ -1118,8 +1373,13 @@ export function buildVerificationTimeline(
       id: 'evidence',
       phase: 'evidence',
       label: 'Evidence',
-      detail: `${input.evidenceCounts.reproduced} reproduced, ${input.evidenceCounts.fixed} fixed, ${input.evidenceCounts.notReproduced} not reproduced${commandAnchors.length > 0 ? ` · ${commandAnchors.length} command anchor${commandAnchors.length === 1 ? '' : 's'}${failedCommandCount > 0 ? `, ${failedCommandCount} failed` : ''}` : ''}${transcriptReplayAnchors.length > 0 ? ` · ${transcriptReplayAnchors.length} replay packet${transcriptReplayAnchors.length === 1 ? '' : 's'}` : ''}`,
-      status: input.qa?.running ? 'active' : evidenceTotal > 0 ? 'done' : 'idle',
+      detail: buildEvidenceTimelineDetail(
+        input.evidenceCounts,
+        commandAnchors,
+        transcriptReplayAnchors,
+        failedCommandCount
+      ),
+      status: computeEvidenceTimelineStatus(input, evidenceTotal),
       anchors: evidenceAnchors,
       jump: evidenceJump,
     },
@@ -1136,8 +1396,8 @@ export function buildVerificationTimeline(
       id: 'fix-packet',
       phase: 'fix',
       label: 'Fix packet',
-      detail: `${fixSelected} selected${input.fixPacket?.routeAdvice ? ` - ${input.fixPacket.routeAdvice}` : ''}`,
-      status: input.isFixing ? 'active' : fixSelected > 0 ? 'done' : 'idle',
+      detail: buildFixPacketTimelineDetail(fixSelected, input.fixPacket?.routeAdvice),
+      status: computeFixPacketTimelineStatus(input, fixSelected),
       jump: fixPacketJump,
     },
     {
@@ -1145,7 +1405,11 @@ export function buildVerificationTimeline(
       phase: 'worktree',
       label: 'Worktree',
       detail: worktreeDetail,
-      status: worktreeFallback ? 'blocked' : worktreePath || input.fixResult ? 'done' : 'idle',
+      status: computeWorktreeTimelineStatus(
+        worktreeFallback,
+        worktreePath,
+        Boolean(input.fixResult)
+      ),
       anchors: editOriginAnchors,
       jump: worktreeJump,
     },
@@ -1169,6 +1433,148 @@ function citationText(value: string, limit = 140): string {
   return normalized.length > limit ? `${out}...` : out;
 }
 
+interface CodebaseHistoryFileSignals {
+  commits: RepoHistoryContext['recent_commits'];
+  decisions: NonNullable<RepoHistoryContext['prior_decisions']>;
+  recurring: RepoHistoryContext['recurring_failures'];
+  agents: RepoHistoryContext['prior_agent_activity'];
+  commands: NonNullable<RepoHistoryContext['command_signals']>;
+}
+
+function collectCodebaseHistoryFileSignals(
+  history: RepoHistoryContext,
+  fileKey: string,
+  decisionList: NonNullable<RepoHistoryContext['prior_decisions']>,
+  commandList: NonNullable<RepoHistoryContext['command_signals']>,
+  commitKeys: string[],
+  decisionKeys: string[],
+  recurringKeys: string[],
+  agentKeys: string[][],
+  commandKeys: (string | null)[]
+): CodebaseHistoryFileSignals {
+  const commits = history.recent_commits.filter((_, idx) =>
+    lowerPathsMatch(commitKeys[idx], fileKey)
+  );
+  const decisions = decisionList.filter((_, idx) => lowerPathsMatch(decisionKeys[idx], fileKey));
+  const recurring = history.recurring_failures.filter((_, idx) =>
+    lowerPathsMatch(recurringKeys[idx], fileKey)
+  );
+  const agents = history.prior_agent_activity.filter((_, idx) =>
+    agentKeys[idx].some((activityKey) => lowerPathsMatch(activityKey, fileKey))
+  );
+  const commands = commandList.filter((_, idx) => {
+    const key = commandKeys[idx];
+    return key != null && lowerPathsMatch(key, fileKey);
+  });
+  return { commits, decisions, recurring, agents, commands };
+}
+
+function buildCodebaseHistoryLead(signals: CodebaseHistoryFileSignals): string {
+  const { decisions, commits, recurring, agents } = signals;
+  if (decisions[0]) return `Prior decision: ${citationText(decisions[0].text, 110)}`;
+  if (commits[0]) return `Recent change: ${citationText(commits[0].subject, 110)}`;
+  if (recurring[0]) {
+    return `Recurring review signal: ${citationText(recurring[0].examples?.[0] ?? 'past finding', 110)}`;
+  }
+  if (agents[0]) return `Prior agent context: ${citationText(agents[0].summary, 110)}`;
+  return 'History exists but has thin explanatory evidence.';
+}
+
+function buildCodebaseHistorySupporting(signals: CodebaseHistoryFileSignals): string[] {
+  const { decisions, commits, recurring, agents, commands } = signals;
+  const recurringCount = recurring.reduce((sum, item) => sum + item.count, 0);
+  return [
+    decisions.length
+      ? `${decisions.length} decision marker${decisions.length === 1 ? '' : 's'}`
+      : null,
+    commits.length ? `${commits.length} recent commit${commits.length === 1 ? '' : 's'}` : null,
+    recurring.length
+      ? `${recurringCount} recurring finding${recurringCount === 1 ? '' : 's'}`
+      : null,
+    agents.length ? `${agents.length} prior agent note${agents.length === 1 ? '' : 's'}` : null,
+    commands.length ? `${commands.length} command anchor${commands.length === 1 ? '' : 's'}` : null,
+  ].filter(Boolean) as string[];
+}
+
+function buildCodebaseHistoryCitations(signals: CodebaseHistoryFileSignals): string[] {
+  const { decisions, commits, recurring } = signals;
+  return [
+    ...decisions
+      .slice(0, 2)
+      .map(
+        (decision) =>
+          `${decision.source}:${decision.file}${decision.line ? `:${decision.line}` : ''} - ${citationText(decision.text)}`
+      ),
+    ...commits
+      .slice(0, 2)
+      .map((commit) => `commit:${commit.sha} ${commit.file} - ${citationText(commit.subject)}`),
+    ...recurring
+      .slice(0, 1)
+      .flatMap((failure) =>
+        (failure.examples ?? [])
+          .slice(0, 2)
+          .map((example) => `finding:${failure.file} - ${citationText(example)}`)
+      ),
+  ].slice(0, 5);
+}
+
+function buildCodebaseHistoryExplanationForFile(
+  file: string,
+  history: RepoHistoryContext,
+  decisionList: NonNullable<RepoHistoryContext['prior_decisions']>,
+  commandList: NonNullable<RepoHistoryContext['command_signals']>,
+  commitKeys: string[],
+  decisionKeys: string[],
+  recurringKeys: string[],
+  agentKeys: string[][],
+  commandKeys: (string | null)[]
+): CodebaseHistoryExplanation | null {
+  const fileKey = file.toLowerCase();
+  const signals = collectCodebaseHistoryFileSignals(
+    history,
+    fileKey,
+    decisionList,
+    commandList,
+    commitKeys,
+    decisionKeys,
+    recurringKeys,
+    agentKeys,
+    commandKeys
+  );
+  const { commits, decisions, recurring, agents, commands } = signals;
+  const signalCount =
+    commits.length + decisions.length + recurring.length + agents.length + commands.length;
+  if (signalCount === 0) return null;
+
+  const lead = buildCodebaseHistoryLead(signals);
+  const supporting = buildCodebaseHistorySupporting(signals);
+  const citations = buildCodebaseHistoryCitations(signals);
+  const recurringCount = recurring.reduce((sum, item) => sum + item.count, 0);
+
+  return {
+    file,
+    summary: `${lead}${supporting.length ? ` (${supporting.join(', ')})` : ''}.`,
+    confidence: decisions.length + commits.length + recurring.length >= 2 ? 'strong' : 'thin',
+    counts: {
+      commits: commits.length,
+      decisions: decisions.length,
+      recurring: recurringCount,
+      agents: agents.length,
+      commands: commands.length,
+    },
+    citations,
+  };
+}
+
+function codebaseHistoryExplanationScore(item: CodebaseHistoryExplanation): number {
+  return (
+    item.counts.decisions * 4 +
+    item.counts.recurring * 3 +
+    item.counts.agents * 2 +
+    item.counts.commits
+  );
+}
+
 export function buildCodebaseHistoryExplanations(
   history: RepoHistoryContext | null
 ): CodebaseHistoryExplanation[] {
@@ -1188,92 +1594,21 @@ export function buildCodebaseHistoryExplanations(
   const commandKeys = commandList.map((signal) => signal.source_path?.toLowerCase() ?? null);
 
   return history.files_analyzed
-    .map((file) => {
-      const fileKey = file.toLowerCase();
-      const commits = history.recent_commits.filter((_, idx) =>
-        lowerPathsMatch(commitKeys[idx], fileKey)
-      );
-      const decisions = decisionList.filter((_, idx) =>
-        lowerPathsMatch(decisionKeys[idx], fileKey)
-      );
-      const recurring = history.recurring_failures.filter((_, idx) =>
-        lowerPathsMatch(recurringKeys[idx], fileKey)
-      );
-      const agents = history.prior_agent_activity.filter((_, idx) =>
-        agentKeys[idx].some((activityKey) => lowerPathsMatch(activityKey, fileKey))
-      );
-      const commands = commandList.filter((_, idx) => {
-        const key = commandKeys[idx];
-        return key != null && lowerPathsMatch(key, fileKey);
-      });
-
-      const signalCount =
-        commits.length + decisions.length + recurring.length + agents.length + commands.length;
-      if (signalCount === 0) return null;
-
-      const lead = decisions[0]
-        ? `Prior decision: ${citationText(decisions[0].text, 110)}`
-        : commits[0]
-          ? `Recent change: ${citationText(commits[0].subject, 110)}`
-          : recurring[0]
-            ? `Recurring review signal: ${citationText(recurring[0].examples?.[0] ?? 'past finding', 110)}`
-            : agents[0]
-              ? `Prior agent context: ${citationText(agents[0].summary, 110)}`
-              : 'History exists but has thin explanatory evidence.';
-      const supporting = [
-        decisions.length
-          ? `${decisions.length} decision marker${decisions.length === 1 ? '' : 's'}`
-          : null,
-        commits.length ? `${commits.length} recent commit${commits.length === 1 ? '' : 's'}` : null,
-        recurring.length
-          ? `${recurring.reduce((sum, item) => sum + item.count, 0)} recurring finding${recurring.reduce((sum, item) => sum + item.count, 0) === 1 ? '' : 's'}`
-          : null,
-        agents.length ? `${agents.length} prior agent note${agents.length === 1 ? '' : 's'}` : null,
-        commands.length
-          ? `${commands.length} command anchor${commands.length === 1 ? '' : 's'}`
-          : null,
-      ].filter(Boolean);
-      const citations = [
-        ...decisions
-          .slice(0, 2)
-          .map(
-            (decision) =>
-              `${decision.source}:${decision.file}${decision.line ? `:${decision.line}` : ''} - ${citationText(decision.text)}`
-          ),
-        ...commits
-          .slice(0, 2)
-          .map((commit) => `commit:${commit.sha} ${commit.file} - ${citationText(commit.subject)}`),
-        ...recurring
-          .slice(0, 1)
-          .flatMap((failure) =>
-            (failure.examples ?? [])
-              .slice(0, 2)
-              .map((example) => `finding:${failure.file} - ${citationText(example)}`)
-          ),
-      ].slice(0, 5);
-
-      return {
+    .map((file) =>
+      buildCodebaseHistoryExplanationForFile(
         file,
-        summary: `${lead}${supporting.length ? ` (${supporting.join(', ')})` : ''}.`,
-        confidence: decisions.length + commits.length + recurring.length >= 2 ? 'strong' : 'thin',
-        counts: {
-          commits: commits.length,
-          decisions: decisions.length,
-          recurring: recurring.reduce((sum, item) => sum + item.count, 0),
-          agents: agents.length,
-          commands: commands.length,
-        },
-        citations,
-      };
-    })
+        history,
+        decisionList,
+        commandList,
+        commitKeys,
+        decisionKeys,
+        recurringKeys,
+        agentKeys,
+        commandKeys
+      )
+    )
     .filter((item): item is CodebaseHistoryExplanation => Boolean(item))
-    .sort((a, b) => {
-      const aScore =
-        a.counts.decisions * 4 + a.counts.recurring * 3 + a.counts.agents * 2 + a.counts.commits;
-      const bScore =
-        b.counts.decisions * 4 + b.counts.recurring * 3 + b.counts.agents * 2 + b.counts.commits;
-      return bScore - aScore;
-    })
+    .sort((a, b) => codebaseHistoryExplanationScore(b) - codebaseHistoryExplanationScore(a))
     .slice(0, 5);
 }
 
@@ -1368,22 +1703,351 @@ export function buildRevalidationChecklist(
   return items;
 }
 
+function evidenceStatusIcon(status: FindingEvidence['status']): string {
+  if (status === 'fixed') return '✅';
+  if (status === 'reproduced') return '⚠️';
+  if (status === 'not_reproduced') return '🔵';
+  return '⏳';
+}
+
+function formatFindingLoc(finding: CliReviewFinding): string {
+  return finding.filePath
+    ? ` (\`${finding.filePath}${finding.line != null ? `:${finding.line}` : ''}\`)`
+    : '';
+}
+
+function buildTimelineItemJumpParts(item: VerificationTimelineItem): string[] {
+  if (!item.jump) return [];
+  return [
+    `jump=${item.jump.kind}`,
+    item.jump.findingIndex != null ? `finding=${item.jump.findingIndex + 1}` : null,
+    item.jump.path ? `path=${item.jump.path}` : null,
+    item.jump.line != null ? `line=${item.jump.line}` : null,
+  ].filter(Boolean) as string[];
+}
+
+function buildTimelineAnchorLines(anchor: VerificationTimelineAnchor): string[] {
+  const lines: string[] = [];
+  const loc = [
+    anchor.source,
+    anchor.sourcePath ? `source=${anchor.sourcePath}` : null,
+    anchor.sourceLine != null ? `line=${anchor.sourceLine}` : null,
+    anchor.eventId ? `event=${anchor.eventId}` : null,
+    anchor.sessionId ? `session=${anchor.sessionId}` : null,
+    anchor.artifact ? `artifact=${anchor.artifact}` : null,
+    anchor.jump?.kind ? `jump=${anchor.jump.kind}` : null,
+    anchor.jump?.path ? `jumpPath=${anchor.jump.path}` : null,
+  ].filter(Boolean) as string[];
+  lines.push(
+    `  - ${anchor.status ?? 'unknown'} command: ${anchor.label}${loc.length > 0 ? ` (${loc.join(' · ')})` : ''}`
+  );
+  for (const excerpt of anchor.contextExcerpt?.slice(0, 2) ?? []) {
+    lines.push(`    - transcript: ${excerpt}`);
+  }
+  for (const ctxItem of anchor.conversationContext?.items.slice(0, 4) ?? []) {
+    lines.push(
+      `    - intent context (${ctxItem.relative_position}, ${ctxItem.role}, source=${ctxItem.source_path}${ctxItem.source_line != null ? `:${ctxItem.source_line}` : ''}): ${ctxItem.text}`
+    );
+  }
+  if (anchor.conversationContext) {
+    lines.push('    - qualification: intent context only; not executable verification evidence');
+  }
+  return lines;
+}
+
+function buildVerificationTimelineSectionLines(timeline: VerificationTimelineItem[]): string[] {
+  const lines: string[] = ['', '### Verification timeline'];
+  for (const item of timeline) {
+    const itemJump = buildTimelineItemJumpParts(item);
+    lines.push(
+      `- **${item.label}** — ${item.status}: ${item.detail}${itemJump.length > 0 ? ` (${itemJump.join(' · ')})` : ''}`
+    );
+    for (const anchor of item.anchors?.slice(0, 4) ?? []) {
+      lines.push(...buildTimelineAnchorLines(anchor));
+    }
+  }
+  return lines;
+}
+
+function buildIntentCheckSectionLines(intentReport: ReviewIntentReport): string[] {
+  const lines: string[] = ['', '### Intent check'];
+  lines.push(`Intent: ${intentReport.inferredIntent}`);
+  lines.push(`Changed surfaces: ${intentReport.changedSurfaces.join(', ')}`);
+  lines.push('', 'Verification gaps:');
+  lines.push(
+    ...(intentReport.verificationGaps.length
+      ? intentReport.verificationGaps.map((gap) => `- ${gap}`)
+      : ['- No obvious gaps.'])
+  );
+  return lines;
+}
+
+function buildQaPostFixComparisonSectionLines(comparison: QaPostFixComparison): string[] {
+  const lines: string[] = ['', '### Synthetic QA post-fix comparison'];
+  lines.push(`- **${comparison.status.replace('_', ' ')}** — ${comparison.summary}`);
+  lines.push(
+    `- Before: ${comparison.before.pass ? 'PASS' : 'FAIL'} ${comparison.before.runnerType} ${comparison.before.route ?? comparison.before.loopId} (${comparison.before.durationMs}ms)`
+  );
+  if (comparison.after) {
+    lines.push(
+      `- After: ${comparison.after.pass ? 'PASS' : 'FAIL'} ${comparison.after.runnerType} ${comparison.after.route ?? comparison.after.loopId} (${comparison.after.durationMs}ms)`
+    );
+  } else {
+    lines.push('- After: not run yet');
+  }
+  return lines;
+}
+
+function buildEvidenceCandidatesSectionLines(
+  candidates: EvidenceCandidate[],
+  statuses: Record<string, EvidenceCandidateStatus> | undefined
+): string[] {
+  const lines: string[] = ['', '### Evidence candidates'];
+  for (const candidate of candidates.slice(0, 6)) {
+    const status = statuses?.[candidate.id] ?? 'open';
+    lines.push(
+      `- **${candidate.severity_hint.toUpperCase()}** ${candidate.kind} (${candidate.id}) — ${status.replace('_', ' ')} — ${candidate.why_it_matters}`
+    );
+    if (candidate.affected_files.length > 0) {
+      lines.push(`  - Files: ${candidate.affected_files.slice(0, 5).join(', ')}`);
+    }
+    if (candidate.evidence_refs.length > 0) {
+      const refs = candidate.evidence_refs
+        .slice(0, 3)
+        .map((ref) => `${ref.kind}:${ref.label}${ref.detail ? ` (${ref.detail})` : ''}`);
+      lines.push(`  - Evidence refs: ${refs.join('; ')}`);
+    }
+    if (candidate.open_questions.length > 0) {
+      lines.push(`  - Open question: ${candidate.open_questions[0]}`);
+    }
+    if (candidate.suggested_checks.length > 0) {
+      lines.push(`  - Suggested check: ${candidate.suggested_checks[0]}`);
+    }
+  }
+  return lines;
+}
+
+function buildProcedureGatesSectionLines(
+  steps: EvidenceProcedureStep[],
+  events: ProcedureExecutionEvent[] | undefined
+): string[] {
+  const lines: string[] = ['', '### Procedure gates'];
+  for (const step of steps.slice(0, 6)) {
+    const stepEvents = (events ?? []).filter((event) => event.stepId === step.id);
+    lines.push(
+      `- **${step.status.toUpperCase()}** ${step.procedure} (${step.id}) - ${step.action}`
+    );
+    lines.push(`  - Gate: ${step.gate}`);
+    lines.push(`  - Artifact: ${step.artifact}`);
+    if (step.candidate_ids.length > 0) {
+      lines.push(`  - Candidates: ${step.candidate_ids.join(', ')}`);
+    }
+    if (step.blocked_on.length > 0) {
+      lines.push(`  - Blocked on: ${step.blocked_on.join(', ')}`);
+    }
+    for (const event of stepEvents.slice(0, 3)) {
+      lines.push(`  - Execution: ${event.status} via ${event.source} - ${event.summary}`);
+      if (event.artifact) {
+        lines.push(`    - Artifact: ${event.artifact}`);
+      }
+    }
+  }
+  return lines;
+}
+
+function buildMemoryGraphNodeLines(nodes: ReviewMemoryGraph['nodes'], limit: number): string[] {
+  return nodes.slice(0, limit).map((node) => {
+    const path = node.file_path && node.file_path !== node.label ? ` (${node.file_path})` : '';
+    const detail = node.detail ? ` — ${node.detail}` : '';
+    return `- [${node.kind}] ${node.label}${path}${detail}`;
+  });
+}
+
+function buildMemoryGraphEdgeLines(edges: ReviewMemoryGraph['edges'], limit: number): string[] {
+  return edges
+    .slice(0, limit)
+    .map(
+      (edge) => `  - edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.confidence.toFixed(2)})`
+    );
+}
+
+function buildReviewMemoryGraphSectionLines(graph: ReviewMemoryGraph): string[] {
+  const lines: string[] = ['', '### Review memory graph'];
+  lines.push(
+    `Schema v${graph.schema_version} · ${graph.nodes.length} nodes · ${graph.edges.length} edges${graph.truncated ? ' · truncated' : ''}`
+  );
+  lines.push(...buildMemoryGraphNodeLines(graph.nodes, 8));
+  lines.push(...buildMemoryGraphEdgeLines(graph.edges, 8));
+  if ((graph.trusted_paths?.length ?? 0) > 0) {
+    lines.push('', '#### Qualified native graph paths');
+    for (const path of graph.trusted_paths?.slice(0, 4) ?? []) {
+      lines.push('```text', renderQualifiedGraphPath(path), '```');
+    }
+  }
+  return lines;
+}
+
+function buildFocusedReviewMemoryGraphSectionLines(graph: ReviewMemoryGraph): string[] {
+  const lines: string[] = ['', '### Focused finding graph'];
+  lines.push(
+    `Scope ${graph.scope} · ${graph.nodes.length} nodes · ${graph.edges.length} edges${graph.truncated ? ' · truncated' : ''}`
+  );
+  lines.push(...buildMemoryGraphNodeLines(graph.nodes, 8));
+  lines.push(...buildMemoryGraphEdgeLines(graph.edges, 8));
+  return lines;
+}
+
+function buildTrustedGraphSectionLines(graph: TrustedReviewGraphContext): string[] {
+  const lines: string[] = ['', '### Trusted structural graph'];
+  lines.push(
+    `Snapshot \`${graph.snapshot_id}\` · ${graph.engine_id}@${graph.engine_version} · schema v${graph.schema_version} · ${graph.stale ? 'stale' : 'current'}${graph.truncated ? ' · truncated' : ''}`
+  );
+  lines.push(
+    `Coverage: ${graph.coverage.indexed_files}/${graph.coverage.discovered_files} files indexed · ${graph.coverage.error_files} errors · ${graph.coverage.skipped_files} skipped`
+  );
+  lines.push(`Qualification: ${graph.qualification}`);
+  lines.push(
+    '_Navigation context only. Graph topology is not a finding and is not verified runtime evidence._'
+  );
+  for (const node of graph.nodes.slice(0, 12)) {
+    const source = node.sources[0];
+    const sourceLabel = source
+      ? ` · source: \`${source.path}${source.start_line != null ? `:${source.start_line}` : ''}\``
+      : ' · source: unavailable';
+    lines.push(
+      `- node [${node.trust}/${node.origin}] ${node.label}${node.path ? ` (\`${node.path}\`)` : ''}${sourceLabel}`
+    );
+  }
+  for (const edge of graph.edges.slice(0, 16)) {
+    const source = edge.sources[0];
+    const sourceLabel = source
+      ? ` · source: \`${source.path}${source.start_line != null ? `:${source.start_line}` : ''}\``
+      : ' · source: unavailable';
+    lines.push(
+      `  - edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.trust}/${edge.origin})${sourceLabel}`
+    );
+  }
+  return lines;
+}
+
+function buildHistoryExplanationsSectionLines(
+  explanations: CodebaseHistoryExplanation[]
+): string[] {
+  const lines: string[] = ['', '### Codebase history explanations'];
+  for (const explanation of explanations.slice(0, 5)) {
+    lines.push(`- **${explanation.file}** (${explanation.confidence}) — ${explanation.summary}`);
+    for (const citation of explanation.citations.slice(0, 3)) {
+      lines.push(`  - ${citation}`);
+    }
+  }
+  return lines;
+}
+
+function buildTemporalHistorySectionLines(
+  temporalHistory: NonNullable<RepoHistoryContext['temporal_slice']>
+): string[] {
+  const lines: string[] = ['', '### Temporal history graph'];
+  lines.push(
+    `Schema v${temporalHistory.schema_version} · ${temporalHistory.episodes.length} episodes · ${temporalHistory.stale ? 'stale' : 'current'}${temporalHistory.truncated ? ' · truncated' : ''}`
+  );
+  for (const event of temporalHistory.constraints.slice(0, 5)) {
+    const source = event.sources[0]?.path ? ` · source: \`${event.sources[0].path}\`` : '';
+    lines.push(
+      `- [${event.stage}/${event.trust}] ${event.summary}${source} · event: \`${event.id}\``
+    );
+  }
+  for (const event of temporalHistory.failures.slice(0, 5)) {
+    lines.push(`- [prior failure/${event.trust}] ${event.summary} · event: \`${event.id}\``);
+  }
+  for (const gap of temporalHistory.gaps.slice(0, 5)) {
+    lines.push(`- Gap: ${gap}`);
+  }
+  return lines;
+}
+
+function buildHistorySummaryCountsLines(summary: HistoryFindingSummary): string[] {
+  const counts = [
+    summary.decisions ? `${summary.decisions} decision` : null,
+    summary.commits ? `${summary.commits} commit` : null,
+    summary.recurring ? `${summary.recurring} recurring` : null,
+    summary.commands ? `${summary.commands} command` : null,
+    summary.claims ? `${summary.claims} claim` : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
+  const sample = summary.topDecision ?? summary.topCommit ?? summary.topClaim;
+  const lines: string[] = [`  - History context: ${counts}${sample ? ` — ${sample}` : ''}`];
+  for (const command of summary.topCommands ?? []) {
+    lines.push(`  - Command evidence: ${command}`);
+  }
+  return lines;
+}
+
+function buildFindingEvidenceLines(
+  finding: CliReviewFinding,
+  ev: FindingEvidence,
+  historySummary: HistoryFindingSummary | undefined
+): string[] {
+  const lines: string[] = [];
+  const artifact = ev.artifact.trim() ? ` · artifact: \`${ev.artifact.trim()}\`` : '';
+  lines.push(
+    `- ${evidenceStatusIcon(ev.status)} **[${finding.severity.toUpperCase()}]** ${finding.title}${formatFindingLoc(finding)} — ${ev.status.replace('_', ' ')}${artifact}`
+  );
+  if (historySummary) {
+    lines.push(...buildHistorySummaryCountsLines(historySummary));
+  }
+  const notes = ev.notes.trim();
+  if (notes) {
+    for (const line of notes.split('\n')) {
+      lines.push(`  - ${line}`);
+    }
+  }
+  return lines;
+}
+
+function buildFindingsAndEvidenceSectionLines(input: ReviewerProofInput): string[] {
+  const lines: string[] = ['', '### Findings & evidence'];
+  if (input.findings.length === 0) {
+    lines.push('- _No findings._');
+    return lines;
+  }
+  input.findings.forEach((finding, idx) => {
+    const ev = input.evidence[idx];
+    const historySummary = input.historyFindingSummaries.get(idx);
+    lines.push(...buildFindingEvidenceLines(finding, ev, historySummary));
+  });
+  return lines;
+}
+
+function buildReviewerNextActionsLines(input: ReviewerProofInput): string[] {
+  const nextActions: string[] = [];
+  input.findings.forEach((finding, idx) => {
+    const ev = input.evidence[idx];
+    const sev = `[${finding.severity.toUpperCase()}]`;
+    if (ev.status === 'not_checked') {
+      nextActions.push(`- [ ] Verify **${sev}** ${finding.title}${formatFindingLoc(finding)}`);
+    } else if (ev.status === 'reproduced') {
+      const artifact = ev.artifact.trim() ? ` (artifact: \`${ev.artifact.trim()}\`)` : '';
+      nextActions.push(
+        `- [ ] Fix **${sev}** ${finding.title}${formatFindingLoc(finding)} — currently reproduced${artifact}`
+      );
+    } else if (ev.status === 'fixed') {
+      buildRevalidationChecklist(finding, ev).forEach((item) => {
+        if (!ev.revalidation[item.id]) {
+          nextActions.push(`- [ ] ${item.label}`);
+        }
+      });
+    }
+  });
+  return nextActions;
+}
+
 export function buildReviewerProofMarkdown(input: ReviewerProofInput): string {
   const notChecked =
     input.findings.length -
     input.evidenceCounts.reproduced -
     input.evidenceCounts.fixed -
     input.evidenceCounts.notReproduced;
-  const statusIcon = (status: FindingEvidence['status']): string => {
-    if (status === 'fixed') return '✅';
-    if (status === 'reproduced') return '⚠️';
-    if (status === 'not_reproduced') return '🔵';
-    return '⏳';
-  };
-  const formatLoc = (finding: CliReviewFinding): string =>
-    finding.filePath
-      ? ` (\`${finding.filePath}${finding.line != null ? `:${finding.line}` : ''}\`)`
-      : '';
 
   const lines: string[] = [];
   lines.push(`## Reviewer handoff — ${input.diffRange || 'local diff'}`);
@@ -1396,292 +2060,116 @@ export function buildReviewerProofMarkdown(input: ReviewerProofInput): string {
   );
 
   if (input.intentReport) {
-    lines.push('', '### Intent check');
-    lines.push(`Intent: ${input.intentReport.inferredIntent}`);
-    lines.push(`Changed surfaces: ${input.intentReport.changedSurfaces.join(', ')}`);
-    lines.push('');
-    lines.push('Verification gaps:');
-    lines.push(
-      ...(input.intentReport.verificationGaps.length
-        ? input.intentReport.verificationGaps.map((gap) => `- ${gap}`)
-        : ['- No obvious gaps.'])
-    );
+    lines.push(...buildIntentCheckSectionLines(input.intentReport));
   }
 
   if (input.verificationTimeline && input.verificationTimeline.length > 0) {
-    lines.push('', '### Verification timeline');
-    input.verificationTimeline.forEach((item) => {
-      const itemJump = item.jump
-        ? [
-            `jump=${item.jump.kind}`,
-            item.jump.findingIndex != null ? `finding=${item.jump.findingIndex + 1}` : null,
-            item.jump.path ? `path=${item.jump.path}` : null,
-            item.jump.line != null ? `line=${item.jump.line}` : null,
-          ].filter(Boolean)
-        : [];
-      lines.push(
-        `- **${item.label}** — ${item.status}: ${item.detail}${itemJump.length > 0 ? ` (${itemJump.join(' · ')})` : ''}`
-      );
-      item.anchors?.slice(0, 4).forEach((anchor) => {
-        const loc = [
-          anchor.source,
-          anchor.sourcePath ? `source=${anchor.sourcePath}` : null,
-          anchor.sourceLine != null ? `line=${anchor.sourceLine}` : null,
-          anchor.eventId ? `event=${anchor.eventId}` : null,
-          anchor.sessionId ? `session=${anchor.sessionId}` : null,
-          anchor.artifact ? `artifact=${anchor.artifact}` : null,
-          anchor.jump?.kind ? `jump=${anchor.jump.kind}` : null,
-          anchor.jump?.path ? `jumpPath=${anchor.jump.path}` : null,
-        ].filter(Boolean);
-        lines.push(
-          `  - ${anchor.status ?? 'unknown'} command: ${anchor.label}${loc.length > 0 ? ` (${loc.join(' · ')})` : ''}`
-        );
-        anchor.contextExcerpt?.slice(0, 2).forEach((excerpt) => {
-          lines.push(`    - transcript: ${excerpt}`);
-        });
-        anchor.conversationContext?.items.slice(0, 4).forEach((item) => {
-          lines.push(
-            `    - intent context (${item.relative_position}, ${item.role}, source=${item.source_path}${item.source_line != null ? `:${item.source_line}` : ''}): ${item.text}`
-          );
-        });
-        if (anchor.conversationContext) {
-          lines.push(
-            '    - qualification: intent context only; not executable verification evidence'
-          );
-        }
-      });
-    });
+    lines.push(...buildVerificationTimelineSectionLines(input.verificationTimeline));
   }
 
   if (input.qaPostFixComparison) {
-    const comparison = input.qaPostFixComparison;
-    lines.push('', '### Synthetic QA post-fix comparison');
-    lines.push(`- **${comparison.status.replace('_', ' ')}** — ${comparison.summary}`);
-    lines.push(
-      `- Before: ${comparison.before.pass ? 'PASS' : 'FAIL'} ${comparison.before.runnerType} ${comparison.before.route ?? comparison.before.loopId} (${comparison.before.durationMs}ms)`
-    );
-    if (comparison.after) {
-      lines.push(
-        `- After: ${comparison.after.pass ? 'PASS' : 'FAIL'} ${comparison.after.runnerType} ${comparison.after.route ?? comparison.after.loopId} (${comparison.after.durationMs}ms)`
-      );
-    } else {
-      lines.push('- After: not run yet');
-    }
+    lines.push(...buildQaPostFixComparisonSectionLines(input.qaPostFixComparison));
   }
 
   if (input.evidenceCandidates && input.evidenceCandidates.length > 0) {
-    lines.push('', '### Evidence candidates');
-    input.evidenceCandidates.slice(0, 6).forEach((candidate) => {
-      const status = input.evidenceCandidateStatuses?.[candidate.id] ?? 'open';
-      lines.push(
-        `- **${candidate.severity_hint.toUpperCase()}** ${candidate.kind} (${candidate.id}) — ${status.replace('_', ' ')} — ${candidate.why_it_matters}`
-      );
-      if (candidate.affected_files.length > 0) {
-        lines.push(`  - Files: ${candidate.affected_files.slice(0, 5).join(', ')}`);
-      }
-      if (candidate.evidence_refs.length > 0) {
-        const refs = candidate.evidence_refs
-          .slice(0, 3)
-          .map((ref) => `${ref.kind}:${ref.label}${ref.detail ? ` (${ref.detail})` : ''}`);
-        lines.push(`  - Evidence refs: ${refs.join('; ')}`);
-      }
-      if (candidate.open_questions.length > 0) {
-        lines.push(`  - Open question: ${candidate.open_questions[0]}`);
-      }
-      if (candidate.suggested_checks.length > 0) {
-        lines.push(`  - Suggested check: ${candidate.suggested_checks[0]}`);
-      }
-    });
+    lines.push(
+      ...buildEvidenceCandidatesSectionLines(
+        input.evidenceCandidates,
+        input.evidenceCandidateStatuses
+      )
+    );
   }
 
   if (input.evidenceProcedureSteps && input.evidenceProcedureSteps.length > 0) {
-    lines.push('', '### Procedure gates');
-    input.evidenceProcedureSteps.slice(0, 6).forEach((step) => {
-      const events = (input.procedureExecutionEvents ?? []).filter(
-        (event) => event.stepId === step.id
-      );
-      lines.push(
-        `- **${step.status.toUpperCase()}** ${step.procedure} (${step.id}) - ${step.action}`
-      );
-      lines.push(`  - Gate: ${step.gate}`);
-      lines.push(`  - Artifact: ${step.artifact}`);
-      if (step.candidate_ids.length > 0) {
-        lines.push(`  - Candidates: ${step.candidate_ids.join(', ')}`);
-      }
-      if (step.blocked_on.length > 0) {
-        lines.push(`  - Blocked on: ${step.blocked_on.join(', ')}`);
-      }
-      for (const event of events.slice(0, 3)) {
-        lines.push(`  - Execution: ${event.status} via ${event.source} - ${event.summary}`);
-        if (event.artifact) {
-          lines.push(`    - Artifact: ${event.artifact}`);
-        }
-      }
-    });
+    lines.push(
+      ...buildProcedureGatesSectionLines(
+        input.evidenceProcedureSteps,
+        input.procedureExecutionEvents
+      )
+    );
   }
 
   if (input.reviewMemoryGraph && input.reviewMemoryGraph.nodes.length > 0) {
-    lines.push('', '### Review memory graph');
-    lines.push(
-      `Schema v${input.reviewMemoryGraph.schema_version} · ${input.reviewMemoryGraph.nodes.length} nodes · ${input.reviewMemoryGraph.edges.length} edges${input.reviewMemoryGraph.truncated ? ' · truncated' : ''}`
-    );
-    input.reviewMemoryGraph.nodes.slice(0, 8).forEach((node) => {
-      const path = node.file_path && node.file_path !== node.label ? ` (${node.file_path})` : '';
-      const detail = node.detail ? ` — ${node.detail}` : '';
-      lines.push(`- [${node.kind}] ${node.label}${path}${detail}`);
-    });
-    input.reviewMemoryGraph.edges.slice(0, 8).forEach((edge) => {
-      lines.push(
-        `  - edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.confidence.toFixed(2)})`
-      );
-    });
-    if ((input.reviewMemoryGraph.trusted_paths?.length ?? 0) > 0) {
-      lines.push('', '#### Qualified native graph paths');
-      input.reviewMemoryGraph.trusted_paths?.slice(0, 4).forEach((path) => {
-        lines.push('```text', renderQualifiedGraphPath(path), '```');
-      });
-    }
+    lines.push(...buildReviewMemoryGraphSectionLines(input.reviewMemoryGraph));
   }
 
   if (input.focusedReviewMemoryGraph && input.focusedReviewMemoryGraph.nodes.length > 0) {
-    lines.push('', '### Focused finding graph');
-    lines.push(
-      `Scope ${input.focusedReviewMemoryGraph.scope} · ${input.focusedReviewMemoryGraph.nodes.length} nodes · ${input.focusedReviewMemoryGraph.edges.length} edges${input.focusedReviewMemoryGraph.truncated ? ' · truncated' : ''}`
-    );
-    input.focusedReviewMemoryGraph.nodes.slice(0, 8).forEach((node) => {
-      const path = node.file_path && node.file_path !== node.label ? ` (${node.file_path})` : '';
-      const detail = node.detail ? ` — ${node.detail}` : '';
-      lines.push(`- [${node.kind}] ${node.label}${path}${detail}`);
-    });
-    input.focusedReviewMemoryGraph.edges.slice(0, 8).forEach((edge) => {
-      lines.push(
-        `  - edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.confidence.toFixed(2)})`
-      );
-    });
+    lines.push(...buildFocusedReviewMemoryGraphSectionLines(input.focusedReviewMemoryGraph));
   }
 
   if (input.trustedGraphContext && input.trustedGraphContext.nodes.length > 0) {
-    const graph = input.trustedGraphContext;
-    lines.push('', '### Trusted structural graph');
-    lines.push(
-      `Snapshot \`${graph.snapshot_id}\` · ${graph.engine_id}@${graph.engine_version} · schema v${graph.schema_version} · ${graph.stale ? 'stale' : 'current'}${graph.truncated ? ' · truncated' : ''}`
-    );
-    lines.push(
-      `Coverage: ${graph.coverage.indexed_files}/${graph.coverage.discovered_files} files indexed · ${graph.coverage.error_files} errors · ${graph.coverage.skipped_files} skipped`
-    );
-    lines.push(`Qualification: ${graph.qualification}`);
-    lines.push(
-      '_Navigation context only. Graph topology is not a finding and is not verified runtime evidence._'
-    );
-    graph.nodes.slice(0, 12).forEach((node) => {
-      const source = node.sources[0];
-      const sourceLabel = source
-        ? ` · source: \`${source.path}${source.start_line != null ? `:${source.start_line}` : ''}\``
-        : ' · source: unavailable';
-      lines.push(
-        `- node [${node.trust}/${node.origin}] ${node.label}${node.path ? ` (\`${node.path}\`)` : ''}${sourceLabel}`
-      );
-    });
-    graph.edges.slice(0, 16).forEach((edge) => {
-      const source = edge.sources[0];
-      const sourceLabel = source
-        ? ` · source: \`${source.path}${source.start_line != null ? `:${source.start_line}` : ''}\``
-        : ' · source: unavailable';
-      lines.push(
-        `  - edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.trust}/${edge.origin})${sourceLabel}`
-      );
-    });
+    lines.push(...buildTrustedGraphSectionLines(input.trustedGraphContext));
   }
 
   if (input.historyExplanations && input.historyExplanations.length > 0) {
-    lines.push('', '### Codebase history explanations');
-    input.historyExplanations.slice(0, 5).forEach((explanation) => {
-      lines.push(`- **${explanation.file}** (${explanation.confidence}) — ${explanation.summary}`);
-      explanation.citations.slice(0, 3).forEach((citation) => {
-        lines.push(`  - ${citation}`);
-      });
-    });
+    lines.push(...buildHistoryExplanationsSectionLines(input.historyExplanations));
   }
 
   if (input.temporalHistory) {
-    lines.push('', '### Temporal history graph');
-    lines.push(
-      `Schema v${input.temporalHistory.schema_version} · ${input.temporalHistory.episodes.length} episodes · ${input.temporalHistory.stale ? 'stale' : 'current'}${input.temporalHistory.truncated ? ' · truncated' : ''}`
-    );
-    input.temporalHistory.constraints.slice(0, 5).forEach((event) => {
-      const source = event.sources[0]?.path ? ` · source: \`${event.sources[0].path}\`` : '';
-      lines.push(
-        `- [${event.stage}/${event.trust}] ${event.summary}${source} · event: \`${event.id}\``
-      );
-    });
-    input.temporalHistory.failures.slice(0, 5).forEach((event) => {
-      lines.push(`- [prior failure/${event.trust}] ${event.summary} · event: \`${event.id}\``);
-    });
-    input.temporalHistory.gaps.slice(0, 5).forEach((gap) => {
-      lines.push(`- Gap: ${gap}`);
-    });
+    lines.push(...buildTemporalHistorySectionLines(input.temporalHistory));
   }
 
-  lines.push('', '### Findings & evidence');
-  if (input.findings.length === 0) {
-    lines.push('- _No findings._');
-  } else {
-    input.findings.forEach((finding, idx) => {
-      const ev = input.evidence[idx];
-      const artifact = ev.artifact.trim() ? ` · artifact: \`${ev.artifact.trim()}\`` : '';
-      lines.push(
-        `- ${statusIcon(ev.status)} **[${finding.severity.toUpperCase()}]** ${finding.title}${formatLoc(finding)} — ${ev.status.replace('_', ' ')}${artifact}`
-      );
-      const historySummary = input.historyFindingSummaries.get(idx);
-      if (historySummary) {
-        const sample =
-          historySummary.topDecision ?? historySummary.topCommit ?? historySummary.topClaim;
-        const counts = [
-          historySummary.decisions ? `${historySummary.decisions} decision` : null,
-          historySummary.commits ? `${historySummary.commits} commit` : null,
-          historySummary.recurring ? `${historySummary.recurring} recurring` : null,
-          historySummary.commands ? `${historySummary.commands} command` : null,
-          historySummary.claims ? `${historySummary.claims} claim` : null,
-        ]
-          .filter(Boolean)
-          .join(', ');
-        lines.push(`  - History context: ${counts}${sample ? ` — ${sample}` : ''}`);
-        for (const command of historySummary.topCommands ?? []) {
-          lines.push(`  - Command evidence: ${command}`);
-        }
-      }
-      const notes = ev.notes.trim();
-      if (notes) {
-        notes.split('\n').forEach((line) => lines.push(`  - ${line}`));
-      }
-    });
-  }
+  lines.push(...buildFindingsAndEvidenceSectionLines(input));
 
-  const nextActions: string[] = [];
-  input.findings.forEach((finding, idx) => {
-    const ev = input.evidence[idx];
-    const sev = `[${finding.severity.toUpperCase()}]`;
-    if (ev.status === 'not_checked') {
-      nextActions.push(`- [ ] Verify **${sev}** ${finding.title}${formatLoc(finding)}`);
-    } else if (ev.status === 'reproduced') {
-      const artifact = ev.artifact.trim() ? ` (artifact: \`${ev.artifact.trim()}\`)` : '';
-      nextActions.push(
-        `- [ ] Fix **${sev}** ${finding.title}${formatLoc(finding)} — currently reproduced${artifact}`
-      );
-    } else if (ev.status === 'fixed') {
-      buildRevalidationChecklist(finding, ev).forEach((item) => {
-        if (!ev.revalidation[item.id]) {
-          nextActions.push(`- [ ] ${item.label}`);
-        }
-      });
-    }
-  });
+  const nextActions = buildReviewerNextActionsLines(input);
   if (nextActions.length > 0) {
     lines.push('', '### Next actions');
     lines.push(...nextActions);
   }
 
   return lines.join('\n');
+}
+
+function buildFindingHunkHistorySectionLines(summary: HistoryFindingSummary): string[] {
+  const counts = [
+    summary.decisions ? `${summary.decisions} decision` : null,
+    summary.commits ? `${summary.commits} commit` : null,
+    summary.recurring ? `${summary.recurring} recurring` : null,
+    summary.commands ? `${summary.commands} command` : null,
+    summary.claims ? `${summary.claims} claim` : null,
+  ].filter(Boolean) as string[];
+  const sample = summary.topDecision ?? summary.topCommit ?? summary.topClaim;
+  const lines: string[] = ['', '## Local history context'];
+  lines.push(`- ${counts.length ? counts.join(', ') : 'No linked history counts.'}`);
+  if (sample) {
+    lines.push(`- ${sample}`);
+  }
+  for (const command of summary.topCommands ?? []) {
+    lines.push(`- Command evidence: ${command}`);
+  }
+  return lines;
+}
+
+function buildFindingHunkFocusedGraphLines(graph: ReviewMemoryGraph): string[] {
+  const lines: string[] = ['', '## Focused memory graph'];
+  lines.push(
+    `Schema v${graph.schema_version}; scope ${graph.scope}; ${graph.nodes.length} nodes; ${graph.edges.length} edges${graph.truncated ? '; truncated' : ''}.`
+  );
+  for (const node of graph.nodes.slice(0, 8)) {
+    const path = node.file_path && node.file_path !== node.label ? ` (${node.file_path})` : '';
+    const detail = node.detail ? ` - ${node.detail}` : '';
+    lines.push(`- [${node.kind}] ${node.label}${path}${detail}`);
+  }
+  for (const edge of graph.edges.slice(0, 8)) {
+    lines.push(`- Edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.confidence.toFixed(2)})`);
+  }
+  return lines;
+}
+
+function buildFindingHunkNextActionsLines(
+  finding: CliReviewFinding,
+  evidence: FindingEvidence,
+  loc: string
+): string[] {
+  const nextActions = buildRevalidationChecklist(finding, evidence)
+    .filter((item) => !evidence.revalidation[item.id])
+    .map((item) => `- [ ] ${item.label}`);
+  if (evidence.status === 'not_checked') {
+    nextActions.unshift(`- [ ] Verify this finding against ${loc}.`);
+  } else if (evidence.status === 'reproduced') {
+    nextActions.unshift(`- [ ] Fix the reproduced issue and attach fresh proof.`);
+  }
+  return nextActions;
 }
 
 export function buildFindingHunkNoteMarkdown(input: FindingHunkNoteInput): string {
@@ -1715,60 +2203,24 @@ export function buildFindingHunkNoteMarkdown(input: FindingHunkNoteInput): strin
 
   if (evidence.notes.trim()) {
     lines.push('', '## Evidence notes');
-    evidence.notes
+    for (const line of evidence.notes
       .trim()
       .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .forEach((line) => lines.push(`- ${line}`));
+      .map((l) => l.trim())
+      .filter(Boolean)) {
+      lines.push(`- ${line}`);
+    }
   }
 
   if (input.historySummary) {
-    const summary = input.historySummary;
-    const counts = [
-      summary.decisions ? `${summary.decisions} decision` : null,
-      summary.commits ? `${summary.commits} commit` : null,
-      summary.recurring ? `${summary.recurring} recurring` : null,
-      summary.commands ? `${summary.commands} command` : null,
-      summary.claims ? `${summary.claims} claim` : null,
-    ].filter(Boolean);
-    const sample = summary.topDecision ?? summary.topCommit ?? summary.topClaim;
-    lines.push('', '## Local history context');
-    lines.push(`- ${counts.length ? counts.join(', ') : 'No linked history counts.'}`);
-    if (sample) {
-      lines.push(`- ${sample}`);
-    }
-    for (const command of summary.topCommands ?? []) {
-      lines.push(`- Command evidence: ${command}`);
-    }
+    lines.push(...buildFindingHunkHistorySectionLines(input.historySummary));
   }
 
   if (input.focusedReviewMemoryGraph && input.focusedReviewMemoryGraph.nodes.length > 0) {
-    const graph = input.focusedReviewMemoryGraph;
-    lines.push('', '## Focused memory graph');
-    lines.push(
-      `Schema v${graph.schema_version}; scope ${graph.scope}; ${graph.nodes.length} nodes; ${graph.edges.length} edges${graph.truncated ? '; truncated' : ''}.`
-    );
-    graph.nodes.slice(0, 8).forEach((node) => {
-      const path = node.file_path && node.file_path !== node.label ? ` (${node.file_path})` : '';
-      const detail = node.detail ? ` - ${node.detail}` : '';
-      lines.push(`- [${node.kind}] ${node.label}${path}${detail}`);
-    });
-    graph.edges.slice(0, 8).forEach((edge) => {
-      lines.push(
-        `- Edge: ${edge.from} -> ${edge.to} (${edge.kind}, ${edge.confidence.toFixed(2)})`
-      );
-    });
+    lines.push(...buildFindingHunkFocusedGraphLines(input.focusedReviewMemoryGraph));
   }
 
-  const nextActions = buildRevalidationChecklist(finding, evidence)
-    .filter((item) => !evidence.revalidation[item.id])
-    .map((item) => `- [ ] ${item.label}`);
-  if (evidence.status === 'not_checked') {
-    nextActions.unshift(`- [ ] Verify this finding against ${loc}.`);
-  } else if (evidence.status === 'reproduced') {
-    nextActions.unshift(`- [ ] Fix the reproduced issue and attach fresh proof.`);
-  }
+  const nextActions = buildFindingHunkNextActionsLines(finding, evidence, loc);
   if (nextActions.length > 0) {
     lines.push('', '## Next verification actions', ...nextActions);
   }
