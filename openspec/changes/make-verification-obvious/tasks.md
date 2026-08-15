@@ -12,10 +12,11 @@
 - [x] 2.1 Add one keyboard-accessible, high-attention `Check a change` action
   to the existing desktop navigation without removing destinations, changing
   routes, or breaking `g` shortcuts and persistent route mounting
-- [x] 2.2 Add a compact verification spotlight before Usage telemetry on Home
-  with a primary Review action and a secondary runtime-evidence action
+- [x] 2.2 Keep change verification immediately reachable through the persistent
+  shell action; the former duplicated Home spotlight is superseded by the
+  focused five-surface shell
 - [x] 2.3 Update the command palette so verification terminology and actions
-  match the shell and include the existing Board destination
+  match the shell; Board is superseded by the focused five-surface direction
 
 ## 3. Workflow clarity
 
@@ -32,9 +33,9 @@
 
 ## 4. UI verification
 
-- [x] 4.1 Add focused frontend tests for the persistent CTA, Home spotlight,
-  onboarding mental model, command-palette destinations, and honest missing-
-  evidence state
+- [x] 4.1 Add focused frontend tests for the persistent CTA, onboarding mental
+  model, retained command-palette destinations, and honest missing-evidence
+  state; historical Home-spotlight assertions are superseded
 - [x] 4.2 Run the smallest relevant desktop unit, lint, typecheck, and route
   checks, then fix only failures caused by this change
 - [x] 4.3 Qualify representative empty, partial, completed, keyboard-focused,
@@ -70,3 +71,8 @@
 - [ ] 6.2 Record only implemented and verified outcomes in
   `PROJECT_STATUS.md`; do not treat the plan or three dogfood cases as shipped
   product-value evidence
+> **Scope reconciliation (2026-08-16):** Work, Board, seven-destination
+> navigation, and the duplicated Home spotlight are superseded by
+> `focus-desktop-product-surfaces`. Retain the completed Review, Testing,
+> evidence-language, and shipping-decision work; do not restore removed shell
+> surfaces to satisfy historical assertions.

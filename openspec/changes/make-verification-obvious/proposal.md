@@ -49,3 +49,9 @@ None.
 - Produces three private dogfood verification packets and a decision ledger.
   Public claims, benchmark promotion, publishing, releases, and provider runs
   remain separately gated.
+> **Superseded product-shell scope (2026-08-16):**
+> [`focus-desktop-product-surfaces`](../focus-desktop-product-surfaces/proposal.md)
+> removes Work and Board from primary product presentation and introduces
+> Performance. This change remains authoritative only for the retained Review,
+> Testing, evidence-language, and shipping-decision work. Its seven-destination
+> navigation and duplicated Home-spotlight assumptions must not be restored.
