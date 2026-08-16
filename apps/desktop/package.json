@@ -87,6 +87,7 @@
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.20",
     "c8": "^11.0.0",
+    "ccusage": "20.0.20",
     "msw": "2.15.0",
     "playwright": "^1.58.2",
     "postcss": "^8.5.0",
