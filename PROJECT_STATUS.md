@@ -38,6 +38,7 @@ separately approved safety design justify renewed investment.
 ## Dependencies
 
 External:
+- Bundled `ccusage` 20.0.20 sidecar — local, offline Claude/Codex usage accounting; exact updates are opened weekly and remain qualification-gated.
 - User-supplied LLM API keys (Anthropic / OpenAI / OpenRouter) stored in user settings — no server-side auth.
 - Installed and authenticated Codex or Claude CLI for Work conversations; provider account policy remains external to CodeVetter.
 - GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on `tauri.conf.json` version bumps, dispatching `release.yml` to build/sign/upload Tauri binaries; `@tauri-apps/plugin-updater` consumes the `latest.json` manifest.
@@ -53,6 +54,16 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-08-16 — ccusage local-accounting cutover (unreleased):** Replaced the
+  Usage chart's custom Claude/Codex accounting with one cached report from the
+  pinned bundled `ccusage` sidecar. The chart now contains ccusage-backed
+  Claude/Codex data plus the existing Devin tracker only; Cursor and Grok are
+  excluded. Reliable provider remaining-usage and quota cards are unchanged.
+  Retired the Codex reconciliation UI, startup repairs, observation writes, and
+  bespoke ledger pricing/qualification code while leaving historical SQLite
+  tables intact. Devin remains separate because upstream ccusage does not
+  support its cloud-side usage.
 
 - **2026-08-16 — Focused desktop performance workbench (release candidate):**
   Retired Work and Board from the visible product shell and redirected their

@@ -636,50 +636,6 @@ export interface SessionAdapterRun {
   created_at: string;
 }
 
-export interface LiveSessionEvidencePolicy {
-  schema_version: number;
-  mode: string;
-  supported_incremental_adapters: string[];
-  incremental_interval_secs: number;
-  secondary_adapter_interval_secs: number;
-  recovery: string;
-  full_index_recovery_interval_secs: number;
-  update_event: string;
-  local_only: boolean;
-  last_full_indexed_at?: string | null;
-  last_usage_observed_at?: string | null;
-  incomplete_codex_sources: number;
-  pending_codex_bytes: number;
-  duplicate_usage_events: number;
-  excluded_usage_events: number;
-}
-
-export interface CodexReconciliationTokenTotals {
-  input_tokens: number;
-  cache_read_tokens: number;
-  output_tokens: number;
-  reasoning_tokens: number;
-}
-
-export interface CodexUsageReconciliation {
-  scanner_revision: number;
-  verified_sessions: number;
-  legacy_estimated_sessions: number;
-  ambiguous_sessions: number;
-  missing_unestimated_sessions: number;
-  stale_sessions: number;
-  verified_totals: CodexReconciliationTokenTotals;
-  legacy_estimated_totals: CodexReconciliationTokenTotals;
-  legacy_estimated_cost_usd: number;
-  priced_exact_events: number;
-  priced_range_events: number;
-  unpriced_events: number;
-  verified_cost_min_microusd?: number | null;
-  verified_cost_max_microusd?: number | null;
-  pending_bytes: number;
-  observation_watermark?: string | null;
-}
-
 export interface SessionScorecard {
   schema_version: number;
   project?: string | null;
@@ -3427,22 +3383,6 @@ export async function triggerIndex(): Promise<TriggerIndexResult> {
   return safeInvoke<TriggerIndexResult>('trigger_index');
 }
 
-export async function getLiveSessionEvidencePolicy(): Promise<LiveSessionEvidencePolicy> {
-  return safeInvoke<LiveSessionEvidencePolicy>('get_live_session_evidence_policy');
-}
-
-export async function getCodexUsageReconciliation(
-  scannerRevision?: number
-): Promise<CodexUsageReconciliation> {
-  return safeInvoke<CodexUsageReconciliation>('get_codex_usage_reconciliation', {
-    scannerRevision: scannerRevision ?? null,
-  });
-}
-
-export async function getTokenUsageStats(): Promise<TokenUsageStats> {
-  return safeInvoke<TokenUsageStats>('get_token_usage_stats');
-}
-
 export async function getLocalUsageReport(
   refresh = false,
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
@@ -3450,25 +3390,23 @@ export async function getLocalUsageReport(
   return safeInvoke<LocalUsageReport>('get_local_usage_report', { refresh, timezone });
 }
 
-export async function getAgentUsageBreakdown(): Promise<AgentUsageRow[]> {
-  return safeInvoke<AgentUsageRow[]>('get_agent_usage_breakdown');
+export async function getDevinUsageBreakdown(): Promise<AgentUsageRow[]> {
+  return safeInvoke<AgentUsageRow[]>('get_devin_usage_breakdown');
 }
 
-export async function getAgentUsageByDay(days?: number): Promise<AgentDayUsage[]> {
-  return safeInvoke<AgentDayUsage[]>('get_agent_usage_by_day', {
+export async function getDevinUsageByDay(days?: number): Promise<AgentDayUsage[]> {
+  return safeInvoke<AgentDayUsage[]>('get_devin_usage_by_day', {
     days: days ?? null,
   });
 }
 
-export async function getUsageByModel(
+export async function getDevinUsageByModel(
   days?: number,
-  excludeAgents?: string[],
   dayStart?: string,
   dayEnd?: string
 ): Promise<ModelUsage[]> {
-  return safeInvoke<ModelUsage[]>('get_usage_by_model', {
+  return safeInvoke<ModelUsage[]>('get_devin_usage_by_model', {
     days: days ?? null,
-    excludeAgents: excludeAgents?.length ? excludeAgents : null,
     dayStart: dayStart ?? null,
     dayEnd: dayEnd ?? null,
   });

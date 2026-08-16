@@ -91,7 +91,8 @@
     "react-router-dom",
     "react-resizable-panels",
     "@xterm/*",
-    "@axe-core/playwright"
+    "@axe-core/playwright",
+    "ccusage"
   ],
   "ignoreBinaries": [
     "astro",

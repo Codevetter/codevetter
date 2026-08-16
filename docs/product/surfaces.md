@@ -37,7 +37,7 @@ Source: `navItems` in `apps/desktop/src/components/sidebar.tsx`.
 
 | Tab | Route | Page (via `persistent-routes.tsx`) | What it does |
 |---|---|---|---|
-| Usage | `/` | `apps/desktop/src/pages/Home.tsx` | Verified Codex token evidence, explicit coverage/pricing diagnostics, separately labelled legacy estimates, recovery/import controls, session history, and acceptance-rate strip. |
+| Usage | `/` | `apps/desktop/src/pages/Home.tsx` | Local spend and token trends from bundled `ccusage` for Claude/Codex plus CodeVetter's Devin tracker; provider remaining-usage and quota telemetry stays separate and unchanged. |
 | Repo Unpack | `/unpack` | `apps/desktop/src/pages/RepoPage.tsx` | Whole-repo evidence-backed system brief. Tab `match`es `/unpack` and `/intel`. Scanner in `src-tauri/src/commands/unpack*.rs`; persisted to `repo_unpacked_reports`. See [architecture/repo-unpacked.md](../architecture/repo-unpacked.md). |
 | Review | `/review` | `apps/desktop/src/pages/QuickReview.tsx` | First change-checking stage: select an exact change, inspect source-qualified findings and coverage gaps, attach evidence, and export a local Agent PR X-Ray. Findings remain leads until executable evidence supports the decision. |
 | Testing | `/trex` | `apps/desktop/src/pages/TRex.tsx` | Runtime-evidence stage: resolve a human-described flow, exact PR/change, or bounded codebase portfolio into runnable tests; confirm the plan; then capture receipts. Direct preview, changed-capability verification, scenarios, and PR watchers remain available. See [trex-change-preview.md](./trex-change-preview.md). |

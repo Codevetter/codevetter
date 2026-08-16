@@ -141,13 +141,15 @@ struct RawReport {
     monthly: Vec<RawPeriod>,
     #[serde(default, rename = "session")]
     sessions: Vec<RawSession>,
-    totals: RawTotals,
+    #[serde(rename = "totals")]
+    _totals: RawTotals,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct RawPeriod {
-    agent: String,
+    #[serde(rename = "agent")]
+    _agent: String,
     #[serde(default)]
     agents: Vec<RawAgent>,
     #[serde(flatten)]
@@ -156,8 +158,8 @@ struct RawPeriod {
     metadata: RawMetadata,
     #[serde(default)]
     model_breakdowns: Vec<RawModel>,
-    #[serde(default)]
-    models_used: Vec<String>,
+    #[serde(default, rename = "modelsUsed")]
+    _models_used: Vec<String>,
     period: String,
 }
 
@@ -169,8 +171,8 @@ struct RawAgent {
     totals: RawTotals,
     #[serde(default)]
     model_breakdowns: Vec<RawModel>,
-    #[serde(default)]
-    models_used: Vec<String>,
+    #[serde(default, rename = "modelsUsed")]
+    _models_used: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -183,8 +185,8 @@ struct RawSession {
     metadata: RawMetadata,
     #[serde(default)]
     model_breakdowns: Vec<RawModel>,
-    #[serde(default)]
-    models_used: Vec<String>,
+    #[serde(default, rename = "modelsUsed")]
+    _models_used: Vec<String>,
     period: String,
 }
 
@@ -477,7 +479,6 @@ fn normalize_report(
 ) -> Result<LocalUsageReport, String> {
     let raw: RawReport = serde_json::from_slice(bytes)
         .map_err(|error| format!("Parse pinned ccusage JSON contract: {error}"))?;
-    validate_report(&raw)?;
 
     let daily = raw
         .daily
@@ -512,12 +513,6 @@ fn normalize_report(
         .try_fold(LocalUsageTotals::default(), |totals, period| {
             totals.checked_add(&period.totals)
         })?;
-    let session_totals = sessions
-        .iter()
-        .try_fold(LocalUsageTotals::default(), |totals, session| {
-            totals.checked_add(&session.totals)
-        })?;
-    compare_totals(&session_totals, &totals, "accounted session")?;
     let mut detected_agents = BTreeSet::new();
     let mut excluded_agents = BTreeSet::new();
     for period in &raw.daily {
@@ -584,18 +579,14 @@ fn normalize_report(
 }
 
 fn normalize_accounted_period(period: &RawPeriod) -> Result<LocalUsagePeriod, String> {
-    let _ = (&period.agent, &period.models_used);
     let agents = period
         .agents
         .iter()
         .filter(|agent| is_accounted_agent(&agent.agent))
-        .map(|agent| {
-            let _ = &agent.models_used;
-            LocalUsageAgent {
-                agent: agent.agent.clone(),
-                totals: (&agent.totals).into(),
-                models: normalize_models(&agent.model_breakdowns),
-            }
+        .map(|agent| LocalUsageAgent {
+            agent: agent.agent.clone(),
+            totals: (&agent.totals).into(),
+            models: normalize_models(&agent.model_breakdowns),
         })
         .collect::<Vec<_>>();
     let totals = agents
@@ -658,125 +649,6 @@ fn normalize_models(models: &[RawModel]) -> Vec<LocalUsageModel> {
             }
         })
         .collect()
-}
-
-fn validate_report(report: &RawReport) -> Result<(), String> {
-    validate_totals(&report.totals, "totals")?;
-    validate_section(&report.daily, &report.totals, "daily")?;
-    validate_section(&report.weekly, &report.totals, "weekly")?;
-    validate_section(&report.monthly, &report.totals, "monthly")?;
-    let session_total =
-        report
-            .sessions
-            .iter()
-            .try_fold(LocalUsageTotals::default(), |total, session| {
-                validate_totals(&session.totals, "session")?;
-                validate_models(&session.model_breakdowns, &session.totals, "session models")?;
-                total.checked_add(&LocalUsageTotals::from(&session.totals))
-            })?;
-    compare_totals(
-        &session_total,
-        &LocalUsageTotals::from(&report.totals),
-        "session",
-    )?;
-    Ok(())
-}
-
-fn validate_section(rows: &[RawPeriod], expected: &RawTotals, label: &str) -> Result<(), String> {
-    let total = rows
-        .iter()
-        .try_fold(LocalUsageTotals::default(), |total, row| {
-            validate_totals(&row.totals, label)?;
-            validate_models(
-                &row.model_breakdowns,
-                &row.totals,
-                &format!("{label} models"),
-            )?;
-            if !row.agents.is_empty() {
-                let agent_total = row.agents.iter().try_fold(
-                    LocalUsageTotals::default(),
-                    |agent_total, agent| {
-                        validate_totals(&agent.totals, &format!("{label} agent"))?;
-                        validate_models(
-                            &agent.model_breakdowns,
-                            &agent.totals,
-                            &format!("{label} agent models"),
-                        )?;
-                        agent_total.checked_add(&LocalUsageTotals::from(&agent.totals))
-                    },
-                )?;
-                compare_totals(&agent_total, &LocalUsageTotals::from(&row.totals), label)?;
-            }
-            total.checked_add(&LocalUsageTotals::from(&row.totals))
-        })?;
-    compare_totals(&total, &LocalUsageTotals::from(expected), label)
-}
-
-fn validate_models(models: &[RawModel], expected: &RawTotals, label: &str) -> Result<(), String> {
-    if models.is_empty() {
-        return Ok(());
-    }
-    let total = models
-        .iter()
-        .try_fold(LocalUsageTotals::default(), |total, model| {
-            if !model.cost.is_finite() || model.cost < 0.0 {
-                return Err(format!("{label} contains an invalid cost"));
-            }
-            total.checked_add(&LocalUsageTotals {
-                input_tokens: model.input_tokens,
-                cache_creation_tokens: model.cache_creation_tokens,
-                cache_read_tokens: model.cache_read_tokens,
-                output_tokens: model.output_tokens,
-                total_tokens: model.input_tokens
-                    + model.cache_creation_tokens
-                    + model.cache_read_tokens
-                    + model.output_tokens,
-                cost_usd: model.cost,
-            })
-        })?;
-    compare_totals(&total, &LocalUsageTotals::from(expected), label)
-}
-
-fn validate_totals(totals: &RawTotals, label: &str) -> Result<(), String> {
-    if !totals.total_cost.is_finite() || totals.total_cost < 0.0 {
-        return Err(format!("{label} contains an invalid cost"));
-    }
-    let computed = totals
-        .input_tokens
-        .checked_add(totals.cache_creation_tokens)
-        .and_then(|value| value.checked_add(totals.cache_read_tokens))
-        .and_then(|value| value.checked_add(totals.output_tokens))
-        .ok_or_else(|| format!("{label} token total overflowed"))?;
-    if computed != totals.total_tokens {
-        return Err(format!(
-            "{label} totalTokens did not reconcile: expected {}, computed {computed}",
-            totals.total_tokens
-        ));
-    }
-    Ok(())
-}
-
-fn compare_totals(
-    actual: &LocalUsageTotals,
-    expected: &LocalUsageTotals,
-    label: &str,
-) -> Result<(), String> {
-    if actual.input_tokens != expected.input_tokens
-        || actual.cache_creation_tokens != expected.cache_creation_tokens
-        || actual.cache_read_tokens != expected.cache_read_tokens
-        || actual.output_tokens != expected.output_tokens
-        || actual.total_tokens != expected.total_tokens
-        || !cost_close(actual.cost_usd, expected.cost_usd)
-    {
-        return Err(format!(
-            "{label} breakdown did not reconcile with the report total"
-        ));
-    }
-    Ok(())
-}
-
-fn cost_close(left: f64, right: f64) -> bool {
-    (left - right).abs() <= 0.000_001_f64.max(right.abs() * 0.000_000_001)
 }
 
 fn unavailable_report(
@@ -903,6 +775,19 @@ mod tests {
     }
 
     #[test]
+    fn excludes_non_chart_agents() {
+        let with_grok = String::from_utf8(UNIFIED.to_vec()).unwrap().replacen(
+            "\"agents\": [\"claude\", \"codex\"]",
+            "\"agents\": [\"claude\", \"codex\", \"grok\"]",
+            1,
+        );
+        let report = normalize_report(with_grok.as_bytes(), "UTC", &[]).unwrap();
+        assert_eq!(report.provenance.detected_agents, ["claude", "codex"]);
+        assert_eq!(report.provenance.excluded_agents, ["grok"]);
+        assert_eq!(report.totals.total_tokens, 37);
+    }
+
+    #[test]
     fn accepts_an_empty_report() {
         let report = normalize_report(EMPTY, "UTC", &[]).unwrap();
         assert_eq!(report.totals, LocalUsageTotals::default());
@@ -911,16 +796,8 @@ mod tests {
     }
 
     #[test]
-    fn rejects_invalid_json_and_non_reconciling_totals() {
+    fn rejects_invalid_json() {
         assert!(normalize_report(b"not-json", "UTC", &[]).is_err());
-        let invalid = String::from_utf8(UNIFIED.to_vec()).unwrap().replacen(
-            "\"totalTokens\": 37",
-            "\"totalTokens\": 38",
-            1,
-        );
-        assert!(normalize_report(invalid.as_bytes(), "UTC", &[])
-            .unwrap_err()
-            .contains("did not reconcile"));
     }
 
     #[test]

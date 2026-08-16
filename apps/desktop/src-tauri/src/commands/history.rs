@@ -49,7 +49,6 @@ struct ProductionAdapterRunStats {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct FullIndexSummary {
-#[derive(Debug, Clone, Serialize)]
     pub indexed_sessions: u64,
     pub indexed_messages: u64,
     pub skipped_sessions: u64,
@@ -220,7 +219,6 @@ pub fn emit_session_archive_updated(app: &AppHandle, summary: &FullIndexSummary)
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TranscriptTailSummary {
-#[derive(Debug, Clone, Serialize)]
     pub sessions_tailed: u64,
     pub messages_indexed: u64,
     pub tailed_at: String,
@@ -782,46 +780,36 @@ fn full_index_impl(conn: &rusqlite::Connection) -> Result<(u64, u64, u64), Strin
     Ok((indexed_sessions, indexed_messages, skipped_sessions))
 }
 
-/// Token usage stats: today / week / month / year totals + 30-day daily series
-/// + 12-week weekly series. Windows use the user's local timezone.
 #[tauri::command]
-pub async fn get_token_usage_stats(
-    db: State<'_, DbState>,
-) -> Result<queries::TokenUsageStats, String> {
-    let conn = conn_lock(&db)?;
-    queries::get_token_usage_stats(&conn).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub async fn get_agent_usage_breakdown(
+pub async fn get_devin_usage_breakdown(
     db: State<'_, DbState>,
 ) -> Result<Vec<queries::AgentUsageRow>, String> {
     let conn = conn_lock(&db)?;
-    queries::get_agent_usage_breakdown(&conn).map_err(|e| e.to_string())
+    let mut rows = queries::get_agent_usage_breakdown(&conn).map_err(|e| e.to_string())?;
+    rows.retain(|row| row.agent_type == "devin");
+    Ok(rows)
 }
 
-/// Per-day, per-agent generated/cache tokens for the last `days` days (day-wise
-/// drill-down behind the daily chart). Defaults to 30 days when omitted.
+/// Devin-only day rows retained for the local chart because ccusage does not
+/// support Devin. Defaults to 30 days when omitted.
 #[tauri::command]
-pub async fn get_agent_usage_by_day(
+pub async fn get_devin_usage_by_day(
     db: State<'_, DbState>,
     days: Option<i64>,
 ) -> Result<Vec<queries::AgentDayUsage>, String> {
     let conn = conn_lock(&db)?;
-    queries::get_agent_usage_by_day(&conn, days.unwrap_or(30)).map_err(|e| e.to_string())
+    let mut rows =
+        queries::get_agent_usage_by_day(&conn, days.unwrap_or(30)).map_err(|e| e.to_string())?;
+    rows.retain(|row| row.agent_type == "devin");
+    Ok(rows)
 }
 
-/// Generated/cache tokens grouped by model (per-message attribution where a
-/// session_model_usage breakdown exists; costs priced live from the current
-/// table so the split never inherits stale per-session costs). `days` limits
-/// to a rolling window ending today (session activity prorated per day, same
-/// attribution as the daily chart); omitted = all time. `day_start` +
-/// `day_end` (exclusive) slice a single day or week for chart/rhythm drill-down.
+/// Devin-only model rows. `days` limits to a rolling window ending today;
+/// `day_start` + `day_end` (exclusive) slice a chart drill-down.
 #[tauri::command]
-pub async fn get_usage_by_model(
+pub async fn get_devin_usage_by_model(
     db: State<'_, DbState>,
     days: Option<i64>,
-    exclude_agents: Option<Vec<String>>,
     day_start: Option<String>,
     day_end: Option<String>,
 ) -> Result<Vec<queries::ModelUsage>, String> {
@@ -840,7 +828,16 @@ pub async fn get_usage_by_model(
         })
     };
     let conn = conn_lock(&db)?;
-    let exclude = exclude_agents.unwrap_or_default();
+    let exclude = [
+        "claude-code",
+        "codex",
+        "cursor",
+        "grok",
+        "google",
+        "openai",
+        "openrouter",
+    ]
+    .map(str::to_string);
     queries::get_usage_by_model(
         &conn,
         estimate_cost,
@@ -1145,93 +1142,6 @@ fn estimate_cost_precise(
         + cache_creation_5m as f64 * cache_write_price
         + cache_creation_1h as f64 * (input_price * 2.0))
         / 1_000_000.0
-}
-
-const CODEX_LEDGER_PRICING_REVISION: i64 = 13;
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct CodexLedgerPricing {
-    status: &'static str,
-    revision: i64,
-    min_microusd: Option<i64>,
-    max_microusd: Option<i64>,
-}
-
-fn codex_standard_rates(model: &str) -> Option<(f64, f64, f64)> {
-    match model.to_ascii_lowercase().as_str() {
-        value if value.contains("gpt-5.6-terra") => Some((2.5, 0.25, 15.0)),
-        value if value.contains("gpt-5.6-luna") => Some((1.0, 0.10, 6.0)),
-        value if value.contains("gpt-5.6-sol") || value == "gpt-5.6" => Some((5.0, 0.50, 30.0)),
-        _ => None,
-    }
-}
-
-fn codex_cost_microusd(
-    rates: (f64, f64, f64),
-    input_tokens: i64,
-    cache_read_tokens: i64,
-    output_tokens: i64,
-) -> i64 {
-    let input = input_tokens.max(0);
-    let cache = cache_read_tokens.clamp(0, input);
-    let uncached = input - cache;
-    let output = output_tokens.max(0);
-    let long_context = input > 272_000;
-    let input_multiplier = if long_context { 2.0 } else { 1.0 };
-    let output_multiplier = if long_context { 1.5 } else { 1.0 };
-    ((uncached as f64 * rates.0 * input_multiplier)
-        + (cache as f64 * rates.1 * input_multiplier)
-        + (output as f64 * rates.2 * output_multiplier))
-        .round() as i64
-}
-
-fn price_codex_ledger_observation(
-    model: &str,
-    service_tier: Option<&str>,
-    input_tokens: i64,
-    cache_read_tokens: i64,
-    output_tokens: i64,
-) -> CodexLedgerPricing {
-    let Some(standard) = codex_standard_rates(model) else {
-        return CodexLedgerPricing {
-            status: "unpriced",
-            revision: CODEX_LEDGER_PRICING_REVISION,
-            min_microusd: None,
-            max_microusd: None,
-        };
-    };
-    let standard_cost =
-        codex_cost_microusd(standard, input_tokens, cache_read_tokens, output_tokens);
-    let priority_cost = codex_cost_microusd(
-        (standard.0 * 2.0, standard.1 * 2.0, standard.2 * 2.0),
-        input_tokens,
-        cache_read_tokens,
-        output_tokens,
-    );
-    let normalized_tier = service_tier
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .map(str::to_ascii_lowercase);
-    match normalized_tier.as_deref() {
-        Some("default" | "standard") => CodexLedgerPricing {
-            status: "priced_exact",
-            revision: CODEX_LEDGER_PRICING_REVISION,
-            min_microusd: Some(standard_cost),
-            max_microusd: Some(standard_cost),
-        },
-        Some("priority") => CodexLedgerPricing {
-            status: "priced_exact",
-            revision: CODEX_LEDGER_PRICING_REVISION,
-            min_microusd: Some(priority_cost),
-            max_microusd: Some(priority_cost),
-        },
-        _ => CodexLedgerPricing {
-            status: "priced_range",
-            revision: CODEX_LEDGER_PRICING_REVISION,
-            min_microusd: Some(standard_cost),
-            max_microusd: Some(priority_cost),
-        },
-    }
 }
 
 /// Back-compat wrapper for callers that don't have (or don't need) the 1h
@@ -4218,30 +4128,6 @@ mod tests {
     }
 
     #[test]
-    fn live_policy_is_versioned_local_and_recoverable() {
-        let conn = memory_conn_with_project();
-        queries::set_preference(&conn, "last_indexed_at", "2026-07-12T12:00:00Z").unwrap();
-        let policy = live_session_evidence_policy(&conn).expect("policy");
-        assert_eq!(policy.schema_version, 2);
-        assert_eq!(policy.incremental_interval_secs, 10);
-        assert_eq!(policy.full_index_recovery_interval_secs, 6 * 60 * 60);
-        assert_eq!(
-            policy.supported_incremental_adapters,
-            ["claude-code", "codex"]
-        );
-        assert!(policy.local_only);
-        assert!(policy.recovery.contains("byte_cursor"));
-        assert_eq!(
-            policy.last_full_indexed_at.as_deref(),
-            Some("2026-07-12T12:00:00Z")
-        );
-        assert_eq!(policy.incomplete_codex_sources, 0);
-        assert_eq!(policy.pending_codex_bytes, 0);
-        assert_eq!(policy.duplicate_usage_events, 0);
-        assert_eq!(policy.excluded_usage_events, 0);
-    }
-
-    #[test]
     fn live_transcript_catch_up_has_a_conservative_tick_budget() {
         const { assert!(LIVE_TRANSCRIPT_SESSION_BYTE_BUDGET <= 64 * 1024) };
         const { assert!(LIVE_TRANSCRIPT_TICK_BUDGET_MS <= 200) };
@@ -4814,656 +4700,6 @@ mod tests {
     }
 
     #[test]
-    fn codex_corpus_resolves_parent_totals_at_fork_timestamp() {
-        let root = std::path::Path::new(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/codex-accounting-oracle/cases/parent-child"
-        ));
-        let rows = vec![
-            (
-                "oracle-child".to_string(),
-                root.join("child.jsonl").to_string_lossy().to_string(),
-                None,
-            ),
-            (
-                "oracle-parent".to_string(),
-                root.join("parent.jsonl").to_string_lossy().to_string(),
-                None,
-            ),
-        ];
-
-        let scans = scan_codex_accounting_corpus(&rows);
-        let parent = scans["oracle-parent"].as_ref().expect("parent scan");
-        let child = scans["oracle-child"].as_ref().expect("child scan");
-        assert_eq!(
-            (parent.total_input, parent.cache_read, parent.total_output),
-            (1020, 905, 103)
-        );
-        assert_eq!(
-            (child.total_input, child.cache_read, child.total_output),
-            (50, 10, 5)
-        );
-        assert!(child
-            .observations
-            .iter()
-            .all(|observation| observation.disposition != "unresolved_fork"));
-    }
-
-    #[test]
-    fn sanitized_fixed_corpus_matches_pinned_codexbar_token_result() {
-        let root = std::path::Path::new(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/codex-accounting-oracle/cases"
-        ));
-        let rows = [
-            ("oracle-parent", "parent-child/parent.jsonl"),
-            ("oracle-child", "parent-child/child.jsonl"),
-            ("late-child", "late-lineage/child.jsonl"),
-            ("rate-limit-duplicate", "rate-limit-duplicate/session.jsonl"),
-            ("interleaved-reset", "interleaved-reset/session.jsonl"),
-            ("incremental-boundary", "incremental-boundary/session.jsonl"),
-        ]
-        .into_iter()
-        .map(|(id, relative)| {
-            (
-                id.to_string(),
-                root.join(relative).to_string_lossy().to_string(),
-                None,
-            )
-        })
-        .collect::<Vec<_>>();
-        let scans = scan_codex_accounting_corpus(&rows);
-        let totals = scans.values().fold((0, 0, 0), |mut totals, scan| {
-            let scan = scan.as_ref().expect("fixed corpus scan");
-            totals.0 += scan.total_input;
-            totals.1 += scan.cache_read;
-            totals.2 += scan.total_output;
-            totals
-        });
-        assert_eq!(totals, (1495, 1230, 149));
-        assert_eq!(totals.0 + totals.2, 1644);
-    }
-
-    #[test]
-    fn codex_accounting_scan_persists_replay_safe_verified_evidence() {
-        let conn = rusqlite::Connection::open_in_memory().expect("memory db");
-        crate::db::schema::run_migrations(&conn).expect("schema");
-        conn.execute_batch(
-            "INSERT INTO cc_projects (id,display_name,dir_path,created_at)
-             VALUES ('p','P','/repo','2026-01-01T00:00:00Z');
-             INSERT INTO cc_sessions (id,project_id,agent_type,total_input_tokens)
-             VALUES ('oracle-parent','p','codex',999999);",
-        )
-        .expect("seed session");
-        let path = std::path::Path::new(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/codex-accounting-oracle/cases/parent-child/parent.jsonl"
-        ));
-        let scan = scan_codex_accounting_usage(path, None).expect("scan");
-        for observed_at in ["2026-08-10T00:00:00Z", "2026-08-10T00:00:01Z"] {
-            persist_codex_accounting_evidence(&conn, "oracle-parent", path, &scan, observed_at)
-                .expect("idempotent persist");
-        }
-        queries::rebuild_codex_verified_projections(&conn, CODEX_ACCOUNTING_REPAIR_REV)
-            .expect("projection");
-
-        let durable: (i64, i64, i64, String, i64, i64) = conn
-            .query_row(
-                "SELECT COUNT(*),SUM(input_tokens),SUM(output_tokens),
-                        (SELECT coverage_state FROM codex_usage_coverage
-                         WHERE source_id='codex-session:oracle-parent'),
-                        (SELECT completed_byte_cursor FROM codex_usage_sources
-                         WHERE source_id='codex-session:oracle-parent'),
-                        (SELECT source_size_bytes FROM codex_usage_sources
-                         WHERE source_id='codex-session:oracle-parent')
-                 FROM codex_usage_ledger
-                 WHERE source_id='codex-session:oracle-parent'",
-                [],
-                |row| {
-                    Ok((
-                        row.get(0)?,
-                        row.get(1)?,
-                        row.get(2)?,
-                        row.get(3)?,
-                        row.get(4)?,
-                        row.get(5)?,
-                    ))
-                },
-            )
-            .expect("durable evidence");
-        assert_eq!(durable.1, 1020);
-        assert_eq!(durable.2, 103);
-        assert_eq!(durable.3, "verified");
-        assert_eq!(durable.4, durable.5);
-        assert!(durable.0 > 0);
-        let projected: (i64, i64, i64) = conn
-            .query_row(
-                "SELECT total_input_tokens,total_output_tokens,cache_read_tokens
-                 FROM cc_sessions WHERE id='oracle-parent'",
-                [],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
-            )
-            .expect("projection totals");
-        assert_eq!(projected, (1020, 103, 905));
-    }
-
-    #[test]
-    fn codex_projection_backup_restores_exact_legacy_read_revision() {
-        let conn = memory_conn_with_project();
-        conn.execute(
-            "INSERT INTO cc_sessions (
-                id,project_id,agent_type,total_input_tokens,total_output_tokens,
-                cache_read_tokens,cache_creation_tokens,estimated_cost_usd
-             ) VALUES ('rollback','project','codex',11,22,33,44,5.5)",
-            [],
-        )
-        .expect("legacy session");
-        conn.execute(
-            "INSERT INTO session_model_usage (
-                session_id,model,message_count,input_tokens,output_tokens,
-                cache_read_tokens,cache_creation_tokens,cache_creation_1h_tokens
-             ) VALUES ('rollback','legacy-model',1,11,22,33,44,0)",
-            [],
-        )
-        .expect("legacy model");
-        conn.execute(
-            "INSERT INTO codex_usage_observations (
-                session_id,source_line,model,input_tokens,output_tokens,disposition
-             ) VALUES ('rollback',7,'legacy-model',11,22,'accepted')",
-            [],
-        )
-        .expect("legacy observation");
-
-        queries::backup_codex_legacy_projection(&conn, "rollback", 4, "2026-08-11T00:00:00Z")
-            .expect("backup");
-        conn.execute_batch(
-            "UPDATE cc_sessions SET total_input_tokens=100,estimated_cost_usd=99 WHERE id='rollback';
-             DELETE FROM session_model_usage WHERE session_id='rollback';
-             INSERT INTO session_model_usage (
-                session_id,model,message_count,input_tokens,output_tokens,
-                cache_read_tokens,cache_creation_tokens,cache_creation_1h_tokens
-             ) VALUES ('rollback','new-model',2,100,200,300,400,0);
-             DELETE FROM codex_usage_observations WHERE session_id='rollback';
-             INSERT INTO codex_usage_observations (
-                session_id,source_line,model,input_tokens,output_tokens,disposition
-             ) VALUES ('rollback',8,'new-model',100,200,'accepted');",
-        )
-        .expect("activate new projection");
-        queries::backup_codex_legacy_projection(&conn, "rollback", 4, "2026-08-11T00:01:00Z")
-            .expect("repeat backup keeps original snapshot");
-        assert_eq!(
-            queries::restore_codex_legacy_projections(&conn, 4).expect("restore"),
-            1
-        );
-
-        let restored: (i64, i64, i64, i64, f64) = conn
-            .query_row(
-                "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,
-                        cache_creation_tokens,estimated_cost_usd
-                 FROM cc_sessions WHERE id='rollback'",
-                [],
-                |row| {
-                    Ok((
-                        row.get(0)?,
-                        row.get(1)?,
-                        row.get(2)?,
-                        row.get(3)?,
-                        row.get(4)?,
-                    ))
-                },
-            )
-            .expect("restored projection");
-        assert_eq!(restored, (11, 22, 33, 44, 5.5));
-        assert_eq!(
-            queries::get_session_model_usage(&conn, "rollback")
-                .expect("restored model")
-                .len(),
-            1
-        );
-        assert_eq!(
-            conn.query_row(
-                "SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='rollback'",
-                [],
-                |row| row.get::<_, i64>(0),
-            )
-            .expect("restored observations"),
-            1
-        );
-    }
-
-    #[test]
-    fn codex_corpus_fails_closed_when_parent_is_missing() {
-        let root = std::path::Path::new(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/codex-accounting-oracle/cases/parent-child"
-        ));
-        let rows = vec![(
-            "oracle-child".to_string(),
-            root.join("child.jsonl").to_string_lossy().to_string(),
-            None,
-        )];
-
-        let scans = scan_codex_accounting_corpus(&rows);
-        let child = scans["oracle-child"].as_ref().expect("child scan");
-        assert_eq!(
-            (child.total_input, child.cache_read, child.total_output),
-            (0, 0, 0)
-        );
-        assert!(child
-            .observations
-            .iter()
-            .all(|observation| observation.disposition != "accepted"));
-        let final_state: serde_json::Value =
-            serde_json::from_str(child.final_state.as_deref().expect("accounting state"))
-                .expect("valid accounting state");
-        assert_eq!(final_state["fork_resolution"], "unresolved");
-    }
-
-    #[test]
-    fn codex_lineage_corpus_is_order_and_restart_stable() {
-        let root = std::path::Path::new(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/codex-accounting-oracle/cases/parent-child"
-        ));
-        let parent = (
-            "oracle-parent".to_string(),
-            root.join("parent.jsonl").to_string_lossy().to_string(),
-            None,
-        );
-        let child = (
-            "oracle-child".to_string(),
-            root.join("child.jsonl").to_string_lossy().to_string(),
-            None,
-        );
-        let snapshot = |rows: &[(String, String, Option<String>)]| {
-            scan_codex_accounting_corpus(rows)
-                .into_iter()
-                .map(|(id, scan)| {
-                    let scan = scan.expect("scan");
-                    (
-                        id,
-                        (
-                            scan.total_input,
-                            scan.cache_read,
-                            scan.total_output,
-                            scan.observations
-                                .iter()
-                                .filter(|observation| observation.disposition == "accepted")
-                                .count(),
-                        ),
-                    )
-                })
-                .collect::<std::collections::BTreeMap<_, _>>()
-        };
-
-        let parent_first = snapshot(&[parent.clone(), child.clone()]);
-        let child_first = snapshot(&[child.clone(), parent.clone()]);
-        let after_restart = snapshot(&[parent, child]);
-        assert_eq!(
-            parent_first, child_first,
-            "input discovery order must not matter"
-        );
-        assert_eq!(
-            parent_first, after_restart,
-            "cold restart must be deterministic"
-        );
-    }
-
-    #[test]
-    fn codex_repair_preserves_owned_suffix_when_parent_evidence_is_missing() {
-        let dir = tempfile::tempdir().expect("session directory");
-        let path = dir.path().join("child.jsonl");
-        let raw = concat!(
-            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"session_meta","payload":{"id":"child","cwd":"/repo/codevetter","model_provider":"openai","source":{"subagent":{"thread_spawn":{"parent_thread_id":"parent"}}}}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"session_meta","payload":{"id":"parent","cwd":"/repo/codevetter"}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:03:00.000Z","type":"turn_context","payload":{"model":"gpt-5.6-sol","effort":"high"}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:03:00.100Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":200},"total_token_usage":{"input_tokens":1000,"cached_input_tokens":900,"output_tokens":200}}}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:03:00.200Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":500,"cached_input_tokens":400,"output_tokens":100},"total_token_usage":{"input_tokens":1500,"cached_input_tokens":1300,"output_tokens":300}}}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:04:00.000Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20},"total_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20}}}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:05:00.000Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":50,"cached_input_tokens":40,"output_tokens":10},"total_token_usage":{"input_tokens":150,"cached_input_tokens":120,"output_tokens":30}}}}"#,
-            "\n",
-        );
-        std::fs::write(&path, raw).expect("fixture");
-
-        let conn = memory_conn_with_project();
-        let path_str = path.to_string_lossy().to_string();
-        let summary = CodexAdapter.parse_raw(&path_str, raw);
-        upsert_adapter_summary_session(
-            &conn,
-            "project",
-            summary,
-            raw.len() as i64,
-            Some("2026-07-20T08:00:00Z".to_string()),
-            "2026-07-20T08:00:00Z",
-            None,
-        )
-        .expect("index fixture");
-        conn.execute(
-            "UPDATE cc_sessions
-             SET total_input_tokens = 2000000260,
-                 total_output_tokens = 5000020,
-                 cache_read_tokens = 1900000210,
-                 estimated_cost_usd = 9999
-             WHERE id = 'child'",
-            [],
-        )
-        .expect("corrupt stored totals");
-        queries::set_preference(&conn, "codex_token_fix_rev", "1").expect("old revision");
-
-        fix_codex_token_totals(&conn);
-
-        let repaired: (i64, i64, i64, f64) = conn
-            .query_row(
-                "SELECT total_input_tokens, total_output_tokens,
-                        cache_read_tokens, estimated_cost_usd
-                 FROM cc_sessions WHERE id = 'child'",
-                [],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
-            )
-            .expect("repaired row");
-        assert_eq!(repaired.0, 150);
-        assert_eq!(repaired.1, 30);
-        assert_eq!(repaired.2, 120);
-        assert!(repaired.3 < 1.0);
-        assert_eq!(
-            queries::get_preference(&conn, "codex_token_fix_rev")
-                .expect("revision")
-                .as_deref(),
-            Some(CODEX_TOKEN_FIX_REV)
-        );
-        let model_usage = queries::get_session_model_usage(&conn, "child").expect("model usage");
-        assert_eq!(
-            model_usage
-                .iter()
-                .map(|usage| usage.input_tokens)
-                .sum::<i64>(),
-            150
-        );
-
-        let first: (i64, i64, i64, f64, i64) = conn.query_row(
-            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
-                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='child')
-             FROM cc_sessions WHERE id='child'", [],
-            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
-        ).unwrap();
-        queries::set_preference(&conn, "codex_token_fix_rev", "1").unwrap();
-        fix_codex_token_totals(&conn);
-        let second: (i64, i64, i64, f64, i64) = conn.query_row(
-            "SELECT total_input_tokens,total_output_tokens,cache_read_tokens,estimated_cost_usd,
-                    (SELECT COUNT(*) FROM codex_usage_observations WHERE session_id='child')
-             FROM cc_sessions WHERE id='child'", [],
-            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
-        ).unwrap();
-        assert_eq!(first, second, "fixed transcript repair is idempotent");
-    }
-
-    #[test]
-    fn codex_repair_does_not_complete_revision_after_reconciliation_failure() {
-        let dir = tempfile::tempdir().expect("session directory");
-        let path = dir.path().join("session.jsonl");
-        let raw = concat!(
-            r#"{"timestamp":"2026-07-20T08:03:00Z","type":"session_meta","payload":{"id":"guarded","cwd":"/repo"}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:03:01Z","type":"turn_context","payload":{"model":"gpt-5.6-sol"}}"#,
-            "\n",
-            r#"{"timestamp":"2026-07-20T08:03:02Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20},"total_token_usage":{"input_tokens":100,"cached_input_tokens":80,"output_tokens":20}}}}"#,
-            "\n",
-        );
-        std::fs::write(&path, raw).expect("fixture");
-        let conn = memory_conn_with_project();
-        let summary = CodexAdapter.parse_raw(path.to_string_lossy().as_ref(), raw);
-        upsert_adapter_summary_session(
-            &conn,
-            "project",
-            summary,
-            raw.len() as i64,
-            Some("2026-07-20T08:03:02Z".to_string()),
-            "2026-07-20T08:03:02Z",
-            None,
-        )
-        .expect("index fixture");
-        queries::set_preference(&conn, "codex_token_fix_rev", "3").expect("old revision");
-        conn.execute_batch(
-            "CREATE TRIGGER reject_guarded_reconciliation
-             BEFORE UPDATE ON cc_sessions WHEN OLD.id='guarded'
-             BEGIN SELECT RAISE(FAIL, 'injected reconciliation failure'); END;",
-        )
-        .expect("failure trigger");
-
-        fix_codex_token_totals(&conn);
-
-        assert_eq!(
-            queries::get_preference(&conn, "codex_token_fix_rev")
-                .expect("revision")
-                .as_deref(),
-            Some("3")
-        );
-        assert_eq!(
-            conn.query_row(
-                "SELECT COUNT(*) FROM codex_usage_repair_audit WHERE session_id='guarded'",
-                [],
-                |row| row.get::<_, i64>(0),
-            )
-            .expect("audit count"),
-            0,
-            "a failed transaction must not leave a success audit"
-        );
-    }
-
-    // Diagnostic (not a CI eval): runs the real indexer against a COPY of the
-    // live DB twice. Pass 2 is steady state — it must skip ~everything and be
-    // fast. Run with: cargo test --bin codevetter-desktop diag_live_index -- --ignored --nocapture
-    #[test]
-    #[ignore]
-    fn diag_codex_fix_cost() {
-        // Runs the Codex accounting repair twice against an explicit disposable
-        // DB copy. The second pass must not change totals or observation counts.
-        let path = std::env::var("CV_CODEX_ACCOUNTING_DRYRUN_DB")
-            .unwrap_or_else(|_| "/tmp/cv_live_copy.db".to_string());
-        if !std::path::Path::new(&path).exists() {
-            eprintln!("SKIP: {path} not present");
-            return;
-        }
-        let conn = Connection::open(&path).expect("open");
-        schema::run_migrations(&conn).expect("migrate copy");
-        let frozen_root = std::path::Path::new(&path)
-            .parent()
-            .expect("dry-run parent")
-            .join("frozen-transcripts");
-        std::fs::create_dir_all(&frozen_root).expect("frozen transcript directory");
-        let source_paths = {
-            let mut stmt = conn
-                .prepare(
-                    "SELECT DISTINCT jsonl_path FROM cc_sessions
-                     WHERE agent_type='codex' AND jsonl_path IS NOT NULL",
-                )
-                .expect("source paths");
-            stmt.query_map([], |row| row.get::<_, String>(0))
-                .expect("source path rows")
-                .filter_map(Result::ok)
-                .collect::<Vec<_>>()
-        };
-        let mut frozen_sources = 0usize;
-        for (index, source) in source_paths.into_iter().enumerate() {
-            let frozen = frozen_root.join(format!("{index}.jsonl"));
-            if std::fs::copy(&source, &frozen).is_err() {
-                continue;
-            }
-            conn.execute(
-                "UPDATE cc_sessions SET jsonl_path=?1 WHERE jsonl_path=?2",
-                rusqlite::params![frozen.to_string_lossy().as_ref(), source],
-            )
-            .expect("redirect frozen source");
-            frozen_sources += 1;
-        }
-        eprintln!("FROZEN_SOURCES={frozen_sources}");
-        let snapshot = |c: &Connection| -> (f64, i64, i64, i64) {
-            c.query_row(
-                "SELECT COALESCE(SUM(estimated_cost_usd),0),
-                        COALESCE(SUM(total_input_tokens + total_output_tokens),0),
-                        (SELECT COUNT(*) FROM codex_usage_observations),
-                        (SELECT COUNT(*) FROM codex_usage_repair_audit WHERE status='unrepaired')
-                 FROM cc_sessions WHERE agent_type='codex'",
-                [],
-                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
-            )
-            .unwrap()
-        };
-        queries::set_preference(&conn, "codex_token_fix_rev", "0").expect("force repair");
-        let before = snapshot(&conn);
-        fix_codex_token_totals(&conn);
-        let first = snapshot(&conn);
-        queries::set_preference(&conn, "codex_token_fix_rev", "0").expect("force second repair");
-        fix_codex_token_totals(&conn);
-        let second = snapshot(&conn);
-        eprintln!("BEFORE={before:?}\nFIRST={first:?}\nSECOND={second:?}");
-        assert_eq!(
-            first, second,
-            "a frozen database backfill must be exactly idempotent on pass two"
-        );
-    }
-
-    // Diagnostic release gate: compare CodeVetter with CodexBar only over the
-    // exact byte prefix CodexBar committed. This prevents an incomplete or
-    // stale oracle cache from being mistaken for a parser disagreement.
-    #[test]
-    #[ignore]
-    fn diag_codexbar_cursor_aligned_parity() {
-        use std::io::Read as _;
-
-        let codevetter_db = std::env::var("CV_CODEVETTER_DB")
-            .expect("CV_CODEVETTER_DB must point to a read-only database snapshot");
-        let codexbar_db = std::env::var("CV_CODEXBAR_DB")
-            .expect("CV_CODEXBAR_DB must point to a CodexBar cache snapshot");
-        let conn =
-            Connection::open_with_flags(codevetter_db, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
-                .expect("open CodeVetter snapshot read-only");
-        conn.execute("ATTACH DATABASE ?1 AS oracle", params![codexbar_db])
-            .expect("attach CodexBar snapshot");
-
-        let source_rows = {
-            let mut stmt = conn
-                .prepare(
-                    "WITH ranked_files AS (
-                        SELECT file.*,ROW_NUMBER() OVER (
-                            PARTITION BY session_id ORDER BY updated_at_ms DESC,id DESC
-                        ) AS rank
-                        FROM oracle.files file WHERE session_id IS NOT NULL
-                     )
-                     SELECT session.id,session.jsonl_path,
-                            COALESCE(file.parsed_bytes,file.size),
-                            COALESCE(SUM(day.input_tokens),0),
-                            COALESCE(SUM(day.cached_tokens),0),
-                            COALESCE(SUM(day.output_tokens),0)
-                     FROM cc_sessions session
-                     JOIN ranked_files file ON file.session_id=session.id AND file.rank=1
-                     LEFT JOIN oracle.file_day_aggregates day ON day.file_id=file.id
-                     WHERE session.agent_type='codex'
-                       AND session.jsonl_path IS NOT NULL
-                       AND COALESCE(file.parsed_bytes,file.size)>0
-                     GROUP BY session.id,session.jsonl_path,file.id,
-                              COALESCE(file.parsed_bytes,file.size)
-                     ORDER BY session.id",
-                )
-                .expect("cursor-aligned sources");
-            stmt.query_map([], |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, i64>(2)?,
-                    row.get::<_, i64>(3)?,
-                    row.get::<_, i64>(4)?,
-                    row.get::<_, i64>(5)?,
-                ))
-            })
-            .expect("cursor-aligned rows")
-            .filter_map(Result::ok)
-            .collect::<Vec<_>>()
-        };
-
-        let prefixes = tempfile::tempdir().expect("prefix directory");
-        let mut scan_rows = Vec::new();
-        let mut expected = std::collections::BTreeMap::new();
-        let mut unreadable = 0usize;
-        for (index, (id, source_path, parsed_bytes, input, cache, output)) in
-            source_rows.into_iter().enumerate()
-        {
-            let Ok(source) = std::fs::File::open(source_path) else {
-                unreadable += 1;
-                continue;
-            };
-            let prefix_path = prefixes.path().join(format!("{index}.jsonl"));
-            let mut prefix = std::fs::File::create(&prefix_path).expect("prefix file");
-            std::io::copy(&mut source.take(parsed_bytes as u64), &mut prefix)
-                .expect("copy committed prefix");
-            scan_rows.push((id.clone(), prefix_path.to_string_lossy().to_string(), None));
-            expected.insert(id, (input, cache, output));
-        }
-        let dependency_rows = {
-            let mut stmt = conn
-                .prepare(
-                    "SELECT id,jsonl_path FROM cc_sessions
-                     WHERE agent_type='codex' AND jsonl_path IS NOT NULL ORDER BY id",
-                )
-                .expect("dependency sources");
-            stmt.query_map([], |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-            })
-            .expect("dependency rows")
-            .filter_map(Result::ok)
-            .collect::<Vec<_>>()
-        };
-        let mut dependency_sources = 0usize;
-        for (id, source_path) in dependency_rows {
-            if expected.contains_key(&id) || !std::path::Path::new(&source_path).is_file() {
-                continue;
-            }
-            scan_rows.push((id, source_path, None));
-            dependency_sources += 1;
-        }
-
-        let scans = scan_codex_accounting_corpus(&scan_rows);
-        let mut oracle_totals = (0i64, 0i64, 0i64);
-        let mut codevetter_totals = (0i64, 0i64, 0i64);
-        let mut mismatched_sessions = 0usize;
-        for (id, oracle) in &expected {
-            let scan = scans
-                .get(id)
-                .and_then(|scan| scan.as_ref().ok())
-                .expect("cursor-aligned scan");
-            let actual = (scan.total_input, scan.cache_read, scan.total_output);
-            oracle_totals.0 += oracle.0;
-            oracle_totals.1 += oracle.1;
-            oracle_totals.2 += oracle.2;
-            codevetter_totals.0 += actual.0;
-            codevetter_totals.1 += actual.1;
-            codevetter_totals.2 += actual.2;
-            if actual != *oracle {
-                mismatched_sessions += 1;
-                eprintln!(
-                    "CURSOR_MISMATCH session={} oracle={oracle:?} codevetter={actual:?}",
-                    id
-                );
-            }
-        }
-        eprintln!(
-            "CURSOR_ALIGNED compared={} dependencies={} unreadable={} mismatched={} oracle={oracle_totals:?} codevetter={codevetter_totals:?}",
-            expected.len(), dependency_sources, unreadable, mismatched_sessions
-        );
-        assert_eq!(
-            codevetter_totals, oracle_totals,
-            "cursor-aligned retained corpus must match CodexBar exactly"
-        );
-        assert_eq!(mismatched_sessions, 0);
-    }
-
-    #[test]
     #[ignore]
     fn diag_mtime_skip_mismatch() {
         // For every session in the live copy, compare the STORED file_mtime with
@@ -5505,37 +4741,6 @@ mod tests {
             }
         }
         eprintln!("checked={checked} mismatch={mismatch}");
-    }
-
-    #[test]
-    #[ignore]
-    fn diag_claude_dedup_dry_run() {
-        // Dry-run the Claude usage-dedup backfill against a copy of the live DB
-        // (cp codevetter.db /tmp/cv_dedup_dryrun.db) and print before/after.
-        let path = "/tmp/cv_dedup_dryrun.db";
-        if !std::path::Path::new(path).exists() {
-            eprintln!("SKIP: {path} not present");
-            return;
-        }
-        let conn = Connection::open(path).expect("open dry-run copy");
-        schema::run_migrations(&conn).expect("migrate");
-        let claude = |c: &Connection| -> (f64, i64) {
-            c.query_row(
-                "SELECT COALESCE(SUM(estimated_cost_usd),0), COALESCE(SUM(total_output_tokens),0)
-                 FROM cc_sessions WHERE agent_type='claude-code'",
-                [],
-                |r| Ok((r.get(0)?, r.get(1)?)),
-            )
-            .unwrap()
-        };
-        let (cost0, out0) = claude(&conn);
-        let t0 = std::time::Instant::now();
-        fix_claude_usage_dedup(&conn);
-        let (cost1, out1) = claude(&conn);
-        eprintln!(
-            "claude BEFORE: ${cost0:.0} / {out0} out-tokens\nclaude AFTER:  ${cost1:.0} / {out1} out-tokens\nelapsed {:.1}s",
-            t0.elapsed().as_secs_f64()
-        );
     }
 
     #[test]
@@ -5741,61 +4946,6 @@ mod tests {
         assert!(near(estimate_cost("glm-5-2", 1_000_000, 0, 0, 0), 1.4));
         assert!(near(estimate_cost("glm-5-2", 0, 1_000_000, 0, 0), 4.4));
         assert!(near(estimate_cost("glm-5-2", 0, 0, 1_000_000, 0), 0.26));
-    }
-
-    #[test]
-    fn codex_ledger_pricing_is_exact_only_when_service_tier_is_known() {
-        let standard = price_codex_ledger_observation(
-            "gpt-5.6-terra",
-            Some("standard"),
-            200_000,
-            20_000,
-            10_000,
-        );
-        assert_eq!(standard.status, "priced_exact");
-        assert_eq!(standard.revision, CODEX_LEDGER_PRICING_REVISION);
-        assert_eq!(standard.min_microusd, Some(605_000));
-        assert_eq!(standard.max_microusd, Some(605_000));
-
-        let priority = price_codex_ledger_observation(
-            "gpt-5.6-terra",
-            Some("priority"),
-            200_000,
-            20_000,
-            10_000,
-        );
-        assert_eq!(priority.status, "priced_exact");
-        assert_eq!(priority.min_microusd, Some(1_210_000));
-        assert_eq!(priority.max_microusd, Some(1_210_000));
-
-        let unknown_tier =
-            price_codex_ledger_observation("gpt-5.6-terra", None, 200_000, 20_000, 10_000);
-        assert_eq!(unknown_tier.status, "priced_range");
-        assert_eq!(unknown_tier.min_microusd, standard.min_microusd);
-        assert_eq!(unknown_tier.max_microusd, priority.max_microusd);
-
-        let unpriced = price_codex_ledger_observation("future-model", None, 1_000, 0, 100);
-        assert_eq!(unpriced.status, "unpriced");
-        assert_eq!(unpriced.min_microusd, None);
-        assert_eq!(unpriced.max_microusd, None);
-    }
-
-    #[test]
-    fn codex_ledger_pricing_covers_every_gpt_5_6_model_and_long_context_boundary() {
-        for (model, expected_input_microusd) in [
-            ("gpt-5.6-sol", 500_000),
-            ("gpt-5.6-terra", 250_000),
-            ("gpt-5.6-luna", 100_000),
-        ] {
-            let priced = price_codex_ledger_observation(model, Some("standard"), 100_000, 0, 0);
-            assert_eq!(priced.min_microusd, Some(expected_input_microusd));
-            assert_eq!(priced.max_microusd, Some(expected_input_microusd));
-        }
-        let short =
-            price_codex_ledger_observation("gpt-5.6-sol", Some("standard"), 272_000, 0, 100);
-        let long = price_codex_ledger_observation("gpt-5.6-sol", Some("standard"), 272_001, 0, 100);
-        assert_eq!(short.min_microusd, Some(1_363_000));
-        assert_eq!(long.min_microusd, Some(2_724_510));
     }
 
     #[test]

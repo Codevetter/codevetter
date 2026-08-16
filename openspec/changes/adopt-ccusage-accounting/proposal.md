@@ -5,9 +5,9 @@ CodeVetter has repeatedly repaired its own token parsers, replay handling, calen
 ## What Changes
 
 - Bundle a pinned `ccusage` native executable with CodeVetter and invoke its JSON reports internally; users will not need Node, Bun, `npx`, or a separately installed CLI.
-- Make `ccusage` the authoritative source for local daily, weekly, monthly, session, model, token-class, and API-equivalent cost totals for every agent source it supports.
+- Make `ccusage` the authoritative source for Claude and Codex local daily, weekly, monthly, session, model, token-class, and API-equivalent cost totals.
 - Normalize `ccusage` JSON into CodeVetter's existing typed IPC shapes and cache only derived report snapshots and provenance needed for responsive rendering.
-- Keep provider quota/window telemetry and unsupported-provider ledgers separate; they will not be blended into transcript-derived totals.
+- Keep the reliable provider quota/window telemetry unchanged. Preserve CodeVetter's existing Devin tracking in the local-usage chart because upstream `ccusage` cannot read Devin's cloud-side usage; exclude other providers from that chart.
 - Remove the custom usage-arithmetic path after a pinned-corpus parity gate passes. A missing, incompatible, timed-out, or invalid `ccusage` sidecar will surface an unavailable/degraded state instead of silently falling back to CodeVetter's old counters.
 - Replace CodeVetter-specific “verified” claims with explicit `ccusage` provenance, version, report timestamp, source coverage, and fallback-model indicators where the upstream JSON exposes them.
 

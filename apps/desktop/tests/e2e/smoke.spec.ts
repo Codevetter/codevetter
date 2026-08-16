@@ -19,17 +19,12 @@ test.describe('Smoke tests', () => {
     await navigateTo(page, '/');
     await waitForNoSpinners(page);
 
-    await expect(page.getByTestId('verification-spotlight')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Check a change' }).first()).toBeVisible();
-    await expect(page.getByText('Verified Codex usage unavailable')).toBeVisible();
-    await expect(page.getByText('All-agent period estimates')).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: /Re-index & reconcile|Reconciling/ })
-    ).toBeVisible();
+    await expect(page.getByText('Claude + Codex + Devin usage')).toBeVisible();
     await expect(page.getByText('Provider telemetry')).toBeVisible();
   });
 
-  test('Codex usage leads with verified partial coverage and bounded cost', async ({ page }) => {
+  test('local usage is sourced from ccusage plus Devin tracking', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('onboarding_complete', 'true');
       const responses: Record<string, unknown> = {
@@ -46,55 +41,95 @@ test.describe('Smoke tests', () => {
           net_out_per_sec: null,
           children: [],
         },
-        get_codex_usage_reconciliation: {
-          scanner_revision: 4,
-          verified_sessions: 842,
-          legacy_estimated_sessions: 126,
-          ambiguous_sessions: 7,
-          missing_unestimated_sessions: 19,
-          stale_sessions: 3,
-          verified_totals: {
-            input_tokens: 1_323_422_557,
-            cache_read_tokens: 1_295_676_160,
-            output_tokens: 4_098_792,
-            reasoning_tokens: 921_443,
+        get_local_usage_report: {
+          status: 'ready',
+          stale: false,
+          error: null,
+          provenance: {
+            engine: 'ccusage',
+            version: '20.0.20',
+            generated_at: '2026-08-16T17:35:09Z',
+            timezone: 'Asia/Kolkata',
+            window: 'all',
+            detected_agents: ['claude', 'codex'],
+            excluded_agents: ['grok'],
+            codex_roots: [],
+            source_fingerprint: 'sha256:fixture',
+            pricing_complete: true,
+            fallback_models: [],
+            unpriced_models: [],
           },
-          legacy_estimated_totals: {
-            input_tokens: 91_000_000_000,
-            cache_read_tokens: 0,
-            output_tokens: 87_000_000,
-            reasoning_tokens: 0,
+          daily: [
+            {
+              period: '2026-08-16',
+              totals: {
+                input_tokens: 10,
+                cache_creation_tokens: 0,
+                cache_read_tokens: 20,
+                output_tokens: 5,
+                total_tokens: 35,
+                cost_usd: 4,
+              },
+              agents: [
+                {
+                  agent: 'claude',
+                  totals: {
+                    input_tokens: 4,
+                    cache_creation_tokens: 0,
+                    cache_read_tokens: 5,
+                    output_tokens: 1,
+                    total_tokens: 10,
+                    cost_usd: 1,
+                  },
+                  models: [],
+                },
+                {
+                  agent: 'codex',
+                  totals: {
+                    input_tokens: 6,
+                    cache_creation_tokens: 0,
+                    cache_read_tokens: 15,
+                    output_tokens: 4,
+                    total_tokens: 25,
+                    cost_usd: 3,
+                  },
+                  models: [],
+                },
+              ],
+              models: [],
+            },
+          ],
+          weekly: [],
+          monthly: [],
+          sessions: [],
+          totals: {
+            input_tokens: 10,
+            cache_creation_tokens: 0,
+            cache_read_tokens: 20,
+            output_tokens: 5,
+            total_tokens: 35,
+            cost_usd: 4,
           },
-          legacy_estimated_cost_usd: 0,
-          priced_exact_events: 0,
-          priced_range_events: 4_832,
-          unpriced_events: 11,
-          verified_cost_min_microusd: 906_887_997,
-          verified_cost_max_microusd: 1_813_775_994,
-          pending_bytes: 284_103,
-          observation_watermark: '2026-08-10T17:35:09Z',
-        },
-        get_token_usage_stats: {
-          today: 0,
-          this_week: 0,
-          this_month: 0,
-          this_year: 0,
-          today_generated: 0,
-          week_generated: 0,
-          month_generated: 0,
-          year_generated: 0,
-          today_cost: 0,
-          week_cost: 0,
-          month_cost: 0,
-          year_cost: 0,
-          daily_series: [],
-          weekly_series: [],
         },
         detect_provider_accounts: { accounts: [] },
         list_provider_accounts: [],
         list_repo_projects: [],
-        get_agent_usage_by_day: [],
-        get_usage_by_model: [],
+        get_devin_usage_by_day: [
+          { date: '2026-08-16', agent_type: 'devin', generated: 3, cache: 0, cost: 1 },
+        ],
+        get_devin_usage_breakdown: [
+          {
+            agent_type: 'devin',
+            sessions: 1,
+            real_input_tokens: 2,
+            cache_read_tokens: 0,
+            output_tokens: 1,
+            week_real_input_tokens: 2,
+            week_output_tokens: 1,
+            cost: 1,
+          },
+        ],
+        get_devin_usage_by_model: [],
         'plugin:event|listen': 1,
       };
       Object.assign(window as unknown as Record<string, unknown>, {
@@ -113,13 +148,14 @@ test.describe('Smoke tests', () => {
     });
 
     await navigateTo(page, '/');
-    await expect(page.getByRole('heading', { name: 'Verified Codex compute' })).toBeVisible();
-    await expect(page.getByText('Partial coverage', { exact: true })).toBeVisible();
-    await expect(page.getByText('$907–$1,814 priced portion · 11 unpriced')).toBeVisible();
-    await expect(
-      page.getByText(/91\.00B historical input tokens remain legacy estimates/)
-    ).toBeVisible();
-    await expect(page.getByText('All-agent period estimates')).toBeVisible();
+    await expect(page.getByText('Claude + Codex + Devin usage')).toBeVisible();
+    await expect(page.getByText('ccusage 20.0.20 · Devin local')).toBeVisible();
+    await expect(page.getByText('Local usage · ccusage + Devin')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Claude' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Codex' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Devin' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cursor' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Grok' })).toHaveCount(0);
   });
 
   test('Review page loads without errors', async ({ page }) => {

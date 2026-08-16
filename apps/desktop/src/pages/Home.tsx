@@ -25,10 +25,10 @@ import {
   checkLiveUsage,
   deleteProviderAccount,
   detectProviderAccounts,
-  getAgentUsageBreakdown,
-  getAgentUsageByDay,
+  getDevinUsageBreakdown,
+  getDevinUsageByDay,
+  getDevinUsageByModel,
   getLocalUsageReport,
-  getUsageByModel,
   isTauriAvailable,
   listProviderAccounts,
   triggerIndex,
@@ -860,17 +860,7 @@ const AGENT_PALETTE: Record<
 > = {
   'claude-code': { bar: '#d6a947', label: 'Claude', source: 'ccusage' },
   codex: { bar: '#31c6b7', label: 'Codex', source: 'ccusage' },
-  cursor: { bar: '#a78bfa', label: 'Cursor', estimated: true, source: 'Cursor local state' },
-  grok: {
-    bar: '#5da6f5',
-    label: 'Grok',
-    estimated: true,
-    source: 'Grok sessions: per-turn context + output estimate',
-  },
   devin: { bar: '#fb923c', label: 'Devin', source: 'Devin sessions.db metrics' },
-  google: { bar: '#60a5fa', label: 'Gemini', estimated: true, source: 'Gemini local/API usage' },
-  openai: { bar: '#34d399', label: 'OpenAI', source: 'OpenAI live usage' },
-  openrouter: { bar: '#f472b6', label: 'OpenRouter', source: 'OpenRouter usage' },
 };
 
 const agentPaletteFor = (agent: string) => AGENT_PALETTE[agent] ?? { bar: '#64748b', label: agent };
@@ -1456,8 +1446,6 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
   if (filtered.length === 0 || grandTotal === 0) return null;
 
   const paletteFor = agentPaletteFor;
-  const anyEstimated = filtered.some((s) => s.estimated);
-
   return (
     <div>
       <div className="mb-2.5">
@@ -1501,12 +1489,6 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
           );
         })}
       </div>
-      {anyEstimated && (
-        <div className="mt-2 text-[10px] text-slate-600">
-          * estimated: Grok uses per-turn context plus output chars/4; Cursor local rows are partial
-          unless live plan usage is refreshed.
-        </div>
-      )}
     </div>
   );
 }
@@ -1520,12 +1502,9 @@ function useAgentUsageRows(active: boolean, report: LocalUsageReport) {
     let unlisten: (() => void) | undefined;
     const fetchRows = async () => {
       try {
-        const legacyRows = await getAgentUsageBreakdown();
+        const legacyRows = await getDevinUsageBreakdown();
         if (!cancelled) {
-          setRows([
-            ...ccusageAgentRows(report),
-            ...legacyRows.filter((row) => row.agent_type === 'devin'),
-          ]);
+          setRows([...ccusageAgentRows(report), ...legacyRows]);
         }
       } catch {
         if (!cancelled) setRows((prev) => prev ?? []);
@@ -1558,24 +1537,15 @@ function useAgentUsageRows(active: boolean, report: LocalUsageReport) {
 
 function buildAllRangeAgentSegments(
   rows: AgentUsageRow[],
-  hiddenAgents: Set<string>,
-  cursorLedgerCost: number | null
+  hiddenAgents: Set<string>
 ): AgentSegment[] {
-  const segments = rows
+  return rows
     .filter((r) => !hiddenAgents.has(r.agent_type))
     .map((r) => ({
       agent: r.agent_type,
-      tokens: r.agent_type === 'cursor' && cursorLedgerCost != null ? cursorLedgerCost : r.cost,
+      tokens: r.cost,
       estimated: AGENT_PALETTE[r.agent_type]?.estimated ?? false,
     }));
-  if (
-    cursorLedgerCost != null &&
-    !hiddenAgents.has('cursor') &&
-    !rows.some((r) => r.agent_type === 'cursor')
-  ) {
-    segments.push({ agent: 'cursor', tokens: cursorLedgerCost, estimated: false });
-  }
-  return segments;
 }
 
 function buildAgentSegments(
@@ -1584,8 +1554,7 @@ function buildAgentSegments(
   hiddenAgents: Set<string>,
   range: ModelRangeKey,
   focusDate: string | null | undefined,
-  focusMode: 'daily' | 'weekly' | undefined,
-  cursorLedgerCost: number | null
+  focusMode: 'daily' | 'weekly' | undefined
 ): AgentSegment[] {
   if (focusDate && focusMode) {
     const acc = new Map<string, number>();
@@ -1600,7 +1569,7 @@ function buildAgentSegments(
       estimated: AGENT_PALETTE[agent]?.estimated ?? false,
     }));
   }
-  if (range === 'all') return buildAllRangeAgentSegments(rows, hiddenAgents, cursorLedgerCost);
+  if (range === 'all') return buildAllRangeAgentSegments(rows, hiddenAgents);
   const days = MODEL_RANGES.find((r) => r.key === range)?.days ?? 30;
   const start = new Date();
   start.setHours(0, 0, 0, 0);
@@ -1649,15 +1618,7 @@ function WeeklyAgentSplit({
 
   if (!rows) return null;
 
-  const segments = buildAgentSegments(
-    rows,
-    agentByDay,
-    hiddenAgents,
-    range,
-    focusDate,
-    focusMode,
-    null
-  );
+  const segments = buildAgentSegments(rows, agentByDay, hiddenAgents, range, focusDate, focusMode);
 
   const rangeLabel = MODEL_RANGES.find((r) => r.key === range)?.label.toLowerCase() ?? 'all time';
   const focusLabel = agentFocusLabel(focusDate, focusMode);
@@ -2100,17 +2061,10 @@ function LocalUsagePanel({
     let cancelled = false;
     setFocusModelLoading(true);
     const { start, end } = modelFocusDayRange(focusDate, granularity);
-    const legacyExclude = [
-      'claude-code',
-      'codex',
-      'cursor',
-      'grok',
-      'google',
-      'openai',
-      'openrouter',
-      ...hiddenAgents,
-    ];
-    void getUsageByModel(undefined, legacyExclude, start, end)
+    const devinRows = hiddenAgents.has('devin')
+      ? Promise.resolve([] as ModelUsage[])
+      : getDevinUsageByModel(undefined, start, end);
+    void devinRows
       .then((rows) => {
         if (!cancelled) {
           setFocusModelData(
@@ -2210,8 +2164,7 @@ function LocalUsagePanel({
   );
 }
 
-/** Spend time windows shared by the by-model and by-agent panels. `days`
- * maps to the getUsageByModel arg; client-side windows use it as a day span. */
+/** Spend time windows shared by the by-model and by-agent panels. */
 const MODEL_RANGES = [
   { key: 'd7', label: '1w', days: 7 },
   { key: 'd30', label: '30d', days: 30 },
@@ -3000,7 +2953,7 @@ export default function Home() {
       );
 
       const [localUsageResult, accountsResult, cachedUsagesResult] = await Promise.all([
-        Promise.all([getLocalUsageReport(), getAgentUsageByDay(180)]).then(
+        Promise.all([getLocalUsageReport(), getDevinUsageByDay(366)]).then(
           (v) => ({ status: 'fulfilled' as const, value: v }),
           (e) => ({ status: 'rejected' as const, reason: e })
         ),
@@ -3018,10 +2971,7 @@ export default function Home() {
         const [report, legacyDays] = localUsageResult.value;
         setLocalUsageReport(report);
         if (report.status !== 'unavailable') {
-          const rows = [
-            ...ccusageAgentDays(report),
-            ...legacyDays.filter((row) => row.agent_type === 'devin'),
-          ];
+          const rows = [...ccusageAgentDays(report), ...legacyDays];
           setAgentByDay(rows);
           setTokenUsage(usageStats(rows));
         } else {
@@ -3089,19 +3039,9 @@ export default function Home() {
   const fetchModelUsage = useCallback(
     async (exclude: string[]) => {
       if (!localUsageReport || localUsageReport.status === 'unavailable') return;
-      const legacyExclude = [
-        'claude-code',
-        'codex',
-        'cursor',
-        'grok',
-        'google',
-        'openai',
-        'openrouter',
-        ...exclude,
-      ];
       const ranges = await Promise.all(
         MODEL_RANGES.map(async (range) => {
-          const [devin] = await Promise.all([getUsageByModel(range.days, legacyExclude)]);
+          const devin = exclude.includes('devin') ? [] : await getDevinUsageByModel(range.days);
           return [
             range.key,
             [
