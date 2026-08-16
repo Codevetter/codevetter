@@ -148,6 +148,9 @@ importers:
       c8:
         specifier: ^11.0.0
         version: 11.0.0
+      ccusage:
+        specifier: 20.0.20
+        version: 20.0.20
       msw:
         specifier: 2.15.0
         version: 2.15.0(@types/node@22.19.17)(typescript@5.9.3)
@@ -511,6 +514,36 @@ packages:
   '@capsizecss/unpack@4.0.0':
     resolution: {integrity: sha512-VERIM64vtTP1C4mxQ5thVT9fK0apjPFobqybMtA1UdUujWka24ERHbRHFGmpbbhp73MhV+KSsHQH9C6uOTdEQA==}
     engines: {node: '>=18'}
+
+  '@ccusage/ccusage-darwin-arm64@20.0.20':
+    resolution: {integrity: sha512-TgvU1u9bjgBD+CuQqj55PNAl3LnrW9awCeXDkPS0acntTP72A4gdGjCBZ+LAmR8HECBlvD9lSDqWHhpCX9kZQw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@ccusage/ccusage-darwin-x64@20.0.20':
+    resolution: {integrity: sha512-UkanWl+XRiC7rgTG7eZDy4xqleQOZ3xd8i6RBW77p2OhHheBpGznMkqS7/5rPT2JQ10cnkOKqjxFE09CLAmIrQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@ccusage/ccusage-linux-arm64@20.0.20':
+    resolution: {integrity: sha512-iiURX4sqr3S7jrDJW6P6F0QtP6lx7lkhqqxBQXzaL/66xjhUkCDHKzRglixPuSBxkNaKGL6RAtKGk/ubFGvdBg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@ccusage/ccusage-linux-x64@20.0.20':
+    resolution: {integrity: sha512-qG5LcyerzKJVPu3hTRHYaWo6VtKB9uyGbRdviw4imInIWRQdPcrEAIb22oCO7iWEfAEv5ZYmTjYWJLX+dR5HXg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@ccusage/ccusage-win32-arm64@20.0.20':
+    resolution: {integrity: sha512-BUXxVGbZ6WtA8RGqjukzkKFmS2x2cjMTV1kU5weZ4+K/uPHIHJjDIDnSKJtNAllwpwlPKpC+k3UdhkapeVM10w==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@ccusage/ccusage-win32-x64@20.0.20':
+    resolution: {integrity: sha512-6R9cdLuRy529ewdkKbwtjx7boCQNFK8KG1F6d5G/pw2ApKRmucWcwjFo/7sNULQtZMyUxhYa40tUnWy9L/yTMA==}
+    cpu: [x64]
+    os: [win32]
 
   '@clack/core@1.4.3':
     resolution: {integrity: sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ==}
@@ -2399,6 +2432,10 @@ packages:
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
+
+  ccusage@20.0.20:
+    resolution: {integrity: sha512-xctCxhwK4Nqo1i3zSa1+JM3wN/oSdPSglzgxIWZyk9KLsLyQQMfntG3NJHoRH3DJHzkvG1EzVwH/xSI2z6VH3Q==}
+    hasBin: true
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -4573,6 +4610,24 @@ snapshots:
     dependencies:
       fontkitten: 1.0.3
 
+  '@ccusage/ccusage-darwin-arm64@20.0.20':
+    optional: true
+
+  '@ccusage/ccusage-darwin-x64@20.0.20':
+    optional: true
+
+  '@ccusage/ccusage-linux-arm64@20.0.20':
+    optional: true
+
+  '@ccusage/ccusage-linux-x64@20.0.20':
+    optional: true
+
+  '@ccusage/ccusage-win32-arm64@20.0.20':
+    optional: true
+
+  '@ccusage/ccusage-win32-x64@20.0.20':
+    optional: true
+
   '@clack/core@1.4.3':
     dependencies:
       fast-wrap-ansi: 0.2.2
@@ -6027,6 +6082,15 @@ snapshots:
   caniuse-lite@1.0.30001790: {}
 
   ccount@2.0.1: {}
+
+  ccusage@20.0.20:
+    optionalDependencies:
+      '@ccusage/ccusage-darwin-arm64': 20.0.20
+      '@ccusage/ccusage-darwin-x64': 20.0.20
+      '@ccusage/ccusage-linux-arm64': 20.0.20
+      '@ccusage/ccusage-linux-x64': 20.0.20
+      '@ccusage/ccusage-win32-arm64': 20.0.20
+      '@ccusage/ccusage-win32-x64': 20.0.20
 
   chalk@4.1.2:
     dependencies:
