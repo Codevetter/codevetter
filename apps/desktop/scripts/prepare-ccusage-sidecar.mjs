@@ -112,7 +112,7 @@ function pinnedVersion() {
   return packageJson.devDependencies?.ccusage ?? '';
 }
 
-function rustHostTarget() {
+export function rustHostTarget() {
   const target = execFileSync('rustc', ['-vV'], { encoding: 'utf8' })
     .split('\n')
     .find((line) => line.startsWith('host: '))
