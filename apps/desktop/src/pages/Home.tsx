@@ -8,7 +8,7 @@ import {
   Terminal,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,10 @@ import type {
   AgentUsageRow,
   DayBucket,
   LiveUsageResult,
-  LiveSessionEvidencePolicy,
   CodexUsageReconciliation,
+  LocalUsageReport,
   ModelUsage,
   ProviderAccount,
-  ProviderUsageLedgerRow,
   SessionAdapterRun,
   SessionScorecard,
   TokenUsageStats,
@@ -37,15 +36,13 @@ import {
   detectProviderAccounts,
   getAgentUsageBreakdown,
   getAgentUsageByDay,
-  getCodexUsageReconciliation,
-  getLiveSessionEvidencePolicy,
-  getTokenUsageStats,
+  getLocalUsageReport,
   getUsageByModel,
   isTauriAvailable,
   listProviderAccounts,
-  listProviderUsageLedger,
   triggerIndex,
 } from '@/lib/tauri-ipc';
+import { ccusageAgentDays, ccusageAgentRows, ccusageModels, usageStats } from '@/lib/local-usage';
 import { computeUsagePaceLabel, resolveUsageWindowTotalSecs } from '@/lib/usage-pace';
 import { isWindowHidden, useVisibilityInterval } from '@/lib/use-visibility';
 import { cn } from '@/lib/utils';
@@ -856,6 +853,7 @@ function AccountUsageRow({
 
 // Module-level cache so data persists across tab switches
 let _cachedDashboard: {
+  localUsageReport: LocalUsageReport | null;
   tokenUsage: TokenUsageStats | null;
   accounts: ProviderAccount[];
   usages: Record<string, AccountUsage>;
@@ -869,8 +867,8 @@ const AGENT_PALETTE: Record<
   string,
   { bar: string; label: string; estimated?: boolean; source?: string }
 > = {
-  'claude-code': { bar: '#d6a947', label: 'Claude', source: 'Claude Code JSONL' },
-  codex: { bar: '#31c6b7', label: 'Codex', source: 'Codex session JSONL' },
+  'claude-code': { bar: '#d6a947', label: 'Claude', source: 'ccusage' },
+  codex: { bar: '#31c6b7', label: 'Codex', source: 'ccusage' },
   cursor: { bar: '#a78bfa', label: 'Cursor', estimated: true, source: 'Cursor local state' },
   grok: {
     bar: '#5da6f5',
@@ -1522,9 +1520,8 @@ function StackedBar({ title, segments }: { title: string; segments: AgentSegment
   );
 }
 
-function useAgentUsageRows(active: boolean) {
+function useAgentUsageRows(active: boolean, report: LocalUsageReport) {
   const [rows, setRows] = useState<AgentUsageRow[] | null>(null);
-  const [cursorLedger, setCursorLedger] = useState<ProviderUsageLedgerRow | null>(null);
 
   useEffect(() => {
     if (!active) return;
@@ -1532,17 +1529,12 @@ function useAgentUsageRows(active: boolean) {
     let unlisten: (() => void) | undefined;
     const fetchRows = async () => {
       try {
-        const [r, ledger] = await Promise.all([
-          getAgentUsageBreakdown(),
-          listProviderUsageLedger(50).catch(() => [] as ProviderUsageLedgerRow[]),
-        ]);
-        const cursor =
-          ledger
-            .filter((l) => l.provider === 'cursor')
-            .sort((a, b) => b.observed_at.localeCompare(a.observed_at))[0] ?? null;
+        const legacyRows = await getAgentUsageBreakdown();
         if (!cancelled) {
-          setRows(r);
-          setCursorLedger(cursor);
+          setRows([
+            ...ccusageAgentRows(report),
+            ...legacyRows.filter((row) => row.agent_type === 'devin'),
+          ]);
         }
       } catch {
         if (!cancelled) setRows((prev) => prev ?? []);
@@ -1568,9 +1560,9 @@ function useAgentUsageRows(active: boolean) {
       clearInterval(interval);
       unlisten?.();
     };
-  }, [active]);
+  }, [active, report]);
 
-  return { rows, cursorLedger };
+  return rows;
 }
 
 function buildAllRangeAgentSegments(
@@ -1652,6 +1644,7 @@ function WeeklyAgentSplit({
   focusDate,
   focusMode,
   active,
+  report,
 }: {
   hiddenAgents: Set<string>;
   agentByDay: AgentDayUsage[];
@@ -1659,13 +1652,12 @@ function WeeklyAgentSplit({
   focusDate?: string | null;
   focusMode?: 'daily' | 'weekly';
   active: boolean;
+  report: LocalUsageReport;
 }) {
-  const { rows, cursorLedger } = useAgentUsageRows(active);
+  const rows = useAgentUsageRows(active, report);
 
   if (!rows) return null;
 
-  const cursorLedgerCost =
-    cursorLedger && cursorLedger.cost_usd != null ? cursorLedger.cost_usd : null;
   const segments = buildAgentSegments(
     rows,
     agentByDay,
@@ -1673,7 +1665,7 @@ function WeeklyAgentSplit({
     range,
     focusDate,
     focusMode,
-    cursorLedgerCost
+    null
   );
 
   const rangeLabel = MODEL_RANGES.find((r) => r.key === range)?.label.toLowerCase() ?? 'all time';
@@ -2048,6 +2040,7 @@ function GranularityToggle({
 }
 
 function LocalUsagePanel({
+  report,
   tokenUsage,
   agentByDay,
   modelUsage,
@@ -2056,6 +2049,7 @@ function LocalUsagePanel({
   onShowAllAgents,
   active,
 }: {
+  report: LocalUsageReport;
   tokenUsage: TokenUsageStats;
   agentByDay: AgentDayUsage[];
   modelUsage: ModelUsageRanges;
@@ -2115,9 +2109,25 @@ function LocalUsagePanel({
     let cancelled = false;
     setFocusModelLoading(true);
     const { start, end } = modelFocusDayRange(focusDate, granularity);
-    void getUsageByModel(undefined, [...hiddenAgents], start, end)
+    const legacyExclude = [
+      'claude-code',
+      'codex',
+      'cursor',
+      'grok',
+      'google',
+      'openai',
+      'openrouter',
+      ...hiddenAgents,
+    ];
+    void getUsageByModel(undefined, legacyExclude, start, end)
       .then((rows) => {
-        if (!cancelled) setFocusModelData(rows);
+        if (!cancelled) {
+          setFocusModelData(
+            [...ccusageModels(report, start, end, hiddenAgents), ...rows].sort(
+              (left, right) => right.cost - left.cost
+            )
+          );
+        }
       })
       .catch(() => {
         if (!cancelled) setFocusModelData([]);
@@ -2128,13 +2138,13 @@ function LocalUsagePanel({
     return () => {
       cancelled = true;
     };
-  }, [active, focusDate, granularity, hiddenAgents]);
+  }, [active, focusDate, granularity, hiddenAgents, report]);
 
   return (
     <div className="cv-frame overflow-hidden">
       <div className="cv-terminal-bar h-10 px-4">
         <BarChart3 size={14} className="text-[var(--cv-accent)]" />
-        <span className="cv-label">Local usage · API-equivalent estimate</span>
+        <span className="cv-label">Local usage · ccusage + Devin</span>
       </div>
 
       <div className="flex flex-col gap-2 border-b border-[var(--cv-line)] px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
@@ -2187,6 +2197,7 @@ function LocalUsagePanel({
                 focusDate={focusDate}
                 focusMode={focusDate ? granularity : undefined}
                 active={active}
+                report={report}
               />
             ) : (
               <div className="text-[11px] text-slate-600">No agent spend in this window.</div>
@@ -3027,14 +3038,14 @@ function ProviderTelemetrySection({
   );
 }
 
-function LegacySummarySection({
+function CcusageSummarySection({
   tokenUsage,
   loading,
-  liveSessionPolicy,
+  report,
 }: {
   tokenUsage: TokenUsageStats | null;
   loading: boolean;
-  liveSessionPolicy: LiveSessionEvidencePolicy | null;
+  report: LocalUsageReport | null;
 }) {
   const stats = [
     {
@@ -3067,28 +3078,35 @@ function LegacySummarySection({
     <section className="cv-spotlight-surface overflow-hidden rounded-2xl">
       <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
-          <div className="cv-label text-zinc-500">Legacy blended summary</div>
+          <div className="cv-label text-zinc-500">ccusage local accounting</div>
           <h1 className="mt-1 truncate text-lg font-semibold tracking-[-0.015em] text-zinc-100">
-            All-agent period estimates
+            Claude + Codex + Devin usage
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {liveSessionPolicy && (
+          {report && (
             <Badge
               variant="outline"
               className="h-6 border-emerald-500/25 bg-emerald-500/[0.06] px-2 text-[11px] font-medium text-emerald-300/80"
-              title={`Local-only ${liveSessionPolicy.mode}; full/manual recovery every ${Math.round(liveSessionPolicy.full_index_recovery_interval_secs / 3600)}h; ${liveSessionPolicy.incomplete_codex_sources} Codex sources pending (${formatCompactNumber(liveSessionPolicy.pending_codex_bytes)} bytes); ${liveSessionPolicy.excluded_usage_events} excluded usage events; last usage ${liveSessionPolicy.last_usage_observed_at ?? 'unavailable'}`}
+              title={`Claude and Codex from ccusage ${report.provenance.version}; Devin from CodeVetter's local tracker; generated ${formatShortDateTime(report.provenance.generated_at)}`}
             >
-              live archive · {liveSessionPolicy.incremental_interval_secs}s ·{' '}
-              {liveSessionPolicy.supported_incremental_adapters.join(' + ')}
+              ccusage {report.provenance.version} · Devin local
             </Badge>
           )}
-          {liveSessionPolicy && liveSessionPolicy.incomplete_codex_sources > 0 && (
+          {report?.stale && (
             <Badge
               variant="outline"
               className="h-6 border-amber-500/25 bg-amber-500/[0.06] px-2 text-[11px] font-medium text-amber-300/80"
             >
-              usage catching up · {liveSessionPolicy.incomplete_codex_sources} sources
+              stale snapshot
+            </Badge>
+          )}
+          {report && !report.provenance.pricing_complete && (
+            <Badge
+              variant="outline"
+              className="h-6 border-amber-500/25 bg-amber-500/[0.06] px-2 text-[11px] font-medium text-amber-300/80"
+            >
+              incomplete pricing
             </Badge>
           )}
         </div>
@@ -3099,7 +3117,7 @@ function LegacySummarySection({
           <div
             key={stat.label}
             className="flex min-h-20 items-center justify-between bg-[var(--cv-surface)] px-4 py-4"
-            title={`${formatMoney(stat.cost)} legacy API-equivalent estimate · ${formatTokens(stat.gen)} generated tokens`}
+            title={`${formatMoney(stat.cost)} ccusage plus Devin local accounting · ${formatTokens(stat.gen)} generated tokens`}
           >
             <span className="cv-label mr-2 truncate">{stat.label}</span>
             <span className="shrink-0 text-right">
@@ -3119,7 +3137,6 @@ function LegacySummarySection({
 
 export default function Home() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
   const isHomeActive = pathname === '/';
   const isInitialLoad = useRef(true);
   const { hidden: hiddenAgents, toggle: toggleAgent, showAll } = useHiddenAgents();
@@ -3131,6 +3148,9 @@ export default function Home() {
   const [editingTelemetry, setEditingTelemetry] = useState(false);
 
   // Data state — initialize from cache if available
+  const [localUsageReport, setLocalUsageReport] = useState<LocalUsageReport | null>(
+    _cachedDashboard?.localUsageReport ?? null
+  );
   const [tokenUsage, setTokenUsage] = useState<TokenUsageStats | null>(
     _cachedDashboard?.tokenUsage ?? null
   );
@@ -3152,22 +3172,12 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [indexing, setIndexing] = useState(false);
   const [indexResult, setIndexResult] = useState<TriggerIndexResult | null>(null);
-  const [liveSessionPolicy, setLiveSessionPolicy] = useState<LiveSessionEvidencePolicy | null>(
-    null
-  );
-  const [codexReconciliation, setCodexReconciliation] = useState<CodexUsageReconciliation | null>(
-    null
-  );
-  const [codexReconciliationLoading, setCodexReconciliationLoading] = useState(true);
-  const [codexReconciliationError, setCodexReconciliationError] = useState<string | null>(null);
 
   // ─── Load all dashboard data ────────────────────────────────────────────
 
   const loadDashboard = useCallback(async (showSpinner: boolean = true) => {
     if (!isTauriAvailable()) {
       setLoading(false);
-      setCodexReconciliationLoading(false);
-      setCodexReconciliationError('Open the desktop app to read the local evidence ledger.');
       setError('Tauri APIs not available. Run inside the desktop app to see live data.');
       isInitialLoad.current = false;
       return;
@@ -3176,8 +3186,6 @@ export default function Home() {
       setLoading(true);
     }
     setError(null);
-    setCodexReconciliationLoading(true);
-    setCodexReconciliationError(null);
 
     try {
       // Kick off account usage in parallel with the rest of the dashboard.
@@ -3189,8 +3197,8 @@ export default function Home() {
         cachedAccounts.map(async (a) => [a.id, await checkAccountUsage(a.id)] as const)
       );
 
-      const [tokenUsageResult, accountsResult, cachedUsagesResult] = await Promise.all([
-        getTokenUsageStats().then(
+      const [localUsageResult, accountsResult, cachedUsagesResult] = await Promise.all([
+        Promise.all([getLocalUsageReport(), getAgentUsageByDay(180)]).then(
           (v) => ({ status: 'fulfilled' as const, value: v }),
           (e) => ({ status: 'rejected' as const, reason: e })
         ),
@@ -3204,27 +3212,20 @@ export default function Home() {
         cachedUsagePromise,
       ]);
 
-      if (tokenUsageResult.status === 'fulfilled') {
-        setTokenUsage(tokenUsageResult.value);
+      if (localUsageResult.status === 'fulfilled') {
+        const [report, legacyDays] = localUsageResult.value;
+        setLocalUsageReport(report);
+        if (report.status !== 'unavailable') {
+          const rows = [
+            ...ccusageAgentDays(report),
+            ...legacyDays.filter((row) => row.agent_type === 'devin'),
+          ];
+          setAgentByDay(rows);
+          setTokenUsage(usageStats(rows));
+        } else {
+          setError(report.error?.message ?? 'ccusage is unavailable. Retry after reinstalling.');
+        }
       }
-
-      // Usage breakdowns (day×agent, project, model) — non-critical, so they
-      // load independently and never block or fail the core dashboard.
-      void getAgentUsageByDay(180)
-        .then((v) => setAgentByDay(v))
-        .catch(() => undefined);
-      void getLiveSessionEvidencePolicy()
-        .then(setLiveSessionPolicy)
-        .catch(() => undefined);
-      void getCodexUsageReconciliation()
-        .then(setCodexReconciliation)
-        .catch((reconciliationError) => {
-          console.error('[CodeVetter] Codex reconciliation failed:', reconciliationError);
-          setCodexReconciliationError(
-            'The latest Codex reconciliation could not be read. Re-index local data and retry.'
-          );
-        })
-        .finally(() => setCodexReconciliationLoading(false));
 
       // Seed usage map with cached-ID results that came back alongside the rest.
       const usageMap = seedCachedUsages(cachedUsagesResult);
@@ -3240,8 +3241,8 @@ export default function Home() {
 
       // If critical reads failed, surface a friendly message — full detail
       // goes to the console, never the raw IPC error to the user.
-      if (tokenUsageResult.status === 'rejected') {
-        setError(surfaceTokenUsageError(tokenUsageResult.reason));
+      if (localUsageResult.status === 'rejected') {
+        setError(surfaceTokenUsageError(localUsageResult.reason));
       }
     } catch (err) {
       console.error('[CodeVetter] Dashboard load failed:', err);
@@ -3256,13 +3257,14 @@ export default function Home() {
   useEffect(() => {
     if (loading) return;
     _cachedDashboard = {
+      localUsageReport,
       tokenUsage,
       accounts,
       usages: accountUsages,
       liveUsages,
       fetchedAt: Date.now(),
     };
-  }, [loading, tokenUsage, accounts, accountUsages, liveUsages]);
+  }, [loading, localUsageReport, tokenUsage, accounts, accountUsages, liveUsages]);
 
   // Refresh without showing loading spinners (for background event updates)
   const refreshDashboard = useCallback(() => {
@@ -3273,22 +3275,6 @@ export default function Home() {
   useEffect(() => {
     if (!isHomeActive) return;
     if (_cachedDashboard && Date.now() - _cachedDashboard.fetchedAt < CACHE_TTL_MS) {
-      // The general dashboard cache predates the revisioned evidence report;
-      // always refresh that report so a cached legacy headline cannot mask it.
-      if (isTauriAvailable()) {
-        setCodexReconciliationLoading(true);
-        void getCodexUsageReconciliation()
-          .then((report) => {
-            setCodexReconciliation(report);
-            setCodexReconciliationError(null);
-          })
-          .catch(() => {
-            setCodexReconciliationError(
-              'The latest Codex reconciliation could not be read. Re-index local data and retry.'
-            );
-          })
-          .finally(() => setCodexReconciliationLoading(false));
-      }
       return;
     }
     const timeout = setTimeout(() => {
@@ -3298,12 +3284,40 @@ export default function Home() {
   }, [isHomeActive, loadDashboard]);
 
   // Model breakdown — refetch when agent filters change and after index events.
-  const fetchModelUsage = useCallback(async (exclude: string[]) => {
-    const [d7, d30, d90, all] = await Promise.all(
-      MODEL_RANGES.map((r) => getUsageByModel(r.days, exclude))
-    );
-    setModelUsage({ d7, d30, d90, all });
-  }, []);
+  const fetchModelUsage = useCallback(
+    async (exclude: string[]) => {
+      if (!localUsageReport || localUsageReport.status === 'unavailable') return;
+      const legacyExclude = [
+        'claude-code',
+        'codex',
+        'cursor',
+        'grok',
+        'google',
+        'openai',
+        'openrouter',
+        ...exclude,
+      ];
+      const ranges = await Promise.all(
+        MODEL_RANGES.map(async (range) => {
+          const [devin] = await Promise.all([getUsageByModel(range.days, legacyExclude)]);
+          return [
+            range.key,
+            [
+              ...ccusageModels(
+                localUsageReport,
+                rangeSinceDate(range.key) ?? undefined,
+                undefined,
+                new Set(exclude)
+              ),
+              ...devin,
+            ].sort((left, right) => right.cost - left.cost),
+          ] as const;
+        })
+      );
+      setModelUsage(Object.fromEntries(ranges) as ModelUsageRanges);
+    },
+    [localUsageReport]
+  );
 
   useEffect(() => {
     if (!isHomeActive) return;
@@ -3477,19 +3491,10 @@ export default function Home() {
   return (
     <div className="h-full min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
-        <CodexEvidenceSummary
-          report={codexReconciliation}
-          loading={codexReconciliationLoading}
-          error={codexReconciliationError}
-          reconciling={indexing}
-          onReconcile={() => void handleTriggerIndex()}
-          onOpenRecovery={() => navigate('/settings?section=usage')}
-        />
-
-        <LegacySummarySection
+        <CcusageSummarySection
           tokenUsage={tokenUsage}
           loading={loading}
-          liveSessionPolicy={liveSessionPolicy}
+          report={localUsageReport}
         />
 
         {/* Index result banner */}
@@ -3542,8 +3547,9 @@ export default function Home() {
           onDeleteAccount={(account) => void handleDeleteAccount(account)}
         />
 
-        {tokenUsage && (
+        {tokenUsage && localUsageReport && localUsageReport.status !== 'unavailable' && (
           <LocalUsagePanel
+            report={localUsageReport}
             tokenUsage={tokenUsage}
             agentByDay={agentByDay}
             modelUsage={modelUsage}

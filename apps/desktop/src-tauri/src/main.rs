@@ -614,6 +614,7 @@ fn main() {
             commands::history::get_agent_usage_breakdown,
             commands::history::get_agent_usage_by_day,
             commands::history::get_usage_by_model,
+            commands::local_usage::get_local_usage_report,
             commands::local_qualification::benchmark_dashboard_ipc,
             commands::local_qualification::account_local_caches,
             commands::performance_bridge::run_local_performance,

@@ -848,6 +848,74 @@ export interface AgentUsageRow {
   cost: number;
 }
 
+export interface LocalUsageTotals {
+  input_tokens: number;
+  cache_creation_tokens: number;
+  cache_read_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+}
+
+export interface LocalUsageModel {
+  model: string;
+  totals: LocalUsageTotals;
+  fallback: boolean;
+  priced: boolean;
+}
+
+export interface LocalUsageAgent {
+  agent: string;
+  totals: LocalUsageTotals;
+  models: LocalUsageModel[];
+}
+
+export interface LocalUsagePeriod {
+  period: string;
+  totals: LocalUsageTotals;
+  agents: LocalUsageAgent[];
+  models: LocalUsageModel[];
+}
+
+export interface LocalUsageSession {
+  session_id: string;
+  agent: string;
+  last_activity: string | null;
+  reasoning_output_tokens: number;
+  totals: LocalUsageTotals;
+  models: LocalUsageModel[];
+}
+
+export interface LocalUsageFailure {
+  category: string;
+  message: string;
+}
+
+export interface LocalUsageReport {
+  status: 'ready' | 'stale' | 'unavailable';
+  stale: boolean;
+  error: LocalUsageFailure | null;
+  provenance: {
+    engine: 'ccusage';
+    version: string;
+    generated_at: string;
+    timezone: string;
+    window: string;
+    detected_agents: string[];
+    excluded_agents: string[];
+    codex_roots: string[];
+    source_fingerprint: string;
+    pricing_complete: boolean;
+    fallback_models: string[];
+    unpriced_models: string[];
+  };
+  daily: LocalUsagePeriod[];
+  weekly: LocalUsagePeriod[];
+  monthly: LocalUsagePeriod[];
+  sessions: LocalUsageSession[];
+  totals: LocalUsageTotals;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // BACKEND RESPONSE WRAPPERS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3373,6 +3441,13 @@ export async function getCodexUsageReconciliation(
 
 export async function getTokenUsageStats(): Promise<TokenUsageStats> {
   return safeInvoke<TokenUsageStats>('get_token_usage_stats');
+}
+
+export async function getLocalUsageReport(
+  refresh = false,
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+): Promise<LocalUsageReport> {
+  return safeInvoke<LocalUsageReport>('get_local_usage_report', { refresh, timezone });
 }
 
 export async function getAgentUsageBreakdown(): Promise<AgentUsageRow[]> {
