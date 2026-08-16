@@ -10,7 +10,7 @@ CodeVetter already packages target-triple Tauri sidecars for its CLI and MCP ser
 
 **Goals:**
 
-- Remove custom token arithmetic from the production read path for sources supported by `ccusage`.
+- Remove custom token arithmetic from the production read path for Claude and Codex.
 - Preserve the current Usage dashboard's period, agent, model, cache, session, and cost views through one coherent normalized snapshot.
 - Keep startup and idle behavior lightweight by scanning on demand, coalescing concurrent requests, and caching bounded report snapshots.
 - Make engine provenance, stale data, fallback pricing, and failures explicit.
@@ -19,7 +19,8 @@ CodeVetter already packages target-triple Tauri sidecars for its CLI and MCP ser
 **Non-Goals:**
 
 - Replacing provider quota/window APIs with transcript estimates.
-- Making unsupported providers such as Cursor appear in `ccusage` totals.
+- Replacing CodeVetter's Devin tracker while upstream cannot access Devin's cloud-side usage.
+- Changing the reliable provider quota/window telemetry cards.
 - Forking or vendoring `ccusage` parsing logic into Rust.
 - Keeping the legacy parser as a silent production fallback.
 - Dropping legacy SQLite tables or deleting historical user data in this change.
@@ -69,7 +70,7 @@ SQLite remains authoritative for session search, transcript history, verificatio
 
 If the sidecar is missing, times out, returns a non-zero exit, exceeds output limits, or violates the pinned JSON contract, Usage shows the last successful snapshot as stale when available and otherwise shows unavailable. The app does not query the old arithmetic path to fill the gap.
 
-Provider quota/window telemetry and `provider_usage_ledger` remain separate because they describe account limits or differently scoped observations. Unsupported providers remain visible only in those explicitly labeled surfaces.
+Provider quota/window telemetry remains unchanged because it describes account limits, not transcript-derived spend. The local-usage visualization combines one coherent Claude/Codex `ccusage` snapshot with the existing Devin-only rows and labels that boundary explicitly. Cursor, Grok, and other unsupported providers are excluded from this chart.
 
 ### 6. Qualify before switching, then retire writes without deleting data
 
@@ -93,7 +94,7 @@ After the switch, stop maintaining custom usage observations, repair migrations,
 2. Implement raw JSON fixtures, normalized report mapping, reconciliation checks, timeout/output bounds, caching, and provenance.
 3. Run a qualification-only comparison on synthetic edge cases and a retained real corpus; document expected legacy differences.
 4. Switch Usage IPC consumers and the minimal provenance/error UI to the normalized report.
-5. Stop production writes and startup repair work used only by the legacy Usage arithmetic, while retaining tables and a temporary rollback flag for one release.
-6. Remove the rollback flag after the released build is qualified; handle any destructive schema cleanup in a separate approved change.
+5. Stop production writes and startup repair work used only by Claude/Codex legacy arithmetic while retaining legacy tables and Devin accounting.
+6. Handle any destructive schema cleanup in a separate approved change.
 
-Rollback during the first release restores the prior read path through the temporary flag without deleting the new adapter or any legacy tables. A rollback never rewrites transcript files.
+Rollback uses the prior application release. No rollback rewrites transcript files or deletes legacy tables.

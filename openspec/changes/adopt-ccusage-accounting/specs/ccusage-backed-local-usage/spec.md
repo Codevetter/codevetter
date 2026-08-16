@@ -1,11 +1,13 @@
 ## Purpose
 
-Make a bundled, locally executed `ccusage` report the single maintained source for CodeVetter's supported coding-agent token and cost totals.
+Make a bundled, locally executed `ccusage` report the maintained source for Claude and Codex token and cost totals while retaining Devin's existing local tracker.
 
 ## ADDED Requirements
 
 ### Requirement: Local usage comes from the bundled accounting engine
-The system SHALL derive transcript-backed usage for every `ccusage`-supported source from the pinned `ccusage` executable bundled with the application and SHALL NOT require a separately installed package runner or CLI.
+The system SHALL derive Claude and Codex transcript-backed usage from the pinned `ccusage` executable bundled with the application and SHALL NOT require a separately installed package runner or CLI.
+
+The system SHALL retain CodeVetter's existing Devin rows in the local-usage visualization because upstream `ccusage` does not support Devin, and SHALL leave provider quota/window telemetry unchanged.
 
 #### Scenario: Packaged application loads usage
 - **WHEN** a user opens the Usage surface in a supported CodeVetter build
@@ -46,4 +48,3 @@ The packaged `ccusage` version SHALL be pinned, and any version change SHALL pas
 #### Scenario: Dependency update changes report shape or totals
 - **WHEN** a candidate `ccusage` version fails schema validation or exceeds the approved retained-corpus variance
 - **THEN** the update is rejected and the currently pinned version remains the production engine
-

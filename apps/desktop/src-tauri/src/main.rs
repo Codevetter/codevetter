@@ -596,10 +596,9 @@ fn main() {
             commands::agent_memories::get_memory_file_git_diff,
             // History / indexer
             commands::history::trigger_index,
-            commands::history::get_token_usage_stats,
-            commands::history::get_agent_usage_breakdown,
-            commands::history::get_agent_usage_by_day,
-            commands::history::get_usage_by_model,
+            commands::history::get_devin_usage_breakdown,
+            commands::history::get_devin_usage_by_day,
+            commands::history::get_devin_usage_by_model,
             commands::local_usage::get_local_usage_report,
             commands::local_qualification::benchmark_dashboard_ipc,
             commands::local_qualification::account_local_caches,

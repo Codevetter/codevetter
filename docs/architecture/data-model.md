@@ -40,28 +40,19 @@ repairs run as idempotent migrations guarded by feature flags. The groups:
 
 ## Persistence invariants
 
-- **Telemetry is additive and idempotent.** The indexer dedups Claude usage by
-  `(message.id, requestId)` (last key persisted per session in
-  `cc_sessions.last_usage_key`) because Claude Code writes one JSONL line per
-  content block and repeats the final usage. Don't re-add raw usage without
-  the dedup gate — see
-  [knowledge/learnings/telemetry-and-indexing.md](../knowledge/learnings/telemetry-and-indexing.md).
-- **Codex accounting is revisioned and observation-backed.** `token_count`
-  events are normalized into the append-only `codex_usage_ledger`; source byte
-  cursors, lineage checkpoints, pricing provenance, and coverage are committed
-  before ingestion is acknowledged. Exact cumulative repeats and copied
-  prefixes are excluded, while compact subagent counter resets remain owned
-  usage. Verified totals use accepted rows only. Legacy summaries are a
-  separate evidence tier and never become fabricated daily ledger rows.
-- **Token coverage and price coverage are independent.** A token-complete event
-  can be `priced_exact`, `priced_range`, or `unpriced`. Unknown standard versus
-  priority service tier produces a bounded API-equivalent range, not a made-up
-  point estimate and never a claim about subscription spend.
-- **Revision 4 has a one-release projection rollback.** Before its first write
-  to legacy session, model, or v1 observation projections, it captures those
-  rows exactly once in the `codex_*_projection_backup` tables. Starting with
-  `CODEVETTER_CODEX_ACCOUNTING=legacy` restores that snapshot transactionally
-  without deleting the immutable v2 ledger.
+- **Claude/Codex Usage accounting is externalized.** The bundled, pinned
+  `ccusage` sidecar reads agent transcripts locally and supplies the Usage
+  chart's Claude/Codex period, model, session, token-class, and cost data. The
+  desktop caches only a short-lived normalized snapshot; SQLite is not a second
+  canonical usage ledger.
+- **Devin remains explicitly separate.** Upstream `ccusage` cannot access
+  Devin's cloud-side usage, so the chart retains only CodeVetter's existing
+  Devin rows from SQLite. Provider remaining-usage and quota telemetry is a
+  separate metric family and is unchanged.
+- **Legacy usage tables are retained, not maintained as production truth.**
+  Historical Codex observation/coverage/projection tables remain in existing
+  databases for non-destructive compatibility, but startup repair and ledger
+  write paths are retired. Schema deletion requires a separate migration.
 - **Migrations are guarded and idempotent.** Each one-time repair carries a
   feature-flag gate and is safe to run on a fresh DB. Re-running on an
   already-repaired DB is a no-op.
