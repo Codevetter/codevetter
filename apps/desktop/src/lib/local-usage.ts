@@ -149,7 +149,7 @@ export function ccusageAgentRows(report: LocalUsageReport): AgentUsageRow[] {
     row.cache_read_tokens += session.totals.cache_read_tokens;
     row.output_tokens += session.totals.output_tokens;
     row.cost += session.totals.cost_usd;
-    if (session.last_activity?.slice(0, 10) >= week) {
+    if (session.last_activity && session.last_activity.slice(0, 10) >= week) {
       row.week_real_input_tokens += session.totals.input_tokens;
       row.week_output_tokens += session.totals.output_tokens;
     }
