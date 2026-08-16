@@ -27,6 +27,7 @@ pub mod history_read;
 pub mod history_summary_graph;
 pub mod intel;
 pub mod local_qualification;
+pub mod local_usage;
 pub mod managed_work;
 pub mod mcp_access;
 pub mod native_agent_island;
