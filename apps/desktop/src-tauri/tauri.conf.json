@@ -5,7 +5,7 @@
   "version": "1.8.1",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run prepare:mcp-sidecar:release && npm run prepare:cli-sidecar:release && npm run prepare:agent-island:release && npm run build",
+    "beforeBuildCommand": "npm run prepare:mcp-sidecar:release && npm run prepare:cli-sidecar:release && npm run prepare:ccusage-sidecar && npm run prepare:agent-island:release && npm run build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../out"
   },
@@ -54,7 +54,7 @@
     "shortDescription": "Evidence-backed code review and verification",
     "longDescription": "CodeVetter Desktop combines change review, executable testing, local performance measurement, repository context, and machine-readable evidence in one local application.",
     "copyright": "Copyright 2026 CodeVetter",
-    "externalBin": ["binaries/codevetter-mcp", "binaries/codevetter"],
+    "externalBin": ["binaries/codevetter-mcp", "binaries/codevetter", "binaries/ccusage"],
     "resources": {
       "../../../scripts/runtime-failure-capsule/": "runtime-failure-capsule/"
     }

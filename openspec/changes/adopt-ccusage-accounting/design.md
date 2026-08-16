@@ -2,7 +2,7 @@
 
 See [proposal.md](./proposal.md) for motivation. CodeVetter currently computes Usage from `cc_sessions`, message-day proration, `session_model_usage`, and a separate lineage-aware Codex ledger. That makes the app responsible for every upstream log-format, replay, model, calendar, and pricing change.
 
-`ccusage` 20.0.19 now exposes a unified, machine-readable report across supported coding agents. Its `daily --json --offline --sections daily,weekly,monthly,session --by-agent` command loads the corpus once and returns the period, per-agent, model, and session shapes needed by the existing Usage surface. The published `ccusage` package is a launcher for platform-native optional packages rather than an importable library; the macOS arm64 binary is approximately 3.2 MB unpacked. Codex support remains labeled beta upstream, so pinning and qualification are part of the architecture rather than release hygiene alone.
+`ccusage` 20.0.20 now exposes a unified, machine-readable report across supported coding agents. Its `daily --json --offline --sections daily,weekly,monthly,session --by-agent` command loads the corpus once and returns the period, per-agent, model, and session shapes needed by the existing Usage surface. The published `ccusage` package is a launcher for platform-native optional packages rather than an importable library; the macOS arm64 binary is approximately 3.2 MB unpacked. Codex support remains labeled beta upstream, so pinning and qualification are part of the architecture rather than release hygiene alone.
 
 CodeVetter already packages target-triple Tauri sidecars for its CLI and MCP server. The desktop release currently targets macOS arm64, while the upstream package also publishes macOS x64, Linux arm64/x64, and Windows arm64/x64 binaries.
 
@@ -30,6 +30,8 @@ CodeVetter already packages target-triple Tauri sidecars for its CLI and MCP ser
 ### 1. Package the native executable as a Tauri sidecar
 
 Add a pinned `ccusage` package to the desktop build toolchain and a `prepare-ccusage-sidecar.mjs` script that resolves the target-specific native package, verifies the expected version, copies it to `src-tauri/binaries/ccusage-<target-triple>`, and preserves executable permissions. Add `binaries/ccusage` to `bundle.externalBin` and verify the packaged executable in CI and release bundles.
+
+Dependabot checks the package weekly and opens grouped update pull requests. Updates remain pinned and must pass the sidecar, JSON-contract, retained-corpus, and dependency-security gates before merge; production builds never fetch `latest` dynamically.
 
 This is a justified new production dependency because it replaces the production accounting engine, is MIT licensed, runs locally, and avoids requiring a user-managed Node/Bun installation. Importing a JavaScript library is not viable because v20 publishes only the CLI launcher and native executables. Calling `pnpm dlx` or a PATH-installed binary was rejected because it adds network, version, runtime, and user-environment drift.
 
