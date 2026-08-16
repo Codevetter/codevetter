@@ -9,6 +9,7 @@ import {
   packageForTarget,
   prepareCcusageSidecar,
   resolveInstalledCcusage,
+  rustHostTarget,
 } from './prepare-ccusage-sidecar.mjs';
 
 test('maps every published ccusage target package', () => {
@@ -41,10 +42,11 @@ test('rejects non-exact, mismatched, and non-MIT packages', () => {
 });
 
 test('resolves and executes the real installed native package', () => {
-  const installed = resolveInstalledCcusage('aarch64-apple-darwin');
+  const target = rustHostTarget();
+  const installed = resolveInstalledCcusage(target);
   const destinationRoot = mkdtempSync(join(tmpdir(), 'codevetter-ccusage-'));
   const result = prepareCcusageSidecar({
-    target: 'aarch64-apple-darwin',
+    target,
     destinationRoot,
     installed,
     expectedVersion: '20.0.20',
