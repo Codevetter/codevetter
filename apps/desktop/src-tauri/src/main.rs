@@ -84,21 +84,9 @@ fn run_usage_maintenance(app_data_dir: std::path::PathBuf) {
             db::schema::purge_message_cruft_once(&conn);
             db::schema::purge_content_text_once(&conn);
             db::schema::purge_messages_to_buckets_once(&conn);
-            // Repair Codex token totals corrupted by cumulative-add and spawned
-            // session attribution bugs (one-time per revision), then refresh
-            // stored per-session $ cost if the price table changed.
-            commands::history::fix_codex_token_totals(&conn);
             // One-time per-model usage backfill (v1.1.100) — must precede the
             // cost recompute so multi-model sessions reprice from their split.
             commands::history::backfill_session_model_usage(&conn);
-            // Relabel o3-defaulted Codex sessions from their turn_context rows
-            // before cost recompute so rev-6+ pricing books corrected models.
-            commands::history::backfill_codex_session_models(&conn);
-            // One-time Claude usage dedup: re-scan on-disk transcripts counting
-            // each API response's usage once (duplicate content-block lines
-            // inflated Claude numbers ~2.2×). Rewrites totals + cost directly,
-            // so ordering vs the pricing recompute below doesn't matter.
-            commands::history::fix_claude_usage_dedup(&conn);
             commands::history::recompute_all_session_costs(&conn);
             log::info!("Usage maintenance done.");
         }
@@ -608,8 +596,6 @@ fn main() {
             commands::agent_memories::get_memory_file_git_diff,
             // History / indexer
             commands::history::trigger_index,
-            commands::history::get_live_session_evidence_policy,
-            commands::history::get_codex_usage_reconciliation,
             commands::history::get_token_usage_stats,
             commands::history::get_agent_usage_breakdown,
             commands::history::get_agent_usage_by_day,
