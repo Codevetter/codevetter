@@ -1,6 +1,6 @@
 ## 1. Pin and package the accounting engine
 
-- [ ] 1.1 Add the exact approved `ccusage` version to the desktop build toolchain and record its MIT license and package-integrity expectations.
+- [ ] 1.1 Add the exact approved `ccusage` version to the desktop build toolchain, record its MIT license and package-integrity expectations, and configure weekly automated update pull requests gated by qualification.
 - [ ] 1.2 Add a target-aware preparation script that resolves the matching native package, verifies its version, copies it to the Tauri target-triple sidecar path, and preserves executable permissions.
 - [ ] 1.3 Register the `ccusage` external binary in Tauri configuration and wire sidecar preparation into development, CI, and release build commands.
 - [ ] 1.4 Add preparation-script tests for supported target mapping, version mismatch, missing optional package, and executable output.

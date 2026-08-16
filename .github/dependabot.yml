@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      ccusage-runtime:
+        patterns:
+          - ccusage
+          - '@ccusage/*'
+    labels:
+      - dependencies
+      - ccusage
+    open-pull-requests-limit: 5

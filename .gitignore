@@ -18,6 +18,7 @@ target/
 # Desktop app build
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/binaries/codevetter-*
+apps/desktop/src-tauri/binaries/ccusage-*
 apps/desktop/src-tauri/sidecar/
 apps/desktop/out/
 apps/desktop/.next/

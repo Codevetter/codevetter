@@ -71,6 +71,14 @@ jobs:
           TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
         run: pnpm run prepare:cli-sidecar:release
 
+      - name: Prepare release ccusage sidecar
+        working-directory: apps/desktop
+        env:
+          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
+        run: |
+          pnpm run test:ccusage-sidecar
+          pnpm run prepare:ccusage-sidecar
+
       # Tauri merges tauri.macos.conf.json before every Cargo build, including
       # the release-only graph benchmark below. Prepare the declared native
       # helper before that first build rather than waiting for tauri-action.
@@ -121,6 +129,9 @@ jobs:
         run: |
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter-mcp
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage
+          EXPECTED_CCUSAGE=$(node -p "require('./apps/desktop/package.json').devDependencies.ccusage")
+          apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage --version | grep "$EXPECTED_CCUSAGE"
           pnpm --dir apps/desktop run qualify:cli --binary \
             src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
 

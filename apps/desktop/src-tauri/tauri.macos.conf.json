@@ -3,6 +3,7 @@
     "externalBin": [
       "binaries/codevetter-mcp",
       "binaries/codevetter",
+      "binaries/ccusage",
       "binaries/codevetter-agent-island"
     ]
   }

@@ -74,6 +74,12 @@ jobs:
       - name: Prepare CLI sidecar
         working-directory: apps/desktop
         run: pnpm run prepare:cli-sidecar
+      - name: Prepare and qualify ccusage sidecar
+        working-directory: apps/desktop
+        run: |
+          pnpm run test:ccusage-sidecar
+          pnpm run prepare:ccusage-sidecar
+          src-tauri/binaries/ccusage-$(rustc -vV | sed -n 's/^host: //p') --version
       - name: Qualify CLI artifact
         working-directory: apps/desktop
         run: |
