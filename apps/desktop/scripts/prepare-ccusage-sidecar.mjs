@@ -99,7 +99,9 @@ export function prepareCcusageSidecar({
     stdio: ['ignore', 'pipe', 'pipe'],
   }).trim();
   if (!output.includes(expectedVersion)) {
-    throw new Error(`Prepared ccusage version mismatch: expected ${expectedVersion}, received ${output}`);
+    throw new Error(
+      `Prepared ccusage version mismatch: expected ${expectedVersion}, received ${output}`
+    );
   }
   console.log(`Prepared ${destination} (${output}, MIT)`);
   return { destination, version: expectedVersion, license: installed.license };
@@ -128,5 +130,6 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
+const isMain =
+  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
 if (isMain) prepareCcusageSidecar();
