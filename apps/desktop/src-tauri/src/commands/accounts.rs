@@ -3,6 +3,7 @@ use crate::DbState;
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::io::BufRead;
+use std::path::PathBuf;
 use tauri::State;
 
 #[tauri::command]
@@ -592,7 +593,7 @@ async fn detect_claude_accounts() -> Vec<DetectedAccount> {
     let mut accounts: Vec<DetectedAccount> = Vec::new();
     for service in services {
         let svc = service.clone();
-        let result = tokio::task::spawn_blocking(move || read_keychain_account_info(&svc))
+        let result = tokio::task::spawn_blocking(move || read_credential_account_info(&svc))
             .await
             .ok()
             .flatten();
@@ -908,38 +909,33 @@ fn find_claude_keychain_services() -> Vec<String> {
         }
     }
 
-    // Ensure the default one is tried even if dump-keychain fails
-    if services.is_empty() {
+    // The current CLI may use a config-root file while stale profile entries
+    // remain in Keychain, so always include the default logical account when a
+    // credential file exists. Also keep the legacy fallback when discovery
+    // itself fails.
+    if (!claude_credential_files().is_empty() || services.is_empty())
+        && !services
+            .iter()
+            .any(|service| service == "Claude Code-credentials")
+    {
         services.push("Claude Code-credentials".to_string());
     }
 
     services
 }
 
-/// Read account metadata + expiry from a specific Claude keychain entry.
+/// Read account metadata + expiry from the freshest credential candidate for a
+/// logical Claude account.
 /// Returns `(DetectedAccount, expires_at_ms)` for dedup by freshest token.
-fn read_keychain_account_info(service: &str) -> Option<(DetectedAccount, i64)> {
-    let output = std::process::Command::new("security")
-        .args(["find-generic-password", "-s", service, "-w"])
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .output()
-        .ok()?;
-
-    if !output.status.success() {
-        return None;
-    }
-
-    let raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    let parsed: Value = serde_json::from_str(&raw).ok()?;
-
-    let oauth = parsed.get("claudeAiOauth")?;
+fn read_credential_account_info(service: &str) -> Option<(DetectedAccount, i64)> {
+    let credential = read_full_credential(service).ok()?;
+    let oauth = credential.wrapper.get("claudeAiOauth")?;
     let subscription_type = oauth
         .get("subscriptionType")
         .and_then(|v| v.as_str())
         .unwrap_or("unknown")
         .to_string();
-    let expires_at = oauth.get("expiresAt").and_then(|v| v.as_i64()).unwrap_or(0);
+    let expires_at = credential.expires_at;
 
     let name = match subscription_type.as_str() {
         "team" => "Claude Team".to_string(),
@@ -1038,19 +1034,21 @@ fn parse_credential_wrapper(
 
 /// Read the full Claude Code credential so it can be refreshed in place.
 ///
-/// Newer Claude Code stores the active account's OAuth in
-/// `~/.claude/.credentials.json` (a file it refreshes in place); older versions
-/// used the macOS keychain. The keychain entries are frequently stale leftovers,
-/// so for the primary account prefer the file and fall back to the keychain.
+/// Newer Claude Code can store OAuth in a config-root `.credentials.json` file;
+/// older versions used the macOS keychain. Both locations can remain after a
+/// migration, so collect every candidate and use the one with the newest expiry
+/// instead of blindly preferring one storage mechanism.
 fn read_full_credential(service: &str) -> Result<KeychainCred, String> {
+    let mut candidates = Vec::new();
     if service == "Claude Code-credentials" {
-        if let Ok(home) = std::env::var("HOME") {
-            let path = format!("{home}/.claude/.credentials.json");
+        for path in claude_credential_files() {
             if let Ok(raw) = std::fs::read_to_string(&path) {
-                if let Ok(cred) =
-                    parse_credential_wrapper(raw.trim(), service, CredLocation::File(path))
-                {
-                    return Ok(cred);
+                if let Ok(cred) = parse_credential_wrapper(
+                    raw.trim(),
+                    service,
+                    CredLocation::File(path.to_string_lossy().to_string()),
+                ) {
+                    candidates.push(cred);
                 }
             }
         }
@@ -1072,10 +1070,16 @@ fn read_full_credential(service: &str) -> Result<KeychainCred, String> {
         if let Some(k) = kc {
             pw_args.push(k.clone());
         }
-        let pw_out = std::process::Command::new("security")
+        let pw_out = match std::process::Command::new("security")
             .args(&pw_args)
             .output()
-            .map_err(|e| format!("Failed to run security command: {e}"))?;
+        {
+            Ok(output) => output,
+            Err(error) => {
+                last_err = format!("Failed to run security command: {error}");
+                continue;
+            }
+        };
         if !pw_out.status.success() {
             continue;
         }
@@ -1106,14 +1110,58 @@ fn read_full_credential(service: &str) -> Result<KeychainCred, String> {
                 keychain: kc.clone(),
             },
         ) {
-            Ok(cred) => return Ok(cred),
+            Ok(cred) => candidates.push(cred),
             Err(e) => {
                 last_err = e;
                 continue;
             }
         }
     }
-    Err(last_err)
+    freshest_credential(candidates).ok_or(last_err)
+}
+
+fn claude_credential_files() -> Vec<PathBuf> {
+    let Some(home) = std::env::var_os("HOME").map(PathBuf::from) else {
+        return Vec::new();
+    };
+    let mut roots = Vec::new();
+    if let Ok(config_dirs) = std::env::var("CLAUDE_CONFIG_DIR") {
+        for raw in config_dirs
+            .split(',')
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+        {
+            roots.push(PathBuf::from(raw));
+        }
+    }
+    roots.extend([
+        home.join(".claude"),
+        home.join(".config").join("claude"),
+        home.join("Library")
+            .join("Application Support")
+            .join("Claude"),
+    ]);
+    if let Ok(entries) = std::fs::read_dir(&home) {
+        for entry in entries.flatten() {
+            if entry.path().is_dir() && entry.file_name().to_string_lossy().starts_with(".claude-")
+            {
+                roots.push(entry.path());
+            }
+        }
+    }
+
+    let mut files = Vec::new();
+    for root in roots {
+        let path = root.join(".credentials.json");
+        if path.is_file() && !files.contains(&path) {
+            files.push(path);
+        }
+    }
+    files
+}
+
+fn freshest_credential(candidates: Vec<KeychainCred>) -> Option<KeychainCred> {
+    candidates.into_iter().max_by_key(|cred| cred.expires_at)
 }
 
 /// Write rotated tokens back to wherever the credential came from (the
@@ -2817,6 +2865,35 @@ fn json_i64(value: &Value) -> Option<i64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn test_claude_credential(label: &str, expires_at: i64) -> KeychainCred {
+        let raw = json!({
+            "claudeAiOauth": {
+                "accessToken": format!("access-{label}"),
+                "refreshToken": format!("refresh-{label}"),
+                "expiresAt": expires_at,
+                "subscriptionType": "team"
+            }
+        })
+        .to_string();
+        parse_credential_wrapper(
+            &raw,
+            "Claude Code-credentials",
+            CredLocation::File(format!("/{label}/.credentials.json")),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn claude_credential_resolution_uses_freshest_candidate() {
+        let stale_file = test_claude_credential("stale", 100);
+        let active_profile = test_claude_credential("active", 300);
+
+        let selected = freshest_credential(vec![active_profile, stale_file]).unwrap();
+
+        assert_eq!(selected.expires_at, 300);
+        assert_eq!(selected.access_token, "access-active");
+    }
 
     #[test]
     fn parse_devin_credentials_toml_values() {
