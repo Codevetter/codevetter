@@ -9,7 +9,7 @@ import type {
 
 const agentName = (agent: string) => (agent === 'claude' ? 'claude-code' : agent);
 const generated = (totals: LocalUsageReport['totals']) =>
-  totals.input_tokens + totals.output_tokens;
+  totals.input_tokens + totals.cache_creation_tokens + totals.output_tokens;
 
 function localDay(value: Date): string {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
@@ -145,12 +145,13 @@ export function ccusageAgentRows(report: LocalUsageReport): AgentUsageRow[] {
       cost: 0,
     };
     row.sessions += 1;
-    row.real_input_tokens += session.totals.input_tokens;
+    row.real_input_tokens += session.totals.input_tokens + session.totals.cache_creation_tokens;
     row.cache_read_tokens += session.totals.cache_read_tokens;
     row.output_tokens += session.totals.output_tokens;
     row.cost += session.totals.cost_usd;
     if (session.last_activity && session.last_activity.slice(0, 10) >= week) {
-      row.week_real_input_tokens += session.totals.input_tokens;
+      row.week_real_input_tokens +=
+        session.totals.input_tokens + session.totals.cache_creation_tokens;
       row.week_output_tokens += session.totals.output_tokens;
     }
     rows.set(agent, row);

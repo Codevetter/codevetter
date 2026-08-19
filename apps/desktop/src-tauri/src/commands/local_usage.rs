@@ -18,7 +18,7 @@ const CACHE_TTL: Duration = Duration::from_secs(30);
 const EXECUTION_TIMEOUT: Duration = Duration::from_secs(30);
 const MAX_STDOUT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_STDERR_BYTES: usize = 1024 * 1024;
-const ACCOUNTED_AGENTS: [&str; 2] = ["claude", "codex"];
+const ACCOUNTED_AGENTS: [&str; 3] = ["claude", "codex", "grok"];
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub struct LocalUsageTotals {
@@ -32,7 +32,9 @@ pub struct LocalUsageTotals {
 
 impl LocalUsageTotals {
     pub fn generated_tokens(&self) -> u64 {
-        self.input_tokens.saturating_add(self.output_tokens)
+        self.input_tokens
+            .saturating_add(self.cache_creation_tokens)
+            .saturating_add(self.output_tokens)
     }
 
     fn checked_add(&self, other: &Self) -> Result<Self, String> {
@@ -776,15 +778,23 @@ mod tests {
 
     #[test]
     fn excludes_non_chart_agents() {
-        let with_grok = String::from_utf8(UNIFIED.to_vec()).unwrap().replacen(
+        let with_opencode = String::from_utf8(UNIFIED.to_vec()).unwrap().replacen(
             "\"agents\": [\"claude\", \"codex\"]",
-            "\"agents\": [\"claude\", \"codex\", \"grok\"]",
+            "\"agents\": [\"claude\", \"codex\", \"opencode\"]",
             1,
         );
-        let report = normalize_report(with_grok.as_bytes(), "UTC", &[]).unwrap();
+        let report = normalize_report(with_opencode.as_bytes(), "UTC", &[]).unwrap();
         assert_eq!(report.provenance.detected_agents, ["claude", "codex"]);
-        assert_eq!(report.provenance.excluded_agents, ["grok"]);
+        assert_eq!(report.provenance.excluded_agents, ["opencode"]);
         assert_eq!(report.totals.total_tokens, 37);
+    }
+
+    #[test]
+    fn accounts_for_grok_but_not_devin() {
+        assert!(is_accounted_agent("claude"));
+        assert!(is_accounted_agent("codex"));
+        assert!(is_accounted_agent("grok"));
+        assert!(!is_accounted_agent("devin"));
     }
 
     #[test]

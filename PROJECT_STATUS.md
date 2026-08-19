@@ -38,7 +38,7 @@ separately approved safety design justify renewed investment.
 ## Dependencies
 
 External:
-- Bundled `ccusage` 20.0.20 sidecar — local, offline Claude/Codex usage accounting; exact updates are opened weekly and remain qualification-gated.
+- Bundled `ccusage` 20.0.20 sidecar — local, offline Claude/Codex/Grok usage accounting; exact updates are opened weekly and remain qualification-gated.
 - User-supplied LLM API keys (Anthropic / OpenAI / OpenRouter) stored in user settings — no server-side auth.
 - Installed and authenticated Codex or Claude CLI for Work conversations; provider account policy remains external to CodeVetter.
 - GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on `tauri.conf.json` version bumps, dispatching `release.yml` to build/sign/upload Tauri binaries; `@tauri-apps/plugin-updater` consumes the `latest.json` manifest.
@@ -55,11 +55,20 @@ Internal (fleet):
 
 ## Timeline
 
-- **2026-08-16 — ccusage local-accounting cutover (unreleased):** Replaced the
-  Usage chart's custom Claude/Codex accounting with one cached report from the
-  pinned bundled `ccusage` sidecar. The chart now contains ccusage-backed
-  Claude/Codex data plus the existing Devin tracker only; Cursor and Grok are
-  excluded. Reliable provider remaining-usage and quota cards are unchanged.
+- **2026-08-19 — Claude/Grok local-accounting correction (v1.9.1):** Expanded
+  the pinned `ccusage` report to Claude, Codex, and Grok while keeping Devin as
+  an independently queried local source. Devin query failures no longer hide
+  healthy ccusage data, and fresh/generated totals now include cache-creation
+  input. Claude live-quota checks now consider configured profile files and
+  Keychain candidates, selecting the freshest expiry instead of
+  unconditionally preferring a stale default file.
+
+- **2026-08-16 — ccusage local-accounting cutover (shipped in v1.9.0):** Replaced
+  the Usage chart's custom Claude/Codex accounting with one cached report from
+  the pinned bundled `ccusage` sidecar. The chart contained ccusage-backed
+  Claude/Codex data plus the existing Devin tracker; Cursor and Grok were
+  excluded. Reliable provider remaining-usage and quota cards remained a
+  separate surface.
   Retired the Codex reconciliation UI, startup repairs, observation writes, and
   bespoke ledger pricing/qualification code while leaving historical SQLite
   tables intact. Devin remains separate because upstream ccusage does not

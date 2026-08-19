@@ -305,6 +305,12 @@ function formatLiveErrorHint(liveError: string | null): string | null {
   return `Live usage unavailable: ${liveError}`;
 }
 
+function scopeLiveErrorHint(provider: string, hint: string | null): string | null {
+  return provider === 'anthropic' && hint
+    ? `Local usage remains available via ccusage. ${hint}`
+    : hint;
+}
+
 function resolveAccountPlan(
   provider: string,
   liveUsage: LiveUsageResult | null,
@@ -753,6 +759,7 @@ function AccountUsageRow({
   isSharedUsage: boolean;
 }) {
   const liveErrorHint = formatLiveErrorHint(liveError);
+  const scopedLiveErrorHint = scopeLiveErrorHint(account.provider, liveErrorHint);
   const weekSessions = usage?.week_sessions ?? 0;
   const weekTokens = (usage?.week_input_tokens ?? 0) + (usage?.week_output_tokens ?? 0);
   const profileBreakdown = usage?.profile_breakdown ?? [];
@@ -829,7 +836,7 @@ function AccountUsageRow({
             weekSessions={weekSessions}
             usage={usage}
             hasLive={hasLive}
-            liveErrorHint={liveErrorHint}
+            liveErrorHint={scopedLiveErrorHint}
             profileBreakdown={profileBreakdown}
           />
         ) : (
@@ -860,7 +867,8 @@ const AGENT_PALETTE: Record<
 > = {
   'claude-code': { bar: '#d6a947', label: 'Claude', source: 'ccusage' },
   codex: { bar: '#31c6b7', label: 'Codex', source: 'ccusage' },
-  devin: { bar: '#fb923c', label: 'Devin', source: 'Devin sessions.db metrics' },
+  grok: { bar: '#38bdf8', label: 'Grok', source: 'ccusage' },
+  devin: { bar: '#fb923c', label: 'Devin', source: 'separate Devin sessions.db accounting' },
 };
 
 const agentPaletteFor = (agent: string) => AGENT_PALETTE[agent] ?? { bar: '#64748b', label: agent };
@@ -1428,15 +1436,11 @@ function TokenUsageChart({
 // including Grok and Cursor — appears. We show TWO bars because the agents log
 // tokens on incompatible bases:
 //   • "Total burn (cache-incl)" = real_input + cache_read + output. Mirrors
-//     ccusage; Claude/Codex dominate because ~96-98% of their tokens are cache
+//     ccusage; Claude/Codex/Grok often dominate because most tokens are cache
 //     reads (re-sent context counted every turn).
-//   • "Fresh tokens (cache-free)" = real_input + output. Cache reads aren't
-//     comparable across agents (Grok/Cursor logs don't expose them), so this is
-//     the fair cross-agent split — Grok and Cursor become visible.
-// Cursor's local cc_sessions value is a chars÷4 estimate that misses all IDE
-// usage, so when the live-API ledger has a cursor row we use it as the source
-// of truth instead (see CursorAgentTokens below). Grok stays a per-turn-context
-// estimate (no output/cache logged). AGENT_PALETTE is shared from above.
+//   • "Fresh tokens (cache-free)" = real_input + output. This separates newly
+//     processed tokens from re-sent cached context across the local sources.
+// AGENT_PALETTE is shared from above.
 
 type AgentSegment = { agent: string; tokens: number; estimated: boolean };
 
@@ -1507,7 +1511,7 @@ function useAgentUsageRows(active: boolean, report: LocalUsageReport) {
           setRows([...ccusageAgentRows(report), ...legacyRows]);
         }
       } catch {
-        if (!cancelled) setRows((prev) => prev ?? []);
+        if (!cancelled) setRows(ccusageAgentRows(report));
       }
     };
     void fetchRows();
@@ -2063,7 +2067,7 @@ function LocalUsagePanel({
     const { start, end } = modelFocusDayRange(focusDate, granularity);
     const devinRows = hiddenAgents.has('devin')
       ? Promise.resolve([] as ModelUsage[])
-      : getDevinUsageByModel(undefined, start, end);
+      : getDevinUsageByModel(undefined, start, end).catch(() => []);
     void devinRows
       .then((rows) => {
         if (!cancelled) {
@@ -2073,9 +2077,6 @@ function LocalUsagePanel({
             )
           );
         }
-      })
-      .catch(() => {
-        if (!cancelled) setFocusModelData([]);
       })
       .finally(() => {
         if (!cancelled) setFocusModelLoading(false);
@@ -2089,7 +2090,7 @@ function LocalUsagePanel({
     <div className="cv-frame overflow-hidden">
       <div className="cv-terminal-bar h-10 px-4">
         <BarChart3 size={14} className="text-[var(--cv-accent)]" />
-        <span className="cv-label">Local usage · ccusage + Devin</span>
+        <span className="cv-label">Local usage · ccusage · Devin separate</span>
       </div>
 
       <div className="flex flex-col gap-2 border-b border-[var(--cv-line)] px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
@@ -2835,7 +2836,7 @@ function CcusageSummarySection({
         <div className="min-w-0">
           <div className="cv-label text-zinc-500">ccusage local accounting</div>
           <h1 className="mt-1 truncate text-lg font-semibold tracking-[-0.015em] text-zinc-100">
-            Claude + Codex + Devin usage
+            Claude + Codex + Grok, plus Devin
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -2843,9 +2844,9 @@ function CcusageSummarySection({
             <Badge
               variant="outline"
               className="h-6 border-emerald-500/25 bg-emerald-500/[0.06] px-2 text-[11px] font-medium text-emerald-300/80"
-              title={`Claude and Codex from ccusage ${report.provenance.version}; Devin from CodeVetter's local tracker; generated ${formatShortDateTime(report.provenance.generated_at)}`}
+              title={`Claude, Codex, and Grok from ccusage ${report.provenance.version}; Devin from CodeVetter's separate local tracker; generated ${formatShortDateTime(report.provenance.generated_at)}`}
             >
-              ccusage {report.provenance.version} · Devin local
+              ccusage {report.provenance.version} · Devin separate
             </Badge>
           )}
           {report?.stale && (
@@ -2872,7 +2873,7 @@ function CcusageSummarySection({
           <div
             key={stat.label}
             className="flex min-h-20 items-center justify-between bg-[var(--cv-surface)] px-4 py-4"
-            title={`${formatMoney(stat.cost)} ccusage plus Devin local accounting · ${formatTokens(stat.gen)} generated tokens`}
+            title={`${formatMoney(stat.cost)} ccusage plus separate Devin accounting · ${formatTokens(stat.gen)} generated tokens`}
           >
             <span className="cv-label mr-2 truncate">{stat.label}</span>
             <span className="shrink-0 text-right">
@@ -2953,7 +2954,7 @@ export default function Home() {
       );
 
       const [localUsageResult, accountsResult, cachedUsagesResult] = await Promise.all([
-        Promise.all([getLocalUsageReport(), getDevinUsageByDay(366)]).then(
+        Promise.all([getLocalUsageReport(), getDevinUsageByDay(366).catch(() => [])]).then(
           (v) => ({ status: 'fulfilled' as const, value: v }),
           (e) => ({ status: 'rejected' as const, reason: e })
         ),
@@ -3041,7 +3042,9 @@ export default function Home() {
       if (!localUsageReport || localUsageReport.status === 'unavailable') return;
       const ranges = await Promise.all(
         MODEL_RANGES.map(async (range) => {
-          const devin = exclude.includes('devin') ? [] : await getDevinUsageByModel(range.days);
+          const devin = exclude.includes('devin')
+            ? []
+            : await getDevinUsageByModel(range.days).catch(() => []);
           return [
             range.key,
             [
