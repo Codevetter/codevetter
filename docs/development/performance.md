@@ -791,9 +791,8 @@ single cursor pass reduced the 800,000-row median from 118.928 to 35.744 ms/op,
 and the identical-scope verifier confirmed a 69.945% improvement. A second
 micro-optimization improved the largest case by only 8.863% and regressed the
 smallest by 4.079%; it was reverted after the verifier returned inconclusive.
-See the active OpenSpec
-[qualification](../../openspec/changes/archive/2026-08-15-add-scaled-parsing-challenge/qualification.md)
-for the complete evidence and limitations.
+The original qualification record was migrated to GitHub Issues; the benchmark
+README and artifact record above preserve the executable evidence and limits.
 
 The challenge is not an official submission and does not claim one- or
 nine-billion-row performance. Its current boundary is one in-memory generated
@@ -828,10 +827,9 @@ only the worst-case regression fixture.
 The self-trial is also an accuracy fixture. CodeVetter's first inference blamed
 a bounded coverage-filename sort even though the workload held file count at
 one. That hypothesis was rejected from the captured workload identity before
-the observed offset helper was optimized. The active OpenSpec
-[qualification](../../openspec/changes/archive/2026-08-15-add-runtime-performance-capsules/qualification.md)
-records the complete evidence, the conservative shipping limitation, and the
-decision-explanation bug found and fixed during the loop.
+the observed offset helper was optimized. The original qualification record
+was migrated to GitHub Issues; the executable runtime fixtures retain the
+evidence, conservative shipping limit, and the decision-explanation regression.
 
 A later four-project robustness pass found one additional material candidate:
 `qs` flat query parsing improved 45.086% at 40,000 parameters in a ten-pair
