@@ -5,7 +5,6 @@
   "status": "provisional",
   "evidence_references": [
     "docs/BUSINESS_RULE_ARCHAEOLOGY_QUALIFICATION.md",
-    "openspec/specs/business-rule-archaeology/spec.md",
     "apps/desktop/tests/fixtures/warm-verification/qualification-2026-07-17.json",
     "apps/desktop/tests/fixtures/warm-verification/stability-2026-07-17.json",
     "apps/desktop/scripts/mcp-benchmark.mjs",

@@ -26,8 +26,8 @@ a weak adapter.
 | retrieval and reverse lookup precision / recall | 0.95 / 0.95 | Both navigation directions must be useful and measured independently. |
 | clean/incremental parity | 1.00 for facts, edges, rules, and retrieval | Incremental publication cannot silently change the ready catalog. |
 
-These are semantic release hard gates derived from the OpenSpec evidence and claim contracts, not
-observed pass rates. Task 1.2 supplies the labeled corpus and tasks 9.1–9.4 supply actual results.
+These are semantic release hard gates derived from the checked evidence and claim contracts, not
+observed pass rates. The labeled corpus and executable qualification runs supply actual results.
 
 ## Named-machine budgets
 
