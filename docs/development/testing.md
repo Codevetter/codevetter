@@ -134,7 +134,8 @@ release-mode stdio lifecycle. A failure stops the pipeline.
   for review by 2026-09-11 because its fix requires the Astro 7 major upgrade.
 - **Clippy zero-warning** in release qualification.
 - **Bundle budgets** via `apps/desktop/scripts/bundle-budget.mjs`.
-- **OpenSpec strict** validation for specs under `openspec/`.
+- **GitHub-Issue specs** for non-trivial features; no repo-local spec tree is
+  part of the quality gate.
 - **Pre-commit** (`.husky/pre-commit`): `lint-staged` runs `biome check --write` on staged `apps/desktop/src/**/*.{ts,tsx}`.
 - **Pre-push** (`.husky/pre-push`): runs `pnpm lint` + a secret-pattern scan over tracked files (with anchored exclusions for fixtures, benchmarks, and `secret_policy.rs`).
 

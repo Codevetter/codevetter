@@ -58,7 +58,6 @@ apps/
 docs/                   # Canonical knowledge system — see docs/index.md
 benchmark/              # Public catch-rate benchmark cases + harness
 scripts/                # Benchmark + deploy + doc-validation scripts
-openspec/               # Spec-driven workflow (specs + changes/archive)
 .github/workflows/      # ci, auto-release, release, deploy-landing, weekly, docs
 blume.config.ts         # Blume presentation layer for docs/ (NOT the source of truth)
 STATUS.md               # Compatibility pointer
@@ -102,7 +101,7 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 ## Fleet Guidance
 
 ### Adding Tasks
-- Track CodeVetter work in this repository's GitHub issues or OpenSpec changes.
+- Track CodeVetter work in this repository's GitHub Issues.
 - Keep cross-project infrastructure work in Fleet Workspace, not SaaS Maker.
 
 ### Using SaaS Maker
