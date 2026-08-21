@@ -102,12 +102,13 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 
 ### Adding Tasks
 - Track CodeVetter work in this repository's GitHub Issues.
-- Keep cross-project infrastructure work in Fleet Workspace, not SaaS Maker.
+- Keep reusable cross-project automation in Workflows and Skills and private
+  portfolio metadata in Site Health, not SaaS Maker.
 
 ### Using SaaS Maker
 - Do not use the retired SaaS Maker task queue or API as a system of record.
-- Fleet Workspace owns shared project metadata and infrastructure; CodeVetter
-  remains independently versioned and deployed.
+- Site Health owns private portfolio metadata; Workflows and Skills owns shared
+  automation. CodeVetter remains independently versioned and deployed.
 
 ### Free AI First
 - Prefer free/local AI paths for routine development and analysis: the `free-ai` gateway, local models, provider free tiers, and cached context.
