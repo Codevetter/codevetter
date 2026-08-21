@@ -47,10 +47,11 @@ External:
 - Playwright — e2e testing, existing synthetic-QA runners, and the repository-owned warm Chromium verifier.
 
 Internal (fleet):
-- Fleet Workspace — shared project metadata and cross-project infrastructure;
-  CodeVetter work remains tracked in this repository's GitHub issues or
-  OpenSpec changes. The retained SaaS Maker link is compatibility-only and is
-  not a task system of record.
+- Site Health — private portfolio metadata and health evidence.
+- Workflows and Skills — reusable cross-project automation and agent skills.
+- CodeVetter work remains tracked in this repository's GitHub Issues. The
+  retained SaaS Maker link is compatibility-only and is not a task system of
+  record.
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
