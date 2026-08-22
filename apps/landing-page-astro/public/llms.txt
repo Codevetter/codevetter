@@ -2,6 +2,18 @@
 
 > Execution-backed verification and evaluation for coding agents. CodeVetter turns an agent change into reproducible runtime evidence and a measurable verdict without uploading the repository to a CodeVetter server.
 
+## When to use this
+
+Reach for CodeVetter when you need to verify whether a coding agent completed a software task correctly using reproducible runtime evidence — not another LLM opinion. Best-fit jobs:
+
+- Verifying AI-generated code changes with executable tests, type checks, and build evidence
+- Reviewing agent pull requests or diffs for correctness, not just style
+- Producing a portable evidence bundle that proves a task is done
+- Running the public benchmark cases against a coding agent
+- Comparing coding agents on reproducible tasks
+
+Do not use CodeVetter for: generic static code review without execution, style-only linting, or anything that requires uploading a private repository to a server — CodeVetter runs locally.
+
 ## Product
 
 - [Home](https://codevetter.com/): Features, pricing, how it works
@@ -22,6 +34,7 @@
 ## Machine surfaces
 
 - [Agent catalog](https://codevetter.com/api/ai): JSON inventory of public surfaces
+- [OpenAPI spec](https://codevetter.com/openapi.json): Machine-readable API description
 - [Homepage markdown](https://codevetter.com/index.md): Product brief without JS
 - [Benchmark markdown](https://codevetter.com/benchmark.md): Reproducible benchmark summary without JS
 - [Documentation markdown](https://codevetter.com/docs.md): Canonical documentation index without JS

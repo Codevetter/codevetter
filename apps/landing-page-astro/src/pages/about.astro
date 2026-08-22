@@ -1,0 +1,62 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+---
+
+<Layout
+  title="About — CodeVetter"
+  description="CodeVetter is an execution-backed verification system for coding agents. Local-first, open-source, and built by Sarthak Agrawal."
+  path="/about"
+>
+  <main class="min-h-screen bg-stone-950 text-stone-200">
+    <Nav />
+    <article class="mx-auto max-w-3xl px-4 py-16 leading-7 pt-32">
+      <a href="/" class="text-xs text-stone-500 hover:text-amber-400">
+        ← CodeVetter
+      </a>
+      <h1 class="mt-3 text-3xl font-bold tracking-tight text-white">
+        About
+      </h1>
+
+      <p class="mt-6 text-sm">
+        CodeVetter is an execution-backed verification and evaluation system
+        for coding agents. It determines whether an agent completed a software
+        task correctly using reproducible runtime evidence — not another LLM
+        opinion. The review pipeline runs locally in a Tauri desktop app; your
+        repository never hits a CodeVetter server.
+      </p>
+
+      <h2 class="mt-8 text-base font-semibold text-white">What it does</h2>
+      <p class="mt-2 text-sm">
+        The core loop is: task → agent change → executable verification →
+        evidence → measurable verdict. CodeVetter runs tests, type checks,
+        builds, and profiling against the agent's diff, then produces a
+        portable evidence bundle that proves whether the task is done.
+      </p>
+
+      <h2 class="mt-8 text-base font-semibold text-white">Open source</h2>
+      <p class="mt-2 text-sm">
+        CodeVetter is open-source under the ISC license. The source lives at
+        <a href="https://github.com/Codevetter/codevetter" class="text-amber-400 hover:text-amber-300 underline">github.com/Codevetter/codevetter</a>.
+        Signed macOS binaries are published via GitHub Releases with an
+        auto-updater.
+      </p>
+
+      <h2 class="mt-8 text-base font-semibold text-white">Built by</h2>
+      <p class="mt-2 text-sm">
+        Sarthak Agrawal — AI infrastructure and product engineer. More at
+        <a href="https://sarthakagrawal.dev" class="text-amber-400 hover:text-amber-300 underline">sarthakagrawal.dev</a>.
+      </p>
+
+      <h2 class="mt-8 text-base font-semibold text-white">Public benchmark</h2>
+      <p class="mt-2 text-sm">
+        CodeVetter maintains a
+        <a href="/benchmark" class="text-amber-400 hover:text-amber-300 underline">public benchmark</a>
+        of reproducible verification cases, a scorer, and published results
+        with documented limitations.
+      </p>
+    </article>
+    <Footer />
+  </main>
+</Layout>
