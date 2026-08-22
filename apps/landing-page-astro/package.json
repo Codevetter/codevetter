@@ -20,7 +20,7 @@
   "devDependencies": {
     "lightningcss": "^1.32.0",
     "vite": "7.3.6",
-    "wrangler": "^4.98.0"
+    "wrangler": "^4.124.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.2"
