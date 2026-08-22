@@ -8,8 +8,9 @@
   "robots": "https://codevetter.com/robots.txt",
   "markdown": {
     "suffix": ".md",
-    "negotiation": false
+    "negotiation": true
   },
+  "openapi": "https://codevetter.com/openapi.json",
   "surfaces": [
     {
       "id": "home",
@@ -17,6 +18,20 @@
       "md": "https://codevetter.com/index.md",
       "kind": "static",
       "description": "Product home"
+    },
+    {
+      "id": "about",
+      "url": "https://codevetter.com/about",
+      "md": "https://codevetter.com/about.md",
+      "kind": "static",
+      "description": "About CodeVetter — what it is, open-source license, and author"
+    },
+    {
+      "id": "contact",
+      "url": "https://codevetter.com/contact",
+      "md": "https://codevetter.com/contact.md",
+      "kind": "static",
+      "description": "Contact — GitHub issues, email, and social"
     },
     {
       "id": "download",

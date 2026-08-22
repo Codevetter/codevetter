@@ -194,6 +194,50 @@ A rejected experiment remains visible. Historical research capability is labeled
 
 CodeVetter does not enable crash or usage telemetry by default. A user can remove local state by uninstalling the application and deleting its local application-data directory.`
   ),
+  about: page(
+    'About CodeVetter',
+    '/about',
+    `CodeVetter is an execution-backed verification and evaluation system for coding agents. It determines whether an agent completed a software task correctly using reproducible runtime evidence — not another LLM opinion. The review pipeline runs locally in a Tauri desktop app; your repository never hits a CodeVetter server.
+
+## What it does
+
+The core loop is: task → agent change → executable verification → evidence → measurable verdict. CodeVetter runs tests, type checks, builds, and profiling against the agent's diff, then produces a portable evidence bundle that proves whether the task is done.
+
+## Open source
+
+CodeVetter is open-source under the ISC license. The source lives at github.com/Codevetter/codevetter. Signed macOS binaries are published via GitHub Releases with an auto-updater.
+
+## Built by
+
+Sarthak Agrawal — AI infrastructure and product engineer. More at sarthakagrawal.dev.
+
+## Public benchmark
+
+CodeVetter maintains a public benchmark of reproducible verification cases, a scorer, and published results with documented limitations.`
+  ),
+  contact: page(
+    'Contact CodeVetter',
+    '/contact',
+    `CodeVetter is open-source and local-first. The fastest way to get help or report a bug is GitHub Issues.
+
+## GitHub
+
+- github.com/Codevetter/codevetter/issues — bug reports, feature requests, and verification case contributions
+- github.com/Codevetter/codevetter — source code and releases
+
+## Email
+
+sarthakagrawal@agentmail.to
+
+## Social
+
+- @sarthakcodes on X
+- sarthakagrawal.dev — personal site
+
+## Agent email
+
+For agent-to-agent or directory verification, use sarthakagrawal@agentmail.to.`
+  ),
   terms: page(
     'CodeVetter terms of use',
     '/terms',

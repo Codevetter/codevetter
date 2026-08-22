@@ -1,0 +1,63 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+---
+
+<Layout
+  title="Contact — CodeVetter"
+  description="How to reach the CodeVetter team: GitHub issues, email, and social."
+  path="/contact"
+>
+  <main class="min-h-screen bg-stone-950 text-stone-200">
+    <Nav />
+    <article class="mx-auto max-w-3xl px-4 py-16 leading-7 pt-32">
+      <a href="/" class="text-xs text-stone-500 hover:text-amber-400">
+        ← CodeVetter
+      </a>
+      <h1 class="mt-3 text-3xl font-bold tracking-tight text-white">
+        Contact
+      </h1>
+
+      <p class="mt-6 text-sm">
+        CodeVetter is open-source and local-first. The fastest way to get help
+        or report a bug is GitHub Issues.
+      </p>
+
+      <h2 class="mt-8 text-base font-semibold text-white">GitHub</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm marker:text-stone-600">
+        <li>
+          <a href="https://github.com/Codevetter/codevetter/issues" class="text-amber-400 hover:text-amber-300 underline">github.com/Codevetter/codevetter/issues</a>
+          — bug reports, feature requests, and verification case contributions
+        </li>
+        <li>
+          <a href="https://github.com/Codevetter/codevetter" class="text-amber-400 hover:text-amber-300 underline">github.com/Codevetter/codevetter</a>
+          — source code and releases
+        </li>
+      </ul>
+
+      <h2 class="mt-8 text-base font-semibold text-white">Email</h2>
+      <p class="mt-2 text-sm">
+        <a href="mailto:sarthakagrawal@agentmail.to" class="text-amber-400 hover:text-amber-300 underline">sarthakagrawal@agentmail.to</a>
+      </p>
+
+      <h2 class="mt-8 text-base font-semibold text-white">Social</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm marker:text-stone-600">
+        <li>
+          <a href="https://x.com/sarthakcodes" class="text-amber-400 hover:text-amber-300 underline">@sarthakcodes</a> on X
+        </li>
+        <li>
+          <a href="https://sarthakagrawal.dev" class="text-amber-400 hover:text-amber-300 underline">sarthakagrawal.dev</a>
+          — personal site
+        </li>
+      </ul>
+
+      <h2 class="mt-8 text-base font-semibold text-white">Agent email</h2>
+      <p class="mt-2 text-sm">
+        For agent-to-agent or directory verification, use
+        <code class="text-amber-400">sarthakagrawal@agentmail.to</code>.
+      </p>
+    </article>
+    <Footer />
+  </main>
+</Layout>
