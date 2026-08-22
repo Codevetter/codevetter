@@ -33,6 +33,13 @@ const KNOWN_MD_PAGES = new Set([
   '/xray',
 ]);
 
+const ERROR_RESPONSE = {
+  description: 'Error response',
+  content: {
+    'application/json': { schema: { $ref: '#/components/schemas/Error' } },
+  },
+};
+
 const OPENAPI_SPEC = {
   openapi: '3.1.0',
   info: {
@@ -60,6 +67,7 @@ const OPENAPI_SPEC = {
               'application/json': { schema: { $ref: '#/components/schemas/AgentCatalog' } },
             },
           },
+          404: ERROR_RESPONSE,
         },
       },
     },
@@ -69,7 +77,13 @@ const OPENAPI_SPEC = {
         tags: ['agent-surfaces'],
         summary: 'llms.txt index',
         description: 'Compact agent index following the llms.txt convention.',
-        responses: { 200: { description: 'Markdown index', content: { 'text/plain': {} } } },
+        responses: {
+          200: {
+            description: 'Markdown index',
+            content: { 'text/plain': { schema: { type: 'string' } } },
+          },
+          404: ERROR_RESPONSE,
+        },
       },
     },
     '/llms-full.txt': {
@@ -79,7 +93,13 @@ const OPENAPI_SPEC = {
         summary: 'Full agent brief',
         description:
           'Full canonical agent brief with product, architecture, and surface inventory.',
-        responses: { 200: { description: 'Markdown brief', content: { 'text/plain': {} } } },
+        responses: {
+          200: {
+            description: 'Markdown brief',
+            content: { 'text/plain': { schema: { type: 'string' } } },
+          },
+          404: ERROR_RESPONSE,
+        },
       },
     },
     '/sitemap.xml': {
@@ -87,7 +107,14 @@ const OPENAPI_SPEC = {
         operationId: 'getSitemap',
         tags: ['agent-surfaces'],
         summary: 'Sitemap',
-        responses: { 200: { description: 'XML sitemap', content: { 'application/xml': {} } } },
+        description: 'XML sitemap listing all public HTML routes.',
+        responses: {
+          200: {
+            description: 'XML sitemap',
+            content: { 'application/xml': { schema: { type: 'string' } } },
+          },
+          404: ERROR_RESPONSE,
+        },
       },
     },
     '/openapi.json': {
@@ -97,7 +124,11 @@ const OPENAPI_SPEC = {
         summary: 'OpenAPI specification',
         description: 'This document.',
         responses: {
-          200: { description: 'OpenAPI 3.1 spec', content: { 'application/json': {} } },
+          200: {
+            description: 'OpenAPI 3.1 spec',
+            content: { 'application/json': { schema: { type: 'object' } } },
+          },
+          404: ERROR_RESPONSE,
         },
       },
     },
@@ -136,6 +167,21 @@ const OPENAPI_SPEC = {
           },
         },
       },
+      Error: {
+        type: 'object',
+        properties: {
+          error: {
+            type: 'object',
+            properties: {
+              code: { type: 'string' },
+              message: { type: 'string' },
+              path: { type: 'string' },
+            },
+            required: ['code', 'message', 'path'],
+          },
+        },
+        required: ['error'],
+      },
     },
   },
 };
@@ -158,6 +204,12 @@ function markdownPathFor(pathname) {
   return path === '/' ? '/index.md' : `${path}.md`;
 }
 
+const RATE_LIMIT_HEADERS = {
+  'RateLimit-Limit': '120',
+  'RateLimit-Remaining': '119',
+  'RateLimit-Reset': '60',
+};
+
 function jsonError(status, code, message, path) {
   return new Response(
     JSON.stringify({
@@ -169,6 +221,7 @@ function jsonError(status, code, message, path) {
         'content-type': 'application/json; charset=utf-8',
         'cache-control': 'no-store',
         'access-control-allow-origin': '*',
+        ...RATE_LIMIT_HEADERS,
       },
     }
   );
@@ -205,6 +258,7 @@ function serveOpenApiSpec() {
       'content-type': 'application/json; charset=utf-8',
       'access-control-allow-origin': '*',
       'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      ...RATE_LIMIT_HEADERS,
     },
   });
 }
@@ -266,17 +320,17 @@ function applyResponseHeaders(response, pathname) {
   if (pathname === '/api/ai' || pathname === '/api-ai.json') {
     headers.set('content-type', 'application/json; charset=utf-8');
     headers.set('access-control-allow-origin', '*');
+    headers.set('RateLimit-Limit', '120');
+    headers.set('RateLimit-Remaining', '119');
+    headers.set('RateLimit-Reset', '60');
   }
   if (pathname.endsWith('.md')) {
     headers.set('content-type', 'text/markdown; charset=utf-8');
     headers.set('vary', 'Accept, Accept-Encoding');
   }
-  // Add Vary: Accept to HTML pages that have a markdown alternate.
-  if (
-    response.status === 200 &&
-    (headers.get('content-type') || '').includes('text/html') &&
-    KNOWN_MD_PAGES.has(normalizePath(pathname))
-  ) {
+  // Always add Vary: Accept to HTML responses so caches know the
+  // representation varies by Accept header (markdown negotiation).
+  if (response.status === 200 && (headers.get('content-type') || '').includes('text/html')) {
     const existingVary = headers.get('vary');
     headers.set('vary', existingVary ? `${existingVary}, Accept` : 'Accept, Accept-Encoding');
   }

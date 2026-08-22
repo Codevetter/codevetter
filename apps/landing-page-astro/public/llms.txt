@@ -40,3 +40,15 @@ Do not use CodeVetter for: generic static code review without execution, style-o
 - [Documentation markdown](https://codevetter.com/docs.md): Canonical documentation index without JS
 - [This index](https://codevetter.com/llms.txt)
 - [Full agent brief](https://codevetter.com/llms-full.txt)
+
+## CLI
+
+CodeVetter ships a CLI for agent verification:
+
+```bash
+npx codevetter verify --repo ./my-project --task "fix the failing tests"
+```
+
+The CLI runs the same execution-backed verification pipeline as the desktop app
+and emits a portable evidence bundle. See `codevetter verify --help` for all
+subcommands (verify, benchmark, evidence, mcp).
