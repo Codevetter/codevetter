@@ -16,6 +16,7 @@ export async function runContextProviderPlanCli(args = process.argv.slice(2)) {
       corpusRoot: options.corpusRoot,
       probePaths: options.probePaths,
       stage: options.stage,
+      aaRepetitions: options.aaRepetitions,
       availableEnvironmentNames: Object.keys(process.env),
     });
     if (options.out) await writeContextProviderPlan(options.out, plan);
@@ -42,12 +43,17 @@ function parseArgs(args) {
     corpusRoot: 'benchmarks/agent-tasks/sample',
     probePaths: [],
     stage: 'feasibility',
+    aaRepetitions: undefined,
     out: undefined,
   };
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (argument === '--json') continue;
-    if (['--root', '--corpus-root', '--probe', '--stage', '--out'].includes(argument)) {
+    if (
+      ['--root', '--corpus-root', '--probe', '--stage', '--aa-repetitions', '--out'].includes(
+        argument
+      )
+    ) {
       const value = args[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value`);
       index += 1;
@@ -55,6 +61,7 @@ function parseArgs(args) {
       if (argument === '--corpus-root') options.corpusRoot = value;
       if (argument === '--probe') options.probePaths.push(value);
       if (argument === '--stage') options.stage = value;
+      if (argument === '--aa-repetitions') options.aaRepetitions = parseRepetitions(value);
       if (argument === '--out') options.out = value;
       continue;
     }
@@ -64,6 +71,11 @@ function parseArgs(args) {
   return options;
 }
 
+function parseRepetitions(value) {
+  if (!/^\d+$/.test(value)) throw new Error('--aa-repetitions requires a non-negative integer');
+  return Number.parseInt(value, 10);
+}
+
 function humanOutput(plan, outputPath) {
   const lines = [
     `Plan: ${plan.plan_id}`,
@@ -71,7 +83,12 @@ function humanOutput(plan, outputPath) {
     `Providers: ${plan.providers.map((provider) => provider.provider_id).join(', ')}`,
     `Tasks: ${plan.counts.tasks}`,
     `Repetitions: ${plan.counts.repetitions}`,
-    `Attempts: ${plan.counts.attempts}`,
+    `A/A repetitions: ${plan.aa_repetitions ?? 0}`,
+    `Attempts: ${plan.counts.attempts}${
+      plan.counts.aa_attempts === undefined
+        ? ''
+        : ` (${plan.counts.ab_attempts} A/B + ${plan.counts.aa_attempts} A/A)`
+    }`,
     `Context maximum: $${plan.cost.context_max_usd.toFixed(6)}`,
     `Total cost posture: ${plan.cost.posture}`,
     `Approval: ${plan.approvals.approval_id}`,

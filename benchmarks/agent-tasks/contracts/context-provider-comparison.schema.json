@@ -37,6 +37,7 @@
           "scheduled_attempts",
           "complete_attempts",
           "outcomes",
+          "noise",
           "diagnostics_available",
           "raw_p_value",
           "adjusted_p_value",
@@ -106,6 +107,24 @@
               "ties": { "type": "integer", "minimum": 0, "maximum": 5000 },
               "success_rate_delta": { "type": "number", "minimum": -1, "maximum": 1 },
               "regression_delta": { "type": "integer", "minimum": -5000, "maximum": 5000 }
+            }
+          },
+          "noise": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "scheduled_attempts",
+              "complete_attempts",
+              "complete_pairs",
+              "discordant_pairs",
+              "discordance_rate"
+            ],
+            "properties": {
+              "scheduled_attempts": { "type": "integer", "minimum": 0, "maximum": 1000 },
+              "complete_attempts": { "type": "integer", "minimum": 0, "maximum": 1000 },
+              "complete_pairs": { "type": "integer", "minimum": 0, "maximum": 5000 },
+              "discordant_pairs": { "type": "integer", "minimum": 0, "maximum": 5000 },
+              "discordance_rate": { "type": "number", "minimum": 0, "maximum": 1 }
             }
           },
           "diagnostics_available": {

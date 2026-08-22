@@ -19,6 +19,7 @@ import {
 import { resolveArtifact } from './validate-corpus.mjs';
 
 const MODEL_ENVIRONMENT = 'CODEVETTER_LOCAL_MODEL_URL';
+const OPERATOR_DIAGNOSTICS_SCHEMA_VERSION = 'codevetter.context-provider-operator-diagnostics.v1';
 const CONTEXT_FILE = '.codevetter-context.json';
 const MAX_ARTIFACT_BYTES = 5 * 1024 * 1024;
 const MAX_TOOL_BYTES = 64 * 1024 * 1024;
@@ -69,6 +70,7 @@ export async function runContextProviderPlan({
   );
   await assertFreshOutput(runRoot);
   await mkdir(join(runRoot, 'receipts'), { recursive: true });
+  await mkdir(join(runRoot, 'diagnostics'), { recursive: true });
 
   const providerById = new Map(plan.providers.map((provider) => [provider.provider_id, provider]));
   const snapshots = await loadSnapshots(plan, snapshotDirectory);
@@ -112,6 +114,12 @@ export async function runContextProviderPlan({
     const receiptPath = join(runRoot, 'receipts', `attempt-${scheduled.sequence}.json`);
     await writeJsonAtomic(receiptPath, execution.receipt);
     const receipt = await artifact(workspaceRoot, receiptPath);
+    // The immutable receipt keeps only bounded hashes, so a failure cause would be
+    // unrecoverable without retaining the matching redacted text beside it.
+    await writeJsonAtomic(
+      join(runRoot, 'diagnostics', `attempt-${scheduled.sequence}.json`),
+      operatorDiagnostics(scheduled, execution)
+    );
     const attempt = {
       schema_version: CONTEXT_ATTEMPT_SCHEMA_VERSION,
       plan_id: plan.plan_id,
@@ -120,6 +128,9 @@ export async function runContextProviderPlan({
       task_id: scheduled.task_id,
       trial_index: scheduled.trial_index,
       order: scheduled.order,
+      ...(scheduled.comparison === undefined
+        ? {}
+        : { comparison: scheduled.comparison, arm: scheduled.arm }),
       workspace_id: workspaceId,
       agent_session_id: `session-${randomUUID()}`,
       tool_configuration_sha256: sha256Bytes(
@@ -153,6 +164,33 @@ export async function runContextProviderPlan({
     approval_id: approvalId,
     attempts,
     attempts_path: relative(workspaceRoot, join(runRoot, 'attempts.json')).split(sep).join('/'),
+    diagnostics_path: relative(workspaceRoot, join(runRoot, 'diagnostics')).split(sep).join('/'),
+  };
+}
+
+export function operatorDiagnostics(scheduled, execution) {
+  const { receipt, output } = execution;
+  const observed = {
+    stdout_sha256: sha256Bytes(Buffer.from(output?.stdout ?? '')),
+    stderr_sha256: sha256Bytes(Buffer.from(output?.stderr ?? '')),
+  };
+  for (const stream of ['stdout', 'stderr']) {
+    if (observed[`${stream}_sha256`] !== receipt.agent[`${stream}_sha256`]) {
+      throw new Error(`attempt ${scheduled.sequence} ${stream} does not match its receipt hash`);
+    }
+  }
+  return {
+    schema_version: OPERATOR_DIAGNOSTICS_SCHEMA_VERSION,
+    plan_id: receipt.plan_id,
+    run_id: receipt.run_id,
+    sequence: scheduled.sequence,
+    task_id: scheduled.task_id,
+    provider_id: scheduled.provider_id,
+    terminal_status: receipt.terminal_status,
+    lifecycle: [...receipt.lifecycle],
+    agent: { ...receipt.agent },
+    limitations: [...receipt.limitations],
+    output: { stdout: output?.stdout ?? '', stderr: output?.stderr ?? '' },
   };
 }
 
@@ -279,7 +317,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const result = await runContextProviderPlan(parseArgs(process.argv.slice(2)));
     process.stdout.write(
-      `Completed ${result.attempts.length} attempts\nEvidence: ${result.attempts_path}\n`
+      `Completed ${result.attempts.length} attempts\nEvidence: ${result.attempts_path}\nFailure diagnostics: ${result.diagnostics_path}\n`
     );
   } catch (error) {
     process.stderr.write(
