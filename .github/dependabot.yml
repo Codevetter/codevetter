@@ -9,6 +9,22 @@ updates:
         patterns:
           - ccusage
           - '@ccusage/*'
+      # react and react-dom assert at runtime that they resolve to the exact
+      # same version, so they have to move in one PR. Bumping react alone
+      # leaves react-dom behind in the lockfile and every desktop test dies
+      # on "Incompatible React versions" before its first assertion.
+      react-runtime:
+        patterns:
+          - react
+          - react-dom
+          - '@types/react'
+          - '@types/react-dom'
+    ignore:
+      # jscpd is exact-pinned on purpose. quality:duplication compares its
+      # measured duplication against a fixed --threshold, so a patch bump that
+      # simply detects more clones fails the gate without any code changing.
+      # Upgrade it deliberately, alongside whatever threshold move it implies.
+      - dependency-name: jscpd
     labels:
       - dependencies
       - ccusage
