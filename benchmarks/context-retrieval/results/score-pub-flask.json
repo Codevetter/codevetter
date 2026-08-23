@@ -1,0 +1,6945 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "flask",
+    "head": "d318b683471101618febed18996405ad26462110"
+  },
+  "corpus_counts": {
+    "cases": 39,
+    "path_leak": 7,
+    "baseline_blind": 32,
+    "multi_file": 17
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "providers": [
+    {
+      "provider_id": "agent-default",
+      "summary": {
+        "all": {
+          "cases": 39,
+          "mean_recall_at_5": 0.2051,
+          "full_recall_at_5": 0.0769,
+          "mean_recall_at_10": 0.2927,
+          "full_recall_at_10": 0.1282,
+          "mean_recall_at_20": 0.3953,
+          "full_recall_at_20": 0.2308,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0128,
+          "mean_recall_at_16000_tokens": 0.1795,
+          "mean_precision_at_10": 0.0641,
+          "zero_hit_rate": 0.4615,
+          "median_tokens_delivered": 78305,
+          "median_latency_ms": 88.123,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 34,
+          "mean_recall_at_5": 0.1324,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1887,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.3064,
+          "full_recall_at_20": 0.1176,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0147,
+          "mean_recall_at_16000_tokens": 0.1176,
+          "mean_precision_at_10": 0.0529,
+          "zero_hit_rate": 0.5294,
+          "median_tokens_delivered": 72042,
+          "median_latency_ms": 83.334,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 5,
+          "mean_recall_at_5": 0.7,
+          "full_recall_at_5": 0.6,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.6,
+          "mean_precision_at_10": 0.14,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 89253,
+          "median_latency_ms": 101.714,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 7,
+          "mean_recall_at_5": 0.4762,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 0.4762,
+          "full_recall_at_10": 0.2857,
+          "mean_recall_at_20": 0.6667,
+          "full_recall_at_20": 0.4286,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.4286,
+          "mean_precision_at_10": 0.0857,
+          "zero_hit_rate": 0.1429,
+          "median_tokens_delivered": 88684,
+          "median_latency_ms": 95.365,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 32,
+          "mean_recall_at_5": 0.1458,
+          "full_recall_at_5": 0.0313,
+          "mean_recall_at_10": 0.2526,
+          "full_recall_at_10": 0.0938,
+          "mean_recall_at_20": 0.3359,
+          "full_recall_at_20": 0.1875,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0156,
+          "mean_recall_at_16000_tokens": 0.125,
+          "mean_precision_at_10": 0.0594,
+          "zero_hit_rate": 0.5313,
+          "median_tokens_delivered": 76235.5,
+          "median_latency_ms": 80.5345,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 80230.6,
+        "peak_rss_mb": 80257,
+        "delta_rss_mb": 26.4,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "keyword-search",
+      "summary": {
+        "all": {
+          "cases": 39,
+          "mean_recall_at_5": 0.1667,
+          "full_recall_at_5": 0.0256,
+          "mean_recall_at_10": 0.3013,
+          "full_recall_at_10": 0.1282,
+          "mean_recall_at_20": 0.3953,
+          "full_recall_at_20": 0.2308,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0513,
+          "mean_recall_at_16000_tokens": 0.1282,
+          "mean_precision_at_10": 0.0667,
+          "zero_hit_rate": 0.4615,
+          "median_tokens_delivered": 80731,
+          "median_latency_ms": 46.196,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 34,
+          "mean_recall_at_5": 0.1324,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1985,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.3064,
+          "full_recall_at_20": 0.1176,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0294,
+          "mean_recall_at_16000_tokens": 0.1029,
+          "mean_precision_at_10": 0.0559,
+          "zero_hit_rate": 0.5294,
+          "median_tokens_delivered": 78155,
+          "median_latency_ms": 41.997,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 5,
+          "mean_recall_at_5": 0.4,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.2,
+          "mean_recall_at_16000_tokens": 0.3,
+          "mean_precision_at_10": 0.14,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 89253,
+          "median_latency_ms": 61.452,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 7,
+          "mean_recall_at_5": 0.1905,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.5238,
+          "full_recall_at_10": 0.2857,
+          "mean_recall_at_20": 0.5238,
+          "full_recall_at_20": 0.2857,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.1429,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 87992,
+          "median_latency_ms": 56.206,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 32,
+          "mean_recall_at_5": 0.1615,
+          "full_recall_at_5": 0.0313,
+          "mean_recall_at_10": 0.2526,
+          "full_recall_at_10": 0.0938,
+          "mean_recall_at_20": 0.3672,
+          "full_recall_at_20": 0.2188,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0625,
+          "mean_recall_at_16000_tokens": 0.125,
+          "mean_precision_at_10": 0.0594,
+          "zero_hit_rate": 0.5,
+          "median_tokens_delivered": 78701.5,
+          "median_latency_ms": 41.997,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 79420.6,
+        "peak_rss_mb": 79493.8,
+        "delta_rss_mb": 73.1,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "codesearch",
+      "summary": {
+        "all": {
+          "cases": 39,
+          "mean_recall_at_5": 0.2906,
+          "full_recall_at_5": 0.1795,
+          "mean_recall_at_10": 0.297,
+          "full_recall_at_10": 0.1795,
+          "mean_recall_at_20": 0.3226,
+          "full_recall_at_20": 0.2051,
+          "mean_recall_at_1000_tokens": 0.2436,
+          "mean_recall_at_4000_tokens": 0.3226,
+          "mean_recall_at_16000_tokens": 0.3226,
+          "mean_precision_at_10": 0.0746,
+          "zero_hit_rate": 0.5641,
+          "median_tokens_delivered": 1538,
+          "median_latency_ms": 1374.292,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 2
+        },
+        "baseline_missed": {
+          "cases": 34,
+          "mean_recall_at_5": 0.2892,
+          "full_recall_at_5": 0.1765,
+          "mean_recall_at_10": 0.2966,
+          "full_recall_at_10": 0.1765,
+          "mean_recall_at_20": 0.2966,
+          "full_recall_at_20": 0.1765,
+          "mean_recall_at_1000_tokens": 0.2353,
+          "mean_recall_at_4000_tokens": 0.2966,
+          "mean_recall_at_16000_tokens": 0.2966,
+          "mean_precision_at_10": 0.072,
+          "zero_hit_rate": 0.5882,
+          "median_tokens_delivered": 1578,
+          "median_latency_ms": 1369.3995,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 1
+        },
+        "baseline_solved": {
+          "cases": 5,
+          "mean_recall_at_5": 0.3,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 0.3,
+          "full_recall_at_10": 0.2,
+          "mean_recall_at_20": 0.5,
+          "full_recall_at_20": 0.4,
+          "mean_recall_at_1000_tokens": 0.3,
+          "mean_recall_at_4000_tokens": 0.5,
+          "mean_recall_at_16000_tokens": 0.5,
+          "mean_precision_at_10": 0.0917,
+          "zero_hit_rate": 0.4,
+          "median_tokens_delivered": 1043,
+          "median_latency_ms": 1658.895,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 1
+        },
+        "path_leak": {
+          "cases": 7,
+          "mean_recall_at_5": 0.3333,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 0.3333,
+          "full_recall_at_10": 0.2857,
+          "mean_recall_at_20": 0.3333,
+          "full_recall_at_20": 0.2857,
+          "mean_recall_at_1000_tokens": 0.3333,
+          "mean_recall_at_4000_tokens": 0.3333,
+          "mean_recall_at_16000_tokens": 0.3333,
+          "mean_precision_at_10": 0.0778,
+          "zero_hit_rate": 0.5714,
+          "median_tokens_delivered": 1400,
+          "median_latency_ms": 1658.895,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 32,
+          "mean_recall_at_5": 0.2813,
+          "full_recall_at_5": 0.1563,
+          "mean_recall_at_10": 0.2891,
+          "full_recall_at_10": 0.1563,
+          "mean_recall_at_20": 0.3203,
+          "full_recall_at_20": 0.1875,
+          "mean_recall_at_1000_tokens": 0.224,
+          "mean_recall_at_4000_tokens": 0.3203,
+          "mean_recall_at_16000_tokens": 0.3203,
+          "mean_precision_at_10": 0.0739,
+          "zero_hit_rate": 0.5625,
+          "median_tokens_delivered": 1618,
+          "median_latency_ms": 1351.7755,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 2
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 79494.8,
+        "peak_rss_mb": 82334.1,
+        "delta_rss_mb": 2839.3,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "graphify",
+      "summary": {
+        "all": {
+          "cases": 39,
+          "mean_recall_at_5": 0.2714,
+          "full_recall_at_5": 0.1026,
+          "mean_recall_at_10": 0.312,
+          "full_recall_at_10": 0.1282,
+          "mean_recall_at_20": 0.3547,
+          "full_recall_at_20": 0.1795,
+          "mean_recall_at_1000_tokens": 0.2863,
+          "mean_recall_at_4000_tokens": 0.3547,
+          "mean_recall_at_16000_tokens": 0.3547,
+          "mean_precision_at_10": 0.0765,
+          "zero_hit_rate": 0.4872,
+          "median_tokens_delivered": 1702,
+          "median_latency_ms": 1445.37,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 34,
+          "mean_recall_at_5": 0.2672,
+          "full_recall_at_5": 0.0882,
+          "mean_recall_at_10": 0.3137,
+          "full_recall_at_10": 0.1176,
+          "mean_recall_at_20": 0.3333,
+          "full_recall_at_20": 0.1471,
+          "mean_recall_at_1000_tokens": 0.2843,
+          "mean_recall_at_4000_tokens": 0.3333,
+          "mean_recall_at_16000_tokens": 0.3333,
+          "mean_precision_at_10": 0.0819,
+          "zero_hit_rate": 0.5,
+          "median_tokens_delivered": 1712,
+          "median_latency_ms": 1463.302,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 5,
+          "mean_recall_at_5": 0.3,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 0.3,
+          "full_recall_at_10": 0.2,
+          "mean_recall_at_20": 0.5,
+          "full_recall_at_20": 0.4,
+          "mean_recall_at_1000_tokens": 0.3,
+          "mean_recall_at_4000_tokens": 0.5,
+          "mean_recall_at_16000_tokens": 0.5,
+          "mean_precision_at_10": 0.04,
+          "zero_hit_rate": 0.4,
+          "median_tokens_delivered": 1687,
+          "median_latency_ms": 1403.222,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 7,
+          "mean_recall_at_5": 0.4524,
+          "full_recall_at_5": 0.1429,
+          "mean_recall_at_10": 0.4524,
+          "full_recall_at_10": 0.1429,
+          "mean_recall_at_20": 0.4524,
+          "full_recall_at_20": 0.1429,
+          "mean_recall_at_1000_tokens": 0.4524,
+          "mean_recall_at_4000_tokens": 0.4524,
+          "mean_recall_at_16000_tokens": 0.4524,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 1689,
+          "median_latency_ms": 1423.875,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 32,
+          "mean_recall_at_5": 0.2318,
+          "full_recall_at_5": 0.0938,
+          "mean_recall_at_10": 0.2813,
+          "full_recall_at_10": 0.125,
+          "mean_recall_at_20": 0.3333,
+          "full_recall_at_20": 0.1875,
+          "mean_recall_at_1000_tokens": 0.25,
+          "mean_recall_at_4000_tokens": 0.3333,
+          "mean_recall_at_16000_tokens": 0.3333,
+          "mean_precision_at_10": 0.0714,
+          "zero_hit_rate": 0.5313,
+          "median_tokens_delivered": 2131,
+          "median_latency_ms": 1446.001,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 78418.5,
+        "peak_rss_mb": 79195,
+        "delta_rss_mb": 776.4,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 48340992
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 39,
+          "mean_recall_at_5": 0.2671,
+          "full_recall_at_5": 0.1795,
+          "mean_recall_at_10": 0.4573,
+          "full_recall_at_10": 0.3077,
+          "mean_recall_at_20": 0.6026,
+          "full_recall_at_20": 0.4359,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0321,
+          "mean_recall_at_16000_tokens": 0.1603,
+          "mean_precision_at_10": 0.0718,
+          "zero_hit_rate": 0.2308,
+          "median_tokens_delivered": 80328,
+          "median_latency_ms": 24.656,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 34,
+          "mean_recall_at_5": 0.2475,
+          "full_recall_at_5": 0.1765,
+          "mean_recall_at_10": 0.4216,
+          "full_recall_at_10": 0.2647,
+          "mean_recall_at_20": 0.5735,
+          "full_recall_at_20": 0.3824,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0368,
+          "mean_recall_at_16000_tokens": 0.1397,
+          "mean_precision_at_10": 0.0676,
+          "zero_hit_rate": 0.2353,
+          "median_tokens_delivered": 80321,
+          "median_latency_ms": 24.8585,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 5,
+          "mean_recall_at_5": 0.4,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 0.7,
+          "full_recall_at_10": 0.6,
+          "mean_recall_at_20": 0.8,
+          "full_recall_at_20": 0.8,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.3,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.2,
+          "median_tokens_delivered": 81351,
+          "median_latency_ms": 23.923,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 7,
+          "mean_recall_at_5": 0.1429,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.4048,
+          "full_recall_at_10": 0.1429,
+          "mean_recall_at_20": 0.4762,
+          "full_recall_at_20": 0.2857,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.0714,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 98043,
+          "median_latency_ms": 24.288,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 32,
+          "mean_recall_at_5": 0.2943,
+          "full_recall_at_5": 0.2188,
+          "mean_recall_at_10": 0.4688,
+          "full_recall_at_10": 0.3438,
+          "mean_recall_at_20": 0.6302,
+          "full_recall_at_20": 0.4688,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0391,
+          "mean_recall_at_16000_tokens": 0.1953,
+          "mean_precision_at_10": 0.0719,
+          "zero_hit_rate": 0.2188,
+          "median_tokens_delivered": 80264.5,
+          "median_latency_ms": 24.713,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 75347,
+        "peak_rss_mb": 75347,
+        "delta_rss_mb": 0,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 39,
+          "mean_recall_at_5": 0.0427,
+          "full_recall_at_5": 0.0256,
+          "mean_recall_at_10": 0.0962,
+          "full_recall_at_10": 0.0513,
+          "mean_recall_at_20": 0.1859,
+          "full_recall_at_20": 0.1026,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0171,
+          "mean_recall_at_16000_tokens": 0.094,
+          "mean_precision_at_10": 0.0179,
+          "zero_hit_rate": 0.6667,
+          "median_tokens_delivered": 30503,
+          "median_latency_ms": 10.322,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 34,
+          "mean_recall_at_5": 0.049,
+          "full_recall_at_5": 0.0294,
+          "mean_recall_at_10": 0.0956,
+          "full_recall_at_10": 0.0588,
+          "mean_recall_at_20": 0.1544,
+          "full_recall_at_20": 0.0882,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0196,
+          "mean_recall_at_16000_tokens": 0.0784,
+          "mean_precision_at_10": 0.0176,
+          "zero_hit_rate": 0.7059,
+          "median_tokens_delivered": 30323.5,
+          "median_latency_ms": 10.338,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 5,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.4,
+          "full_recall_at_20": 0.2,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.2,
+          "mean_precision_at_10": 0.02,
+          "zero_hit_rate": 0.4,
+          "median_tokens_delivered": 32720,
+          "median_latency_ms": 10.191,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 7,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0476,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.119,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0714,
+          "mean_precision_at_10": 0.0143,
+          "zero_hit_rate": 0.7143,
+          "median_tokens_delivered": 26267,
+          "median_latency_ms": 10.322,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 32,
+          "mean_recall_at_5": 0.0521,
+          "full_recall_at_5": 0.0313,
+          "mean_recall_at_10": 0.1068,
+          "full_recall_at_10": 0.0625,
+          "mean_recall_at_20": 0.2005,
+          "full_recall_at_20": 0.125,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0208,
+          "mean_recall_at_16000_tokens": 0.099,
+          "mean_precision_at_10": 0.0188,
+          "zero_hit_rate": 0.6563,
+          "median_tokens_delivered": 31713,
+          "median_latency_ms": 10.3265,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 74733,
+        "peak_rss_mb": 74756,
+        "delta_rss_mb": 23,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-03b410066b96",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 54022,
+      "latency_ms": 107.732,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-095651be9eec",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/ctx.py"
+      ],
+      "found": [
+        "src/flask/ctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 18,
+      "tokens_delivered": 91167,
+      "latency_ms": 79.377,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-0afeb1d11cad",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 89842,
+      "latency_ms": 76.082,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-0d8c8ba71bc6",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 47778,
+      "latency_ms": 112.571,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-0ec9192cf25f",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "found": [
+        "src/flask/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 88842,
+      "latency_ms": 94.415,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-176fdfa00023",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 73.775,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-1af8f95785b8",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_cli.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 94107,
+      "latency_ms": 103.765,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-1d5abfadd713",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 18,
+      "tokens_delivered": 85655,
+      "latency_ms": 128.309,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-261e4a6cf287",
+      "path_leak": false,
+      "required_files": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        ".flake8",
+        "tests/test_appctx.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 76672,
+      "latency_ms": 89.288,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-3ba37d2afe65",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "found": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py"
+      ],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 88684,
+      "latency_ms": 95.365,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-40b78fa2ea90",
+      "path_leak": false,
+      "required_files": [
+        "tox.ini"
+      ],
+      "found": [],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 86634,
+      "latency_ms": 67.92,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-426a1e25b77e",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "found": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 64792,
+      "latency_ms": 81.692,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-4995a775df21",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 95646,
+      "latency_ms": 107.272,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-54c3f87af9f6",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 82763,
+      "latency_ms": 112.155,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-6f79cb8a2346",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 75799,
+      "latency_ms": 101.015,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-7203feabf723",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 89253,
+      "latency_ms": 96.937,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-746455d1038f",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/config.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/config.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 44.894,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-74721b48f034",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 78305,
+      "latency_ms": 177.313,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-80cf589a26d7",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/typing.py"
+      ],
+      "found": [
+        "src/flask/typing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 85957,
+      "latency_ms": 114.094,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-826514b8eb18",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 58.569,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-860a25c390eb",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 86.706,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-9532cba45d23",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4462,
+      "latency_ms": 84.976,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-976459f7cb35",
+      "path_leak": false,
+      "required_files": [
+        "pyproject.toml"
+      ],
+      "found": [],
+      "missed": [
+        "pyproject.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 80731,
+      "latency_ms": 68.778,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-98ae71897600",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 58.082,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-9b74a90dd3c4",
+      "path_leak": false,
+      "required_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "found": [],
+      "missed": [
+        ".pre-commit-config.yaml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 43.188,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-a363642a3288",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/wrappers.py"
+      ],
+      "found": [
+        "src/flask/wrappers.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 98117,
+      "latency_ms": 111.994,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-a6a7a57380cd",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 107434,
+      "latency_ms": 75.959,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-bda295d37fa3",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "found": [
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 99836,
+      "latency_ms": 95.019,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-c49ce2e1eb8b",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 59.402,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-ccf125bf3010",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 77.965,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-d7b6c1f6703d",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 94980,
+      "latency_ms": 101.714,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-de8429ffda8c",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 67412,
+      "latency_ms": 88.123,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-df201ed152b6",
+      "path_leak": true,
+      "required_files": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "found": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 13,
+      "tokens_delivered": 46017,
+      "latency_ms": 90.46,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-dffe3034825e",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 71.62,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-e63ead4208c1",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 49.655,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-e82db2ca3a22",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "found": [
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_blueprints.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.1667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 94787,
+      "latency_ms": 90.527,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-eb1182a10e75",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 66.342,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-ecc057dd4857",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "found": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 93633,
+      "latency_ms": 73.798,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "agent-default",
+      "case_id": "flask-eede1a3685e2",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "found": [
+        "src/flask/json/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 89863,
+      "latency_ms": 92.604,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-03b410066b96",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 54022,
+      "latency_ms": 57.498,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-095651be9eec",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/ctx.py"
+      ],
+      "found": [
+        "src/flask/ctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 18,
+      "tokens_delivered": 91167,
+      "latency_ms": 40.677,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-0afeb1d11cad",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 89842,
+      "latency_ms": 39.576,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-0d8c8ba71bc6",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 14,
+      "tokens_delivered": 88384,
+      "latency_ms": 68.608,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-0ec9192cf25f",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "found": [
+        "src/flask/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 54911,
+      "latency_ms": 46.196,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-176fdfa00023",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 34.866,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-1af8f95785b8",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_cli.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 94107,
+      "latency_ms": 64.489,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-1d5abfadd713",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 18,
+      "tokens_delivered": 85655,
+      "latency_ms": 91.244,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-261e4a6cf287",
+      "path_leak": false,
+      "required_files": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        ".flake8",
+        "tests/test_appctx.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 76672,
+      "latency_ms": 45.835,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-3ba37d2afe65",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "found": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py"
+      ],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 92485,
+      "latency_ms": 47.871,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-40b78fa2ea90",
+      "path_leak": false,
+      "required_files": [
+        "tox.ini"
+      ],
+      "found": [],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 86634,
+      "latency_ms": 35.453,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-426a1e25b77e",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "found": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 64792,
+      "latency_ms": 32.984,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-4995a775df21",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 95646,
+      "latency_ms": 59.63,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-54c3f87af9f6",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 84363,
+      "latency_ms": 65.84,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-6f79cb8a2346",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 76631,
+      "latency_ms": 59.98,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-7203feabf723",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 89253,
+      "latency_ms": 61.452,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-746455d1038f",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/config.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/config.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 26.542,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-74721b48f034",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 100786,
+      "latency_ms": 123.679,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-80cf589a26d7",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/typing.py"
+      ],
+      "found": [
+        "src/flask/typing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 87992,
+      "latency_ms": 61.021,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-826514b8eb18",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 39.56,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-860a25c390eb",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 36.296,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-9532cba45d23",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4462,
+      "latency_ms": 32.724,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-976459f7cb35",
+      "path_leak": false,
+      "required_files": [
+        "pyproject.toml"
+      ],
+      "found": [],
+      "missed": [
+        "pyproject.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 80731,
+      "latency_ms": 47.385,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-98ae71897600",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 34.238,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-9b74a90dd3c4",
+      "path_leak": false,
+      "required_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "found": [],
+      "missed": [
+        ".pre-commit-config.yaml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 24.575,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-a363642a3288",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/wrappers.py"
+      ],
+      "found": [
+        "src/flask/wrappers.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 98117,
+      "latency_ms": 93.808,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-a6a7a57380cd",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 107434,
+      "latency_ms": 36.223,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-bda295d37fa3",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "found": [
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 99836,
+      "latency_ms": 69.8,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-c49ce2e1eb8b",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 43.317,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-ccf125bf3010",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 35.716,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-d7b6c1f6703d",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 94980,
+      "latency_ms": 82.202,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-de8429ffda8c",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 67412,
+      "latency_ms": 46.613,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-df201ed152b6",
+      "path_leak": true,
+      "required_files": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "found": [],
+      "missed": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 79638,
+      "latency_ms": 39.268,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-dffe3034825e",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 34.377,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-e63ead4208c1",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 26.009,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-e82db2ca3a22",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "found": [
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_blueprints.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.1667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 94787,
+      "latency_ms": 65.137,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-eb1182a10e75",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4578,
+      "latency_ms": 34.769,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-ecc057dd4857",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "found": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 93633,
+      "latency_ms": 52.774,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "keyword-search",
+      "case_id": "flask-eede1a3685e2",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "found": [
+        "src/flask/json/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 89863,
+      "latency_ms": 56.206,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-03b410066b96",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1832,
+      "latency_ms": 38088.439,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-095651be9eec",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/ctx.py"
+      ],
+      "found": [
+        "src/flask/ctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3569,
+      "latency_ms": 3770.123,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-0afeb1d11cad",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1041,
+      "latency_ms": 10139.306,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-0d8c8ba71bc6",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 502,
+      "latency_ms": 3597.77,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-0ec9192cf25f",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 407,
+      "latency_ms": 1364.507,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-176fdfa00023",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 527,
+      "latency_ms": 9579.318,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-1af8f95785b8",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1389,
+      "latency_ms": 2731.238,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-1d5abfadd713",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 457,
+      "latency_ms": 3076.69,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-261e4a6cf287",
+      "path_leak": false,
+      "required_files": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        ".flake8",
+        "tests/test_appctx.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1831,
+      "latency_ms": 2674.764,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-3ba37d2afe65",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "found": [
+        "tests/test_instance_config.py"
+      ],
+      "missed": [
+        "src/flask/scaffold.py",
+        "tox.ini"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1491,
+      "latency_ms": 7158.296,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-40b78fa2ea90",
+      "path_leak": false,
+      "required_files": [
+        "tox.ini"
+      ],
+      "found": [],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 826,
+      "latency_ms": 1374.292,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-426a1e25b77e",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        "tests/test_reqctx.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1151,
+      "latency_ms": 6544.999,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-4995a775df21",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.4286,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.4286,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.75,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1384,
+      "latency_ms": 3734.492,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-54c3f87af9f6",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 2349.148,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-6f79cb8a2346",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 1842.353,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-7203feabf723",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1043,
+      "latency_ms": 7907.477,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-746455d1038f",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/config.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/config.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1538,
+      "latency_ms": 1694.036,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-74721b48f034",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1634,
+      "latency_ms": 1258.707,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-80cf589a26d7",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/typing.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/typing.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1025,
+      "latency_ms": 1658.895,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-826514b8eb18",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1618,
+      "latency_ms": 1138.543,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-860a25c390eb",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2081,
+      "latency_ms": 1117.145,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-9532cba45d23",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2344,
+      "latency_ms": 1033.494,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-976459f7cb35",
+      "path_leak": false,
+      "required_files": [
+        "pyproject.toml"
+      ],
+      "found": [
+        "pyproject.toml"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2355,
+      "latency_ms": 2042.235,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-98ae71897600",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2071,
+      "latency_ms": 1089.007,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-9b74a90dd3c4",
+      "path_leak": false,
+      "required_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "found": [],
+      "missed": [
+        ".pre-commit-config.yaml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1430,
+      "latency_ms": 1329.259,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-a363642a3288",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/wrappers.py"
+      ],
+      "found": [
+        "src/flask/wrappers.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 13,
+      "tokens_delivered": 2472,
+      "latency_ms": 1097.086,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-a6a7a57380cd",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4703,
+      "latency_ms": 1066.682,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-bda295d37fa3",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "found": [
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2796,
+      "latency_ms": 1091.204,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-c49ce2e1eb8b",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1618,
+      "latency_ms": 931.873,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-ccf125bf3010",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 527,
+      "latency_ms": 997.067,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-d7b6c1f6703d",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2075,
+      "latency_ms": 946.165,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-de8429ffda8c",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.4,
+      "recall_at_20": 1,
+      "precision_at_20": 0.4,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4904,
+      "latency_ms": 1071.166,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-df201ed152b6",
+      "path_leak": true,
+      "required_files": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "found": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1272,
+      "latency_ms": 1114.785,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-dffe3034825e",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 527,
+      "latency_ms": 1576.227,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-e63ead4208c1",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2643,
+      "latency_ms": 965.147,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-e82db2ca3a22",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "found": [
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_views.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.6,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3,
+      "recall_at_1000_tokens": 0.1667,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3685,
+      "latency_ms": 1033.749,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-eb1182a10e75",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1694,
+      "latency_ms": 1032.932,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-ecc057dd4857",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "found": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3486,
+      "latency_ms": 990.909,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codesearch",
+      "case_id": "flask-eede1a3685e2",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1400,
+      "latency_ms": 2293.361,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-03b410066b96",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1694,
+      "latency_ms": 1975.285,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-095651be9eec",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/ctx.py"
+      ],
+      "found": [
+        "src/flask/ctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1678,
+      "latency_ms": 1860.063,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-0afeb1d11cad",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7470,
+      "latency_ms": 1914.841,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-0d8c8ba71bc6",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1672,
+      "latency_ms": 1848.026,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-0ec9192cf25f",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "found": [
+        "src/flask/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1650,
+      "latency_ms": 1944.202,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-176fdfa00023",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "found": [
+        "src/flask/json/provider.py"
+      ],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2550,
+      "latency_ms": 1926.087,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-1af8f95785b8",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_cli.py"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 285,
+      "latency_ms": 1932.368,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-1d5abfadd713",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 4860,
+      "latency_ms": 1682.259,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-261e4a6cf287",
+      "path_leak": false,
+      "required_files": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3947,
+      "latency_ms": 1567.659,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-3ba37d2afe65",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "found": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py"
+      ],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1710,
+      "latency_ms": 1762.418,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-40b78fa2ea90",
+      "path_leak": false,
+      "required_files": [
+        "tox.ini"
+      ],
+      "found": [],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1677,
+      "latency_ms": 1624.887,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-426a1e25b77e",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "found": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1676,
+      "latency_ms": 1513.152,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-4995a775df21",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_blueprints.py"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1690,
+      "latency_ms": 1622.101,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-54c3f87af9f6",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1712,
+      "latency_ms": 1565.674,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-6f79cb8a2346",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1680,
+      "latency_ms": 1401.028,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-7203feabf723",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1676,
+      "latency_ms": 1403.222,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-746455d1038f",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/config.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/config.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2610,
+      "latency_ms": 1416.681,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-74721b48f034",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 799,
+      "latency_ms": 1461.691,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-80cf589a26d7",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/typing.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/typing.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1689,
+      "latency_ms": 1423.875,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-826514b8eb18",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1428.002,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-860a25c390eb",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1469.913,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-9532cba45d23",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1445.37,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-976459f7cb35",
+      "path_leak": false,
+      "required_files": [
+        "pyproject.toml"
+      ],
+      "found": [],
+      "missed": [
+        "pyproject.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2610,
+      "latency_ms": 1432.889,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-98ae71897600",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1441.881,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-9b74a90dd3c4",
+      "path_leak": false,
+      "required_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "found": [],
+      "missed": [
+        ".pre-commit-config.yaml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1464.913,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-a363642a3288",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/wrappers.py"
+      ],
+      "found": [
+        "src/flask/wrappers.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 11,
+      "tokens_delivered": 1687,
+      "latency_ms": 1419.283,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-a6a7a57380cd",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1692,
+      "latency_ms": 1446.632,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-bda295d37fa3",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "found": [
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1712,
+      "latency_ms": 1516.167,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-c49ce2e1eb8b",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1441.519,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-ccf125bf3010",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1443.424,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-d7b6c1f6703d",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/blueprints.py"
+      ],
+      "missed": [
+        "tests/test_blueprints.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1696,
+      "latency_ms": 1099.158,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-de8429ffda8c",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1675,
+      "latency_ms": 1097.63,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-df201ed152b6",
+      "path_leak": true,
+      "required_files": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "found": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1682,
+      "latency_ms": 1094.791,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-dffe3034825e",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1104.022,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-e63ead4208c1",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1088.308,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-e82db2ca3a22",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "found": [
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_views.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_cli.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.6,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1702,
+      "latency_ms": 1099.398,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-eb1182a10e75",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2550,
+      "latency_ms": 1104.117,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-ecc057dd4857",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "found": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1669,
+      "latency_ms": 1115.349,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "flask-eede1a3685e2",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "found": [
+        "src/flask/json/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1666,
+      "latency_ms": 1212.273,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-03b410066b96",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 98958,
+      "latency_ms": 31.674,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-095651be9eec",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/ctx.py"
+      ],
+      "found": [
+        "src/flask/ctx.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 98182,
+      "latency_ms": 25.842,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-0afeb1d11cad",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 97356,
+      "latency_ms": 26.05,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-0d8c8ba71bc6",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 100544,
+      "latency_ms": 24.947,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-0ec9192cf25f",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "found": [
+        "src/flask/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 97421,
+      "latency_ms": 25.104,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-176fdfa00023",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "found": [
+        "src/flask/helpers.py"
+      ],
+      "missed": [
+        "src/flask/json/provider.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 70486,
+      "latency_ms": 26.399,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-1af8f95785b8",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 70069,
+      "latency_ms": 24.989,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-1d5abfadd713",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "found": [
+        "src/flask/cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 76284,
+      "latency_ms": 25.514,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-261e4a6cf287",
+      "path_leak": false,
+      "required_files": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        ".flake8",
+        "tests/test_appctx.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 101135,
+      "latency_ms": 24.571,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-3ba37d2afe65",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "found": [
+        "src/flask/scaffold.py"
+      ],
+      "missed": [
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 98043,
+      "latency_ms": 28.274,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-40b78fa2ea90",
+      "path_leak": false,
+      "required_files": [
+        "tox.ini"
+      ],
+      "found": [],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 70565,
+      "latency_ms": 26.389,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-426a1e25b77e",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        "tests/test_reqctx.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 100513,
+      "latency_ms": 27.304,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-4995a775df21",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_blueprints.py"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 72596,
+      "latency_ms": 25.179,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-54c3f87af9f6",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 73072,
+      "latency_ms": 24.513,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-6f79cb8a2346",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 96806,
+      "latency_ms": 23.261,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-7203feabf723",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 81351,
+      "latency_ms": 25.984,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-746455d1038f",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/config.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/config.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 99251,
+      "latency_ms": 23.401,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-74721b48f034",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 70565,
+      "latency_ms": 24.467,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-80cf589a26d7",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/typing.py"
+      ],
+      "found": [
+        "src/flask/typing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 75828,
+      "latency_ms": 23.671,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-826514b8eb18",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 96787,
+      "latency_ms": 24.77,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-860a25c390eb",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [
+        "src/flask/helpers.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 70795,
+      "latency_ms": 24.202,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-9532cba45d23",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 97421,
+      "latency_ms": 24.337,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-976459f7cb35",
+      "path_leak": false,
+      "required_files": [
+        "pyproject.toml"
+      ],
+      "found": [
+        "pyproject.toml"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 80328,
+      "latency_ms": 24.145,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-98ae71897600",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 70553,
+      "latency_ms": 25.041,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-9b74a90dd3c4",
+      "path_leak": false,
+      "required_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "found": [
+        ".pre-commit-config.yaml"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 80215,
+      "latency_ms": 25.207,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-a363642a3288",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/wrappers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/wrappers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 70730,
+      "latency_ms": 24.554,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-a6a7a57380cd",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 99308,
+      "latency_ms": 23.851,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-bda295d37fa3",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "found": [
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 97261,
+      "latency_ms": 23.631,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-c49ce2e1eb8b",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 95560,
+      "latency_ms": 23.737,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-ccf125bf3010",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [
+        "src/flask/sessions.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 70731,
+      "latency_ms": 25.233,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-d7b6c1f6703d",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 100533,
+      "latency_ms": 23.923,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-de8429ffda8c",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "found": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 81260,
+      "latency_ms": 25.648,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-df201ed152b6",
+      "path_leak": true,
+      "required_files": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "found": [],
+      "missed": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 70553,
+      "latency_ms": 24.288,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-dffe3034825e",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [
+        "src/flask/helpers.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 71520,
+      "latency_ms": 24.656,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-e63ead4208c1",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 70565,
+      "latency_ms": 25.34,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-e82db2ca3a22",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "found": [
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_blueprints.py",
+        "tests/test_views.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.1667,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 80314,
+      "latency_ms": 24.521,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-eb1182a10e75",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [
+        "src/flask/sessions.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 70461,
+      "latency_ms": 24.654,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-ecc057dd4857",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 70069,
+      "latency_ms": 23.327,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "flask-eede1a3685e2",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "found": [
+        "src/flask/json/__init__.py"
+      ],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 98082,
+      "latency_ms": 23.058,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-03b410066b96",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17705,
+      "latency_ms": 11.643,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-095651be9eec",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/ctx.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/ctx.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22208,
+      "latency_ms": 11.305,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-0afeb1d11cad",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30144,
+      "latency_ms": 11.455,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-0d8c8ba71bc6",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30503,
+      "latency_ms": 10.157,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-0ec9192cf25f",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 11009,
+      "latency_ms": 10.322,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-176fdfa00023",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 27983,
+      "latency_ms": 10.416,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-1af8f95785b8",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "found": [
+        "tests/test_cli.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 17,
+      "tokens_delivered": 26044,
+      "latency_ms": 10.354,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-1d5abfadd713",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 40575,
+      "latency_ms": 10.37,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-261e4a6cf287",
+      "path_leak": false,
+      "required_files": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_appctx.py"
+      ],
+      "missed": [
+        ".flake8",
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 37624,
+      "latency_ms": 9.762,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-3ba37d2afe65",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "found": [
+        "src/flask/scaffold.py"
+      ],
+      "missed": [
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 62976,
+      "latency_ms": 9.51,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-40b78fa2ea90",
+      "path_leak": false,
+      "required_files": [
+        "tox.ini"
+      ],
+      "found": [],
+      "missed": [
+        "tox.ini"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 36940,
+      "latency_ms": 10.842,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-426a1e25b77e",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "found": [
+        "tests/test_reqctx.py"
+      ],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 18661,
+      "latency_ms": 10.299,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-4995a775df21",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 50380,
+      "latency_ms": 10.235,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-54c3f87af9f6",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30706,
+      "latency_ms": 10.678,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-6f79cb8a2346",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [
+        "src/flask/app.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 45986,
+      "latency_ms": 9.424,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-7203feabf723",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 9,
+      "tokens_delivered": 32720,
+      "latency_ms": 10.191,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-746455d1038f",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/config.py"
+      ],
+      "found": [
+        "src/flask/config.py"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 28009,
+      "latency_ms": 9.599,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-74721b48f034",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 36384,
+      "latency_ms": 9.698,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-80cf589a26d7",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/typing.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/typing.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30334,
+      "latency_ms": 10.584,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-826514b8eb18",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [],
+      "missed": [
+        "tests/test_basic.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 28572,
+      "latency_ms": 9.412,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-860a25c390eb",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43383,
+      "latency_ms": 10.908,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-9532cba45d23",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19148,
+      "latency_ms": 10.827,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-976459f7cb35",
+      "path_leak": false,
+      "required_files": [
+        "pyproject.toml"
+      ],
+      "found": [],
+      "missed": [
+        "pyproject.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33010,
+      "latency_ms": 10.132,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-98ae71897600",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25252,
+      "latency_ms": 10.864,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-9b74a90dd3c4",
+      "path_leak": false,
+      "required_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "found": [
+        ".pre-commit-config.yaml"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 25471,
+      "latency_ms": 9.767,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-a363642a3288",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/wrappers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/wrappers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 45386,
+      "latency_ms": 11.574,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-a6a7a57380cd",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23746,
+      "latency_ms": 11.153,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-bda295d37fa3",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "found": [
+        "src/flask/helpers.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/scaffold.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 36859,
+      "latency_ms": 10.408,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-c49ce2e1eb8b",
+      "path_leak": false,
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "found": [
+        "tests/test_basic.py"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 36829,
+      "latency_ms": 11.095,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-ccf125bf3010",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 51711,
+      "latency_ms": 10.453,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-d7b6c1f6703d",
+      "path_leak": true,
+      "required_files": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "found": [
+        "tests/test_blueprints.py"
+      ],
+      "missed": [
+        "src/flask/blueprints.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 11,
+      "tokens_delivered": 26267,
+      "latency_ms": 9.543,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-de8429ffda8c",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23985,
+      "latency_ms": 9.873,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-df201ed152b6",
+      "path_leak": true,
+      "required_files": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "found": [],
+      "missed": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 40972,
+      "latency_ms": 9.62,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-dffe3034825e",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/helpers.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 41679,
+      "latency_ms": 9.96,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-e63ead4208c1",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 35855,
+      "latency_ms": 9.873,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-e82db2ca3a22",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "found": [
+        "tests/test_views.py"
+      ],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py"
+      ],
+      "recall_at_5": 0.1667,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.1667,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.1667,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.1667,
+      "recall_at_16000_tokens": 0.1667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 27943,
+      "latency_ms": 9.639,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-eb1182a10e75",
+      "path_leak": false,
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "found": [],
+      "missed": [
+        "src/flask/sessions.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19505,
+      "latency_ms": 10.841,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-ecc057dd4857",
+      "path_leak": false,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 42482,
+      "latency_ms": 10.08,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "flask-eede1a3685e2",
+      "path_leak": true,
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "found": [],
+      "missed": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25042,
+      "latency_ms": 11.466,
+      "indexed_revision_matches": true
+    }
+  ],
+  "tier": "small",
+  "tier_code_files": 83,
+  "tier_provenance": "Stamped after the fact from a measured file count; the run predates tier stamping. Tier is a property of the repository, not of the run."
+}

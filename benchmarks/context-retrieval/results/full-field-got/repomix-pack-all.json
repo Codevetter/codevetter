@@ -1,0 +1,3093 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "got",
+    "head": "e3924aa1e53a6ca3eb93a43618ce532442a89b40"
+  },
+  "tier": "small",
+  "tier_code_files": 85,
+  "corpus_counts": {
+    "cases": 108,
+    "path_leak": 54,
+    "baseline_blind": 54,
+    "multi_file": 82
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": false,
+      "missing": [
+        "random-files",
+        "random-code-files",
+        "churn-ranked"
+      ],
+      "reason": "controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric."
+    },
+    "controls_lose": {
+      "ok": null
+    },
+    "needs_raw_payload_check": [
+      {
+        "provider_id": "repomix-pack-all",
+        "why": "scored exactly zero — read the raw payload before believing it"
+      }
+    ],
+    "nominated_for_hand_audit": [],
+    "trustworthy": false
+  },
+  "providers": [
+    {
+      "provider_id": "repomix-pack-all",
+      "summary": {
+        "all": {
+          "cases": 108,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 163443.5,
+          "median_latency_ms": 1069.0345,
+          "payload_kind": [
+            "whole-repository"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 108,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 163443.5,
+          "median_latency_ms": 1069.0345,
+          "payload_kind": [
+            "whole-repository"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 163443.5,
+          "median_latency_ms": 1066.0765,
+          "payload_kind": [
+            "whole-repository"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 161194.5,
+          "median_latency_ms": 1073.684,
+          "payload_kind": [
+            "whole-repository"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 108
+      },
+      "resources": {
+        "baseline_rss_mb": 19707.3,
+        "peak_rss_mb": 21267,
+        "delta_rss_mb": 1559.6,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "RELIABILITY GATE FAILED — do not publish these numbers: controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric.",
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-043c9501b851",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 110684,
+      "latency_ms": 1522.877,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-05cb01405a70",
+      "path_leak": false,
+      "required_files": [
+        "test/arguments.ts"
+      ],
+      "found": [
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 69,
+      "tokens_delivered": 181365,
+      "latency_ms": 1178.711,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-06029e0b758e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 168975,
+      "latency_ms": 1101.909,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-06a2d3d7d8d4",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 134605,
+      "latency_ms": 1045.21,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-0703318d3bb6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/response.ts",
+        "test/encoding.ts"
+      ],
+      "found": [
+        "source/core/response.ts"
+      ],
+      "missed": [
+        "test/encoding.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 52,
+      "tokens_delivered": 157133,
+      "latency_ms": 1273.354,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-071ea0749d81",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/timed-out.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/timed-out.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 278639,
+      "latency_ms": 1095.793,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-0863bcd5e90e",
+      "path_leak": true,
+      "required_files": [
+        "test/timeout.ts"
+      ],
+      "found": [
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 104,
+      "tokens_delivered": 178881,
+      "latency_ms": 1037.883,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-08d7a0f3285d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 49,
+      "tokens_delivered": 150846,
+      "latency_ms": 959.804,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-0a16a9ca7de3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 203930,
+      "latency_ms": 1011.083,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-1018c2029eea",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 48,
+      "tokens_delivered": 146936,
+      "latency_ms": 1052.791,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-11a2202de328",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 279222,
+      "latency_ms": 1050.584,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-15395ee87e6d",
+      "path_leak": true,
+      "required_files": [
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "test/normalize-arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 67,
+      "tokens_delivered": 134380,
+      "latency_ms": 1301.489,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-157e02bcb613",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 96708,
+      "latency_ms": 1060.071,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-1b208df66716",
+      "path_leak": true,
+      "required_files": [
+        "test/stream.ts"
+      ],
+      "found": [
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 78,
+      "tokens_delivered": 127782,
+      "latency_ms": 1030.942,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-1e1e50647e93",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 134776,
+      "latency_ms": 1091.418,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-1e49781eff61",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 46,
+      "tokens_delivered": 185279,
+      "latency_ms": 1000.705,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-226cc3995f6e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 135963,
+      "latency_ms": 1105.813,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-2453e5e4213f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 47,
+      "tokens_delivered": 146828,
+      "latency_ms": 1050.241,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-2527bf690fd5",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 182930,
+      "latency_ms": 1077.126,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-26fffe94618b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 51,
+      "tokens_delivered": 165053,
+      "latency_ms": 991.213,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-2ab94fd4daf6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 177996,
+      "latency_ms": 1178.502,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-2ccc4c2e8bd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 103240,
+      "latency_ms": 1120.709,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-30b3b795580d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 182766,
+      "latency_ms": 1095.418,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-32070619a547",
+      "path_leak": true,
+      "required_files": [
+        "test/https.ts"
+      ],
+      "found": [
+        "test/https.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 87,
+      "tokens_delivered": 159715,
+      "latency_ms": 1023.977,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-398c11ae502c",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 196694,
+      "latency_ms": 1343.182,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-3b3ea6776b4f",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 44,
+      "tokens_delivered": 165716,
+      "latency_ms": 1504.594,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-3cc40b549c4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 165672,
+      "latency_ms": 1113.105,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-3d66aecacd6d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 178951,
+      "latency_ms": 1054.953,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-3e9d3af606c3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 165442,
+      "latency_ms": 1085.956,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-408e22aed993",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 32,
+      "tokens_delivered": 125623,
+      "latency_ms": 1084.304,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-439fb82d2a07",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 48,
+      "tokens_delivered": 148182,
+      "latency_ms": 1213.638,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-462bc6300150",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 32,
+      "tokens_delivered": 130569,
+      "latency_ms": 1309.701,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-47c1afedc77b",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 63,
+      "tokens_delivered": 99239,
+      "latency_ms": 1188.598,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-47c3155e4bdf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 209772,
+      "latency_ms": 1071.291,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-4cce4de19ed5",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/types.ts"
+      ],
+      "found": [
+        "source/as-promise/types.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 130761,
+      "latency_ms": 1015.22,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-4d5168cc7c58",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/types.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/types.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 52,
+      "tokens_delivered": 211360,
+      "latency_ms": 1000.178,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-4e7567965dbc",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 178456,
+      "latency_ms": 1094.074,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-5028c11abd21",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 29,
+      "tokens_delivered": 105853,
+      "latency_ms": 1010.484,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-50ef99a9856c",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 97288,
+      "latency_ms": 1035.779,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-5772bf24dc7d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 54,
+      "tokens_delivered": 280784,
+      "latency_ms": 1203.716,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-59ae3b062f53",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 48,
+      "tokens_delivered": 147121,
+      "latency_ms": 1066.778,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-60a441939af3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 46,
+      "tokens_delivered": 180857,
+      "latency_ms": 1079.477,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-61d5e3b0ebc5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/timer.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/utils/timer.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 64,
+      "tokens_delivered": 209203,
+      "latency_ms": 1065.743,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-61d6f610ffa6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/agent.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 108851,
+      "latency_ms": 1031.077,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-676be6d85481",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 27,
+      "tokens_delivered": 107189,
+      "latency_ms": 1183.277,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-67d5039ff5a5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 166078,
+      "latency_ms": 1020.567,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-6961284172c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/agent.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/agent.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 51,
+      "tokens_delivered": 173268,
+      "latency_ms": 1129.027,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-6a544a392baf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 181085,
+      "latency_ms": 1058.463,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-6ae3e7fc364b",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 46,
+      "tokens_delivered": 181686,
+      "latency_ms": 1093.114,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-6e1d9f97465d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "found": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts"
+      ],
+      "missed": [
+        "test/helpers/invalid-url.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 29,
+      "tokens_delivered": 134429,
+      "latency_ms": 1065.375,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-724d5923816b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/https.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/https.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 51,
+      "tokens_delivered": 170483,
+      "latency_ms": 942.428,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-728aef989c1a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts",
+        "test/promise.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 27,
+      "tokens_delivered": 105996,
+      "latency_ms": 983.322,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-74e3167b705b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 279502,
+      "latency_ms": 1106.746,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-78b105b5ebcf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 133033,
+      "latency_ms": 1129.531,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-7a920647efa2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 54,
+      "tokens_delivered": 168961,
+      "latency_ms": 1077.803,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-7acd3801ec7d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/utils/get-body-size.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 34,
+      "tokens_delivered": 128529,
+      "latency_ms": 1177.724,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-7b19e8f32c90",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 96490,
+      "latency_ms": 1149.367,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-7e1de4240dad",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 132196,
+      "latency_ms": 1052.464,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-88622701c704",
+      "path_leak": false,
+      "required_files": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 39,
+      "tokens_delivered": 99217,
+      "latency_ms": 1117.357,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-88b32eade80f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 32,
+      "tokens_delivered": 127833,
+      "latency_ms": 1057.419,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-8d3412abb8aa",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 106116,
+      "latency_ms": 1128.389,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-8f775c71c41a",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 106560,
+      "latency_ms": 1076.077,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-91aa0ac9e676",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 98746,
+      "latency_ms": 1090.241,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-92b378e5fd95",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 168805,
+      "latency_ms": 1044.89,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-934211f951bf",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 29,
+      "tokens_delivered": 105608,
+      "latency_ms": 1007.78,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-9725fbd109a6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 189350,
+      "latency_ms": 1061.858,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-98ca6181a039",
+      "path_leak": true,
+      "required_files": [
+        "test/progress.ts"
+      ],
+      "found": [
+        "test/progress.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 92,
+      "tokens_delivered": 155904,
+      "latency_ms": 1094.037,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-99e8d134bd9a",
+      "path_leak": true,
+      "required_files": [
+        "test/http.ts"
+      ],
+      "found": [
+        "test/http.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 82,
+      "tokens_delivered": 147015,
+      "latency_ms": 1118.209,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-9a309bdbe7e2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/https.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/https.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 110681,
+      "latency_ms": 1033.7,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-9ab4cf991fd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/response.ts"
+      ],
+      "found": [
+        "source/core/response.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 168738,
+      "latency_ms": 1066.756,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-9e15d887da3b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 135594,
+      "latency_ms": 989.916,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-9ec6ff02a189",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 176771,
+      "latency_ms": 977.647,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-a2812de3baa0",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/post.ts"
+      ],
+      "found": [
+        "source/core/utils/get-body-size.ts",
+        "test/post.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 55,
+      "tokens_delivered": 177136,
+      "latency_ms": 1044.487,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-a59fac415ac0",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 30,
+      "tokens_delivered": 131959,
+      "latency_ms": 1002.125,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-ac5f67dd4b92",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 106858,
+      "latency_ms": 995.373,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-aee9249444c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 281110,
+      "latency_ms": 1162.84,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-af928f6d3974",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 166191,
+      "latency_ms": 1154.965,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-b17012597e4d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 53,
+      "tokens_delivered": 275248,
+      "latency_ms": 1153.522,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-b671480715db",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 51,
+      "tokens_delivered": 164582,
+      "latency_ms": 2045.586,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-bf39d2c1c58f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 156728,
+      "latency_ms": 1136.981,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-bf84d3697537",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 189813,
+      "latency_ms": 1147.402,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-c079b9366ff2",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 169196,
+      "latency_ms": 1082.126,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-c09b9857d1b4",
+      "path_leak": true,
+      "required_files": [
+        "test/cookies.ts"
+      ],
+      "found": [
+        "test/cookies.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 71,
+      "tokens_delivered": 162305,
+      "latency_ms": 1056.771,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-c81a61159473",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 46,
+      "tokens_delivered": 166693,
+      "latency_ms": 1047.372,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-c97ce7cbde86",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 32,
+      "tokens_delivered": 127799,
+      "latency_ms": 985.368,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-cbc890292f40",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 44,
+      "tokens_delivered": 149288,
+      "latency_ms": 1015.51,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-cc434bc52111",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/no-body-status-codes.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/no-body-status-codes.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 169508,
+      "latency_ms": 1023.863,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-d1d4ed2f6242",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 172574,
+      "latency_ms": 976.276,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-d65d0caf627e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/headers.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/headers.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 48,
+      "tokens_delivered": 148473,
+      "latency_ms": 968.886,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-d8c00cfa388b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 103266,
+      "latency_ms": 869.82,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-da4769e98880",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 31,
+      "tokens_delivered": 106662,
+      "latency_ms": 970.286,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-dad6a91b3d11",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/infinite-loop-issue.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/infinite-loop-issue.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 51,
+      "tokens_delivered": 168947,
+      "latency_ms": 1048.751,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-dc4f1e323dbd",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 170235,
+      "latency_ms": 1022.271,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-dfc54d9e57b7",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 44,
+      "tokens_delivered": 169190,
+      "latency_ms": 979.476,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-e02845f1aa73",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 42,
+      "tokens_delivered": 109354,
+      "latency_ms": 1012.853,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-e09a9bd1ca97",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 181524,
+      "latency_ms": 975.764,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-e1099fbc2aa9",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 49,
+      "tokens_delivered": 148936,
+      "latency_ms": 1097.999,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-e4aeb8e3bfc4",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 67,
+      "tokens_delivered": 107675,
+      "latency_ms": 1249.505,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-e5659d401a4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts",
+        "test/get-unix-socket-path.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts"
+      ],
+      "missed": [
+        "test/get-unix-socket-path.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 184068,
+      "latency_ms": 1333.396,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-e899c0736f6a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 174705,
+      "latency_ms": 1011.761,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-eb045bfc324d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 157336,
+      "latency_ms": 1381.705,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-ecb05343dea3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 45,
+      "tokens_delivered": 155310,
+      "latency_ms": 1300.264,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-f0045640d12a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 46,
+      "tokens_delivered": 192241,
+      "latency_ms": 1097.893,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-f2f8cb29fe9f",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 168751,
+      "latency_ms": 1033.196,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-f44ef4388e0b",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/create.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 64,
+      "tokens_delivered": 168798,
+      "latency_ms": 1064.453,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-f7ab6e9ffda6",
+      "path_leak": true,
+      "required_files": [
+        "source/types.ts",
+        "test/create.ts",
+        "test/extend.types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/types.ts",
+        "test/create.ts",
+        "test/extend.types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 70,
+      "tokens_delivered": 209981,
+      "latency_ms": 1209.305,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-fb8641856a13",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 50,
+      "tokens_delivered": 178168,
+      "latency_ms": 1161.372,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repomix-pack-all",
+      "case_id": "got-ff918fb6dedb",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 27,
+      "tokens_delivered": 129107,
+      "latency_ms": 1106.642,
+      "indexed_revision_matches": true
+    }
+  ]
+}

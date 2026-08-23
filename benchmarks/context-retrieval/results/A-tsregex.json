@@ -1,0 +1,2197 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "gin",
+    "head": "dcaa4296d111981ffb31ac3eba90bb63e1eb5ab9"
+  },
+  "corpus_counts": {
+    "cases": 76,
+    "path_leak": 23,
+    "baseline_blind": 53,
+    "multi_file": 54
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "providers": [
+    {
+      "provider_id": "token-savior-regex",
+      "summary": {
+        "all": {
+          "cases": 76,
+          "mean_recall_at_5": 0.3794,
+          "full_recall_at_5": 0.2632,
+          "mean_recall_at_10": 0.5164,
+          "full_recall_at_10": 0.3816,
+          "mean_recall_at_20": 0.523,
+          "full_recall_at_20": 0.3816,
+          "mean_recall_at_1000_tokens": 0.2939,
+          "mean_recall_at_4000_tokens": 0.523,
+          "mean_recall_at_16000_tokens": 0.523,
+          "mean_precision_at_10": 0.1804,
+          "zero_hit_rate": 0.3289,
+          "median_tokens_delivered": 1914.5,
+          "median_latency_ms": 1803.2805,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 47,
+          "mean_recall_at_5": 0.1454,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.2181,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.2287,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0.117,
+          "mean_recall_at_4000_tokens": 0.2287,
+          "mean_recall_at_16000_tokens": 0.2287,
+          "mean_precision_at_10": 0.0927,
+          "zero_hit_rate": 0.5319,
+          "median_tokens_delivered": 1729,
+          "median_latency_ms": 1727.944,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 29,
+          "mean_recall_at_5": 0.7586,
+          "full_recall_at_5": 0.6897,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0.5805,
+          "mean_recall_at_4000_tokens": 1,
+          "mean_recall_at_16000_tokens": 1,
+          "mean_precision_at_10": 0.3227,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 2121,
+          "median_latency_ms": 1875.013,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 23,
+          "mean_recall_at_5": 0.4928,
+          "full_recall_at_5": 0.3478,
+          "mean_recall_at_10": 0.6087,
+          "full_recall_at_10": 0.4348,
+          "mean_recall_at_20": 0.6087,
+          "full_recall_at_20": 0.4348,
+          "mean_recall_at_1000_tokens": 0.3043,
+          "mean_recall_at_4000_tokens": 0.6087,
+          "mean_recall_at_16000_tokens": 0.6087,
+          "mean_precision_at_10": 0.2407,
+          "zero_hit_rate": 0.2174,
+          "median_tokens_delivered": 2296,
+          "median_latency_ms": 1815.403,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 53,
+          "mean_recall_at_5": 0.3302,
+          "full_recall_at_5": 0.2264,
+          "mean_recall_at_10": 0.4764,
+          "full_recall_at_10": 0.3585,
+          "mean_recall_at_20": 0.4858,
+          "full_recall_at_20": 0.3585,
+          "mean_recall_at_1000_tokens": 0.2893,
+          "mean_recall_at_4000_tokens": 0.4858,
+          "mean_recall_at_16000_tokens": 0.4858,
+          "mean_precision_at_10": 0.1543,
+          "zero_hit_rate": 0.3774,
+          "median_tokens_delivered": 1844,
+          "median_latency_ms": 1791.158,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 31868.3,
+        "peak_rss_mb": 38145,
+        "delta_rss_mb": 6276.8,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 512000
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-03e5e05ae089",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.6,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2352,
+      "latency_ms": 1842.053,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-088cdd74d42d",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1729,
+      "latency_ms": 1644.125,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-09f8224593e3",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2222,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2901,
+      "latency_ms": 1783.245,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-11aa11a65618",
+      "path_leak": true,
+      "required_files": [
+        "recovery_test.go"
+      ],
+      "found": [
+        "recovery_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1377,
+      "latency_ms": 1256.415,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-1c2aa59b20c8",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.4,
+      "recall_at_20": 1,
+      "precision_at_20": 0.4,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 387,
+      "latency_ms": 1596.521,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-1d0f938f28d7",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1578,
+      "latency_ms": 1540.735,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-212267d67163",
+      "path_leak": false,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 943,
+      "latency_ms": 1204.23,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-234a6d4c00cb",
+      "path_leak": true,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1412,
+      "latency_ms": 2063.293,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-24a1d2adb9db",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 319,
+      "latency_ms": 1194.457,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-28e57f58b184",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 2690,
+      "latency_ms": 1398.694,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-2921582d11d5",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 1,
+      "recall_at_10": 1,
+      "precision_at_10": 1,
+      "recall_at_20": 1,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2020,
+      "latency_ms": 1367.603,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-293ad7edebb3",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1924,
+      "latency_ms": 2815.803,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-2a794cd0b0fa",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1001,
+      "latency_ms": 1208.745,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-2ae61570499d",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2716,
+      "latency_ms": 2348.334,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-2b1da2b0b38d",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 3172,
+      "latency_ms": 2850.55,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-2d4bbec94155",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1844,
+      "latency_ms": 3065.53,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-328d0b8076f0",
+      "path_leak": false,
+      "required_files": [
+        "fs.go"
+      ],
+      "found": [],
+      "missed": [
+        "fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 297,
+      "latency_ms": 1711.08,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-36b0dede4b8c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1328,
+      "latency_ms": 1147.367,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-386d244068db",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.6,
+      "recall_at_10": 1,
+      "precision_at_10": 0.375,
+      "recall_at_20": 1,
+      "precision_at_20": 0.375,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 982,
+      "latency_ms": 2605.353,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-3a6f18f32f22",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1196,
+      "latency_ms": 1727.944,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-3dc1cd6572b4",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2815,
+      "latency_ms": 2184.782,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-44d0dd70924d",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 11,
+      "tokens_delivered": 2780,
+      "latency_ms": 2073.744,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-472d086af2ac",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 4038,
+      "latency_ms": 3493.931,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-4a3eb31fb15b",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2222,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 1547,
+      "latency_ms": 1731.216,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-4a40f8f1a49b",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1050,
+      "latency_ms": 1191.94,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-4cee78f5382d",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1388,
+      "latency_ms": 3172.699,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-4f339e6a35b1",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context_test.go"
+      ],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 880,
+      "latency_ms": 1658.361,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-51aea73ba0f1",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1458,
+      "latency_ms": 1294.852,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-55e27f12465e",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go",
+        "gin.go",
+        "test_helpers.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "context_test.go",
+        "test_helpers.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3956,
+      "latency_ms": 2324.104,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-5826722a87cf",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1475,
+      "latency_ms": 1342.44,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-5c00df8afadd",
+      "path_leak": true,
+      "required_files": [
+        "render/data.go",
+        "render/render_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "render/data.go",
+        "render/render_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3446,
+      "latency_ms": 3125.003,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-5fad976b372e",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2014,
+      "latency_ms": 3772.606,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-626d55b0c029",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3682,
+      "latency_ms": 3033.474,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-63dd3e60cab8",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [
+        "recovery.go"
+      ],
+      "missed": [
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3014,
+      "latency_ms": 2493.939,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-646312aef6a3",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3416,
+      "latency_ms": 2844.377,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-674522db91d6",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3054,
+      "latency_ms": 1970.138,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-68542126982e",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1603,
+      "latency_ms": 1875.013,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-7742ff50e0a0",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 1,
+      "recall_at_10": 1,
+      "precision_at_10": 1,
+      "recall_at_20": 1,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 850,
+      "latency_ms": 839.51,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-7a1b655074c3",
+      "path_leak": true,
+      "required_files": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "found": [
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 1,
+      "recall_at_10": 0.5,
+      "precision_at_10": 1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 274,
+      "latency_ms": 942.109,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-7cb151bb4c4c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2657,
+      "latency_ms": 2135.786,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-7d147928ee23",
+      "path_leak": true,
+      "required_files": [
+        "debug.go",
+        "mode.go",
+        "mode_test.go"
+      ],
+      "found": [
+        "debug.go",
+        "mode.go"
+      ],
+      "missed": [
+        "mode_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 6,
+      "tokens_delivered": 2495,
+      "latency_ms": 2185.082,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-7d189814cbf6",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2139,
+      "latency_ms": 2580.139,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-814cd188eb0b",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 929,
+      "latency_ms": 1000.026,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-815122a0f4b9",
+      "path_leak": false,
+      "required_files": [
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2463,
+      "latency_ms": 1620.102,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-82bcd6d39bfe",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "found": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1622,
+      "latency_ms": 1502.123,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-86ff4a64c7ef",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "routes_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2437,
+      "latency_ms": 2092.477,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-8763f33c65f7",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3543,
+      "latency_ms": 3718.213,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-87811a97bddb",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3732,
+      "latency_ms": 2541.658,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-8790d08909fc",
+      "path_leak": true,
+      "required_files": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "found": [
+        "binding/query.go"
+      ],
+      "missed": [
+        "binding/query_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1524,
+      "latency_ms": 1340.411,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-8b9c55e8b059",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1363,
+      "latency_ms": 1252.16,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-8dd20118ba9a",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2351,
+      "latency_ms": 3307.555,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-8e07d37c63e5",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 9,
+      "tokens_delivered": 3560,
+      "latency_ms": 4539.96,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-8eb5f832bac1",
+      "path_leak": true,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "routes_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1722,
+      "latency_ms": 1662.368,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-97b3c0d88ada",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1555,
+      "latency_ms": 1652.541,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-9914178584e4",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2733,
+      "latency_ms": 2620.49,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-9f598a31aafb",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.6667,
+      "recall_at_10": 1,
+      "precision_at_10": 0.6667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.6667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1355,
+      "latency_ms": 1509.852,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-aa6002134e97",
+      "path_leak": false,
+      "required_files": [
+        "context_go17_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_go17_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1019,
+      "latency_ms": 1450.385,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-aefae309a4fc",
+      "path_leak": true,
+      "required_files": [
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1962,
+      "latency_ms": 1815.403,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-b38c59de7fef",
+      "path_leak": false,
+      "required_files": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3046,
+      "latency_ms": 2558.836,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-b917b14ff9d1",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2151,
+      "latency_ms": 1394.816,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-bb1fc2e0fe97",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1905,
+      "latency_ms": 984.307,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-be860ec1578f",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1087,
+      "latency_ms": 1020.064,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-c3d1092b3b48",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4937,
+      "latency_ms": 3959.587,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-c3d5a28ed6d3",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.125,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2314,
+      "latency_ms": 2644.193,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-c677ccc40a60",
+      "path_leak": false,
+      "required_files": [
+        "go.mod"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1318,
+      "latency_ms": 1471.136,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-c706ace9298f",
+      "path_leak": false,
+      "required_files": [
+        "binding/binding_test.go",
+        "githubapi_test.go"
+      ],
+      "found": [
+        "binding/binding_test.go"
+      ],
+      "missed": [
+        "githubapi_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 813,
+      "latency_ms": 2484.738,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-cbdd47a7e108",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1487,
+      "latency_ms": 1791.158,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-d75fcd4c9ab2",
+      "path_leak": false,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 2778,
+      "latency_ms": 2650.703,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-d9307dbcbbe7",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2222,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2121,
+      "latency_ms": 2893.211,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-e0d46ded6cb6",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1878,
+      "latency_ms": 1773.247,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-e737e3e267be",
+      "path_leak": true,
+      "required_files": [
+        "binding/toml.go"
+      ],
+      "found": [
+        "binding/toml.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 2296,
+      "latency_ms": 2479.904,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-ea53388e6ee4",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2992,
+      "latency_ms": 3206.595,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-eab47b5423b6",
+      "path_leak": true,
+      "required_files": [
+        "binding/binding_test.go",
+        "binding/protobuf.go"
+      ],
+      "found": [
+        "binding/binding_test.go",
+        "binding/protobuf.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3005,
+      "latency_ms": 1623.278,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-ebe5e2a6bfdc",
+      "path_leak": false,
+      "required_files": [
+        ".golangci.yml"
+      ],
+      "found": [],
+      "missed": [
+        ".golangci.yml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1552,
+      "latency_ms": 2731.319,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-f4bc259de33c",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2380,
+      "latency_ms": 1291.865,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "token-savior-regex",
+      "case_id": "gin-f70dd00b00bc",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1032,
+      "latency_ms": 979.334,
+      "indexed_revision_matches": true
+    }
+  ],
+  "tier": "small",
+  "tier_code_files": 99,
+  "tier_provenance": "Stamped after the fact from a measured file count; the run predates tier stamping. Tier is a property of the repository, not of the run."
+}

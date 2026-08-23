@@ -1,0 +1,6630 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "gin",
+    "head": "dcaa4296d111981ffb31ac3eba90bb63e1eb5ab9"
+  },
+  "tier": "small",
+  "tier_code_files": 99,
+  "corpus_counts": {
+    "cases": 76,
+    "path_leak": 23,
+    "baseline_blind": 53,
+    "multi_file": 54
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": true,
+      "best": 0.4594,
+      "control": 0.0263,
+      "reason": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "data race with trustedCIDRs (#2674) (#2675)",
+        "revision": "d496f64540b6707602de50ab57aeea8ff4080b74",
+        "returned": [
+          "tree_test.go",
+          "binding/form_mapping_test.go",
+          "binding/form.go",
+          "routes_test.go",
+          "tree.go"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "Fix #3500 Add escape logic for header (#3503)",
+        "revision": "fc1c43298de675e5252d0b44f97dc5e204bd4e1e",
+        "returned": [
+          "mode_test.go",
+          "routes_test.go",
+          "internal/json/json.go",
+          "testdata/protoexample/test.pb.go",
+          "render/render.go"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "check obj type in protobufBinding (#2851)",
+        "revision": "deb83b6365cf1b95f50929492f6058c94a6ff274",
+        "returned": [
+          ".github/workflows/gin.yml",
+          "tree_test.go",
+          "render/xml.go",
+          "binding/protobuf.go",
+          "test_helpers.go"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "data race with trustedCIDRs (#2674) (#2675)",
+        "revision": "d496f64540b6707602de50ab57aeea8ff4080b74",
+        "returned": [
+          "context.go",
+          "context_test.go",
+          "gin.go",
+          "binding/binding_test.go",
+          ".travis.yml"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Do not panic when handling method not allowed on empty tree (#4003)",
+        "revision": "9c081de9cdd1948f521d47d170d18cbc2981c33a",
+        "returned": [
+          "context.go",
+          "context_test.go",
+          "gin.go",
+          ".github/workflows/gin.yml",
+          "tree.go"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "check obj type in protobufBinding (#2851)",
+        "revision": "deb83b6365cf1b95f50929492f6058c94a6ff274",
+        "returned": [
+          "context.go",
+          "context_test.go",
+          "gin.go",
+          "binding/binding_test.go",
+          "binding/form_mapping.go"
+        ]
+      }
+    ],
+    "trustworthy": true
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 76,
+          "mean_recall_at_5": 0.068,
+          "full_recall_at_5": 0.0132,
+          "mean_recall_at_10": 0.0921,
+          "full_recall_at_10": 0.0263,
+          "mean_recall_at_20": 0.1776,
+          "full_recall_at_20": 0.0526,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0263,
+          "mean_recall_at_16000_tokens": 0.1009,
+          "mean_precision_at_10": 0.0197,
+          "zero_hit_rate": 0.6842,
+          "median_tokens_delivered": 24792.5,
+          "median_latency_ms": 12.089,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 74,
+          "mean_recall_at_5": 0.0563,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0676,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1554,
+          "full_recall_at_20": 0.027,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.027,
+          "mean_recall_at_16000_tokens": 0.0766,
+          "mean_precision_at_10": 0.0162,
+          "zero_hit_rate": 0.7027,
+          "median_tokens_delivered": 24792.5,
+          "median_latency_ms": 12.135,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 2,
+          "mean_recall_at_5": 0.5,
+          "full_recall_at_5": 0.5,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 1,
+          "mean_precision_at_10": 0.15,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 21401,
+          "median_latency_ms": 10.7245,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 23,
+          "mean_recall_at_5": 0.0435,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0652,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1522,
+          "full_recall_at_20": 0.0435,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0217,
+          "mean_recall_at_16000_tokens": 0.0652,
+          "mean_precision_at_10": 0.013,
+          "zero_hit_rate": 0.7391,
+          "median_tokens_delivered": 24180,
+          "median_latency_ms": 11.94,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 53,
+          "mean_recall_at_5": 0.0786,
+          "full_recall_at_5": 0.0189,
+          "mean_recall_at_10": 0.1038,
+          "full_recall_at_10": 0.0377,
+          "mean_recall_at_20": 0.1887,
+          "full_recall_at_20": 0.0566,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0283,
+          "mean_recall_at_16000_tokens": 0.1164,
+          "mean_precision_at_10": 0.0226,
+          "zero_hit_rate": 0.6604,
+          "median_tokens_delivered": 25977,
+          "median_latency_ms": 12.091,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 76
+      },
+      "resources": {
+        "baseline_rss_mb": 21695.6,
+        "peak_rss_mb": 21814.2,
+        "delta_rss_mb": 118.6,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 76,
+          "mean_recall_at_5": 0.3783,
+          "full_recall_at_5": 0.2632,
+          "mean_recall_at_10": 0.5077,
+          "full_recall_at_10": 0.3553,
+          "mean_recall_at_20": 0.7368,
+          "full_recall_at_20": 0.6579,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0175,
+          "mean_recall_at_16000_tokens": 0.2884,
+          "mean_precision_at_10": 0.0934,
+          "zero_hit_rate": 0.1842,
+          "median_tokens_delivered": 88454.5,
+          "median_latency_ms": 24.7655,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 74,
+          "mean_recall_at_5": 0.375,
+          "full_recall_at_5": 0.2568,
+          "mean_recall_at_10": 0.5079,
+          "full_recall_at_10": 0.3514,
+          "mean_recall_at_20": 0.7297,
+          "full_recall_at_20": 0.6486,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.018,
+          "mean_recall_at_16000_tokens": 0.2962,
+          "mean_precision_at_10": 0.0946,
+          "zero_hit_rate": 0.1892,
+          "median_tokens_delivered": 88454.5,
+          "median_latency_ms": 24.7655,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 2,
+          "mean_recall_at_5": 0.5,
+          "full_recall_at_5": 0.5,
+          "mean_recall_at_10": 0.5,
+          "full_recall_at_10": 0.5,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.05,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 87302.5,
+          "median_latency_ms": 26.8095,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 23,
+          "mean_recall_at_5": 0.4203,
+          "full_recall_at_5": 0.3478,
+          "mean_recall_at_10": 0.5507,
+          "full_recall_at_10": 0.3913,
+          "mean_recall_at_20": 0.7174,
+          "full_recall_at_20": 0.6087,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0435,
+          "mean_recall_at_16000_tokens": 0.3768,
+          "mean_precision_at_10": 0.0913,
+          "zero_hit_rate": 0.1739,
+          "median_tokens_delivered": 90059,
+          "median_latency_ms": 23.587,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 53,
+          "mean_recall_at_5": 0.3601,
+          "full_recall_at_5": 0.2264,
+          "mean_recall_at_10": 0.489,
+          "full_recall_at_10": 0.3396,
+          "mean_recall_at_20": 0.7453,
+          "full_recall_at_20": 0.6792,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0063,
+          "mean_recall_at_16000_tokens": 0.25,
+          "mean_precision_at_10": 0.0943,
+          "zero_hit_rate": 0.1887,
+          "median_tokens_delivered": 88304,
+          "median_latency_ms": 24.896,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 76
+      },
+      "resources": {
+        "baseline_rss_mb": 21821.4,
+        "peak_rss_mb": 22199.9,
+        "delta_rss_mb": 378.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "repowise",
+      "summary": {
+        "all": {
+          "cases": 76,
+          "mean_recall_at_5": 0.3564,
+          "full_recall_at_5": 0.1316,
+          "mean_recall_at_10": 0.4529,
+          "full_recall_at_10": 0.2237,
+          "mean_recall_at_20": 0.4594,
+          "full_recall_at_20": 0.2237,
+          "mean_recall_at_1000_tokens": 0.4002,
+          "mean_recall_at_4000_tokens": 0.4594,
+          "mean_recall_at_16000_tokens": 0.4594,
+          "mean_precision_at_10": 0.1092,
+          "zero_hit_rate": 0.2895,
+          "median_tokens_delivered": 1507.5,
+          "median_latency_ms": 36644.7525,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 74,
+          "mean_recall_at_5": 0.3592,
+          "full_recall_at_5": 0.1351,
+          "mean_recall_at_10": 0.4448,
+          "full_recall_at_10": 0.2162,
+          "mean_recall_at_20": 0.4516,
+          "full_recall_at_20": 0.2162,
+          "mean_recall_at_1000_tokens": 0.3908,
+          "mean_recall_at_4000_tokens": 0.4516,
+          "mean_recall_at_16000_tokens": 0.4516,
+          "mean_precision_at_10": 0.1095,
+          "zero_hit_rate": 0.2973,
+          "median_tokens_delivered": 1502,
+          "median_latency_ms": 36644.7525,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 2,
+          "mean_recall_at_5": 0.25,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.75,
+          "full_recall_at_10": 0.5,
+          "mean_recall_at_20": 0.75,
+          "full_recall_at_20": 0.5,
+          "mean_recall_at_1000_tokens": 0.75,
+          "mean_recall_at_4000_tokens": 0.75,
+          "mean_recall_at_16000_tokens": 0.75,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 1583.5,
+          "median_latency_ms": 36091.6065,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 23,
+          "mean_recall_at_5": 0.3551,
+          "full_recall_at_5": 0.1304,
+          "mean_recall_at_10": 0.413,
+          "full_recall_at_10": 0.1304,
+          "mean_recall_at_20": 0.4348,
+          "full_recall_at_20": 0.1304,
+          "mean_recall_at_1000_tokens": 0.3696,
+          "mean_recall_at_4000_tokens": 0.4348,
+          "mean_recall_at_16000_tokens": 0.4348,
+          "mean_precision_at_10": 0.099,
+          "zero_hit_rate": 0.2609,
+          "median_tokens_delivered": 1559,
+          "median_latency_ms": 36443.147,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 53,
+          "mean_recall_at_5": 0.3569,
+          "full_recall_at_5": 0.1321,
+          "mean_recall_at_10": 0.4701,
+          "full_recall_at_10": 0.2642,
+          "mean_recall_at_20": 0.4701,
+          "full_recall_at_20": 0.2642,
+          "mean_recall_at_1000_tokens": 0.4135,
+          "mean_recall_at_4000_tokens": 0.4701,
+          "mean_recall_at_16000_tokens": 0.4701,
+          "mean_precision_at_10": 0.1136,
+          "zero_hit_rate": 0.3019,
+          "median_tokens_delivered": 1500,
+          "median_latency_ms": 36815.559,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 74,
+        "indexed-but-returned-nothing": 2
+      },
+      "resources": {
+        "baseline_rss_mb": 22223.1,
+        "peak_rss_mb": 24507.8,
+        "delta_rss_mb": 2284.8,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-03e5e05ae089",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "found": [
+        "context_test.go"
+      ],
+      "missed": [
+        "context.go",
+        "logger_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 44600,
+      "latency_ms": 25.462,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-088cdd74d42d",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12761,
+      "latency_ms": 13.576,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-09f8224593e3",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26285,
+      "latency_ms": 11.599,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-11aa11a65618",
+      "path_leak": true,
+      "required_files": [
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24674,
+      "latency_ms": 12.631,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-1c2aa59b20c8",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 21162,
+      "latency_ms": 12.467,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-1d0f938f28d7",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 27850,
+      "latency_ms": 12.663,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-212267d67163",
+      "path_leak": false,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 28556,
+      "latency_ms": 12.389,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-234a6d4c00cb",
+      "path_leak": true,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18035,
+      "latency_ms": 13.096,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-24a1d2adb9db",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19033,
+      "latency_ms": 13.478,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-28e57f58b184",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 37122,
+      "latency_ms": 12.204,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-2921582d11d5",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30316,
+      "latency_ms": 12.357,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-293ad7edebb3",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 33394,
+      "latency_ms": 12.087,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-2a794cd0b0fa",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26404,
+      "latency_ms": 12.218,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-2ae61570499d",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26292,
+      "latency_ms": 12.337,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-2b1da2b0b38d",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22473,
+      "latency_ms": 12.327,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-2d4bbec94155",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 15956,
+      "latency_ms": 12.457,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-328d0b8076f0",
+      "path_leak": false,
+      "required_files": [
+        "fs.go"
+      ],
+      "found": [],
+      "missed": [
+        "fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19388,
+      "latency_ms": 12.56,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-36b0dede4b8c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17445,
+      "latency_ms": 12.482,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-386d244068db",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "routes_test.go"
+      ],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 27773,
+      "latency_ms": 13.084,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-3a6f18f32f22",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 14497,
+      "latency_ms": 12.624,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-3dc1cd6572b4",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30553,
+      "latency_ms": 13.265,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-44d0dd70924d",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 37728,
+      "latency_ms": 15.487,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-472d086af2ac",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 34527,
+      "latency_ms": 11.561,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-4a3eb31fb15b",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19547,
+      "latency_ms": 12.559,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-4a40f8f1a49b",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12483,
+      "latency_ms": 13.174,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-4cee78f5382d",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 22479,
+      "latency_ms": 13.033,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-4f339e6a35b1",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 14254,
+      "latency_ms": 12.928,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-51aea73ba0f1",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "found": [
+        "context_test.go",
+        "gin.go"
+      ],
+      "missed": [
+        "binding/default_validator.go",
+        "errors.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.1667,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 35496,
+      "latency_ms": 12.797,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-55e27f12465e",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go",
+        "gin.go",
+        "test_helpers.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_test.go",
+        "gin.go",
+        "test_helpers.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23550,
+      "latency_ms": 12.955,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-5826722a87cf",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18818,
+      "latency_ms": 14.039,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-5c00df8afadd",
+      "path_leak": true,
+      "required_files": [
+        "render/data.go",
+        "render/render_test.go"
+      ],
+      "found": [
+        "render/render_test.go"
+      ],
+      "missed": [
+        "render/data.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 48958,
+      "latency_ms": 12.613,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-5fad976b372e",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 53000,
+      "latency_ms": 11.838,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-626d55b0c029",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 28956,
+      "latency_ms": 13.041,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-63dd3e60cab8",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 21545,
+      "latency_ms": 11.552,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-646312aef6a3",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 34999,
+      "latency_ms": 11.587,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-674522db91d6",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 26477,
+      "latency_ms": 12.179,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-68542126982e",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 20935,
+      "latency_ms": 11.047,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-7742ff50e0a0",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 20327,
+      "latency_ms": 11.94,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-7a1b655074c3",
+      "path_leak": true,
+      "required_files": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 21566,
+      "latency_ms": 10.725,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-7cb151bb4c4c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25538,
+      "latency_ms": 11.214,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-7d147928ee23",
+      "path_leak": true,
+      "required_files": [
+        "debug.go",
+        "mode.go",
+        "mode_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go",
+        "mode.go",
+        "mode_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24170,
+      "latency_ms": 10.444,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-7d189814cbf6",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23086,
+      "latency_ms": 11.183,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-814cd188eb0b",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 20136,
+      "latency_ms": 10.813,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-815122a0f4b9",
+      "path_leak": false,
+      "required_files": [
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8753,
+      "latency_ms": 11.555,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-82bcd6d39bfe",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 35582,
+      "latency_ms": 13.715,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-86ff4a64c7ef",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "routes_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 14,
+      "tokens_delivered": 27255,
+      "latency_ms": 12.383,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-8763f33c65f7",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30122,
+      "latency_ms": 12.04,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-87811a97bddb",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19879,
+      "latency_ms": 12.018,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-8790d08909fc",
+      "path_leak": true,
+      "required_files": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33426,
+      "latency_ms": 11.523,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-8b9c55e8b059",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 16642,
+      "latency_ms": 11.022,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-8dd20118ba9a",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 27618,
+      "latency_ms": 10.537,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-8e07d37c63e5",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "found": [
+        "errors.go",
+        "routergroup.go"
+      ],
+      "missed": [
+        "context.go",
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 39163,
+      "latency_ms": 12.359,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-8eb5f832bac1",
+      "path_leak": true,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "routes_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 15,
+      "tokens_delivered": 16118,
+      "latency_ms": 12.974,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-97b3c0d88ada",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23279,
+      "latency_ms": 12.571,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-9914178584e4",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 36634,
+      "latency_ms": 11.672,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-9f598a31aafb",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 40307,
+      "latency_ms": 11.201,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-aa6002134e97",
+      "path_leak": false,
+      "required_files": [
+        "context_go17_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_go17_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23860,
+      "latency_ms": 11.183,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-aefae309a4fc",
+      "path_leak": true,
+      "required_files": [
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 37903,
+      "latency_ms": 10.507,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-b38c59de7fef",
+      "path_leak": false,
+      "required_files": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 49541,
+      "latency_ms": 11.403,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-b917b14ff9d1",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 44167,
+      "latency_ms": 10.913,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-bb1fc2e0fe97",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 13012,
+      "latency_ms": 11.512,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-be860ec1578f",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 28129,
+      "latency_ms": 11.288,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-c3d1092b3b48",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19778,
+      "latency_ms": 10.93,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-c3d5a28ed6d3",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 27314,
+      "latency_ms": 11.105,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-c677ccc40a60",
+      "path_leak": false,
+      "required_files": [
+        "go.mod"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22773,
+      "latency_ms": 11.209,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-c706ace9298f",
+      "path_leak": false,
+      "required_files": [
+        "binding/binding_test.go",
+        "githubapi_test.go"
+      ],
+      "found": [
+        "binding/binding_test.go"
+      ],
+      "missed": [
+        "githubapi_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 11,
+      "tokens_delivered": 28023,
+      "latency_ms": 11.962,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-cbdd47a7e108",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24288,
+      "latency_ms": 11.73,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-d75fcd4c9ab2",
+      "path_leak": false,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26606,
+      "latency_ms": 12.091,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-d9307dbcbbe7",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 21083,
+      "latency_ms": 11.954,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-e0d46ded6cb6",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8705,
+      "latency_ms": 12.334,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-e737e3e267be",
+      "path_leak": true,
+      "required_files": [
+        "binding/toml.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/toml.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 55452,
+      "latency_ms": 11.928,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-ea53388e6ee4",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 25977,
+      "latency_ms": 11.01,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-eab47b5423b6",
+      "path_leak": true,
+      "required_files": [
+        "binding/binding_test.go",
+        "binding/protobuf.go"
+      ],
+      "found": [
+        "binding/protobuf.go"
+      ],
+      "missed": [
+        "binding/binding_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 24180,
+      "latency_ms": 10.731,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-ebe5e2a6bfdc",
+      "path_leak": false,
+      "required_files": [
+        ".golangci.yml"
+      ],
+      "found": [],
+      "missed": [
+        ".golangci.yml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 16819,
+      "latency_ms": 10.797,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-f4bc259de33c",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 15488,
+      "latency_ms": 10.344,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "gin-f70dd00b00bc",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24911,
+      "latency_ms": 13.192,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-03e5e05ae089",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 69810,
+      "latency_ms": 24.761,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-088cdd74d42d",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 84576,
+      "latency_ms": 21.648,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-09f8224593e3",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 87509,
+      "latency_ms": 22.161,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-11aa11a65618",
+      "path_leak": true,
+      "required_files": [
+        "recovery_test.go"
+      ],
+      "found": [
+        "recovery_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 20,
+      "tokens_delivered": 82399,
+      "latency_ms": 22.408,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-1c2aa59b20c8",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 83992,
+      "latency_ms": 22.355,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-1d0f938f28d7",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 72743,
+      "latency_ms": 24.896,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-212267d67163",
+      "path_leak": false,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 88246,
+      "latency_ms": 24.078,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-234a6d4c00cb",
+      "path_leak": true,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 105412,
+      "latency_ms": 23.393,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-24a1d2adb9db",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 84449,
+      "latency_ms": 23.345,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-28e57f58b184",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 95317,
+      "latency_ms": 22.842,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-2921582d11d5",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 69979,
+      "latency_ms": 26.883,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-293ad7edebb3",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 113276,
+      "latency_ms": 23.785,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-2a794cd0b0fa",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [
+        "debug.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 108509,
+      "latency_ms": 24.121,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-2ae61570499d",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [
+        "routergroup.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 84446,
+      "latency_ms": 22.151,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-2b1da2b0b38d",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 90304,
+      "latency_ms": 23.313,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-2d4bbec94155",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 89875,
+      "latency_ms": 23.266,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-328d0b8076f0",
+      "path_leak": false,
+      "required_files": [
+        "fs.go"
+      ],
+      "found": [],
+      "missed": [
+        "fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 70138,
+      "latency_ms": 24.573,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-36b0dede4b8c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 93950,
+      "latency_ms": 24.55,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-386d244068db",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 87314,
+      "latency_ms": 22.975,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-3a6f18f32f22",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 82768,
+      "latency_ms": 23.618,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-3dc1cd6572b4",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 88101,
+      "latency_ms": 22.588,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-44d0dd70924d",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 87276,
+      "latency_ms": 25.467,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-472d086af2ac",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 117055,
+      "latency_ms": 23.408,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-4a3eb31fb15b",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 113658,
+      "latency_ms": 23.61,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-4a40f8f1a49b",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 87849,
+      "latency_ms": 22.313,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-4cee78f5382d",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 89097,
+      "latency_ms": 22.692,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-4f339e6a35b1",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 93972,
+      "latency_ms": 24.77,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-51aea73ba0f1",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "found": [
+        "context_test.go",
+        "gin.go",
+        "routergroup.go"
+      ],
+      "missed": [
+        "binding/default_validator.go",
+        "errors.go",
+        "response_writer.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 88010,
+      "latency_ms": 24.643,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-55e27f12465e",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go",
+        "gin.go",
+        "test_helpers.go"
+      ],
+      "found": [
+        "context_test.go",
+        "gin.go"
+      ],
+      "missed": [
+        "test_helpers.go"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 88138,
+      "latency_ms": 23.587,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-5826722a87cf",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [
+        "debug.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 103341,
+      "latency_ms": 22.124,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-5c00df8afadd",
+      "path_leak": true,
+      "required_files": [
+        "render/data.go",
+        "render/render_test.go"
+      ],
+      "found": [
+        "render/render_test.go"
+      ],
+      "missed": [
+        "render/data.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 115951,
+      "latency_ms": 25.57,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-5fad976b372e",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 106775,
+      "latency_ms": 24.705,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-626d55b0c029",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 94928,
+      "latency_ms": 25.96,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-63dd3e60cab8",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [
+        "recovery.go"
+      ],
+      "missed": [
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 110221,
+      "latency_ms": 25.926,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-646312aef6a3",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 87531,
+      "latency_ms": 23.392,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-674522db91d6",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 102446,
+      "latency_ms": 24.081,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-68542126982e",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 83359,
+      "latency_ms": 23.278,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-7742ff50e0a0",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 66540,
+      "latency_ms": 23.576,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-7a1b655074c3",
+      "path_leak": true,
+      "required_files": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 101365,
+      "latency_ms": 24.695,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-7cb151bb4c4c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 88522,
+      "latency_ms": 23.569,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-7d147928ee23",
+      "path_leak": true,
+      "required_files": [
+        "debug.go",
+        "mode.go",
+        "mode_test.go"
+      ],
+      "found": [
+        "debug.go"
+      ],
+      "missed": [
+        "mode.go",
+        "mode_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 92380,
+      "latency_ms": 23.124,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-7d189814cbf6",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 82724,
+      "latency_ms": 22.886,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-814cd188eb0b",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [
+        "routergroup.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 13,
+      "tokens_delivered": 88010,
+      "latency_ms": 25.064,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-815122a0f4b9",
+      "path_leak": false,
+      "required_files": [
+        "tree.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 84577,
+      "latency_ms": 24.848,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-82bcd6d39bfe",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 88304,
+      "latency_ms": 27.525,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-86ff4a64c7ef",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 88116,
+      "latency_ms": 27.901,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-8763f33c65f7",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 98912,
+      "latency_ms": 28.516,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-87811a97bddb",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 86657,
+      "latency_ms": 27.612,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-8790d08909fc",
+      "path_leak": true,
+      "required_files": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 90329,
+      "latency_ms": 28.031,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-8b9c55e8b059",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 88014,
+      "latency_ms": 30.431,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-8dd20118ba9a",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 112651,
+      "latency_ms": 29.342,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-8e07d37c63e5",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "found": [
+        "context.go",
+        "recovery_test.go"
+      ],
+      "missed": [
+        "errors.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 115859,
+      "latency_ms": 29.283,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-8eb5f832bac1",
+      "path_leak": true,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 88387,
+      "latency_ms": 29.155,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-97b3c0d88ada",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 82791,
+      "latency_ms": 36.021,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-9914178584e4",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 111258,
+      "latency_ms": 29.81,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-9f598a31aafb",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 88075,
+      "latency_ms": 30.909,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-aa6002134e97",
+      "path_leak": false,
+      "required_files": [
+        "context_go17_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_go17_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 86659,
+      "latency_ms": 31.25,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-aefae309a4fc",
+      "path_leak": true,
+      "required_files": [
+        "gin_test.go"
+      ],
+      "found": [
+        "gin_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 20,
+      "tokens_delivered": 88259,
+      "latency_ms": 30.965,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-b38c59de7fef",
+      "path_leak": false,
+      "required_files": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 101364,
+      "latency_ms": 29.276,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-b917b14ff9d1",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 108196,
+      "latency_ms": 31.173,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-bb1fc2e0fe97",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 90059,
+      "latency_ms": 30.326,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-be860ec1578f",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go"
+      ],
+      "found": [
+        "recovery.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 72362,
+      "latency_ms": 29.637,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-c3d1092b3b48",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 105612,
+      "latency_ms": 35.671,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-c3d5a28ed6d3",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 106371,
+      "latency_ms": 29.89,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-c677ccc40a60",
+      "path_leak": false,
+      "required_files": [
+        "go.mod"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 92820,
+      "latency_ms": 29.198,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-c706ace9298f",
+      "path_leak": false,
+      "required_files": [
+        "binding/binding_test.go",
+        "githubapi_test.go"
+      ],
+      "found": [
+        "binding/binding_test.go"
+      ],
+      "missed": [
+        "githubapi_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 83426,
+      "latency_ms": 29.713,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-cbdd47a7e108",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 84119,
+      "latency_ms": 29.064,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-d75fcd4c9ab2",
+      "path_leak": false,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 113276,
+      "latency_ms": 27.798,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-d9307dbcbbe7",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 113946,
+      "latency_ms": 28.139,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-e0d46ded6cb6",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 93998,
+      "latency_ms": 27.914,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-e737e3e267be",
+      "path_leak": true,
+      "required_files": [
+        "binding/toml.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/toml.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 98912,
+      "latency_ms": 26.505,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-ea53388e6ee4",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 98262,
+      "latency_ms": 25.522,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-eab47b5423b6",
+      "path_leak": true,
+      "required_files": [
+        "binding/binding_test.go",
+        "binding/protobuf.go"
+      ],
+      "found": [
+        "binding/binding_test.go"
+      ],
+      "missed": [
+        "binding/protobuf.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 82704,
+      "latency_ms": 26.021,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-ebe5e2a6bfdc",
+      "path_leak": false,
+      "required_files": [
+        ".golangci.yml"
+      ],
+      "found": [],
+      "missed": [
+        ".golangci.yml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 99455,
+      "latency_ms": 24.429,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-f4bc259de33c",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 13,
+      "tokens_delivered": 68234,
+      "latency_ms": 23.729,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "gin-f70dd00b00bc",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go"
+      ],
+      "found": [
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 90299,
+      "latency_ms": 22.142,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-03e5e05ae089",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1618,
+      "latency_ms": 36994.582,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-088cdd74d42d",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [
+        "debug.go"
+      ],
+      "missed": [
+        "debug_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1494,
+      "latency_ms": 37824.299,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-09f8224593e3",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2249,
+      "latency_ms": 37454.273,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-11aa11a65618",
+      "path_leak": true,
+      "required_files": [
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 339,
+      "latency_ms": 37027.346,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-1c2aa59b20c8",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 314,
+      "latency_ms": 37425.17,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-1d0f938f28d7",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1529,
+      "latency_ms": 37380.335,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-212267d67163",
+      "path_leak": false,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5,
+      "latency_ms": 38561.738,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-234a6d4c00cb",
+      "path_leak": true,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [
+        "response_writer.go"
+      ],
+      "missed": [
+        "response_writer_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1928,
+      "latency_ms": 39257.545,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-24a1d2adb9db",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 844,
+      "latency_ms": 36996.877,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-28e57f58b184",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1354,
+      "latency_ms": 37365.068,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-2921582d11d5",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1630,
+      "latency_ms": 37123.436,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-293ad7edebb3",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2132,
+      "latency_ms": 38830.004,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-2a794cd0b0fa",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [
+        "debug.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1462,
+      "latency_ms": 37376.503,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-2ae61570499d",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [
+        "routergroup.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1026,
+      "latency_ms": 36198.754,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-2b1da2b0b38d",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2064,
+      "latency_ms": 36601.141,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-2d4bbec94155",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1329,
+      "latency_ms": 36575.898,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-328d0b8076f0",
+      "path_leak": false,
+      "required_files": [
+        "fs.go"
+      ],
+      "found": [],
+      "missed": [
+        "fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 332,
+      "latency_ms": 36620.998,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-36b0dede4b8c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1523,
+      "latency_ms": 37667.181,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-386d244068db",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [
+        "routes_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1619,
+      "latency_ms": 37366.669,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-3a6f18f32f22",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2514,
+      "latency_ms": 37888.117,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-3dc1cd6572b4",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1778,
+      "latency_ms": 38261.79,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-44d0dd70924d",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1797,
+      "latency_ms": 37105.393,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-472d086af2ac",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1249,
+      "latency_ms": 37998.597,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-4a3eb31fb15b",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1209,
+      "latency_ms": 38456.107,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-4a40f8f1a49b",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2206,
+      "latency_ms": 36568.548,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-4cee78f5382d",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2336,
+      "latency_ms": 37716.429,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-4f339e6a35b1",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2372,
+      "latency_ms": 37075.243,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-51aea73ba0f1",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "found": [
+        "response_writer.go"
+      ],
+      "missed": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.1667,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.1667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.1667,
+      "recall_at_16000_tokens": 0.1667,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2066,
+      "latency_ms": 36166.71,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-55e27f12465e",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go",
+        "gin.go",
+        "test_helpers.go"
+      ],
+      "found": [
+        "test_helpers.go"
+      ],
+      "missed": [
+        "context_test.go",
+        "gin.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1256,
+      "latency_ms": 36090.507,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-5826722a87cf",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [
+        "debug.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1842,
+      "latency_ms": 36581.573,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-5c00df8afadd",
+      "path_leak": true,
+      "required_files": [
+        "render/data.go",
+        "render/render_test.go"
+      ],
+      "found": [
+        "render/data.go"
+      ],
+      "missed": [
+        "render/render_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1738,
+      "latency_ms": 36727.807,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-5fad976b372e",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1489,
+      "latency_ms": 36520.901,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-626d55b0c029",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1500,
+      "latency_ms": 36071.311,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-63dd3e60cab8",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1466,
+      "latency_ms": 36380.692,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-646312aef6a3",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2135,
+      "latency_ms": 35598.386,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-674522db91d6",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1511,
+      "latency_ms": 38317.183,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-68542126982e",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1559,
+      "latency_ms": 50531.057,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-7742ff50e0a0",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5,
+      "latency_ms": 35082.146,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-7a1b655074c3",
+      "path_leak": true,
+      "required_files": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "found": [
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2222,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1337,
+      "latency_ms": 36443.147,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-7cb151bb4c4c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2048,
+      "latency_ms": 36145.273,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-7d147928ee23",
+      "path_leak": true,
+      "required_files": [
+        "debug.go",
+        "mode.go",
+        "mode_test.go"
+      ],
+      "found": [
+        "debug.go",
+        "mode.go"
+      ],
+      "missed": [
+        "mode_test.go"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1813,
+      "latency_ms": 36366.479,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-7d189814cbf6",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1717,
+      "latency_ms": 37152.213,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-814cd188eb0b",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [
+        "routergroup.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1504,
+      "latency_ms": 36668.507,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-815122a0f4b9",
+      "path_leak": false,
+      "required_files": [
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 529,
+      "latency_ms": 36330.712,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-82bcd6d39bfe",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "found": [
+        "binding/default_validator.go"
+      ],
+      "missed": [
+        "binding/validate_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1273,
+      "latency_ms": 36252.317,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-86ff4a64c7ef",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "routes_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1417,
+      "latency_ms": 36564.743,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-8763f33c65f7",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2042,
+      "latency_ms": 37032.367,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-87811a97bddb",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1434,
+      "latency_ms": 36365.411,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-8790d08909fc",
+      "path_leak": true,
+      "required_files": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "found": [
+        "binding/query.go"
+      ],
+      "missed": [
+        "binding/query_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1622,
+      "latency_ms": 36016.156,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-8b9c55e8b059",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 457,
+      "latency_ms": 36361.896,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-8dd20118ba9a",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1654,
+      "latency_ms": 38855.693,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-8e07d37c63e5",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2006,
+      "latency_ms": 37434.906,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-8eb5f832bac1",
+      "path_leak": true,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "routes_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 11,
+      "tokens_delivered": 1788,
+      "latency_ms": 36289.257,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-97b3c0d88ada",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 327,
+      "latency_ms": 36112.541,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-9914178584e4",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1256,
+      "latency_ms": 37294.587,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-9f598a31aafb",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 1,
+      "recall_at_10": 1,
+      "precision_at_10": 1,
+      "recall_at_20": 1,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 410,
+      "latency_ms": 36052.347,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-aa6002134e97",
+      "path_leak": false,
+      "required_files": [
+        "context_go17_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_go17_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1721,
+      "latency_ms": 36272.876,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-aefae309a4fc",
+      "path_leak": true,
+      "required_files": [
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1266,
+      "latency_ms": 36333.567,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-b38c59de7fef",
+      "path_leak": false,
+      "required_files": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "found": [
+        "errors.go"
+      ],
+      "missed": [
+        "errors_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1994,
+      "latency_ms": 36815.559,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-b917b14ff9d1",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping.go"
+      ],
+      "missed": [
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 8,
+      "tokens_delivered": 1281,
+      "latency_ms": 39067.185,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-bb1fc2e0fe97",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1415,
+      "latency_ms": 36596.56,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-be860ec1578f",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2403,
+      "latency_ms": 35657.616,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-c3d1092b3b48",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 8,
+      "tokens_delivered": 1967,
+      "latency_ms": 37009.579,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-c3d5a28ed6d3",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1528,
+      "latency_ms": 36728.218,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-c677ccc40a60",
+      "path_leak": false,
+      "required_files": [
+        "go.mod"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2375,
+      "latency_ms": 36309.432,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-c706ace9298f",
+      "path_leak": false,
+      "required_files": [
+        "binding/binding_test.go",
+        "githubapi_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/binding_test.go",
+        "githubapi_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 913,
+      "latency_ms": 36127.19,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-cbdd47a7e108",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 878,
+      "latency_ms": 35905.329,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-d75fcd4c9ab2",
+      "path_leak": false,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1316,
+      "latency_ms": 37056.981,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-d9307dbcbbe7",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1190,
+      "latency_ms": 36964.962,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-e0d46ded6cb6",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1460,
+      "latency_ms": 36067.375,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-e737e3e267be",
+      "path_leak": true,
+      "required_files": [
+        "binding/toml.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/toml.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1945,
+      "latency_ms": 36224.326,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-ea53388e6ee4",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go"
+      ],
+      "missed": [
+        "tree_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1687,
+      "latency_ms": 36923.964,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-eab47b5423b6",
+      "path_leak": true,
+      "required_files": [
+        "binding/binding_test.go",
+        "binding/protobuf.go"
+      ],
+      "found": [
+        "binding/protobuf.go"
+      ],
+      "missed": [
+        "binding/binding_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1072,
+      "latency_ms": 35287.661,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-ebe5e2a6bfdc",
+      "path_leak": false,
+      "required_files": [
+        ".golangci.yml"
+      ],
+      "found": [],
+      "missed": [
+        ".golangci.yml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 670,
+      "latency_ms": 36041.848,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-f4bc259de33c",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [
+        "debug.go"
+      ],
+      "missed": [
+        "debug_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1639,
+      "latency_ms": 35454.995,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "gin-f70dd00b00bc",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 712,
+      "latency_ms": 35743.632,
+      "indexed_revision_matches": true
+    }
+  ]
+}

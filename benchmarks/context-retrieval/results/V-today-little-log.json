@@ -1,0 +1,4942 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "today-little-log",
+    "head": "93b48d03329b74df043f0b45468f96ac21197c41"
+  },
+  "tier": "small",
+  "tier_code_files": 117,
+  "corpus_counts": {
+    "cases": 41,
+    "path_leak": 21,
+    "baseline_blind": 20,
+    "multi_file": 15
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": true,
+      "best": 0.4338,
+      "control": 0.0035,
+      "reason": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "CSS import order and PostCSS conflict",
+        "revision": "0458fb2e26f9d78c20c824b75b62f3c8cc5a9592",
+        "returned": [
+          "src/pwa.ts",
+          "src/components/ui/hover-card.tsx",
+          "src/components/ui/toast.tsx",
+          "src/components/ui/sheet.tsx",
+          "src/components/ui/button.tsx"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "pre-push runs tsc + build, not just lint",
+        "revision": "9631951e22885658c3fa72897305aff4bd3690a8",
+        "returned": [
+          "src/components/ui/label.tsx",
+          "src/components/StreakBadge.tsx",
+          "renovate.json",
+          "src/lib/auth-client.ts",
+          "drizzle/migrations/0002_urgency_wave_b.sql"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "consolidate sidebar, tolerant /api/profiles, craft-hours widget",
+        "revision": "4a09700d0f7f1b5afad3dd6136090f448403bddb",
+        "returned": [
+          "src/vite-env.d.ts",
+          "src/pages/Goals.tsx",
+          "src/components/LifeScoreBadge.tsx",
+          "api/_lib/auth-instance.ts",
+          "src/pages/Index.tsx"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "vendor @saas-maker/ai so Vercel builds",
+        "revision": "b297f57a34899bbca5463d4df60bc7acf40ba3c4",
+        "returned": [
+          "src/pages/Index.tsx",
+          "package.json",
+          "src/App.tsx",
+          "src/components/AppSidebar.tsx",
+          "src/components/ScheduleMaker.tsx"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "route /api/auth/* subpaths to api/auth.ts",
+        "revision": "d3f3c964ec945f8b01a6c55acfe2fd19755a837a",
+        "returned": [
+          "src/pages/Index.tsx",
+          "package.json",
+          "src/App.tsx",
+          "src/components/AppSidebar.tsx",
+          "vercel.json"
+        ]
+      },
+      {
+        "provider_id": "codevetter-structural-context",
+        "query": "CSS import order and PostCSS conflict",
+        "revision": "0458fb2e26f9d78c20c824b75b62f3c8cc5a9592",
+        "returned": [
+          "postcss.config.js",
+          "src/components/saasmaker-feedback.tsx",
+          "src/main.tsx",
+          "src/index.css",
+          "api/_lib/schema.ts"
+        ]
+      },
+      {
+        "provider_id": "codevetter-structural-context",
+        "query": "add api/tsconfig.json with module:commonjs for Vercel",
+        "revision": "d43e7471f1ba1956cb4cfc1882cdd1feb4f67feb",
+        "returned": [
+          "tsconfig.app.json",
+          "tsconfig.json",
+          "tsconfig.node.json",
+          "docs/plans/2026-02-25-chatbot-design.md",
+          "vercel.json"
+        ]
+      },
+      {
+        "provider_id": "graphify",
+        "query": "use single auth.ts with rewrite for Better Auth catch-all",
+        "revision": "62d9d24a111619497a4398d2cba81a00e674bfe6",
+        "returned": [
+          "api/_lib/auth.ts",
+          "src/pages/Auth.tsx",
+          "docs/plans/2026-02-27-better-auth-migration-plan.md",
+          "src/components/ErrorBoundary.tsx",
+          "vercel.json"
+        ]
+      }
+    ],
+    "trustworthy": true
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 41,
+          "mean_recall_at_5": 0.0035,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0157,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.097,
+          "full_recall_at_20": 0.0732,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0035,
+          "mean_recall_at_16000_tokens": 0.0401,
+          "mean_precision_at_10": 0.0073,
+          "zero_hit_rate": 0.8293,
+          "median_tokens_delivered": 17981,
+          "median_latency_ms": 12.147,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 41,
+          "mean_recall_at_5": 0.0035,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0157,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.097,
+          "full_recall_at_20": 0.0732,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0035,
+          "mean_recall_at_16000_tokens": 0.0401,
+          "mean_precision_at_10": 0.0073,
+          "zero_hit_rate": 0.8293,
+          "median_tokens_delivered": 17981,
+          "median_latency_ms": 12.147,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.0068,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0187,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1298,
+          "full_recall_at_20": 0.0952,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0068,
+          "mean_recall_at_16000_tokens": 0.0663,
+          "mean_precision_at_10": 0.0095,
+          "zero_hit_rate": 0.7619,
+          "median_tokens_delivered": 16346,
+          "median_latency_ms": 12.271,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 20,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0125,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0625,
+          "full_recall_at_20": 0.05,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0125,
+          "mean_precision_at_10": 0.005,
+          "zero_hit_rate": 0.9,
+          "median_tokens_delivered": 19008.5,
+          "median_latency_ms": 11.966,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 41
+      },
+      "resources": {
+        "baseline_rss_mb": 27074.8,
+        "peak_rss_mb": 27183,
+        "delta_rss_mb": 108.2,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 41,
+          "mean_recall_at_5": 0.0801,
+          "full_recall_at_5": 0.0244,
+          "mean_recall_at_10": 0.2041,
+          "full_recall_at_10": 0.122,
+          "mean_recall_at_20": 0.3017,
+          "full_recall_at_20": 0.2195,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0157,
+          "mean_precision_at_10": 0.0341,
+          "zero_hit_rate": 0.561,
+          "median_tokens_delivered": 140450,
+          "median_latency_ms": 18.363,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 41,
+          "mean_recall_at_5": 0.0801,
+          "full_recall_at_5": 0.0244,
+          "mean_recall_at_10": 0.2041,
+          "full_recall_at_10": 0.122,
+          "mean_recall_at_20": 0.3017,
+          "full_recall_at_20": 0.2195,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0157,
+          "mean_precision_at_10": 0.0341,
+          "zero_hit_rate": 0.561,
+          "median_tokens_delivered": 140450,
+          "median_latency_ms": 18.363,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.0612,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.208,
+          "full_recall_at_10": 0.0952,
+          "mean_recall_at_20": 0.339,
+          "full_recall_at_20": 0.2381,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0068,
+          "mean_precision_at_10": 0.0429,
+          "zero_hit_rate": 0.4762,
+          "median_tokens_delivered": 217508,
+          "median_latency_ms": 18.145,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 20,
+          "mean_recall_at_5": 0.1,
+          "full_recall_at_5": 0.05,
+          "mean_recall_at_10": 0.2,
+          "full_recall_at_10": 0.15,
+          "mean_recall_at_20": 0.2625,
+          "full_recall_at_20": 0.2,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.025,
+          "mean_precision_at_10": 0.025,
+          "zero_hit_rate": 0.65,
+          "median_tokens_delivered": 139356.5,
+          "median_latency_ms": 18.6485,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 41
+      },
+      "resources": {
+        "baseline_rss_mb": 27152.8,
+        "peak_rss_mb": 27282.2,
+        "delta_rss_mb": 129.4,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "summary": {
+        "all": {
+          "cases": 41,
+          "mean_recall_at_5": 0.3307,
+          "full_recall_at_5": 0.2683,
+          "mean_recall_at_10": 0.3545,
+          "full_recall_at_10": 0.2927,
+          "mean_recall_at_20": 0.4338,
+          "full_recall_at_20": 0.3659,
+          "mean_recall_at_1000_tokens": 0.4338,
+          "mean_recall_at_4000_tokens": 0.4338,
+          "mean_recall_at_16000_tokens": 0.4338,
+          "mean_precision_at_10": 0.0829,
+          "zero_hit_rate": 0.4878,
+          "median_tokens_delivered": 619,
+          "median_latency_ms": 193.273,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 41,
+          "mean_recall_at_5": 0.3307,
+          "full_recall_at_5": 0.2683,
+          "mean_recall_at_10": 0.3545,
+          "full_recall_at_10": 0.2927,
+          "mean_recall_at_20": 0.4338,
+          "full_recall_at_20": 0.3659,
+          "mean_recall_at_1000_tokens": 0.4338,
+          "mean_recall_at_4000_tokens": 0.4338,
+          "mean_recall_at_16000_tokens": 0.4338,
+          "mean_precision_at_10": 0.0829,
+          "zero_hit_rate": 0.4878,
+          "median_tokens_delivered": 619,
+          "median_latency_ms": 193.273,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.479,
+          "full_recall_at_5": 0.381,
+          "mean_recall_at_10": 0.5017,
+          "full_recall_at_10": 0.4286,
+          "mean_recall_at_20": 0.5969,
+          "full_recall_at_20": 0.5238,
+          "mean_recall_at_1000_tokens": 0.5969,
+          "mean_recall_at_4000_tokens": 0.5969,
+          "mean_recall_at_16000_tokens": 0.5969,
+          "mean_precision_at_10": 0.0857,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 726,
+          "median_latency_ms": 197.226,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 20,
+          "mean_recall_at_5": 0.175,
+          "full_recall_at_5": 0.15,
+          "mean_recall_at_10": 0.2,
+          "full_recall_at_10": 0.15,
+          "mean_recall_at_20": 0.2625,
+          "full_recall_at_20": 0.2,
+          "mean_recall_at_1000_tokens": 0.2625,
+          "mean_recall_at_4000_tokens": 0.2625,
+          "mean_recall_at_16000_tokens": 0.2625,
+          "mean_precision_at_10": 0.08,
+          "zero_hit_rate": 0.7,
+          "median_tokens_delivered": 571.5,
+          "median_latency_ms": 192.4615,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 41
+      },
+      "resources": {
+        "baseline_rss_mb": 27264.2,
+        "peak_rss_mb": 28772.7,
+        "delta_rss_mb": 1508.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 175759360
+      }
+    },
+    {
+      "provider_id": "graphify",
+      "summary": {
+        "all": {
+          "cases": 41,
+          "mean_recall_at_5": 0.3496,
+          "full_recall_at_5": 0.3171,
+          "mean_recall_at_10": 0.4141,
+          "full_recall_at_10": 0.3659,
+          "mean_recall_at_20": 0.4262,
+          "full_recall_at_20": 0.3902,
+          "mean_recall_at_1000_tokens": 0.2677,
+          "mean_recall_at_4000_tokens": 0.4262,
+          "mean_recall_at_16000_tokens": 0.4262,
+          "mean_precision_at_10": 0.0714,
+          "zero_hit_rate": 0.5122,
+          "median_tokens_delivered": 1678,
+          "median_latency_ms": 1710.031,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 41,
+          "mean_recall_at_5": 0.3496,
+          "full_recall_at_5": 0.3171,
+          "mean_recall_at_10": 0.4141,
+          "full_recall_at_10": 0.3659,
+          "mean_recall_at_20": 0.4262,
+          "full_recall_at_20": 0.3902,
+          "mean_recall_at_1000_tokens": 0.2677,
+          "mean_recall_at_4000_tokens": 0.4262,
+          "mean_recall_at_16000_tokens": 0.4262,
+          "mean_precision_at_10": 0.0714,
+          "zero_hit_rate": 0.5122,
+          "median_tokens_delivered": 1678,
+          "median_latency_ms": 1710.031,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.4921,
+          "full_recall_at_5": 0.4286,
+          "mean_recall_at_10": 0.5703,
+          "full_recall_at_10": 0.4762,
+          "mean_recall_at_20": 0.5941,
+          "full_recall_at_20": 0.5238,
+          "mean_recall_at_1000_tokens": 0.3798,
+          "mean_recall_at_4000_tokens": 0.5941,
+          "mean_recall_at_16000_tokens": 0.5941,
+          "mean_precision_at_10": 0.0965,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 1681,
+          "median_latency_ms": 1744.764,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 20,
+          "mean_recall_at_5": 0.2,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 0.25,
+          "full_recall_at_10": 0.25,
+          "mean_recall_at_20": 0.25,
+          "full_recall_at_20": 0.25,
+          "mean_recall_at_1000_tokens": 0.15,
+          "mean_recall_at_4000_tokens": 0.25,
+          "mean_recall_at_16000_tokens": 0.25,
+          "mean_precision_at_10": 0.045,
+          "zero_hit_rate": 0.75,
+          "median_tokens_delivered": 1677,
+          "median_latency_ms": 1615.9895,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 41
+      },
+      "resources": {
+        "baseline_rss_mb": 27265.6,
+        "peak_rss_mb": 28777,
+        "delta_rss_mb": 1511.4,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 32817152
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-026ffeba899f",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts"
+      ],
+      "found": [
+        "api/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 18,
+      "tokens_delivered": 18523,
+      "latency_ms": 26.192,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-0458fb2e26f9",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 105308,
+      "latency_ms": 12.242,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-085a8f98f4e3",
+      "path_leak": false,
+      "required_files": [
+        "vite.config.ts"
+      ],
+      "found": [
+        "vite.config.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 109597,
+      "latency_ms": 14.538,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-0d69b26aa12b",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json",
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 13251,
+      "latency_ms": 15.282,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-1a06cf12d177",
+      "path_leak": false,
+      "required_files": [
+        "functions/api/[resource].ts"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/[resource].ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 102343,
+      "latency_ms": 13.273,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-21e91a0cf7d1",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts"
+      ],
+      "found": [],
+      "missed": [
+        "api/_lib/auth.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19013,
+      "latency_ms": 12.875,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-2576f31c791b",
+      "path_leak": true,
+      "required_files": [
+        "eslint.config.js"
+      ],
+      "found": [],
+      "missed": [
+        "eslint.config.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 20860,
+      "latency_ms": 12.53,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-311f04610c97",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19074,
+      "latency_ms": 12.019,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-3648fa9a9b79",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10438,
+      "latency_ms": 11.24,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-3822e19e5360",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 13637,
+      "latency_ms": 12.465,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-432012502419",
+      "path_leak": true,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12447,
+      "latency_ms": 11.651,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-44e885050a3a",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15916,
+      "latency_ms": 12.305,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-49d25eea3efb",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 13348,
+      "latency_ms": 12.485,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-4a06c9457671",
+      "path_leak": true,
+      "required_files": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts",
+        "tests/smoke.spec.ts"
+      ],
+      "found": [],
+      "missed": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts",
+        "tests/smoke.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 27482,
+      "latency_ms": 11.225,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-4c2bf18061a1",
+      "path_leak": false,
+      "required_files": [
+        "postcss.config.js",
+        "src/index.css",
+        "tailwind.config.ts",
+        "vite.config.ts"
+      ],
+      "found": [
+        "postcss.config.js"
+      ],
+      "missed": [
+        "src/index.css",
+        "tailwind.config.ts",
+        "vite.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 6,
+      "tokens_delivered": 14015,
+      "latency_ms": 11.518,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-5ff55ed07b2f",
+      "path_leak": true,
+      "required_files": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17981,
+      "latency_ms": 11.062,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-6d6487fa6ee3",
+      "path_leak": false,
+      "required_files": [
+        "src/components/AppLayout.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/AppLayout.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 123591,
+      "latency_ms": 11.445,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-6e8bd0230c30",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10493,
+      "latency_ms": 11.923,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-799f599a32dd",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 104945,
+      "latency_ms": 12.182,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-7ad692618d92",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 123169,
+      "latency_ms": 12.147,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-83fa639f21f8",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts",
+        "api/_lib/db.ts",
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [],
+      "missed": [
+        "api/_lib/auth.ts",
+        "api/_lib/db.ts",
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 111966,
+      "latency_ms": 10.917,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-8a71258e7d16",
+      "path_leak": true,
+      "required_files": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 16346,
+      "latency_ms": 12.611,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-8b29bbd28725",
+      "path_leak": false,
+      "required_files": [
+        "index.html"
+      ],
+      "found": [],
+      "missed": [
+        "index.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19262,
+      "latency_ms": 13.576,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-93b48d03329b",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "found": [],
+      "missed": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10087,
+      "latency_ms": 13.426,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-9b9d47f48e0b",
+      "path_leak": false,
+      "required_files": [
+        "src/hooks/useChat.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/hooks/useChat.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12873,
+      "latency_ms": 15.064,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-9e21586af581",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "src/components/Navbar.tsx",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "found": [
+        "src/components/Navbar.tsx"
+      ],
+      "missed": [
+        ".husky/pre-push",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 10,
+      "tokens_delivered": 13203,
+      "latency_ms": 13.297,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-af8c1b0d433b",
+      "path_leak": false,
+      "required_files": [
+        "api/_schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [],
+      "missed": [
+        "api/_schema.ts",
+        "api/debug.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 9739,
+      "latency_ms": 10.778,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-b26636817b1b",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 12,
+      "tokens_delivered": 16299,
+      "latency_ms": 10.767,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-b297f57a3489",
+      "path_leak": true,
+      "required_files": [
+        "api/profiles.ts",
+        "src/components/AppSidebar.tsx",
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Index.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "found": [
+        "src/pages/Index.tsx"
+      ],
+      "missed": [
+        "api/profiles.ts",
+        "src/components/AppSidebar.tsx",
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "recall_at_5": 0.1429,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.1429,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.1429,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.1429,
+      "recall_at_16000_tokens": 0.1429,
+      "first_hit_rank": 5,
+      "tokens_delivered": 13293,
+      "latency_ms": 11.297,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-bc2139cca1ca",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "tests/prod-auth.spec.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12829,
+      "latency_ms": 11.878,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-bd456960c205",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 13606,
+      "latency_ms": 11.849,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-be8f1bcad0c1",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23062,
+      "latency_ms": 12.507,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-c1da954218b5",
+      "path_leak": false,
+      "required_files": [
+        "vitest.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "vitest.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 100717,
+      "latency_ms": 11.381,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-c1dbe746df7c",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 14777,
+      "latency_ms": 11.732,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-cda10389aa0f",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10942,
+      "latency_ms": 10.842,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-d3f3c964ec94",
+      "path_leak": true,
+      "required_files": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts",
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 147928,
+      "latency_ms": 12.737,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-d543600425f6",
+      "path_leak": false,
+      "required_files": [
+        "src/main.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/main.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 13672,
+      "latency_ms": 11.418,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-dcca049fcd7b",
+      "path_leak": false,
+      "required_files": [
+        "src/index.css"
+      ],
+      "found": [],
+      "missed": [
+        "src/index.css"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 108092,
+      "latency_ms": 12.009,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-e2fd6e5d8453",
+      "path_leak": false,
+      "required_files": [
+        ".saasmaker.json"
+      ],
+      "found": [],
+      "missed": [
+        ".saasmaker.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 116794,
+      "latency_ms": 10.766,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-e37951b10026",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 20848,
+      "latency_ms": 12.271,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "today-little-log-f81cc54457ab",
+      "path_leak": false,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18755,
+      "latency_ms": 12.511,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-026ffeba899f",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts"
+      ],
+      "found": [],
+      "missed": [
+        "api/auth.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 217508,
+      "latency_ms": 21.847,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-0458fb2e26f9",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 250904,
+      "latency_ms": 18.805,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-085a8f98f4e3",
+      "path_leak": false,
+      "required_files": [
+        "vite.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "vite.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 218109,
+      "latency_ms": 19.826,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-0d69b26aa12b",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 2,
+      "tokens_delivered": 253670,
+      "latency_ms": 19.791,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-1a06cf12d177",
+      "path_leak": false,
+      "required_files": [
+        "functions/api/[resource].ts"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/[resource].ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 113820,
+      "latency_ms": 24.697,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-21e91a0cf7d1",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts"
+      ],
+      "found": [
+        "api/_lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 129831,
+      "latency_ms": 17.728,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-2576f31c791b",
+      "path_leak": true,
+      "required_files": [
+        "eslint.config.js"
+      ],
+      "found": [],
+      "missed": [
+        "eslint.config.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 121393,
+      "latency_ms": 18.368,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-311f04610c97",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 217508,
+      "latency_ms": 19.656,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-3648fa9a9b79",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 217726,
+      "latency_ms": 18.835,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-3822e19e5360",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 130907,
+      "latency_ms": 18.13,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-432012502419",
+      "path_leak": true,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 217726,
+      "latency_ms": 18.34,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-44e885050a3a",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 127762,
+      "latency_ms": 18.363,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-49d25eea3efb",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 20,
+      "tokens_delivered": 130201,
+      "latency_ms": 17.48,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-4a06c9457671",
+      "path_leak": true,
+      "required_files": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts",
+        "tests/smoke.spec.ts"
+      ],
+      "found": [],
+      "missed": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts",
+        "tests/smoke.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 131648,
+      "latency_ms": 18.836,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-4c2bf18061a1",
+      "path_leak": false,
+      "required_files": [
+        "postcss.config.js",
+        "src/index.css",
+        "tailwind.config.ts",
+        "vite.config.ts"
+      ],
+      "found": [
+        "vite.config.ts"
+      ],
+      "missed": [
+        "postcss.config.js",
+        "src/index.css",
+        "tailwind.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 161970,
+      "latency_ms": 19.287,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-5ff55ed07b2f",
+      "path_leak": true,
+      "required_files": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 121393,
+      "latency_ms": 21.604,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-6d6487fa6ee3",
+      "path_leak": false,
+      "required_files": [
+        "src/components/AppLayout.tsx"
+      ],
+      "found": [
+        "src/components/AppLayout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 138033,
+      "latency_ms": 18.772,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-6e8bd0230c30",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 134327,
+      "latency_ms": 20.609,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-799f599a32dd",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 130907,
+      "latency_ms": 19.336,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-7ad692618d92",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 217726,
+      "latency_ms": 18.764,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-83fa639f21f8",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts",
+        "api/_lib/db.ts",
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [
+        "api/_lib/auth.ts"
+      ],
+      "missed": [
+        "api/_lib/db.ts",
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 130172,
+      "latency_ms": 17.771,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-8a71258e7d16",
+      "path_leak": true,
+      "required_files": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 219296,
+      "latency_ms": 19.417,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-8b29bbd28725",
+      "path_leak": false,
+      "required_files": [
+        "index.html"
+      ],
+      "found": [],
+      "missed": [
+        "index.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 141649,
+      "latency_ms": 19.252,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-93b48d03329b",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "found": [],
+      "missed": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 140248,
+      "latency_ms": 23.387,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-9b9d47f48e0b",
+      "path_leak": false,
+      "required_files": [
+        "src/hooks/useChat.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/hooks/useChat.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 134115,
+      "latency_ms": 15.736,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-9e21586af581",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "src/components/Navbar.tsx",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "found": [
+        "src/components/Navbar.tsx"
+      ],
+      "missed": [
+        ".husky/pre-push",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 114964,
+      "latency_ms": 17.13,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-af8c1b0d433b",
+      "path_leak": false,
+      "required_files": [
+        "api/_schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [
+        "api/debug.ts"
+      ],
+      "missed": [
+        "api/_schema.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 129252,
+      "latency_ms": 16.082,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-b26636817b1b",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 130907,
+      "latency_ms": 17.322,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-b297f57a3489",
+      "path_leak": true,
+      "required_files": [
+        "api/profiles.ts",
+        "src/components/AppSidebar.tsx",
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Index.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "found": [
+        "src/components/AppSidebar.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "missed": [
+        "api/profiles.ts",
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "recall_at_5": 0.2857,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.2857,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.2857,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.1429,
+      "first_hit_rank": 1,
+      "tokens_delivered": 255668,
+      "latency_ms": 18.145,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-bc2139cca1ca",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts",
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 254337,
+      "latency_ms": 18.14,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-bd456960c205",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 218528,
+      "latency_ms": 16.277,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-be8f1bcad0c1",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 126863,
+      "latency_ms": 17.951,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-c1da954218b5",
+      "path_leak": false,
+      "required_files": [
+        "vitest.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "vitest.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 140450,
+      "latency_ms": 22.234,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-c1dbe746df7c",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 129189,
+      "latency_ms": 18.533,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-cda10389aa0f",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 217718,
+      "latency_ms": 17.853,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-d3f3c964ec94",
+      "path_leak": true,
+      "required_files": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts",
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 254316,
+      "latency_ms": 17.39,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-d543600425f6",
+      "path_leak": false,
+      "required_files": [
+        "src/main.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "found": [
+        "src/pages/Index.tsx"
+      ],
+      "missed": [
+        "src/main.tsx"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 138263,
+      "latency_ms": 17.939,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-dcca049fcd7b",
+      "path_leak": false,
+      "required_files": [
+        "src/index.css"
+      ],
+      "found": [],
+      "missed": [
+        "src/index.css"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 250904,
+      "latency_ms": 17.293,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-e2fd6e5d8453",
+      "path_leak": false,
+      "required_files": [
+        ".saasmaker.json"
+      ],
+      "found": [],
+      "missed": [
+        ".saasmaker.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 219008,
+      "latency_ms": 16.978,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-e37951b10026",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 217966,
+      "latency_ms": 16.744,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "today-little-log-f81cc54457ab",
+      "path_leak": false,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 253752,
+      "latency_ms": 16.568,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-026ffeba899f",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts"
+      ],
+      "found": [
+        "api/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 794,
+      "latency_ms": 459.083,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-0458fb2e26f9",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 619,
+      "latency_ms": 188.275,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-085a8f98f4e3",
+      "path_leak": false,
+      "required_files": [
+        "vite.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "vite.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 300,
+      "latency_ms": 158.537,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-0d69b26aa12b",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json",
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 726,
+      "latency_ms": 229.365,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-1a06cf12d177",
+      "path_leak": false,
+      "required_files": [
+        "functions/api/[resource].ts"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/[resource].ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 558,
+      "latency_ms": 191.65,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-21e91a0cf7d1",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts"
+      ],
+      "found": [
+        "api/_lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 576,
+      "latency_ms": 223.067,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-2576f31c791b",
+      "path_leak": true,
+      "required_files": [
+        "eslint.config.js"
+      ],
+      "found": [
+        "eslint.config.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 496,
+      "latency_ms": 227.115,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-311f04610c97",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 750,
+      "latency_ms": 167.425,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-3648fa9a9b79",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [
+        "scripts/bundle-api.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 1,
+      "recall_at_10": 1,
+      "precision_at_10": 1,
+      "recall_at_20": 1,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 51,
+      "latency_ms": 164.3,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-3822e19e5360",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 766,
+      "latency_ms": 201.995,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-432012502419",
+      "path_leak": true,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [
+        "scripts/bundle-api.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 445,
+      "latency_ms": 160.589,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-44e885050a3a",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 856,
+      "latency_ms": 193.273,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-49d25eea3efb",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 18,
+      "tokens_delivered": 756,
+      "latency_ms": 166.294,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-4a06c9457671",
+      "path_leak": true,
+      "required_files": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts",
+        "tests/smoke.spec.ts"
+      ],
+      "found": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts",
+        "tests/smoke.spec.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 756,
+      "latency_ms": 166.387,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-4c2bf18061a1",
+      "path_leak": false,
+      "required_files": [
+        "postcss.config.js",
+        "src/index.css",
+        "tailwind.config.ts",
+        "vite.config.ts"
+      ],
+      "found": [
+        "postcss.config.js",
+        "src/index.css",
+        "tailwind.config.ts"
+      ],
+      "missed": [
+        "vite.config.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0.75,
+      "recall_at_4000_tokens": 0.75,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 1,
+      "tokens_delivered": 722,
+      "latency_ms": 163.176,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-5ff55ed07b2f",
+      "path_leak": true,
+      "required_files": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 813,
+      "latency_ms": 199.688,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-6d6487fa6ee3",
+      "path_leak": false,
+      "required_files": [
+        "src/components/AppLayout.tsx"
+      ],
+      "found": [
+        "src/components/AppLayout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 372,
+      "latency_ms": 146.981,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-6e8bd0230c30",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 603,
+      "latency_ms": 206.647,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-799f599a32dd",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 724,
+      "latency_ms": 177.748,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-7ad692618d92",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 764,
+      "latency_ms": 189.578,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-83fa639f21f8",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts",
+        "api/_lib/db.ts",
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [
+        "api/_lib/auth.ts",
+        "api/_lib/db.ts"
+      ],
+      "missed": [
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 536,
+      "latency_ms": 153.842,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-8a71258e7d16",
+      "path_leak": true,
+      "required_files": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "found": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 822,
+      "latency_ms": 171.66,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-8b29bbd28725",
+      "path_leak": false,
+      "required_files": [
+        "index.html"
+      ],
+      "found": [],
+      "missed": [
+        "index.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 140,
+      "latency_ms": 190.163,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-93b48d03329b",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "found": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 733,
+      "latency_ms": 197.226,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-9b9d47f48e0b",
+      "path_leak": false,
+      "required_files": [
+        "src/hooks/useChat.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/hooks/useChat.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 667,
+      "latency_ms": 149.413,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-9e21586af581",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "src/components/Navbar.tsx",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "found": [
+        ".husky/pre-push"
+      ],
+      "missed": [
+        "src/components/Navbar.tsx",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 573,
+      "latency_ms": 160.035,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-af8c1b0d433b",
+      "path_leak": false,
+      "required_files": [
+        "api/_schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [
+        "api/debug.ts"
+      ],
+      "missed": [
+        "api/_schema.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 10,
+      "tokens_delivered": 595,
+      "latency_ms": 170.039,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-b26636817b1b",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 680,
+      "latency_ms": 175.83,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-b297f57a3489",
+      "path_leak": true,
+      "required_files": [
+        "api/profiles.ts",
+        "src/components/AppSidebar.tsx",
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Index.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "found": [
+        "api/profiles.ts",
+        "src/components/AppSidebar.tsx"
+      ],
+      "missed": [
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Index.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "recall_at_5": 0.1429,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.2857,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.2857,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.2857,
+      "recall_at_4000_tokens": 0.2857,
+      "recall_at_16000_tokens": 0.2857,
+      "first_hit_rank": 2,
+      "tokens_delivered": 726,
+      "latency_ms": 227.859,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-bc2139cca1ca",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "tests/prod-auth.spec.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 502,
+      "latency_ms": 328.754,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-bd456960c205",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 585,
+      "latency_ms": 281.516,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-be8f1bcad0c1",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 482,
+      "latency_ms": 325.702,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-c1da954218b5",
+      "path_leak": false,
+      "required_files": [
+        "vitest.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "vitest.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 203,
+      "latency_ms": 327.003,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-c1dbe746df7c",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 329,
+      "latency_ms": 383.223,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-cda10389aa0f",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 19,
+      "tokens_delivered": 832,
+      "latency_ms": 309.325,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-d3f3c964ec94",
+      "path_leak": true,
+      "required_files": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 283,
+      "latency_ms": 266.226,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-d543600425f6",
+      "path_leak": false,
+      "required_files": [
+        "src/main.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "found": [
+        "src/main.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 11,
+      "tokens_delivered": 670,
+      "latency_ms": 233.922,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-dcca049fcd7b",
+      "path_leak": false,
+      "required_files": [
+        "src/index.css"
+      ],
+      "found": [
+        "src/index.css"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 147,
+      "latency_ms": 226.526,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-e2fd6e5d8453",
+      "path_leak": false,
+      "required_files": [
+        ".saasmaker.json"
+      ],
+      "found": [],
+      "missed": [
+        ".saasmaker.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 126,
+      "latency_ms": 283.836,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-e37951b10026",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [
+        "api/auth.ts"
+      ],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 685,
+      "latency_ms": 178.523,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "today-little-log-f81cc54457ab",
+      "path_leak": false,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 780,
+      "latency_ms": 244.901,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-026ffeba899f",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts"
+      ],
+      "found": [
+        "api/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 1572,
+      "latency_ms": 1738.706,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-0458fb2e26f9",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4058,
+      "latency_ms": 1688.082,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-085a8f98f4e3",
+      "path_leak": false,
+      "required_files": [
+        "vite.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "vite.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1676,
+      "latency_ms": 1881.701,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-0d69b26aa12b",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json",
+        "vendor/saas-maker-ai/package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1675,
+      "latency_ms": 2127.56,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-1a06cf12d177",
+      "path_leak": false,
+      "required_files": [
+        "functions/api/[resource].ts"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/[resource].ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1670,
+      "latency_ms": 1604.354,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-21e91a0cf7d1",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts"
+      ],
+      "found": [
+        "api/_lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1682,
+      "latency_ms": 1671.712,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-2576f31c791b",
+      "path_leak": true,
+      "required_files": [
+        "eslint.config.js"
+      ],
+      "found": [
+        "eslint.config.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1675,
+      "latency_ms": 2611.028,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-311f04610c97",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [
+        "api/auth.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1684,
+      "latency_ms": 1505.604,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-3648fa9a9b79",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 377,
+      "latency_ms": 1889.204,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-3822e19e5360",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 138,
+      "latency_ms": 1744.764,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-432012502419",
+      "path_leak": true,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [
+        "scripts/bundle-api.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1306,
+      "latency_ms": 1740.205,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-44e885050a3a",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 162,
+      "latency_ms": 1734.862,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-49d25eea3efb",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3164,
+      "latency_ms": 1690.343,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-4a06c9457671",
+      "path_leak": true,
+      "required_files": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts",
+        "tests/smoke.spec.ts"
+      ],
+      "found": [
+        "tests/smoke.spec.ts"
+      ],
+      "missed": [
+        "tests/interactive.spec.ts",
+        "tests/prod-auth.spec.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1677,
+      "latency_ms": 1697.836,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-4c2bf18061a1",
+      "path_leak": false,
+      "required_files": [
+        "postcss.config.js",
+        "src/index.css",
+        "tailwind.config.ts",
+        "vite.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "postcss.config.js",
+        "src/index.css",
+        "tailwind.config.ts",
+        "vite.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 142,
+      "latency_ms": 1561.117,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-5ff55ed07b2f",
+      "path_leak": true,
+      "required_files": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "functions/api/auth/[[all]].ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1710,
+      "latency_ms": 2022.617,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-6d6487fa6ee3",
+      "path_leak": false,
+      "required_files": [
+        "src/components/AppLayout.tsx"
+      ],
+      "found": [
+        "src/components/AppLayout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3100,
+      "latency_ms": 1454.52,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-6e8bd0230c30",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2488,
+      "latency_ms": 1664.492,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-799f599a32dd",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 840,
+      "latency_ms": 3576.011,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-7ad692618d92",
+      "path_leak": false,
+      "required_files": [
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [
+        "scripts/bundle-api.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 6731,
+      "latency_ms": 1723.42,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-83fa639f21f8",
+      "path_leak": true,
+      "required_files": [
+        "api/_lib/auth.ts",
+        "api/_lib/db.ts",
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [],
+      "missed": [
+        "api/_lib/auth.ts",
+        "api/_lib/db.ts",
+        "api/_lib/schema.ts",
+        "api/debug.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3508,
+      "latency_ms": 1860.691,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-8a71258e7d16",
+      "path_leak": true,
+      "required_files": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "found": [
+        "src/components/ChatBot.tsx",
+        "src/hooks/useChat.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1700,
+      "latency_ms": 1808.503,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-8b29bbd28725",
+      "path_leak": false,
+      "required_files": [
+        "index.html"
+      ],
+      "found": [],
+      "missed": [
+        "index.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 458,
+      "latency_ms": 2046.089,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-93b48d03329b",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "found": [
+        "tests/prod-auth.spec.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 5188,
+      "latency_ms": 2057.649,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-9b9d47f48e0b",
+      "path_leak": false,
+      "required_files": [
+        "src/hooks/useChat.ts"
+      ],
+      "found": [
+        "src/hooks/useChat.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 1667,
+      "latency_ms": 1487.316,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-9e21586af581",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "src/components/Navbar.tsx",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push",
+        "src/components/Navbar.tsx",
+        "src/components/ui/calendar.tsx",
+        "src/db/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1466,
+      "latency_ms": 1516.076,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-af8c1b0d433b",
+      "path_leak": false,
+      "required_files": [
+        "api/_schema.ts",
+        "api/debug.ts"
+      ],
+      "found": [],
+      "missed": [
+        "api/_schema.ts",
+        "api/debug.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1679,
+      "latency_ms": 1581.477,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-b26636817b1b",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 7081,
+      "latency_ms": 1570.471,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-b297f57a3489",
+      "path_leak": true,
+      "required_files": [
+        "api/profiles.ts",
+        "src/components/AppSidebar.tsx",
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Index.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "found": [
+        "src/components/AppSidebar.tsx"
+      ],
+      "missed": [
+        "api/profiles.ts",
+        "src/components/CraftHoursWidget.tsx",
+        "src/components/NowRecommender.tsx",
+        "src/components/QuickLogFab.tsx",
+        "src/pages/Index.tsx",
+        "src/pages/Schedule.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.1429,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.1429,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.1429,
+      "recall_at_4000_tokens": 0.1429,
+      "recall_at_16000_tokens": 0.1429,
+      "first_hit_rank": 10,
+      "tokens_delivered": 1671,
+      "latency_ms": 1849.558,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-bc2139cca1ca",
+      "path_leak": true,
+      "required_files": [
+        "tests/prod-auth.spec.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "tests/prod-auth.spec.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1674,
+      "latency_ms": 1802.437,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-bd456960c205",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/EntryEditor.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 9033,
+      "latency_ms": 1305.353,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-be8f1bcad0c1",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1678,
+      "latency_ms": 1710.031,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-c1da954218b5",
+      "path_leak": false,
+      "required_files": [
+        "vitest.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "vitest.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1710,
+      "latency_ms": 1462.72,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-c1dbe746df7c",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "found": [],
+      "missed": [
+        ".gitignore",
+        "scripts/bundle-api.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8212,
+      "latency_ms": 1138.185,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-cda10389aa0f",
+      "path_leak": true,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [
+        "vercel.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 7746,
+      "latency_ms": 2210.542,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-d3f3c964ec94",
+      "path_leak": true,
+      "required_files": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts",
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "tests/auth-button.spec.ts",
+        "tests/interactive.spec.ts",
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1681,
+      "latency_ms": 1909.242,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-d543600425f6",
+      "path_leak": false,
+      "required_files": [
+        "src/main.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/main.tsx",
+        "src/pages/Index.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8261,
+      "latency_ms": 1627.625,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-dcca049fcd7b",
+      "path_leak": false,
+      "required_files": [
+        "src/index.css"
+      ],
+      "found": [],
+      "missed": [
+        "src/index.css"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 229,
+      "latency_ms": 1332.43,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-e2fd6e5d8453",
+      "path_leak": false,
+      "required_files": [
+        ".saasmaker.json"
+      ],
+      "found": [],
+      "missed": [
+        ".saasmaker.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 756,
+      "latency_ms": 1486.072,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-e37951b10026",
+      "path_leak": true,
+      "required_files": [
+        "api/auth.ts",
+        "vercel.json"
+      ],
+      "found": [
+        "api/auth.ts"
+      ],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1674,
+      "latency_ms": 1245.369,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "today-little-log-f81cc54457ab",
+      "path_leak": false,
+      "required_files": [
+        "vercel.json"
+      ],
+      "found": [],
+      "missed": [
+        "vercel.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1685,
+      "latency_ms": 1922.642,
+      "indexed_revision_matches": true
+    }
+  ]
+}

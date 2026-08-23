@@ -1,0 +1,1121 @@
+{
+  "schema_version": "codevetter.context-retrieval-corpus.v1",
+  "repository": {
+    "id": "express",
+    "head": "a3714473feb3d2908add734d340e7755fd85e0a3"
+  },
+  "selection": {
+    "commits_scanned": 600,
+    "fixes_only": true,
+    "max_required_files": 8
+  },
+  "counts": {
+    "cases": 28,
+    "path_leak": 9,
+    "baseline_blind": 19,
+    "multi_file": 14
+  },
+  "cases": [
+    {
+      "case_id": "express-05f40f4321fe",
+      "repository": "express",
+      "commit": "05f40f4321fee5235de0159dcd2a826c2532dff1",
+      "base_revision": "402e7f653fd79528df634c3464f2fe929e716ff3",
+      "authored_at": "2024-08-31T13:09:21-05:00",
+      "query": "content-disposition@^1.0.0 (#5884)",
+      "query_tokens": [
+        "content",
+        "disposition"
+      ],
+      "specific_tokens": [
+        "content",
+        "disposition"
+      ],
+      "required_files": [
+        "package.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-18e5985b8a9d",
+      "repository": "express",
+      "commit": "18e5985b8a9d5e8423db0a9121f22bdaecd5b120",
+      "base_revision": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+      "authored_at": "2026-06-16T06:06:31+03:00",
+      "query": "add Content-Length header only if Transfer-Encoding is not present (#4893)",
+      "query_tokens": [
+        "content",
+        "encoding",
+        "header",
+        "length",
+        "present",
+        "transfer"
+      ],
+      "specific_tokens": [
+        "content",
+        "encoding",
+        "header",
+        "length",
+        "present",
+        "transfer"
+      ],
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-246f6f5aeeba",
+      "repository": "express",
+      "commit": "246f6f5aeebad1b9d6a0ea08cd96d3fe19f8f23c",
+      "base_revision": "b11122be85377375465b2aa103da43301e56f128",
+      "authored_at": "2025-01-08T16:56:16+01:00",
+      "query": "Remove `utils-merge` dependency - use spread syntax instead (#6091)",
+      "query_tokens": [
+        "dependency",
+        "instead",
+        "merge",
+        "remove",
+        "spread",
+        "syntax",
+        "utils"
+      ],
+      "specific_tokens": [
+        "dependency",
+        "instead",
+        "merge",
+        "remove",
+        "spread",
+        "syntax",
+        "utils"
+      ],
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [
+        "package.json"
+      ],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-353348a83e68",
+      "repository": "express",
+      "commit": "353348a83e6874db7ded27102e91e7b6cad7e89c",
+      "base_revision": "dab6ee58229f2af3680023021703e7ab5cf9c76f",
+      "authored_at": "2020-02-20T07:34:41+01:00",
+      "query": "Fix typo in res.is JSDoc",
+      "query_tokens": [
+        "jsdoc",
+        "typo"
+      ],
+      "specific_tokens": [
+        "jsdoc",
+        "typo"
+      ],
+      "required_files": [
+        "lib/request.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-3d10279826f5",
+      "repository": "express",
+      "commit": "3d10279826f59bf68e28995ce423f7bc4d2f11cf",
+      "base_revision": "5e9de5dcb6f1ff396038ded11951aa53c62a07a4",
+      "authored_at": "2018-09-19T23:25:16-04:00",
+      "query": "Fix issue where \"Request aborted\" may be logged in res.sendfile",
+      "query_tokens": [
+        "aborted",
+        "issue",
+        "logged",
+        "request",
+        "sendfile"
+      ],
+      "specific_tokens": [
+        "aborted",
+        "logged",
+        "request",
+        "sendfile"
+      ],
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-4c4f3ea10593",
+      "repository": "express",
+      "commit": "4c4f3ea1059319d217dbb8177dfec902d2917424",
+      "base_revision": "cb4c56e9a7ebc208730886e010b75475bf816fd9",
+      "authored_at": "2025-03-28T01:46:06+01:00",
+      "query": "serve-static@^2.2.0 (#6418)",
+      "query_tokens": [
+        "serve",
+        "static"
+      ],
+      "specific_tokens": [
+        "serve",
+        "static"
+      ],
+      "required_files": [
+        "package.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-4e61d0100d90",
+      "repository": "express",
+      "commit": "4e61d0100d903de94673d4202eaa7edde5888fb4",
+      "base_revision": "7748475747c3ccabc929dac78ea4eeb34003b245",
+      "authored_at": "2024-08-31T11:06:25-05:00",
+      "query": "mime-types@^3.0.0 (#5882)",
+      "query_tokens": [
+        "mime",
+        "types"
+      ],
+      "specific_tokens": [
+        "mime",
+        "types"
+      ],
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [
+        "package.json"
+      ],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-54271f69b511",
+      "repository": "express",
+      "commit": "54271f69b511fea198471e6ff3400ab805d6b553",
+      "base_revision": "125bb742a38cd97938a3932b47cc301e41c31f5d",
+      "authored_at": "2024-09-09T17:16:58-05:00",
+      "query": "don't render redirect values in anchor href",
+      "query_tokens": [
+        "anchor",
+        "href",
+        "redirect",
+        "render",
+        "values"
+      ],
+      "specific_tokens": [
+        "anchor",
+        "href",
+        "redirect",
+        "render",
+        "values"
+      ],
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/res.redirect.js",
+            "tokens": [
+              "redirect"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-5855339455a7",
+      "repository": "express",
+      "commit": "5855339455a7f60774bef4166829e742a5056fa8",
+      "base_revision": "1cc816993832eba829a2f556f7c08e27e6371301",
+      "authored_at": "2019-04-18T09:12:33-04:00",
+      "query": "Fix behavior of null/undefined as \"maxAge\" in res.cookie",
+      "query_tokens": [
+        "behavior",
+        "cookie",
+        "null",
+        "undefined"
+      ],
+      "specific_tokens": [
+        "behavior",
+        "cookie",
+        "null",
+        "undefined"
+      ],
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/res.cookie.js",
+            "tokens": [
+              "cookie"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-62336717bfb6",
+      "repository": "express",
+      "commit": "62336717bfb6ff0ddca1c320cab76218928e7f93",
+      "base_revision": "3bbffdc41c1adebd1c4297e3661e2b182b8d27ac",
+      "authored_at": "2025-01-26T16:24:07+05:30",
+      "query": "added a missing semicolon in css styles in examples/auth (#6297)",
+      "query_tokens": [
+        "added",
+        "auth",
+        "examples",
+        "missing",
+        "semicolon",
+        "styles"
+      ],
+      "specific_tokens": [
+        "added",
+        "auth",
+        "examples",
+        "missing",
+        "semicolon",
+        "styles"
+      ],
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "examples/auth/views/head.ejs",
+            "tokens": [
+              "auth",
+              "examples"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-631ada0c645d",
+      "repository": "express",
+      "commit": "631ada0c645dc84c6df8788f5a7eb2b8100acea5",
+      "base_revision": "75e0c7a2c91665f44d053d83be15f8ecd0177f41",
+      "authored_at": "2022-04-29T13:34:47-04:00",
+      "query": "Fix hanging on large stack of sync routes",
+      "query_tokens": [
+        "hanging",
+        "large",
+        "routes",
+        "stack",
+        "sync"
+      ],
+      "specific_tokens": [
+        "hanging",
+        "large",
+        "routes",
+        "stack",
+        "sync"
+      ],
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-65b62065d2b4",
+      "repository": "express",
+      "commit": "65b62065d2b4308212fc3b19ab4986a9fa10ca41",
+      "base_revision": "0b243b1aee0d8774f2b97da2e8ac4340adaed1b3",
+      "authored_at": "2024-08-23T16:07:45-05:00",
+      "query": "fix(deps) serve-staic@2.0.0 (#5790)",
+      "query_tokens": [
+        "deps",
+        "serve",
+        "staic"
+      ],
+      "specific_tokens": [
+        "deps",
+        "serve",
+        "staic"
+      ],
+      "required_files": [
+        "package.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-6cd404eb28ff",
+      "repository": "express",
+      "commit": "6cd404eb28ff861180f435b3015f8d0c8c0b44d4",
+      "base_revision": "3e81873b52e107898ed7ba45874959fb0546df3f",
+      "authored_at": "2026-01-07T15:41:34+01:00",
+      "query": "enhance req.acceptsCharsets method (#6088)",
+      "query_tokens": [
+        "accepts",
+        "charsets",
+        "enhance",
+        "method"
+      ],
+      "specific_tokens": [
+        "accepts",
+        "charsets",
+        "enhance",
+        "method"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/req.acceptsCharsets.js",
+            "tokens": [
+              "accepts",
+              "charsets"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-6ed3439584b6",
+      "repository": "express",
+      "commit": "6ed3439584b6bc77b0f1156f8797700df063fa63",
+      "base_revision": "327af123a1833239adf7eb47fee94542b692d451",
+      "authored_at": "2025-02-14T16:51:27+01:00",
+      "query": "Update multiple links to use `https` instead of `http` (#6338)",
+      "query_tokens": [
+        "http",
+        "https",
+        "instead",
+        "links",
+        "multiple",
+        "update"
+      ],
+      "specific_tokens": [
+        "http",
+        "https",
+        "instead",
+        "links",
+        "multiple"
+      ],
+      "required_files": [
+        ".editorconfig"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "Charter.md",
+        "Collaborator-Guide.md",
+        "Release-Process.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-708ac4cdf5cd",
+      "repository": "express",
+      "commit": "708ac4cdf5cd0a658d62490a9f4d78d3e1ec6612",
+      "base_revision": "92c5ce59f51cce4b3598fd040117772fac42dce8",
+      "authored_at": "2022-04-13T23:29:25-04:00",
+      "query": "Fix handling very large stacks of sync middleware",
+      "query_tokens": [
+        "handling",
+        "large",
+        "middleware",
+        "stacks",
+        "sync",
+        "very"
+      ],
+      "specific_tokens": [
+        "large",
+        "middleware",
+        "stacks",
+        "sync",
+        "very"
+      ],
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-74beeac0718c",
+      "repository": "express",
+      "commit": "74beeac0718c928b4ba249aba3652c52fbe32ca8",
+      "base_revision": "9bc1742937253825d2dc1e9a48c8e8424f0a315b",
+      "authored_at": "2023-02-23T17:23:22-05:00",
+      "query": "Fix routing requests without method",
+      "query_tokens": [
+        "method",
+        "requests",
+        "routing"
+      ],
+      "specific_tokens": [
+        "method",
+        "requests",
+        "routing"
+      ],
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-7ec5dd2b3c5e",
+      "repository": "express",
+      "commit": "7ec5dd2b3c5e7379f68086dae72859f5573c8b9b",
+      "base_revision": "ab2c70b954ac2ceb3aaf466b0f59089999952dd0",
+      "authored_at": "2022-05-20T09:37:20-04:00",
+      "query": "Fix regression routing a large stack in a single route",
+      "query_tokens": [
+        "large",
+        "regression",
+        "route",
+        "routing",
+        "single",
+        "stack"
+      ],
+      "specific_tokens": [
+        "large",
+        "regression",
+        "route",
+        "routing",
+        "single",
+        "stack"
+      ],
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/router/route.js",
+            "tokens": [
+              "route"
+            ]
+          },
+          {
+            "path": "test/Route.js",
+            "tokens": [
+              "route"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-925a1dff1e42",
+      "repository": "express",
+      "commit": "925a1dff1e42f1b393c977b8b77757fcf633e09f",
+      "base_revision": "9c85a25c02e83ad16e1561d02c8ede652f0ef15b",
+      "authored_at": "2026-02-21T22:11:08-05:00",
+      "query": "bump qs minimum to ^6.14.2 for CVE-2026-2391 (#7057)",
+      "query_tokens": [
+        "bump",
+        "minimum"
+      ],
+      "specific_tokens": [
+        "bump",
+        "minimum"
+      ],
+      "required_files": [
+        "package.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-99a369f3d51b",
+      "repository": "express",
+      "commit": "99a369f3d51bafcf0c09657250067249f19d04f5",
+      "base_revision": "a1dbb113779c45a10f56a910de1bc5f7e750eaea",
+      "authored_at": "2020-03-05T12:00:08+01:00",
+      "query": "Fix incorrect middleware execution with unanchored RegExps",
+      "query_tokens": [
+        "execution",
+        "exps",
+        "incorrect",
+        "middleware",
+        "unanchored"
+      ],
+      "specific_tokens": [
+        "execution",
+        "exps",
+        "incorrect",
+        "middleware",
+        "unanchored"
+      ],
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-9d8223d92ee8",
+      "repository": "express",
+      "commit": "9d8223d92ee81137a50a28eb6ad55a096791091d",
+      "base_revision": "90ec6206d3275fdf2787f2028c6f48a2d92e8042",
+      "authored_at": "2026-06-16T08:04:06+05:30",
+      "query": "replace deprecated trimRight() with trimEnd() (#7265)",
+      "query_tokens": [
+        "deprecated",
+        "replace",
+        "right",
+        "trim"
+      ],
+      "specific_tokens": [
+        "deprecated",
+        "replace",
+        "right",
+        "trim"
+      ],
+      "required_files": [
+        "lib/request.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-9dd0e7afdb6d",
+      "repository": "express",
+      "commit": "9dd0e7afdb6d022e18add1e009c4e3a66258c1fa",
+      "base_revision": "1b2f3a06982cf4d51482dd79447b66315687b287",
+      "authored_at": "2021-11-16T23:58:17-05:00",
+      "query": "Fix handling of undefined in res.jsonp",
+      "query_tokens": [
+        "handling",
+        "jsonp",
+        "undefined"
+      ],
+      "specific_tokens": [
+        "jsonp",
+        "undefined"
+      ],
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/res.jsonp.js",
+            "tokens": [
+              "jsonp"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-a1dbb113779c",
+      "repository": "express",
+      "commit": "a1dbb113779c45a10f56a910de1bc5f7e750eaea",
+      "base_revision": "353348a83e6874db7ded27102e91e7b6cad7e89c",
+      "authored_at": "2020-01-08T10:56:45+09:00",
+      "query": "Fix res.jsonp(obj, status) deprecation message",
+      "query_tokens": [
+        "deprecation",
+        "jsonp",
+        "message",
+        "status"
+      ],
+      "specific_tokens": [
+        "deprecation",
+        "jsonp",
+        "message",
+        "status"
+      ],
+      "required_files": [
+        "lib/response.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-b3906cbdded2",
+      "repository": "express",
+      "commit": "b3906cbdded224554ce1c778996d77b5d2a15ebc",
+      "base_revision": "fed8c2a8857a30b91e07a37f739aee18e756853f",
+      "authored_at": "2024-09-09T23:32:19-05:00",
+      "query": "serve-static@^2.1.0",
+      "query_tokens": [
+        "serve",
+        "static"
+      ],
+      "specific_tokens": [
+        "serve",
+        "static"
+      ],
+      "required_files": [
+        "package.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-d12772393c82",
+      "repository": "express",
+      "commit": "d12772393c8249666e0fcc11e298f48ce4632a11",
+      "base_revision": "6b7ccfcf120e77f20aa22ff96ccf98a994c7d35b",
+      "authored_at": "2026-02-01T03:12:23Z",
+      "query": "search example to support Redis v4+ and Express 4/5 (#6274)",
+      "query_tokens": [
+        "example",
+        "express",
+        "redis",
+        "search",
+        "support"
+      ],
+      "specific_tokens": [
+        "example",
+        "redis",
+        "search",
+        "support"
+      ],
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "examples/search/index.js",
+            "tokens": [
+              "search"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-f275e87dff1a",
+      "repository": "express",
+      "commit": "f275e87dff1aaef86080e6931888de4968585fd8",
+      "base_revision": "9dd0e7afdb6d022e18add1e009c4e3a66258c1fa",
+      "authored_at": "2021-11-03T10:58:25Z",
+      "query": "Fix handling of undefined when \"json escape\" is enabled",
+      "query_tokens": [
+        "enabled",
+        "escape",
+        "handling",
+        "json",
+        "undefined"
+      ],
+      "specific_tokens": [
+        "enabled",
+        "escape",
+        "json",
+        "undefined"
+      ],
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "test/res.json.js",
+            "tokens": [
+              "json"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-f3fa758af966",
+      "repository": "express",
+      "commit": "f3fa758af9664526ee18c58764590e48f559e6ae",
+      "base_revision": "ede24da9645ed771ddeb9cf327d042d35a31d42d",
+      "authored_at": "2018-05-26T21:58:15+02:00",
+      "query": "Fix JSDoc for Router constructor",
+      "query_tokens": [
+        "constructor",
+        "jsdoc",
+        "router"
+      ],
+      "specific_tokens": [
+        "constructor",
+        "jsdoc",
+        "router"
+      ],
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/router/index.js",
+            "tokens": [
+              "router"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "express-f9954dd317a1",
+      "repository": "express",
+      "commit": "f9954dd317a1b534e62a5ae3aa7f52f3582b8881",
+      "base_revision": "5da5a11a498a3034623960861e542a3b39b00c94",
+      "authored_at": "2025-04-17T00:18:38+08:00",
+      "query": "remove duplicate word (#6456)",
+      "query_tokens": [
+        "duplicate",
+        "remove",
+        "word"
+      ],
+      "specific_tokens": [
+        "duplicate",
+        "remove",
+        "word"
+      ],
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "express-fed8c2a8857a",
+      "repository": "express",
+      "commit": "fed8c2a8857a30b91e07a37f739aee18e756853f",
+      "base_revision": "bdd81f8670975ef30fd49e92513ef48d35029eaf",
+      "authored_at": "2024-09-09T22:32:07-05:00",
+      "query": "body-parser@^2.0.1",
+      "query_tokens": [
+        "body",
+        "parser"
+      ],
+      "specific_tokens": [
+        "body",
+        "parser"
+      ],
+      "required_files": [
+        "package.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "History.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    }
+  ],
+  "rejected_sample": [
+    {
+      "commit": "a3714473feb3d2908add734d340e7755fd85e0a3",
+      "subject": "build(deps-dev): bump hbs from 4.2.0 to 4.2.1 (#7152)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "ae6dd37680e3a00618d6c8a3e522f0ee4eeba1a4",
+      "subject": "feat: allow conditional revalidation for QUERY requests (#7366)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "ba006766fb964571723138708eacaba0f55759cd",
+      "subject": "build(deps-dev): bump morgan from 1.10.1 to 1.11.0 (#7353)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "5175d2f357e9c6fac998812b3fc22a1a90ead988",
+      "subject": "build(deps): bump actions/checkout from 6.0.2 to 7.0.0 (#7345)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "66878d3e70437ba7b887ec519a3e33edc5bca0c7",
+      "subject": "docs: use the new logo (#7316)",
+      "reason": "excluded-subject"
+    },
+    {
+      "commit": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+      "subject": "Upgrade `content-disposition` (#7233)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "b3004cb8c825321279efa48d6ad115d91a6c1b83",
+      "subject": "build(deps): bump github/codeql-action from 4.35.2 to 4.36.0 (#7297)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "90ec6206d3275fdf2787f2028c6f48a2d92e8042",
+      "subject": "Improve error logging by logging full error object (#6464)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "cb19f04170fc815321d40dcd3bc620ae03c828cd",
+      "subject": "Upgrade `content-type` (#7234)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "a08da78e64a7fdc610d453fb7771754091d8ed3b",
+      "subject": "deps: bump qs minimum to 6.15.2 (#7305)",
+      "reason": "excluded-subject"
+    },
+    {
+      "commit": "dae209ae6559c29cfca2a1f4414c51d89ea643d5",
+      "subject": "build(deps): bump github/codeql-action from 4.35.1 to 4.35.2 (#7212)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "777001a0f52aaf761f8b95afc02bee19c87a0158",
+      "subject": "build(deps): bump actions/upload-artifact from 7.0.0 to 7.0.1 (#7211)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "64576bde91c6fbe8214006207f56cb84e7ab9274",
+      "subject": "build(deps): bump actions/setup-node from 6.3.0 to 6.4.0 (#7210)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "f5c159b112e8ac6e3b2b022eff03ad727d4ff98a",
+      "subject": "ci: build express with node.js v26 (#7218)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "2eae22b1e12df345e314a4db483052a780e0ba0b",
+      "subject": "chore: ensure safe config in the npmrc (#7144)",
+      "reason": "excluded-subject"
+    },
+    {
+      "commit": "f873ac23124ffcff8c040b4bd257b32c29828d53",
+      "subject": "fixed typo in history.md (#7191)",
+      "reason": "no-code-files"
+    },
+    {
+      "commit": "6340c1eaaedc0ddcae8be8df2cdb1d2e961cbf2f",
+      "subject": "build(deps): bump github/codeql-action from 4.32.4 to 4.35.1 (#7150)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "8cc3afa8e35e1a62ccf48276d456278455eb784d",
+      "subject": "build(deps): bump actions/setup-node from 6.2.0 to 6.3.0 (#7149)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "e7fd63a3878596154dd0693e92a8e5e41a45647c",
+      "subject": "build(deps): bump actions/download-artifact from 8.0.0 to 8.0.1 (#7148)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "8e022edc9185f540a3fcecaf5e56b850d919cdac",
+      "subject": "docs: update npm install docs URL in Readme.md (#7159)",
+      "reason": "excluded-subject"
+    }
+  ]
+}

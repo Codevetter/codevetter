@@ -1,0 +1,3546 @@
+{
+  "schema_version": "codevetter.context-retrieval-corpus.v1",
+  "repository": {
+    "id": "fastify",
+    "head": "83e69762aff047940b376fc2a266d143499ef727"
+  },
+  "selection": {
+    "commits_scanned": 600,
+    "fixes_only": true,
+    "max_required_files": 8
+  },
+  "counts": {
+    "cases": 82,
+    "path_leak": 47,
+    "baseline_blind": 35,
+    "multi_file": 66
+  },
+  "cases": [
+    {
+      "case_id": "fastify-01ca8393b9d1",
+      "repository": "fastify",
+      "commit": "01ca8393b9d10a897f0d2daedbe2f9eb90076ef5",
+      "base_revision": "b6cdc6a40598d15f38fe7d399eb17f4b84b7bf06",
+      "authored_at": "2026-07-30T17:20:20+08:00",
+      "query": "uncatchable throws in writeHead when using async hook (#6881)",
+      "query_tokens": [
+        "async",
+        "head",
+        "hook",
+        "throws",
+        "uncatchable",
+        "using",
+        "write"
+      ],
+      "specific_tokens": [
+        "async",
+        "head",
+        "hook",
+        "throws",
+        "uncatchable",
+        "using",
+        "write"
+      ],
+      "required_files": [
+        "lib/hooks.js",
+        "test/reply-error.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-0dfa46c46687",
+      "repository": "fastify",
+      "commit": "0dfa46c466875ca1e2338c5ed0baf1359174fbcb",
+      "base_revision": "6cbcfa7d82aaf25c7e53804e2a024c531d15c4d0",
+      "authored_at": "2025-03-24T19:07:23+01:00",
+      "query": "double hook execution (#6013)",
+      "query_tokens": [
+        "double",
+        "execution",
+        "hook"
+      ],
+      "specific_tokens": [
+        "double",
+        "execution",
+        "hook"
+      ],
+      "required_files": [
+        "lib/wrapThenable.js",
+        "test/issue-4959.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-0e9a3b35d8b1",
+      "repository": "fastify",
+      "commit": "0e9a3b35d8b13c9f261bf29bef46168a5d43c28f",
+      "base_revision": "b93d611c7cefc2cd4a0b6f05cc864f2b6c397a6d",
+      "authored_at": "2026-07-30T12:00:13+02:00",
+      "query": "add http method override warning (#6879)",
+      "query_tokens": [
+        "http",
+        "method",
+        "override",
+        "warning"
+      ],
+      "specific_tokens": [
+        "http",
+        "method",
+        "override",
+        "warning"
+      ],
+      "required_files": [
+        "fastify.js",
+        "lib/warnings.js",
+        "test/http-methods/custom-http-methods.test.js",
+        "test/types/instance.tst.ts",
+        "types/instance.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Server.md",
+        "docs/Reference/Warnings.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.2,
+        "shared_tokens": [
+          {
+            "path": "test/http-methods/custom-http-methods.test.js",
+            "tokens": [
+              "http"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-0f54a40f63b3",
+      "repository": "fastify",
+      "commit": "0f54a40f63b399bfe06a3deeab832f8b5feb6345",
+      "base_revision": "0e9a3b35d8b13c9f261bf29bef46168a5d43c28f",
+      "authored_at": "2026-08-02T13:01:44+02:00",
+      "query": "allow explicit http2: false in server options (#6888)",
+      "query_tokens": [
+        "allow",
+        "explicit",
+        "false",
+        "http2",
+        "options",
+        "server"
+      ],
+      "specific_tokens": [
+        "allow",
+        "explicit",
+        "false",
+        "http2",
+        "options",
+        "server"
+      ],
+      "required_files": [
+        "fastify.d.ts",
+        "test/types/fastify.tst.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-120661fab3b2",
+      "repository": "fastify",
+      "commit": "120661fab3b2de662444a835cb3f58a1c4851b8c",
+      "base_revision": "de610ccc94652719c5c8477344c6ae7dfe127c11",
+      "authored_at": "2025-01-30T19:14:18+01:00",
+      "query": "missing supportedMethods (#5970)",
+      "query_tokens": [
+        "methods",
+        "missing",
+        "supported"
+      ],
+      "specific_tokens": [
+        "methods",
+        "missing",
+        "supported"
+      ],
+      "required_files": [
+        "test/types/instance.test-d.ts",
+        "types/instance.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-153d78aaf952",
+      "repository": "fastify",
+      "commit": "153d78aaf95249e275e234185d3e2d1c770859c4",
+      "base_revision": "57aad569180eb67458562691ab51bbe3d7bd62c5",
+      "authored_at": "2026-01-16T09:18:33+01:00",
+      "query": "updated version in the fastify.js (#6446)",
+      "query_tokens": [
+        "fastify",
+        "updated",
+        "version"
+      ],
+      "specific_tokens": [
+        "updated",
+        "version"
+      ],
+      "required_files": [
+        "fastify.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "fastify.js",
+            "tokens": [
+              "fastify"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-15c2fb193346",
+      "repository": "fastify",
+      "commit": "15c2fb1933461f846a6160923a2bc4e091039826",
+      "base_revision": "eaff726a68c629c1aedc99f96b3c4b95dfdb38d1",
+      "authored_at": "2026-08-13T17:32:28+02:00",
+      "query": "return undefined for invalid media types (#6942)",
+      "query_tokens": [
+        "invalid",
+        "media",
+        "return",
+        "types",
+        "undefined"
+      ],
+      "specific_tokens": [
+        "invalid",
+        "media",
+        "return",
+        "types",
+        "undefined"
+      ],
+      "required_files": [
+        "lib/content-type.js"
+      ],
+      "derivable_files": [
+        "test/content-type.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-16a74e7cb2d1",
+      "repository": "fastify",
+      "commit": "16a74e7cb2d1abdc2feca9097f2936fe8b851a5c",
+      "base_revision": "27938ac777c15482a81881b29f86c82b025f7fae",
+      "authored_at": "2026-08-07T23:37:50-07:00",
+      "query": "reset lastIndex before testing global/sticky content-type RegExp parsers (#6846)",
+      "query_tokens": [
+        "content",
+        "global",
+        "index",
+        "last",
+        "parsers",
+        "reset",
+        "sticky",
+        "testing",
+        "type"
+      ],
+      "specific_tokens": [
+        "content",
+        "global",
+        "index",
+        "last",
+        "parsers",
+        "reset",
+        "sticky",
+        "testing",
+        "type"
+      ],
+      "required_files": [
+        "lib/content-type-parser.js",
+        "test/content-parser.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/content-type-parser.js",
+            "tokens": [
+              "content",
+              "type"
+            ]
+          },
+          {
+            "path": "test/content-parser.test.js",
+            "tokens": [
+              "content"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-16b2e4d01888",
+      "repository": "fastify",
+      "commit": "16b2e4d018885a732aa0702bf708f4f790f5ef7f",
+      "base_revision": "0c7abb1eb55d8cae7c73789d8c400a5d1603d37b",
+      "authored_at": "2025-05-17T18:50:04+07:00",
+      "query": "add missing version to request.routeOptions (#6126)",
+      "query_tokens": [
+        "missing",
+        "options",
+        "request",
+        "route",
+        "version"
+      ],
+      "specific_tokens": [
+        "missing",
+        "options",
+        "request",
+        "route",
+        "version"
+      ],
+      "required_files": [
+        "test/types/request.test-d.ts",
+        "types/request.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/types/request.test-d.ts",
+            "tokens": [
+              "request"
+            ]
+          },
+          {
+            "path": "types/request.d.ts",
+            "tokens": [
+              "request"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-16c2c3db5cf0",
+      "repository": "fastify",
+      "commit": "16c2c3db5cf0fedba34860ae68399ae7f82a0787",
+      "base_revision": "eb428803e9c0b3b482fcfd094fa55c7c81ff9c30",
+      "authored_at": "2025-06-10T16:55:01+02:00",
+      "query": "do not freeze request.routeOptions (#6141)",
+      "query_tokens": [
+        "freeze",
+        "options",
+        "request",
+        "route"
+      ],
+      "specific_tokens": [
+        "freeze",
+        "options",
+        "request",
+        "route"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/request-error.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/request.js",
+            "tokens": [
+              "request"
+            ]
+          },
+          {
+            "path": "test/request-error.test.js",
+            "tokens": [
+              "request"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-1d5f8ae199ed",
+      "repository": "fastify",
+      "commit": "1d5f8ae199edddea68f6df4c5d68b62279e6c59d",
+      "base_revision": "c02c5f5696c8695184f355891106ec26139cb559",
+      "authored_at": "2026-01-03T14:34:18+01:00",
+      "query": "ajv options type validation (#6437)",
+      "query_tokens": [
+        "options",
+        "type",
+        "validation"
+      ],
+      "specific_tokens": [
+        "options",
+        "type",
+        "validation"
+      ],
+      "required_files": [
+        "fastify.d.ts",
+        "fastify.js",
+        "test/types/fastify.test-d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [
+        "package.json"
+      ],
+      "excluded_files": [
+        "docs/Reference/Server.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-1e0be1294e85",
+      "repository": "fastify",
+      "commit": "1e0be1294e85734f1e6ac651f3ff664d389d7799",
+      "base_revision": "8fad07272bf8042db8c0074c6fd40ed50fb6b0f7",
+      "authored_at": "2026-02-28T09:32:19Z",
+      "query": "remove format placeholder from FST_ERR_CTP_INVALID_MEDIA_TYPE message (#6528)",
+      "query_tokens": [
+        "format",
+        "invalid",
+        "media",
+        "message",
+        "placeholder",
+        "remove",
+        "type"
+      ],
+      "specific_tokens": [
+        "format",
+        "invalid",
+        "media",
+        "message",
+        "placeholder",
+        "remove",
+        "type"
+      ],
+      "required_files": [
+        "lib/content-type-parser.js",
+        "lib/errors.js",
+        "test/content-parser.test.js"
+      ],
+      "derivable_files": [
+        "test/internals/errors.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "lib/content-type-parser.js",
+            "tokens": [
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-21b4c3c10103",
+      "repository": "fastify",
+      "commit": "21b4c3c101038030e552ad2cfcca3f43a349f464",
+      "base_revision": "9bbf60978d013c26663b7be8031ecc12e6db12bd",
+      "authored_at": "2026-04-24T08:59:22+02:00",
+      "query": "guard forwarded host and protocol on socket presence (#6684)",
+      "query_tokens": [
+        "forwarded",
+        "guard",
+        "host",
+        "presence",
+        "protocol",
+        "socket"
+      ],
+      "specific_tokens": [
+        "forwarded",
+        "guard",
+        "host",
+        "presence",
+        "protocol",
+        "socket"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/trust-proxy.test.js"
+      ],
+      "derivable_files": [
+        "test/internals/request.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-27938ac777c1",
+      "repository": "fastify",
+      "commit": "27938ac777c15482a81881b29f86c82b025f7fae",
+      "base_revision": "a2f590563f111ebc8e92b8f17701909e9b19d4b7",
+      "authored_at": "2026-08-08T09:36:43+03:00",
+      "query": "recognize constructor-assigned built-in properties as decorator dependencies (#6892)",
+      "query_tokens": [
+        "assigned",
+        "built",
+        "constructor",
+        "decorator",
+        "dependencies",
+        "properties",
+        "recognize"
+      ],
+      "specific_tokens": [
+        "assigned",
+        "built",
+        "constructor",
+        "decorator",
+        "dependencies",
+        "properties",
+        "recognize"
+      ],
+      "required_files": [
+        "lib/decorate.js",
+        "test/decorator-instance-properties.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/decorator-instance-properties.test.js",
+            "tokens": [
+              "decorator",
+              "properties"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-29bdcbb91f13",
+      "repository": "fastify",
+      "commit": "29bdcbb91f1318dc90ae8c0e52ab6f4e13c42744",
+      "base_revision": "01ca8393b9d10a897f0d2daedbe2f9eb90076ef5",
+      "authored_at": "2026-07-30T12:22:03+03:00",
+      "query": "honor quoted-string in Content-Type parameter values (#6865)",
+      "query_tokens": [
+        "content",
+        "honor",
+        "parameter",
+        "quoted",
+        "string",
+        "type",
+        "values"
+      ],
+      "specific_tokens": [
+        "content",
+        "honor",
+        "parameter",
+        "quoted",
+        "string",
+        "type",
+        "values"
+      ],
+      "required_files": [
+        "lib/content-type.js",
+        "test/internals/reply.test.js"
+      ],
+      "derivable_files": [
+        "test/content-type.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "lib/content-type.js",
+            "tokens": [
+              "content",
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-2ae3e1d73491",
+      "repository": "fastify",
+      "commit": "2ae3e1d73491c023080efed566204c470cb49fd0",
+      "base_revision": "d76dbcd58bf6d82bba167cdc74a79d2f74dbcb97",
+      "authored_at": "2026-04-21T05:38:51-04:00",
+      "query": "validate invalid route logLevel at registration (#6523)",
+      "query_tokens": [
+        "invalid",
+        "level",
+        "registration",
+        "route",
+        "validate"
+      ],
+      "specific_tokens": [
+        "invalid",
+        "level",
+        "registration",
+        "route",
+        "validate"
+      ],
+      "required_files": [
+        "lib/errors.js",
+        "lib/route.js",
+        "test/logger/options.test.js",
+        "types/errors.d.ts"
+      ],
+      "derivable_files": [
+        "test/internals/errors.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Errors.md",
+        "docs/Reference/Routes.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.25,
+        "shared_tokens": [
+          {
+            "path": "lib/route.js",
+            "tokens": [
+              "route"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-2af83d64b53a",
+      "repository": "fastify",
+      "commit": "2af83d64b53a0a786141d93edb9ffefac8b6446a",
+      "base_revision": "5c14e05670c80455b99286ee0b6eac05eabec831",
+      "authored_at": "2026-01-24T13:11:54Z",
+      "query": "Fix MIT Licence file to conform to standard (#6464)",
+      "query_tokens": [
+        "conform",
+        "file",
+        "licence",
+        "standard"
+      ],
+      "specific_tokens": [
+        "conform",
+        "file",
+        "licence",
+        "standard"
+      ],
+      "required_files": [
+        "LICENSE"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-2bf4265b991a",
+      "repository": "fastify",
+      "commit": "2bf4265b991aa4c9a2d3886882be6f062338c7bc",
+      "base_revision": "fc9eafddae37dea167d2affc26a29a04f9412047",
+      "authored_at": "2026-06-07T15:19:47+02:00",
+      "query": "chunk large HTTP/2 buffer replies (#6746)",
+      "query_tokens": [
+        "buffer",
+        "chunk",
+        "http",
+        "large",
+        "replies"
+      ],
+      "specific_tokens": [
+        "buffer",
+        "chunk",
+        "http",
+        "large",
+        "replies"
+      ],
+      "required_files": [
+        "lib/reply.js",
+        "test/http2/plain.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Reply.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-2c0be02b396b",
+      "repository": "fastify",
+      "commit": "2c0be02b396bdd37bc34ee49356003be3c5a3f95",
+      "base_revision": "1b6ddaaa888833f7192fe721e9ecc292e410d344",
+      "authored_at": "2025-03-27T23:30:08+07:00",
+      "query": "wrong reply return type (#6026)",
+      "query_tokens": [
+        "reply",
+        "return",
+        "type",
+        "wrong"
+      ],
+      "specific_tokens": [
+        "reply",
+        "return",
+        "type"
+      ],
+      "required_files": [
+        "test/types/type-provider.test-d.ts",
+        "types/type-provider.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/types/type-provider.test-d.ts",
+            "tokens": [
+              "type"
+            ]
+          },
+          {
+            "path": "types/type-provider.d.ts",
+            "tokens": [
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-2f597a9297a3",
+      "repository": "fastify",
+      "commit": "2f597a9297a3020a9f30bf5548a8442c28ddb1c1",
+      "base_revision": "8b9c07b645a8156c23a1d2619267fc84ea879250",
+      "authored_at": "2026-06-21T07:54:17-05:00",
+      "query": "avoid double slash when joining nested prefixes (#6803)",
+      "query_tokens": [
+        "avoid",
+        "double",
+        "joining",
+        "nested",
+        "prefixes",
+        "slash"
+      ],
+      "specific_tokens": [
+        "avoid",
+        "double",
+        "joining",
+        "nested",
+        "prefixes",
+        "slash"
+      ],
+      "required_files": [
+        "lib/plugin-override.js",
+        "test/route-prefix.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-325682c9e5ab",
+      "repository": "fastify",
+      "commit": "325682c9e5abb4dce494770c7cdf27139934347d",
+      "base_revision": "ff7eff5eec8a820b2c6f79b477e1a784bbf42341",
+      "authored_at": "2026-07-26T20:59:25+08:00",
+      "query": "correctly update falsy values from validator (#6483)",
+      "query_tokens": [
+        "correctly",
+        "falsy",
+        "update",
+        "validator",
+        "values"
+      ],
+      "specific_tokens": [
+        "falsy",
+        "validator",
+        "values"
+      ],
+      "required_files": [
+        "lib/validation.js",
+        "test/fix-6411.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-329e40f09f23",
+      "repository": "fastify",
+      "commit": "329e40f09f23910ed0193a9636b474844a7fbe79",
+      "base_revision": "34fea68924d1b8bec34b18b5317c71f9006790f1",
+      "authored_at": "2025-09-26T16:56:39-03:00",
+      "query": "error throwing in reply (#6299)",
+      "query_tokens": [
+        "error",
+        "reply",
+        "throwing"
+      ],
+      "specific_tokens": [
+        "reply",
+        "throwing"
+      ],
+      "required_files": [
+        "lib/reply.js",
+        "test/reply-web-stream-locked.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/reply.js",
+            "tokens": [
+              "reply"
+            ]
+          },
+          {
+            "path": "test/reply-web-stream-locked.test.js",
+            "tokens": [
+              "reply"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-36498f85a91c",
+      "repository": "fastify",
+      "commit": "36498f85a91cebc107282fe8128e08e48567bde0",
+      "base_revision": "4e5a3631ec731fa9b82689e140b399f21a8b96fd",
+      "authored_at": "2025-09-22T17:19:05+05:00",
+      "query": "close http2 sessions on close server (#6137)",
+      "query_tokens": [
+        "close",
+        "http2",
+        "server",
+        "sessions"
+      ],
+      "specific_tokens": [
+        "close",
+        "http2",
+        "server",
+        "sessions"
+      ],
+      "required_files": [
+        "fastify.js",
+        "lib/server.js",
+        "lib/symbols.js",
+        "test/http2/closing.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Server.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "lib/server.js",
+            "tokens": [
+              "server"
+            ]
+          },
+          {
+            "path": "test/http2/closing.test.js",
+            "tokens": [
+              "http2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-37c7ca89d88f",
+      "repository": "fastify",
+      "commit": "37c7ca89d88f55880e6fe23c6d5d8b26c048538f",
+      "base_revision": "787b7a7c2e00f2fa211a3e52d134ca1e8ce81530",
+      "authored_at": "2025-01-09T09:42:41+01:00",
+      "query": "don't check for payload type in default json parser (#5933)",
+      "query_tokens": [
+        "check",
+        "default",
+        "json",
+        "parser",
+        "payload",
+        "type"
+      ],
+      "specific_tokens": [
+        "check",
+        "default",
+        "json",
+        "parser",
+        "payload",
+        "type"
+      ],
+      "required_files": [
+        "lib/contentTypeParser.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/contentTypeParser.js",
+            "tokens": [
+              "parser",
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-39f0f24233cf",
+      "repository": "fastify",
+      "commit": "39f0f24233cf6da2fef48551f51be2f589f7d5d0",
+      "base_revision": "af92d0d2a9280a41e23fea4dc2b5cfff41169d5d",
+      "authored_at": "2026-03-23T07:25:33-04:00",
+      "query": "Fix port parsing (#6603)",
+      "query_tokens": [
+        "parsing",
+        "port"
+      ],
+      "specific_tokens": [
+        "parsing",
+        "port"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/request-port.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/request-port.test.js",
+            "tokens": [
+              "port"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-39f35f9a0596",
+      "repository": "fastify",
+      "commit": "39f35f9a0596537326b960183b1aa64aca796632",
+      "base_revision": "70b14e92c0b55e8201f5530ba2e6bab4e928c784",
+      "authored_at": "2025-09-09T23:34:30+02:00",
+      "query": "fix typo of deprecation warning FSTDEP022 (#6313)",
+      "query_tokens": [
+        "deprecation",
+        "fstdep022",
+        "typo",
+        "warning"
+      ],
+      "specific_tokens": [
+        "deprecation",
+        "fstdep022",
+        "typo",
+        "warning"
+      ],
+      "required_files": [
+        "lib/warnings.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-3b0f76993d51",
+      "repository": "fastify",
+      "commit": "3b0f76993d51f8db662814c693f4ebea8d97cc95",
+      "base_revision": "e4474cfd794b1ff3cf4cbdb60c465c69fed4db1d",
+      "authored_at": "2026-03-07T09:44:16+01:00",
+      "query": "anchor keyValuePairsReg to prevent quadratic backtracking (#6558)",
+      "query_tokens": [
+        "anchor",
+        "backtracking",
+        "pairs",
+        "prevent",
+        "quadratic",
+        "value"
+      ],
+      "specific_tokens": [
+        "anchor",
+        "backtracking",
+        "pairs",
+        "prevent",
+        "quadratic",
+        "value"
+      ],
+      "required_files": [
+        "lib/content-type.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-3bcb8cfb2e5c",
+      "repository": "fastify",
+      "commit": "3bcb8cfb2e5c635a5ce60fd00f1d78ef150b91a5",
+      "base_revision": "c5f4a17b1342470e4de80414164723f812d095a1",
+      "authored_at": "2025-01-03T18:05:55+08:00",
+      "query": "ReadableStream.locked crashes application (#5920)",
+      "query_tokens": [
+        "application",
+        "crashes",
+        "locked",
+        "readable",
+        "stream"
+      ],
+      "specific_tokens": [
+        "application",
+        "crashes",
+        "locked",
+        "readable",
+        "stream"
+      ],
+      "required_files": [
+        "lib/errors.js",
+        "lib/reply.js",
+        "test/web-api.test.js"
+      ],
+      "derivable_files": [
+        "test/internals/errors.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Errors.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-47670c1fced0",
+      "repository": "fastify",
+      "commit": "47670c1fced0dbdd630ef7719823cce74241cc63",
+      "base_revision": "3e04cff927534744290f26cf15220f6824e9dc66",
+      "authored_at": "2026-05-30T14:45:56+03:00",
+      "query": "include hint and docs URL in FSTWRN004 warning message (#6723)",
+      "query_tokens": [
+        "docs",
+        "fstwrn004",
+        "hint",
+        "include",
+        "message",
+        "warning"
+      ],
+      "specific_tokens": [
+        "docs",
+        "fstwrn004",
+        "hint",
+        "include",
+        "message",
+        "warning"
+      ],
+      "required_files": [
+        "fastify.js",
+        "lib/warnings.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Warnings.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-4e1db5bd0012",
+      "repository": "fastify",
+      "commit": "4e1db5bd0012ccf63a49ff105a63e25981b9a747",
+      "base_revision": "a22217f9420f70017a419d8e18b2a3141ab27989",
+      "authored_at": "2026-03-05T12:15:57-05:00",
+      "query": "gate host and protocol getters on proxy trust function",
+      "query_tokens": [
+        "function",
+        "gate",
+        "getters",
+        "host",
+        "protocol",
+        "proxy",
+        "trust"
+      ],
+      "specific_tokens": [
+        "function",
+        "gate",
+        "getters",
+        "host",
+        "protocol",
+        "proxy",
+        "trust"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/trust-proxy.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/trust-proxy.test.js",
+            "tokens": [
+              "proxy",
+              "trust"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-4e5a3631ec73",
+      "repository": "fastify",
+      "commit": "4e5a3631ec731fa9b82689e140b399f21a8b96fd",
+      "base_revision": "80ef70c2541cac5cacf7e288c2db35e3763e0c09",
+      "authored_at": "2025-09-22T14:18:35+02:00",
+      "query": "correct session.close() context in http2 timeout handler (#6327)",
+      "query_tokens": [
+        "close",
+        "context",
+        "correct",
+        "handler",
+        "http2",
+        "session",
+        "timeout"
+      ],
+      "specific_tokens": [
+        "close",
+        "context",
+        "handler",
+        "http2",
+        "session",
+        "timeout"
+      ],
+      "required_files": [
+        "lib/server.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-4fceec019ba2",
+      "repository": "fastify",
+      "commit": "4fceec019ba2f893758a3b8434cddf36cd407f4c",
+      "base_revision": "76d50af2e2fb281b20965e8ebb52e4a7dd4e8de0",
+      "authored_at": "2026-06-11T15:29:51+03:00",
+      "query": "correct duplicate 'not' typos in warnings.js comments (#6713)",
+      "query_tokens": [
+        "comments",
+        "correct",
+        "duplicate",
+        "typos",
+        "warnings"
+      ],
+      "specific_tokens": [
+        "comments",
+        "duplicate",
+        "typos",
+        "warnings"
+      ],
+      "required_files": [
+        "lib/warnings.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/warnings.js",
+            "tokens": [
+              "warnings"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-4ff4c1296267",
+      "repository": "fastify",
+      "commit": "4ff4c1296267f9b004f812a9cf2b3eeedcb5bab9",
+      "base_revision": "76281098f57dfe9a2af4dd86576995cb772f95c2",
+      "authored_at": "2025-07-13T18:59:56+02:00",
+      "query": "account for EPIPE fetch errors in tests (#6255)",
+      "query_tokens": [
+        "account",
+        "epipe",
+        "errors",
+        "fetch",
+        "tests"
+      ],
+      "specific_tokens": [
+        "account",
+        "epipe",
+        "fetch",
+        "tests"
+      ],
+      "required_files": [
+        "test/helper.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-55345987cb51",
+      "repository": "fastify",
+      "commit": "55345987cb51f3266a3f3ea746c2473bf9956036",
+      "base_revision": "e0315b9db2ac5e9eb447f95812785311b2df4eb9",
+      "authored_at": "2025-06-26T03:54:54+08:00",
+      "query": "handle abort signal in fastify.listen (#6235)",
+      "query_tokens": [
+        "abort",
+        "fastify",
+        "handle",
+        "listen",
+        "signal"
+      ],
+      "specific_tokens": [
+        "abort",
+        "listen",
+        "signal"
+      ],
+      "required_files": [
+        "fastify.js",
+        "lib/server.js"
+      ],
+      "derivable_files": [
+        "test/server.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "fastify.js",
+            "tokens": [
+              "fastify"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-55c4841507bd",
+      "repository": "fastify",
+      "commit": "55c4841507bd796030a0aa754ed51f5865f732a4",
+      "base_revision": "31ef7a4bee18374f9ef9f19618d803ed0534564b",
+      "authored_at": "2025-06-14T15:00:47+02:00",
+      "query": "close pipelining flaky test (#6204)",
+      "query_tokens": [
+        "close",
+        "flaky",
+        "pipelining",
+        "test"
+      ],
+      "specific_tokens": [
+        "close",
+        "flaky",
+        "pipelining",
+        "test"
+      ],
+      "required_files": [
+        "test/close-pipelining.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/close-pipelining.test.js",
+            "tokens": [
+              "close",
+              "pipelining",
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-6682c4f9a76c",
+      "repository": "fastify",
+      "commit": "6682c4f9a76cbb60c372ba5cad9dd2fc6e2fdb51",
+      "base_revision": "ab9b96eb2f93373949c253933eddb46f6772bbf4",
+      "authored_at": "2026-07-11T19:45:45+05:30",
+      "query": "normalize method in findRoute (#6838)",
+      "query_tokens": [
+        "find",
+        "method",
+        "normalize",
+        "route"
+      ],
+      "specific_tokens": [
+        "find",
+        "method",
+        "normalize",
+        "route"
+      ],
+      "required_files": [
+        "lib/route.js",
+        "test/find-route.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/route.js",
+            "tokens": [
+              "route"
+            ]
+          },
+          {
+            "path": "test/find-route.test.js",
+            "tokens": [
+              "find",
+              "route"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-6a428d94f6bf",
+      "repository": "fastify",
+      "commit": "6a428d94f6bf42792d4b91dd7643f74f5e2960eb",
+      "base_revision": "79cbc96aef2a29f58b6ceff3405e744709cef004",
+      "authored_at": "2025-09-24T14:43:13+02:00",
+      "query": "accept htab ows (#6303)",
+      "query_tokens": [
+        "accept",
+        "htab"
+      ],
+      "specific_tokens": [
+        "accept",
+        "htab"
+      ],
+      "required_files": [
+        "lib/content-type-parser.js",
+        "test/content-parser.test.js",
+        "test/schema-validation.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-6ac2e9537053",
+      "repository": "fastify",
+      "commit": "6ac2e953705312d0ac8776166b96f509dd153613",
+      "base_revision": "5f4871f931d45d576bc3385cd1e95f0d668abf4f",
+      "authored_at": "2026-07-05T11:20:22+02:00",
+      "query": "derive request.port from request.host (#6680)",
+      "query_tokens": [
+        "derive",
+        "host",
+        "port",
+        "request"
+      ],
+      "specific_tokens": [
+        "derive",
+        "host",
+        "port",
+        "request"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/trust-proxy.test.js"
+      ],
+      "derivable_files": [
+        "test/internals/request.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "lib/request.js",
+            "tokens": [
+              "request"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-6d202c6203f3",
+      "repository": "fastify",
+      "commit": "6d202c6203f33ceb709dbcf6311b2d7152a8a057",
+      "base_revision": "10c69d153c6ee4a61878eabfb2a8f3ec34ab9c8c",
+      "authored_at": "2026-05-07T11:46:30+03:00",
+      "query": "enable diagnostics tracking for async error handlers (#6458)",
+      "query_tokens": [
+        "async",
+        "diagnostics",
+        "enable",
+        "error",
+        "handlers",
+        "tracking"
+      ],
+      "specific_tokens": [
+        "async",
+        "diagnostics",
+        "enable",
+        "handlers",
+        "tracking"
+      ],
+      "required_files": [
+        "lib/error-handler.js",
+        "lib/handle-request.js",
+        "lib/symbols.js",
+        "test/diagnostics-channel/async-error-handler.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "lib/error-handler.js",
+            "tokens": [
+              "error"
+            ]
+          },
+          {
+            "path": "test/diagnostics-channel/async-error-handler.test.js",
+            "tokens": [
+              "async",
+              "diagnostics",
+              "error"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-6e95cb9f6de4",
+      "repository": "fastify",
+      "commit": "6e95cb9f6de47deaf145138661c70a1eec34ec97",
+      "base_revision": "d693f43d890f07a8852b4737b048ed76458139a2",
+      "authored_at": "2026-08-16T16:56:42+03:00",
+      "query": "Fix prefix route options url (#6719)",
+      "query_tokens": [
+        "options",
+        "prefix",
+        "route"
+      ],
+      "specific_tokens": [
+        "options",
+        "prefix",
+        "route"
+      ],
+      "required_files": [
+        "lib/route.js",
+        "test/route-prefix.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/route.js",
+            "tokens": [
+              "route"
+            ]
+          },
+          {
+            "path": "test/route-prefix.test.js",
+            "tokens": [
+              "prefix",
+              "route"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-6f63ce9324b7",
+      "repository": "fastify",
+      "commit": "6f63ce9324b7368ac8beff1f385b31addce35c2d",
+      "base_revision": "75d74e1af74598deb18f2c052d64f815a5eec8f8",
+      "authored_at": "2026-07-05T15:57:09+08:00",
+      "query": "use ContentType to detect `json` and `charset` in reply.send (#6830)",
+      "query_tokens": [
+        "charset",
+        "content",
+        "detect",
+        "json",
+        "reply",
+        "send",
+        "type"
+      ],
+      "specific_tokens": [
+        "charset",
+        "content",
+        "detect",
+        "json",
+        "reply",
+        "send",
+        "type"
+      ],
+      "required_files": [
+        "lib/content-type-parser.js",
+        "lib/content-type.js",
+        "lib/handle-request.js",
+        "lib/reply.js",
+        "lib/request.js"
+      ],
+      "derivable_files": [
+        "test/content-type.test.js",
+        "test/internals/reply.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.6,
+        "shared_tokens": [
+          {
+            "path": "lib/content-type-parser.js",
+            "tokens": [
+              "content",
+              "type"
+            ]
+          },
+          {
+            "path": "lib/content-type.js",
+            "tokens": [
+              "content",
+              "type"
+            ]
+          },
+          {
+            "path": "lib/reply.js",
+            "tokens": [
+              "reply"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-7299a57d3fdc",
+      "repository": "fastify",
+      "commit": "7299a57d3fdce7da49f2c6d19ba08dc673e53f22",
+      "base_revision": "043baf988048c08ee87190193089a3b714f163fe",
+      "authored_at": "2026-08-03T19:07:20+05:30",
+      "query": "clear trailer state when removing all trailers (#6845)",
+      "query_tokens": [
+        "clear",
+        "removing",
+        "state",
+        "trailer",
+        "trailers"
+      ],
+      "specific_tokens": [
+        "clear",
+        "removing",
+        "state",
+        "trailer",
+        "trailers"
+      ],
+      "required_files": [
+        "lib/reply.js",
+        "test/reply-trailers.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/reply-trailers.test.js",
+            "tokens": [
+              "trailers"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-750976cc4cb0",
+      "repository": "fastify",
+      "commit": "750976cc4cb09c3aedc00b27a971601856a5eafe",
+      "base_revision": "e73481cc38a2c5532d022f1e796aca3b0e728e18",
+      "authored_at": "2025-06-05T00:39:57+02:00",
+      "query": "hook async flaky (#6155)",
+      "query_tokens": [
+        "async",
+        "flaky",
+        "hook"
+      ],
+      "specific_tokens": [
+        "async",
+        "flaky",
+        "hook"
+      ],
+      "required_files": [
+        "test/hooks-async.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/hooks-async.test.js",
+            "tokens": [
+              "async"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-79ab8e956482",
+      "repository": "fastify",
+      "commit": "79ab8e956482971a8cc0544ab9a846168b11998d",
+      "base_revision": "970c575832521fff01cc018d928d84454811173b",
+      "authored_at": "2025-12-23T19:21:46+01:00",
+      "query": "use JSON.stringify in onBadUrl for proper escaping (#6420)",
+      "query_tokens": [
+        "escaping",
+        "json",
+        "proper",
+        "stringify"
+      ],
+      "specific_tokens": [
+        "escaping",
+        "json",
+        "stringify"
+      ],
+      "required_files": [
+        "fastify.js",
+        "test/404s.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-7f6d31980632",
+      "repository": "fastify",
+      "commit": "7f6d31980632eaa9c751dda48da8d12ff76ab411",
+      "base_revision": "0c28b57cef28d15b6873df77c0f76a80a0ad2269",
+      "authored_at": "2026-07-01T14:36:20+05:30",
+      "query": "clear socket._meta on reply.hijack() when onTimeout is registered (#6810)",
+      "query_tokens": [
+        "clear",
+        "hijack",
+        "meta",
+        "registered",
+        "reply",
+        "socket",
+        "timeout"
+      ],
+      "specific_tokens": [
+        "clear",
+        "hijack",
+        "meta",
+        "registered",
+        "reply",
+        "socket",
+        "timeout"
+      ],
+      "required_files": [
+        "lib/reply.js",
+        "lib/route.js",
+        "test/hooks.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "lib/reply.js",
+            "tokens": [
+              "reply"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-80ef70c2541c",
+      "repository": "fastify",
+      "commit": "80ef70c2541cac5cacf7e288c2db35e3763e0c09",
+      "base_revision": "9a67d3a4875e2c078f9f710035a7625819853677",
+      "authored_at": "2025-09-22T14:18:04+02:00",
+      "query": "(types) allow FastifySchemaValidationError[] as an error (#6326)",
+      "query_tokens": [
+        "allow",
+        "error",
+        "fastify",
+        "schema",
+        "types",
+        "validation"
+      ],
+      "specific_tokens": [
+        "allow",
+        "schema",
+        "types",
+        "validation"
+      ],
+      "required_files": [
+        "test/types/schema.test-d.ts",
+        "types/schema.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/types/schema.test-d.ts",
+            "tokens": [
+              "schema",
+              "types"
+            ]
+          },
+          {
+            "path": "types/schema.d.ts",
+            "tokens": [
+              "schema",
+              "types"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-812ef58f8ab1",
+      "repository": "fastify",
+      "commit": "812ef58f8ab1e765a148177d5491d6384670b19e",
+      "base_revision": "b84733e997340076240d93db5bbeef716df58756",
+      "authored_at": "2025-08-14T05:33:30-04:00",
+      "query": "update typescript pino type to pick (#6287)",
+      "query_tokens": [
+        "pick",
+        "pino",
+        "type",
+        "typescript",
+        "update"
+      ],
+      "specific_tokens": [
+        "pick",
+        "pino",
+        "type",
+        "typescript"
+      ],
+      "required_files": [
+        "types/logger.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-8435cb10f93e",
+      "repository": "fastify",
+      "commit": "8435cb10f93e149c8956f815db9e5dd59789a1d9",
+      "base_revision": "b01e67d46628fa8c3995c9dce79f06ccf51d845b",
+      "authored_at": "2025-06-17T09:13:38+02:00",
+      "query": "close fastify instance (#6177)",
+      "query_tokens": [
+        "close",
+        "fastify",
+        "instance"
+      ],
+      "specific_tokens": [
+        "close",
+        "instance"
+      ],
+      "required_files": [
+        "test/http2/secure-with-fallback.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-8b9c07b645a8",
+      "repository": "fastify",
+      "commit": "8b9c07b645a8156c23a1d2619267fc84ea879250",
+      "base_revision": "9d2914857906a98b6366266417d6527ab8e5e06f",
+      "authored_at": "2026-06-19T20:51:34+05:30",
+      "query": "clear socket._meta after response to prevent keep-alive leaks (#6799)",
+      "query_tokens": [
+        "alive",
+        "clear",
+        "keep",
+        "leaks",
+        "meta",
+        "prevent",
+        "response",
+        "socket"
+      ],
+      "specific_tokens": [
+        "alive",
+        "clear",
+        "keep",
+        "leaks",
+        "meta",
+        "prevent",
+        "response",
+        "socket"
+      ],
+      "required_files": [
+        "lib/reply.js",
+        "test/hooks.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-8ddd4fa85629",
+      "repository": "fastify",
+      "commit": "8ddd4fa85629b6907ef2d262c2dde0081568dee2",
+      "base_revision": "850ebf6ef0d71284e37c2bc98f41bbe2ec2c45c0",
+      "authored_at": "2025-05-11T08:58:47+02:00",
+      "query": "internal function _addHook failure should be turned into the rejection that app.ready() is waiting for (#6105)",
+      "query_tokens": [
+        "failure",
+        "function",
+        "hook",
+        "internal",
+        "ready",
+        "rejection",
+        "turned",
+        "waiting"
+      ],
+      "specific_tokens": [
+        "failure",
+        "function",
+        "hook",
+        "internal",
+        "ready",
+        "rejection",
+        "turned",
+        "waiting"
+      ],
+      "required_files": [
+        "fastify.js",
+        "test/internals/hooks.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-8dee9be05ebf",
+      "repository": "fastify",
+      "commit": "8dee9be05ebf683cd212aeff1d294f6ea1ec405c",
+      "base_revision": "d457aeda8611777389c7e4713a288eb7ddb9a389",
+      "authored_at": "2026-03-28T23:40:11Z",
+      "query": "restore trustProxy function for number and string types, add null check for socketAddr (#6613)",
+      "query_tokens": [
+        "addr",
+        "check",
+        "function",
+        "null",
+        "number",
+        "proxy",
+        "restore",
+        "socket",
+        "string",
+        "trust",
+        "types"
+      ],
+      "specific_tokens": [
+        "addr",
+        "check",
+        "function",
+        "null",
+        "number",
+        "proxy",
+        "restore",
+        "socket",
+        "string",
+        "trust",
+        "types"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/trust-proxy.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/trust-proxy.test.js",
+            "tokens": [
+              "proxy",
+              "trust"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-9026164f5a2e",
+      "repository": "fastify",
+      "commit": "9026164f5a2e78db59ff8f98933279161a85a6e3",
+      "base_revision": "6d202c6203f33ceb709dbcf6311b2d7152a8a057",
+      "authored_at": "2026-05-07T10:47:06+02:00",
+      "query": "ignore duplicate trailer completions (#6714)",
+      "query_tokens": [
+        "completions",
+        "duplicate",
+        "ignore",
+        "trailer"
+      ],
+      "specific_tokens": [
+        "completions",
+        "duplicate",
+        "ignore",
+        "trailer"
+      ],
+      "required_files": [
+        "lib/reply.js",
+        "test/reply-trailers.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-9493c0fb716c",
+      "repository": "fastify",
+      "commit": "9493c0fb716cb7eb7c3568702912e3abb92f3193",
+      "base_revision": "af079bd4c60c3cbebedc7640517d7288468fb5eb",
+      "authored_at": "2026-07-29T21:08:36+01:00",
+      "query": "preserve coerced root values",
+      "query_tokens": [
+        "coerced",
+        "preserve",
+        "root",
+        "values"
+      ],
+      "specific_tokens": [
+        "coerced",
+        "preserve",
+        "root",
+        "values"
+      ],
+      "required_files": [
+        "lib/validation.js",
+        "test/fix-root-primitive-coercion.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/fix-root-primitive-coercion.test.js",
+            "tokens": [
+              "root"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-970c57583252",
+      "repository": "fastify",
+      "commit": "970c575832521fff01cc018d928d84454811173b",
+      "base_revision": "ab9dae462a138cd0d3c2d4e4e9e691b426fbbf9e",
+      "authored_at": "2025-12-15T00:18:38+08:00",
+      "query": "set status code before publishing diagnostics error channel (#6412)",
+      "query_tokens": [
+        "channel",
+        "code",
+        "diagnostics",
+        "error",
+        "publishing",
+        "status"
+      ],
+      "specific_tokens": [
+        "channel",
+        "code",
+        "diagnostics",
+        "publishing",
+        "status"
+      ],
+      "required_files": [
+        "lib/error-handler.js",
+        "lib/error-status.js",
+        "lib/handle-request.js",
+        "lib/wrap-thenable.js"
+      ],
+      "derivable_files": [
+        "test/diagnostics-channel/error-status.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "lib/error-handler.js",
+            "tokens": [
+              "error"
+            ]
+          },
+          {
+            "path": "lib/error-status.js",
+            "tokens": [
+              "error",
+              "status"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-9ba6d6016fa9",
+      "repository": "fastify",
+      "commit": "9ba6d6016fa932118e6cb2a2f68617cab0824f12",
+      "base_revision": "74c44c94afea276256721316d25218d1cdd1aae4",
+      "authored_at": "2026-08-03T10:53:18+03:00",
+      "query": "do not force close in-flight connections on 'idle' (#6889)",
+      "query_tokens": [
+        "close",
+        "connections",
+        "flight",
+        "force",
+        "idle"
+      ],
+      "specific_tokens": [
+        "close",
+        "connections",
+        "flight",
+        "force",
+        "idle"
+      ],
+      "required_files": [
+        "fastify.js",
+        "test/close.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/close.test.js",
+            "tokens": [
+              "close"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-9bbf60978d01",
+      "repository": "fastify",
+      "commit": "9bbf60978d013c26663b7be8031ecc12e6db12bd",
+      "base_revision": "efb599a7ac2b4e5ec148cf6a2f547b6dd3ea4eb7",
+      "authored_at": "2026-04-23T03:20:35-07:00",
+      "query": "allow request.getValidationFunction() to return undefined (#6665)",
+      "query_tokens": [
+        "allow",
+        "function",
+        "request",
+        "return",
+        "undefined",
+        "validation"
+      ],
+      "specific_tokens": [
+        "allow",
+        "function",
+        "request",
+        "return",
+        "undefined",
+        "validation"
+      ],
+      "required_files": [
+        "test/types/request.test-d.ts",
+        "types/request.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/types/request.test-d.ts",
+            "tokens": [
+              "request"
+            ]
+          },
+          {
+            "path": "types/request.d.ts",
+            "tokens": [
+              "request"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-9be9fc07b769",
+      "repository": "fastify",
+      "commit": "9be9fc07b7697a4818699e26effe3364d9d3ce4a",
+      "base_revision": "b84061926bb9f7afda65104e1d8d29abbd64090e",
+      "authored_at": "2025-07-30T09:55:03+02:00",
+      "query": "remove unnecessary body length check in contentTypeParser (#6266)",
+      "query_tokens": [
+        "body",
+        "check",
+        "content",
+        "length",
+        "parser",
+        "remove",
+        "type",
+        "unnecessary"
+      ],
+      "specific_tokens": [
+        "body",
+        "check",
+        "content",
+        "length",
+        "parser",
+        "remove",
+        "type",
+        "unnecessary"
+      ],
+      "required_files": [
+        "lib/contentTypeParser.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/contentTypeParser.js",
+            "tokens": [
+              "content",
+              "parser",
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-9dc6486b6594",
+      "repository": "fastify",
+      "commit": "9dc6486b659420bb213fe93fde2432f74e1905ec",
+      "base_revision": "7868e47194bcfb34cab2e51ea36bf10f764b538e",
+      "authored_at": "2025-03-30T19:19:39+09:00",
+      "query": "clear `[kState].readyPromise` for garbage collection (#6030)",
+      "query_tokens": [
+        "clear",
+        "collection",
+        "garbage",
+        "promise",
+        "ready",
+        "state"
+      ],
+      "specific_tokens": [
+        "clear",
+        "collection",
+        "garbage",
+        "promise",
+        "ready",
+        "state"
+      ],
+      "required_files": [
+        "fastify.js",
+        "test/fastify-instance.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-9eaef5123b88",
+      "repository": "fastify",
+      "commit": "9eaef5123b8824ac64e2b30692e78320d3bb8987",
+      "base_revision": "39e87e892da468bbffd4aeb4360c92dca22f4b53",
+      "authored_at": "2026-08-06T13:26:27+05:00",
+      "query": "pass null instead of undefined to requestCompleted on success (#6837)",
+      "query_tokens": [
+        "completed",
+        "instead",
+        "null",
+        "pass",
+        "request",
+        "success",
+        "undefined"
+      ],
+      "specific_tokens": [
+        "completed",
+        "instead",
+        "null",
+        "pass",
+        "request",
+        "success",
+        "undefined"
+      ],
+      "required_files": [
+        "lib/log-controller.js",
+        "types/logger.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-af079bd4c60c",
+      "repository": "fastify",
+      "commit": "af079bd4c60c3cbebedc7640517d7288468fb5eb",
+      "base_revision": "6e95cb9f6de47deaf145138661c70a1eec34ec97",
+      "authored_at": "2026-07-06T18:25:03+02:00",
+      "query": "disable numeric trustProxy hop-count trust",
+      "query_tokens": [
+        "count",
+        "disable",
+        "numeric",
+        "proxy",
+        "trust"
+      ],
+      "specific_tokens": [
+        "count",
+        "disable",
+        "numeric",
+        "proxy",
+        "trust"
+      ],
+      "required_files": [
+        "fastify.d.ts",
+        "lib/request.js",
+        "test/trust-proxy.test.js",
+        "test/types/fastify.tst.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Server.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.25,
+        "shared_tokens": [
+          {
+            "path": "test/trust-proxy.test.js",
+            "tokens": [
+              "proxy",
+              "trust"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-b03d0783f246",
+      "repository": "fastify",
+      "commit": "b03d0783f24602748ca5042cc30dfadefdd2c53a",
+      "base_revision": "6a428d94f6bf42792d4b91dd7643f74f5e2960eb",
+      "authored_at": "2025-09-26T00:12:11+02:00",
+      "query": "handle non FastifyErrors in custom handler properly, set type of error-parameter for setErrorHandler and errorHandler to unknown, but configurable via generic TError (#6308)",
+      "query_tokens": [
+        "configurable",
+        "custom",
+        "error",
+        "errors",
+        "fastify",
+        "generic",
+        "handle",
+        "handler",
+        "parameter",
+        "properly",
+        "terror",
+        "type",
+        "unknown"
+      ],
+      "specific_tokens": [
+        "configurable",
+        "custom",
+        "generic",
+        "handler",
+        "parameter",
+        "terror",
+        "type",
+        "unknown"
+      ],
+      "required_files": [
+        "lib/error-handler.js",
+        "test/500s.test.js",
+        "test/types/instance.test-d.ts",
+        "types/instance.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.25,
+        "shared_tokens": [
+          {
+            "path": "lib/error-handler.js",
+            "tokens": [
+              "error",
+              "handler"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-b0e255a2cdab",
+      "repository": "fastify",
+      "commit": "b0e255a2cdab05ed382a99db70fde482f6464bdd",
+      "base_revision": "0d7182129610148dda7f996f1a0962c43842a228",
+      "authored_at": "2025-08-10T16:01:11+02:00",
+      "query": "OPTIONS Content-Type handling (#6263)",
+      "query_tokens": [
+        "content",
+        "handling",
+        "options",
+        "type"
+      ],
+      "specific_tokens": [
+        "content",
+        "options",
+        "type"
+      ],
+      "required_files": [
+        "lib/handleRequest.js",
+        "test/internals/handle-request.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-b4db85b665ac",
+      "repository": "fastify",
+      "commit": "b4db85b665ac99a809c633b7564d49c8a4c2c5c9",
+      "base_revision": "3653e7b92719061c6c2dfb4497d2d5b936509309",
+      "authored_at": "2026-02-20T23:08:12+01:00",
+      "query": "avoid mutating shared routerOptions across instances (#6515)",
+      "query_tokens": [
+        "across",
+        "avoid",
+        "instances",
+        "mutating",
+        "options",
+        "router",
+        "shared"
+      ],
+      "specific_tokens": [
+        "across",
+        "avoid",
+        "instances",
+        "mutating",
+        "options",
+        "router",
+        "shared"
+      ],
+      "required_files": [
+        "lib/route.js",
+        "test/router-options.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/router-options.test.js",
+            "tokens": [
+              "options",
+              "router"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-c02c5f5696c8",
+      "repository": "fastify",
+      "commit": "c02c5f5696c8695184f355891106ec26139cb559",
+      "base_revision": "f18cda12d62a81f41d14b5c41cd674dd2abef817",
+      "authored_at": "2026-01-03T18:14:22+08:00",
+      "query": "require send() payload when Reply type is specified (#6432)",
+      "query_tokens": [
+        "payload",
+        "reply",
+        "require",
+        "send",
+        "specified",
+        "type"
+      ],
+      "specific_tokens": [
+        "payload",
+        "reply",
+        "require",
+        "send",
+        "specified",
+        "type"
+      ],
+      "required_files": [
+        "test/types/instance.test-d.ts",
+        "test/types/reply.test-d.ts",
+        "test/types/type-provider.test-d.ts",
+        "types/reply.d.ts",
+        "types/type-provider.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.8,
+        "shared_tokens": [
+          {
+            "path": "test/types/reply.test-d.ts",
+            "tokens": [
+              "reply"
+            ]
+          },
+          {
+            "path": "test/types/type-provider.test-d.ts",
+            "tokens": [
+              "type"
+            ]
+          },
+          {
+            "path": "types/reply.d.ts",
+            "tokens": [
+              "reply"
+            ]
+          },
+          {
+            "path": "types/type-provider.d.ts",
+            "tokens": [
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-c06fc06d33e6",
+      "repository": "fastify",
+      "commit": "c06fc06d33e66354cf6f5dc000b1ef2002a5eb96",
+      "base_revision": "d1133d7eac09e075ccfd3b947f6a6e25d727d4d4",
+      "authored_at": "2026-04-21T22:01:17+02:00",
+      "query": "use ContentType parser for response schema lookup (#6685)",
+      "query_tokens": [
+        "content",
+        "lookup",
+        "parser",
+        "response",
+        "schema",
+        "type"
+      ],
+      "specific_tokens": [
+        "content",
+        "lookup",
+        "parser",
+        "response",
+        "schema",
+        "type"
+      ],
+      "required_files": [
+        "lib/schemas.js",
+        "test/schema-serialization.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/schema-serialization.test.js",
+            "tokens": [
+              "schema"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-c277b9f0ec27",
+      "repository": "fastify",
+      "commit": "c277b9f0ec27356de6551d7777117bd739057e99",
+      "base_revision": "95292098426943822fcbc40beaacb314db4bbfbd",
+      "authored_at": "2025-07-20T18:36:53+01:00",
+      "query": "add FST_ERR_CTP_INVALID_JSON_BODY (#5925)",
+      "query_tokens": [
+        "body",
+        "invalid",
+        "json"
+      ],
+      "specific_tokens": [
+        "body",
+        "invalid",
+        "json"
+      ],
+      "required_files": [
+        "lib/contentTypeParser.js",
+        "lib/errors.js",
+        "test/buffer.test.js",
+        "test/types/errors.test-d.ts",
+        "types/errors.d.ts"
+      ],
+      "derivable_files": [
+        "test/internals/errors.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Errors.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-c2ba18c17769",
+      "repository": "fastify",
+      "commit": "c2ba18c17769dacce61472ec0397560b3b4eebde",
+      "base_revision": "d33f017ffef3a9beec687b4d4b1777e2e1180afa",
+      "authored_at": "2026-04-19T05:58:31-07:00",
+      "query": "avoid duplicate closeIdleConnections call on native servers (#6669)",
+      "query_tokens": [
+        "avoid",
+        "call",
+        "close",
+        "connections",
+        "duplicate",
+        "idle",
+        "native",
+        "servers"
+      ],
+      "specific_tokens": [
+        "avoid",
+        "call",
+        "close",
+        "connections",
+        "duplicate",
+        "idle",
+        "native",
+        "servers"
+      ],
+      "required_files": [
+        "fastify.js",
+        "test/close-pipelining.test.js",
+        "test/custom-http-server.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "test/close-pipelining.test.js",
+            "tokens": [
+              "close"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-c4a6e78e5d77",
+      "repository": "fastify",
+      "commit": "c4a6e78e5d7727b0d4323be75623f7815869b5da",
+      "base_revision": "b4db85b665ac99a809c633b7564d49c8a4c2c5c9",
+      "authored_at": "2026-02-20T23:08:27+01:00",
+      "query": "accept async route hooks in shorthand options (#6514)",
+      "query_tokens": [
+        "accept",
+        "async",
+        "hooks",
+        "options",
+        "route",
+        "shorthand"
+      ],
+      "specific_tokens": [
+        "accept",
+        "async",
+        "hooks",
+        "options",
+        "route",
+        "shorthand"
+      ],
+      "required_files": [
+        "test/types/route.test-d.ts",
+        "types/route.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/types/route.test-d.ts",
+            "tokens": [
+              "route"
+            ]
+          },
+          {
+            "path": "types/route.d.ts",
+            "tokens": [
+              "route"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-c647de44ccea",
+      "repository": "fastify",
+      "commit": "c647de44cceaf8ec6ce81796374ff6ffd944d873",
+      "base_revision": "27f4d6222dd945238e96c1fdaa632d5dc3c37b2c",
+      "authored_at": "2026-06-09T15:27:33+03:00",
+      "query": "replace AssertionError with FST_ERR_PLUGIN_DEPENDENCY_NOT_REGISTERED in checkDependencies (#6774)",
+      "query_tokens": [
+        "assertion",
+        "check",
+        "dependencies",
+        "dependency",
+        "error",
+        "plugin",
+        "registered",
+        "replace"
+      ],
+      "specific_tokens": [
+        "assertion",
+        "check",
+        "dependencies",
+        "dependency",
+        "plugin",
+        "registered",
+        "replace"
+      ],
+      "required_files": [
+        "lib/errors.js",
+        "lib/plugin-utils.js",
+        "test/internals/plugin.test.js",
+        "test/types/errors.test-d.ts",
+        "types/errors.d.ts"
+      ],
+      "derivable_files": [
+        "test/internals/errors.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Errors.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.4,
+        "shared_tokens": [
+          {
+            "path": "lib/plugin-utils.js",
+            "tokens": [
+              "plugin"
+            ]
+          },
+          {
+            "path": "test/internals/plugin.test.js",
+            "tokens": [
+              "plugin"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-cc8d9a3c961d",
+      "repository": "fastify",
+      "commit": "cc8d9a3c961d65cb1a39c4142ce63285d2de1e3c",
+      "base_revision": "6e6be153127cbe6e025f73efba78d1db7dd5788b",
+      "authored_at": "2026-06-28T00:45:40-07:00",
+      "query": "make hasRequestDecorator/hasReplyDecorator recognize constructor-assigned built-in properties (#6753)",
+      "query_tokens": [
+        "assigned",
+        "built",
+        "constructor",
+        "decorator",
+        "make",
+        "properties",
+        "recognize",
+        "reply",
+        "request"
+      ],
+      "specific_tokens": [
+        "assigned",
+        "built",
+        "constructor",
+        "decorator",
+        "make",
+        "properties",
+        "recognize",
+        "reply",
+        "request"
+      ],
+      "required_files": [
+        "lib/decorate.js",
+        "lib/reply.js",
+        "lib/request.js",
+        "test/decorator-instance-properties.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.75,
+        "shared_tokens": [
+          {
+            "path": "lib/reply.js",
+            "tokens": [
+              "reply"
+            ]
+          },
+          {
+            "path": "lib/request.js",
+            "tokens": [
+              "request"
+            ]
+          },
+          {
+            "path": "test/decorator-instance-properties.test.js",
+            "tokens": [
+              "decorator",
+              "properties"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-d338dca5ab24",
+      "repository": "fastify",
+      "commit": "d338dca5ab24a4ce0175b4333efe46859ceaffab",
+      "base_revision": "e1aee4b872aaeabbd4f7074794c1015a518f8d9a",
+      "authored_at": "2025-11-08T15:16:10+01:00",
+      "query": "consistent error handling for custom validators in async validation contexts (#6247)",
+      "query_tokens": [
+        "async",
+        "consistent",
+        "contexts",
+        "custom",
+        "error",
+        "handling",
+        "validation",
+        "validators"
+      ],
+      "specific_tokens": [
+        "async",
+        "consistent",
+        "contexts",
+        "custom",
+        "validation",
+        "validators"
+      ],
+      "required_files": [
+        "lib/validation.js",
+        "test/validation-error-handling.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/validation.js",
+            "tokens": [
+              "validation"
+            ]
+          },
+          {
+            "path": "test/validation-error-handling.test.js",
+            "tokens": [
+              "error",
+              "handling",
+              "validation"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-d33f017ffef3",
+      "repository": "fastify",
+      "commit": "d33f017ffef3a9beec687b4d4b1777e2e1180afa",
+      "base_revision": "dce0d47a44ecf6605a4e6b39d80f0bef17c2c2ce",
+      "authored_at": "2026-04-19T15:51:05+08:00",
+      "query": "prevent duplicate res.end in sendTrailer with sync callbacks (#6676)",
+      "query_tokens": [
+        "callbacks",
+        "duplicate",
+        "prevent",
+        "send",
+        "sync",
+        "trailer"
+      ],
+      "specific_tokens": [
+        "callbacks",
+        "duplicate",
+        "prevent",
+        "send",
+        "sync",
+        "trailer"
+      ],
+      "required_files": [
+        "lib/reply.js",
+        "test/reply-trailers.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-d44b3f7b2d2e",
+      "repository": "fastify",
+      "commit": "d44b3f7b2d2e89ef17fe514f52cb0dff74124ac0",
+      "base_revision": "7d7f065e0efb1b2d9f3ba318ac3915a1ac59d5c6",
+      "authored_at": "2025-08-15T18:01:29-04:00",
+      "query": "Fix use of \"esModuleInterop: false\" (#6292)",
+      "query_tokens": [
+        "false",
+        "interop",
+        "module"
+      ],
+      "specific_tokens": [
+        "false",
+        "interop",
+        "module"
+      ],
+      "required_files": [
+        "types/logger.d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-d76dbcd58bf6",
+      "repository": "fastify",
+      "commit": "d76dbcd58bf6d82bba167cdc74a79d2f74dbcb97",
+      "base_revision": "d9659819fbbc391d054f1aa4b49ce969a13610dd",
+      "authored_at": "2026-04-21T01:37:32+08:00",
+      "query": "correct isCustomSerializerCompiler flag check (#6657)",
+      "query_tokens": [
+        "check",
+        "compiler",
+        "correct",
+        "custom",
+        "flag",
+        "serializer"
+      ],
+      "specific_tokens": [
+        "check",
+        "compiler",
+        "custom",
+        "flag",
+        "serializer"
+      ],
+      "required_files": [
+        "lib/schema-controller.js",
+        "test/internals/schema-controller-perf.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-d9659819fbbc",
+      "repository": "fastify",
+      "commit": "d9659819fbbc391d054f1aa4b49ce969a13610dd",
+      "base_revision": "c2ba18c17769dacce61472ec0397560b3b4eebde",
+      "authored_at": "2026-04-19T19:55:38+02:00",
+      "query": "error.code not present on some routing errors (#6674) (#6678)",
+      "query_tokens": [
+        "code",
+        "error",
+        "errors",
+        "present",
+        "routing"
+      ],
+      "specific_tokens": [
+        "code",
+        "present",
+        "routing"
+      ],
+      "required_files": [
+        "lib/route.js",
+        "test/throw.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-dd02e428ddbf",
+      "repository": "fastify",
+      "commit": "dd02e428ddbfe407a2d114d431e60a6a10335ea0",
+      "base_revision": "810e3d548eeceb32c948a0fbfdd90d6d1e6098ce",
+      "authored_at": "2025-11-03T19:42:10+09:00",
+      "query": "handle web stream payload in HEAD route (#6372)",
+      "query_tokens": [
+        "handle",
+        "head",
+        "payload",
+        "route",
+        "stream"
+      ],
+      "specific_tokens": [
+        "head",
+        "payload",
+        "route",
+        "stream"
+      ],
+      "required_files": [
+        "lib/head-route.js",
+        "test/route.6.test.js",
+        "test/route.7.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "lib/head-route.js",
+            "tokens": [
+              "head",
+              "route"
+            ]
+          },
+          {
+            "path": "test/route.6.test.js",
+            "tokens": [
+              "route"
+            ]
+          },
+          {
+            "path": "test/route.7.test.js",
+            "tokens": [
+              "route"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-e1aee4b872aa",
+      "repository": "fastify",
+      "commit": "e1aee4b872aaeabbd4f7074794c1015a518f8d9a",
+      "base_revision": "b5958b3b8ed6fce850ebaabbc4a8a3e5f42b389b",
+      "authored_at": "2025-11-05T08:24:31+01:00",
+      "query": "parse ipv6 hostname (#6373)",
+      "query_tokens": [
+        "hostname",
+        "ipv6",
+        "parse"
+      ],
+      "specific_tokens": [
+        "hostname",
+        "ipv6",
+        "parse"
+      ],
+      "required_files": [
+        "lib/request.js",
+        "test/server.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-e1f58aba76e0",
+      "repository": "fastify",
+      "commit": "e1f58aba76e0510cd69e4e69b507598253b70070",
+      "base_revision": "387b168997acbffb82ea9b10377a43b21aceb259",
+      "authored_at": "2025-10-07T21:49:55+11:00",
+      "query": "respect child logger factory in fastify options (#6349)",
+      "query_tokens": [
+        "child",
+        "factory",
+        "fastify",
+        "logger",
+        "options",
+        "respect"
+      ],
+      "specific_tokens": [
+        "child",
+        "factory",
+        "logger",
+        "options",
+        "respect"
+      ],
+      "required_files": [
+        "fastify.js",
+        "test/child-logger-factory.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "fastify.js",
+            "tokens": [
+              "fastify"
+            ]
+          },
+          {
+            "path": "test/child-logger-factory.test.js",
+            "tokens": [
+              "child",
+              "factory",
+              "logger"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-e4ffc205328d",
+      "repository": "fastify",
+      "commit": "e4ffc205328db294d550c5855d2573b33f5e9d62",
+      "base_revision": "ed664c344f4d7e0171f252d5e886db6d7d241770",
+      "authored_at": "2026-08-12T16:02:56+05:30",
+      "query": "remove raw response headers (#6860)",
+      "query_tokens": [
+        "headers",
+        "remove",
+        "response"
+      ],
+      "specific_tokens": [
+        "headers",
+        "remove",
+        "response"
+      ],
+      "required_files": [
+        "lib/reply.js"
+      ],
+      "derivable_files": [
+        "test/internals/reply.test.js"
+      ],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-f18cda12d62a",
+      "repository": "fastify",
+      "commit": "f18cda12d62a81f41d14b5c41cd674dd2abef817",
+      "base_revision": "4c10980bd4a5a4d19e051f52a018779e6afb588b",
+      "authored_at": "2026-01-02T22:09:58+05:30",
+      "query": "Align routerOptions defaultRoute types with runtime (#6392)",
+      "query_tokens": [
+        "align",
+        "default",
+        "options",
+        "route",
+        "router",
+        "runtime",
+        "types"
+      ],
+      "specific_tokens": [
+        "align",
+        "default",
+        "options",
+        "route",
+        "router",
+        "runtime",
+        "types"
+      ],
+      "required_files": [
+        "build/build-validation.js",
+        "fastify.d.ts",
+        "lib/config-validator.js",
+        "test/issue-4959.test.js",
+        "test/router-options.test.js",
+        "test/types/instance.test-d.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/Reference/Server.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "test/router-options.test.js",
+            "tokens": [
+              "options",
+              "router"
+            ]
+          },
+          {
+            "path": "test/types/instance.test-d.ts",
+            "tokens": [
+              "types"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "fastify-f3d2bcb3963c",
+      "repository": "fastify",
+      "commit": "f3d2bcb3963cd570a582e5d39aab01a9ae692fe4",
+      "base_revision": "9b1cf06987c1b00c90e27ed921a2779edd2f609b",
+      "authored_at": "2025-04-18T22:23:54+02:00",
+      "query": "treat space as a delimiter in content-type parsing (#6064)",
+      "query_tokens": [
+        "content",
+        "delimiter",
+        "parsing",
+        "space",
+        "treat",
+        "type"
+      ],
+      "specific_tokens": [
+        "content",
+        "delimiter",
+        "parsing",
+        "space",
+        "treat",
+        "type"
+      ],
+      "required_files": [
+        "lib/validation.js",
+        "test/schema-validation.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "fastify-f5ef34443c5b",
+      "repository": "fastify",
+      "commit": "f5ef34443c5be0cfc7fbde44f84253ef5d0ec66e",
+      "base_revision": "9a1535bcfe2a780cc6f9c6555df86e5072ca9a29",
+      "authored_at": "2026-08-14T14:20:56+05:00",
+      "query": "run preClose hook exactly once per declaring instance (#6940)",
+      "query_tokens": [
+        "close",
+        "declaring",
+        "exactly",
+        "hook",
+        "instance",
+        "once"
+      ],
+      "specific_tokens": [
+        "close",
+        "declaring",
+        "exactly",
+        "hook",
+        "instance",
+        "once"
+      ],
+      "required_files": [
+        "fastify.js",
+        "test/close.test.js"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/close.test.js",
+            "tokens": [
+              "close"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "rejected_sample": [
+    {
+      "commit": "83e69762aff047940b376fc2a266d143499ef727",
+      "subject": "test(types): assert LogController.requestCompleted accepts an undefined error (#6875)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "dbebe73c421597da96c3154c1036377f4e8e5117",
+      "subject": "docs: fix broken links in Style-Guide.md (#6966)",
+      "reason": "excluded-subject"
+    },
+    {
+      "commit": "9334d07129589f7340adfa4729ebe6c55e34bbfd",
+      "subject": "Bumped v6.0.0-alpha.2",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "d693f43d890f07a8852b4737b048ed76458139a2",
+      "subject": "docs: remove deprecated-API notices ahead of v6 cleanup (#6951)",
+      "reason": "excluded-subject"
+    },
+    {
+      "commit": "9a1535bcfe2a780cc6f9c6555df86e5072ca9a29",
+      "subject": "ci: allow backport in pr title (#6948)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "b7de40faa21e3cff3a214921223dff2203944902",
+      "subject": "test: fix reply.mediaType (#6949)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "377533a260d5de8966f4f9dbe7de9eff5e0d0da9",
+      "subject": "Bumped v6.0.0-alpha.1",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "eaff726a68c629c1aedc99f96b3c4b95dfdb38d1",
+      "subject": "feat: add `Reply.prototype.mediaType` (#6932)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "3efe8748335fea67b7006773a8ea28dd4abc8724",
+      "subject": "test: use process-warning spyWarning for testing (#6887)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "ed664c344f4d7e0171f252d5e886db6d7d241770",
+      "subject": "Bumped v6.0.0-alpha.0",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "2808d207d93c5b56d5ed9cf02ada65c15bb6e8f8",
+      "subject": "refactor(types)!: remove ResSerializerReply type (#6911)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "42321d896471b4a6790c5d7ad619c5586c4a283c",
+      "subject": "refactor(types)!: remove deprecated req in request.d.ts (#6935)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "e1fc82593b614a991e6d237ce2c134f7bf8f9254",
+      "subject": "test: remove @sinonjs/fake-timers (#6934)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "bd3e246de0c107bb9b1f87666a67efd36dbd5da1",
+      "subject": "refactor!: remove FSTDEP025 (#6909)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "63ef53497c52c3b4fdb8c5e0c1b6b14dd5a424fc",
+      "subject": "refactor!: remove FSTDEP024 deprecation (#6912)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "7df35fb8b4238d64086479c3f4caba28f24e418f",
+      "subject": "refactor!: remove FSTDEP023 deprecation (#6913)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "2e81c38bfede1858c3705c5a6f7753abd93019b3",
+      "subject": "docs: add per-route logging for Google Cloud Functions (#6907)",
+      "reason": "excluded-subject"
+    },
+    {
+      "commit": "f87eb61a6df212f56849e6ba250f505648aeb8a1",
+      "subject": "chore(sponsor): add testmu ai (#6922)",
+      "reason": "excluded-subject"
+    },
+    {
+      "commit": "a22ceded3dfbb44354dcb0fe683d4b142a7487c4",
+      "subject": "Bumped v5.11.3",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "b8cb861f155edf559e618af818f6b8f486ceb090",
+      "subject": "refactor!: remove fstdep022 (#6908)",
+      "reason": "not-a-fix"
+    }
+  ]
+}

@@ -1,0 +1,2193 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "gin",
+    "head": "dcaa4296d111981ffb31ac3eba90bb63e1eb5ab9"
+  },
+  "corpus_counts": {
+    "cases": 76,
+    "path_leak": 23,
+    "baseline_blind": 53,
+    "multi_file": 54
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "providers": [
+    {
+      "provider_id": "cocoindex-code",
+      "summary": {
+        "all": {
+          "cases": 76,
+          "mean_recall_at_5": 0.193,
+          "full_recall_at_5": 0.0789,
+          "mean_recall_at_10": 0.2686,
+          "full_recall_at_10": 0.1447,
+          "mean_recall_at_20": 0.2752,
+          "full_recall_at_20": 0.1579,
+          "mean_recall_at_1000_tokens": 0.057,
+          "mean_recall_at_4000_tokens": 0.2193,
+          "mean_recall_at_16000_tokens": 0.2752,
+          "mean_precision_at_10": 0.0666,
+          "zero_hit_rate": 0.6053,
+          "median_tokens_delivered": 5196.5,
+          "median_latency_ms": 937.256,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 65,
+          "mean_recall_at_5": 0.1026,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1449,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1526,
+          "full_recall_at_20": 0.0154,
+          "mean_recall_at_1000_tokens": 0.0205,
+          "mean_recall_at_4000_tokens": 0.1179,
+          "mean_recall_at_16000_tokens": 0.1526,
+          "mean_precision_at_10": 0.0449,
+          "zero_hit_rate": 0.7077,
+          "median_tokens_delivered": 5202,
+          "median_latency_ms": 935.219,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 11,
+          "mean_recall_at_5": 0.7273,
+          "full_recall_at_5": 0.5455,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0.2727,
+          "mean_recall_at_4000_tokens": 0.8182,
+          "mean_recall_at_16000_tokens": 1,
+          "mean_precision_at_10": 0.1947,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 5191,
+          "median_latency_ms": 941.366,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 23,
+          "mean_recall_at_5": 0.2681,
+          "full_recall_at_5": 0.1739,
+          "mean_recall_at_10": 0.3007,
+          "full_recall_at_10": 0.1739,
+          "mean_recall_at_20": 0.3007,
+          "full_recall_at_20": 0.1739,
+          "mean_recall_at_1000_tokens": 0.1014,
+          "mean_recall_at_4000_tokens": 0.2681,
+          "mean_recall_at_16000_tokens": 0.3007,
+          "mean_precision_at_10": 0.0686,
+          "zero_hit_rate": 0.5652,
+          "median_tokens_delivered": 5202,
+          "median_latency_ms": 927.29,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 53,
+          "mean_recall_at_5": 0.1604,
+          "full_recall_at_5": 0.0377,
+          "mean_recall_at_10": 0.2547,
+          "full_recall_at_10": 0.1321,
+          "mean_recall_at_20": 0.2642,
+          "full_recall_at_20": 0.1509,
+          "mean_recall_at_1000_tokens": 0.0377,
+          "mean_recall_at_4000_tokens": 0.1981,
+          "mean_recall_at_16000_tokens": 0.2642,
+          "mean_precision_at_10": 0.0657,
+          "zero_hit_rate": 0.6226,
+          "median_tokens_delivered": 5191,
+          "median_latency_ms": 939.48,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        }
+      },
+      "resources": {
+        "baseline_rss_mb": 44362.5,
+        "peak_rss_mb": 51456,
+        "delta_rss_mb": 7093.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-03e5e05ae089",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go",
+        "logger_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 332,
+      "latency_ms": 925.96,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-088cdd74d42d",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 332,
+      "latency_ms": 887.048,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-09f8224593e3",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 332,
+      "latency_ms": 894.944,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-11aa11a65618",
+      "path_leak": true,
+      "required_files": [
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4653,
+      "latency_ms": 1039.135,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-1c2aa59b20c8",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5487,
+      "latency_ms": 962.306,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-1d0f938f28d7",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5108,
+      "latency_ms": 1041.316,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-212267d67163",
+      "path_leak": false,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5233,
+      "latency_ms": 1043.446,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-234a6d4c00cb",
+      "path_leak": true,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5482,
+      "latency_ms": 916.746,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-24a1d2adb9db",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5202,
+      "latency_ms": 962.546,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-28e57f58b184",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4698,
+      "latency_ms": 917.515,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-2921582d11d5",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5434,
+      "latency_ms": 1193.146,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-293ad7edebb3",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 10,
+      "tokens_delivered": 5146,
+      "latency_ms": 966.077,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-2a794cd0b0fa",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5317,
+      "latency_ms": 940.893,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-2ae61570499d",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5553,
+      "latency_ms": 1020.298,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-2b1da2b0b38d",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4820,
+      "latency_ms": 927.29,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-2d4bbec94155",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5667,
+      "latency_ms": 970.47,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-328d0b8076f0",
+      "path_leak": false,
+      "required_files": [
+        "fs.go"
+      ],
+      "found": [],
+      "missed": [
+        "fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5230,
+      "latency_ms": 938.818,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-36b0dede4b8c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context_test.go"
+      ],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 5402,
+      "latency_ms": 940.006,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-386d244068db",
+      "path_leak": false,
+      "required_files": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "routes_test.go",
+        "tree.go",
+        "tree_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5352,
+      "latency_ms": 939.48,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-3a6f18f32f22",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4931,
+      "latency_ms": 919.663,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-3dc1cd6572b4",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 8,
+      "tokens_delivered": 4745,
+      "latency_ms": 932.236,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-44d0dd70924d",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5626,
+      "latency_ms": 943.262,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-472d086af2ac",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5131,
+      "latency_ms": 1174.097,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-4a3eb31fb15b",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5774,
+      "latency_ms": 972.963,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-4a40f8f1a49b",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4810,
+      "latency_ms": 937.081,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-4cee78f5382d",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4776,
+      "latency_ms": 886.681,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-4f339e6a35b1",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context_test.go"
+      ],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 5347,
+      "latency_ms": 968.098,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-51aea73ba0f1",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/default_validator.go",
+        "context_test.go",
+        "errors.go",
+        "gin.go",
+        "response_writer.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4514,
+      "latency_ms": 1007.365,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-55e27f12465e",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go",
+        "gin.go",
+        "test_helpers.go"
+      ],
+      "found": [
+        "context_test.go",
+        "test_helpers.go"
+      ],
+      "missed": [
+        "gin.go"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5700,
+      "latency_ms": 941.514,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-5826722a87cf",
+      "path_leak": false,
+      "required_files": [
+        "debug.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5045,
+      "latency_ms": 884.329,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-5c00df8afadd",
+      "path_leak": true,
+      "required_files": [
+        "render/data.go",
+        "render/render_test.go"
+      ],
+      "found": [
+        "render/data.go",
+        "render/render_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2222,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5814,
+      "latency_ms": 915.462,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-5fad976b372e",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [
+        "gin_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5502,
+      "latency_ms": 929.807,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-626d55b0c029",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5392,
+      "latency_ms": 945.235,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-63dd3e60cab8",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go",
+        "recovery_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5599,
+      "latency_ms": 921.311,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-646312aef6a3",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [
+        "context.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5488,
+      "latency_ms": 968.13,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-674522db91d6",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4909,
+      "latency_ms": 921.311,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-68542126982e",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5371,
+      "latency_ms": 884.461,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-7742ff50e0a0",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5202,
+      "latency_ms": 912.07,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-7a1b655074c3",
+      "path_leak": true,
+      "required_files": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go",
+        "internal/json/sonic.go"
+      ],
+      "found": [
+        "internal/json/sonic.go"
+      ],
+      "missed": [
+        "go.mod",
+        "go.sum",
+        "internal/json/json.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 7,
+      "tokens_delivered": 5314,
+      "latency_ms": 925.115,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-7cb151bb4c4c",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5103,
+      "latency_ms": 914.091,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-7d147928ee23",
+      "path_leak": true,
+      "required_files": [
+        "debug.go",
+        "mode.go",
+        "mode_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "debug.go",
+        "mode.go",
+        "mode_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3486,
+      "latency_ms": 944.228,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-7d189814cbf6",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5654,
+      "latency_ms": 912.342,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-814cd188eb0b",
+      "path_leak": false,
+      "required_files": [
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2913,
+      "latency_ms": 906.122,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-815122a0f4b9",
+      "path_leak": false,
+      "required_files": [
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5140,
+      "latency_ms": 955.815,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-82bcd6d39bfe",
+      "path_leak": false,
+      "required_files": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "found": [
+        "binding/default_validator.go",
+        "binding/validate_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4887,
+      "latency_ms": 941.366,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-86ff4a64c7ef",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "found": [
+        "gin.go",
+        "routes_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 5440,
+      "latency_ms": 915.157,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-8763f33c65f7",
+      "path_leak": false,
+      "required_files": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "gin.go",
+        "gin_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5346,
+      "latency_ms": 942.272,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-87811a97bddb",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 5191,
+      "latency_ms": 1000.142,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-8790d08909fc",
+      "path_leak": true,
+      "required_files": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/query.go",
+        "binding/query_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5433,
+      "latency_ms": 1026.906,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-8b9c55e8b059",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5371,
+      "latency_ms": 911.037,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-8dd20118ba9a",
+      "path_leak": false,
+      "required_files": [
+        "go.mod",
+        "go.sum"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod",
+        "go.sum"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4656,
+      "latency_ms": 930.027,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-8e07d37c63e5",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "errors.go",
+        "recovery_test.go",
+        "routergroup.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5353,
+      "latency_ms": 920.389,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-8eb5f832bac1",
+      "path_leak": true,
+      "required_files": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "found": [],
+      "missed": [
+        "routes_test.go",
+        "tree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4870,
+      "latency_ms": 940.248,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-97b3c0d88ada",
+      "path_leak": true,
+      "required_files": [
+        "context.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5421,
+      "latency_ms": 913.67,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-9914178584e4",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5344,
+      "latency_ms": 961.673,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-9f598a31aafb",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5075,
+      "latency_ms": 932.382,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-aa6002134e97",
+      "path_leak": false,
+      "required_files": [
+        "context_go17_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_go17_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5077,
+      "latency_ms": 930.983,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-aefae309a4fc",
+      "path_leak": true,
+      "required_files": [
+        "gin_test.go"
+      ],
+      "found": [
+        "gin_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5081,
+      "latency_ms": 910.888,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-b38c59de7fef",
+      "path_leak": false,
+      "required_files": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "errors.go",
+        "errors_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4952,
+      "latency_ms": 905.832,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-b917b14ff9d1",
+      "path_leak": false,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 5041,
+      "latency_ms": 909.716,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-bb1fc2e0fe97",
+      "path_leak": true,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context_test.go"
+      ],
+      "missed": [
+        "context.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 5727,
+      "latency_ms": 904.404,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-be860ec1578f",
+      "path_leak": false,
+      "required_files": [
+        "recovery.go"
+      ],
+      "found": [],
+      "missed": [
+        "recovery.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4991,
+      "latency_ms": 959.509,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-c3d1092b3b48",
+      "path_leak": true,
+      "required_files": [
+        "binding/form_mapping.go",
+        "binding/form_mapping_test.go"
+      ],
+      "found": [
+        "binding/form_mapping_test.go"
+      ],
+      "missed": [
+        "binding/form_mapping.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5121,
+      "latency_ms": 990.799,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-c3d5a28ed6d3",
+      "path_leak": false,
+      "required_files": [
+        "gin.go"
+      ],
+      "found": [
+        "gin.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 4729,
+      "latency_ms": 1492.182,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-c677ccc40a60",
+      "path_leak": false,
+      "required_files": [
+        "go.mod"
+      ],
+      "found": [],
+      "missed": [
+        "go.mod"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4821,
+      "latency_ms": 911.735,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-c706ace9298f",
+      "path_leak": false,
+      "required_files": [
+        "binding/binding_test.go",
+        "githubapi_test.go"
+      ],
+      "found": [
+        "githubapi_test.go"
+      ],
+      "missed": [
+        "binding/binding_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 5462,
+      "latency_ms": 927.511,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-cbdd47a7e108",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5661,
+      "latency_ms": 937.431,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-d75fcd4c9ab2",
+      "path_leak": false,
+      "required_files": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "found": [
+        "response_writer.go",
+        "response_writer_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5280,
+      "latency_ms": 998.016,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-d9307dbcbbe7",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context.go",
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5461,
+      "latency_ms": 932.302,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-e0d46ded6cb6",
+      "path_leak": false,
+      "required_files": [
+        "context.go",
+        "context_test.go"
+      ],
+      "found": [
+        "context.go",
+        "context_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2222,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4736,
+      "latency_ms": 925.72,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-e737e3e267be",
+      "path_leak": true,
+      "required_files": [
+        "binding/toml.go"
+      ],
+      "found": [],
+      "missed": [
+        "binding/toml.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5709,
+      "latency_ms": 928.223,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-ea53388e6ee4",
+      "path_leak": false,
+      "required_files": [
+        "tree.go",
+        "tree_test.go"
+      ],
+      "found": [
+        "tree_test.go"
+      ],
+      "missed": [
+        "tree.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5179,
+      "latency_ms": 941.948,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-eab47b5423b6",
+      "path_leak": true,
+      "required_files": [
+        "binding/binding_test.go",
+        "binding/protobuf.go"
+      ],
+      "found": [
+        "binding/binding_test.go",
+        "binding/protobuf.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 5252,
+      "latency_ms": 938.479,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-ebe5e2a6bfdc",
+      "path_leak": false,
+      "required_files": [
+        ".golangci.yml"
+      ],
+      "found": [],
+      "missed": [
+        ".golangci.yml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4937,
+      "latency_ms": 945.851,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-f4bc259de33c",
+      "path_leak": false,
+      "required_files": [
+        "debug.go",
+        "debug_test.go"
+      ],
+      "found": [
+        "debug_test.go"
+      ],
+      "missed": [
+        "debug.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 3667,
+      "latency_ms": 935.219,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "gin-f70dd00b00bc",
+      "path_leak": true,
+      "required_files": [
+        "context_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "context_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5050,
+      "latency_ms": 962.648,
+      "indexed_revision_matches": true
+    }
+  ],
+  "tier": "small",
+  "tier_code_files": 99,
+  "tier_provenance": "Stamped after the fact from a measured file count; the run predates tier stamping. Tier is a property of the repository, not of the run."
+}

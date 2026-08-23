@@ -1,0 +1,1350 @@
+{
+  "schema_version": "codevetter.context-retrieval-corpus.v1",
+  "repository": {
+    "id": "flask",
+    "head": "d318b683471101618febed18996405ad26462110"
+  },
+  "selection": {
+    "commits_scanned": 600,
+    "fixes_only": true,
+    "max_required_files": 8
+  },
+  "counts": {
+    "cases": 39,
+    "path_leak": 7,
+    "baseline_blind": 32,
+    "multi_file": 17
+  },
+  "cases": [
+    {
+      "case_id": "flask-03b410066b96",
+      "repository": "flask",
+      "commit": "03b410066b96f63ba2a215750f881d5bebb78a29",
+      "base_revision": "4696156278c5d3f05fb09d1a605b6866b49ffbcb",
+      "authored_at": "2022-07-11T18:02:00-04:00",
+      "query": "Fix docs/CHANGES.rst typo",
+      "query_tokens": [
+        "changes",
+        "docs",
+        "typo"
+      ],
+      "specific_tokens": [
+        "docs",
+        "typo"
+      ],
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "CHANGES.rst",
+            "tokens": [
+              "changes"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "flask-095651be9eec",
+      "repository": "flask",
+      "commit": "095651be9eec58ddb0c2eb6158318b1c703c67c5",
+      "base_revision": "02a08512527f997e43d1c01d03d4d473cab3b239",
+      "authored_at": "2022-07-25T07:35:17-07:00",
+      "query": "fix has_app_context and has_request_context",
+      "query_tokens": [
+        "context",
+        "request"
+      ],
+      "specific_tokens": [
+        "context",
+        "request"
+      ],
+      "required_files": [
+        "src/flask/ctx.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-0afeb1d11cad",
+      "repository": "flask",
+      "commit": "0afeb1d11cad9aa42ef25cc20b10dcd67c8cf3c9",
+      "base_revision": "4cf8b78c6c674048a393acf0280f08761a5cb2a5",
+      "authored_at": "2023-05-01T09:01:40-07:00",
+      "query": "fix release date",
+      "query_tokens": [
+        "date",
+        "release"
+      ],
+      "specific_tokens": [
+        "date",
+        "release"
+      ],
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-0d8c8ba71bc6",
+      "repository": "flask",
+      "commit": "0d8c8ba71bc6362e6ea9af08146dc97e1a0a8abc",
+      "base_revision": "9c3deeee963e62dfb60c9343fad4ec2ec752fdba",
+      "authored_at": "2022-09-18T19:53:47+08:00",
+      "query": "Fix docstring of test_request_context (#4821)",
+      "query_tokens": [
+        "context",
+        "docstring",
+        "request",
+        "test"
+      ],
+      "specific_tokens": [
+        "context",
+        "docstring",
+        "request",
+        "test"
+      ],
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-0ec9192cf25f",
+      "repository": "flask",
+      "commit": "0ec9192cf25f5187d6521f2539489fa8d55336bb",
+      "base_revision": "345f18442ceb29f9e365af99fc85bdc5986323d2",
+      "authored_at": "2023-04-25T21:10:05+02:00",
+      "query": "fix importing Markup from flask",
+      "query_tokens": [
+        "flask",
+        "importing",
+        "markup"
+      ],
+      "specific_tokens": [
+        "importing",
+        "markup"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/__init__.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "src/flask/__init__.py",
+            "tokens": [
+              "flask"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "flask-176fdfa00023",
+      "repository": "flask",
+      "commit": "176fdfa0002360670f698d3828cfff11f97349f0",
+      "base_revision": "2d31dce8262a68875c177645fa0c7585a45ac447",
+      "authored_at": "2024-08-23T16:33:52-07:00",
+      "query": "fix mypy findings",
+      "query_tokens": [
+        "findings",
+        "mypy"
+      ],
+      "specific_tokens": [
+        "findings",
+        "mypy"
+      ],
+      "required_files": [
+        "src/flask/helpers.py",
+        "src/flask/json/provider.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-1af8f95785b8",
+      "repository": "flask",
+      "commit": "1af8f95785b85d0937153ee63d504c0b51934d80",
+      "base_revision": "3435d2ff1589eb0c1a85cc294a20985910a1a606",
+      "authored_at": "2024-01-26T10:08:55+08:00",
+      "query": "fix super call in list comprehension",
+      "query_tokens": [
+        "call",
+        "comprehension",
+        "list",
+        "super"
+      ],
+      "specific_tokens": [
+        "call",
+        "comprehension",
+        "list",
+        "super"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-1d5abfadd713",
+      "repository": "flask",
+      "commit": "1d5abfadd7132c9a78e14e5ba6c07aed47115280",
+      "base_revision": "b97165db75c6f4e99c3307b4a5a1f3b0d9f4de25",
+      "authored_at": "2023-11-24T16:03:31-06:00",
+      "query": "Fixing issue 5342: 'The double quote is missing in the string'",
+      "query_tokens": [
+        "double",
+        "fixing",
+        "issue",
+        "missing",
+        "quote",
+        "string"
+      ],
+      "specific_tokens": [
+        "double",
+        "fixing",
+        "missing",
+        "quote",
+        "string"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/cli.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-261e4a6cf287",
+      "repository": "flask",
+      "commit": "261e4a6cf287180b69c4db407791e43ce90e50ad",
+      "base_revision": "8f13f5b6d672f1ba434f9c8ebe2c1b1dd385962e",
+      "authored_at": "2023-01-18T10:31:08-08:00",
+      "query": "fix flake8 bugbear errors",
+      "query_tokens": [
+        "bugbear",
+        "errors",
+        "flake8"
+      ],
+      "specific_tokens": [
+        "bugbear",
+        "flake8"
+      ],
+      "required_files": [
+        ".flake8",
+        "tests/test_appctx.py",
+        "tests/test_basic.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-3ba37d2afe65",
+      "repository": "flask",
+      "commit": "3ba37d2afe6511c3f3153248f7342174bea5b131",
+      "base_revision": "88bcf78439b66b5fcba9f4d3a1c56307f98dbf1d",
+      "authored_at": "2022-06-06T08:24:05-07:00",
+      "query": "fix uninstalled package tests under tox",
+      "query_tokens": [
+        "package",
+        "tests",
+        "uninstalled"
+      ],
+      "specific_tokens": [
+        "package",
+        "tests",
+        "uninstalled"
+      ],
+      "required_files": [
+        "src/flask/scaffold.py",
+        "tests/test_instance_config.py",
+        "tox.ini"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "tests/test_instance_config.py",
+            "tokens": [
+              "tests"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "flask-40b78fa2ea90",
+      "repository": "flask",
+      "commit": "40b78fa2ea9095197608287de9f0d902d2763b00",
+      "base_revision": "2c5d652493b79eecadd4407f24f2249948bd6ff2",
+      "authored_at": "2024-08-23T16:41:39-07:00",
+      "query": "fix min python for pip-compile",
+      "query_tokens": [
+        "compile",
+        "python"
+      ],
+      "specific_tokens": [
+        "compile",
+        "python"
+      ],
+      "required_files": [
+        "tox.ini"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "requirements/build.txt",
+        "requirements/dev.txt",
+        "requirements/docs.txt",
+        "requirements/tests.txt",
+        "requirements/typing.txt"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-426a1e25b77e",
+      "repository": "flask",
+      "commit": "426a1e25b77e760b4f54bf94aee3e3617850569f",
+      "base_revision": "6f7d99ce4b7dc2bad52683e64fec7008dd0b580f",
+      "authored_at": "2022-02-08T12:05:17-08:00",
+      "query": "fix pytest 7 warnings",
+      "query_tokens": [
+        "pytest",
+        "warnings"
+      ],
+      "specific_tokens": [
+        "pytest",
+        "warnings"
+      ],
+      "required_files": [
+        "tests/test_basic.py",
+        "tests/test_reqctx.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-4995a775df21",
+      "repository": "flask",
+      "commit": "4995a775df21a206b529403bc30d71795a994fd4",
+      "base_revision": "07c7d5730a2685ef2281cc635e289685e5c3d478",
+      "authored_at": "2024-11-10T20:13:05-08:00",
+      "query": "fix subdomain_matching=False behavior",
+      "query_tokens": [
+        "behavior",
+        "false",
+        "matching",
+        "subdomain"
+      ],
+      "specific_tokens": [
+        "behavior",
+        "false",
+        "matching",
+        "subdomain"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/config.rst"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-54c3f87af9f6",
+      "repository": "flask",
+      "commit": "54c3f87af9f6c0d6622cec2c3d9695b0229fb8fa",
+      "base_revision": "ea08f155d8d37d515559534bbe0f80ef5185466c",
+      "authored_at": "2024-11-23T03:23:09+03:00",
+      "query": "fix type hint for `cli_runner.invoke`",
+      "query_tokens": [
+        "hint",
+        "invoke",
+        "runner",
+        "type"
+      ],
+      "specific_tokens": [
+        "hint",
+        "invoke",
+        "runner",
+        "type"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/testing.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-6f79cb8a2346",
+      "repository": "flask",
+      "commit": "6f79cb8a23467aa01f94f6ad53790f468ba77c76",
+      "base_revision": "b6a8ccd2cf65939401fe4ccb6b550d2b19423b06",
+      "authored_at": "2022-02-16T21:12:01-08:00",
+      "query": "Fix typing on `app.session_interface`",
+      "query_tokens": [
+        "interface",
+        "session",
+        "typing"
+      ],
+      "specific_tokens": [
+        "interface",
+        "session",
+        "typing"
+      ],
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-7203feabf723",
+      "repository": "flask",
+      "commit": "7203feabf723edae0286ae5dc64fec8ac4c91735",
+      "base_revision": "de8429ffda8cfb54db175529e2bae72a24e1fa7e",
+      "authored_at": "2026-07-14T16:42:09+02:00",
+      "query": "Fix IPv6 server name parsing",
+      "query_tokens": [
+        "ipv6",
+        "name",
+        "parsing",
+        "server"
+      ],
+      "specific_tokens": [
+        "ipv6",
+        "name",
+        "parsing",
+        "server"
+      ],
+      "required_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-746455d1038f",
+      "repository": "flask",
+      "commit": "746455d1038fd5479f396cbf2d19b48edfeb8290",
+      "base_revision": "e0c157f7ee99bde3376e456a914bb07260eb6017",
+      "authored_at": "2022-08-14T18:59:19-04:00",
+      "query": "Fix misrendered docstring",
+      "query_tokens": [
+        "docstring",
+        "misrendered"
+      ],
+      "specific_tokens": [
+        "docstring",
+        "misrendered"
+      ],
+      "required_files": [
+        "src/flask/config.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-74721b48f034",
+      "repository": "flask",
+      "commit": "74721b48f0347f19f134f386fab3421e5132fb53",
+      "base_revision": "d273f87a41e72db8ef1387f469ffa1c6eed39730",
+      "authored_at": "2024-10-22T17:32:02-03:00",
+      "query": "Fix the issue link in the Flask 3.0.1 Changelog in the send_file argument type entry",
+      "query_tokens": [
+        "argument",
+        "changelog",
+        "entry",
+        "file",
+        "flask",
+        "issue",
+        "link",
+        "send",
+        "type"
+      ],
+      "specific_tokens": [
+        "argument",
+        "changelog",
+        "entry",
+        "file",
+        "link",
+        "send",
+        "type"
+      ],
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-80cf589a26d7",
+      "repository": "flask",
+      "commit": "80cf589a26d792820f135591eb8007bca891bf4f",
+      "base_revision": "cc80a47f5be6c60e53c42ef9378e6db3b0e183b1",
+      "authored_at": "2023-08-14T11:10:15+01:00",
+      "query": "Correct the error handler typing",
+      "query_tokens": [
+        "correct",
+        "error",
+        "handler",
+        "typing"
+      ],
+      "specific_tokens": [
+        "handler",
+        "typing"
+      ],
+      "required_files": [
+        "src/flask/typing.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "src/flask/typing.py",
+            "tokens": [
+              "typing"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "flask-826514b8eb18",
+      "repository": "flask",
+      "commit": "826514b8eb18f6c314cf566630253d35c89e42c3",
+      "base_revision": "6d266f63633f5f127165d4ef836db14a59bbc106",
+      "authored_at": "2023-08-16T13:37:56-07:00",
+      "query": "fix flake8 bugbear findings",
+      "query_tokens": [
+        "bugbear",
+        "findings",
+        "flake8"
+      ],
+      "specific_tokens": [
+        "bugbear",
+        "findings",
+        "flake8"
+      ],
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-860a25c390eb",
+      "repository": "flask",
+      "commit": "860a25c390eba8e6c089a818b02800dd9d789864",
+      "base_revision": "273123f6b8fc0d871553f707e515816777c60e24",
+      "authored_at": "2024-05-06T10:23:10-07:00",
+      "query": "fix mypy finding",
+      "query_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "specific_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-9532cba45d23",
+      "repository": "flask",
+      "commit": "9532cba45d2339e90ebf04f178b1e4f2064e7328",
+      "base_revision": "0bc7356ce1ae11e633426902aba76d525f4523da",
+      "authored_at": "2023-05-01T08:10:25-07:00",
+      "query": "fix mypy finding",
+      "query_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "specific_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-976459f7cb35",
+      "repository": "flask",
+      "commit": "976459f7cb35c8c3abc3a6e6a2728d76d1a0a5f2",
+      "base_revision": "5e621a2801daf95be6d208da9dcc287bb251f63c",
+      "authored_at": "2026-02-03T10:20:49-08:00",
+      "query": "fix editable werkzeug",
+      "query_tokens": [
+        "editable",
+        "werkzeug"
+      ],
+      "specific_tokens": [
+        "editable",
+        "werkzeug"
+      ],
+      "required_files": [
+        "pyproject.toml"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "uv.lock"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-98ae71897600",
+      "repository": "flask",
+      "commit": "98ae71897600a3162f529b1b30c70b8abdf0961b",
+      "base_revision": "c62b03bcfd6e6440f8195e02f4678488e16121ac",
+      "authored_at": "2024-11-01T18:06:34-07:00",
+      "query": "fix mypy finding",
+      "query_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "specific_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "required_files": [
+        "src/flask/app.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-9b74a90dd3c4",
+      "repository": "flask",
+      "commit": "9b74a90dd3c47f792734823e8793ac36f38bc4dd",
+      "base_revision": "5880befcd22490c40f3c63d6178427f7753672c1",
+      "authored_at": "2026-01-24T19:11:02-08:00",
+      "query": "fix codespell findings",
+      "query_tokens": [
+        "codespell",
+        "findings"
+      ],
+      "specific_tokens": [
+        "codespell",
+        "findings"
+      ],
+      "required_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/appcontext.rst",
+        "docs/quickstart.rst",
+        "docs/templating.rst"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-a363642a3288",
+      "repository": "flask",
+      "commit": "a363642a32880114c7944b1017f2f69bd4cc00eb",
+      "base_revision": "f958b6500b2aeb8edc578a07f00546becdad4c80",
+      "authored_at": "2024-05-06T10:09:58-07:00",
+      "query": "fix mypy finding with new werkzeug endpoint type",
+      "query_tokens": [
+        "endpoint",
+        "finding",
+        "mypy",
+        "type",
+        "werkzeug"
+      ],
+      "specific_tokens": [
+        "endpoint",
+        "finding",
+        "mypy",
+        "type",
+        "werkzeug"
+      ],
+      "required_files": [
+        "src/flask/wrappers.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-a6a7a57380cd",
+      "repository": "flask",
+      "commit": "a6a7a57380cd8f7410753c3b819ba6d09198d8c9",
+      "base_revision": "4984753dbf5a247f46e2903011c981d0709973ff",
+      "authored_at": "2022-08-04T07:24:20-07:00",
+      "query": "fix default value of app.env",
+      "query_tokens": [
+        "default",
+        "value"
+      ],
+      "specific_tokens": [
+        "default",
+        "value"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/app.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-bda295d37fa3",
+      "repository": "flask",
+      "commit": "bda295d37fa3809c95a93d01dd605d0222109889",
+      "base_revision": "c8cf4694c60f0d81809468a1b45ec730496cc546",
+      "authored_at": "2023-06-09T09:34:42-07:00",
+      "query": "fix use of importlib.util.find_spec",
+      "query_tokens": [
+        "find",
+        "importlib",
+        "spec",
+        "util"
+      ],
+      "specific_tokens": [
+        "find",
+        "importlib",
+        "spec",
+        "util"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/helpers.py",
+        "src/flask/scaffold.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-c49ce2e1eb8b",
+      "repository": "flask",
+      "commit": "c49ce2e1eb8b598e724388bead0943837bab8027",
+      "base_revision": "3237fff4b86227a84913d3885b600738bb9479a0",
+      "authored_at": "2023-08-16T13:37:26-07:00",
+      "query": "fix flake8 bugbear findings",
+      "query_tokens": [
+        "bugbear",
+        "findings",
+        "flake8"
+      ],
+      "specific_tokens": [
+        "bugbear",
+        "findings",
+        "flake8"
+      ],
+      "required_files": [
+        "tests/test_basic.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-ccf125bf3010",
+      "repository": "flask",
+      "commit": "ccf125bf30102beedafb3ecef72376bfb6c90a4d",
+      "base_revision": "db0fe9436e9da7f7bd14683542bbf33ba3c6d5e4",
+      "authored_at": "2024-04-23T16:49:42-07:00",
+      "query": "fix mypy findings",
+      "query_tokens": [
+        "findings",
+        "mypy"
+      ],
+      "specific_tokens": [
+        "findings",
+        "mypy"
+      ],
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-d7b6c1f6703d",
+      "repository": "flask",
+      "commit": "d7b6c1f6703df405c69da45e7e0ba3d1aed512ce",
+      "base_revision": "fa1ee7066807c21256e90089731c548b313394d2",
+      "authored_at": "2022-10-31T12:49:16+04:00",
+      "query": "Fix subdomain inheritance for nested blueprints.",
+      "query_tokens": [
+        "blueprints",
+        "inheritance",
+        "nested",
+        "subdomain"
+      ],
+      "specific_tokens": [
+        "blueprints",
+        "inheritance",
+        "nested",
+        "subdomain"
+      ],
+      "required_files": [
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "src/flask/blueprints.py",
+            "tokens": [
+              "blueprints"
+            ]
+          },
+          {
+            "path": "tests/test_blueprints.py",
+            "tokens": [
+              "blueprints"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "flask-de8429ffda8c",
+      "repository": "flask",
+      "commit": "de8429ffda8cfb54db175529e2bae72a24e1fa7e",
+      "base_revision": "514fc6b3e8402e4c646d5284e97a4f0ab50a7c4b",
+      "authored_at": "2026-07-14T16:40:58+02:00",
+      "query": "Fix IPv6 session transactions",
+      "query_tokens": [
+        "ipv6",
+        "session",
+        "transactions"
+      ],
+      "specific_tokens": [
+        "ipv6",
+        "session",
+        "transactions"
+      ],
+      "required_files": [
+        "src/flask/testing.py",
+        "tests/test_testing.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-df201ed152b6",
+      "repository": "flask",
+      "commit": "df201ed152b61c439ea1ace179f35b424594ba6c",
+      "base_revision": "96800fb673cb7b2d75476096798e701e3e6d26bc",
+      "authored_at": "2024-11-01T16:44:17-07:00",
+      "query": "fix js example test",
+      "query_tokens": [
+        "example",
+        "test"
+      ],
+      "specific_tokens": [
+        "example",
+        "test"
+      ],
+      "required_files": [
+        "examples/javascript/tests/test_js_example.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "examples/javascript/tests/test_js_example.py",
+            "tokens": [
+              "example",
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "flask-dffe3034825e",
+      "repository": "flask",
+      "commit": "dffe3034825edc4f84aded013fc9c6590e545ed5",
+      "base_revision": "c5a5576522273ff028018c4e13d1fc4d0260495b",
+      "authored_at": "2024-10-18T13:04:35-07:00",
+      "query": "fix mypy findings",
+      "query_tokens": [
+        "findings",
+        "mypy"
+      ],
+      "specific_tokens": [
+        "findings",
+        "mypy"
+      ],
+      "required_files": [
+        "src/flask/helpers.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-e63ead4208c1",
+      "repository": "flask",
+      "commit": "e63ead4208c1e56723532878728ef9c2eb197b01",
+      "base_revision": "c77b099cbb979269d45df06753cadd8abc662e23",
+      "authored_at": "2024-09-22T21:42:35+08:00",
+      "query": "Fix typo in the changelog",
+      "query_tokens": [
+        "changelog",
+        "typo"
+      ],
+      "specific_tokens": [
+        "changelog",
+        "typo"
+      ],
+      "required_files": [
+        "CHANGES.rst"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-e82db2ca3a22",
+      "repository": "flask",
+      "commit": "e82db2ca3a22c9614c1987392c9cfaa8c6ce99ad",
+      "base_revision": "d3b78fd18a8d9e224cb9ef58a23cec9b1ffc9ce9",
+      "authored_at": "2026-02-12T13:03:03-08:00",
+      "query": "fix provide_automatic_options override",
+      "query_tokens": [
+        "automatic",
+        "options",
+        "override",
+        "provide"
+      ],
+      "specific_tokens": [
+        "automatic",
+        "options",
+        "override",
+        "provide"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "tests/test_cli.py",
+        "tests/test_views.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "docs/config.rst"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-eb1182a10e75",
+      "repository": "flask",
+      "commit": "eb1182a10e757b5e76009c69fdf3a88a5afc6840",
+      "base_revision": "a363642a32880114c7944b1017f2f69bd4cc00eb",
+      "authored_at": "2024-05-06T10:12:32-07:00",
+      "query": "fix mypy finding",
+      "query_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "specific_tokens": [
+        "finding",
+        "mypy"
+      ],
+      "required_files": [
+        "src/flask/sessions.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-ecc057dd4857",
+      "repository": "flask",
+      "commit": "ecc057dd4857e655f0844b781899a917852042a4",
+      "base_revision": "3207af8827d4162ef5841249c46fbb9da043c551",
+      "authored_at": "2024-01-23T11:28:51-05:00",
+      "query": "fix jinja_loader annotation",
+      "query_tokens": [
+        "annotation",
+        "jinja",
+        "loader"
+      ],
+      "specific_tokens": [
+        "annotation",
+        "jinja",
+        "loader"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "flask-eede1a3685e2",
+      "repository": "flask",
+      "commit": "eede1a3685e21deaeb6686e9de9b76a73b6a510c",
+      "base_revision": "69f71b4d94006678a2463f76a4504208d195c367",
+      "authored_at": "2022-04-12T13:17:24-03:00",
+      "query": "fix annotation for json.loads",
+      "query_tokens": [
+        "annotation",
+        "json",
+        "loads"
+      ],
+      "specific_tokens": [
+        "annotation",
+        "json",
+        "loads"
+      ],
+      "required_files": [
+        "CHANGES.rst",
+        "src/flask/json/__init__.py"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "src/flask/json/__init__.py",
+            "tokens": [
+              "json"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "rejected_sample": [
+    {
+      "commit": "d318b683471101618febed18996405ad26462110",
+      "subject": "explain seek",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "2a8a38b051fc248865730bf3511bf2e2ea325e81",
+      "subject": "support query in methodview",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "89992954ec71b594b1b911f98977cdc8ad46a057",
+      "subject": "add app.query route decorator",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "3596b1ab61cea85edb8970e83ff61daa073facf8",
+      "subject": "add entry",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "81798b406f97ffe4795d2c9fc18db7db744a96dc",
+      "subject": "fix typos",
+      "reason": "query-too-short"
+    },
+    {
+      "commit": "8b4fd5d18611e63080b826ecfefe8659dba7d2e4",
+      "subject": "use header properties",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "30d1c5d6fcbd62d9e902209d7a207f7510e9f5dc",
+      "subject": "test Python 3.15",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "ff6fa22f4d961a28567db11430208b964620f511",
+      "subject": "update dependencies",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "5ce121dd841e2dc2594d0ed3954278f4101d3521",
+      "subject": "Replace the use of private `monkeypatch` fixture API",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "8285adf5a4f572dbf7a0a3b8f3a96ca0b19c50a4",
+      "subject": "update dev dependencies",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "36e4a824f340fdee7ed50937ba8e7f6bc7d17f81",
+      "subject": "Any for  CertParamType type",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "954f5684e4841aad84a8eec7ace7b81a0d3f6831",
+      "subject": "update dev dependencies",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "1d49747264554dee31f5627d4249d09aaaeced39",
+      "subject": "update flask-mongoengine link",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "7374c85ddefc3f4b177a698ab9f0cbb6a5c0b392",
+      "subject": "remove leftover setuptools",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "9368fb3f3c52d74534d14c1bef03c79c103356cd",
+      "subject": "case-insensitive comparison",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "06ea505ce2b2042af26e96d35ebf159af7c0869d",
+      "subject": "separate copy per call",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "689362089edd09b6d68f7cfe99075e1345e0fede",
+      "subject": "fix typo",
+      "reason": "query-too-short"
+    },
+    {
+      "commit": "a31e6b73469cb2bf7eb8f70b5ff21f710fd2e23c",
+      "subject": "remove werkzeug host tests",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "b21425d6df207fec0c47e9563faa10a2819984ca",
+      "subject": "reduce venv size",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "83dbcb222a65a87741c9d96bb183f34528149269",
+      "subject": "update dev dependencies",
+      "reason": "not-a-fix"
+    }
+  ]
+}

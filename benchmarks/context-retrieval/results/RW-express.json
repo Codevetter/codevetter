@@ -1,0 +1,2688 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "express",
+    "head": "a3714473feb3d2908add734d340e7755fd85e0a3"
+  },
+  "tier": "small",
+  "tier_code_files": 141,
+  "corpus_counts": {
+    "cases": 28,
+    "path_leak": 9,
+    "baseline_blind": 19,
+    "multi_file": 14
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": false,
+      "best": 0.3036,
+      "control": 0.2143,
+      "reason": "a query-blind control scored 21.4% against a leader's 30.4%. Suspect the metric, not the tools."
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "Fix hanging on large stack of sync routes",
+        "revision": "75e0c7a2c91665f44d053d83be15f8ecd0177f41",
+        "returned": [
+          "test/req.range.js",
+          "test/acceptance/route-separation.js",
+          "test/res.append.js",
+          "test/req.accepts.js",
+          "lib/router/layer.js"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "remove duplicate word (#6456)",
+        "revision": "5da5a11a498a3034623960861e542a3b39b00c94",
+        "returned": [
+          "test/res.format.js",
+          "test/res.vary.js",
+          "test/res.cookie.js",
+          "lib/utils.js",
+          "examples/view-constructor/github-view.js"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "add Content-Length header only if Transfer-Encoding is not present (#4893)",
+        "revision": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+        "returned": [
+          "package.json",
+          ".github/workflows/ci.yml",
+          "lib/response.js",
+          ".github/workflows/legacy.yml",
+          ".github/workflows/scorecard.yml"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix handling very large stacks of sync middleware",
+        "revision": "92c5ce59f51cce4b3598fd040117772fac42dce8",
+        "returned": [
+          "package.json",
+          "appveyor.yml",
+          "lib/response.js",
+          "test/res.sendFile.js",
+          ".github/workflows/ci.yml"
+        ]
+      },
+      {
+        "provider_id": "repowise",
+        "query": "add Content-Length header only if Transfer-Encoding is not present (#4893)",
+        "revision": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+        "returned": [
+          "lib/response.js",
+          "examples/online/index.js",
+          "lib/application.js",
+          "test/support/utils.js",
+          "examples/web-service/index.js"
+        ]
+      },
+      {
+        "provider_id": "repowise",
+        "query": "Fix handling very large stacks of sync middleware",
+        "revision": "92c5ce59f51cce4b3598fd040117772fac42dce8",
+        "returned": [
+          "examples/error/index.js",
+          "lib/view.js",
+          "examples/route-middleware/index.js",
+          "examples/view-locals/index.js",
+          "lib/express.js"
+        ]
+      }
+    ],
+    "trustworthy": false
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.0179,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0357,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0804,
+          "full_recall_at_20": 0.0357,
+          "mean_recall_at_1000_tokens": 0.0179,
+          "mean_recall_at_4000_tokens": 0.0179,
+          "mean_recall_at_16000_tokens": 0.0714,
+          "mean_precision_at_10": 0.0071,
+          "zero_hit_rate": 0.8571,
+          "median_tokens_delivered": 17557.5,
+          "median_latency_ms": 12.606,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.0179,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0357,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0804,
+          "full_recall_at_20": 0.0357,
+          "mean_recall_at_1000_tokens": 0.0179,
+          "mean_recall_at_4000_tokens": 0.0179,
+          "mean_recall_at_16000_tokens": 0.0714,
+          "mean_precision_at_10": 0.0071,
+          "zero_hit_rate": 0.8571,
+          "median_tokens_delivered": 17557.5,
+          "median_latency_ms": 12.606,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 17126,
+          "median_latency_ms": 13.029,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.0263,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0526,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1184,
+          "full_recall_at_20": 0.0526,
+          "mean_recall_at_1000_tokens": 0.0263,
+          "mean_recall_at_4000_tokens": 0.0263,
+          "mean_recall_at_16000_tokens": 0.1053,
+          "mean_precision_at_10": 0.0105,
+          "zero_hit_rate": 0.7895,
+          "median_tokens_delivered": 17991,
+          "median_latency_ms": 12.563,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 21696.6,
+        "peak_rss_mb": 21732.5,
+        "delta_rss_mb": 35.9,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.4345,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 0.5625,
+          "full_recall_at_10": 0.3929,
+          "mean_recall_at_20": 0.619,
+          "full_recall_at_20": 0.5,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.2143,
+          "mean_recall_at_16000_tokens": 0.4881,
+          "mean_precision_at_10": 0.0857,
+          "zero_hit_rate": 0.25,
+          "median_tokens_delivered": 55061.5,
+          "median_latency_ms": 23.014,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.4345,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 0.5625,
+          "full_recall_at_10": 0.3929,
+          "mean_recall_at_20": 0.619,
+          "full_recall_at_20": 0.5,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.2143,
+          "mean_recall_at_16000_tokens": 0.4881,
+          "mean_precision_at_10": 0.0857,
+          "zero_hit_rate": 0.25,
+          "median_tokens_delivered": 55061.5,
+          "median_latency_ms": 23.014,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.3148,
+          "full_recall_at_5": 0.1111,
+          "mean_recall_at_10": 0.3148,
+          "full_recall_at_10": 0.1111,
+          "mean_recall_at_20": 0.3148,
+          "full_recall_at_20": 0.1111,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.3148,
+          "mean_precision_at_10": 0.0556,
+          "zero_hit_rate": 0.4444,
+          "median_tokens_delivered": 54998,
+          "median_latency_ms": 23.63,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.4912,
+          "full_recall_at_5": 0.3684,
+          "mean_recall_at_10": 0.6798,
+          "full_recall_at_10": 0.5263,
+          "mean_recall_at_20": 0.7632,
+          "full_recall_at_20": 0.6842,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.3158,
+          "mean_recall_at_16000_tokens": 0.5702,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.1579,
+          "median_tokens_delivered": 55125,
+          "median_latency_ms": 22.829,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 21764.2,
+        "peak_rss_mb": 21813.4,
+        "delta_rss_mb": 49.3,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "repowise",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.1905,
+          "full_recall_at_5": 0.0714,
+          "mean_recall_at_10": 0.3036,
+          "full_recall_at_10": 0.1071,
+          "mean_recall_at_20": 0.3036,
+          "full_recall_at_20": 0.1071,
+          "mean_recall_at_1000_tokens": 0.2351,
+          "mean_recall_at_4000_tokens": 0.3036,
+          "mean_recall_at_16000_tokens": 0.3036,
+          "mean_precision_at_10": 0.0611,
+          "zero_hit_rate": 0.5,
+          "median_tokens_delivered": 1706.5,
+          "median_latency_ms": 37171.323,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.1905,
+          "full_recall_at_5": 0.0714,
+          "mean_recall_at_10": 0.3036,
+          "full_recall_at_10": 0.1071,
+          "mean_recall_at_20": 0.3036,
+          "full_recall_at_20": 0.1071,
+          "mean_recall_at_1000_tokens": 0.2351,
+          "mean_recall_at_4000_tokens": 0.3036,
+          "mean_recall_at_16000_tokens": 0.3036,
+          "mean_precision_at_10": 0.0611,
+          "zero_hit_rate": 0.5,
+          "median_tokens_delivered": 1706.5,
+          "median_latency_ms": 37171.323,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.2593,
+          "full_recall_at_5": 0.1111,
+          "mean_recall_at_10": 0.3704,
+          "full_recall_at_10": 0.1111,
+          "mean_recall_at_20": 0.3704,
+          "full_recall_at_20": 0.1111,
+          "mean_recall_at_1000_tokens": 0.3148,
+          "mean_recall_at_4000_tokens": 0.3704,
+          "mean_recall_at_16000_tokens": 0.3704,
+          "mean_precision_at_10": 0.0667,
+          "zero_hit_rate": 0.3333,
+          "median_tokens_delivered": 2169,
+          "median_latency_ms": 37179.759,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.1579,
+          "full_recall_at_5": 0.0526,
+          "mean_recall_at_10": 0.2719,
+          "full_recall_at_10": 0.1053,
+          "mean_recall_at_20": 0.2719,
+          "full_recall_at_20": 0.1053,
+          "mean_recall_at_1000_tokens": 0.1974,
+          "mean_recall_at_4000_tokens": 0.2719,
+          "mean_recall_at_16000_tokens": 0.2719,
+          "mean_precision_at_10": 0.0585,
+          "zero_hit_rate": 0.5789,
+          "median_tokens_delivered": 1521,
+          "median_latency_ms": 37162.887,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 21839.1,
+        "peak_rss_mb": 24519,
+        "delta_rss_mb": 2680,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "RELIABILITY GATE FAILED — do not publish these numbers: a query-blind control scored 21.4% against a leader's 30.4%. Suspect the metric, not the tools.",
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15887,
+      "latency_ms": 25.982,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24167,
+      "latency_ms": 12.244,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17991,
+      "latency_ms": 12.386,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15115,
+      "latency_ms": 12.98,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8352,
+      "latency_ms": 12.251,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25943,
+      "latency_ms": 12.535,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24105,
+      "latency_ms": 12.42,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17989,
+      "latency_ms": 13.36,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10199,
+      "latency_ms": 13.224,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25824,
+      "latency_ms": 12.3,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 8,
+      "tokens_delivered": 21567,
+      "latency_ms": 12.255,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 14979,
+      "latency_ms": 12.059,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 21348,
+      "latency_ms": 12.312,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 28836,
+      "latency_ms": 12.318,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "test/Route.js"
+      ],
+      "missed": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 20,
+      "tokens_delivered": 25626,
+      "latency_ms": 12.146,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26880,
+      "latency_ms": 12.572,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12752,
+      "latency_ms": 12.64,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12150,
+      "latency_ms": 12.563,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12313,
+      "latency_ms": 12.863,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 14066,
+      "latency_ms": 12.784,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24966,
+      "latency_ms": 13.234,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18218,
+      "latency_ms": 14.491,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 11,
+      "tokens_delivered": 22036,
+      "latency_ms": 12.755,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "examples/search/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17126,
+      "latency_ms": 12.417,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15153,
+      "latency_ms": 13.131,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15550,
+      "latency_ms": 13.029,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [
+        "test/res.format.js"
+      ],
+      "missed": [
+        "test/app.router.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 15695,
+      "latency_ms": 13.005,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10590,
+      "latency_ms": 12.77,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 48438,
+      "latency_ms": 25.438,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 63857,
+      "latency_ms": 23.199,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 68922,
+      "latency_ms": 23.409,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [
+        "lib/request.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 46929,
+      "latency_ms": 22.829,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 44158,
+      "latency_ms": 21.399,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 69122,
+      "latency_ms": 21.888,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 48438,
+      "latency_ms": 24.443,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.redirect.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 56208,
+      "latency_ms": 25.025,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 54109,
+      "latency_ms": 23.959,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 69044,
+      "latency_ms": 22.344,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 57263,
+      "latency_ms": 24.394,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 48439,
+      "latency_ms": 24.053,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 68691,
+      "latency_ms": 23.813,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 68940,
+      "latency_ms": 21.569,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 57070,
+      "latency_ms": 21.894,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "test/Router.js"
+      ],
+      "missed": [
+        "lib/router/route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 55125,
+      "latency_ms": 21.455,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 54998,
+      "latency_ms": 21.195,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 63660,
+      "latency_ms": 23.345,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 46930,
+      "latency_ms": 21.497,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 63835,
+      "latency_ms": 23.28,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 47132,
+      "latency_ms": 22.054,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 46929,
+      "latency_ms": 21.226,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 52216,
+      "latency_ms": 24.426,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "examples/search/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 63752,
+      "latency_ms": 25.16,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 47164,
+      "latency_ms": 23.63,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 44146,
+      "latency_ms": 20.388,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [
+        "test/app.router.js"
+      ],
+      "missed": [
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 69122,
+      "latency_ms": 21.805,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 52218,
+      "latency_ms": 21.611,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1414,
+      "latency_ms": 37625.567,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.send.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1571,
+      "latency_ms": 38183.3,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/application.js",
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 6,
+      "tokens_delivered": 2034,
+      "latency_ms": 36968.61,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2275,
+      "latency_ms": 37162.887,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.sendFile.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2528,
+      "latency_ms": 36701.971,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1817,
+      "latency_ms": 37801.875,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1177,
+      "latency_ms": 38410.176,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1661,
+      "latency_ms": 38492.106,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2471,
+      "latency_ms": 37196.995,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2207,
+      "latency_ms": 37818.108,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1127,
+      "latency_ms": 38015.737,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1200,
+      "latency_ms": 37192.458,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [
+        "lib/request.js"
+      ],
+      "missed": [
+        "test/req.acceptsCharsets.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1622,
+      "latency_ms": 36968.574,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1752,
+      "latency_ms": 36691.28,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "lib/router/route.js"
+      ],
+      "missed": [
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1350,
+      "latency_ms": 36571.607,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/route.js"
+      ],
+      "missed": [
+        "test/Router.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1521,
+      "latency_ms": 36692.728,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [
+        "lib/router/route.js"
+      ],
+      "missed": [
+        "test/Route.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1810,
+      "latency_ms": 37179.759,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 358,
+      "latency_ms": 36875.206,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [
+        "test/app.router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1762,
+      "latency_ms": 37306.791,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 550,
+      "latency_ms": 37419.626,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2480,
+      "latency_ms": 38056.783,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2310,
+      "latency_ms": 37850.907,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1911,
+      "latency_ms": 36884.64,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "examples/search/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2331,
+      "latency_ms": 36371.808,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1347,
+      "latency_ms": 36766.261,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2169,
+      "latency_ms": 35855.624,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 912,
+      "latency_ms": 36084.698,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "repowise",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1158,
+      "latency_ms": 36719.118,
+      "indexed_revision_matches": true
+    }
+  ]
+}
