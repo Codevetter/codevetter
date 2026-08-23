@@ -80,6 +80,14 @@ Whole-repository packers, listed apart because they do not rank:
 | repomix-compressed | 0.0% | 0.0% | 6.3% | 81,589 |
 | repomix-pack-all | 0.0% | 0.0% | 0.0% | 161,195 |
 
+> **Publication scope:** exploratory one-shot retrieval evidence for one pinned
+> TypeScript repository. This is publishable as a corpus, harness, raw-artifact set,
+> and scoped measurement. It is not an overall product leaderboard, purchasing
+> recommendation, or evidence that any tool improves an agent. Nobody outside the
+> originating machine has reproduced the provider executions, and the legacy audit
+> records cannot independently reconstruct ranks 6–10; see
+> [mid-range-audit-got.md](mid-range-audit-got.md).
+
 
 ## Arms that could not be scored, and why
 
@@ -96,7 +104,7 @@ setup until one query has been run by hand and the bytes read.
 ## Faults found in this run's own harness
 
 Six, all found while producing this one table, and every one of them had produced a
-plausible number first. They are listed with the other nineteen in
+plausible number first. They are listed with the other twenty-four in
 [instrumentation.md](instrumentation.md) — one catalogue rather than two.
 
 The two most consequential were adapters of mine reporting working tools as broken:

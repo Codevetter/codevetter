@@ -3,8 +3,9 @@
 Measures whether a code-context provider actually finds the code a change needed.
 No agent, no model, no network, no cost. It answers a narrower question than the
 [context-provider experiment](../context-providers/README.md) — retrieval quality,
-not task success — and it exists because that experiment cannot currently answer
-anything at all (see [Why this exists](#why-this-exists)).
+not task success. The current agent experiment is deliberately unqualified and does
+not change the retrieval results reported here (see
+[Why this exists](#why-this-exists)).
 
 > **Every provider number dated 2026-08-22 in this file is superseded and should not
 > be cited.** Four harness defects found on 2026-08-23 invalidate them: path
@@ -19,8 +20,9 @@ anything at all (see [Why this exists](#why-this-exists)).
 > the amended plan. Whoever picks this up next should start at
 > [HANDOFF.md](HANDOFF.md), which says what is measured, what is void and what will
 > mislead a verifier.
-> Re-measurement is in progress; the tables below are retained because the
-> methodology and the failure modes are the durable part, not the figures.
+> The older tables below are retained as historical fault evidence, not current
+> results. The only publishable measurement is the explicitly scoped `got` artifact
+> linked above.
 
 
 ## How it works
@@ -669,7 +671,7 @@ shipped a wrong number.
 | A control scoring above half the leader fails the run | The churn ranker at 37.3% against a 59.2% leader. Also fires on under-powered samples: on 3 cases the control *tied* the leader |
 | Corpus rebuild must hash-match | Silent drift in ground truth |
 | Zero / all-unavailable / near-perfect scores flagged | Four arms scored 0.0% for four unrelated harness bugs and zero tool defects |
-| Deterministic mid-range audit sample | The plausible middle is where bias hides, and it is exactly what got no scrutiny before |
+| Deterministic mid-range audit sample | The plausible middle is where bias hides; the first bounded audit passed its stored top-five evidence and found that legacy artifacts discarded ranks 6–10 |
 | Coverage travels with every row | Six arms had one repository and six had four, printed identically |
 | Outcome taxonomy kept separate | More candidates fail to *install* than score badly; collapsing those is the largest distortion available here |
 
@@ -679,10 +681,13 @@ leave a trace in git history, which is the most any format can do.
 
 ## Instrumentation faults
 
-Twenty-nine defects have been found in this harness itself, every one of which produced
-a plausible number before it was caught, and every one of which under-reported a tool
-that worked. The full catalogue, the corpus-by-corpus cost of the worst of them, and the
-pattern they share are in **[instrumentation.md](instrumentation.md)**.
+Thirty defects have been found in this harness itself, every one of which produced a
+plausible number or assurance before it was caught. All twenty-nine score-affecting
+faults under-reported a tool that worked; the newest made the promised audit
+unverifiable. The full catalogue, the corpus-by-corpus cost of the worst of them, and
+the pattern they share are in
+**[instrumentation.md](instrumentation.md)**. The first bounded mid-range audit and
+its legacy evidence limitation are in **[mid-range-audit-got.md](mid-range-audit-got.md)**.
 
 ## Not every "code context tool" is a retriever
 

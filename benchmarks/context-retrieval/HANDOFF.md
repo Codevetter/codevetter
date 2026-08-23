@@ -45,9 +45,10 @@ the adapter passed a whole sentence to a term-matching search; a working 961-fun
 graph scored 0.0% because the tool's own cleanup command was disabled by config and
 failed silently; two packer arms scored 0.0% while delivering every required file.
 
-**3. The bias runs one way.** Every fault found so far *under*-reported a tool that
-worked. None inflated a score. Assume the same direction for faults not yet found, and
-treat the published ordering as a lower bound on the field rather than a settled result.
+**3. The score bias runs one way.** Every score-affecting fault found so far
+*under*-reported a tool that worked. None inflated a score. Assume the same direction
+for faults not yet found, and treat the published ordering as a lower bound on the field
+rather than a settled result.
 
 ## Where things are
 
@@ -55,11 +56,11 @@ treat the published ordering as a lower bound on the field rather than a settled
 | --- | --- | --- |
 | `scripts/context-retrieval/` | Harness: `score.mjs` (runner), `adapters/`, `gates.mjs`, `tiers.mjs`, `paths.mjs`, `preregister.mjs`, `report-tiered.mjs`, tests | committed on `main` |
 | `benchmarks/context-retrieval/plan.json` | Pre-registered plan, hash `4937d61d19d81518` | committed on `main` |
-| `benchmarks/context-retrieval/instrumentation.md` | The 25 harness faults — read before trusting any zero | committed on `main` |
+| `benchmarks/context-retrieval/instrumentation.md` | The 30 harness faults — read before trusting any zero | committed on `main` |
 | `benchmarks/context-retrieval/candidates.json` | 54 candidate tools with stars, licence, mechanism | committed on `main` |
 | `benchmarks/context-retrieval/results/full-field-got/` | 27 score artifacts, 108 case rows each | committed on `main` |
 | `benchmarks/context-retrieval/corpora/` | Corpora for public upstreams only | committed on `main` |
-| `scripts/context-retrieval/field-report.mjs` | Regenerates `full-field-got.md` from the committed artifacts | committed on `main` |
+| `scripts/context-retrieval/field-report.mjs` | Regenerates the published tables in `full-field-got.md` from the committed artifacts | committed on `main` |
 | `apps/desktop/src-tauri/src/bin/codevetter-graph.rs` | Headless bin driving the real product code | committed on `main` |
 | Private-repo corpora | 7 corpora built from the owner's own repositories | **session scratchpad only — gone** |
 | Tool binaries under `nbin/`, `gnx/`, `bin/gortex` | codegraph, graft, ck, gitnexus, gortex | **session scratchpad only — gone** |
@@ -71,7 +72,7 @@ corpora carry commit subjects and file paths from private codebases. Rebuild the
 ## Reproducing the headline numbers
 
 Verified from a fresh `--depth 1` clone with **no `pnpm install`**: the regeneration
-command below reproduces the committed tables byte-for-byte, and 34 of the harness
+command below reproduces the committed tables byte-for-byte, and 38 of the harness
 tests run on Node's built-in runner with zero dependencies. Anything involving a real
 provider needs the tool inventory further down.
 
@@ -114,7 +115,7 @@ Versions matter; several of these are pre-1.0 and move fast.
 | Arm | Version | Install | Note |
 | --- | --- | --- | --- |
 | semble | 0.5.5 | `~/.local/bin` | leader at 4k/16k |
-| codevetter-structural-context | this repo | `cargo build --bin codevetter-graph` | leader at 1k; needs uncommitted product changes |
+| codevetter-structural-context | this repo | `cargo build --bin codevetter-graph` | leader at 1k in this scoped run |
 | ck | @beaconbay/ck-search@0.7.11 | `npm i @beaconbay/ck-search` | 36 s/query |
 | repowise | 0.45.0 | `~/.local/bin` | 42 s/query; run `init --no-prose` (key-free) |
 | codegraph | @colbymchenry/codegraph@1.5.0 | `npm i @colbymchenry/codegraph` | |
@@ -191,10 +192,13 @@ Two things about this history are worth knowing:
 4. **Adapter parity is uneven and correlates with score.** Three arms needed a bespoke
    query form before they scored at all. Arms that got less debugging are likely
    understated. There is no fix for this except more debugging per arm, disclosed.
-5. **Mid-range results are unaudited.** `gates.mjs` has `nominateForAudit`, which
-   deterministically samples mid-range cases for hand-checking. It has never been read.
-   Every fault found so far was found because a number was extreme enough to look wrong;
-   a plausible wrong number would still get through. This is the known weakness.
+5. **Mid-range results are only partially audited.** The 44 stored nominations now
+   pass an independent top-five, corpus, and Git-history audit; see
+   [mid-range-audit-got.md](mid-range-audit-got.md). That audit found the legacy
+   nomination record preserved only five paths for a recall@10 selection and omitted
+   its expected files. The current artifacts therefore cannot prove ranks 6–10. Future
+   artifacts preserve the full evidence window, but completing this audit for the
+   published run requires fresh provider runs.
 
 ## Verification worth doing first
 

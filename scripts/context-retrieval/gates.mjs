@@ -179,18 +179,23 @@ export function nominateForAudit({ providers, perProvider = 2 }) {
     if (cases.length === 0) continue;
     // Fixed stride from a fixed offset: reproducible, and spread across the run.
     const stride = Math.max(1, Math.floor(cases.length / perProvider));
-    for (
-      let i = 0;
-      i < cases.length && nominations.length < perProvider * providers.length;
-      i += stride
-    ) {
+    let nominated = 0;
+    for (let i = 0; i < cases.length && nominated < perProvider; i += stride) {
+      const selected = cases[i];
       nominations.push({
         provider_id: p.provider_id,
-        query: cases[i].case?.query,
-        revision: cases[i].case?.base_revision,
-        returned: cases[i].response?.files?.slice(0, 5),
-        expected: cases[i].case?.changed_files,
+        case_id: selected.case?.case_id,
+        query: selected.case?.query,
+        revision: selected.case?.base_revision,
+        // Preserve the complete window whose metric nominated the case. Keeping only
+        // five paths while sampling on recall@10 made the stored evidence incapable of
+        // checking its own claim.
+        returned: selected.response?.files?.slice(0, 10) ?? [],
+        returned_limit: 10,
+        required_files: selected.case?.required_files ?? [],
+        claimed_recall_at_10: selected.measures?.recall_at_10,
       });
+      nominated += 1;
     }
   }
   return nominations;

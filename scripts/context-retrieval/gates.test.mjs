@@ -125,8 +125,13 @@ test('audit nominations are deterministic and drawn from the plausible middle', 
     {
       provider_id: 'x',
       cases: Array.from({ length: 6 }, (_, i) => ({
-        case: { query: `q${i}`, base_revision: `r${i}`, changed_files: ['a.go'] },
-        response: { files: ['a.go'] },
+        case: {
+          case_id: `case-${i}`,
+          query: `q${i}`,
+          base_revision: `r${i}`,
+          required_files: ['a.go'],
+        },
+        response: { files: ['a.go', ...Array.from({ length: 11 }, (__, j) => `${j}.go`)] },
         measures: { recall_at_10: i === 0 ? 0 : i === 5 ? 1 : 0.5 },
       })),
     },
@@ -136,4 +141,37 @@ test('audit nominations are deterministic and drawn from the plausible middle', 
   assert.deepEqual(first, second);
   // Neither the 0.0 nor the 1.0 case is eligible: those are the ones already checked.
   assert.ok(first.every((n) => n.query !== 'q0' && n.query !== 'q5'));
+  assert.equal(first.length, 2);
+  assert.deepEqual(first[0], {
+    provider_id: 'x',
+    case_id: 'case-1',
+    query: 'q1',
+    revision: 'r1',
+    returned: ['a.go', '0.go', '1.go', '2.go', '3.go', '4.go', '5.go', '6.go', '7.go', '8.go'],
+    returned_limit: 10,
+    required_files: ['a.go'],
+    claimed_recall_at_10: 0.5,
+  });
+});
+
+test('audit nomination count is bounded per provider', () => {
+  const makeProvider = (providerId) => ({
+    provider_id: providerId,
+    cases: Array.from({ length: 5 }, (_, i) => ({
+      case: {
+        case_id: `${providerId}-${i}`,
+        query: `q${i}`,
+        base_revision: `r${i}`,
+        required_files: ['a.go'],
+      },
+      response: { files: ['a.go'] },
+      measures: { recall_at_10: 0.5 },
+    })),
+  });
+  const nominations = nominateForAudit({
+    providers: [makeProvider('x'), makeProvider('y')],
+    perProvider: 2,
+  });
+  assert.equal(nominations.filter((entry) => entry.provider_id === 'x').length, 2);
+  assert.equal(nominations.filter((entry) => entry.provider_id === 'y').length, 2);
 });
