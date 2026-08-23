@@ -250,6 +250,16 @@ pub fn import_node_link_json(
     })
 }
 
+/// Serializes a snapshot as the CodeVetter interchange document.
+///
+/// Encoded compactly on purpose. `import_codevetter_json` enforces
+/// `MAX_IMPORT_BYTES` against the raw document length, and on real repositories
+/// roughly a third of a pretty-printed graph is indentation whitespace
+/// (measured: gin 17.8 MiB -> 11.4 MiB, fastify 29.5 MiB -> 19.7 MiB). Spending
+/// a third of the import budget on padding shrank the repository size the
+/// product could round-trip for no reader's benefit: `export_markdown` is the
+/// human-readable rendering, and `export_public_package` stays indented because
+/// it is a small sanitized artifact people read directly.
 pub fn export_json(snapshot: &StructuralGraphSnapshot) -> Result<String, String> {
     #[derive(Serialize)]
     struct Export<'a> {
@@ -258,7 +268,7 @@ pub fn export_json(snapshot: &StructuralGraphSnapshot) -> Result<String, String>
         exported_at: String,
         snapshot: &'a StructuralGraphSnapshot,
     }
-    serde_json::to_string_pretty(&Export {
+    serde_json::to_string(&Export {
         format: "codevetter-structural-graph",
         schema_version: STRUCTURAL_GRAPH_SCHEMA_VERSION,
         exported_at: Utc::now().to_rfc3339(),
@@ -775,6 +785,27 @@ mod tests {
         assert!(markdown.contains("`src/api.py`:1"));
         let round_trip = import_codevetter_json(&json).expect("round trip");
         assert_eq!(round_trip, preview.snapshot);
+    }
+
+    #[test]
+    fn codevetter_json_export_spends_no_import_budget_on_indentation() {
+        let preview = import_node_link_json("/repo", FIXTURE).expect("import");
+        let json = export_json(&preview.snapshot).expect("json export");
+        // Whitespace inside string values is legitimate; newline-plus-indent is
+        // the pretty printer's padding, and it is what used to consume roughly a
+        // third of MAX_IMPORT_BYTES on real repositories.
+        assert!(!json.contains("\n  "), "export must not be indented");
+        let pretty = serde_json::to_string_pretty(&serde_json::from_str::<serde_json::Value>(&json).expect("valid json")).expect("pretty");
+        assert!(
+            json.len() < pretty.len(),
+            "compact export ({} bytes) must be smaller than the indented form ({} bytes)",
+            json.len(),
+            pretty.len()
+        );
+        assert_eq!(
+            import_codevetter_json(&json).expect("compact round trip"),
+            preview.snapshot
+        );
     }
 
     #[test]

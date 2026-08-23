@@ -151,6 +151,9 @@ fn extract_sql(line_number: usize, line: &str, lower: &str, output: &mut Contrac
             }
         }
     }
+    if !reads_as_sql(lower) {
+        return;
+    }
     for (marker, edge_kind) in [
         ("from", "reads_from"),
         ("join", "reads_from"),
@@ -778,6 +781,34 @@ fn sql_object_after(line: &str, object_kind: &str) -> Option<String> {
             )
         })
         .map(|value| clean_sql_identifier(value))
+}
+
+/// Whether a line is plausibly SQL rather than prose that happens to contain the
+/// word "from".
+///
+/// The reference markers below are bare English words, and this extractor runs
+/// over every line of every metadata text file — Markdown, JSON, YAML. Without
+/// this guard, "extracted from Fleet Workspace" in a JSON `notes` string
+/// produced a `db_object_reference` node labelled `Fleet`, and "from the
+/// ios-landings factory" produced one labelled `the`. On one real config file
+/// eight of its nine nodes were this kind of noise. Requiring an unambiguous
+/// multi-word SQL marker keeps embedded queries like
+/// `db.query("SELECT * FROM users")` while dropping prose.
+fn reads_as_sql(lower: &str) -> bool {
+    const STATEMENTS: &[&str] = &[
+        "select ",
+        "insert into",
+        "delete from",
+        "create table",
+        "create view",
+        "create index",
+        "create or replace",
+        "alter table",
+        "truncate table",
+        "merge into",
+    ];
+    STATEMENTS.iter().any(|marker| lower.contains(marker))
+        || (lower.contains("update ") && lower.contains(" set "))
 }
 
 fn sql_references_after(line: &str, marker: &str) -> Vec<String> {

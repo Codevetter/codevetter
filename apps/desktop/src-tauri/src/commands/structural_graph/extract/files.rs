@@ -293,6 +293,16 @@ fn is_metadata_text_path(path: &Path) -> bool {
             | "gql"
     ) || matches!(
         name.as_str(),
-        "dockerfile" | "makefile" | "justfile" | "procfile"
+        // Dotfiles have no extension, so they have to be named. These are
+        // key/value configuration in every practical repository; `.gitignore`
+        // and `.gitattributes` are deliberately absent because they are pattern
+        // lists, not entries.
+        "dockerfile"
+            | "makefile"
+            | "justfile"
+            | "procfile"
+            | ".gitmodules"
+            | ".editorconfig"
+            | ".npmrc"
     )
 }
