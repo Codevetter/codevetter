@@ -35,11 +35,13 @@ const ATTEMPT_FIELDS = [
   'receipt',
   'adapter',
 ];
+const NOISE_ATTEMPT_FIELDS = [...ATTEMPT_FIELDS, 'comparison', 'arm'];
 
 export function validateContextProviderAttempt(value, plan) {
   const errors = [];
   if (!plainObject(value)) return ['attempt: expected an object'];
-  closed(value, ATTEMPT_FIELDS, 'attempt', errors);
+  const preregisteredNoise = (plan?.aa_repetitions ?? 0) > 0;
+  closed(value, preregisteredNoise ? NOISE_ATTEMPT_FIELDS : ATTEMPT_FIELDS, 'attempt', errors);
   exact(value.schema_version, CONTEXT_ATTEMPT_SCHEMA_VERSION, 'attempt.schema_version', errors);
   exact(value.plan_id, plan?.plan_id, 'attempt.plan_id', errors);
   integer(value.sequence, 'attempt.sequence', errors, 1, 1000);
@@ -64,7 +66,7 @@ export function validateContextProviderAttempt(value, plan) {
   const schedule = plan?.schedule?.find((entry) => entry.sequence === value.sequence);
   if (!schedule) errors.push('attempt.sequence: not present in the plan schedule');
   else {
-    for (const field of ['provider_id', 'task_id', 'trial_index', 'order']) {
+    for (const field of ['provider_id', 'task_id', 'trial_index', 'order', 'comparison', 'arm']) {
       if (value[field] !== schedule[field])
         errors.push(`attempt.${field}: does not match schedule`);
     }
@@ -91,7 +93,7 @@ export function inspectContextProviderAttempts({ plan, providerId, attempts }) {
   const bySequence = indexAttempts(relevant, errors);
   const missingArms = expected
     .filter((entry) => !bySequence.has(entry.sequence))
-    .map((entry) => `${entry.task_id}:trial-${entry.trial_index}:${entry.provider_id}`)
+    .map(scheduleArmName)
     .sort();
   uniqueIdentity(relevant, 'workspace_id', errors);
   uniqueIdentity(relevant, 'agent_session_id', errors);
@@ -177,36 +179,92 @@ function validateTreatmentIsolation(attempt, provider, task, allProviderTools, e
   }
 }
 
+// The two run-collection loops are split out. The single function scored cognitive
+// complexity 38 against this repository's ceiling of 20 — the highest of four
+// over-ceiling functions in the change that introduced it, none of which were caught
+// because that change verified lint, cycles, duplication and tests but not complexity.
+//
+// A/B and A/A are built separately on purpose: an A/A pair must come from arms the
+// schedule declared as A/A, and deriving it by relabelling A/B repetitions is exactly
+// the shortcut the noise measurement exists to rule out.
+function collectAbRuns({ plan, providerId, inspection, bySequence, taskId }) {
+  const runs = [];
+  for (let trial = 1; trial <= plan.repetitions; trial += 1) {
+    const find = (id) =>
+      scheduledAttempt(inspection.expected, bySequence, {
+        comparison: 'ab',
+        taskId,
+        trial,
+        providerId: id,
+      });
+    const control = find(inspection.baseline.provider_id);
+    const treatment = find(providerId);
+    if (!control || !treatment) continue;
+    const pairId = `${providerId}-${taskId}-${trial}`;
+    // Plan order spans the whole cohort; a pairwise bundle records which of its two
+    // arms ran first.
+    const controlFirst = control.order < treatment.order;
+    runs.push(bundleRun(pairId, 'ab', 'control', control, noContext(), controlFirst ? 1 : 2));
+    runs.push(
+      bundleRun(
+        pairId,
+        'ab',
+        'treatment',
+        treatment,
+        providerContext(inspection.treatment, taskId),
+        controlFirst ? 2 : 1
+      )
+    );
+  }
+  return runs;
+}
+
+function collectAaRuns({ plan, providerId, inspection, bySequence, taskId }) {
+  const runs = [];
+  for (let trial = 1; trial <= (plan.aa_repetitions ?? 0); trial += 1) {
+    const arms = ['a', 'b'].map((arm) =>
+      scheduledAttempt(inspection.expected, bySequence, {
+        comparison: 'aa',
+        taskId,
+        trial,
+        providerId,
+        arm,
+      })
+    );
+    if (arms.some((attempt) => !attempt)) continue;
+    const pairId = `aa-${providerId}-${taskId}-${trial}`;
+    const firstArm = arms[0].order < arms[1].order ? 0 : 1;
+    for (const [index, attempt] of arms.entries()) {
+      runs.push(
+        bundleRun(
+          pairId,
+          'aa',
+          index === 0 ? 'a' : 'b',
+          attempt,
+          providerContext(inspection.treatment, taskId),
+          index === firstArm ? 1 : 2
+        )
+      );
+    }
+  }
+  return runs;
+}
+
 export function projectContextProviderEvaluationBundle({ plan, providerId, attempts }) {
   const inspection = inspectContextProviderAttempts({ plan, providerId, attempts });
   if (inspection.errors.length > 0) {
     throw new Error(`context-provider evidence is contaminated:\n${inspection.errors.join('\n')}`);
   }
-  const byKey = new Map(
-    inspection.attempts.map((attempt) => [
-      `${attempt.task_id}:${attempt.trial_index}:${attempt.provider_id}`,
-      attempt,
-    ])
-  );
+  const bySequence = new Map(inspection.attempts.map((attempt) => [attempt.sequence, attempt]));
   const runs = [];
   for (const task of plan.tasks) {
-    for (let trial = 1; trial <= plan.repetitions; trial += 1) {
-      const control = byKey.get(`${task.task_id}:${trial}:${inspection.baseline.provider_id}`);
-      const treatment = byKey.get(`${task.task_id}:${trial}:${providerId}`);
-      if (!control || !treatment) continue;
-      const pairId = `${providerId}-${task.task_id}-${trial}`;
-      runs.push(bundleRun(pairId, 'control', control, noContext()));
-      runs.push(
-        bundleRun(
-          pairId,
-          'treatment',
-          treatment,
-          providerContext(inspection.treatment, task.task_id)
-        )
-      );
-    }
+    const context = { plan, providerId, inspection, bySequence, taskId: task.task_id };
+    runs.push(...collectAbRuns(context), ...collectAaRuns(context));
   }
-  if (runs.length < 2) throw new Error('no complete baseline-versus-provider pair is available');
+  if (!runs.some((run) => run.comparison === 'ab')) {
+    throw new Error('no complete baseline-versus-provider pair is available');
+  }
+  const noisePairs = runs.filter((run) => run.comparison === 'aa').length / 2;
   const bundle = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['evaluation-bundle'],
     experiment: {
@@ -216,13 +274,17 @@ export function projectContextProviderEvaluationBundle({ plan, providerId, attem
       qualification_policy: {
         minimum_complete_pairs: plan.tasks.length * plan.repetitions,
         minimum_distinct_tasks: plan.tasks.length,
-        minimum_aa_pairs: 1,
+        minimum_aa_pairs: Math.max(1, plan.tasks.length * (plan.aa_repetitions ?? 0)),
         minimum_success_rate_delta: 0,
         maximum_regression_delta: 0,
         maximum_aa_discordance_rate: 0,
       },
       limitations: [
-        'Provider comparison remains descriptive until independent A/A noise evidence is supplied.',
+        ...(noisePairs === 0
+          ? [
+              'Provider comparison remains descriptive until independent A/A noise evidence is supplied.',
+            ]
+          : []),
         ...plan.limitations,
       ],
     },
@@ -264,6 +326,11 @@ export function aggregateContextProviderScores({ plan, planArtifact, pairwise })
     limitations.push('Feasibility evidence is descriptive and cannot establish a provider winner.');
   if (missingArms.length > 0)
     limitations.push('One or more scheduled provider arms are missing terminal evidence.');
+  if (providers.some((provider) => provider.noise.complete_pairs === 0)) {
+    limitations.push(
+      'A provider has no independent A/A noise evidence, so its comparison stays descriptive.'
+    );
+  }
   const draft = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['context-provider-comparison'],
     plan_sha256: planArtifact.sha256,
@@ -335,17 +402,31 @@ function pairwiseRow(plan, provider, entry, missingArms) {
   }
   validatePairwiseArtifacts(entry);
   const ab = entry.score.scorecard.ab;
+  const aa = entry.score.scorecard.aa;
+  if (!aa) throw new Error(`pairwise score omits A/A noise evidence: ${provider.provider_id}`);
   const expectedAttempts = scheduledArmNames(plan, provider.provider_id).length;
   const completeAttempts = ab.complete_pairs * 2;
-  if (completeAttempts > expectedAttempts) {
+  const expectedNoiseAttempts = scheduledArmNames(plan, provider.provider_id, 'aa').length;
+  const completeNoiseAttempts = aa.complete_pairs * 2;
+  if (completeAttempts > expectedAttempts || completeNoiseAttempts > expectedNoiseAttempts) {
     throw new Error(`pairwise score exceeds the schedule for ${provider.provider_id}`);
   }
-  appendMissingArms(provider, entry, expectedAttempts, completeAttempts, missingArms);
+  appendMissingArms(provider, entry, expectedAttempts, completeAttempts, missingArms, 'ab');
+  appendMissingArms(
+    provider,
+    entry,
+    expectedNoiseAttempts,
+    completeNoiseAttempts,
+    missingArms,
+    'aa'
+  );
   return {
     provider,
     entry,
     expectedAttempts,
     completeAttempts,
+    expectedNoiseAttempts,
+    completeNoiseAttempts,
     rawP: exactMcNemarPValue(ab.treatment_wins, ab.control_wins),
   };
 }
@@ -358,17 +439,32 @@ function validatePairwiseArtifacts(entry) {
   }
 }
 
-function appendMissingArms(provider, entry, expected, complete, missingArms) {
+function appendMissingArms(provider, entry, expected, complete, missingArms, comparison) {
   if (complete >= expected) return;
-  const declared = entry.missing_arms ?? [];
+  const declared = (entry.missing_arms ?? []).filter(
+    (name) => name.startsWith('aa:') === (comparison === 'aa')
+  );
   if (declared.length === expected - complete) missingArms.push(...declared);
-  else missingArms.push(`${provider.provider_id}:incomplete-pairwise-evidence`);
+  else
+    missingArms.push(
+      `${provider.provider_id}:incomplete-${comparison === 'aa' ? 'aa' : 'pairwise'}-evidence`
+    );
 }
 
 function comparisonProvider(row, adjustedP) {
-  const { provider, entry, expectedAttempts, completeAttempts, rawP } = row;
+  const {
+    provider,
+    entry,
+    expectedAttempts,
+    completeAttempts,
+    expectedNoiseAttempts,
+    completeNoiseAttempts,
+    rawP,
+  } = row;
   const ab = entry.score.scorecard.ab;
-  const pairwiseQualified = entry.score.scorecard.qualification.state === 'qualified';
+  const aa = entry.score.scorecard.aa;
+  // The pairwise scorer reports qualified_improvement / qualified_no_improvement / unqualified.
+  const pairwiseQualified = entry.score.scorecard.qualification.state !== 'unqualified';
   return {
     provider_id: provider.provider_id,
     provider_version: provider.provider_version,
@@ -389,6 +485,13 @@ function comparisonProvider(row, adjustedP) {
       ties: ab.tie_pass + ab.tie_fail,
       success_rate_delta: ab.success_rate_delta,
       regression_delta: ab.regression_delta,
+    },
+    noise: {
+      scheduled_attempts: expectedNoiseAttempts,
+      complete_attempts: completeNoiseAttempts,
+      complete_pairs: aa.complete_pairs,
+      discordant_pairs: aa.discordant_pairs,
+      discordance_rate: aa.discordance_rate,
     },
     diagnostics_available: Object.entries(ab.diagnostics)
       .filter(([, value]) => value.paired_count > 0)
@@ -483,6 +586,7 @@ function markdownProviderEvidence(provider) {
     `- Version: \`${provider.provider_version}\`; configuration: \`${provider.configuration_sha256}\``,
     `- Snapshots: ${snapshots}`,
     `- Tools: ${provider.allowed_tools.join(', ') || 'none'}`,
+    `- A/A noise: ${noiseSummary(provider.noise)}`,
     `- Diagnostics: ${provider.diagnostics_available.join(', ') || 'unavailable'}`,
     `- Pairwise bundle: \`${provider.pairwise_bundle.path}\`; score: \`${provider.pairwise_score.path}\``,
     '',
@@ -495,8 +599,17 @@ function htmlProviderEvidence(provider) {
     .map((snapshot) => `${snapshot.task_id}=${snapshot.snapshot_id}`)
     .join('\n');
   const outcome = `${provider.outcomes.control_successes} → ${provider.outcomes.treatment_successes}\n${signed(provider.outcomes.success_rate_delta)} · Holm ${decimal(provider.adjusted_p_value)}`;
-  const evidence = `snapshots:\n${snapshots}\ntools: ${provider.allowed_tools.join(', ') || 'none'}\ndiagnostics: ${provider.diagnostics_available.join(', ') || 'unavailable'}`;
+  const evidence = `snapshots:\n${snapshots}\ntools: ${provider.allowed_tools.join(', ') || 'none'}\nA/A noise: ${noiseSummary(provider.noise)}\ndiagnostics: ${provider.diagnostics_available.join(', ') || 'unavailable'}`;
   return `<tr><td><code>${escapeHtml(identity)}</code></td><td>${provider.complete_attempts}/${provider.scheduled_attempts}</td><td><code>${escapeHtml(outcome)}</code></td><td><code>${escapeHtml(evidence)}</code></td><td>${provider.family_qualified ? 'yes' : 'no'}</td></tr>`;
+}
+
+function noiseSummary(noise) {
+  if (noise.complete_pairs === 0) {
+    return `unavailable (${noise.complete_attempts}/${noise.scheduled_attempts} arms)`;
+  }
+  return `${noise.discordant_pairs}/${noise.complete_pairs} discordant pairs (${decimal(
+    noise.discordance_rate
+  )})`;
 }
 
 function htmlList(title, items) {
@@ -512,14 +625,32 @@ export async function writeContextProviderArtifact(path, content) {
   await rename(temporary, destination);
 }
 
-function bundleRun(pairId, arm, attempt, context) {
+function scheduledAttempt(expected, bySequence, { comparison, taskId, trial, providerId, arm }) {
+  const entry = expected.find(
+    (candidate) =>
+      (candidate.comparison ?? 'ab') === comparison &&
+      candidate.task_id === taskId &&
+      candidate.trial_index === trial &&
+      candidate.provider_id === providerId &&
+      (arm === undefined || candidate.arm === arm)
+  );
+  return entry === undefined ? undefined : bySequence.get(entry.sequence);
+}
+
+function scheduleArmName(entry) {
+  return entry.comparison === 'aa'
+    ? `aa:${entry.task_id}:trial-${entry.trial_index}:${entry.provider_id}:${entry.arm}`
+    : `${entry.task_id}:trial-${entry.trial_index}:${entry.provider_id}`;
+}
+
+function bundleRun(pairId, comparison, arm, attempt, context, executionOrder) {
   return {
     pair_id: pairId,
-    comparison: 'ab',
+    comparison,
     arm,
     task_id: attempt.task_id,
     trial_index: attempt.trial_index,
-    execution_order: attempt.order,
+    execution_order: executionOrder,
     receipt: attempt.receipt,
     adapter: attempt.adapter,
     context,
@@ -551,11 +682,14 @@ function providerContext(provider, taskId) {
   };
 }
 
-function scheduledArmNames(plan, providerId) {
+function scheduledArmNames(plan, providerId, comparison = 'ab') {
   const baseline = plan.providers.find((provider) => provider.role === 'baseline');
+  const cohort = comparison === 'aa' ? [providerId] : [baseline.provider_id, providerId];
   return plan.schedule
-    .filter((entry) => [baseline.provider_id, providerId].includes(entry.provider_id))
-    .map((entry) => `${entry.task_id}:trial-${entry.trial_index}:${entry.provider_id}`)
+    .filter(
+      (entry) => (entry.comparison ?? 'ab') === comparison && cohort.includes(entry.provider_id)
+    )
+    .map(scheduleArmName)
     .sort();
 }
 

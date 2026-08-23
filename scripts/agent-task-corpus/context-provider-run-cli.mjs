@@ -19,9 +19,45 @@ import {
 import { resolveArtifact } from './validate-corpus.mjs';
 
 const MODEL_ENVIRONMENT = 'CODEVETTER_LOCAL_MODEL_URL';
+const OPERATOR_DIAGNOSTICS_SCHEMA_VERSION = 'codevetter.context-provider-operator-diagnostics.v1';
 const CONTEXT_FILE = '.codevetter-context.json';
 const MAX_ARTIFACT_BYTES = 5 * 1024 * 1024;
 const MAX_TOOL_BYTES = 64 * 1024 * 1024;
+
+// Preflight split out of runContextProviderPlan, which scored cognitive complexity 21
+// against a ceiling of 20. Each half answers one question — is this plan allowed to run,
+// and is the agent still the one that was approved — and both are refusals rather than
+// adjustments: an identity that drifted after approval invalidates the comparison the
+// plan was approved for, so the run stops instead of proceeding with a note.
+async function loadApprovedPlan(workspaceRoot, planPath, approvalId, modelUrl) {
+  const planDocument = await readJson(workspaceRoot, planPath);
+  const plan = planDocument.value;
+  const errors = validateContract('context-provider-plan', plan);
+  if (errors.length > 0) throw new Error(`invalid context-provider plan:\n${errors.join('\n')}`);
+  assertExecutionApproval(plan, approvalId);
+  if (plan.blocked_reasons.length > 0) {
+    throw new Error(`execution plan is blocked: ${plan.blocked_reasons.join(', ')}`);
+  }
+  assertLoopbackModelUrl(modelUrl);
+  return plan;
+}
+
+async function loadPinnedAdapter(workspaceRoot, plan, modelUrl) {
+  const adapter = await loadAgentAdapter(
+    resolveArtifact(workspaceRoot, plan.agent_profile.adapter.path)
+  );
+  if (adapter.sha256 !== plan.agent_profile.adapter.sha256) {
+    throw new Error('agent adapter identity drifted after plan approval');
+  }
+  if (
+    adapter.value.agent !== plan.agent_profile.agent ||
+    adapter.value.model !== plan.agent_profile.model
+  ) {
+    throw new Error('agent or model identity drifted after plan approval');
+  }
+  await assertModelServer(modelUrl, adapter.value.model);
+  return adapter;
+}
 
 export async function runContextProviderPlan({
   root = process.cwd(),
@@ -33,28 +69,8 @@ export async function runContextProviderPlan({
   outputRoot,
 } = {}) {
   const workspaceRoot = resolve(root);
-  const planDocument = await readJson(workspaceRoot, planPath);
-  const plan = planDocument.value;
-  const errors = validateContract('context-provider-plan', plan);
-  if (errors.length > 0) throw new Error(`invalid context-provider plan:\n${errors.join('\n')}`);
-  assertExecutionApproval(plan, approvalId);
-  if (plan.blocked_reasons.length > 0) {
-    throw new Error(`execution plan is blocked: ${plan.blocked_reasons.join(', ')}`);
-  }
-  assertLoopbackModelUrl(modelUrl);
-
-  const adapterPath = plan.agent_profile.adapter.path;
-  const adapter = await loadAgentAdapter(resolveArtifact(workspaceRoot, adapterPath));
-  if (adapter.sha256 !== plan.agent_profile.adapter.sha256) {
-    throw new Error('agent adapter identity drifted after plan approval');
-  }
-  if (
-    adapter.value.agent !== plan.agent_profile.agent ||
-    adapter.value.model !== plan.agent_profile.model
-  ) {
-    throw new Error('agent or model identity drifted after plan approval');
-  }
-  await assertModelServer(modelUrl, adapter.value.model);
+  const plan = await loadApprovedPlan(workspaceRoot, planPath, approvalId, modelUrl);
+  const adapter = await loadPinnedAdapter(workspaceRoot, plan, modelUrl);
 
   const tool = resolveArtifact(workspaceRoot, toolPath, MAX_TOOL_BYTES);
   const snapshotDirectory = insideRoot(workspaceRoot, snapshotRoot, 'snapshot');
@@ -69,6 +85,7 @@ export async function runContextProviderPlan({
   );
   await assertFreshOutput(runRoot);
   await mkdir(join(runRoot, 'receipts'), { recursive: true });
+  await mkdir(join(runRoot, 'diagnostics'), { recursive: true });
 
   const providerById = new Map(plan.providers.map((provider) => [provider.provider_id, provider]));
   const snapshots = await loadSnapshots(plan, snapshotDirectory);
@@ -112,6 +129,12 @@ export async function runContextProviderPlan({
     const receiptPath = join(runRoot, 'receipts', `attempt-${scheduled.sequence}.json`);
     await writeJsonAtomic(receiptPath, execution.receipt);
     const receipt = await artifact(workspaceRoot, receiptPath);
+    // The immutable receipt keeps only bounded hashes, so a failure cause would be
+    // unrecoverable without retaining the matching redacted text beside it.
+    await writeJsonAtomic(
+      join(runRoot, 'diagnostics', `attempt-${scheduled.sequence}.json`),
+      operatorDiagnostics(scheduled, execution)
+    );
     const attempt = {
       schema_version: CONTEXT_ATTEMPT_SCHEMA_VERSION,
       plan_id: plan.plan_id,
@@ -120,6 +143,9 @@ export async function runContextProviderPlan({
       task_id: scheduled.task_id,
       trial_index: scheduled.trial_index,
       order: scheduled.order,
+      ...(scheduled.comparison === undefined
+        ? {}
+        : { comparison: scheduled.comparison, arm: scheduled.arm }),
       workspace_id: workspaceId,
       agent_session_id: `session-${randomUUID()}`,
       tool_configuration_sha256: sha256Bytes(
@@ -153,6 +179,33 @@ export async function runContextProviderPlan({
     approval_id: approvalId,
     attempts,
     attempts_path: relative(workspaceRoot, join(runRoot, 'attempts.json')).split(sep).join('/'),
+    diagnostics_path: relative(workspaceRoot, join(runRoot, 'diagnostics')).split(sep).join('/'),
+  };
+}
+
+export function operatorDiagnostics(scheduled, execution) {
+  const { receipt, output } = execution;
+  const observed = {
+    stdout_sha256: sha256Bytes(Buffer.from(output?.stdout ?? '')),
+    stderr_sha256: sha256Bytes(Buffer.from(output?.stderr ?? '')),
+  };
+  for (const stream of ['stdout', 'stderr']) {
+    if (observed[`${stream}_sha256`] !== receipt.agent[`${stream}_sha256`]) {
+      throw new Error(`attempt ${scheduled.sequence} ${stream} does not match its receipt hash`);
+    }
+  }
+  return {
+    schema_version: OPERATOR_DIAGNOSTICS_SCHEMA_VERSION,
+    plan_id: receipt.plan_id,
+    run_id: receipt.run_id,
+    sequence: scheduled.sequence,
+    task_id: scheduled.task_id,
+    provider_id: scheduled.provider_id,
+    terminal_status: receipt.terminal_status,
+    lifecycle: [...receipt.lifecycle],
+    agent: { ...receipt.agent },
+    limitations: [...receipt.limitations],
+    output: { stdout: output?.stdout ?? '', stderr: output?.stderr ?? '' },
   };
 }
 
@@ -279,7 +332,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const result = await runContextProviderPlan(parseArgs(process.argv.slice(2)));
     process.stdout.write(
-      `Completed ${result.attempts.length} attempts\nEvidence: ${result.attempts_path}\n`
+      `Completed ${result.attempts.length} attempts\nEvidence: ${result.attempts_path}\nFailure diagnostics: ${result.diagnostics_path}\n`
     );
   } catch (error) {
     process.stderr.write(

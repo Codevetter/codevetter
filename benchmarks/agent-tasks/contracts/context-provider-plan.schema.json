@@ -177,6 +177,7 @@
       }
     },
     "repetitions": { "type": "integer", "minimum": 0, "maximum": 5 },
+    "aa_repetitions": { "type": "integer", "minimum": 0, "maximum": 5 },
     "schedule": {
       "type": "array",
       "maxItems": 1000,
@@ -189,7 +190,9 @@
           "task_id": { "$ref": "common.schema.json#/$defs/id" },
           "trial_index": { "type": "integer", "minimum": 1, "maximum": 5 },
           "provider_id": { "$ref": "common.schema.json#/$defs/id" },
-          "order": { "type": "integer", "minimum": 1, "maximum": 4 }
+          "order": { "type": "integer", "minimum": 1, "maximum": 4 },
+          "comparison": { "enum": ["ab", "aa"] },
+          "arm": { "enum": ["control", "treatment", "a", "b"] }
         }
       }
     },
@@ -201,7 +204,9 @@
         "providers": { "type": "integer", "minimum": 1, "maximum": 4 },
         "tasks": { "type": "integer", "minimum": 0, "maximum": 50 },
         "repetitions": { "type": "integer", "minimum": 0, "maximum": 5 },
-        "attempts": { "type": "integer", "minimum": 0, "maximum": 1000 }
+        "attempts": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "ab_attempts": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "aa_attempts": { "type": "integer", "minimum": 0, "maximum": 1000 }
       }
     },
     "cost": {

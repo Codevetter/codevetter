@@ -31,10 +31,11 @@ const PROVIDER_ID = 'codevetter-structural-context';
 const REVISION = '7a3dd934f68f4927b66d9e8b8ed317f8ba369aa3';
 const DIGEST = 'a'.repeat(64);
 
-async function fixturePlan() {
+async function fixturePlan({ aaRepetitions, stage = 'feasibility', providerSnapshots } = {}) {
   return planContextProviderExperiment({
     probePaths: [BASELINE_PROBE, CODEVETTER_PROBE],
-    stage: 'feasibility',
+    stage,
+    aaRepetitions,
     agentProfile: {
       status: 'selected',
       agent: 'Hermetic fixture agent',
@@ -46,7 +47,7 @@ async function fixturePlan() {
       cost_posture: 'free',
       max_usd_per_attempt: 0,
     },
-    providerSnapshots: {
+    providerSnapshots: providerSnapshots ?? {
       [PROVIDER_ID]: Object.fromEntries(
         [
           'accept-zero-duration',
@@ -80,6 +81,7 @@ function fixtureAttempts(plan) {
       task_id: entry.task_id,
       trial_index: entry.trial_index,
       order: entry.order,
+      ...(entry.comparison === undefined ? {} : { comparison: entry.comparison, arm: entry.arm }),
       workspace_id: `workspace-${entry.sequence}`,
       agent_session_id: `session-${entry.sequence}`,
       tool_configuration_sha256: entry.sequence.toString(16).padStart(64, '0'),
@@ -101,13 +103,33 @@ function fixtureAttempts(plan) {
   });
 }
 
+async function fullFixturePlan() {
+  const draft = await fixturePlan({ stage: 'full' });
+  return fixturePlan({
+    stage: 'full',
+    providerSnapshots: {
+      [PROVIDER_ID]: Object.fromEntries(
+        draft.tasks.map((task) => [
+          task.task_id,
+          {
+            status: 'ready',
+            snapshot_id: `snapshot:${task.task_id}`,
+            indexed_revision: task.repository_revision,
+          },
+        ])
+      ),
+    },
+  });
+}
+
 function evaluationScore({
   treatmentWins = 6,
   controlWins = 0,
   qualified = false,
   corpusSha = 'c'.repeat(64),
+  noisePairs = 0,
+  completePairs = 8,
 } = {}) {
-  const completePairs = 8;
   const scorecard = {
     ab: {
       complete_pairs: completePairs,
@@ -128,7 +150,12 @@ function evaluationScore({
         files_modified: { paired_count: 8 },
       },
     },
-    qualification: { state: qualified ? 'qualified' : 'unqualified' },
+    aa: {
+      complete_pairs: noisePairs,
+      discordant_pairs: 0,
+      discordance_rate: 0,
+    },
+    qualification: { state: qualified ? 'qualified_improvement' : 'unqualified' },
   };
   const draft = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['evaluation-score'],
@@ -176,6 +203,79 @@ test('isolated attempts project every scheduled baseline and provider arm', asyn
   assert.deepEqual(validateContract('evaluation-bundle', result.bundle), []);
   assert.equal(new Set(attempts.map((attempt) => attempt.workspace_id)).size, 16);
   assert.equal(new Set(attempts.map((attempt) => attempt.agent_session_id)).size, 16);
+});
+
+test('preregistered A/A arms project as independent same-condition noise pairs', async () => {
+  const plan = await fixturePlan({ aaRepetitions: 2 });
+  const attempts = fixtureAttempts(plan);
+  const result = projectContextProviderEvaluationBundle({
+    plan,
+    providerId: PROVIDER_ID,
+    attempts,
+  });
+
+  assert.deepEqual(result.inspection.errors, []);
+  assert.deepEqual(result.inspection.missing_arms, []);
+  assert.deepEqual(validateContract('evaluation-bundle', result.bundle), []);
+  assert.equal(result.bundle.runs.length, 32);
+  assert.equal(result.bundle.experiment.qualification_policy.minimum_aa_pairs, 8);
+  assert.equal(
+    result.bundle.experiment.limitations.some((item) => item.includes('until independent A/A')),
+    false
+  );
+
+  const noise = result.bundle.runs.filter((run) => run.comparison === 'aa');
+  assert.equal(noise.length, 16);
+  assert.equal(new Set(noise.map((run) => run.pair_id)).size, 8);
+  assert.deepEqual([...new Set(noise.map((run) => run.arm))].sort(), ['a', 'b']);
+  for (const run of noise) {
+    assert.equal(run.context.structural_context_enabled, true);
+    assert.equal(run.context.policy_identity, PROVIDER_ID);
+  }
+  for (const pairId of new Set(noise.map((run) => run.pair_id))) {
+    const pair = noise.filter((run) => run.pair_id === pairId);
+    assert.deepEqual(pair.map((run) => run.execution_order).sort(), [1, 2]);
+    assert.deepEqual(pair[0].context, pair[1].context);
+  }
+  assert.equal(new Set(attempts.map((attempt) => attempt.workspace_id)).size, 32);
+  assert.equal(new Set(attempts.map((attempt) => attempt.agent_session_id)).size, 32);
+});
+
+test('A/A evidence cannot be relabelled from A/B repetitions', async () => {
+  const plan = await fixturePlan({ aaRepetitions: 2 });
+  const attempts = fixtureAttempts(plan);
+  const noiseAttempt = attempts.find((attempt) => attempt.comparison === 'aa');
+  noiseAttempt.comparison = 'ab';
+  noiseAttempt.arm = 'treatment';
+  const inspection = inspectContextProviderAttempts({
+    plan,
+    providerId: PROVIDER_ID,
+    attempts,
+  });
+  assert.match(inspection.errors.join('\n'), /attempt.comparison: does not match schedule/);
+  assert.match(inspection.errors.join('\n'), /attempt.arm: does not match schedule/);
+
+  const withoutNoise = fixtureAttempts(plan).filter((attempt) => attempt.comparison !== 'aa');
+  const partial = inspectContextProviderAttempts({
+    plan,
+    providerId: PROVIDER_ID,
+    attempts: withoutNoise,
+  });
+  assert.equal(partial.missing_arms.length, 16);
+  assert.equal(
+    partial.missing_arms.every((name) => name.startsWith('aa:')),
+    true
+  );
+  const projected = projectContextProviderEvaluationBundle({
+    plan,
+    providerId: PROVIDER_ID,
+    attempts: withoutNoise,
+  });
+  assert.equal(
+    projected.bundle.runs.some((run) => run.comparison === 'aa'),
+    false
+  );
+  assert.equal(projected.bundle.experiment.qualification_policy.minimum_aa_pairs, 8);
 });
 
 test('stale indexes, baseline tool calls, cross-arm state, and reused isolation fail closed', async () => {
@@ -282,6 +382,76 @@ test('aggregate comparison preserves identities, outcomes, diagnostics, and dete
     renderContextProviderComparison(first, 'json'),
     renderContextProviderComparison(second, 'json')
   );
+});
+
+test('a full-stage provider qualifies only with complete A/A noise evidence', async () => {
+  const plan = await fullFixturePlan();
+  const artifacts = {
+    planArtifact: { path: 'stage2/plan.json', sha256: '3'.repeat(64) },
+    score_artifact: { path: 'stage2/scores/codevetter.json', sha256: '4'.repeat(64) },
+    bundle_artifact: { path: 'stage2/bundles/codevetter.json', sha256: '5'.repeat(64) },
+  };
+  const aggregate = (score) =>
+    aggregateContextProviderScores({
+      plan,
+      planArtifact: artifacts.planArtifact,
+      pairwise: [
+        {
+          provider_id: PROVIDER_ID,
+          score,
+          score_artifact: artifacts.score_artifact,
+          bundle_artifact: artifacts.bundle_artifact,
+          missing_arms: [],
+        },
+      ],
+    });
+
+  assert.equal(plan.counts.aa_attempts, 120);
+  const comparison = aggregate(
+    evaluationScore({
+      corpusSha: plan.corpus.sha256,
+      qualified: true,
+      completePairs: 90,
+      treatmentWins: 20,
+      noisePairs: 60,
+    })
+  );
+  assert.deepEqual(validateContract('context-provider-comparison', comparison), []);
+  assert.equal(comparison.providers[0].pairwise_qualified, true);
+  assert.equal(comparison.providers[0].family_qualified, true);
+  assert.equal(comparison.status, 'qualified');
+  assert.deepEqual(comparison.providers[0].noise, {
+    scheduled_attempts: 120,
+    complete_attempts: 120,
+    complete_pairs: 60,
+    discordant_pairs: 0,
+    discordance_rate: 0,
+  });
+
+  assert.throws(
+    () =>
+      aggregate(
+        evaluationScore({
+          corpusSha: plan.corpus.sha256,
+          qualified: true,
+          completePairs: 90,
+          treatmentWins: 20,
+          noisePairs: 0,
+        })
+      ),
+    /requires independent A\/A noise evidence/
+  );
+  const unqualified = aggregate(
+    evaluationScore({
+      corpusSha: plan.corpus.sha256,
+      completePairs: 90,
+      treatmentWins: 20,
+      noisePairs: 60,
+    })
+  );
+  assert.equal(unqualified.providers[0].pairwise_qualified, false);
+  assert.equal(unqualified.providers[0].family_qualified, false);
+  assert.equal(unqualified.status, 'descriptive');
 });
 
 test('aggregate comparison rejects undeclared providers and incomplete evidence', async () => {

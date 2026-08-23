@@ -125,7 +125,14 @@ test('probe, feasibility, and full plans have exact deterministic counts and bal
   assert.deepEqual(probe.counts, { providers: 2, tasks: 0, repetitions: 0, attempts: 0 });
   assert.deepEqual(first, second);
   assert.deepEqual(first.counts, { providers: 2, tasks: 4, repetitions: 2, attempts: 16 });
-  assert.deepEqual(full.counts, { providers: 2, tasks: 30, repetitions: 3, attempts: 180 });
+  assert.deepEqual(full.counts, {
+    providers: 2,
+    tasks: 30,
+    repetitions: 3,
+    attempts: 300,
+    ab_attempts: 180,
+    aa_attempts: 120,
+  });
   assert.deepEqual(
     first.tasks.map((task) => task.lane),
     ['api', 'api', 'browser', 'browser']
@@ -153,6 +160,83 @@ test('probe, feasibility, and full plans have exact deterministic counts and bal
     validateContract('context-provider-plan', invalidCost).join('\n'),
     /cost.context_max_usd: does not match plan inputs/
   );
+});
+
+test('preregistered A/A arms are deterministic, balanced, and identity-bound', async () => {
+  const options = { probePaths: [BASELINE_PROBE, CODEVETTER_PROBE], stage: 'feasibility' };
+  const first = await planContextProviderExperiment({ ...options, aaRepetitions: 2 });
+  const second = await planContextProviderExperiment({ ...options, aaRepetitions: 2 });
+  const withoutNoise = await planContextProviderExperiment(options);
+
+  assert.deepEqual(first, second);
+  assert.notEqual(first.plan_id, withoutNoise.plan_id);
+  assert.equal(first.aa_repetitions, 2);
+  assert.deepEqual(first.counts, {
+    providers: 2,
+    tasks: 4,
+    repetitions: 2,
+    attempts: 32,
+    ab_attempts: 16,
+    aa_attempts: 16,
+  });
+  assert.deepEqual(validateContract('context-provider-plan', first), []);
+
+  const noise = first.schedule.filter((entry) => entry.comparison === 'aa');
+  assert.equal(noise.length, 16);
+  assert.deepEqual(
+    [...new Set(noise.map((entry) => entry.provider_id))],
+    ['codevetter-structural-context']
+  );
+  assert.deepEqual([...new Set(noise.map((entry) => entry.arm))].sort(), ['a', 'b']);
+  for (const entry of first.schedule.filter((entry) => entry.comparison === 'ab')) {
+    assert.equal(
+      entry.arm,
+      entry.provider_id === 'plain-repository-tools' ? 'control' : 'treatment'
+    );
+  }
+
+  const crossedArm = structuredClone(first);
+  crossedArm.schedule.find((entry) => entry.comparison === 'aa').provider_id =
+    'plain-repository-tools';
+  assert.match(
+    validateContract('context-provider-plan', crossedArm).join('\n'),
+    /A\/A arms compare one treatment against itself/
+  );
+  const duplicatedArm = structuredClone(first);
+  const noiseEntries = duplicatedArm.schedule.filter((entry) => entry.comparison === 'aa');
+  noiseEntries[1].arm = noiseEntries[0].arm;
+  noiseEntries[1].order = noiseEntries[0].order;
+  assert.match(
+    validateContract('context-provider-plan', duplicatedArm).join('\n'),
+    /comparison task trial arm/
+  );
+  const relabelled = structuredClone(withoutNoise);
+  relabelled.aa_repetitions = 2;
+  assert.match(
+    validateContract('context-provider-plan', relabelled).join('\n'),
+    /expected 16 scheduled A\/A attempts/
+  );
+});
+
+test('a qualified full-stage comparison is blocked until A/A arms are preregistered', async () => {
+  const options = { probePaths: [BASELINE_PROBE, CODEVETTER_PROBE], stage: 'full' };
+  const withNoise = await planContextProviderExperiment(options);
+  const withoutNoise = await planContextProviderExperiment({ ...options, aaRepetitions: 0 });
+
+  assert.equal(withNoise.blocked_reasons.includes('aa-schedule-missing'), false);
+  assert.equal(withoutNoise.blocked_reasons.includes('aa-schedule-missing'), true);
+  assert.equal(withoutNoise.aa_repetitions, undefined);
+  await assert.rejects(
+    planContextProviderExperiment({ ...options, aaRepetitions: 1 }),
+    /at least two repetitions/
+  );
+  const probe = await planContextProviderExperiment({
+    probePaths: [BASELINE_PROBE, CODEVETTER_PROBE],
+    stage: 'probe',
+    aaRepetitions: 2,
+  });
+  assert.equal(probe.aa_repetitions, undefined);
+  assert.equal(probe.counts.attempts, 0);
 });
 
 test('committed Stage 0 feasibility plan is byte-content equivalent to regeneration', async () => {
@@ -308,6 +392,13 @@ test('aggregate comparison schema is closed before later-stage aggregation is im
           ties: 8,
           success_rate_delta: 0,
           regression_delta: 0,
+        },
+        noise: {
+          scheduled_attempts: 16,
+          complete_attempts: 16,
+          complete_pairs: 8,
+          discordant_pairs: 1,
+          discordance_rate: 0.125,
         },
         diagnostics_available: [],
         raw_p_value: null,

@@ -78,7 +78,7 @@ completed locally:
   their exact cause cannot be recovered from the receipt.
 
 Decision: **revise the probe/adapter and failure evidence before requesting
-Stage 2**. CodeVetter context did not demonstrate value for this local 4B agent,
+Stage 2** (see [Stage 2 prerequisites](#stage-2-prerequisites)). CodeVetter context did not demonstrate value for this local 4B agent,
 and the treatment regressed the only task the control solved. The run also
 exposed and fixed an evaluator boundary bug: a valid verifier `check_error`
 with no returned check records is now projected as explicit skipped checks.
@@ -87,6 +87,40 @@ The immutable run receipts were not modified.
 The score is deliberately `unqualified`. Stage 1 has no independent A/A noise
 arm, the observed effect is negative, and feasibility evidence cannot establish
 a provider winner. Stage 2 still requires a separate exact approval.
+
+## Stage 2 prerequisites
+
+Two Stage 1 gaps are now closed in the harness. Neither changes the Stage 1
+result, and neither is execution approval.
+
+**Preregistered A/A noise arms.** The planner schedules independent
+treatment-versus-treatment A/A arms beside the A/B crossover. They are opt-in
+for the feasibility stage, default to two repetitions per task at the full
+stage, and a full-stage plan that declares none is blocked with
+`aa-schedule-missing`. Every A/A arm still gets a fresh workspace, a fresh
+agent session, and its own tool-configuration identity, so A/A noise can never
+be derived by relabelling A/B repetitions — the projector rejects an attempt
+whose `comparison`/`arm` disagrees with the schedule, and a provider is not
+family-qualified without complete A/A pairs. Plans without A/A arms keep their
+previous identity, so the pinned Stage 0 and Stage 1 plan identities are
+unchanged.
+
+```bash
+pnpm corpus:context-plan --stage feasibility --aa-repetitions 2 \
+  --probe benchmarks/context-providers/stage0/probes/plain-repository-tools.json \
+  --probe benchmarks/context-providers/stage0/probes/codevetter-structural-context.json
+```
+
+A/A arms double the agent attempts for each treatment, so the published plan
+cost and attempt bounds grow accordingly and need explicit re-approval.
+
+**Recoverable failure evidence.** Stage 1 could not explain its two treatment
+agent failures, because the immutable receipt keeps only bounded output hashes.
+The runner now also writes the matching redacted, bounded text to
+`<run-root>/diagnostics/attempt-<n>.json`, verified against the receipt's
+`stdout_sha256`/`stderr_sha256` before it is retained. Receipts are unchanged,
+the text stays in the ignored private evidence root, and a hash mismatch fails
+the run instead of storing unbound output.
 
 Private ignored evidence root:
 `.codevetter/verify-artifacts/context-provider/runs/plan-fd924b482cd13928579a84eebacf36b2/`

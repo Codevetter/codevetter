@@ -1590,7 +1590,7 @@ function validateContextProviderPlan(value, path, errors) {
     'diagnostics',
     'limitations',
   ];
-  if (!closedObject(value, path, fields, fields, errors)) return;
+  if (!closedObject(value, path, [...fields, 'aa_repetitions'], fields, errors)) return;
   exact(
     value.schema_version,
     CONTRACT_SCHEMA_VERSIONS['context-provider-plan'],
@@ -1626,14 +1626,16 @@ function validateContextProviderPlan(value, path, errors) {
   sorted(taskIds, `${path}.tasks`, errors);
   validateProviderSnapshotCoverage(value.providers, value.tasks, path, errors);
   integer(value.repetitions, `${path}.repetitions`, errors, 0, 5);
-  validateContextSchedule(
-    value.schedule,
-    `${path}.schedule`,
+  const noiseRepetitions = validateContextNoiseRepetitions(value, path, errors);
+  validateContextSchedule(value.schedule, `${path}.schedule`, errors, {
     providerIds,
+    treatmentIds: (value.providers ?? [])
+      .filter((provider) => provider?.role === 'treatment')
+      .map((provider) => provider.provider_id),
     taskIds,
-    value.repetitions,
-    errors
-  );
+    repetitions: value.repetitions,
+    noiseRepetitions,
+  });
   validateContextCounts(value.counts, `${path}.counts`, value, errors);
   validateContextCost(value.cost, `${path}.cost`, errors);
   validateContextCostDerivation(value, path, errors);
@@ -1862,53 +1864,141 @@ function validateContextSnapshot(value, path, errors) {
   }
 }
 
-function validateContextSchedule(value, path, providerIds, taskIds, repetitions, errors) {
-  array(value, path, errors, { max: 1000 });
-  if (!Array.isArray(value)) return;
-  const keys = [];
-  const ordersByTrial = new Map();
-  for (const [index, entry] of value.entries()) {
-    const entryPath = `${path}[${index}]`;
-    const fields = ['sequence', 'task_id', 'trial_index', 'provider_id', 'order'];
-    if (!closedObject(entry, entryPath, fields, fields, errors)) continue;
-    integer(entry.sequence, `${entryPath}.sequence`, errors, 1, 1000);
-    if (entry.sequence !== index + 1)
-      errors.push(`${entryPath}.sequence: schedule must be contiguous`);
-    id(entry.task_id, `${entryPath}.task_id`, errors);
-    integer(entry.trial_index, `${entryPath}.trial_index`, errors, 1, 5);
-    id(entry.provider_id, `${entryPath}.provider_id`, errors);
-    integer(entry.order, `${entryPath}.order`, errors, 1, 4);
-    if (!taskIds.includes(entry.task_id)) errors.push(`${entryPath}.task_id: task is not declared`);
-    if (!providerIds.includes(entry.provider_id))
-      errors.push(`${entryPath}.provider_id: provider is not declared`);
-    keys.push(`${entry.task_id}:${entry.trial_index}:${entry.provider_id}`);
-    const trialKey = `${entry.task_id}:${entry.trial_index}`;
-    const orders = ordersByTrial.get(trialKey) ?? [];
-    orders.push(entry.order);
-    ordersByTrial.set(trialKey, orders);
+function validateContextNoiseRepetitions(plan, path, errors) {
+  if (!Object.hasOwn(plan, 'aa_repetitions')) return 0;
+  integer(plan.aa_repetitions, `${path}.aa_repetitions`, errors, 0, 5);
+  if (plan.aa_repetitions === 0) {
+    errors.push(`${path}.aa_repetitions: omit the field instead of declaring zero A/A repetitions`);
   }
-  unique(keys, `${path} task trial provider`, errors);
-  const expected = taskIds.length * repetitions * providerIds.length;
-  if (value.length !== expected) errors.push(`${path}: expected ${expected} scheduled attempts`);
-  const expectedOrders = Array.from({ length: providerIds.length }, (_, index) => index + 1);
-  for (const [trialKey, orders] of ordersByTrial) {
+  if (plan.stage === 'probe' && plan.aa_repetitions > 0) {
+    errors.push(`${path}.aa_repetitions: the probe stage schedules no attempts`);
+  }
+  return Number.isInteger(plan.aa_repetitions) ? plan.aa_repetitions : 0;
+}
+
+// Split into per-entry validation, key derivation and cross-entry tallies. The single
+// function scored cognitive complexity 34 against this repository's ceiling of 20; the
+// pull request that introduced it verified lint, cycles, duplication and the test suites
+// but not `quality:complexity`, so nothing flagged it before merge.
+function validateContextScheduleEntry(entry, entryPath, index, identity, errors) {
+  const { providerIds, treatmentIds, taskIds, noiseRepetitions } = identity;
+  const noise = noiseRepetitions > 0;
+  const fields = ['sequence', 'task_id', 'trial_index', 'provider_id', 'order'];
+  const allowed = noise ? [...fields, 'comparison', 'arm'] : fields;
+  if (!closedObject(entry, entryPath, allowed, noise ? allowed : fields, errors)) return null;
+
+  integer(entry.sequence, `${entryPath}.sequence`, errors, 1, 1000);
+  if (entry.sequence !== index + 1) {
+    errors.push(`${entryPath}.sequence: schedule must be contiguous`);
+  }
+  id(entry.task_id, `${entryPath}.task_id`, errors);
+  integer(entry.trial_index, `${entryPath}.trial_index`, errors, 1, 5);
+  id(entry.provider_id, `${entryPath}.provider_id`, errors);
+  integer(entry.order, `${entryPath}.order`, errors, 1, 4);
+  if (!taskIds.includes(entry.task_id)) errors.push(`${entryPath}.task_id: task is not declared`);
+  if (!providerIds.includes(entry.provider_id)) {
+    errors.push(`${entryPath}.provider_id: provider is not declared`);
+  }
+
+  if (noise) {
+    oneOf(entry.comparison, ['ab', 'aa'], `${entryPath}.comparison`, errors);
+    validateContextScheduleArm(entry, entryPath, treatmentIds, errors);
+  }
+  const comparison = noise ? entry.comparison : 'ab';
+  // An A/A arm compares one treatment against itself, so a control provider there
+  // would silently turn a noise measurement into a second A/B comparison.
+  if (comparison === 'aa' && !treatmentIds.includes(entry.provider_id)) {
+    errors.push(`${entryPath}.provider_id: A/A arms compare one treatment against itself`);
+  }
+  return comparison;
+}
+
+function scheduleKeys(entry, comparison) {
+  return comparison === 'aa'
+    ? {
+        key: `aa:${entry.provider_id}:${entry.task_id}:${entry.trial_index}:${entry.arm}`,
+        group: `aa:${entry.provider_id}:${entry.task_id}:${entry.trial_index}`,
+      }
+    : {
+        key: `ab:${entry.task_id}:${entry.trial_index}:${entry.provider_id}`,
+        group: `ab:${entry.task_id}:${entry.trial_index}`,
+      };
+}
+
+function validateContextScheduleTotals({ path, identity, tallies, ordersByGroup, errors }) {
+  const { providerIds, treatmentIds, taskIds, repetitions, noiseRepetitions } = identity;
+  const expectedAb = taskIds.length * repetitions * providerIds.length;
+  const expectedAa = treatmentIds.length * taskIds.length * noiseRepetitions * 2;
+  if (tallies.ab !== expectedAb) {
+    errors.push(`${path}: expected ${expectedAb} scheduled A/B attempts`);
+  }
+  if (tallies.aa !== expectedAa) {
+    errors.push(`${path}: expected ${expectedAa} scheduled A/A attempts`);
+  }
+  const expectedAbOrders = Array.from({ length: providerIds.length }, (_, index) => index + 1);
+  for (const [groupKey, orders] of ordersByGroup) {
+    const expectedOrders = groupKey.startsWith('aa:') ? [1, 2] : expectedAbOrders;
     if (JSON.stringify([...orders].sort()) !== JSON.stringify(expectedOrders)) {
-      errors.push(`${path}: ${trialKey} must use each arm order exactly once`);
+      errors.push(`${path}: ${groupKey} must use each arm order exactly once`);
     }
   }
 }
 
+function validateContextSchedule(value, path, errors, identity) {
+  array(value, path, errors, { max: 1000 });
+  if (!Array.isArray(value)) return;
+
+  const keys = [];
+  const ordersByGroup = new Map();
+  const tallies = { ab: 0, aa: 0 };
+
+  for (const [index, entry] of value.entries()) {
+    const entryPath = `${path}[${index}]`;
+    const comparison = validateContextScheduleEntry(entry, entryPath, index, identity, errors);
+    if (comparison === null) continue;
+
+    tallies[comparison === 'aa' ? 'aa' : 'ab'] += 1;
+    const { key, group } = scheduleKeys(entry, comparison);
+    keys.push(key);
+    ordersByGroup.set(group, [...(ordersByGroup.get(group) ?? []), entry.order]);
+  }
+
+  unique(keys, `${path} comparison task trial arm`, errors);
+  validateContextScheduleTotals({ path, identity, tallies, ordersByGroup, errors });
+}
+
+function validateContextScheduleArm(entry, path, treatmentIds, errors) {
+  if (entry.comparison === 'aa') {
+    oneOf(entry.arm, ['a', 'b'], `${path}.arm`, errors);
+    return;
+  }
+  oneOf(entry.arm, ['control', 'treatment'], `${path}.arm`, errors);
+  const expected = treatmentIds.includes(entry.provider_id) ? 'treatment' : 'control';
+  if (entry.arm !== expected) errors.push(`${path}.arm: does not match the provider role`);
+}
+
 function validateContextCounts(value, path, plan, errors) {
   const fields = ['providers', 'tasks', 'repetitions', 'attempts'];
-  if (!closedObject(value, path, fields, fields, errors)) return;
+  const noise = (plan.aa_repetitions ?? 0) > 0;
+  const noiseFields = ['ab_attempts', 'aa_attempts'];
+  const allowed = noise ? [...fields, ...noiseFields] : fields;
+  if (!closedObject(value, path, allowed, allowed, errors)) return;
+  const schedule = Array.isArray(plan.schedule) ? plan.schedule : [];
   const expected = {
     providers: plan.providers?.length,
     tasks: plan.tasks?.length,
     repetitions: plan.repetitions,
-    attempts: plan.schedule?.length,
+    attempts: schedule.length,
+    ...(noise
+      ? {
+          ab_attempts: schedule.filter((entry) => entry?.comparison !== 'aa').length,
+          aa_attempts: schedule.filter((entry) => entry?.comparison === 'aa').length,
+        }
+      : {}),
   };
-  for (const field of fields) {
-    integer(value[field], `${path}.${field}`, errors, 0, field === 'attempts' ? 1000 : 50);
+  for (const field of allowed) {
+    const max = field === 'providers' || field === 'tasks' || field === 'repetitions' ? 50 : 1000;
+    integer(value[field], `${path}.${field}`, errors, 0, max);
     if (value[field] !== expected[field])
       errors.push(`${path}.${field}: does not match plan contents`);
   }
@@ -1926,14 +2016,19 @@ function validateContextCost(value, path, errors) {
 
 function validateContextCostDerivation(plan, path, errors) {
   if (!plan.cost || !Array.isArray(plan.providers) || !Array.isArray(plan.schedule)) return;
-  const contextMax = roundContextCost(
-    plan.providers.reduce(
+  const perAttempt = (providers) =>
+    providers.reduce(
       (total, provider) =>
         total + (Number.isFinite(provider?.max_usd_per_attempt) ? provider.max_usd_per_attempt : 0),
       0
-    ) *
-      (plan.tasks?.length ?? 0) *
-      (plan.repetitions ?? 0)
+    );
+  const taskCount = plan.tasks?.length ?? 0;
+  const contextMax = roundContextCost(
+    perAttempt(plan.providers) * taskCount * (plan.repetitions ?? 0) +
+      perAttempt(plan.providers.filter((provider) => provider?.role === 'treatment')) *
+        taskCount *
+        (plan.aa_repetitions ?? 0) *
+        2
   );
   const agentMax =
     plan.agent_profile?.status === 'selected' &&
@@ -2043,6 +2138,7 @@ function validateContextComparisonProvider(provider, path, errors) {
     'scheduled_attempts',
     'complete_attempts',
     'outcomes',
+    'noise',
     'diagnostics_available',
     'raw_p_value',
     'adjusted_p_value',
@@ -2083,6 +2179,7 @@ function validateContextComparisonProvider(provider, path, errors) {
     errors.push(`${path}.complete_attempts: cannot exceed scheduled attempts`);
   }
   validateContextProviderOutcomes(provider.outcomes, `${path}.outcomes`, errors);
+  validateContextProviderNoise(provider.noise, `${path}.noise`, errors);
   stringArray(provider.diagnostics_available, `${path}.diagnostics_available`, errors, {
     max: 20,
     itemMax: 80,
@@ -2095,7 +2192,32 @@ function validateContextComparisonProvider(provider, path, errors) {
   if (provider.family_qualified && !provider.pairwise_qualified) {
     errors.push(`${path}.family_qualified: requires pairwise qualification`);
   }
+  if (provider.family_qualified && (provider.noise?.complete_pairs ?? 0) === 0) {
+    errors.push(`${path}.family_qualified: requires independent A/A noise evidence`);
+  }
   return true;
+}
+
+function validateContextProviderNoise(value, path, errors) {
+  const fields = [
+    'scheduled_attempts',
+    'complete_attempts',
+    'complete_pairs',
+    'discordant_pairs',
+    'discordance_rate',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  for (const field of ['scheduled_attempts', 'complete_attempts'])
+    integer(value[field], `${path}.${field}`, errors, 0, 1000);
+  for (const field of ['complete_pairs', 'discordant_pairs'])
+    integer(value[field], `${path}.${field}`, errors, 0, 5000);
+  finiteNumber(value.discordance_rate, `${path}.discordance_rate`, errors, 0, 1);
+  if (value.complete_attempts > value.scheduled_attempts) {
+    errors.push(`${path}.complete_attempts: cannot exceed scheduled A/A attempts`);
+  }
+  if (value.discordant_pairs > value.complete_pairs) {
+    errors.push(`${path}.discordant_pairs: cannot exceed complete A/A pairs`);
+  }
 }
 
 function validateUniqueSorted(value, path, errors) {

@@ -52,6 +52,7 @@ export async function planContextProviderExperiment({
   corpusRoot = DEFAULT_CORPUS_ROOT,
   probePaths = [],
   stage = 'feasibility',
+  aaRepetitions,
   agentProfile = unselectedAgentProfile(),
   availableEnvironmentNames = [],
   providerSnapshots = {},
@@ -86,6 +87,7 @@ export async function planContextProviderExperiment({
     .map((row) => taskPlanEntry(absoluteCorpusRoot, corpusIndex, row))
     .sort((left, right) => left.task_id.localeCompare(right.task_id));
   const repetitions = stage === 'probe' ? 0 : stage === 'feasibility' ? 2 : 3;
+  const noiseRepetitions = resolveNoiseRepetitions(stage, aaRepetitions);
   const providers = probes.map(({ artifact, value }) => {
     const snapshots = contextSnapshots(value, stage, tasks, providerSnapshots[value.provider_id]);
     return {
@@ -105,7 +107,14 @@ export async function planContextProviderExperiment({
       snapshots,
     };
   });
-  const schedule = buildBalancedSchedule(tasks, providers, repetitions);
+  const abSchedule = buildBalancedSchedule(tasks, providers, repetitions);
+  const schedule =
+    noiseRepetitions === 0
+      ? abSchedule
+      : [
+          ...annotateComparisonArms(abSchedule, providers),
+          ...buildNoiseSchedule(tasks, providers, noiseRepetitions, abSchedule.length),
+        ];
   const environmentNames = [
     ...new Set([
       ...providers.flatMap((provider) => provider.environment_names),
@@ -119,6 +128,7 @@ export async function planContextProviderExperiment({
     agentProfile,
     tasks,
     repetitions,
+    noiseRepetitions,
     attempts: schedule.length,
   });
   const approvals = {
@@ -129,7 +139,14 @@ export async function planContextProviderExperiment({
     hosted_required: providers.some((provider) => provider.operating_mode !== 'local'),
     data_egress_required: providers.some((provider) => provider.data_egress !== 'none'),
   };
-  const blockedReasons = buildBlockedReasons({ stage, agentProfile, providers, environment, cost });
+  const blockedReasons = buildBlockedReasons({
+    stage,
+    agentProfile,
+    providers,
+    environment,
+    cost,
+    noiseRepetitions,
+  });
   const normalizedAgentProfile = normalizeAgentProfile(agentProfile);
   const draft = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['context-provider-plan'],
@@ -148,12 +165,19 @@ export async function planContextProviderExperiment({
     providers,
     tasks,
     repetitions,
+    ...(noiseRepetitions === 0 ? {} : { aa_repetitions: noiseRepetitions }),
     schedule,
     counts: {
       providers: providers.length,
       tasks: tasks.length,
       repetitions,
       attempts: schedule.length,
+      ...(noiseRepetitions === 0
+        ? {}
+        : {
+            ab_attempts: schedule.filter((entry) => entry.comparison !== 'aa').length,
+            aa_attempts: schedule.filter((entry) => entry.comparison === 'aa').length,
+          }),
     },
     cost,
     environment,
@@ -189,6 +213,39 @@ export function buildBalancedSchedule(tasks, providers, repetitions) {
           order: order + 1,
         });
         sequence += 1;
+      }
+    }
+  }
+  return schedule;
+}
+
+function annotateComparisonArms(schedule, providers) {
+  const roleById = new Map(providers.map((provider) => [provider.provider_id, provider.role]));
+  return schedule.map((entry) => ({
+    ...entry,
+    comparison: 'ab',
+    arm: roleById.get(entry.provider_id) === 'baseline' ? 'control' : 'treatment',
+  }));
+}
+
+function buildNoiseSchedule(tasks, providers, repetitions, startSequence = 0) {
+  const schedule = [];
+  let sequence = startSequence + 1;
+  for (const provider of providers.filter((candidate) => candidate.role === 'treatment')) {
+    for (const task of tasks) {
+      for (let trialIndex = 1; trialIndex <= repetitions; trialIndex += 1) {
+        for (const [index, arm] of ['a', 'b'].entries()) {
+          schedule.push({
+            sequence,
+            task_id: task.task_id,
+            trial_index: trialIndex,
+            provider_id: provider.provider_id,
+            order: index + 1,
+            comparison: 'aa',
+            arm,
+          });
+          sequence += 1;
+        }
       }
     }
   }
@@ -282,11 +339,34 @@ function contextSnapshots(probe, stage, tasks, supplied = {}) {
   }));
 }
 
-function calculateCost({ providers, agentProfile, tasks, repetitions, attempts }) {
+function resolveNoiseRepetitions(stage, requested) {
+  if (stage === 'probe') return 0;
+  const value = requested ?? (stage === 'full' ? 2 : 0);
+  if (!Number.isInteger(value) || value < 0 || value > 5) {
+    throw new Error('A/A repetitions must be an integer between 0 and 5');
+  }
+  if (value === 1) {
+    throw new Error('A/A noise evidence requires at least two repetitions per task');
+  }
+  return value;
+}
+
+function calculateCost({
+  providers,
+  agentProfile,
+  tasks,
+  repetitions,
+  noiseRepetitions,
+  attempts,
+}) {
+  const perAttempt = (cohort) =>
+    cohort.reduce((total, provider) => total + provider.max_usd_per_attempt, 0);
   const contextMax = roundCost(
-    providers.reduce((total, provider) => total + provider.max_usd_per_attempt, 0) *
-      tasks.length *
-      repetitions
+    perAttempt(providers) * tasks.length * repetitions +
+      perAttempt(providers.filter((provider) => provider.role === 'treatment')) *
+        tasks.length *
+        noiseRepetitions *
+        2
   );
   const agentMax =
     agentProfile.status === 'selected'
@@ -306,9 +386,17 @@ function calculateCost({ providers, agentProfile, tasks, repetitions, attempts }
   };
 }
 
-function buildBlockedReasons({ stage, agentProfile, providers, environment, cost }) {
+function buildBlockedReasons({
+  stage,
+  agentProfile,
+  providers,
+  environment,
+  cost,
+  noiseRepetitions,
+}) {
   if (stage === 'probe') return [];
   const reasons = [];
+  if (stage === 'full' && noiseRepetitions === 0) reasons.push('aa-schedule-missing');
   if (agentProfile.status !== 'selected') reasons.push('agent-profile-unselected');
   if (cost.posture === 'unknown') reasons.push('unknown-cost-bound');
   for (const entry of environment) {
