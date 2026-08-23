@@ -1,0 +1,3143 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "got",
+    "head": "e3924aa1e53a6ca3eb93a43618ce532442a89b40"
+  },
+  "tier": "small",
+  "tier_code_files": 85,
+  "corpus_counts": {
+    "cases": 108,
+    "path_leak": 54,
+    "baseline_blind": 54,
+    "multi_file": 82
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": false,
+      "missing": [
+        "random-files",
+        "random-code-files",
+        "churn-ranked"
+      ],
+      "reason": "controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric."
+    },
+    "controls_lose": {
+      "ok": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "graphify",
+        "query": "Fix encoding with json `responseType` (#1996)",
+        "revision": "dbbd31777b3299ceb0db99798453e01ab8e597b1",
+        "returned": [
+          "source/core/options.ts",
+          "documentation/2-options.md",
+          "source/core/response.ts",
+          "source/core/index.ts",
+          "source/index.ts"
+        ]
+      },
+      {
+        "provider_id": "graphify",
+        "query": "Fix unhandled `The server aborted pending request` rejection",
+        "revision": "04f3ea4b7995e1609555dd13f00641b8f470de4c",
+        "returned": [
+          "readme.md",
+          "source/as-promise/create-rejection.ts",
+          "benchmark/server.ts",
+          "source/create.ts",
+          "source/as-promise/types.ts"
+        ]
+      }
+    ],
+    "trustworthy": false
+  },
+  "providers": [
+    {
+      "provider_id": "graphify",
+      "summary": {
+        "all": {
+          "cases": 108,
+          "mean_recall_at_5": 0.284,
+          "full_recall_at_5": 0.1204,
+          "mean_recall_at_10": 0.3957,
+          "full_recall_at_10": 0.213,
+          "mean_recall_at_20": 0.4577,
+          "full_recall_at_20": 0.2963,
+          "mean_recall_at_1000_tokens": 0.2887,
+          "mean_recall_at_4000_tokens": 0.4346,
+          "mean_recall_at_16000_tokens": 0.4577,
+          "mean_precision_at_10": 0.1039,
+          "zero_hit_rate": 0.3981,
+          "median_tokens_delivered": 1677.5,
+          "median_latency_ms": 2435.545,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 85,
+          "mean_recall_at_5": 0.1745,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.2322,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.311,
+          "full_recall_at_20": 0.1059,
+          "mean_recall_at_1000_tokens": 0.1433,
+          "mean_recall_at_4000_tokens": 0.2875,
+          "mean_recall_at_16000_tokens": 0.311,
+          "mean_precision_at_10": 0.0831,
+          "zero_hit_rate": 0.5059,
+          "median_tokens_delivered": 1681,
+          "median_latency_ms": 2363.334,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 23,
+          "mean_recall_at_5": 0.6884,
+          "full_recall_at_5": 0.5652,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0.8261,
+          "mean_recall_at_4000_tokens": 0.9783,
+          "mean_recall_at_16000_tokens": 1,
+          "mean_precision_at_10": 0.1806,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 1669,
+          "median_latency_ms": 2620.509,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0.2253,
+          "full_recall_at_5": 0.0741,
+          "mean_recall_at_10": 0.3407,
+          "full_recall_at_10": 0.1481,
+          "mean_recall_at_20": 0.4123,
+          "full_recall_at_20": 0.2593,
+          "mean_recall_at_1000_tokens": 0.292,
+          "mean_recall_at_4000_tokens": 0.4123,
+          "mean_recall_at_16000_tokens": 0.4123,
+          "mean_precision_at_10": 0.0852,
+          "zero_hit_rate": 0.4444,
+          "median_tokens_delivered": 1676,
+          "median_latency_ms": 2333.08,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0.3426,
+          "full_recall_at_5": 0.1667,
+          "mean_recall_at_10": 0.4506,
+          "full_recall_at_10": 0.2778,
+          "mean_recall_at_20": 0.5031,
+          "full_recall_at_20": 0.3333,
+          "mean_recall_at_1000_tokens": 0.2855,
+          "mean_recall_at_4000_tokens": 0.4568,
+          "mean_recall_at_16000_tokens": 0.5031,
+          "mean_precision_at_10": 0.1225,
+          "zero_hit_rate": 0.3519,
+          "median_tokens_delivered": 1679.5,
+          "median_latency_ms": 2557.876,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 108
+      },
+      "resources": {
+        "baseline_rss_mb": 17668.2,
+        "peak_rss_mb": 23201.4,
+        "delta_rss_mb": 5533.2,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 84590592
+      }
+    }
+  ],
+  "limitations": [
+    "RELIABILITY GATE FAILED — do not publish these numbers: controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric.",
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "graphify",
+      "case_id": "got-043c9501b851",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 15,
+      "tokens_delivered": 6858,
+      "latency_ms": 1580.932,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-05cb01405a70",
+      "path_leak": false,
+      "required_files": [
+        "test/arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1657,
+      "latency_ms": 1630.571,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-06029e0b758e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3335,
+      "latency_ms": 1728.703,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-06a2d3d7d8d4",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2594,
+      "latency_ms": 1506.808,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-0703318d3bb6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/response.ts",
+        "test/encoding.ts"
+      ],
+      "found": [
+        "source/core/response.ts"
+      ],
+      "missed": [
+        "test/encoding.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 5791,
+      "latency_ms": 1989.832,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-071ea0749d81",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/timed-out.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "missed": [
+        "source/core/timed-out.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0.75,
+      "recall_at_4000_tokens": 0.75,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1677,
+      "latency_ms": 2376.549,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-0863bcd5e90e",
+      "path_leak": true,
+      "required_files": [
+        "test/timeout.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4439,
+      "latency_ms": 2212.264,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-08d7a0f3285d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1657,
+      "latency_ms": 2141.156,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-0a16a9ca7de3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 8203,
+      "latency_ms": 2549.58,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-1018c2029eea",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/normalize-arguments.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2927,
+      "latency_ms": 2132.811,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-11a2202de328",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 6443,
+      "latency_ms": 3797.403,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-15395ee87e6d",
+      "path_leak": true,
+      "required_files": [
+        "test/normalize-arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/normalize-arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2733,
+      "latency_ms": 2018.779,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-157e02bcb613",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 8,
+      "tokens_delivered": 6565,
+      "latency_ms": 1781.82,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-1b208df66716",
+      "path_leak": true,
+      "required_files": [
+        "test/stream.ts"
+      ],
+      "found": [
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1668,
+      "latency_ms": 2106.436,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-1e1e50647e93",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1696,
+      "latency_ms": 2279.379,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-1e49781eff61",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1687,
+      "latency_ms": 2306.767,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-226cc3995f6e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 166,
+      "latency_ms": 2241.199,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-2453e5e4213f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 160,
+      "latency_ms": 2752.634,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-2527bf690fd5",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1662,
+      "latency_ms": 2589.32,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-26fffe94618b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 492,
+      "latency_ms": 2522.893,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-2ab94fd4daf6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3555,
+      "latency_ms": 2760.777,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-2ccc4c2e8bd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3960,
+      "latency_ms": 2631.482,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-30b3b795580d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2833,
+      "latency_ms": 3165.95,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-32070619a547",
+      "path_leak": true,
+      "required_files": [
+        "test/https.ts"
+      ],
+      "found": [
+        "test/https.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3776,
+      "latency_ms": 2717.106,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-398c11ae502c",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1674,
+      "latency_ms": 2877.373,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-3b3ea6776b4f",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [
+        "tsconfig.json"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1665,
+      "latency_ms": 1796.521,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-3cc40b549c4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "test/abort.ts"
+      ],
+      "missed": [
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1663,
+      "latency_ms": 2363.334,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-3d66aecacd6d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "test/timings.ts"
+      ],
+      "missed": [
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1677,
+      "latency_ms": 2790.441,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-3e9d3af606c3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1663,
+      "latency_ms": 2365.486,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-408e22aed993",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1660,
+      "latency_ms": 2394.647,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-439fb82d2a07",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4937,
+      "latency_ms": 2470.177,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-462bc6300150",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3653,
+      "latency_ms": 1991.636,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-47c1afedc77b",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2247,
+      "latency_ms": 2063.193,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-47c3155e4bdf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [
+        "test/http.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1668,
+      "latency_ms": 3865.986,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-4cce4de19ed5",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/types.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/types.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1681,
+      "latency_ms": 3422.728,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-4d5168cc7c58",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/types.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/types.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1678,
+      "latency_ms": 4820.222,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-4e7567965dbc",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1673,
+      "latency_ms": 2358.804,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-5028c11abd21",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1664,
+      "latency_ms": 2620.509,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-50ef99a9856c",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 522,
+      "latency_ms": 2173.036,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-5772bf24dc7d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 5830,
+      "latency_ms": 4129.219,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-59ae3b062f53",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1669,
+      "latency_ms": 2303.253,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-60a441939af3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1715,
+      "latency_ms": 2238.171,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-61d5e3b0ebc5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/timer.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "test/timings.ts"
+      ],
+      "missed": [
+        "source/core/utils/timer.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 12299,
+      "latency_ms": 3361.488,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-61d6f610ffa6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/agent.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1450,
+      "latency_ms": 1777.479,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-676be6d85481",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3436,
+      "latency_ms": 2338.897,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-67d5039ff5a5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 894,
+      "latency_ms": 2580.544,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-6961284172c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/agent.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/agent.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3247,
+      "latency_ms": 2269.314,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-6a544a392baf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1662,
+      "latency_ms": 3041.197,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-6ae3e7fc364b",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 12,
+      "tokens_delivered": 1681,
+      "latency_ms": 2235.943,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-6e1d9f97465d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4373,
+      "latency_ms": 2188.864,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-724d5923816b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/https.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/options.ts",
+        "test/https.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1680,
+      "latency_ms": 2891.416,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-728aef989c1a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "missed": [
+        "test/promise.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 6,
+      "tokens_delivered": 7242,
+      "latency_ms": 2137.587,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-74e3167b705b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1143,
+      "latency_ms": 3638.482,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-78b105b5ebcf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1669,
+      "latency_ms": 1792.441,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-7a920647efa2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1662,
+      "latency_ms": 2108.979,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-7acd3801ec7d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/utils/get-body-size.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 5707,
+      "latency_ms": 2432.868,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-7b19e8f32c90",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1415,
+      "latency_ms": 1995.361,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-7e1de4240dad",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2113,
+      "latency_ms": 2111.024,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-88622701c704",
+      "path_leak": false,
+      "required_files": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1344,
+      "latency_ms": 2123.548,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-88b32eade80f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1667,
+      "latency_ms": 2112.151,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-8d3412abb8aa",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "test/arguments.ts"
+      ],
+      "missed": [
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 155,
+      "latency_ms": 1832.711,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-8f775c71c41a",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/create.ts"
+      ],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.4,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.4,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2407,
+      "latency_ms": 2267.911,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-91aa0ac9e676",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3863,
+      "latency_ms": 2186.971,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-92b378e5fd95",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/abort.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3437,
+      "latency_ms": 2443.543,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-934211f951bf",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 12,
+      "tokens_delivered": 1666,
+      "latency_ms": 1847.563,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-9725fbd109a6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3007,
+      "latency_ms": 3226.015,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-98ca6181a039",
+      "path_leak": true,
+      "required_files": [
+        "test/progress.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/progress.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2755,
+      "latency_ms": 2307.25,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-99e8d134bd9a",
+      "path_leak": true,
+      "required_files": [
+        "test/http.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/http.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2834,
+      "latency_ms": 1821.476,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-9a309bdbe7e2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/https.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/https.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 5412,
+      "latency_ms": 2318.893,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-9ab4cf991fd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/response.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/response.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1674,
+      "latency_ms": 4271.439,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-9e15d887da3b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1654,
+      "latency_ms": 2255.636,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-9ec6ff02a189",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1676,
+      "latency_ms": 2964.32,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-a2812de3baa0",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/post.ts"
+      ],
+      "found": [
+        "source/core/utils/get-body-size.ts"
+      ],
+      "missed": [
+        "test/post.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 12,
+      "tokens_delivered": 5149,
+      "latency_ms": 2663.578,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-a59fac415ac0",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1673,
+      "latency_ms": 2651.977,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-ac5f67dd4b92",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1315,
+      "latency_ms": 2316.014,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-aee9249444c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1676,
+      "latency_ms": 3092.955,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-af928f6d3974",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1659,
+      "latency_ms": 2834.241,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-b17012597e4d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1667,
+      "latency_ms": 3111.207,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-b671480715db",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1657,
+      "latency_ms": 2671.168,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-bf39d2c1c58f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/options.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2650,
+      "latency_ms": 2734.94,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-bf84d3697537",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3589,
+      "latency_ms": 2491.982,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-c079b9366ff2",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1669,
+      "latency_ms": 2566.172,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-c09b9857d1b4",
+      "path_leak": true,
+      "required_files": [
+        "test/cookies.ts"
+      ],
+      "found": [
+        "test/cookies.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1668,
+      "latency_ms": 5150.352,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-c81a61159473",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 10,
+      "tokens_delivered": 1661,
+      "latency_ms": 2305.236,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-c97ce7cbde86",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4701,
+      "latency_ms": 2294.748,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-cbc890292f40",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 231,
+      "latency_ms": 2642.268,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-cc434bc52111",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/no-body-status-codes.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/no-body-status-codes.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1664,
+      "latency_ms": 2438.222,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-d1d4ed2f6242",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1669,
+      "latency_ms": 2747.162,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-d65d0caf627e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/headers.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/headers.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4189,
+      "latency_ms": 2831.465,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-d8c00cfa388b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1680,
+      "latency_ms": 1860.891,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-da4769e98880",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1668,
+      "latency_ms": 2175.876,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-dad6a91b3d11",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/infinite-loop-issue.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/infinite-loop-issue.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1691,
+      "latency_ms": 2165.34,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-dc4f1e323dbd",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1676,
+      "latency_ms": 2440.438,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-dfc54d9e57b7",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2832,
+      "latency_ms": 2667.457,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-e02845f1aa73",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1312,
+      "latency_ms": 2327.263,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-e09a9bd1ca97",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1679,
+      "latency_ms": 2928.148,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-e1099fbc2aa9",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1665,
+      "latency_ms": 3640.625,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-e4aeb8e3bfc4",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2420,
+      "latency_ms": 2739.91,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-e5659d401a4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts",
+        "test/get-unix-socket-path.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts"
+      ],
+      "missed": [
+        "test/get-unix-socket-path.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1678,
+      "latency_ms": 2571.667,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-e899c0736f6a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 222,
+      "latency_ms": 3212.419,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-eb045bfc324d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/options.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3593,
+      "latency_ms": 2512.754,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-ecb05343dea3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2724,
+      "latency_ms": 2931.281,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-f0045640d12a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1669,
+      "latency_ms": 2782.657,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-f2f8cb29fe9f",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4150,
+      "latency_ms": 3212.131,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-f44ef4388e0b",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "test/arguments.ts"
+      ],
+      "missed": [
+        "source/create.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 161,
+      "latency_ms": 2980.062,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-f7ab6e9ffda6",
+      "path_leak": true,
+      "required_files": [
+        "source/types.ts",
+        "test/create.ts",
+        "test/extend.types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [
+        "test/create.ts",
+        "test/extend.types.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.4,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0.6,
+      "recall_at_4000_tokens": 0.6,
+      "recall_at_16000_tokens": 0.6,
+      "first_hit_rank": 8,
+      "tokens_delivered": 1657,
+      "latency_ms": 2693.995,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-fb8641856a13",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1248,
+      "latency_ms": 3097.667,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "got-ff918fb6dedb",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts"
+      ],
+      "missed": [
+        "test/promise.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 10,
+      "tokens_delivered": 1683,
+      "latency_ms": 1602.163,
+      "indexed_revision_matches": true
+    }
+  ]
+}

@@ -1,0 +1,3131 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "got",
+    "head": "e3924aa1e53a6ca3eb93a43618ce532442a89b40"
+  },
+  "tier": "small",
+  "tier_code_files": 85,
+  "corpus_counts": {
+    "cases": 108,
+    "path_leak": 54,
+    "baseline_blind": 54,
+    "multi_file": 82
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": false,
+      "missing": [
+        "random-files",
+        "random-code-files",
+        "churn-ranked"
+      ],
+      "reason": "controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric."
+    },
+    "controls_lose": {
+      "ok": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "semble",
+        "query": "Fix `dnsCache: true` having no effect",
+        "revision": "e02845f1aa737d55dce23381d0f4f2a61b1eb5e1",
+        "returned": [
+          "source/core/index.ts",
+          "source/core/utils/dns-ip-version.ts",
+          "source/index.ts",
+          "source/create.ts",
+          "benchmark/index.ts"
+        ]
+      },
+      {
+        "provider_id": "semble",
+        "query": "Fix `Invalid URL` checks on Node.js 16",
+        "revision": "a06e7585ab4503e1dd7178d83dd4443ff6dda6c1",
+        "returned": [
+          "source/core/options.ts",
+          "benchmark/index.ts",
+          "source/core/index.ts",
+          "source/core/errors.ts",
+          "source/create.ts"
+        ]
+      }
+    ],
+    "trustworthy": false
+  },
+  "providers": [
+    {
+      "provider_id": "semble",
+      "summary": {
+        "all": {
+          "cases": 108,
+          "mean_recall_at_5": 0.5755,
+          "full_recall_at_5": 0.2315,
+          "mean_recall_at_10": 0.7452,
+          "full_recall_at_10": 0.5463,
+          "mean_recall_at_20": 0.8495,
+          "full_recall_at_20": 0.7407,
+          "mean_recall_at_1000_tokens": 0.4782,
+          "mean_recall_at_4000_tokens": 0.8357,
+          "mean_recall_at_16000_tokens": 0.8495,
+          "mean_precision_at_10": 0.1454,
+          "zero_hit_rate": 0.0648,
+          "median_tokens_delivered": 3939,
+          "median_latency_ms": 1787.8075,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 49,
+          "mean_recall_at_5": 0.4214,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.4384,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.6684,
+          "full_recall_at_20": 0.4286,
+          "mean_recall_at_1000_tokens": 0.3534,
+          "mean_recall_at_4000_tokens": 0.6378,
+          "mean_recall_at_16000_tokens": 0.6684,
+          "mean_precision_at_10": 0.1122,
+          "zero_hit_rate": 0.1429,
+          "median_tokens_delivered": 3989,
+          "median_latency_ms": 1801.442,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 59,
+          "mean_recall_at_5": 0.7034,
+          "full_recall_at_5": 0.4237,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0.5819,
+          "mean_recall_at_4000_tokens": 1,
+          "mean_recall_at_16000_tokens": 1,
+          "mean_precision_at_10": 0.1729,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 3890,
+          "median_latency_ms": 1773.745,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0.5784,
+          "full_recall_at_5": 0.2222,
+          "mean_recall_at_10": 0.7698,
+          "full_recall_at_10": 0.5926,
+          "mean_recall_at_20": 0.8673,
+          "full_recall_at_20": 0.7778,
+          "mean_recall_at_1000_tokens": 0.4765,
+          "mean_recall_at_4000_tokens": 0.8395,
+          "mean_recall_at_16000_tokens": 0.8673,
+          "mean_precision_at_10": 0.1556,
+          "zero_hit_rate": 0.0556,
+          "median_tokens_delivered": 3958.5,
+          "median_latency_ms": 1836.071,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0.5725,
+          "full_recall_at_5": 0.2407,
+          "mean_recall_at_10": 0.7207,
+          "full_recall_at_10": 0.5,
+          "mean_recall_at_20": 0.8318,
+          "full_recall_at_20": 0.7037,
+          "mean_recall_at_1000_tokens": 0.4799,
+          "mean_recall_at_4000_tokens": 0.8318,
+          "mean_recall_at_16000_tokens": 0.8318,
+          "mean_precision_at_10": 0.1352,
+          "zero_hit_rate": 0.0741,
+          "median_tokens_delivered": 3926,
+          "median_latency_ms": 1676.2565,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 108
+      },
+      "resources": {
+        "baseline_rss_mb": 22746.6,
+        "peak_rss_mb": 37976,
+        "delta_rss_mb": 15229.4,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "RELIABILITY GATE FAILED — do not publish these numbers: controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric.",
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "semble",
+      "case_id": "got-043c9501b851",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3889,
+      "latency_ms": 1352.594,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-05cb01405a70",
+      "path_leak": false,
+      "required_files": [
+        "test/arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3983,
+      "latency_ms": 1416.523,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-06029e0b758e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3730,
+      "latency_ms": 1249.783,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-06a2d3d7d8d4",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 4085,
+      "latency_ms": 1249.701,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-0703318d3bb6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/response.ts",
+        "test/encoding.ts"
+      ],
+      "found": [
+        "source/core/response.ts"
+      ],
+      "missed": [
+        "test/encoding.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3990,
+      "latency_ms": 1601.703,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-071ea0749d81",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/timed-out.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/gzip.ts"
+      ],
+      "missed": [
+        "source/core/timed-out.ts",
+        "test/http.ts"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4053,
+      "latency_ms": 1877.738,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-0863bcd5e90e",
+      "path_leak": true,
+      "required_files": [
+        "test/timeout.ts"
+      ],
+      "found": [
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4247,
+      "latency_ms": 1631.244,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-08d7a0f3285d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4063,
+      "latency_ms": 1964.533,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-0a16a9ca7de3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3912,
+      "latency_ms": 1814.476,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-1018c2029eea",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3664,
+      "latency_ms": 1529.528,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-11a2202de328",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3786,
+      "latency_ms": 2588.572,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-15395ee87e6d",
+      "path_leak": true,
+      "required_files": [
+        "test/normalize-arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/normalize-arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3480,
+      "latency_ms": 1987.574,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-157e02bcb613",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3961,
+      "latency_ms": 1307.173,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-1b208df66716",
+      "path_leak": true,
+      "required_files": [
+        "test/stream.ts"
+      ],
+      "found": [
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3884,
+      "latency_ms": 1301.215,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-1e1e50647e93",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3809,
+      "latency_ms": 3398.417,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-1e49781eff61",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4921,
+      "latency_ms": 2481.36,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-226cc3995f6e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4037,
+      "latency_ms": 1608.117,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-2453e5e4213f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3956,
+      "latency_ms": 1373.338,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-2527bf690fd5",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4208,
+      "latency_ms": 1844.94,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-26fffe94618b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3761,
+      "latency_ms": 1842.118,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-2ab94fd4daf6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3490,
+      "latency_ms": 1612.152,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-2ccc4c2e8bd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4119,
+      "latency_ms": 1305.182,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-30b3b795580d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3737,
+      "latency_ms": 1996.812,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-32070619a547",
+      "path_leak": true,
+      "required_files": [
+        "test/https.ts"
+      ],
+      "found": [
+        "test/https.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3516,
+      "latency_ms": 2043.048,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-398c11ae502c",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4334,
+      "latency_ms": 1627.768,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-3b3ea6776b4f",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3709,
+      "latency_ms": 1477.969,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-3cc40b549c4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3866,
+      "latency_ms": 1551.177,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-3d66aecacd6d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/timings.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4272,
+      "latency_ms": 1980.339,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-3e9d3af606c3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3946,
+      "latency_ms": 1371.723,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-408e22aed993",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3819,
+      "latency_ms": 1043.972,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-439fb82d2a07",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "source/core/response.ts"
+      ],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.75,
+      "precision_at_5": 0.6,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.1875,
+      "recall_at_1000_tokens": 0.75,
+      "recall_at_4000_tokens": 0.75,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4152,
+      "latency_ms": 1462.492,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-462bc6300150",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4925,
+      "latency_ms": 2001.256,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-47c1afedc77b",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3928,
+      "latency_ms": 1803.389,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-47c3155e4bdf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1875,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3878,
+      "latency_ms": 1806.176,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-4cce4de19ed5",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/types.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/types.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4437,
+      "latency_ms": 1325.094,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-4d5168cc7c58",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/types.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/types.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4575,
+      "latency_ms": 1638.176,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-4e7567965dbc",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4277,
+      "latency_ms": 2452.52,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-5028c11abd21",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts"
+      ],
+      "missed": [
+        "test/promise.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3938,
+      "latency_ms": 1603.898,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-50ef99a9856c",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3482,
+      "latency_ms": 1241.113,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-5772bf24dc7d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3775,
+      "latency_ms": 1772.29,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-59ae3b062f53",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3900,
+      "latency_ms": 1762.943,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-60a441939af3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4630,
+      "latency_ms": 2078.283,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-61d5e3b0ebc5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/timer.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/utils/timer.ts",
+        "test/timings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4057,
+      "latency_ms": 1698.031,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-61d6f610ffa6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/agent.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3672,
+      "latency_ms": 1469.194,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-676be6d85481",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2143,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3731,
+      "latency_ms": 1360.152,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-67d5039ff5a5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3967,
+      "latency_ms": 2053.421,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-6961284172c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/agent.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/agent.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3768,
+      "latency_ms": 1579.102,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-6a544a392baf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1765,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4119,
+      "latency_ms": 1789.868,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-6ae3e7fc364b",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1875,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4505,
+      "latency_ms": 5017.076,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-6e1d9f97465d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "found": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts"
+      ],
+      "missed": [
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "recall_at_5": 0.2,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.2,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6,
+      "precision_at_20": 0.1765,
+      "recall_at_1000_tokens": 0.2,
+      "recall_at_4000_tokens": 0.6,
+      "recall_at_16000_tokens": 0.6,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4048,
+      "latency_ms": 1834.907,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-724d5923816b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/https.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/https.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3746,
+      "latency_ms": 1576.606,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-728aef989c1a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "missed": [
+        "test/promise.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.1765,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.75,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3940,
+      "latency_ms": 1490.988,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-74e3167b705b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3981,
+      "latency_ms": 1837.235,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-78b105b5ebcf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3506,
+      "latency_ms": 1360.212,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-7a920647efa2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/timed-out.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [
+        "test/retry.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4344,
+      "latency_ms": 1801.442,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-7acd3801ec7d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/utils/get-body-size.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3577,
+      "latency_ms": 1209.589,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-7b19e8f32c90",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4030,
+      "latency_ms": 1138.311,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-7e1de4240dad",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3840,
+      "latency_ms": 1749.249,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-88622701c704",
+      "path_leak": false,
+      "required_files": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3828,
+      "latency_ms": 1539.374,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-88b32eade80f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3648,
+      "latency_ms": 1434.724,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-8d3412abb8aa",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3409,
+      "latency_ms": 1166.418,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-8f775c71c41a",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/create.ts"
+      ],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4164,
+      "latency_ms": 1728.119,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-91aa0ac9e676",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3938,
+      "latency_ms": 1697.058,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-92b378e5fd95",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3643,
+      "latency_ms": 1797.321,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-934211f951bf",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3925,
+      "latency_ms": 1401.99,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-9725fbd109a6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4073,
+      "latency_ms": 1604.146,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-98ca6181a039",
+      "path_leak": true,
+      "required_files": [
+        "test/progress.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/progress.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3567,
+      "latency_ms": 1629.828,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-99e8d134bd9a",
+      "path_leak": true,
+      "required_files": [
+        "test/http.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/http.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3832,
+      "latency_ms": 1860.492,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-9a309bdbe7e2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/https.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/https.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3655,
+      "latency_ms": 1393.75,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-9ab4cf991fd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/response.ts"
+      ],
+      "found": [
+        "source/core/response.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3888,
+      "latency_ms": 1654.482,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-9e15d887da3b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4102,
+      "latency_ms": 1545.359,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-9ec6ff02a189",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3702,
+      "latency_ms": 1644.613,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-a2812de3baa0",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/post.ts"
+      ],
+      "found": [
+        "source/core/utils/get-body-size.ts",
+        "test/post.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3880,
+      "latency_ms": 1494.975,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-a59fac415ac0",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1875,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4377,
+      "latency_ms": 1498.324,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-ac5f67dd4b92",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3979,
+      "latency_ms": 1707.638,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-aee9249444c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.6,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2308,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3847,
+      "latency_ms": 2522.944,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-af928f6d3974",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3793,
+      "latency_ms": 1327.144,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-b17012597e4d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4094,
+      "latency_ms": 2294.423,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-b671480715db",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4403,
+      "latency_ms": 1976.359,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-bf39d2c1c58f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3494,
+      "latency_ms": 1773.745,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-bf84d3697537",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4615,
+      "latency_ms": 1874.613,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-c079b9366ff2",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4071,
+      "latency_ms": 3857.511,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-c09b9857d1b4",
+      "path_leak": true,
+      "required_files": [
+        "test/cookies.ts"
+      ],
+      "found": [
+        "test/cookies.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3531,
+      "latency_ms": 1915.794,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-c81a61159473",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4418,
+      "latency_ms": 1874.373,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-c97ce7cbde86",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4151,
+      "latency_ms": 1916.482,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-cbc890292f40",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4262,
+      "latency_ms": 2004.839,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-cc434bc52111",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/no-body-status-codes.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/no-body-status-codes.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3781,
+      "latency_ms": 1624.667,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-d1d4ed2f6242",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3937,
+      "latency_ms": 6319.692,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-d65d0caf627e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/headers.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/headers.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3989,
+      "latency_ms": 5020.064,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-d8c00cfa388b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3803,
+      "latency_ms": 4206.52,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-da4769e98880",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4047,
+      "latency_ms": 3837.478,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-dad6a91b3d11",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/infinite-loop-issue.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/infinite-loop-issue.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4768,
+      "latency_ms": 2326.036,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-dc4f1e323dbd",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4361,
+      "latency_ms": 1985.913,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-dfc54d9e57b7",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4241,
+      "latency_ms": 2766.904,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-e02845f1aa73",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3890,
+      "latency_ms": 1848.103,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-e09a9bd1ca97",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4162,
+      "latency_ms": 2116.904,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-e1099fbc2aa9",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3957,
+      "latency_ms": 1989.103,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-e4aeb8e3bfc4",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 3745,
+      "latency_ms": 1785.747,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-e5659d401a4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts",
+        "test/get-unix-socket-path.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts"
+      ],
+      "missed": [
+        "test/get-unix-socket-path.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4249,
+      "latency_ms": 1895.395,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-e899c0736f6a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3841,
+      "latency_ms": 3570.16,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-eb045bfc324d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3516,
+      "latency_ms": 8209.465,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-ecb05343dea3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3855,
+      "latency_ms": 9748.75,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-f0045640d12a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4196,
+      "latency_ms": 7711.335,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-f2f8cb29fe9f",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3714,
+      "latency_ms": 7478.121,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-f44ef4388e0b",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/create.ts",
+        "test/arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 4026,
+      "latency_ms": 5562.714,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-f7ab6e9ffda6",
+      "path_leak": true,
+      "required_files": [
+        "source/types.ts",
+        "test/create.ts",
+        "test/extend.types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/types.ts",
+        "test/extend.types.ts"
+      ],
+      "missed": [
+        "test/create.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0.2,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.2,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.4,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.2,
+      "recall_at_4000_tokens": 0.4,
+      "recall_at_16000_tokens": 0.4,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3612,
+      "latency_ms": 4463.594,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-fb8641856a13",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4150,
+      "latency_ms": 4246.246,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "got-ff918fb6dedb",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 4113,
+      "latency_ms": 3818.707,
+      "indexed_revision_matches": true
+    }
+  ]
+}

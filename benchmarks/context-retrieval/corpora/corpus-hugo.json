@@ -1,0 +1,1336 @@
+{
+  "schema_version": "codevetter.context-retrieval-corpus.v1",
+  "repository": {
+    "id": "hugo",
+    "head": "7b5199fdeff7d7682e9f979f468d55bc7b67b934"
+  },
+  "selection": {
+    "commits_scanned": 600,
+    "fixes_only": true,
+    "max_required_files": 8
+  },
+  "counts": {
+    "cases": 29,
+    "path_leak": 13,
+    "baseline_blind": 16,
+    "multi_file": 25
+  },
+  "cases": [
+    {
+      "case_id": "hugo-09048aad7655",
+      "repository": "hugo",
+      "commit": "09048aad7655385e9a287448eed65408d0b850ab",
+      "base_revision": "f42c422a12987c9ccb1927fc17da37feedd0c7fb",
+      "authored_at": "2026-01-01T13:56:55+01:00",
+      "query": "Fix partial decorator detection in partial with blocks with outer range break or continue",
+      "query_tokens": [
+        "blocks",
+        "break",
+        "continue",
+        "decorator",
+        "detection",
+        "outer",
+        "partial",
+        "range"
+      ],
+      "specific_tokens": [
+        "blocks",
+        "break",
+        "continue",
+        "decorator",
+        "detection",
+        "outer",
+        "partial",
+        "range"
+      ],
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "tpl/templates/decorator_integration_test.go",
+            "tokens": [
+              "decorator"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-0f1c7d12000f",
+      "repository": "hugo",
+      "commit": "0f1c7d12000f7db7f1f45366c2dc4355b1511d5f",
+      "base_revision": "10352335e04c4779e101b6d40202dd90a170dda0",
+      "authored_at": "2026-02-01T22:24:52+01:00",
+      "query": "Fix template change detection for multi-version sites",
+      "query_tokens": [
+        "change",
+        "detection",
+        "multi",
+        "sites",
+        "template",
+        "version"
+      ],
+      "specific_tokens": [
+        "detection",
+        "multi",
+        "sites",
+        "template",
+        "version"
+      ],
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "hugolib/hugo_sites.go",
+            "tokens": [
+              "sites"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-11f7f39913d5",
+      "repository": "hugo",
+      "commit": "11f7f39913d56291f0e049f674378da06cfd4e70",
+      "base_revision": "192e3c453e904cf2e79312d4335a7ee216fe659d",
+      "authored_at": "2026-01-23T16:08:29+01:00",
+      "query": "Fix cascade draft panic",
+      "query_tokens": [
+        "cascade",
+        "draft",
+        "panic"
+      ],
+      "specific_tokens": [
+        "cascade",
+        "draft",
+        "panic"
+      ],
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        ".github/workflows/test.yml"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "hugolib/cascade_test.go",
+            "tokens": [
+              "cascade"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-161d0d475773",
+      "repository": "hugo",
+      "commit": "161d0d475773c5251ec00cc8848f1a174393155c",
+      "base_revision": "45e4596630b1372ab02634e4536d2b5a89452e0b",
+      "authored_at": "2026-04-07T21:02:27+02:00",
+      "query": "Fix RenderShortcodes leaking context markers when indented",
+      "query_tokens": [
+        "context",
+        "indented",
+        "leaking",
+        "markers",
+        "render",
+        "shortcodes"
+      ],
+      "specific_tokens": [
+        "context",
+        "indented",
+        "leaking",
+        "markers",
+        "render",
+        "shortcodes"
+      ],
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-2ffaf1fc1edb",
+      "repository": "hugo",
+      "commit": "2ffaf1fc1edb31993f22dd7fd8da5eeb0f4df015",
+      "base_revision": "a808f6e40d4cb109c65d232ec63c5433bc180aeb",
+      "authored_at": "2026-08-08T16:25:53+02:00",
+      "query": "Fix server static file detection for deleted files/directories in the static syncer",
+      "query_tokens": [
+        "deleted",
+        "detection",
+        "directories",
+        "file",
+        "files",
+        "server",
+        "static",
+        "syncer"
+      ],
+      "specific_tokens": [
+        "deleted",
+        "detection",
+        "directories",
+        "file",
+        "files",
+        "server",
+        "static",
+        "syncer"
+      ],
+      "required_files": [
+        "commands/server.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "testscripts/server/server__delete_static_file_publish.txt"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "commands/server.go",
+            "tokens": [
+              "server"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-3dff7c8c7a04",
+      "repository": "hugo",
+      "commit": "3dff7c8c7a04a413437f2f09e3a1252ae6f1be92",
+      "base_revision": "d98cd4aecf25b9df78d811759ea6135b0c7610f1",
+      "authored_at": "2026-02-25T17:35:20+01:00",
+      "query": "Fix menu pageRef resolution in multidimensional setups",
+      "query_tokens": [
+        "menu",
+        "multidimensional",
+        "page",
+        "resolution",
+        "setups"
+      ],
+      "specific_tokens": [
+        "menu",
+        "multidimensional",
+        "page",
+        "resolution",
+        "setups"
+      ],
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "hugolib/menu_test.go",
+            "tokens": [
+              "menu"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-479fe6c65493",
+      "repository": "hugo",
+      "commit": "479fe6c654937a850b65e74551dc4e857d52898f",
+      "base_revision": "81a5cdca0788ca39574a17d444c9db29d0b19e27",
+      "authored_at": "2026-04-01T13:54:10+02:00",
+      "query": "Fix potential content XSS by escaping dangerous URLs in links and images",
+      "query_tokens": [
+        "content",
+        "dangerous",
+        "escaping",
+        "images",
+        "links",
+        "potential",
+        "urls"
+      ],
+      "specific_tokens": [
+        "content",
+        "dangerous",
+        "escaping",
+        "images",
+        "links",
+        "potential",
+        "urls"
+      ],
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-7a43b928a67c",
+      "repository": "hugo",
+      "commit": "7a43b928a67c4dbb750a905230b3a66a4f242e98",
+      "base_revision": "555dfa207a6a631e4c8193cb6be82f54c750a8dc",
+      "authored_at": "2025-11-25T15:37:24+01:00",
+      "query": "Fix slow server startup of very big content trees",
+      "query_tokens": [
+        "content",
+        "server",
+        "slow",
+        "startup",
+        "trees",
+        "very"
+      ],
+      "specific_tokens": [
+        "content",
+        "server",
+        "slow",
+        "startup",
+        "trees",
+        "very"
+      ],
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.25,
+        "shared_tokens": [
+          {
+            "path": "commands/server.go",
+            "tokens": [
+              "server"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-8a979d54d1e5",
+      "repository": "hugo",
+      "commit": "8a979d54d1e5b3dbd68272413249fd7ff36b6c81",
+      "base_revision": "fd49df8f7a1152a6d303701a92d882a6d82dfce1",
+      "authored_at": "2026-01-28T23:50:57+08:00",
+      "query": "Fix data race when clearing cache in cachebusters",
+      "query_tokens": [
+        "cache",
+        "cachebusters",
+        "clearing",
+        "data",
+        "race"
+      ],
+      "specific_tokens": [
+        "cache",
+        "cachebusters",
+        "clearing",
+        "data",
+        "race"
+      ],
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-8b00030b344d",
+      "repository": "hugo",
+      "commit": "8b00030b344d21635e5634698700f1d13145fead",
+      "base_revision": "c48551677c2504e3f2d7fa53ee42766e0333b957",
+      "authored_at": "2026-04-08T13:30:14+02:00",
+      "query": "Fix panic when passthrough elements are used in headings",
+      "query_tokens": [
+        "elements",
+        "headings",
+        "panic",
+        "passthrough",
+        "used"
+      ],
+      "specific_tokens": [
+        "elements",
+        "headings",
+        "panic",
+        "passthrough",
+        "used"
+      ],
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-8d6145f3c315",
+      "repository": "hugo",
+      "commit": "8d6145f3c31528ecafca4e5f301abd1c672468fd",
+      "base_revision": "ce2a156a4e89849244862705395791590d12b50a",
+      "authored_at": "2026-04-15T19:11:10+02:00",
+      "query": "Fix filename dimension identifiers (_role_X_, _version_X_) to replace mount config",
+      "query_tokens": [
+        "config",
+        "dimension",
+        "filename",
+        "identifiers",
+        "mount",
+        "replace",
+        "role",
+        "version"
+      ],
+      "specific_tokens": [
+        "config",
+        "dimension",
+        "filename",
+        "identifiers",
+        "mount",
+        "replace",
+        "role",
+        "version"
+      ],
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-8dfcece80541",
+      "repository": "hugo",
+      "commit": "8dfcece8054179ec869ceb775d10d64bbf08d6d5",
+      "base_revision": "9a6bfe2667f4e59e3cb78d3e70f75e6cb0fd1f95",
+      "authored_at": "2026-01-26T21:38:50+01:00",
+      "query": "Fix recently introduced partial rendering bug",
+      "query_tokens": [
+        "introduced",
+        "partial",
+        "recently",
+        "rendering"
+      ],
+      "specific_tokens": [
+        "introduced",
+        "partial",
+        "recently",
+        "rendering"
+      ],
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-95e5e9f4ab6e",
+      "repository": "hugo",
+      "commit": "95e5e9f4ab6e2b4565be4e46507aadeada2435a6",
+      "base_revision": "a00b5c72ac57afe26df6688ece3ca544a56df372",
+      "authored_at": "2026-06-11T11:57:09+02:00",
+      "query": "Fix multi --renderSegments merge behavior",
+      "query_tokens": [
+        "behavior",
+        "merge",
+        "multi",
+        "render",
+        "segments"
+      ],
+      "specific_tokens": [
+        "behavior",
+        "merge",
+        "multi",
+        "render",
+        "segments"
+      ],
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.667,
+        "shared_tokens": [
+          {
+            "path": "hugolib/segments/segments.go",
+            "tokens": [
+              "segments"
+            ]
+          },
+          {
+            "path": "hugolib/segments/segments_integration_test.go",
+            "tokens": [
+              "segments"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-974772422258",
+      "repository": "hugo",
+      "commit": "974772422258f1e8aab1c7603fc09bbb1a2c2571",
+      "base_revision": "a17bdbc5face02ed2470895bcbfe67db7749dc73",
+      "authored_at": "2026-04-14T16:33:38+02:00",
+      "query": "Fix it so we never auto-fallback to page resources in other roles/versions",
+      "query_tokens": [
+        "auto",
+        "fallback",
+        "page",
+        "resources",
+        "roles",
+        "versions"
+      ],
+      "specific_tokens": [
+        "auto",
+        "fallback",
+        "page",
+        "resources",
+        "roles",
+        "versions"
+      ],
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.429,
+        "shared_tokens": [
+          {
+            "path": "hugolib/content_map_page.go",
+            "tokens": [
+              "page"
+            ]
+          },
+          {
+            "path": "hugolib/content_map_page_assembler.go",
+            "tokens": [
+              "page"
+            ]
+          },
+          {
+            "path": "resources/page/pagemeta/page_frontmatter.go",
+            "tokens": [
+              "page",
+              "resources"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-a77548830407",
+      "repository": "hugo",
+      "commit": "a77548830407851d3a8d24085a7f5dc131ca886e",
+      "base_revision": "66ba63cd5f30ef8807fc524dbc67399376299bb1",
+      "authored_at": "2026-01-11T15:30:33+01:00",
+      "query": "Fix some default site redirect woes",
+      "query_tokens": [
+        "default",
+        "redirect",
+        "site",
+        "woes"
+      ],
+      "specific_tokens": [
+        "default",
+        "redirect",
+        "site",
+        "woes"
+      ],
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "hugolib/site.go",
+            "tokens": [
+              "site"
+            ]
+          },
+          {
+            "path": "hugolib/site_render.go",
+            "tokens": [
+              "site"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-a808f6e40d4c",
+      "repository": "hugo",
+      "commit": "a808f6e40d4cb109c65d232ec63c5433bc180aeb",
+      "base_revision": "94f3908ec6a1618361ef07c61ac0402b7d21e07a",
+      "authored_at": "2026-08-08T13:36:46+02:00",
+      "query": "Fix server errors when deleting static files or directories",
+      "query_tokens": [
+        "deleting",
+        "directories",
+        "errors",
+        "files",
+        "server",
+        "static"
+      ],
+      "specific_tokens": [
+        "deleting",
+        "directories",
+        "files",
+        "server",
+        "static"
+      ],
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "testscripts/server/server__delete_static_file_mount.txt",
+        "testscripts/server/server__delete_static_mount_dir.txt"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-b5d43cdc1783",
+      "repository": "hugo",
+      "commit": "b5d43cdc1783796d9c6b17c7e135fa46d8b0279d",
+      "base_revision": "6ef8017f60117ad9d900cc59f10a962cd68566d6",
+      "authored_at": "2026-01-29T22:53:13+01:00",
+      "query": "Fix image DecodeConfig regression of WebP images from file cache",
+      "query_tokens": [
+        "cache",
+        "config",
+        "decode",
+        "file",
+        "image",
+        "images",
+        "regression"
+      ],
+      "specific_tokens": [
+        "cache",
+        "config",
+        "decode",
+        "file",
+        "image",
+        "images",
+        "regression"
+      ],
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "resources/image.go",
+            "tokens": [
+              "image"
+            ]
+          },
+          {
+            "path": "resources/image_cache.go",
+            "tokens": [
+              "cache",
+              "image"
+            ]
+          },
+          {
+            "path": "resources/images/images_integration_test.go",
+            "tokens": [
+              "images"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-b82e496c130f",
+      "repository": "hugo",
+      "commit": "b82e496c130fa18eab4f3333b9b88e3823e63e45",
+      "base_revision": "33542d39663e3ec4140b5b425bdc4e40dec1b318",
+      "authored_at": "2025-12-17T17:21:11+01:00",
+      "query": "Fix some outdated front matter",
+      "query_tokens": [
+        "front",
+        "matter",
+        "outdated"
+      ],
+      "specific_tokens": [
+        "front",
+        "matter",
+        "outdated"
+      ],
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-c1b2e58bfb94",
+      "repository": "hugo",
+      "commit": "c1b2e58bfb9420aa92562cdbfa40de782b788234",
+      "base_revision": "77214117ae76ddac6b82dfa232b6aa5d85e64f6b",
+      "authored_at": "2026-01-20T11:00:27+01:00",
+      "query": "Fix file mount specifity issue within the same module",
+      "query_tokens": [
+        "file",
+        "issue",
+        "module",
+        "mount",
+        "specifity",
+        "within"
+      ],
+      "specific_tokens": [
+        "file",
+        "module",
+        "mount",
+        "specifity",
+        "within"
+      ],
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-c48551677c25",
+      "repository": "hugo",
+      "commit": "c48551677c2504e3f2d7fa53ee42766e0333b957",
+      "base_revision": "161d0d475773c5251ec00cc8848f1a174393155c",
+      "authored_at": "2026-04-08T12:07:37+02:00",
+      "query": "Fix panic on edit of legacy mapped template names that's also a valid path in the new setup",
+      "query_tokens": [
+        "also",
+        "edit",
+        "legacy",
+        "mapped",
+        "names",
+        "panic",
+        "path",
+        "setup",
+        "template",
+        "valid"
+      ],
+      "specific_tokens": [
+        "edit",
+        "legacy",
+        "mapped",
+        "names",
+        "panic",
+        "path",
+        "setup",
+        "template",
+        "valid"
+      ],
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-c7b35c8704ac",
+      "repository": "hugo",
+      "commit": "c7b35c8704ac8283d77afc5b13a52529363ed858",
+      "base_revision": "5916b61be94e9c552173038853a37c346eabae6b",
+      "authored_at": "2026-01-27T20:11:22+01:00",
+      "query": "Fix panic reported in discourse",
+      "query_tokens": [
+        "discourse",
+        "panic",
+        "reported"
+      ],
+      "specific_tokens": [
+        "discourse",
+        "panic",
+        "reported"
+      ],
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-ce009e3aa9fd",
+      "repository": "hugo",
+      "commit": "ce009e3aa9fdc0e9f8d2d209d0d4df591707a094",
+      "base_revision": "0755872424182a99520ab27f54df29ba2bcccddc",
+      "authored_at": "2026-04-06T18:01:22+02:00",
+      "query": "Fix auto-creation of root sections in multilingual sites",
+      "query_tokens": [
+        "auto",
+        "creation",
+        "multilingual",
+        "root",
+        "sections",
+        "sites"
+      ],
+      "specific_tokens": [
+        "auto",
+        "creation",
+        "multilingual",
+        "root",
+        "sections",
+        "sites"
+      ],
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-d4c0e4452c22",
+      "repository": "hugo",
+      "commit": "d4c0e4452c22fcb5eab457492d989793722379ac",
+      "base_revision": "418156ec3e943f4c8e00b33b896b759a2b942b03",
+      "authored_at": "2025-12-25T12:03:55+01:00",
+      "query": "Fix error with _content.gotmpl file with index.md siblings",
+      "query_tokens": [
+        "content",
+        "error",
+        "file",
+        "gotmpl",
+        "index",
+        "siblings"
+      ],
+      "specific_tokens": [
+        "content",
+        "file",
+        "gotmpl",
+        "index",
+        "siblings"
+      ],
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-e2e64aeec57c",
+      "repository": "hugo",
+      "commit": "e2e64aeec57ca333618a07d2277b6519d66f3871",
+      "base_revision": "9e7182e9e6a21235a025c6672072b1d4e1359368",
+      "authored_at": "2025-12-05T11:33:55+01:00",
+      "query": "Fix server rebuilds on editing content with Chinese terms",
+      "query_tokens": [
+        "chinese",
+        "content",
+        "editing",
+        "rebuilds",
+        "server",
+        "terms"
+      ],
+      "specific_tokens": [
+        "chinese",
+        "content",
+        "editing",
+        "rebuilds",
+        "server",
+        "terms"
+      ],
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "testscripts/commands/server__edit_content_with_chinese_tag.txt"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.25,
+        "shared_tokens": [
+          {
+            "path": "commands/server.go",
+            "tokens": [
+              "server"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-e9b9b36f46cc",
+      "repository": "hugo",
+      "commit": "e9b9b36f46ccc6250ffa72188c8a5c52f96b119e",
+      "base_revision": "b8a2c10d06d815cdaf61ef2f03fb37267612da2e",
+      "authored_at": "2026-01-02T16:22:25+01:00",
+      "query": "Fix alpha/fuzzy border issue with new webp decoder for images with with transparent background",
+      "query_tokens": [
+        "alpha",
+        "background",
+        "border",
+        "decoder",
+        "fuzzy",
+        "images",
+        "issue",
+        "transparent",
+        "webp"
+      ],
+      "specific_tokens": [
+        "alpha",
+        "background",
+        "border",
+        "decoder",
+        "fuzzy",
+        "images",
+        "transparent",
+        "webp"
+      ],
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.png",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.png"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "internal/warpc/webp.go",
+            "tokens": [
+              "webp"
+            ]
+          },
+          {
+            "path": "resources/images/images_golden_integration_test.go",
+            "tokens": [
+              "images"
+            ]
+          },
+          {
+            "path": "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+            "tokens": [
+              "images",
+              "webp"
+            ]
+          },
+          {
+            "path": "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp",
+            "tokens": [
+              "images",
+              "webp"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-f740d7cfe0eb",
+      "repository": "hugo",
+      "commit": "f740d7cfe0ebaec7056a8fc2b770e46b86c13ee7",
+      "base_revision": "5f46da6e2a3f838b40176775c0b46855f4f8f529",
+      "authored_at": "2025-12-20T11:26:33+01:00",
+      "query": "Fix panic when 404 is backed by a content file",
+      "query_tokens": [
+        "backed",
+        "content",
+        "file",
+        "panic"
+      ],
+      "specific_tokens": [
+        "backed",
+        "content",
+        "file",
+        "panic"
+      ],
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "hugolib/content_map_page_assembler.go",
+            "tokens": [
+              "content"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "hugo-f772998fa349",
+      "repository": "hugo",
+      "commit": "f772998fa34927f469c70b83acdc72b62895d13e",
+      "base_revision": "8a55df7af2e6da31297245cc54fa2e3b521d93e8",
+      "authored_at": "2026-08-10T18:10:06+02:00",
+      "query": "Fix resource transformation chaining after content access",
+      "query_tokens": [
+        "access",
+        "chaining",
+        "content",
+        "resource",
+        "transformation"
+      ],
+      "specific_tokens": [
+        "access",
+        "chaining",
+        "content",
+        "resource",
+        "transformation"
+      ],
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-f797f8490229",
+      "repository": "hugo",
+      "commit": "f797f84902297b7dd37c3f39ce057789a4d8e950",
+      "base_revision": "e8577771c3275d16b7d1b31cca5e9fd3ea517416",
+      "authored_at": "2026-02-27T10:21:12+01:00",
+      "query": "Fix index out of range panic in fileEventsContentPaths",
+      "query_tokens": [
+        "content",
+        "events",
+        "file",
+        "index",
+        "panic",
+        "paths",
+        "range"
+      ],
+      "specific_tokens": [
+        "content",
+        "events",
+        "file",
+        "index",
+        "panic",
+        "paths",
+        "range"
+      ],
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "hugo-f8b5fa09a649",
+      "repository": "hugo",
+      "commit": "f8b5fa09a64950c32b803821ede411ebfe772b7a",
+      "base_revision": "86fbb0f7a8bbb93e2e916390de9e5a4f24bf9f50",
+      "authored_at": "2026-05-11T12:52:53+02:00",
+      "query": "Fix prevention of direct symlink reads in resources.Get",
+      "query_tokens": [
+        "direct",
+        "prevention",
+        "reads",
+        "resources",
+        "symlink"
+      ],
+      "specific_tokens": [
+        "direct",
+        "prevention",
+        "reads",
+        "resources",
+        "symlink"
+      ],
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "testscripts/commands/no_symlinks.txt"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    }
+  ],
+  "rejected_sample": [
+    {
+      "commit": "7b5199fdeff7d7682e9f979f468d55bc7b67b934",
+      "subject": "all: Run modernize -fix ./...",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "e31ff547d24c35edfa9d22bdd48b6cdf9688cf11",
+      "subject": "Upgrade to Go 1.27",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "87260e4a602c6b65134e0b6e1c4ccfd8ade7ee56",
+      "subject": "commands: Fix lang flag description in config command",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "8405b802cf647b88e3de872d6fb01323107aaf9b",
+      "subject": "tpl: Improve the return keyword in templates",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "bf05832d14f9916c8c8268b20fc0fa40f61c9f9f",
+      "subject": "page: Add IndexOf method to Pages",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "a05736cb9f6bbc930eb5815e1496ecccb1f94bf6",
+      "subject": "tpl/resources: Add resources.Publish",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "49dceb19f54610474bc6cf0417d41504c0b80a44",
+      "subject": "hugolib: Fix slice bounds panic when deleting multiple nodes at same path",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "5e7099256e148074dbc2be29d380a2b7c659f39c",
+      "subject": "hugolib: Fix ReadingTime and FuzzyWordCount calculations",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "0805c734a41b75403e3970e0070227916b6845d2",
+      "subject": "releaser: Prepare repository for 0.166.0-DEV",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "76a5e1880ab46688155b02e99bab9be2a6134492",
+      "subject": "releaser: Bump versions for release of 0.165.0",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "0bb337b22ab7953615ec151cb4cb454db7e08968",
+      "subject": "build(deps): bump github.com/bep/imagemeta from 0.17.3 to 1.0.0",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "03dc9170b3e410f50f2e74fdd4428865a5310e61",
+      "subject": "build(deps): bump github.com/evanw/esbuild from 0.28.1 to 0.28.2",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "c829b736cc5736a44f444a2c93f820b3068121c5",
+      "subject": "build(deps): bump github.com/tdewolff/minify/v2 from 2.24.14 to 2.24.16",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "995a2159e5a1b87a1321e154543e6ca20f9bb815",
+      "subject": "resources: Resume chained resource transformations",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "f88f0a9f59f302fb7c60d58921d636ed8da27aca",
+      "subject": "resources/jsconfig: Drop source root mapping for the current source root",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "dd3f2731e0612b3b402d1464d5612fd9fc342748",
+      "subject": "Remove Star History from README",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "8a55df7af2e6da31297245cc54fa2e3b521d93e8",
+      "subject": "Remove tailwindcss from the default security.exec.allow list (note)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "52c9bd7908b4d02d4d0ff8f82a888834d6ee10d2",
+      "subject": "circleci: Upgrade to Go 1.26.5",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "44da086082a1dff487f4e5639bb03a65d9dd1ade",
+      "subject": "Add Data.Artifacts to css.Build and js.Build",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "94f3908ec6a1618361ef07c61ac0402b7d21e07a",
+      "subject": "build(deps): bump github.com/getkin/kin-openapi from 0.145.0 to 0.146.0",
+      "reason": "not-a-fix"
+    }
+  ]
+}

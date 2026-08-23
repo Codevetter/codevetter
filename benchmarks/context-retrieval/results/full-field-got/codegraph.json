@@ -1,0 +1,3170 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "got",
+    "head": "e3924aa1e53a6ca3eb93a43618ce532442a89b40"
+  },
+  "tier": "small",
+  "tier_code_files": 85,
+  "corpus_counts": {
+    "cases": 108,
+    "path_leak": 54,
+    "baseline_blind": 54,
+    "multi_file": 82
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": false,
+      "missing": [
+        "random-files",
+        "random-code-files",
+        "churn-ranked"
+      ],
+      "reason": "controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric."
+    },
+    "controls_lose": {
+      "ok": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "codegraph",
+        "query": "Fix `dnsCache: true` having no effect",
+        "revision": "e02845f1aa737d55dce23381d0f4f2a61b1eb5e1",
+        "returned": [
+          "source/core/utils/dns-ip-version.ts",
+          "source/core/index.ts",
+          "source/create.ts",
+          "source/types.ts",
+          "source/core/utils/weakable-map.ts"
+        ]
+      },
+      {
+        "provider_id": "codegraph",
+        "query": "Fix hanging promise when using cache",
+        "revision": "633e46e8cb184e6a2670ffae5f8184fcf710f31b",
+        "returned": [
+          "source/as-promise/index.ts",
+          "source/create.ts",
+          "source/core/index.ts",
+          "source/as-promise/types.ts",
+          "source/types.ts"
+        ]
+      }
+    ],
+    "trustworthy": false
+  },
+  "providers": [
+    {
+      "provider_id": "codegraph",
+      "summary": {
+        "all": {
+          "cases": 108,
+          "mean_recall_at_5": 0.437,
+          "full_recall_at_5": 0.1667,
+          "mean_recall_at_10": 0.5728,
+          "full_recall_at_10": 0.2963,
+          "mean_recall_at_20": 0.5775,
+          "full_recall_at_20": 0.3056,
+          "mean_recall_at_1000_tokens": 0.2464,
+          "mean_recall_at_4000_tokens": 0.559,
+          "mean_recall_at_16000_tokens": 0.5775,
+          "mean_precision_at_10": 0.1929,
+          "zero_hit_rate": 0.1481,
+          "median_tokens_delivered": 3252.5,
+          "median_latency_ms": 1976.2565,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 76,
+          "mean_recall_at_5": 0.3272,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.393,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.3996,
+          "full_recall_at_20": 0.0132,
+          "mean_recall_at_1000_tokens": 0.1572,
+          "mean_recall_at_4000_tokens": 0.3864,
+          "mean_recall_at_16000_tokens": 0.3996,
+          "mean_precision_at_10": 0.1878,
+          "zero_hit_rate": 0.2105,
+          "median_tokens_delivered": 3222,
+          "median_latency_ms": 1995.5615,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 32,
+          "mean_recall_at_5": 0.6979,
+          "full_recall_at_5": 0.5625,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0.4583,
+          "mean_recall_at_4000_tokens": 0.9688,
+          "mean_recall_at_16000_tokens": 1,
+          "mean_precision_at_10": 0.205,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 3621.5,
+          "median_latency_ms": 1929.7025,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0.3926,
+          "full_recall_at_5": 0.1111,
+          "mean_recall_at_10": 0.5654,
+          "full_recall_at_10": 0.2593,
+          "mean_recall_at_20": 0.5654,
+          "full_recall_at_20": 0.2593,
+          "mean_recall_at_1000_tokens": 0.1765,
+          "mean_recall_at_4000_tokens": 0.5377,
+          "mean_recall_at_16000_tokens": 0.5654,
+          "mean_precision_at_10": 0.2049,
+          "zero_hit_rate": 0.1296,
+          "median_tokens_delivered": 3249.5,
+          "median_latency_ms": 1996.1405,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 54,
+          "mean_recall_at_5": 0.4815,
+          "full_recall_at_5": 0.2222,
+          "mean_recall_at_10": 0.5802,
+          "full_recall_at_10": 0.3333,
+          "mean_recall_at_20": 0.5895,
+          "full_recall_at_20": 0.3519,
+          "mean_recall_at_1000_tokens": 0.3164,
+          "mean_recall_at_4000_tokens": 0.5802,
+          "mean_recall_at_16000_tokens": 0.5895,
+          "mean_precision_at_10": 0.1808,
+          "zero_hit_rate": 0.1667,
+          "median_tokens_delivered": 3252.5,
+          "median_latency_ms": 1949.249,
+          "payload_kind": [
+            "tool-output"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 106,
+        "indexed-but-returned-nothing": 2
+      },
+      "resources": {
+        "baseline_rss_mb": 18891.1,
+        "peak_rss_mb": 23255,
+        "delta_rss_mb": 4363.9,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "RELIABILITY GATE FAILED — do not publish these numbers: controls absent: random-files, random-code-files, churn-ranked. A query-blind control is the only thing that detects a broken metric.",
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-043c9501b851",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/create.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1728,
+      "latency_ms": 2725.393,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-05cb01405a70",
+      "path_leak": false,
+      "required_files": [
+        "test/arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2134,
+      "latency_ms": 2160.141,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-06029e0b758e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4839,
+      "latency_ms": 1605.088,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-06a2d3d7d8d4",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3477,
+      "latency_ms": 1741.697,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-0703318d3bb6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/response.ts",
+        "test/encoding.ts"
+      ],
+      "found": [
+        "source/core/response.ts"
+      ],
+      "missed": [
+        "test/encoding.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2485,
+      "latency_ms": 2229.228,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-071ea0749d81",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/timed-out.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "missed": [
+        "source/core/timed-out.ts"
+      ],
+      "recall_at_5": 0.75,
+      "precision_at_5": 0.6,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.6,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.6,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.75,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3570,
+      "latency_ms": 2906.625,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-0863bcd5e90e",
+      "path_leak": true,
+      "required_files": [
+        "test/timeout.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3943,
+      "latency_ms": 2807.217,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-08d7a0f3285d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3108,
+      "latency_ms": 4146.653,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-0a16a9ca7de3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 4382,
+      "latency_ms": 2098.747,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-1018c2029eea",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3162,
+      "latency_ms": 1891.542,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-11a2202de328",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/abort.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3248,
+      "latency_ms": 2540.654,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-15395ee87e6d",
+      "path_leak": true,
+      "required_files": [
+        "test/normalize-arguments.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/normalize-arguments.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2970,
+      "latency_ms": 2141.858,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-157e02bcb613",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4472,
+      "latency_ms": 2250.203,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-1b208df66716",
+      "path_leak": true,
+      "required_files": [
+        "test/stream.ts"
+      ],
+      "found": [
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 3558,
+      "latency_ms": 2146.137,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-1e1e50647e93",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 3202,
+      "latency_ms": 2001.148,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-1e49781eff61",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts"
+      ],
+      "missed": [
+        "test/retry.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4876,
+      "latency_ms": 1757.273,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-226cc3995f6e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3711,
+      "latency_ms": 1945.583,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-2453e5e4213f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2777,
+      "latency_ms": 1952.915,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-2527bf690fd5",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4096,
+      "latency_ms": 1847.025,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-26fffe94618b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2689,
+      "latency_ms": 2105.015,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-2ab94fd4daf6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 2524,
+      "latency_ms": 2269.223,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-2ccc4c2e8bd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3228,
+      "latency_ms": 2006.436,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-30b3b795580d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2540,
+      "latency_ms": 2258.05,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-32070619a547",
+      "path_leak": true,
+      "required_files": [
+        "test/https.ts"
+      ],
+      "found": [
+        "test/https.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2910,
+      "latency_ms": 1611.229,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-398c11ae502c",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/timings.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3242,
+      "latency_ms": 1705.511,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-3b3ea6776b4f",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4793,
+      "latency_ms": 1999.99,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-3cc40b549c4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/abort.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3454,
+      "latency_ms": 2206.202,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-3d66aecacd6d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/timings.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4752,
+      "latency_ms": 1851.612,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-3e9d3af606c3",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4928,
+      "latency_ms": 2119.782,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-408e22aed993",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/redirects.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4884,
+      "latency_ms": 2183.028,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-439fb82d2a07",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "source/core/index.ts",
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2148,
+      "latency_ms": 1750.891,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-462bc6300150",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2445,
+      "latency_ms": 1756.74,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-47c1afedc77b",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 4802,
+      "latency_ms": 1546.354,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-47c3155e4bdf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2089,
+      "latency_ms": 2381.342,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-4cce4de19ed5",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/types.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/types.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4933,
+      "latency_ms": 1713.966,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-4d5168cc7c58",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/types.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/types.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2603,
+      "latency_ms": 2031.48,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-4e7567965dbc",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/timings.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4371,
+      "latency_ms": 2024.167,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-5028c11abd21",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4709,
+      "latency_ms": 1632.077,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-50ef99a9856c",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 19,
+      "latency_ms": 1508.407,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-5772bf24dc7d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1439,
+      "latency_ms": 2309.628,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-59ae3b062f53",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2999,
+      "latency_ms": 2041.291,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-60a441939af3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 2507,
+      "latency_ms": 1900.218,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-61d5e3b0ebc5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/timer.ts",
+        "test/timings.ts"
+      ],
+      "found": [
+        "source/core/utils/timer.ts"
+      ],
+      "missed": [
+        "test/timings.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4482,
+      "latency_ms": 1928.75,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-61d6f610ffa6",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/agent.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4919,
+      "latency_ms": 1600.914,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-676be6d85481",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.6,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3842,
+      "latency_ms": 1920.376,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-67d5039ff5a5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2554,
+      "latency_ms": 1891.516,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-6961284172c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/agent.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/agent.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2286,
+      "latency_ms": 1580.208,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-6a544a392baf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.6667,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.6667,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.6667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3257,
+      "latency_ms": 1632.976,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-6ae3e7fc364b",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/retry.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3257,
+      "latency_ms": 4034.32,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-6e1d9f97465d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2694,
+      "latency_ms": 1803.982,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-724d5923816b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts",
+        "test/https.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/https.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2478,
+      "latency_ms": 1871.576,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-728aef989c1a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/http.ts",
+        "test/promise.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1506,
+      "latency_ms": 2280.39,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-74e3167b705b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4553,
+      "latency_ms": 2131.672,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-78b105b5ebcf",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3620,
+      "latency_ms": 2053.917,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-7a920647efa2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2308,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4774,
+      "latency_ms": 1939.029,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-7acd3801ec7d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/utils/get-body-size.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1522,
+      "latency_ms": 1881.692,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-7b19e8f32c90",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3169,
+      "latency_ms": 1822.641,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-7e1de4240dad",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.125,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 8,
+      "tokens_delivered": 3157,
+      "latency_ms": 2178.906,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-88622701c704",
+      "path_leak": false,
+      "required_files": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/create.ts"
+      ],
+      "missed": [
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4761,
+      "latency_ms": 2029.034,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-88b32eade80f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3484,
+      "latency_ms": 1933.053,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-8d3412abb8aa",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4935,
+      "latency_ms": 1631.285,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-8f775c71c41a",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3184,
+      "latency_ms": 1542.087,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-91aa0ac9e676",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4126,
+      "latency_ms": 2150.012,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-92b378e5fd95",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/abort.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3474,
+      "latency_ms": 1855.892,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-934211f951bf",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 4150,
+      "latency_ms": 1618.615,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-9725fbd109a6",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.6667,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.6667,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.6667,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2446,
+      "latency_ms": 1975.496,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-98ca6181a039",
+      "path_leak": true,
+      "required_files": [
+        "test/progress.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/progress.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3017,
+      "latency_ms": 3623.392,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-99e8d134bd9a",
+      "path_leak": true,
+      "required_files": [
+        "test/http.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/http.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2970,
+      "latency_ms": 2693.624,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-9a309bdbe7e2",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/https.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/https.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4015,
+      "latency_ms": 1991.133,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-9ab4cf991fd5",
+      "path_leak": false,
+      "required_files": [
+        "source/core/response.ts"
+      ],
+      "found": [
+        "source/core/response.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 4268,
+      "latency_ms": 1803.362,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-9e15d887da3b",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3867,
+      "latency_ms": 2533.315,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-9ec6ff02a189",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/redirects.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3426,
+      "latency_ms": 2096.96,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-a2812de3baa0",
+      "path_leak": false,
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/post.ts"
+      ],
+      "found": [
+        "test/post.ts"
+      ],
+      "missed": [
+        "source/core/utils/get-body-size.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 9,
+      "tokens_delivered": 3536,
+      "latency_ms": 2385.014,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-a59fac415ac0",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4062,
+      "latency_ms": 2177.405,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-ac5f67dd4b92",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.4,
+      "recall_at_20": 1,
+      "precision_at_20": 0.4,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2551,
+      "latency_ms": 1836.846,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-aee9249444c4",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3009,
+      "latency_ms": 2173.771,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-af928f6d3974",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4208,
+      "latency_ms": 1977.017,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-b17012597e4d",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2198,
+      "latency_ms": 2085.287,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-b671480715db",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/arguments.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2818,
+      "latency_ms": 1783.759,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-bf39d2c1c58f",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/options.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 16,
+      "latency_ms": 1792.619,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-bf84d3697537",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2893,
+      "latency_ms": 2184.616,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-c079b9366ff2",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4895,
+      "latency_ms": 1764.177,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-c09b9857d1b4",
+      "path_leak": true,
+      "required_files": [
+        "test/cookies.ts"
+      ],
+      "found": [],
+      "missed": [
+        "test/cookies.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3542,
+      "latency_ms": 2556.998,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-c81a61159473",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 3747,
+      "latency_ms": 2800.268,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-c97ce7cbde86",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1232,
+      "latency_ms": 2364.584,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-cbc890292f40",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2774,
+      "latency_ms": 2066.363,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-cc434bc52111",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/no-body-status-codes.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/no-body-status-codes.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 2610,
+      "latency_ms": 2103.932,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-d1d4ed2f6242",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2666,
+      "latency_ms": 2650.597,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-d65d0caf627e",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/headers.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/headers.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1121,
+      "latency_ms": 1618.988,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-d8c00cfa388b",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3351,
+      "latency_ms": 1915.95,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-da4769e98880",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2741,
+      "latency_ms": 1738.292,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-dad6a91b3d11",
+      "path_leak": true,
+      "required_files": [
+        "source/core/options.ts",
+        "test/infinite-loop-issue.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [
+        "test/infinite-loop-issue.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4262,
+      "latency_ms": 1877.347,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-dc4f1e323dbd",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/stream.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 2864,
+      "latency_ms": 2486.299,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-dfc54d9e57b7",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3007,
+      "latency_ms": 2442.718,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-e02845f1aa73",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/create.ts"
+      ],
+      "missed": [
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 4216,
+      "latency_ms": 1502.748,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-e09a9bd1ca97",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 2776,
+      "latency_ms": 2014.645,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-e1099fbc2aa9",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3623,
+      "latency_ms": 2169.713,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-e4aeb8e3bfc4",
+      "path_leak": true,
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "found": [
+        "test/pagination.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3983,
+      "latency_ms": 1770.842,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-e5659d401a4a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts",
+        "test/get-unix-socket-path.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts"
+      ],
+      "missed": [
+        "test/get-unix-socket-path.ts"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2436,
+      "latency_ms": 1621.114,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-e899c0736f6a",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/retry.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 3343,
+      "latency_ms": 1933.675,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-eb045bfc324d",
+      "path_leak": false,
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "found": [
+        "source/core/options.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2324,
+      "latency_ms": 1874.949,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-ecb05343dea3",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2623,
+      "latency_ms": 1716.316,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-f0045640d12a",
+      "path_leak": false,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [],
+      "missed": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3533,
+      "latency_ms": 1671.407,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-f2f8cb29fe9f",
+      "path_leak": true,
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "found": [
+        "source/core/index.ts"
+      ],
+      "missed": [
+        "test/cache.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4929,
+      "latency_ms": 1660.982,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-f44ef4388e0b",
+      "path_leak": true,
+      "required_files": [
+        "source/create.ts",
+        "test/arguments.ts"
+      ],
+      "found": [
+        "test/arguments.ts"
+      ],
+      "missed": [
+        "source/create.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3728,
+      "latency_ms": 1862.451,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-f7ab6e9ffda6",
+      "path_leak": true,
+      "required_files": [
+        "source/types.ts",
+        "test/create.ts",
+        "test/extend.types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "found": [
+        "source/types.ts"
+      ],
+      "missed": [
+        "test/create.ts",
+        "test/extend.types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "recall_at_5": 0.2,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.2,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.2,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.2,
+      "recall_at_4000_tokens": 0.2,
+      "recall_at_16000_tokens": 0.2,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3816,
+      "latency_ms": 3549.874,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-fb8641856a13",
+      "path_leak": false,
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "found": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2222,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 4626,
+      "latency_ms": 1636.596,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codegraph",
+      "case_id": "got-ff918fb6dedb",
+      "path_leak": true,
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "found": [
+        "source/as-promise/index.ts"
+      ],
+      "missed": [
+        "test/promise.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2938,
+      "latency_ms": 1625.796,
+      "indexed_revision_matches": true
+    }
+  ]
+}
