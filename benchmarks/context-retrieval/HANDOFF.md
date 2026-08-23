@@ -4,6 +4,10 @@ Written for whoever picks this up next, including an agent asked to verify it. I
 what is measured, what is void, what is unfinished, and where every number came from.
 Read [Before you trust anything here](#before-you-trust-anything-here) first.
 
+## The ticket
+
+Work is tracked in **[#159 Compare Code Context Providers](https://github.com/Codevetter/codevetter/issues/159)**.
+
 ## State in one paragraph
 
 There is a working single-project full-field measurement: 25 arms on `got` at a pinned
@@ -65,6 +69,11 @@ corpora carry commit subjects and file paths from private codebases. Rebuild the
 `build-corpus.mjs` against the local checkouts if they are needed.
 
 ## Reproducing the headline numbers
+
+Verified from a fresh `--depth 1` clone with **no `pnpm install`**: the regeneration
+command below reproduces the committed tables byte-for-byte, and 34 of the harness
+tests run on Node's built-in runner with zero dependencies. Anything involving a real
+provider needs the tool inventory further down.
 
 ```bash
 # 1. Clone the pinned upstream. The corpus is pinned to this revision.
@@ -147,12 +156,20 @@ sort descending.
 
 Two things about this history are worth knowing:
 
-- **`main` was force-pushed once.** Ten score artifacts measuring private
-  repositories were committed into this public repository by mistake — file paths
-  and commit SHAs, no query text. They were purged from history with
-  `git filter-repo`, and the branch that still carried them (`feat/retrieval-benchmark`,
-  from closed PR #169) was deleted. Only the three most recent commits changed SHA,
-  so no open pull request's merge base moved.
+- **`main` was force-pushed once, and it rewrote every commit SHA in the repository.**
+  Ten score artifacts measuring private repositories were committed into this public
+  repository by mistake — file paths and commit SHAs, no query text — and were purged
+  with `git filter-repo`, along with the branch that still carried them
+  (`feat/retrieval-benchmark`, from closed PR #169).
+
+  I first recorded here that only the three most recent commits changed SHA. That was
+  wrong: `filter-repo` rewrote all 997. The check behind the claim asked whether an
+  old commit object still *existed* (`git cat-file -e`) when the question was whether
+  it was still an *ancestor* — and the object was there, un-garbage-collected. The
+  visible consequence was that every open pull request branch pointed into orphaned
+  history, so GitHub computed PR #168's diff across two divergent ancestries as 100
+  files when its real change was 11. It was landed by cherry-picking its content
+  instead. Nothing before `44bad09` should be assumed reachable by its old SHA.
 - **Private repository names are generalised** to `private-A` … `private-F`
   throughout. The corpora for those repositories were never committed and are not
   recoverable from here; rebuild them with `build-corpus.mjs` against local

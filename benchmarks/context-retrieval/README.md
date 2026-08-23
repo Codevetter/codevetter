@@ -679,7 +679,7 @@ leave a trace in git history, which is the most any format can do.
 
 ## Instrumentation faults
 
-Twenty-five defects have been found in this harness itself, every one of which produced
+Twenty-nine defects have been found in this harness itself, every one of which produced
 a plausible number before it was caught, and every one of which under-reported a tool
 that worked. The full catalogue, the corpus-by-corpus cost of the worst of them, and the
 pattern they share are in **[instrumentation.md](instrumentation.md)**.

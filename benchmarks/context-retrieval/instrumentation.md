@@ -4,7 +4,7 @@ The single canonical list of defects found in this benchmark's own harness. It l
 its own page because it is the most reusable thing here: the numbers describe one
 repository at one moment, and this describes how measurement of this kind goes wrong.
 
-Every fault below produced a plausible-looking number first, and **every one of them
+Twenty-nine faults. Every one below produced a plausible-looking number first, and **every one of them
 under-reported a tool that worked** — none inflated a score. Nine arm-results of 0.0%,
 from seven distinct causes, turned out to be faults rather than findings about the tools.
 
@@ -111,6 +111,22 @@ Six more, all from the `got` run. Same shape as the rest.
 | A boolean flag passed a value | `--repomix true` threw `unknown argument: true`, so both packer arms exited 2 and produced nothing at all on the first attempt |
 | A subset defined relative to its own run | With one arm per process, `baseline_missed` meant 49 cases for one arm and 81 for another. Presented side by side it would have read as a hard-subset finding. That column was dropped; `no_path_leak` is kept because it comes from per-case corpus metadata and is 54 cases for every arm |
 | Corpus hygiene missing two extensions | `NOISE_EXTENSION` covered `.md .png .svg .txt` but not `.rst` or `.webp`, so flask's `CHANGES.rst` was ground truth in **14 of its 39 cases** and hugo had two `.webp` golden fixtures. A changelog is not a file anyone had to locate. `got` contains neither, so the published field measurement is unaffected |
+
+## Found while landing the work
+
+| Fault | Wrong result it produced |
+| --- | --- |
+| **An existence check used where an ancestry check was needed** | After force-pushing `main` to purge private artifacts, I reported that only three commits had changed SHA, on the strength of `git cat-file -e <old-sha>` succeeding. That asks whether an object exists, not whether it is still an ancestor — and the object was there, un-garbage-collected. `filter-repo` had rewritten all 997 commits, orphaning every open pull request branch. GitHub then computed one PR's diff across two divergent ancestries as **100 files, none of them the files that PR's own description named**, when the real change was 11 files. I nearly filed that as a scope problem with someone else's branch |
+| **A leak "fixed" and verified with the instrument that missed it** | The first removal commit took out 38 artifacts, and I confirmed "private-repo artifacts in HEAD: none" using a filesystem glob and a JSON-parsing detector. Both silently skipped two more files carrying private paths and SHAs. `git ls-files` is the authority for what is committed; a working-tree glob is not |
+| **A test that asserted on source text** | `abandon.test.mjs` matched the literal expression `consecutiveHardFailures = hard ? ... : 0` in `score.mjs`. Extracting that loop into a named function broke the test while the behaviour was identical — backwards from what a test is for, and it had never verified the abandonment behaviour at all |
+| **A test pinned to one machine** | The tiering test pointed at a private local checkout *and* a session-scoped temp directory, so it skipped everywhere else and contributed nothing. Renaming the repository turned a silent pass into a silent skip, which is the only reason it surfaced |
+
+The first two share the shape worth naming: **a verification that cannot see the failure
+it is verifying against.** Three times in one session I reported something as checked
+when the checking instrument was itself the fault — the backwards sort, the ripgrep
+`cwd`, and this. The rule that falls out is narrow enough to be useful: when confirming
+a fix, the check must be a different mechanism from the one that produced the error, not
+a rerun of it.
 
 ## How much each corpus was capped by the narrow allowlist
 
