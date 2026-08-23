@@ -6,6 +6,20 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const limits = Object.freeze({ changedFiles: 40, addedLines: 4_000, grossLines: 6_000 });
+// Paths whose contents are generated data rather than authored code. The gate exists to
+// keep pull requests reviewable, and a reviewer does not read 108 rows of measurement
+// output line by line — they re-run the thing that produced it. Counting such files
+// makes the gate fire on the presence of evidence rather than on the size of a change,
+// which pushes a project toward committing conclusions without the data behind them.
+//
+// Deliberately narrow: a declared results or corpora directory under benchmarks/, and
+// nothing else. Source code under those paths is still counted, because it is still
+// read. Anything added here should be data a reviewer would verify by regenerating.
+const DATA_PATHS = [/^benchmarks\/[^/]+\/results\//, /^benchmarks\/[^/]+\/corpora\//];
+
+function isGeneratedData(file) {
+  return DATA_PATHS.some((pattern) => pattern.test(file));
+}
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const comparisonBase = process.env.CODE_HEALTH_BASE?.trim() || 'origin/main';
 const result = spawnSync(
@@ -30,7 +44,8 @@ const summary = result.stdout
   .filter(Boolean)
   .reduce(
     (totals, line) => {
-      const [added, removed] = line.split('\t');
+      const [added, removed, file] = line.split('\t');
+      if (isGeneratedData(file ?? '')) return totals;
       return {
         changedFiles: totals.changedFiles + 1,
         addedLines: totals.addedLines + (/^\d+$/.test(added) ? Number(added) : 0),
@@ -43,6 +58,7 @@ const summary = result.stdout
     { changedFiles: 0, addedLines: 0, grossLines: 0 }
   );
 for (const file of untracked.stdout.split('\n').filter(Boolean)) {
+  if (isGeneratedData(file)) continue;
   summary.changedFiles += 1;
   const absolute = path.join(repositoryRoot, file);
   if (!lstatSync(absolute).isFile()) continue;
