@@ -49,14 +49,14 @@ treat the published ordering as a lower bound on the field rather than a settled
 
 | Path | What it is | Durable? |
 | --- | --- | --- |
-| `scripts/context-retrieval/` | Harness: `score.mjs` (runner), `adapters/`, `gates.mjs`, `tiers.mjs`, `paths.mjs`, `preregister.mjs`, `report-tiered.mjs`, tests | in repo, **untracked** |
-| `benchmarks/context-retrieval/plan.json` | Pre-registered plan, hash `4937d61d19d81518` | in repo, **untracked** |
-| `benchmarks/context-retrieval/instrumentation.md` | The 25 harness faults — read before trusting any zero | in repo, **untracked** |
-| `benchmarks/context-retrieval/candidates.json` | 54 candidate tools with stars, licence, mechanism | in repo, **untracked** |
-| `benchmarks/context-retrieval/results/full-field-got/` | 27 score artifacts, 108 case rows each | in repo, **untracked** |
-| `benchmarks/context-retrieval/corpora/` | Corpora for public upstreams only | in repo, **untracked** |
-| `scripts/context-retrieval/field-report.mjs` | Regenerates `full-field-got.md` from the committed artifacts | in repo, **untracked** |
-| `apps/desktop/src-tauri/src/bin/codevetter-graph.rs` | Headless bin driving the real product code | in repo, **untracked** |
+| `scripts/context-retrieval/` | Harness: `score.mjs` (runner), `adapters/`, `gates.mjs`, `tiers.mjs`, `paths.mjs`, `preregister.mjs`, `report-tiered.mjs`, tests | committed on `main` |
+| `benchmarks/context-retrieval/plan.json` | Pre-registered plan, hash `4937d61d19d81518` | committed on `main` |
+| `benchmarks/context-retrieval/instrumentation.md` | The 25 harness faults — read before trusting any zero | committed on `main` |
+| `benchmarks/context-retrieval/candidates.json` | 54 candidate tools with stars, licence, mechanism | committed on `main` |
+| `benchmarks/context-retrieval/results/full-field-got/` | 27 score artifacts, 108 case rows each | committed on `main` |
+| `benchmarks/context-retrieval/corpora/` | Corpora for public upstreams only | committed on `main` |
+| `scripts/context-retrieval/field-report.mjs` | Regenerates `full-field-got.md` from the committed artifacts | committed on `main` |
+| `apps/desktop/src-tauri/src/bin/codevetter-graph.rs` | Headless bin driving the real product code | committed on `main` |
 | Private-repo corpora | 7 corpora built from the owner's own repositories | **session scratchpad only — gone** |
 | Tool binaries under `nbin/`, `gnx/`, `bin/gortex` | codegraph, graft, ck, gitnexus, gortex | **session scratchpad only — gone** |
 
@@ -127,15 +127,36 @@ Versions matter; several of these are pre-1.0 and move fast.
 Not installable / not reached at all: `ugrep`, `grepai`, `zoekt`, `codegrok`, `serena`,
 `codesearch`. Pending candidates above 1,000 stars are listed in `candidates.json`.
 
-## Uncommitted work you need to know about
+## What landed, and how
 
-Nothing in this directory is committed. `git status` shows `?? benchmarks/context-retrieval/`
-and `?? scripts/context-retrieval/` — 115 new files — plus modified product files under
-`apps/desktop/src-tauri/src/commands/structural_graph/` (contracts, extract, interchange,
-query/index, query/search, query/limits, query/mod, query/tests) and a new
-`src/bin/codevetter-graph.rs`. **The CodeVetter arm's numbers depend on those product
-changes**; building `codevetter-graph` from a clean checkout will not reproduce 76.8% at
-1k. Committing is the outstanding step and has not been done.
+Merged to `main` as seven dependency-ordered pull requests, #170 through #176,
+because a single one was 131 files against this repository's own 40-file gate. The
+gate came from `agent/enforce-reviewable-pr-size` and it was right.
+
+CI rejected two of them on the way through, both correctly. The complexity gate
+flagged six functions over a ceiling of 20 — one at 51 — and the duplication gate
+caught five clones my adapters had added. Fixing the second surfaced a live defect:
+three call sites passed a bare worktree path where the shared helper takes an
+options object, so `cwd` was never set and `ripgrep` searched *this* repository
+while claiming to have searched the tree under test. The unit tests missed it
+because they invoke `/bin/echo`, which ignores `cwd`.
+
+Released as **v1.10.0**. Minor rather than patch: the query ranking changed
+behaviour and relevance flipped direction, so any consumer ordering those hits must
+sort descending.
+
+Two things about this history are worth knowing:
+
+- **`main` was force-pushed once.** Ten score artifacts measuring private
+  repositories were committed into this public repository by mistake — file paths
+  and commit SHAs, no query text. They were purged from history with
+  `git filter-repo`, and the branch that still carried them (`feat/retrieval-benchmark`,
+  from closed PR #169) was deleted. Only the three most recent commits changed SHA,
+  so no open pull request's merge base moved.
+- **Private repository names are generalised** to `private-A` … `private-F`
+  throughout. The corpora for those repositories were never committed and are not
+  recoverable from here; rebuild them with `build-corpus.mjs` against local
+  checkouts.
 
 ## What is unfinished
 
