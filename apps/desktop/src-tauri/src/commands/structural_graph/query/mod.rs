@@ -20,7 +20,12 @@ const MAX_QUERY_INDEXES: usize = 16;
 #[derive(Debug, Default)]
 struct StructuralGraphQueryIndex {
     exact: HashMap<String, Vec<usize>>,
+    /// Term -> node ordinals. Keys include whole tokens *and* their path
+    /// segments and camelCase words, so retrieval reaches everything the ranker
+    /// is able to score.
     tokens: HashMap<String, Vec<usize>>,
+    /// Denominator for inverse document frequency.
+    node_count: usize,
 }
 
 static QUERY_INDEXES: OnceLock<Mutex<HashMap<String, Arc<StructuralGraphQueryIndex>>>> =
@@ -48,6 +53,12 @@ pub struct GraphQueryFilter {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GraphSearchHit {
     pub node: StructuralGraphNode,
+    /// Relevance on a fixed `0..=999_999` scale where **higher is more
+    /// relevant**, matching what every other search API means by `score`.
+    /// `hits` is already returned best-first; this is the magnitude behind that
+    /// order. It used to be an ascending match-rank (`0` = best), which read as
+    /// a relevance score and silently inverted any consumer that sorted by it
+    /// descending.
     pub score: u32,
     pub matched_by: String,
 }
@@ -192,12 +203,13 @@ mod search;
 mod traversal;
 
 use index::{
-    edge_matches_filter, lexical_tokens, node_map, node_matches_filter, normalize, query_index,
-    rank_node, rank_question_tokens, trust_cost,
+    candidate_ordinals, edge_matches_filter, lexical_query, lexical_relevance, node_map,
+    node_matches_filter, normalize, query_index, rank_node, rank_question_tokens, tiered_score,
+    trust_cost,
 };
 use limits::{
     bounded_limit, enforce_impact_bytes, enforce_path_bytes, enforce_projection_bytes,
-    enforce_search_bytes, parse_cursor,
+    enforce_search_bytes, parse_cursor, trim_search_previews,
 };
 use path_visit::PathVisit;
 use projection::query_context;

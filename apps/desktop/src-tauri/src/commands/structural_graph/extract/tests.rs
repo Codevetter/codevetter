@@ -661,6 +661,96 @@ fn incremental_graph_facts_are_identical_to_a_clean_rebuild() {
     fs::remove_dir_all(root).expect("remove fixture repo");
 }
 
+#[test]
+fn structured_config_files_contribute_searchable_entries_not_just_their_own_path() {
+    let source = r#"{
+  "_meta": { "purpose": "single source of truth for fleet projects" },
+  "projects": [
+    { "id": "tinygpt", "cfProject": "tinygpt", "deployKind": "worker", "deployed": true },
+    { "id": "reel-pipeline", "cfProject": "reel-pipeline", "deployKind": "pages", "deployed": true }
+  ],
+  "schemaVersion": 3
+}
+"#;
+    let contribution = extract_blob("ops/config/projects.json", source.as_bytes(), 1 << 20);
+    let entries = contribution
+        .nodes
+        .iter()
+        .filter(|node| node.kind == "config_entry")
+        .map(|node| node.label.as_str())
+        .collect::<Vec<_>>();
+    // The values a question actually names are retrievable.
+    for expected in [
+        "id: tinygpt",
+        "id: reel-pipeline",
+        "deployKind: worker",
+        "deployKind: pages",
+    ] {
+        assert!(entries.contains(&expected), "missing {expected:?} in {entries:?}");
+    }
+    // Flags and counts collapse onto one deduplicated key rather than one node
+    // per line, and every entry is anchored in the file.
+    assert_eq!(entries.iter().filter(|label| **label == "deployed").count(), 1);
+    assert!(!entries.iter().any(|label| label.starts_with("schemaVersion:")));
+    assert!(contribution
+        .nodes
+        .iter()
+        .filter(|node| node.kind == "config_entry")
+        .all(|node| node.path.as_deref() == Some("ops/config/projects.json")
+            && node.sources.iter().all(|source| source.start_line.is_some())));
+}
+
+#[test]
+fn ini_style_dotfile_config_is_indexed_by_section_and_entry() {
+    let source = "[submodule \"engines/reel-maker\"]\n\tpath = engines/reel-maker\n\turl = https://github.com/example/reel-maker.git\n";
+    let contribution = extract_blob(".gitmodules", source.as_bytes(), 1 << 20);
+    let entries = contribution
+        .nodes
+        .iter()
+        .filter(|node| node.kind == "config_entry")
+        .map(|node| node.label.as_str())
+        .collect::<Vec<_>>();
+    assert!(
+        entries.contains(&"submodule: engines/reel-maker"),
+        "section header not indexed: {entries:?}"
+    );
+    assert!(entries.contains(&"path: engines/reel-maker"), "{entries:?}");
+}
+
+#[test]
+fn prose_that_merely_contains_sql_words_does_not_become_a_database_reference() {
+    let prose = r#"{
+  "notes": "Canonical source was extracted from Fleet Workspace; the landing is served from the ios-landings factory.",
+  "detail": "Rolled into main after review."
+}
+"#;
+    let contribution = extract_blob("ops/config/notes.json", prose.as_bytes(), 1 << 20);
+    let references = contribution
+        .nodes
+        .iter()
+        .filter(|node| node.kind == "db_object_reference")
+        .map(|node| node.label.as_str())
+        .collect::<Vec<_>>();
+    assert!(
+        references.is_empty(),
+        "prose produced database references: {references:?}"
+    );
+
+    // A real statement, embedded in code, still resolves.
+    let query = "const rows = await db.query(\"SELECT id FROM accounts JOIN sessions ON sessions.account_id = accounts.id\");";
+    let indexed = extract_blob("src/db.ts", query.as_bytes(), 1 << 20);
+    let referenced = indexed
+        .nodes
+        .iter()
+        .filter(|node| node.kind == "db_object_reference")
+        .map(|node| node.label.as_str())
+        .collect::<Vec<_>>();
+    assert!(
+        referenced.contains(&"accounts") && referenced.contains(&"sessions"),
+        "embedded SQL lost its table references: {referenced:?}"
+    );
+}
+
 fn run_git(root: &Path, arguments: &[&str]) {
     let status = Command::new("git")
         .arg("-C")
