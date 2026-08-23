@@ -18,6 +18,12 @@ name = "codevetter"
 path = "src/bin/codevetter.rs"
 required-features = ["browser-agent"]
 
+# Headless driver for the shipped structural-graph engine. External benchmarks
+# measure the product through this instead of reimplementing extraction.
+[[bin]]
+name = "codevetter-graph"
+path = "src/bin/codevetter-graph.rs"
+
 [dependencies]
 tauri = { version = "2", features = ["devtools", "tray-icon", "image-png"] }
 tauri-plugin-dialog = "2"

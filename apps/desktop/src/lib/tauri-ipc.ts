@@ -2066,6 +2066,7 @@ export interface StructuralGraphStatus {
 export interface StructuralGraphSearchResult {
   hits: Array<{
     node: StructuralGraphNode;
+    /** Relevance on a 0..=999_999 scale; higher is more relevant. `hits` is already best-first. */
     score: number;
     matched_by: string;
   }>;

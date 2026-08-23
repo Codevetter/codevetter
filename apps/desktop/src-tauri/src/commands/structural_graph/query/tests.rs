@@ -81,6 +81,117 @@ fn search_prefers_exact_stable_identifier() {
 }
 
 #[test]
+fn search_returns_hits_ordered_by_descending_relevance_score() {
+    let result = search(
+        &snapshot(),
+        "start src/a.rs",
+        &GraphQueryFilter::default(),
+        Some(10),
+    );
+    assert!(result.hits.len() >= 2);
+    assert!(
+        result
+            .hits
+            .windows(2)
+            .all(|pair| pair[0].score >= pair[1].score),
+        "hits must be best-first with score decreasing: {:?}",
+        result.hits.iter().map(|hit| hit.score).collect::<Vec<_>>()
+    );
+    // Scores separate near-matches instead of collapsing them onto one tier
+    // value, which is what made large repositories rank almost arbitrarily.
+    let distinct = result
+        .hits
+        .iter()
+        .map(|hit| hit.score)
+        .collect::<HashSet<_>>();
+    assert!(distinct.len() > 1, "identical scores for unequal matches");
+}
+
+#[test]
+fn search_retrieves_nodes_whose_only_match_is_inside_a_camel_case_or_path_token() {
+    let mut graph = snapshot();
+    // The query index is cached per snapshot id, so a mutated fixture needs its
+    // own identity or it would be answered from another test's index.
+    graph.id = "snapshot:camel".to_string();
+    graph.nodes.push(StructuralGraphNode {
+        id: "node:fullpath".to_string(),
+        kind: "function".to_string(),
+        label: "FullPath".to_string(),
+        qualified_name: Some("src/context.go::FullPath".to_string()),
+        path: Some("src/context.go".to_string()),
+        detail: None,
+        language: Some("go".to_string()),
+        community_id: None,
+        trust: GraphTrust::Extracted,
+        origin: GraphOrigin::Syntax,
+        sources: Vec::new(),
+    });
+    // "path" is only a suffix of the label and "context" only a stem of the file
+    // name, so keying candidates on whole tokens never reached this node.
+    for query in ["path", "context", "full path in context"] {
+        let result = search(&graph, query, &GraphQueryFilter::default(), Some(10));
+        assert!(
+            result.hits.iter().any(|hit| hit.node.id == "node:fullpath"),
+            "query {query:?} did not retrieve the camel-case/path match"
+        );
+    }
+}
+
+#[test]
+fn adding_a_query_term_never_shrinks_the_retrieved_set() {
+    let mut graph = snapshot();
+    graph.id = "snapshot:monotonic".to_string();
+    // "shared" is on most nodes, "paths" on exactly one: the shape that made a
+    // frequency-based candidate ceiling drop the common term's nodes entirely.
+    for index in 0..40 {
+        graph.nodes.push(node(
+            &format!("node:shared:{index}"),
+            &format!("shared{index}"),
+            &format!("src/shared{index}.rs"),
+        ));
+    }
+    graph.nodes.push(node("node:paths", "paths", "src/paths.rs"));
+    let ids = |query: &str| {
+        search(&graph, query, &GraphQueryFilter::default(), Some(500))
+            .hits
+            .into_iter()
+            .map(|hit| hit.node.id)
+            .collect::<HashSet<_>>()
+    };
+    let shared = ids("shared");
+    let both = ids("shared paths");
+    assert!(
+        shared.is_subset(&both),
+        "adding a term dropped {} nodes",
+        shared.difference(&both).count()
+    );
+}
+
+#[test]
+fn search_weights_rare_terms_above_terms_the_whole_graph_shares() {
+    let mut graph = snapshot();
+    graph.id = "snapshot:idf".to_string();
+    for index in 0..40 {
+        graph.nodes.push(node(
+            &format!("node:common:{index}"),
+            &format!("handler{index}"),
+            &format!("src/handler{index}.rs"),
+        ));
+    }
+    graph.nodes.push(node("node:rare", "reticulate", "src/rare.rs"));
+    let result = search(
+        &graph,
+        "reticulate handler",
+        &GraphQueryFilter::default(),
+        Some(5),
+    );
+    assert_eq!(
+        result.hits[0].node.id, "node:rare",
+        "the rare term must outweigh the term forty nodes share"
+    );
+}
+
+#[test]
 fn search_seeds_natural_language_questions_without_stop_words() {
     let result = search(
         &snapshot(),
