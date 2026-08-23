@@ -203,7 +203,7 @@ function buildCase({ root, repoId, commit, subject, authoredAt, maxRequiredFiles
 
   const queryTokens = tokenize(query);
   // A query has to name something. Repo-name tokens are excluded too: matching
-  // "email" inside email-manager discriminates nothing.
+  // "email" inside private-B discriminates nothing.
   const repoTokens = tokenize(repoId);
   const specific = [...queryTokens].filter(
     (token) => !GENERIC_TOKEN.has(token) && !repoTokens.has(token)

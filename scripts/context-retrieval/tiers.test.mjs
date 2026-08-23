@@ -33,32 +33,58 @@ test('large repositories use fixed-index, smaller ones re-index per case', () =>
   assert.throws(() => protocolFor('enormous'), /unknown tier/);
 });
 
-test('tier is measured at case revisions, not at HEAD', async (t) => {
+test('tier is measured at case revisions, not at HEAD', async () => {
+  // The trap: a repository that has been split up reads small at HEAD and large at the
+  // revisions its cases are actually scored against. One real repository measured 69
+  // code files at HEAD with a median case revision of 537 — a different tier entirely,
+  // and the protocol follows from the tier.
+  //
+  // This test used to point at that repository's local checkout and at a corpus file in
+  // a session-scoped temp directory, so it skipped everywhere except one machine and
+  // quietly contributed nothing. Building the shape synthetically is the only version
+  // that runs for anyone else, which is the point of having it.
   const { tierFromRevisions } = await import('./tiers.mjs');
-  const { existsSync, readFileSync } = await import('node:fs');
-  const repo = `${process.env.HOME}/Desktop/fleet/site-health`;
-  // Deliberately the corpus's own base revisions, not `rev-list HEAD`. The newest
-  // commits are all post-split and read small; the trap only appears in the
-  // revisions the cases are actually scored against. Sampling the wrong revisions
-  // is the exact mistake this test exists to catch, and the first version of this
-  // test made it.
-  const corpus =
-    '/private/tmp/claude-501/-Users-sarthak-Desktop-fleet-codevetter/89a25e80-80a8-452a-bfe6-a8c6ea4ae228/scratchpad/corpus-site-health.json';
-  if (!existsSync(repo) || !existsSync(corpus)) {
-    t.skip('site-health checkout or corpus unavailable');
-    return;
+  const { execFileSync } = await import('node:child_process');
+  const { mkdtempSync, writeFileSync, rmSync, mkdirSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+
+  const dir = mkdtempSync(join(tmpdir(), 'cr-tiers-'));
+  const git = (...args) => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
+  git('init', '-q');
+  git('config', 'user.email', 'test@example.com');
+  git('config', 'user.name', 'test');
+  mkdirSync(join(dir, 'src'), { recursive: true });
+
+  // A large historical revision: 300 code files, which is above the small ceiling.
+  for (let index = 0; index < 300; index += 1) {
+    writeFileSync(join(dir, 'src', `mod${index}.ts`), `export const v${index} = ${index};\n`);
   }
-  const revisions = JSON.parse(readFileSync(corpus, 'utf8')).cases.map((c) => c.base_revision);
-  const result = tierFromRevisions(repo, revisions);
-  assert.equal(result.ok, true);
-  // HEAD reads 69 code files (small); the case revisions run far larger, because a
-  // monorepo was extracted out of this repository partway through its history. A
-  // provider was wrongly accused of a capacity defect on the HEAD number.
-  assert.ok(
-    result.max_code_files > 250,
-    `history must exceed the small ceiling, saw ${result.max_code_files}`
+  git('add', '-A');
+  git('commit', '-qm', 'monolith');
+  const historical = git('rev-parse', 'HEAD').trim();
+
+  // Then the split: almost everything moves out, so HEAD reads small.
+  for (let index = 0; index < 295; index += 1) {
+    rmSync(join(dir, 'src', `mod${index}.ts`));
+  }
+  git('add', '-A');
+  git('commit', '-qm', 'extract packages');
+  const head = git('rev-parse', 'HEAD').trim();
+
+  const atHead = tierFromRevisions(dir, [head]);
+  const atCases = tierFromRevisions(dir, [historical]);
+
+  assert.equal(atHead.tier, 'small', 'HEAD should read small after the split');
+  assert.notEqual(
+    atCases.tier,
+    atHead.tier,
+    'the historical revision must land in a different tier, or this trap cannot be detected'
   );
-  assert.ok(Array.isArray(result.spans_tiers), 'a repo spanning tiers must say so');
+  assert.ok(
+    atCases.median_code_files > atHead.median_code_files,
+    `expected the case revision to be larger: ${atCases.median_code_files} vs ${atHead.median_code_files}`
+  );
 });
 
 test('every repository lands in exactly one tier', () => {

@@ -77,8 +77,8 @@ competent agent reads a 20 MB data blob on a single token match.
 | Repository | Cases | recall@10 | prec@10 | never found | baseline missed | median tokens |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | codevetter | 155 | 59.4% | 10.8% | 19.4% | 83 (54%) | 196,906 |
-| anime-list | 80 | 56.5% | 9.0% | 22.5% | 43 (54%) | 43,261 |
-| email-manager | 49 | 57.2% | 10.8% | 24.5% | 25 (51%) | 12,346 |
+| private-C | 80 | 56.5% | 9.0% | 22.5% | 43 (54%) | 43,261 |
+| private-B | 49 | 57.2% | 10.8% | 24.5% | 25 (51%) | 12,346 |
 | free-ai | 24 | 68.8% | 12.3% | 20.8% | 9 (38%) | 62,743 |
 
 Two findings replicate across all four repositories:
@@ -100,15 +100,15 @@ retrieval.
 
 | Repository | Provider | recall@10 | missed r@10 | full@10 on missed | never found | tokens | tok/recall |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| email-manager | keyword-search | **57.2%** | 16.0% | 0% | 24.5% | 12,346 | 21,599 |
-| email-manager | graphify | 42.9% | 18.1% | 8% | 38.8% | 1,673 | 3,899 |
-| email-manager | codevetter | 22.3% | 17.7% | 12% | 63.3% | **103** | **462** |
+| private-B | keyword-search | **57.2%** | 16.0% | 0% | 24.5% | 12,346 | 21,599 |
+| private-B | graphify | 42.9% | 18.1% | 8% | 38.8% | 1,673 | 3,899 |
+| private-B | codevetter | 22.3% | 17.7% | 12% | 63.3% | **103** | **462** |
 | free-ai | keyword-search | **68.8%** | 16.7% | 0% | 20.8% | 62,743 | 91,262 |
 | free-ai | graphify | 32.3% | 8.3% | 0% | 50.0% | 1,971 | 6,103 |
 | free-ai | codevetter | 13.0% | 23.6% | 11% | 75.0% | **118** | **906** |
-| anime-list | keyword-search | **56.5%** | 19.1% | 0% | 22.5% | 43,261 | 76,554 |
-| anime-list | graphify | 41.9% | 24.4% | 9% | 38.8% | 1,682 | 4,016 |
-| anime-list | codevetter | 30.8% | 19.0% | 7% | 52.5% | **133** | **430** |
+| private-C | keyword-search | **56.5%** | 19.1% | 0% | 22.5% | 43,261 | 76,554 |
+| private-C | graphify | 41.9% | 24.4% | 9% | 38.8% | 1,682 | 4,016 |
+| private-C | codevetter | 30.8% | 19.0% | 7% | 52.5% | **133** | **430** |
 
 **The token-efficiency claim holds; the capability claim does not.** Both graph
 providers deliver far less text per unit of retrieval — Graphify 5–19× cheaper
@@ -128,7 +128,7 @@ whose prose appears in comments and string literals that content search reads an
 symbol graphs do not; and this measures one-shot retrieval, while a real agent
 iterates. Neither touches the token-efficiency result.
 
-## Scorecard — email-manager, 47 cases
+## Scorecard — private-B, 47 cases
 
 `recall@k` is not comparable across providers: ten whole files from grep costs
 12,345 tokens, ten excerpts from CodeVetter costs 100. Ranking on `recall@k`
@@ -298,7 +298,7 @@ condition any agent has.
 
 ### A conclusion this corrected
 
-An earlier single-repository run (`email-manager`, 47 cases) produced the opposite
+An earlier single-repository run (`private-B`, 47 cases) produced the opposite
 headline: that a semantic retriever "earns its keep only if you are
 context-constrained," because whole-file arms won there from 4k upward. That
 repository has unusually small files and was the outlier. Reporting from it alone
@@ -368,7 +368,7 @@ that guarantee for speed, and this measures the price.
 
 18 deletion cases across three repositories, six each.
 
-| Provider | Holds index | free-ai | anime-list | email-manager | **Pooled** | Detects staleness |
+| Provider | Holds index | free-ai | private-C | private-B | **Pooled** | Detects staleness |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
 | keyword-search | no | 0% | 0% | 0% | **0%** (0/22) | n/a — nothing can go stale |
 | codesearch | yes | 83% | 33% | 17% | **44%** (8/18) | **no** |
@@ -726,7 +726,7 @@ Its PageRank also returns `Rank value: 1.0000` for every file in both modes, so 
 adapter records `rank_is_degenerate` rather than scoring an arbitrary order as
 though it were a ranking.
 
-## Full field with controls — email-manager, 47 cases
+## Full field with controls — private-B, 47 cases
 
 Every provider and both controls on one corpus, after the query-specificity filter.
 Zero revision mismatches across all 282 case-provider pairs.
@@ -771,21 +771,21 @@ controls do no retrieval whatsoever, and both are mandatory in any run:
 
 | Repository | Provider | recall@10 | recall@20 |
 | --- | --- | ---: | ---: |
-| email-manager | keyword-search | 57.2% | 66.8% |
-| email-manager | graphify | 42.9% | 50.5% |
-| email-manager | **churn-ranked** (no query) | 35.8% | **58.7%** |
-| email-manager | codevetter | 22.3% | 28.9% |
-| email-manager | **random-files** | 19.1% | **33.2%** |
+| private-B | keyword-search | 57.2% | 66.8% |
+| private-B | graphify | 42.9% | 50.5% |
+| private-B | **churn-ranked** (no query) | 35.8% | **58.7%** |
+| private-B | codevetter | 22.3% | 28.9% |
+| private-B | **random-files** | 19.1% | **33.2%** |
 | free-ai | keyword-search | 68.8% | 78.1% |
 | free-ai | **churn-ranked** (no query) | **47.0%** | **63.0%** |
 | free-ai | graphify | 32.3% | 33.3% |
 | free-ai | **random-files** | 13.5% | **36.3%** |
 | free-ai | codevetter | 13.0% | 17.2% |
-| anime-list | keyword-search | 56.5% | 64.6% |
-| anime-list | graphify | 41.9% | 48.0% |
-| anime-list | codevetter | 30.8% | 36.2% |
-| anime-list | **churn-ranked** (no query) | 21.5% | 33.4% |
-| anime-list | **random-files** | 6.2% | 13.0% |
+| private-C | keyword-search | 56.5% | 64.6% |
+| private-C | graphify | 41.9% | 48.0% |
+| private-C | codevetter | 30.8% | 36.2% |
+| private-C | **churn-ranked** (no query) | 21.5% | 33.4% |
+| private-C | **random-files** | 6.2% | 13.0% |
 
 Three conclusions, and they override the provider table above:
 
@@ -822,13 +822,13 @@ An earlier run recorded CodeVetter as uniquely solving a three-file change acros
 `EmailDetail.tsx`, `EmailList.tsx` and `Subscriptions.tsx` where keyword search
 found nothing. The query was `fix email manager bugs (#4)`. There is nothing in it
 to retrieve: the graph matched `Email*` filenames against the token "email" in a
-repository called *email-manager*. On the specific queries in the same corpus
+repository called *private-B*. On the specific queries in the same corpus
 (`use canonical auth fallback domain`, `fix filter builder selection`) CodeVetter
 returned nothing and keyword search returned the correct file.
 
 The corpus builder now rejects such cases. A query must retain at least two tokens
 after removing generic fix vocabulary (`bugs`, `handling`, `various`, …) and the
-repository's own name tokens. This dropped 2 of 49 email-manager cases and is the
+repository's own name tokens. This dropped 2 of 49 private-B cases and is the
 reason provider numbers here may differ from earlier runs.
 
 ### Providers excluded, with evidence

@@ -50,7 +50,7 @@ export function countCodeFiles(repo) {
 }
 
 // Tier must be measured at the revisions the cases are actually scored at, not at
-// HEAD. site-health reads 69 code files at HEAD and 537 at its median case revision,
+// HEAD. private-A reads 69 code files at HEAD and 537 at its median case revision,
 // because a monorepo was extracted out of it partway through its history — so it was
 // labelled `small` while most of its cases were scored against a `medium` tree. A
 // provider was then judged to have a capacity defect on the strength of the wrong

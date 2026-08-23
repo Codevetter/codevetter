@@ -15,7 +15,7 @@
 // 174 of 764 cases (22.8%) had at least one ground-truth file the generic-cli
 // vocabulary could not express, so those cases were unscoreable however good the
 // answer — and the rate ranged from 1.2% of fastify cases to 53.7% of
-// today-little-log's, which biases repository-to-repository comparison too.
+// private-D's, which biases repository-to-repository comparison too.
 //
 // The second is worse, because it is differential rather than uniform: an arm on
 // mcp-client could name a .json file and an arm on generic-cli could not, so the arms
