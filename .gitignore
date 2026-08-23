@@ -81,3 +81,6 @@ cache.bin
 # Local agent logs / scratch
 .agent-logs/
 .devin/
+
+# Cache written into the working tree by repo-map providers under benchmark
+.repomap.tags.cache.v1/
