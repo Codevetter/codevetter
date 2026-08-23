@@ -1,0 +1,148 @@
+{
+  "schema_version": "codevetter.context-retrieval-plan.v1",
+  "purpose": "Frozen experiment definition. Written before any tiered result exists so that the ranking cannot be selected after the fact. The plan_hash below appears in every report; if this file changes, the hash changes, and git history shows whether it changed before or after the run.",
+  "registered_on": "2026-08-23",
+  "primary_metric": "mean_recall_at_N_tokens",
+  "primary_metric_rationale": "Recall alone let a query-blind churn ranker appear to beat shipping products, because it ignored what the answer cost to deliver. The metric must charge for the payload the consumer actually pays for.",
+  "budgets": [
+    1000,
+    4000,
+    16000
+  ],
+  "budgets_rationale": "Three budgets, reported always together and never collapsed. On the small tier the leader changes at every one of them, so a single headline number would be a choice about budget disguised as a finding about quality.",
+  "no_overall_winner": true,
+  "no_overall_winner_rationale": "No cross-tier or cross-budget aggregate is computed or published. Different providers win different tiers, which is the result, not a problem to be averaged away.",
+  "tiers": [
+    {
+      "id": "small",
+      "max_code_files": 250,
+      "protocol": "per-case-index"
+    },
+    {
+      "id": "medium",
+      "max_code_files": 1000,
+      "protocol": "per-case-index"
+    },
+    {
+      "id": "large",
+      "max_code_files": null,
+      "protocol": "fixed-index"
+    }
+  ],
+  "tier_assignment": "Mechanical, by counting tracked files matching the code-extension set at the pinned revision. Repositories are measured and then assigned; they are never selected to fill a tier.",
+  "protocol_by_tier": {
+    "per-case-index": "Each case gets a fresh worktree at its base revision and every provider re-indexes it. Highest fidelity, does not survive scale.",
+    "fixed-index": "Index once at a pinned revision R; draw cases only from fixes that landed strictly after R, verified with git merge-base --is-ancestor. The index therefore never contains the fix. Cost: incremental-reindex behaviour cannot be credited in this tier, which is recorded rather than hidden."
+  },
+  "repositories": {
+    "assignment_method": "Mechanical: countCodeFiles() at the pinned head, then classify(). Repositories were cloned as a candidate pool and measured; none was selected to fill a tier.",
+    "measured_on": "2026-08-23",
+    "small": [
+      {
+        "id": "express",
+        "code_files": 141,
+        "language": "javascript",
+        "pinned_head": "a3714473feb3"
+      },
+      {
+        "id": "gin",
+        "code_files": 99,
+        "language": "go",
+        "pinned_head": "dcaa4296d111"
+      },
+      {
+        "id": "got",
+        "code_files": 85,
+        "language": "javascript",
+        "pinned_head": "e3924aa1e53a"
+      },
+      {
+        "id": "flask",
+        "code_files": 83,
+        "language": "python",
+        "pinned_head": "d318b6834711"
+      }
+    ],
+    "medium": [
+      {
+        "id": "hugo",
+        "code_files": 932,
+        "language": "go",
+        "pinned_head": "7b5199fdeff7"
+      },
+      {
+        "id": "fastify",
+        "code_files": 300,
+        "language": "javascript",
+        "pinned_head": "83e69762aff0"
+      }
+    ],
+    "large": [
+      {
+        "id": "django",
+        "code_files": 3040,
+        "language": "python",
+        "pinned_head": "03988c5a5ba2"
+      },
+      {
+        "id": "nest",
+        "code_files": 1828,
+        "language": "typescript",
+        "pinned_head": "55425779a1e2"
+      },
+      {
+        "id": "fastapi",
+        "code_files": 1142,
+        "language": "python",
+        "pinned_head": "c3f316b7e814"
+      }
+    ],
+    "known_imbalance": "No large Go repository yet, so a large-tier result specific to Go would be unsupported. Python and TypeScript are both represented at large (django, fastapi, nest), and every tier now spans at least two languages, so tier effects are no longer confounded with a single language.",
+    "note": "nest measured 1,828 files only after its clone completed; an earlier measurement read 0 and would have mis-tiered it as small. Sizes are taken from a completed checkout for exactly this reason."
+  },
+  "cases_per_repository": {
+    "per-case-index": 76,
+    "fixed-index": 30
+  },
+  "controls": [
+    "random-files",
+    "random-code-files",
+    "churn-ranked"
+  ],
+  "controls_rationale": "churn-ranked never reads the query. If it scores near the leaders the metric is broken, and nothing else in the harness detects that. Two random draws are required, not one: random-files samples every tracked file, which is the honest null because ground truth is not restricted to source code, and random-code-files samples source files only, which is strictly harder to beat. Widening the pool to all tracked files weakened the floor by 1.18x on gin and 2.36x on flask, and a weaker floor flatters every provider and makes the controls-lose gate easier to pass, so the conservative draw is mandatory alongside it. A report missing any control is refused.",
+  "providers": "Every candidate in candidates.json that installs and exposes a non-LLM ranked-result surface. LLM-mediated surfaces are recorded separately because they measure a model plus an index, not retrieval.",
+  "outcome_taxonomy": [
+    "answered",
+    "did-not-install",
+    "did-not-index",
+    "refused-own-capacity-limit",
+    "indexed-but-returned-nothing",
+    "unavailable-at-query-time"
+  ],
+  "outcome_rationale": "More candidates in this category fail to start than score badly. Collapsing did-not-install into a low score is the largest single distortion available here.",
+  "reliability_gates": [
+    "controls present in every run, else the report is refused",
+    "a control scoring above half the leader fails the run",
+    "corpus rebuild must hash-match its pinned artifact",
+    "zero, all-unavailable and near-perfect scores are flagged for raw-payload inspection before publication",
+    "a deterministic sample of mid-range cases is nominated for hand-verification each run",
+    "coverage (tiers and repository count) travels with every published row"
+  ],
+  "known_limitations": [
+    "Ground truth is the files a fix touched, a proxy for the files someone had to find.",
+    "Queries are commit subjects, written with the fix already in hand, so they are friendlier than real prompts.",
+    "One-shot single query; real agents iterate, which penalises precise-narrow providers and flatters broad ones.",
+    "Adapter integration effort is not uniform across providers and effort correlates with score; per-provider effort is disclosed in candidates.json.",
+    "Latency figures reflect harness process-spawning choices as much as provider speed."
+  ],
+  "path_extraction": "A provider's answer is read out of its output by shape, not by file type: a token is a candidate if it carries a path separator or an extension, or is one of a closed set of conventional extensionless root filenames, and it counts only if it resolves to a regular file in the worktree at the case's base revision. No list of admissible extensions exists anywhere in the harness, because every such list was narrower than the ground truth it was scored against.",
+  "amendments": [
+    {
+      "date": "2026-08-23",
+      "what": "Added random-code-files as a required control; replaced per-adapter extension allowlists with one shape-based path rule; added refused-own-capacity-limit to the outcome taxonomy.",
+      "why": "Four harness defects were found after the first tiered runs and before any corrected number was published. Path extraction used four different extension allowlists, one per adapter, none of which covered the file types 22.8% of cases were scored against; a `return` inside a `finally` block discarded every fixed-index result, so the large tier recorded nothing; and one provider spec was declared twice in the same object literal and ran under settings other than the documented ones.",
+      "effect_on_results": "Every provider number produced before this date is void and is retained only as a record of the methodology. The small tier was re-measured from scratch under the amended plan.",
+      "direction_of_bias": "Two of the three changes make the benchmark harder to pass, not easier: the extra control raises the floor a provider must clear, and the outcome addition moves capacity refusals out of the answered pool. The shape-based path rule raises measured recall for any provider whose answers were config or script files, which flatters providers relative to the void numbers \u2014 recorded here so the direction is not discovered later."
+    }
+  ]
+}
