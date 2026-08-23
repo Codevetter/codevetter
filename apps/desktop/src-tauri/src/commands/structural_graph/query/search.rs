@@ -26,37 +26,39 @@ pub fn search_page(
         });
     }
 
-    let tokens = lexical_tokens(&needle);
     let index = query_index(snapshot);
-    let mut candidate_indices = HashSet::new();
-    if let Some(exact) = index.exact.get(&needle) {
-        candidate_indices.extend(exact.iter().copied());
-    }
-    for token in &tokens {
-        if let Some(postings) = index.tokens.get(token) {
-            candidate_indices.extend(postings.iter().copied());
+    // Terms come from the raw query, not the lowercased needle: camelCase word
+    // boundaries are gone once the text is normalized.
+    let lexical = lexical_query(query, &index);
+    let candidates = {
+        let ordinals = candidate_ordinals(&index, &needle, &lexical);
+        if ordinals.is_empty() {
+            (0..snapshot.nodes.len()).collect::<Vec<_>>()
+        } else {
+            ordinals
         }
-    }
-    let candidates = if candidate_indices.is_empty() {
-        (0..snapshot.nodes.len()).collect::<Vec<_>>()
-    } else {
-        let mut candidates = candidate_indices.into_iter().collect::<Vec<_>>();
-        candidates.sort_unstable();
-        candidates
     };
     let mut hits = candidates
         .into_iter()
         .filter_map(|index| snapshot.nodes.get(index))
         .filter(|node| node_matches_filter(node, filter))
         .filter_map(|node| {
-            rank_node(node, &needle)
-                .or_else(|| rank_question_tokens(node, &tokens))
-                .map(|(score, matched_by)| (node, score, matched_by))
+            // A whole-value match picks the tier; the lexical relevance of the
+            // same node then orders it inside that tier.
+            match rank_node(node, &needle) {
+                Some((tier, matched_by)) => Some((
+                    node,
+                    tiered_score(tier, lexical_relevance(node, &lexical)),
+                    matched_by,
+                )),
+                None => rank_question_tokens(node, &lexical)
+                    .map(|(score, matched_by)| (node, score, matched_by)),
+            }
         })
         .collect::<Vec<_>>();
     hits.sort_by(|(left_node, left_score, _), (right_node, right_score, _)| {
-        left_score
-            .cmp(right_score)
+        right_score
+            .cmp(left_score)
             .then_with(|| left_node.label.cmp(&right_node.label))
             .then_with(|| left_node.id.cmp(&right_node.id))
     });
@@ -86,6 +88,7 @@ pub fn search_page(
         next_cursor: (next_offset < total).then(|| next_offset.to_string()),
         context: query_context(snapshot),
     };
+    trim_search_previews(&mut result);
     enforce_search_bytes(&mut result, offset, total);
     Ok(result)
 }
@@ -105,11 +108,15 @@ pub fn resolve_node<'a>(
         .get(&needle)
         .cloned()
         .unwrap_or_else(|| (0..snapshot.nodes.len()).collect());
-    for exact_score in 0..=3 {
+    // Only the four whole-value tiers resolve a reference; a substring match is
+    // too weak to name a node.
+    for tier in ["id", "qualified_name", "path", "label"] {
         let matches = candidates
             .iter()
             .filter_map(|index| snapshot.nodes.get(*index))
-            .filter(|node| rank_node(node, &needle).is_some_and(|(score, _)| score == exact_score))
+            .filter(|node| {
+                rank_node(node, &needle).is_some_and(|(_, matched_by)| matched_by == tier)
+            })
             .collect::<Vec<_>>();
         match matches.len() {
             0 => continue,

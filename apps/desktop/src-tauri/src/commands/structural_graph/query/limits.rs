@@ -59,6 +59,21 @@ pub(super) fn enforce_projection_bytes(
     });
 }
 
+/// Drops the source preview from hits past the first default page.
+///
+/// A search result is a ranked list of locations; every hit keeps its path and
+/// line range, so the answer to "where is this" is unchanged. What a preview
+/// buys is not having to open the file, and that only pays off for hits someone
+/// actually reads. A caller asking for several hundred nodes used to be billed
+/// for several hundred code excerpts to get a ranked list — on a 400-node search
+/// that is tens of kilobytes of text nobody looks at. Callers who ask for a
+/// default page or less are unaffected.
+pub(super) fn trim_search_previews(result: &mut GraphSearchResult) {
+    for hit in result.hits.iter_mut().skip(DEFAULT_LIMIT) {
+        strip_node_excerpts(&mut hit.node);
+    }
+}
+
 pub(super) fn enforce_search_bytes(result: &mut GraphSearchResult, offset: usize, total: usize) {
     if serialized_bytes(result) <= MAX_RESPONSE_BYTES {
         return;

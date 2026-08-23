@@ -27,6 +27,7 @@ pub(super) fn extract_metadata_signals(
     }
 
     let lines = source.lines().collect::<Vec<_>>();
+    let mut config_entries = 0usize;
     for (index, line) in lines.iter().enumerate() {
         let trimmed = line.trim();
         let lower = trimmed.to_ascii_lowercase();
@@ -157,6 +158,28 @@ pub(super) fn extract_metadata_signals(
                 nodes,
                 edges,
             );
+        }
+
+        if is_structured_config_path(&lower_path) && !is_lockfile_path(&lower_path) {
+            for label in config_entry_labels(trimmed) {
+                if config_entries >= MAX_CONFIG_ENTRIES_PER_FILE {
+                    break;
+                }
+                config_entries += 1;
+                push_metadata_signal(
+                    path,
+                    source,
+                    file_id,
+                    language,
+                    line_number,
+                    "config_entry",
+                    &label,
+                    "declares",
+                    "configuration entry",
+                    nodes,
+                    edges,
+                );
+            }
         }
 
         if lower_path.ends_with(".md") || lower_path.ends_with(".mdx") {
@@ -357,6 +380,171 @@ pub(super) fn attach_metadata_to_syntax_owners(
             ));
         }
     }
+}
+
+/// A structured-configuration file contributed nothing searchable before this:
+/// its only node was the file itself, labelled with its own path. A query about
+/// what a config file *says* — a project id, a deploy target, a feature flag —
+/// therefore could not retrieve the file at any budget, which read as a ranking
+/// failure and was really a coverage gap. Each key/value entry now becomes one
+/// node anchored at its line.
+const MAX_CONFIG_ENTRIES_PER_FILE: usize = 400;
+
+fn is_structured_config_path(lower_path: &str) -> bool {
+    let name = lower_path.rsplit('/').next().unwrap_or(lower_path);
+    [".json", ".jsonc", ".yaml", ".yml", ".toml", ".ini"]
+        .iter()
+        .any(|extension| lower_path.ends_with(extension))
+        || matches!(name, ".gitmodules" | ".editorconfig" | ".npmrc")
+}
+
+/// A lockfile is a resolver's output, not authored configuration: thousands of
+/// dependency entries nobody asks a structural question about. One `pnpm-lock`
+/// alone contributed 213 entries on a measured repository.
+fn is_lockfile_path(lower_path: &str) -> bool {
+    let name = lower_path.rsplit('/').next().unwrap_or(lower_path);
+    matches!(
+        name,
+        "package-lock.json"
+            | "pnpm-lock.yaml"
+            | "yarn.lock"
+            | "npm-shrinkwrap.json"
+            | "cargo.lock"
+            | "poetry.lock"
+            | "composer.lock"
+            | "gemfile.lock"
+            | "bun.lock"
+            | "bun.lockb"
+    )
+}
+
+/// Every key/value entry on one line, as `key: value` (or a bare `key` when the
+/// value is structural or uninteresting).
+///
+/// A line can carry several entries — `{ "id": "x", "deployKind": "worker" }` —
+/// so the line is split on commas first. Fragments that are not a single
+/// key/value entry yield nothing, which is how prose, punctuation-only lines and
+/// continuation values are left alone.
+fn config_entry_labels(trimmed: &str) -> Vec<String> {
+    trimmed
+        .split(',')
+        .filter_map(config_entry_label)
+        .collect()
+}
+
+/// `"deployKind": "worker"` -> `deployKind: worker`; `tier: parked` -> the same
+/// shape; `name = "x"` -> `name: x`; an object or array opener yields the bare
+/// key.
+fn config_entry_label(fragment: &str) -> Option<String> {
+    // Tested before the brackets are stripped, since `[section]` is the bracket.
+    if let Some(section) = ini_section_label(fragment.trim()) {
+        return Some(section);
+    }
+    let line = fragment.trim().trim_start_matches(['{', '[', '-']).trim();
+    let (key, rest) = split_config_key(line)?;
+    let value = rest
+        .trim()
+        .trim_start_matches(':')
+        .trim()
+        .trim_end_matches([',', '}', ']'])
+        .trim()
+        .trim_matches(['"', '\'', '`'])
+        .trim();
+    // Structural punctuation only announces that the value continues elsewhere.
+    let structural = value.is_empty()
+        || value.len() > 120
+        || value.contains(['{', '}', '[', ']'])
+        || matches!(value, "|" | ">");
+    let value = if structural || !value_is_distinctive(value) {
+        ""
+    } else {
+        value
+    };
+    Some(if value.is_empty() {
+        key.to_string()
+    } else {
+        format!("{key}: {value}")
+    })
+}
+
+/// `[submodule "engines/reel-maker"]` -> `submodule: engines/reel-maker`;
+/// `[tool.ruff]` -> `tool.ruff`.
+///
+/// A section header names what the entries under it configure, and it is often
+/// the only place the noun a question uses appears at all — a `.gitmodules` file
+/// says "submodule" nowhere else.
+fn ini_section_label(line: &str) -> Option<String> {
+    let inner = line.strip_prefix('[')?.strip_suffix(']')?.trim();
+    if inner.is_empty() || inner.len() > 160 {
+        return None;
+    }
+    let (name, rest) = match inner.split_once(char::is_whitespace) {
+        Some((name, rest)) => (name.trim(), rest.trim().trim_matches(['"', '\'', '`']).trim()),
+        None => (inner, ""),
+    };
+    if name.is_empty() {
+        return None;
+    }
+    Some(if rest.is_empty() {
+        name.to_string()
+    } else {
+        format!("{name}: {rest}")
+    })
+}
+
+/// Whether a config value is the kind of thing a question is ever asked about.
+///
+/// Names are: `"cfProject": "tinygpt"`, `"deployKind": "worker"`. Flags,
+/// counts, versions, dates and hashes are not — and folding them into a
+/// key-only node collapses the hundreds of `"deployed": true` lines in a large
+/// registry onto one deduplicated node instead of one node per line. Without
+/// this, config entries cost roughly a fifth of a snapshot on a
+/// configuration-heavy repository and pushed it back over the import ceiling.
+fn value_is_distinctive(value: &str) -> bool {
+    if matches!(
+        value.to_ascii_lowercase().as_str(),
+        "true" | "false" | "null" | "nil" | "none" | "yes" | "no" | "on" | "off"
+    ) {
+        return false;
+    }
+    let mut letters = 0usize;
+    let mut digits = 0usize;
+    for character in value.chars() {
+        if character.is_ascii_digit() {
+            digits += 1;
+        } else if character.is_alphabetic() {
+            letters += 1;
+        }
+    }
+    // Versions (`1.2.3`), dates (`2026-08-22`), counts and hex digests are all
+    // digit-dominated; a name is not.
+    letters > digits && letters >= 2
+}
+
+/// Splits a leading quoted or bare key from its separator and remainder.
+fn split_config_key(line: &str) -> Option<(&str, &str)> {
+    let (key, rest) = match line.strip_prefix('"') {
+        Some(quoted) => {
+            let end = quoted.find('"')?;
+            (&quoted[..end], &quoted[end + 1..])
+        }
+        None => {
+            let end = line.find([':', '='])?;
+            (line[..end].trim(), &line[end..])
+        }
+    };
+    let rest = rest.trim_start();
+    if !rest.starts_with(':') && !rest.starts_with('=') {
+        return None;
+    }
+    let key = key.trim();
+    let plausible = !key.is_empty()
+        && key.len() <= 80
+        && key
+            .chars()
+            .all(|character| character.is_alphanumeric() || matches!(character, '_' | '-' | '.' | '$' | '/'))
+        && key.chars().any(char::is_alphanumeric);
+    plausible.then_some((key, rest.get(1..).unwrap_or_default()))
 }
 
 #[allow(clippy::too_many_arguments)]
