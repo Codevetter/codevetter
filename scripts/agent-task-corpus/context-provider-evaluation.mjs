@@ -11,6 +11,26 @@ import {
 export const CONTEXT_ATTEMPT_SCHEMA_VERSION = 'codevetter.context-provider-attempt.v1';
 export const CONTEXT_FAMILY_ALPHA = 0.05;
 
+const PAIRED_METRIC_METADATA = Object.freeze({
+  cached_input_tokens: { source: 'adapter', unit: 'tokens' },
+  cost_usd: { source: 'adapter', unit: 'usd' },
+  cpu_time_ms: { source: 'runner-sampled', unit: 'milliseconds' },
+  elapsed_ms: { source: 'runner', unit: 'milliseconds' },
+  files_inspected: { source: 'adapter', unit: 'count' },
+  files_modified: { source: 'adapter', unit: 'count' },
+  input_tokens: { source: 'adapter', unit: 'tokens' },
+  model_elapsed_ms: { source: 'adapter', unit: 'milliseconds' },
+  output_tokens: { source: 'adapter', unit: 'tokens' },
+  peak_rss_bytes: { source: 'runner-sampled', unit: 'bytes' },
+  reasoning_tokens: { source: 'adapter', unit: 'tokens' },
+  run_elapsed_ms: { source: 'runner', unit: 'milliseconds' },
+  tool_calls: { source: 'adapter', unit: 'count' },
+  tool_call_mean_ms: { source: 'derived-adapter', unit: 'milliseconds' },
+  tool_calls_total: { source: 'adapter', unit: 'count' },
+  tool_elapsed_ms: { source: 'adapter', unit: 'milliseconds' },
+  tool_result_tokens: { source: 'adapter', unit: 'tokens' },
+});
+
 const ID = /^[a-z0-9][a-z0-9._-]{0,199}$/;
 const SNAPSHOT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/;
 const SHA256 = /^[a-f0-9]{64}$/;
@@ -497,6 +517,7 @@ function comparisonProvider(row, adjustedP) {
       .filter(([, value]) => value.paired_count > 0)
       .map(([name]) => name)
       .sort(),
+    paired_metrics: pairedMetrics(ab.diagnostics),
     raw_p_value: rawP,
     adjusted_p_value: adjustedP,
     pairwise_qualified: pairwiseQualified,
@@ -506,6 +527,27 @@ function comparisonProvider(row, adjustedP) {
       adjustedP <= CONTEXT_FAMILY_ALPHA &&
       ab.success_rate_delta > 0,
   };
+}
+
+function pairedMetrics(diagnostics) {
+  return Object.entries(PAIRED_METRIC_METADATA)
+    .flatMap(([metric, metadata]) => {
+      const value = diagnostics[metric];
+      if (!value || value.paired_count === 0) return [];
+      return [
+        {
+          metric,
+          source: metadata.source,
+          unit: metadata.unit,
+          paired_count: value.paired_count,
+          total_pairs: value.total_pairs ?? value.paired_count,
+          control_mean: value.control ?? null,
+          treatment_mean: value.treatment ?? null,
+          mean_delta: value.delta ?? null,
+        },
+      ];
+    })
+    .sort((left, right) => left.metric.localeCompare(right.metric));
 }
 
 function comparisonStatus(plan, providers, missingArms) {
@@ -588,6 +630,7 @@ function markdownProviderEvidence(provider) {
     `- Tools: ${provider.allowed_tools.join(', ') || 'none'}`,
     `- A/A noise: ${noiseSummary(provider.noise)}`,
     `- Diagnostics: ${provider.diagnostics_available.join(', ') || 'unavailable'}`,
+    `- Paired efficiency: ${pairedMetricSummary(provider.paired_metrics)}`,
     `- Pairwise bundle: \`${provider.pairwise_bundle.path}\`; score: \`${provider.pairwise_score.path}\``,
     '',
   ];
@@ -599,8 +642,30 @@ function htmlProviderEvidence(provider) {
     .map((snapshot) => `${snapshot.task_id}=${snapshot.snapshot_id}`)
     .join('\n');
   const outcome = `${provider.outcomes.control_successes} → ${provider.outcomes.treatment_successes}\n${signed(provider.outcomes.success_rate_delta)} · Holm ${decimal(provider.adjusted_p_value)}`;
-  const evidence = `snapshots:\n${snapshots}\ntools: ${provider.allowed_tools.join(', ') || 'none'}\nA/A noise: ${noiseSummary(provider.noise)}\ndiagnostics: ${provider.diagnostics_available.join(', ') || 'unavailable'}`;
+  const evidence = `snapshots:\n${snapshots}\ntools: ${provider.allowed_tools.join(', ') || 'none'}\nA/A noise: ${noiseSummary(provider.noise)}\ndiagnostics: ${provider.diagnostics_available.join(', ') || 'unavailable'}\npaired efficiency: ${pairedMetricSummary(provider.paired_metrics)}`;
   return `<tr><td><code>${escapeHtml(identity)}</code></td><td>${provider.complete_attempts}/${provider.scheduled_attempts}</td><td><code>${escapeHtml(outcome)}</code></td><td><code>${escapeHtml(evidence)}</code></td><td>${provider.family_qualified ? 'yes' : 'no'}</td></tr>`;
+}
+
+function pairedMetricSummary(metrics) {
+  if (metrics.length === 0) return 'unavailable';
+  return metrics
+    .map(
+      (row) =>
+        `${row.metric} ${quantity(row.control_mean)} → ${quantity(row.treatment_mean)} (${signedQuantity(row.mean_delta)} ${row.unit}; ${row.source})`
+    )
+    .join('; ');
+}
+
+function quantity(value) {
+  if (value === null) return 'n/a';
+  return Number.isInteger(value)
+    ? String(value)
+    : value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function signedQuantity(value) {
+  if (value === null) return 'unavailable';
+  return `${value >= 0 ? '+' : ''}${quantity(value)}`;
 }
 
 function noiseSummary(noise) {

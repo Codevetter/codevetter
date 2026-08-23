@@ -39,6 +39,7 @@
           "outcomes",
           "noise",
           "diagnostics_available",
+          "paired_metrics",
           "raw_p_value",
           "adjusted_p_value",
           "pairwise_qualified",
@@ -132,6 +133,56 @@
             "maxItems": 20,
             "uniqueItems": true,
             "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+          },
+          "paired_metrics": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "metric",
+                "source",
+                "unit",
+                "paired_count",
+                "total_pairs",
+                "control_mean",
+                "treatment_mean",
+                "mean_delta"
+              ],
+              "properties": {
+                "metric": {
+                  "enum": [
+                    "cached_input_tokens",
+                    "cost_usd",
+                    "cpu_time_ms",
+                    "elapsed_ms",
+                    "files_inspected",
+                    "files_modified",
+                    "input_tokens",
+                    "model_elapsed_ms",
+                    "output_tokens",
+                    "peak_rss_bytes",
+                    "reasoning_tokens",
+                    "run_elapsed_ms",
+                    "tool_call_mean_ms",
+                    "tool_calls",
+                    "tool_calls_total",
+                    "tool_elapsed_ms",
+                    "tool_result_tokens"
+                  ]
+                },
+                "source": {
+                  "enum": ["adapter", "derived-adapter", "runner", "runner-sampled"]
+                },
+                "unit": { "enum": ["bytes", "count", "milliseconds", "tokens", "usd"] },
+                "paired_count": { "type": "integer", "minimum": 1, "maximum": 5000 },
+                "total_pairs": { "type": "integer", "minimum": 1, "maximum": 5000 },
+                "control_mean": { "type": ["number", "null"], "minimum": 0 },
+                "treatment_mean": { "type": ["number", "null"], "minimum": 0 },
+                "mean_delta": { "type": ["number", "null"] }
+              }
+            }
           },
           "raw_p_value": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
           "adjusted_p_value": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },

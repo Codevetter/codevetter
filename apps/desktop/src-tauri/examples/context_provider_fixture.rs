@@ -8,7 +8,10 @@ use codevetter_desktop::commands::structural_graph::{
     extract::BundledTreeSitterEngine,
     interchange::{export_json, import_codevetter_json},
     query::{self, GraphQueryFilter},
-    types::{StructuralGraphBuildInput, StructuralGraphCancellation, StructuralGraphEngine},
+    types::{
+        stable_graph_id, StructuralGraphBuildInput, StructuralGraphCancellation,
+        StructuralGraphEngine,
+    },
 };
 use serde_json::json;
 use std::{env, fs, path::PathBuf};
@@ -47,10 +50,11 @@ fn build_snapshot(repo: &str, revision: &str, output: &str) -> Result<(), String
         PathBuf::from(repo),
         Some(validate_revision(revision)?.to_string()),
     );
-    let snapshot = BundledTreeSitterEngine
+    let mut snapshot = BundledTreeSitterEngine
         .build(&input, &StructuralGraphCancellation::default(), &|_| {})
         .map_err(|error| error.to_string())?;
-    let document = export_json(&snapshot)?;
+    canonicalize_experiment_snapshot(&mut snapshot, revision)?;
+    let document = canonical_experiment_export(export_json(&snapshot)?)?;
     fs::write(output, document).map_err(|error| format!("write snapshot: {error}"))?;
     println!(
         "{}",
@@ -64,6 +68,34 @@ fn build_snapshot(repo: &str, revision: &str, output: &str) -> Result<(), String
         })
     );
     Ok(())
+}
+
+fn canonical_experiment_export(document: String) -> Result<String, String> {
+    let mut value: serde_json::Value = serde_json::from_str(&document)
+        .map_err(|error| format!("parse snapshot export: {error}"))?;
+    value["exported_at"] = json!("1970-01-01T00:00:00Z");
+    serde_json::to_string(&value).map_err(|error| format!("serialize snapshot export: {error}"))
+}
+
+fn canonicalize_experiment_snapshot(
+    snapshot: &mut codevetter_desktop::commands::structural_graph::types::StructuralGraphSnapshot,
+    revision: &str,
+) -> Result<(), String> {
+    let cursor = snapshot
+        .cursor
+        .as_deref()
+        .ok_or_else(|| "experiment snapshot omitted its content cursor".to_string())?;
+    snapshot.repo_path = "context-provider-fixture".to_string();
+    snapshot.created_at = "1970-01-01T00:00:00Z".to_string();
+    snapshot.id = experiment_snapshot_id(revision, &snapshot.engine.version, cursor);
+    Ok(())
+}
+
+fn experiment_snapshot_id(revision: &str, engine_version: &str, cursor: &str) -> String {
+    stable_graph_id(
+        "snapshot",
+        &format!("context-provider-fixture\0{revision}\0{engine_version}\0{cursor}"),
+    )
 }
 
 fn query_snapshot(snapshot: &str, text: &str, limit: usize) -> Result<(), String> {
@@ -93,7 +125,7 @@ fn validate_revision(value: &str) -> Result<&str, String> {
 
 #[cfg(test)]
 mod tests {
-    use super::validate_revision;
+    use super::{experiment_snapshot_id, validate_revision};
 
     #[test]
     fn revision_identity_is_strict() {
@@ -101,5 +133,15 @@ mod tests {
         assert!(validate_revision(&"b".repeat(64)).is_ok());
         assert!(validate_revision("HEAD").is_err());
         assert!(validate_revision(&"A".repeat(40)).is_err());
+    }
+
+    #[test]
+    fn experiment_snapshot_identity_is_content_bound_and_path_independent() {
+        let first = experiment_snapshot_id(&"a".repeat(40), "engine-v1", "cursor:one");
+        let rebuilt = experiment_snapshot_id(&"a".repeat(40), "engine-v1", "cursor:one");
+        let changed = experiment_snapshot_id(&"a".repeat(40), "engine-v1", "cursor:two");
+
+        assert_eq!(first, rebuilt);
+        assert_ne!(first, changed);
     }
 }

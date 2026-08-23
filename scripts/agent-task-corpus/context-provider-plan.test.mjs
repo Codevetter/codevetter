@@ -356,7 +356,7 @@ test('excluded provider probes cannot enter an experiment cohort', async () => {
   );
 });
 
-test('aggregate comparison schema is closed before later-stage aggregation is implemented', () => {
+test('aggregate comparison schema is closed', () => {
   const comparison = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['context-provider-comparison'],
     comparison_id: 'fixture-comparison',
@@ -401,6 +401,7 @@ test('aggregate comparison schema is closed before later-stage aggregation is im
           discordance_rate: 0.125,
         },
         diagnostics_available: [],
+        paired_metrics: [],
         raw_p_value: null,
         adjusted_p_value: null,
         pairwise_qualified: false,

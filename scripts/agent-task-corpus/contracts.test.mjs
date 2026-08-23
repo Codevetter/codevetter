@@ -38,6 +38,7 @@ test('all public contract schemas are closed and parseable', async () => {
     'run-receipt',
     'run-plan',
     'run-receipt-v2',
+    'run-telemetry',
     'task-manifest',
   ];
   for (const name of names) {
@@ -246,6 +247,33 @@ test('accepts representative documents for all qualification and runner contract
       cleanup: { status: 'complete' },
       limitations: [],
     },
+    'run-telemetry': {
+      schema_version: CONTRACT_SCHEMA_VERSIONS['run-telemetry'],
+      clock: 'monotonic',
+      elapsed_ms: 42,
+      events: [
+        {
+          sequence: 1,
+          name: 'agent_execute',
+          start_offset_ms: 2,
+          duration_ms: 40,
+          outcome: 'complete',
+        },
+      ],
+      resources: {
+        scope: 'agent-process-tree',
+        sampler: 'unavailable',
+        sample_count: 0,
+        peak_rss_bytes: null,
+        cpu_time_ms: null,
+        io_read_bytes: null,
+        io_write_bytes: null,
+        network_rx_bytes: null,
+        network_tx_bytes: null,
+        thermal_state: null,
+        limitations: ['No process sample was available.'],
+      },
+    },
     'task-manifest': {
       schema_version: CONTRACT_SCHEMA_VERSIONS['task-manifest'],
       task_id: 'preserve-explicit-false',
@@ -301,6 +329,39 @@ test('rejects unknown fields, unsafe paths, bounds, duplicates, and false qualif
     }),
     ['$: at least one diagnostics observation is required']
   );
+
+  const invalidTelemetry = {
+    schema_version: CONTRACT_SCHEMA_VERSIONS['run-telemetry'],
+    clock: 'monotonic',
+    elapsed_ms: 10,
+    events: [
+      {
+        sequence: 2,
+        name: 'agent_execute',
+        start_offset_ms: 9,
+        duration_ms: 2,
+        outcome: 'complete',
+      },
+    ],
+    resources: {
+      scope: 'agent-process-tree',
+      sampler: 'unavailable',
+      sample_count: 1,
+      peak_rss_bytes: 1024,
+      cpu_time_ms: null,
+      io_read_bytes: null,
+      io_write_bytes: null,
+      network_rx_bytes: null,
+      network_tx_bytes: null,
+      thermal_state: null,
+      limitations: [],
+    },
+  };
+  assert.deepEqual(validateContract('run-telemetry', invalidTelemetry), [
+    '$.events[0].duration_ms: event exceeds total elapsed time',
+    '$.events[0].sequence: expected append-only sequence 1',
+    '$.resources: unavailable sampler cannot report sampled resource values',
+  ]);
 
   const adapter = {
     schema_version: CONTRACT_SCHEMA_VERSIONS['agent-adapter'],

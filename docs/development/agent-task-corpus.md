@@ -93,7 +93,8 @@ benchmarks/agent-tasks/
 │   ├── agent-adapter-v2.schema.json
 │   ├── run-plan.schema.json
 │   ├── run-receipt.schema.json
-│   └── run-receipt-v2.schema.json
+│   ├── run-receipt-v2.schema.json
+│   └── run-telemetry.schema.json
 └── sample/
     ├── adapters/
     │   ├── synthetic-false-fix.json
@@ -195,14 +196,26 @@ plan ID and invalidates the old approval. Free adapters declare zero pricing.
 
 The run receipt binds the plan, task, fixture, acceptance contract, adapter,
 hashed environment identity, lifecycle ordering, agent termination, redacted
-output identities, exact checks, regression count, and cleanup. Optional
-provider diagnostics remain absent unless the adapter declares a
+output identities, exact checks, regression count, and cleanup. New receipts
+also carry a closed telemetry document: append-only monotonic spans for
+workspace preparation, opaque adapter execution, hidden checks, and cleanup,
+plus sampled peak RSS and CPU time for the adapter process tree when the host
+supports `ps`. The runner owns this timing and sampling boundary. It records
+I/O, network, thermal state, and external provider daemons as unavailable
+rather than estimating them, and it does not claim per-tool timing for an
+opaque adapter process. Older v2 receipts without telemetry remain readable.
+
+Optional provider diagnostics remain absent unless the adapter declares a
 workspace-relative `diagnostics_path` and writes a bounded closed
 `codevetter.agent-task-diagnostics.v1` document after execution. The runner
 loads it after termination and before hidden checks, rejects missing, unsafe,
 malformed, secret-bearing, unknown, empty, or out-of-bounds declared evidence,
 consumes the sidecar before hidden checks inspect the workspace, and never
-fabricates token, cost, tool, or file counts. Diagnostics are activity metadata
+fabricates token, cost, tool, or file counts. The sidecar may report input,
+cached-input, output, reasoning, and tool-result tokens; total tool calls;
+aggregate tool/model elapsed time; cost; tool names; and inspected/modified
+files. Those values remain adapter-attributed, even when they are paired with
+runner-owned timing and resource evidence. Diagnostics are activity metadata
 only; executable checks remain authoritative.
 
 ## Receipt evaluation boundary
@@ -227,7 +240,11 @@ A/A context before writing output.
 
 Raw receipts are never rewritten. The separate derived score names the scorer
 version and source hash, bundle hash, corpus hash, combined ground-truth hash,
-projected-manifest hash, and sorted raw receipt identities. Re-running the
+projected-manifest hash, and sorted raw receipt identities. Paired reports keep
+outcome deltas separate from efficiency deltas. They expose mean control,
+treatment, and within-pair differences for every available metric, labelled as
+adapter, derived-adapter, runner, or runner-sampled evidence; there is no
+composite winner score. Re-running the
 command with the same inputs produces the same score without launching an
 agent, executing hidden checks, calling a provider, or making a network
 request. Diagnostics absent from raw receipts remain absent. Pre-check
@@ -274,9 +291,12 @@ not:
 
 Receipt evaluation is a separate read-only command and preserves the existing
 structural-context scorer as the only outcome and qualification authority. The
-repository-owned synthetic adapter and composition tests prove lifecycle and
-projection mechanics only; no real provider/model or paid adapter was run.
-Real provider evidence remains a later slice on issue #53.
+repository-owned synthetic adapter and composition tests prove lifecycle,
+monotonic trace, sampled-resource, projection, and paired-report mechanics
+only; no real provider/model or paid adapter was run. Process-tree sampling is
+not whole-machine energy or thermal measurement, and adapter-attributed token
+or call metrics are not independently reconstructed by the runner. Real
+provider evidence remains a later slice on issues #53 and #159.
 
 The owned corpus is intentionally compact and mostly single-file. The browser
 lane is DOM-independent and does not prove Chromium integration. Passing

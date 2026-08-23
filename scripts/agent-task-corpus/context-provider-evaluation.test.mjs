@@ -142,8 +142,20 @@ function evaluationScore({
       success_rate_delta: 0.75,
       regression_delta: 0,
       diagnostics: {
-        input_tokens: { paired_count: 8 },
-        output_tokens: { paired_count: 8 },
+        input_tokens: {
+          paired_count: 8,
+          total_pairs: 8,
+          control: 1000,
+          treatment: 700,
+          delta: -300,
+        },
+        output_tokens: {
+          paired_count: 8,
+          total_pairs: 8,
+          control: 200,
+          treatment: 180,
+          delta: -20,
+        },
         cost_usd: { paired_count: 0 },
         tool_calls: { paired_count: 8 },
         files_inspected: { paired_count: 8 },
@@ -373,10 +385,24 @@ test('aggregate comparison preserves identities, outcomes, diagnostics, and dete
     'output_tokens',
     'tool_calls',
   ]);
+  assert.deepEqual(
+    first.providers[0].paired_metrics.find((row) => row.metric === 'input_tokens'),
+    {
+      metric: 'input_tokens',
+      source: 'adapter',
+      unit: 'tokens',
+      paired_count: 8,
+      total_pairs: 8,
+      control_mean: 1000,
+      treatment_mean: 700,
+      mean_delta: -300,
+    }
+  );
   assert.equal(first.providers[0].raw_p_value, 0.03125);
   assert.equal(first.providers[0].adjusted_p_value, 0.03125);
   assert.match(renderContextProviderComparison(first, 'markdown'), /snapshot:accept-zero/);
   assert.match(renderContextProviderComparison(first, 'markdown'), /Feasibility evidence/);
+  assert.match(renderContextProviderComparison(first, 'markdown'), /input_tokens 1000 → 700/);
   assert.match(renderContextProviderComparison(first, 'html'), /snapshot:accept-zero/);
   assert.equal(
     renderContextProviderComparison(first, 'json'),

@@ -337,7 +337,22 @@ function validateRun(errors, run, index, tasks) {
     if (!isObject(run.diagnostics)) {
       errors.push(`${label}.diagnostics must be an object when present`);
     } else {
-      for (const field of ['input_tokens', 'output_tokens', 'elapsed_ms', 'cost_usd']) {
+      for (const field of [
+        'input_tokens',
+        'output_tokens',
+        'cached_input_tokens',
+        'reasoning_tokens',
+        'tool_result_tokens',
+        'tool_calls_total',
+        'tool_call_mean_ms',
+        'tool_elapsed_ms',
+        'model_elapsed_ms',
+        'elapsed_ms',
+        'run_elapsed_ms',
+        'peak_rss_bytes',
+        'cpu_time_ms',
+        'cost_usd',
+      ]) {
         if (run.diagnostics[field] !== undefined && run.diagnostics[field] !== null) {
           numberValue(errors, run.diagnostics[field], `${label}.diagnostics.${field}`);
         }
@@ -684,7 +699,17 @@ function summarizeAb(pairs) {
     'tool_calls',
     'input_tokens',
     'output_tokens',
+    'cached_input_tokens',
+    'reasoning_tokens',
+    'tool_result_tokens',
+    'tool_calls_total',
+    'tool_call_mean_ms',
+    'tool_elapsed_ms',
+    'model_elapsed_ms',
     'elapsed_ms',
+    'run_elapsed_ms',
+    'peak_rss_bytes',
+    'cpu_time_ms',
     'cost_usd',
   ]) {
     metrics[metric] = pairedDiagnostic(pairs, 'control', 'treatment', metric);

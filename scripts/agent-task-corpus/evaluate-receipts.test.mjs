@@ -157,6 +157,36 @@ function graph() {
   };
 }
 
+function telemetry(agentDuration, peakRssBytes, cpuTimeMs) {
+  return {
+    schema_version: CONTRACT_SCHEMA_VERSIONS['run-telemetry'],
+    clock: 'monotonic',
+    elapsed_ms: agentDuration + 20,
+    events: [
+      {
+        sequence: 1,
+        name: 'agent_execute',
+        start_offset_ms: 10,
+        duration_ms: agentDuration,
+        outcome: 'complete',
+      },
+    ],
+    resources: {
+      scope: 'agent-process-tree',
+      sampler: 'ps-process-tree-v1',
+      sample_count: 2,
+      peak_rss_bytes: peakRssBytes,
+      cpu_time_ms: cpuTimeMs,
+      io_read_bytes: null,
+      io_write_bytes: null,
+      network_rx_bytes: null,
+      network_tx_bytes: null,
+      thermal_state: null,
+      limitations: ['Synthetic resource evidence.'],
+    },
+  };
+}
+
 async function taskFileHash(root) {
   return sha256Bytes(await readFile(join(root, 'corpus/tasks/preserve-explicit-false/task.json')));
 }
@@ -233,6 +263,8 @@ test('projects available adapter diagnostics without changing outcome authority'
     value.diagnostics = {
       input_tokens: 120,
       output_tokens: 40,
+      tool_calls_total: 4,
+      tool_elapsed_ms: 30,
       cost_usd: 0.002,
       tool_calls: ['apply_patch', 'read_file'],
       files_inspected: ['TASK.md', 'transformer.mjs'],
@@ -250,6 +282,9 @@ test('projects available adapter diagnostics without changing outcome authority'
   assert.deepEqual(treatment.diagnostics, {
     input_tokens: 120,
     output_tokens: 40,
+    tool_calls_total: 4,
+    tool_call_mean_ms: 7.5,
+    tool_elapsed_ms: 30,
     cost_usd: 0.002,
     tool_calls: ['apply_patch', 'read_file'],
     files_inspected: ['TASK.md', 'transformer.mjs'],
@@ -257,6 +292,36 @@ test('projects available adapter diagnostics without changing outcome authority'
   });
   assert.equal(treatment.outcome.status, 'completed');
   assert.ok(treatment.outcome.checks.every((check) => check.status === 'pass'));
+});
+
+test('projects runner timing and sampled resources into paired diagnostics', async (t) => {
+  const context = await fixture(t);
+  await mutateReceipt(context, 'ab-control', (value) => {
+    value.telemetry = telemetry(100, 20_000, 80);
+  });
+  await mutateReceipt(context, 'ab-treatment', (value) => {
+    value.telemetry = telemetry(70, 12_000, 50);
+  });
+  const result = await evaluateReceiptBundle({
+    bundlePath: context.bundlePath,
+    root: context.root,
+  });
+
+  assert.deepEqual(result.score.scorecard.ab.diagnostics.elapsed_ms, {
+    paired_count: 1,
+    total_pairs: 1,
+    control: 100,
+    treatment: 70,
+    delta: -30,
+  });
+  assert.deepEqual(result.score.scorecard.ab.diagnostics.peak_rss_bytes, {
+    paired_count: 1,
+    total_pairs: 1,
+    control: 20_000,
+    treatment: 12_000,
+    delta: -8_000,
+  });
+  assert.equal(result.score.scorecard.ab.diagnostics.cpu_time_ms.delta, -30);
 });
 
 test('rejects receipt hash drift and immutable identity drift', async (t) => {

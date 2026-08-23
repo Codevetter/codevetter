@@ -6,7 +6,12 @@ import test from 'node:test';
 
 import { sha256Bytes } from './contracts.mjs';
 import { runAgentTaskCli } from './run-cli.mjs';
-import { executeAgentTask, planAgentTask, runAdapterProcess } from './run-task.mjs';
+import {
+  executeAgentTask,
+  planAgentTask,
+  runAdapterProcess,
+  sampleProcessTree,
+} from './run-task.mjs';
 
 const SAMPLE_ROOT = resolve('benchmarks/agent-tasks/sample');
 const ADAPTER_PATH = resolve('benchmarks/agent-tasks/sample/adapters/synthetic-false-fix.json');
@@ -45,6 +50,12 @@ function adapterDiagnostics(overrides = {}) {
     schema_version: 'codevetter.agent-task-diagnostics.v1',
     input_tokens: 120,
     output_tokens: 40,
+    cached_input_tokens: 80,
+    reasoning_tokens: 12,
+    tool_result_tokens: 30,
+    tool_calls_total: 4,
+    tool_elapsed_ms: 25,
+    model_elapsed_ms: 75,
     cost_usd: 0.002,
     tool_calls: ['apply_patch', 'read_file'],
     files_inspected: ['TASK.md', 'transformer.mjs'],
@@ -187,6 +198,79 @@ test('runs the immutable synthetic adapter before hidden checks and redacts outp
   assert.match(result.output.stdout, /FIXTURE_TOKEN=\[REDACTED\]/);
   assert.doesNotMatch(result.output.stdout, /synthetic-secret/);
   assert.doesNotMatch(JSON.stringify(result.receipt), /synthetic-secret|codevetter-agent-task-/);
+  assert.equal(result.receipt.telemetry.clock, 'monotonic');
+  assert.deepEqual(
+    result.receipt.telemetry.events.map((event) => event.name),
+    ['workspace_prepare', 'agent_execute', 'checks_execute', 'cleanup']
+  );
+  assert.deepEqual(
+    result.receipt.telemetry.events.map((event) => event.sequence),
+    [1, 2, 3, 4]
+  );
+});
+
+test('records runner-owned spans and bounded process-tree evidence', async () => {
+  const plan = await planAgentTask({
+    root: SAMPLE_ROOT,
+    taskId: TASK_ID,
+    adapterPath: ADAPTER_PATH,
+    availableEnvironmentNames: ['FIXTURE_TOKEN'],
+  });
+  let tick = 0;
+  const result = await executeAgentTask({
+    root: SAMPLE_ROOT,
+    taskId: TASK_ID,
+    adapterPath: ADAPTER_PATH,
+    environment: ENVIRONMENT,
+    approvePlanId: plan.plan_id,
+    now: () => (tick += 10),
+    runAdapter: async ({ onStarted }) => {
+      onStarted();
+      return {
+        status: 'exited',
+        exitCode: 0,
+        stdout: '',
+        stderr: '',
+        truncated: false,
+        resources: {
+          scope: 'agent-process-tree',
+          sampler: 'ps-process-tree-v1',
+          sample_count: 2,
+          peak_rss_bytes: 12_288,
+          cpu_time_ms: 20,
+          io_read_bytes: null,
+          io_write_bytes: null,
+          network_rx_bytes: null,
+          network_tx_bytes: null,
+          thermal_state: null,
+          limitations: ['synthetic process-tree sample'],
+        },
+      };
+    },
+    executeDriver: async ({ acceptanceSha256 }) => passingChecks(acceptanceSha256),
+    runIdFactory: () => 'run-telemetry-fixture',
+  });
+
+  assert.equal(result.receipt.telemetry.elapsed_ms, 90);
+  assert.deepEqual(result.receipt.telemetry.resources, {
+    scope: 'agent-process-tree',
+    sampler: 'ps-process-tree-v1',
+    sample_count: 2,
+    peak_rss_bytes: 12_288,
+    cpu_time_ms: 20,
+    io_read_bytes: null,
+    io_write_bytes: null,
+    network_rx_bytes: null,
+    network_tx_bytes: null,
+    thermal_state: null,
+    limitations: ['synthetic process-tree sample'],
+  });
+  for (const [index, event] of result.receipt.telemetry.events.entries()) {
+    const prior = result.receipt.telemetry.events[index - 1];
+    if (prior) {
+      assert.ok(event.start_offset_ms >= prior.start_offset_ms + prior.duration_ms);
+    }
+  }
 });
 
 test('captures declared bounded diagnostics before hidden checks', async (t) => {
@@ -235,6 +319,12 @@ test('captures declared bounded diagnostics before hidden checks', async (t) => 
   assert.deepEqual(result.receipt.diagnostics, {
     input_tokens: 120,
     output_tokens: 40,
+    cached_input_tokens: 80,
+    reasoning_tokens: 12,
+    tool_result_tokens: 30,
+    tool_calls_total: 4,
+    tool_elapsed_ms: 25,
+    model_elapsed_ms: 75,
     cost_usd: 0.002,
     tool_calls: ['apply_patch', 'read_file'],
     files_inspected: ['TASK.md', 'transformer.mjs'],
@@ -522,6 +612,41 @@ test('terminates a real adapter process on timeout and cancellation', async (t) 
   });
   assert.equal(cancelled.status, 'cancelled');
   assert.equal(sha256Bytes(Buffer.from(cancelled.stdout)), sha256Bytes(Buffer.alloc(0)));
+});
+
+test('samples adapter process-tree resources without adapter self-report', async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), 'codevetter-runner-resource-'));
+  t.after(() => rm(directory, { force: true, recursive: true }));
+  const script = join(directory, 'brief.mjs');
+  await writeFile(script, 'setTimeout(() => {}, 25);\n');
+  let samples = 0;
+  const result = await runAdapterProcess({
+    command: [process.execPath, script],
+    cwd: directory,
+    environment: {},
+    timeoutMs: 1_000,
+    resourceSampleIntervalMs: 5,
+    sampleResources: async () => {
+      samples += 1;
+      return { rssBytes: samples * 1024, cpuTimeMs: samples * 2 };
+    },
+  });
+
+  assert.equal(result.status, 'exited');
+  assert.ok(result.resources.sample_count >= 1);
+  assert.equal(result.resources.sampler, 'ps-process-tree-v1');
+  assert.equal(result.resources.peak_rss_bytes, samples * 1024);
+  assert.equal(result.resources.cpu_time_ms, samples * 2);
+});
+
+test('reads the host process tree with the runner sampler', async (t) => {
+  if (process.platform === 'win32') {
+    t.skip('ps process-tree sampling is unavailable on Windows');
+    return;
+  }
+  const sample = await sampleProcessTree(process.pid);
+  assert.ok(sample.rssBytes > 0);
+  assert.ok(sample.cpuTimeMs >= 0);
 });
 
 test('CLI plans first and executes only with the exact explicit approval', async (t) => {

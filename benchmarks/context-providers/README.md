@@ -140,6 +140,54 @@ passing. Preflights are not Stage 1 evidence. The runner enforces loopback model
 transport; explicit MLX/Hugging Face offline flags prevent the known metadata
 lookup but are not an operating-system network sandbox.
 
+## Agent-utility instrumentation — 2026-08-23
+
+The harness now has the evidence shape needed for a later agent-utility rerun.
+New v2 receipts contain runner-owned monotonic phase spans and sampled adapter
+process-tree RSS/CPU evidence. Adapter diagnostics can separately report token
+classes, total tool calls, and aggregate tool/model elapsed time. The evaluator
+projects both sources into paired control/treatment means and within-pair
+deltas, with provenance on every reported metric and no composite winner.
+
+This did not initially revise the Stage 1 result above: its immutable receipts
+predate the telemetry contract. It also does not measure whole-machine I/O,
+network, energy, thermal pressure, external provider daemons, or individual
+tool-call spans from an opaque adapter. Those remain explicit nulls or later
+adapter instrumentation work.
+
+### Telemetry rerun — 2026-08-23
+
+The owner approved `approval-42a47c8855e7a506b36eeee42977e5b2` for the
+fresh, unblocked feasibility plan `plan-526ba81c9a17468302596f3b3802d76b`.
+All 16 local attempts completed against the same cached Qwen3 4B snapshot. The
+result repeated Stage 1: control succeeded twice, treatment succeeded zero
+times, for a descriptive -25 percentage-point delta (`p = 0.5`). The evidence
+remains unqualified because the feasibility plan has no independent A/A arms.
+
+For the six pairs with complete adapter diagnostics, treatment used one
+`graph_query` and averaged 1,778 input tokens versus 431 for control. Across all
+eight pairs it averaged 3,708.625 ms versus 2,817.75 ms elapsed, 81.25 ms versus
+60 ms sampled adapter-process-tree CPU, and 99,112,960 bytes versus 68,435,968
+bytes sampled peak RSS. The external MLX model server, thermal state, energy,
+network, and whole-machine I/O were not measured.
+
+This rerun is not evidence that retrieval generally hurts agents. The fixed
+adapter supplies the complete small repository to both arms and adds graph
+evidence to treatment, so it tests incremental graph evidence rather than
+context replacement or iterative agent retrieval. Two treatment attempts also
+failed before diagnostics because the model produced no file change. A later
+retrieval-utility trial must let each arm acquire source through observable tool
+calls instead of preloading the same complete source bundle.
+
+The private ignored evidence is bound by these SHA-256 digests:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `attempts.json` | `77f9e08d14bec8d3b795577ea9f830e0bde320b43c750c5afccd625db9590466` |
+| `evaluation-bundle.json` | `6b86bb3578a8e846c769cb48ec9c2b4fc1abb24e1f42fddcf2007172b6887cc3` |
+| `evaluation-score.json` | `6d8bdd8b2dd80492d5a865ee17b677a5d82fa5ce0ac3f17e0d11f349c6de68de` |
+| `comparison.json` | `1c5600928eef08c4b5af6d39866d651337a9ac4ee4ea59bb55adf11fb2df4e83` |
+
 Regenerate the plan from the repository root:
 
 ```bash

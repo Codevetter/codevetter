@@ -96,12 +96,19 @@
       "required": ["status"],
       "properties": { "status": { "enum": ["complete", "failed"] } }
     },
+    "telemetry": { "$ref": "./run-telemetry.schema.json" },
     "diagnostics": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "input_tokens": { "type": "integer", "minimum": 0 },
         "output_tokens": { "type": "integer", "minimum": 0 },
+        "cached_input_tokens": { "type": "integer", "minimum": 0 },
+        "reasoning_tokens": { "type": "integer", "minimum": 0 },
+        "tool_result_tokens": { "type": "integer", "minimum": 0 },
+        "tool_calls_total": { "type": "integer", "minimum": 0 },
+        "tool_elapsed_ms": { "type": "integer", "minimum": 0 },
+        "model_elapsed_ms": { "type": "integer", "minimum": 0 },
         "cost_usd": { "type": "number", "minimum": 0 },
         "tool_calls": {
           "type": "array",

@@ -113,6 +113,7 @@ export async function executeAgentTask({
   removeWorkspace = removeRunWorkspace,
   temporaryRoot,
   runIdFactory = () => `run-${randomUUID()}`,
+  now = monotonicMilliseconds,
 } = {}) {
   const plan = await planAgentTask({
     root,
@@ -153,10 +154,17 @@ export async function executeAgentTask({
   let operatorOutput = { stdout: '', stderr: '' };
   let diagnostics;
   let diagnosticsFailed = false;
+  let resources = unavailableResources(
+    'The adapter process did not expose sampled resource evidence.'
+  );
+  const telemetry = createTelemetryRecorder(now);
+  let activeEvent = telemetry.start('workspace_prepare');
 
   try {
     workspace = await materializeWorkspace(task.fixture, task.taskPacket, temporaryRoot);
+    telemetry.finish(activeEvent, 'complete');
     lifecycle.push('workspace_prepared');
+    activeEvent = telemetry.start('agent_execute');
     const command = resolveAdapterCommand(adapter, workspace);
     const execution = await runAdapter({
       command,
@@ -166,6 +174,8 @@ export async function executeAgentTask({
       signal,
       onStarted: () => lifecycle.push('agent_started'),
     });
+    telemetry.finish(activeEvent, agentPhaseOutcome(execution.status));
+    resources = normalizeResources(execution.resources);
     const normalized = normalizeAgentOutput(execution, Object.values(declaredEnvironment));
     agentResult = normalized.agent;
     operatorOutput = normalized.output;
@@ -195,6 +205,7 @@ export async function executeAgentTask({
       terminalStatus = 'agent_failure';
     } else {
       lifecycle.push('checks_started');
+      activeEvent = telemetry.start('checks_execute');
       const checkExecution = await executeDriver({
         driverPath: task.driverPath,
         workspace,
@@ -213,9 +224,11 @@ export async function executeAgentTask({
       } else {
         terminalStatus = checkExecution.kind === 'timeout' ? 'timeout' : 'check_error';
       }
+      telemetry.finish(activeEvent, checkPhaseOutcome(checkExecution.kind));
       lifecycle.push('checks_finished');
     }
   } catch (error) {
+    telemetry.finish(activeEvent, 'failed');
     if (error?.code === 'CODEVETTER_CLEANUP_FAILURE') {
       terminalStatus = 'cleanup_failure';
       lifecycle.push('cleanup_failed');
@@ -228,10 +241,13 @@ export async function executeAgentTask({
     }
   } finally {
     if (workspace !== null) {
+      activeEvent = telemetry.start('cleanup');
       try {
         await removeWorkspace(workspace);
+        telemetry.finish(activeEvent, 'complete');
         lifecycle.push('cleanup_complete');
       } catch {
+        telemetry.finish(activeEvent, 'failed');
         lifecycle.push('cleanup_failed');
         terminalStatus = 'cleanup_failure';
       }
@@ -256,6 +272,7 @@ export async function executeAgentTask({
     regression_count: regressionCount,
     cleanup: { status: lifecycle.includes('cleanup_failed') ? 'failed' : 'complete' },
     ...(diagnostics === undefined ? {} : { diagnostics }),
+    telemetry: telemetry.document(resources),
     limitations: [
       ...RUN_LIMITATIONS,
       ...(diagnosticsFailed ? [DIAGNOSTICS_FAILURE_LIMITATION] : []),
@@ -325,7 +342,17 @@ export async function loadAdapterDiagnostics({ workspace, path, secretValues = [
     throw new Error(`invalid adapter diagnostics:\n${errors.join('\n')}`);
   }
   const diagnostics = {};
-  for (const field of ['input_tokens', 'output_tokens', 'cost_usd']) {
+  for (const field of [
+    'input_tokens',
+    'output_tokens',
+    'cached_input_tokens',
+    'reasoning_tokens',
+    'tool_result_tokens',
+    'tool_calls_total',
+    'tool_elapsed_ms',
+    'model_elapsed_ms',
+    'cost_usd',
+  ]) {
     if (document[field] !== undefined) diagnostics[field] = document[field];
   }
   if (document.tool_calls !== undefined) {
@@ -357,6 +384,8 @@ export async function runAdapterProcess({
   timeoutMs,
   signal,
   onStarted,
+  sampleResources = sampleProcessTree,
+  resourceSampleIntervalMs = 100,
 }) {
   return new Promise((resolvePromise) => {
     const child = spawn(command[0], command.slice(1), {
@@ -366,6 +395,10 @@ export async function runAdapterProcess({
       shell: false,
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
+    });
+    const resourceSampler = createProcessTreeSampler(child.pid, {
+      sampleResources,
+      intervalMs: resourceSampleIntervalMs,
     });
     onStarted?.();
     const stdout = [];
@@ -407,7 +440,7 @@ export async function runAdapterProcess({
     signal?.addEventListener('abort', abort, { once: true });
     if (signal?.aborted) abort();
 
-    const finish = (code, spawnError = false) => {
+    const finish = async (code, spawnError = false) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
@@ -415,17 +448,258 @@ export async function runAdapterProcess({
       if (escalation) clearTimeout(escalation);
       signal?.removeEventListener('abort', abort);
       const status = requestedStatus ?? (spawnError || code !== 0 ? 'failed' : 'exited');
+      const resources = await resourceSampler.stop();
       resolvePromise({
         status,
         exitCode: status === 'exited' || status === 'failed' ? code : null,
         stdout: Buffer.concat(stdout).toString('utf8'),
         stderr: Buffer.concat(stderr).toString('utf8'),
         truncated,
+        resources,
       });
     };
-    child.once('error', () => finish(null, true));
-    child.once('close', (code) => finish(code));
+    child.once('error', () => void finish(null, true));
+    child.once('close', (code) => void finish(code));
   });
+}
+
+export function sampleProcessTree(rootPid) {
+  if (!Number.isInteger(rootPid) || rootPid <= 0 || process.platform === 'win32') {
+    return Promise.reject(new Error('process-tree sampling is unavailable'));
+  }
+  return new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn('ps', ['-axo', 'pid=,ppid=,rss=,time='], {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'ignore'],
+      windowsHide: true,
+    });
+    const chunks = [];
+    child.stdout.on('data', (chunk) => chunks.push(chunk));
+    child.once('error', rejectPromise);
+    child.once('close', (code) => {
+      if (code !== 0) {
+        rejectPromise(new Error(`ps exited with ${code}`));
+        return;
+      }
+      const rows = Buffer.concat(chunks)
+        .toString('utf8')
+        .split('\n')
+        .map(parseProcessRow)
+        .filter(Boolean);
+      const descendants = new Set([rootPid]);
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const row of rows) {
+          if (descendants.has(row.ppid) && !descendants.has(row.pid)) {
+            descendants.add(row.pid);
+            changed = true;
+          }
+        }
+      }
+      const tree = rows.filter((row) => descendants.has(row.pid));
+      if (tree.length === 0) {
+        rejectPromise(new Error('agent process tree was not present in the sample'));
+        return;
+      }
+      resolvePromise({
+        rssBytes: tree.reduce((sum, row) => sum + row.rssBytes, 0),
+        cpuTimeMs: tree.reduce((sum, row) => sum + row.cpuTimeMs, 0),
+      });
+    });
+  });
+}
+
+function createTelemetryRecorder(now) {
+  const origin = now();
+  const events = [];
+  let active = null;
+  return {
+    start(name) {
+      if (active !== null) throw new Error('telemetry phases cannot overlap');
+      active = { name, startedAt: now(), finished: false };
+      return active;
+    },
+    finish(event, outcome) {
+      if (event?.finished || active !== event) return;
+      event.finished = true;
+      event.finishedAt = now();
+      event.outcome = outcome;
+      events.push(event);
+      active = null;
+    },
+    document(resources) {
+      if (active !== null) this.finish(active, 'failed');
+      let cursor = 0;
+      const normalized = events.map((event, index) => {
+        const startOffset = Math.max(cursor, roundedMilliseconds(event.startedAt - origin));
+        const duration = roundedMilliseconds(event.finishedAt - event.startedAt);
+        cursor = startOffset + duration;
+        return {
+          sequence: index + 1,
+          name: event.name,
+          start_offset_ms: startOffset,
+          duration_ms: duration,
+          outcome: event.outcome,
+        };
+      });
+      return {
+        schema_version: CONTRACT_SCHEMA_VERSIONS['run-telemetry'],
+        clock: 'monotonic',
+        elapsed_ms: Math.max(cursor, roundedMilliseconds(now() - origin)),
+        events: normalized,
+        resources,
+      };
+    },
+  };
+}
+
+function agentPhaseOutcome(status) {
+  return status === 'exited' ? 'complete' : 'failed';
+}
+
+function checkPhaseOutcome(kind) {
+  return kind === 'result' ? 'complete' : 'failed';
+}
+
+function createProcessTreeSampler(rootPid, { sampleResources, intervalMs }) {
+  if (!Number.isInteger(rootPid) || rootPid <= 0) {
+    return { stop: async () => unavailableResources('The adapter process did not start.') };
+  }
+  let stopped = false;
+  let sampleCount = 0;
+  let peakRssBytes = 0;
+  let cpuTimeMs = 0;
+  let samplingFailed = false;
+  let sampleInFlight = false;
+  let pending = Promise.resolve();
+  const sample = () => {
+    if (stopped || sampleInFlight) return;
+    sampleInFlight = true;
+    pending = Promise.resolve()
+      .then(() => sampleResources(rootPid))
+      .then((value) => {
+        sampleCount += 1;
+        peakRssBytes = Math.max(peakRssBytes, roundedMilliseconds(value.rssBytes));
+        cpuTimeMs = Math.max(cpuTimeMs, roundedMilliseconds(value.cpuTimeMs));
+      })
+      .catch(() => {
+        samplingFailed = true;
+      })
+      .finally(() => {
+        sampleInFlight = false;
+      });
+  };
+  sample();
+  const timer = setInterval(sample, intervalMs);
+  timer.unref?.();
+  return {
+    async stop() {
+      stopped = true;
+      clearInterval(timer);
+      await pending;
+      if (sampleCount === 0) {
+        return unavailableResources(
+          'No process-tree resource sample completed before termination.'
+        );
+      }
+      return {
+        scope: 'agent-process-tree',
+        sampler: 'ps-process-tree-v1',
+        sample_count: sampleCount,
+        peak_rss_bytes: peakRssBytes,
+        cpu_time_ms: cpuTimeMs,
+        io_read_bytes: null,
+        io_write_bytes: null,
+        network_rx_bytes: null,
+        network_tx_bytes: null,
+        thermal_state: null,
+        limitations: [
+          'RSS and CPU time are sampled from the adapter process tree and may miss short-lived descendants.',
+          'Process I/O, network use, external provider daemons, and thermal state are not measured.',
+          ...(samplingFailed ? ['One or more process-tree samples failed.'] : []),
+        ],
+      };
+    },
+  };
+}
+
+function unavailableResources(reason) {
+  return {
+    scope: 'agent-process-tree',
+    sampler: 'unavailable',
+    sample_count: 0,
+    peak_rss_bytes: null,
+    cpu_time_ms: null,
+    io_read_bytes: null,
+    io_write_bytes: null,
+    network_rx_bytes: null,
+    network_tx_bytes: null,
+    thermal_state: null,
+    limitations: [
+      reason,
+      'Process I/O, network use, external provider daemons, and thermal state are not measured.',
+    ],
+  };
+}
+
+function normalizeResources(value) {
+  if (value === undefined) {
+    return unavailableResources('The adapter process did not expose sampled resource evidence.');
+  }
+  const errors = [];
+  validateResourceShape(value, errors);
+  return errors.length === 0
+    ? structuredClone(value)
+    : unavailableResources('The adapter process returned invalid sampled resource evidence.');
+}
+
+function validateResourceShape(value, errors) {
+  const telemetry = {
+    schema_version: CONTRACT_SCHEMA_VERSIONS['run-telemetry'],
+    clock: 'monotonic',
+    elapsed_ms: 0,
+    events: [
+      {
+        sequence: 1,
+        name: 'agent_execute',
+        start_offset_ms: 0,
+        duration_ms: 0,
+        outcome: 'complete',
+      },
+    ],
+    resources: value,
+  };
+  errors.push(...validateContract('run-telemetry', telemetry));
+}
+
+function parseProcessRow(line) {
+  const match = /^\s*(\d+)\s+(\d+)\s+(\d+)\s+([\d:.-]+)\s*$/.exec(line);
+  if (!match) return null;
+  return {
+    pid: Number(match[1]),
+    ppid: Number(match[2]),
+    rssBytes: Number(match[3]) * 1024,
+    cpuTimeMs: parseCpuTime(match[4]),
+  };
+}
+
+function parseCpuTime(value) {
+  const dayParts = value.split('-');
+  const days = dayParts.length === 2 ? Number(dayParts[0]) : 0;
+  const clock = dayParts.at(-1).split(':').map(Number);
+  const seconds = clock.pop() ?? 0;
+  const minutes = clock.pop() ?? 0;
+  const hours = clock.pop() ?? 0;
+  return (((days * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000;
+}
+
+function monotonicMilliseconds() {
+  return Number(process.hrtime.bigint()) / 1_000_000;
+}
+
+function roundedMilliseconds(value) {
+  return Math.max(0, Math.round(value));
 }
 
 function resolveAdapterCommand(adapter, workspace) {

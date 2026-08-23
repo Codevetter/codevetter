@@ -20,6 +20,7 @@ export const CONTRACT_SCHEMA_VERSIONS = Object.freeze({
   'run-receipt': 'codevetter.agent-task-run.v1',
   'run-plan': 'codevetter.agent-task-plan.v1',
   'run-receipt-v2': 'codevetter.agent-task-run.v2',
+  'run-telemetry': 'codevetter.agent-task-telemetry.v1',
   'task-manifest': 'codevetter.agent-task.v1',
 });
 
@@ -761,6 +762,89 @@ function validateRunReceiptV1(value, path, errors) {
   }
 }
 
+function validateRunTelemetry(value, path, errors) {
+  const fields = ['schema_version', 'clock', 'elapsed_ms', 'events', 'resources'];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(
+    value.schema_version,
+    CONTRACT_SCHEMA_VERSIONS['run-telemetry'],
+    `${path}.schema_version`,
+    errors
+  );
+  exact(value.clock, 'monotonic', `${path}.clock`, errors);
+  integer(value.elapsed_ms, `${path}.elapsed_ms`, errors, 0, 7_200_000);
+  array(value.events, `${path}.events`, errors, { min: 1, max: 20 });
+  let priorEnd = 0;
+  for (const [index, event] of (Array.isArray(value.events) ? value.events : []).entries()) {
+    const eventPath = `${path}.events[${index}]`;
+    const eventFields = ['sequence', 'name', 'start_offset_ms', 'duration_ms', 'outcome'];
+    if (!closedObject(event, eventPath, eventFields, eventFields, errors)) continue;
+    integer(event.sequence, `${eventPath}.sequence`, errors, 1, 20);
+    if (event.sequence !== index + 1) {
+      errors.push(`${eventPath}.sequence: expected append-only sequence ${index + 1}`);
+    }
+    oneOf(
+      event.name,
+      ['workspace_prepare', 'agent_execute', 'checks_execute', 'cleanup'],
+      `${eventPath}.name`,
+      errors
+    );
+    integer(event.start_offset_ms, `${eventPath}.start_offset_ms`, errors, 0, 7_200_000);
+    integer(event.duration_ms, `${eventPath}.duration_ms`, errors, 0, 7_200_000);
+    oneOf(event.outcome, ['complete', 'failed', 'skipped'], `${eventPath}.outcome`, errors);
+    if (Number.isInteger(event.start_offset_ms) && event.start_offset_ms < priorEnd) {
+      errors.push(`${eventPath}.start_offset_ms: events must not overlap or move backwards`);
+    }
+    if (Number.isInteger(event.start_offset_ms) && Number.isInteger(event.duration_ms)) {
+      priorEnd = event.start_offset_ms + event.duration_ms;
+      if (Number.isInteger(value.elapsed_ms) && priorEnd > value.elapsed_ms) {
+        errors.push(`${eventPath}.duration_ms: event exceeds total elapsed time`);
+      }
+    }
+  }
+  validateRunResources(value.resources, `${path}.resources`, errors);
+}
+
+function validateRunResources(value, path, errors) {
+  const fields = [
+    'scope',
+    'sampler',
+    'sample_count',
+    'peak_rss_bytes',
+    'cpu_time_ms',
+    'io_read_bytes',
+    'io_write_bytes',
+    'network_rx_bytes',
+    'network_tx_bytes',
+    'thermal_state',
+    'limitations',
+  ];
+  if (!closedObject(value, path, fields, fields, errors)) return;
+  exact(value.scope, 'agent-process-tree', `${path}.scope`, errors);
+  oneOf(value.sampler, ['ps-process-tree-v1', 'unavailable'], `${path}.sampler`, errors);
+  integer(value.sample_count, `${path}.sample_count`, errors, 0, 1_000_000);
+  for (const field of ['peak_rss_bytes', 'cpu_time_ms']) {
+    if (value[field] !== null) integer(value[field], `${path}.${field}`, errors, 0);
+  }
+  for (const field of [
+    'io_read_bytes',
+    'io_write_bytes',
+    'network_rx_bytes',
+    'network_tx_bytes',
+    'thermal_state',
+  ]) {
+    exact(value[field], null, `${path}.${field}`, errors);
+  }
+  stringArray(value.limitations, `${path}.limitations`, errors, { max: 20, itemMax: 500 });
+  if (value.sampler === 'unavailable') {
+    if (value.sample_count !== 0 || value.peak_rss_bytes !== null || value.cpu_time_ms !== null) {
+      errors.push(`${path}: unavailable sampler cannot report sampled resource values`);
+    }
+  } else if (value.sample_count === 0) {
+    errors.push(`${path}.sample_count: ps sampler requires at least one sample`);
+  }
+}
+
 function validateRunReceiptV2(value, path, errors) {
   const fields = [
     'schema_version',
@@ -780,6 +864,7 @@ function validateRunReceiptV2(value, path, errors) {
     'regression_count',
     'cleanup',
     'diagnostics',
+    'telemetry',
     'limitations',
   ];
   if (
@@ -787,7 +872,7 @@ function validateRunReceiptV2(value, path, errors) {
       value,
       path,
       fields,
-      fields.filter((field) => field !== 'diagnostics'),
+      fields.filter((field) => !['diagnostics', 'telemetry'].includes(field)),
       errors
     )
   ) {
@@ -838,6 +923,7 @@ function validateRunReceiptV2(value, path, errors) {
     oneOf(value.cleanup.status, ['complete', 'failed'], `${path}.cleanup.status`, errors);
   }
   validateDiagnostics(value.diagnostics, `${path}.diagnostics`, errors);
+  validateOptionalRunTelemetry(value.telemetry, `${path}.telemetry`, errors);
   stringArray(value.limitations, `${path}.limitations`, errors, { max: 50, itemMax: 500 });
 
   const checksStarted = value.lifecycle?.includes('checks_started');
@@ -865,6 +951,10 @@ function validateRunReceiptV2(value, path, errors) {
   if (value.cleanup?.status === 'failed' && value.terminal_status !== 'cleanup_failure') {
     errors.push(`${path}.terminal_status: failed cleanup requires cleanup_failure`);
   }
+}
+
+function validateOptionalRunTelemetry(value, path, errors) {
+  if (value !== undefined) validateRunTelemetry(value, path, errors);
 }
 
 function validateEvaluationBundle(value, path, errors) {
@@ -1120,13 +1210,28 @@ function validateDiagnostics(value, path, errors) {
   const fields = [
     'input_tokens',
     'output_tokens',
+    'cached_input_tokens',
+    'reasoning_tokens',
+    'tool_result_tokens',
+    'tool_calls_total',
+    'tool_elapsed_ms',
+    'model_elapsed_ms',
     'cost_usd',
     'tool_calls',
     'files_inspected',
     'files_modified',
   ];
   if (!closedObject(value, path, fields, [], errors)) return;
-  for (const field of ['input_tokens', 'output_tokens']) {
+  for (const field of [
+    'input_tokens',
+    'output_tokens',
+    'cached_input_tokens',
+    'reasoning_tokens',
+    'tool_result_tokens',
+    'tool_calls_total',
+    'tool_elapsed_ms',
+    'model_elapsed_ms',
+  ]) {
     if (value[field] !== undefined) integer(value[field], `${path}.${field}`, errors, 0);
   }
   if (value.cost_usd !== undefined) {
@@ -1157,6 +1262,12 @@ function validateAdapterDiagnostics(value, path, errors) {
     'schema_version',
     'input_tokens',
     'output_tokens',
+    'cached_input_tokens',
+    'reasoning_tokens',
+    'tool_result_tokens',
+    'tool_calls_total',
+    'tool_elapsed_ms',
+    'model_elapsed_ms',
     'cost_usd',
     'tool_calls',
     'files_inspected',
@@ -2140,6 +2251,7 @@ function validateContextComparisonProvider(provider, path, errors) {
     'outcomes',
     'noise',
     'diagnostics_available',
+    'paired_metrics',
     'raw_p_value',
     'adjusted_p_value',
     'pairwise_qualified',
@@ -2185,6 +2297,7 @@ function validateContextComparisonProvider(provider, path, errors) {
     itemMax: 80,
   });
   validateUniqueSorted(provider.diagnostics_available, `${path}.diagnostics_available`, errors);
+  validatePairedMetrics(provider.paired_metrics, `${path}.paired_metrics`, errors);
   validateNullableProbability(provider.raw_p_value, `${path}.raw_p_value`, errors);
   validateNullableProbability(provider.adjusted_p_value, `${path}.adjusted_p_value`, errors);
   boolean(provider.pairwise_qualified, `${path}.pairwise_qualified`, errors);
@@ -2196,6 +2309,66 @@ function validateContextComparisonProvider(provider, path, errors) {
     errors.push(`${path}.family_qualified: requires independent A/A noise evidence`);
   }
   return true;
+}
+
+function validatePairedMetrics(value, path, errors) {
+  const metrics = [
+    'cached_input_tokens',
+    'cost_usd',
+    'cpu_time_ms',
+    'elapsed_ms',
+    'files_inspected',
+    'files_modified',
+    'input_tokens',
+    'model_elapsed_ms',
+    'output_tokens',
+    'peak_rss_bytes',
+    'reasoning_tokens',
+    'run_elapsed_ms',
+    'tool_calls',
+    'tool_calls_total',
+    'tool_elapsed_ms',
+    'tool_result_tokens',
+    'tool_call_mean_ms',
+  ];
+  array(value, path, errors, { max: 20 });
+  const names = [];
+  for (const [index, row] of (Array.isArray(value) ? value : []).entries()) {
+    const rowPath = `${path}[${index}]`;
+    const fields = [
+      'metric',
+      'source',
+      'unit',
+      'paired_count',
+      'total_pairs',
+      'control_mean',
+      'treatment_mean',
+      'mean_delta',
+    ];
+    if (!closedObject(row, rowPath, fields, fields, errors)) continue;
+    oneOf(row.metric, metrics, `${rowPath}.metric`, errors);
+    oneOf(
+      row.source,
+      ['adapter', 'derived-adapter', 'runner', 'runner-sampled'],
+      `${rowPath}.source`,
+      errors
+    );
+    oneOf(row.unit, ['bytes', 'count', 'milliseconds', 'tokens', 'usd'], `${rowPath}.unit`, errors);
+    integer(row.paired_count, `${rowPath}.paired_count`, errors, 1, 5000);
+    integer(row.total_pairs, `${rowPath}.total_pairs`, errors, 1, 5000);
+    if (row.paired_count > row.total_pairs) {
+      errors.push(`${rowPath}.paired_count: cannot exceed total pairs`);
+    }
+    for (const field of ['control_mean', 'treatment_mean']) {
+      if (row[field] !== null) finiteNumber(row[field], `${rowPath}.${field}`, errors, 0);
+    }
+    if (row.mean_delta !== null) {
+      finiteNumber(row.mean_delta, `${rowPath}.mean_delta`, errors, -Number.MAX_VALUE);
+    }
+    if (typeof row.metric === 'string') names.push(row.metric);
+  }
+  unique(names, `${path} metric`, errors);
+  sorted(names, path, errors);
 }
 
 function validateContextProviderNoise(value, path, errors) {
@@ -2584,5 +2757,6 @@ const validators = Object.freeze({
   'qualification-receipt': validateQualificationReceipt,
   'run-plan': validateRunPlan,
   'run-receipt': validateRunReceipt,
+  'run-telemetry': validateRunTelemetry,
   'task-manifest': validateTaskManifest,
 });

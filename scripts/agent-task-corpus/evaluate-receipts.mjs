@@ -233,7 +233,7 @@ function projectManifest(bundle, tasks, runs) {
 
 function projectRun({ descriptor, receipt, adapter }, tasks) {
   const task = tasks.get(descriptor.task_id);
-  const diagnostics = projectDiagnostics(receipt.diagnostics);
+  const diagnostics = projectDiagnostics(receipt);
   return {
     pair_id: descriptor.pair_id,
     comparison: descriptor.comparison,
@@ -271,14 +271,38 @@ function projectTerminalStatus(status) {
   return 'completed';
 }
 
-function projectDiagnostics(diagnostics) {
-  if (diagnostics === undefined) return undefined;
+function projectDiagnostics(receipt) {
+  const diagnostics = receipt.diagnostics;
   const projected = {};
-  for (const field of ['input_tokens', 'output_tokens', 'cost_usd']) {
-    if (diagnostics[field] !== undefined) projected[field] = diagnostics[field];
+  for (const field of [
+    'input_tokens',
+    'output_tokens',
+    'cached_input_tokens',
+    'reasoning_tokens',
+    'tool_result_tokens',
+    'tool_calls_total',
+    'tool_elapsed_ms',
+    'model_elapsed_ms',
+    'cost_usd',
+  ]) {
+    if (diagnostics?.[field] !== undefined) projected[field] = diagnostics[field];
+  }
+  if (diagnostics?.tool_calls_total > 0 && diagnostics.tool_elapsed_ms !== undefined) {
+    projected.tool_call_mean_ms = diagnostics.tool_elapsed_ms / diagnostics.tool_calls_total;
   }
   for (const field of ['tool_calls', 'files_inspected', 'files_modified']) {
-    if (diagnostics[field] !== undefined) projected[field] = [...diagnostics[field]];
+    if (diagnostics?.[field] !== undefined) projected[field] = [...diagnostics[field]];
+  }
+  if (receipt.telemetry !== undefined) {
+    const agentEvent = receipt.telemetry.events.find((event) => event.name === 'agent_execute');
+    if (agentEvent !== undefined) projected.elapsed_ms = agentEvent.duration_ms;
+    projected.run_elapsed_ms = receipt.telemetry.elapsed_ms;
+    if (receipt.telemetry.resources.peak_rss_bytes !== null) {
+      projected.peak_rss_bytes = receipt.telemetry.resources.peak_rss_bytes;
+    }
+    if (receipt.telemetry.resources.cpu_time_ms !== null) {
+      projected.cpu_time_ms = receipt.telemetry.resources.cpu_time_ms;
+    }
   }
   return Object.keys(projected).length === 0 ? undefined : projected;
 }

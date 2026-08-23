@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-16
+Last updated: 2026-08-23
 
 ## Why / What
 
@@ -55,6 +55,26 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-08-23 — Agent-context utility evidence foundation:** Added a closed,
+  backward-compatible telemetry contract to new agent-task receipts. The runner
+  now records append-only monotonic phase spans and samples adapter process-tree
+  RSS/CPU independently of adapter self-report; unsupported I/O, network,
+  thermal, and external-daemon measurements remain explicit nulls. Optional
+  adapter diagnostics gained token-class, total-call, and aggregate tool/model
+  timing fields. Receipt evaluation now publishes provenance-labelled paired
+  control/treatment means and within-pair deltas for outcome, context, latency,
+  and available resource metrics without collapsing them into a composite
+  winner. Hermetic synthetic tests prove contracts, ordering, sampling,
+  projection, and deterministic reports. A subsequently approved 16-attempt
+  local Qwen3 4B telemetry rerun repeated the immutable Stage 1 outcome:
+  control 2/8, CodeVetter graph treatment 0/8, descriptive delta -25 percentage
+  points (`p = 0.5`). Treatment added roughly 891 ms, 1,347 input tokens, 21 ms
+  sampled adapter CPU, and 30.7 MB sampled adapter-process-tree peak RSS on
+  paired means. The result remains unqualified and does not test context
+  replacement: both arms received the complete fixture source, treatment added
+  graph evidence, A/A noise was absent, and the external model server plus
+  whole-machine thermal/energy/I/O were not measured.
 
 - **2026-08-19 — Claude/Grok local-accounting correction (v1.9.1):** Expanded
   the pinned `ccusage` report to Claude, Codex, and Grok while keeping Devin as
