@@ -25,6 +25,10 @@
     "corpus:context-snapshot": "node scripts/agent-task-corpus/prepare-context-snapshot.mjs",
     "corpus:context-run": "node scripts/agent-task-corpus/context-provider-run-cli.mjs",
     "corpus:context-evaluate": "node scripts/agent-task-corpus/context-provider-evaluate-cli.mjs",
+    "retrieval:corpus": "node scripts/context-retrieval/build-corpus.mjs",
+    "retrieval:score": "node scripts/context-retrieval/score.mjs",
+    "retrieval:staleness": "node scripts/context-retrieval/probe-staleness.mjs",
+    "retrieval:candidates": "node scripts/context-retrieval/probe-candidates.mjs",
     "runtime:detect": "node scripts/runtime-failure-capsule/cli.mjs detect",
     "runtime:qualify": "node scripts/runtime-failure-capsule/cli.mjs qualify",
     "runtime:qualify-portfolio": "node scripts/runtime-failure-capsule/cli.mjs qualify-portfolio",
@@ -47,6 +51,7 @@
     "test:graph-context": "node --test scripts/run-structural-context-evaluation.test.mjs",
     "test:corpus-contracts": "node --test scripts/agent-task-corpus/*.test.mjs",
     "test:context-provider-plan": "node --test scripts/agent-task-corpus/context-provider-plan.test.mjs",
+    "test:retrieval": "node --test scripts/context-retrieval/*.test.mjs",
     "test:runtime-failure-capsule": "node --test scripts/runtime-failure-capsule/*.test.mjs",
     "test:verification-receipts": "node --test scripts/verification-receipts/*.test.mjs",
     "test:automation": "node --test scripts/emit-foundry-receipt.test.mjs",
@@ -62,7 +67,8 @@
     "quality:complexity": "node scripts/check-changed-complexity.mjs",
     "quality:cycles": "biome lint --only=suspicious/noImportCycles .",
     "quality:dependencies": "pnpm audit --audit-level high",
-    "quality:duplication": "jscpd apps/desktop/src apps/landing-page-astro/src scripts --min-lines 8 --min-tokens 60 --mode strict --format typescript,tsx,javascript --cross-formats js-ts --ignore '**/fixtures/**,**/generated/**,**/gen/**,**/node_modules/**,**/dist/**,**/out/**,**/coverage/**' --threshold 0.81 --reporters console,threshold --no-colors --no-tips"
+    "quality:duplication": "jscpd apps/desktop/src apps/landing-page-astro/src scripts --min-lines 8 --min-tokens 60 --mode strict --format typescript,tsx,javascript --cross-formats js-ts --ignore '**/fixtures/**,**/generated/**,**/gen/**,**/node_modules/**,**/dist/**,**/out/**,**/coverage/**' --threshold 0.81 --reporters console,threshold --no-colors --no-tips",
+    "retrieval:discover": "node scripts/context-retrieval/discover-candidates.mjs --registry benchmarks/context-retrieval/candidates.json --fresh-since 2026-02-22"
   },
   "license": "ISC",
   "lint-staged": {

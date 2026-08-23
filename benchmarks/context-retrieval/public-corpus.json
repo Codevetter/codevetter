@@ -1,0 +1,65 @@
+{
+  "schema_version": "codevetter.context-retrieval-public-corpus.v1",
+  "purpose": "Reproducible corpus. Every case is derived from a public repository at a pinned commit, so anyone — including the maintainers of the tools being measured — can regenerate byte-identical inputs and re-run the benchmark.",
+  "reproduce": [
+    "git clone <url> <dir> && git -C <dir> checkout <pinned_head>",
+    "pnpm retrieval:corpus --repo <dir> --limit 600 --out corpus-<id>.json",
+    "verify sha256 of corpus-<id>.json against corpus_sha256 below",
+    "pnpm retrieval:score --corpus corpus-<id>.json --repo <dir> --provider <list>"
+  ],
+  "determinism": "Corpus builds were re-run and compared: all four are byte-identical on rebuild at the same pinned commit.",
+  "repositories": [
+    {
+      "id": "express",
+      "url": "https://github.com/expressjs/express",
+      "license": "MIT",
+      "language": "JavaScript",
+      "pinned_head": "a3714473feb3d2908add734d340e7755fd85e0a3",
+      "commits": 6158,
+      "corpus_cases": 28,
+      "corpus_multi_file": 14,
+      "corpus_sha256": "7968ad1df2b9de6b71e92d7d0bdbf0ce85ab84e2251f01e26cf200f5b3722bd7",
+      "builder_limit": 600
+    },
+    {
+      "id": "flask",
+      "url": "https://github.com/pallets/flask",
+      "license": "BSD-3-Clause",
+      "language": "Python",
+      "pinned_head": "d318b683471101618febed18996405ad26462110",
+      "commits": 5556,
+      "corpus_cases": 39,
+      "corpus_multi_file": 17,
+      "corpus_sha256": "cc44545cf5840eac11b4878a476a8f1cf1273233e9a08c682d3c1ab8b4ebc2b8",
+      "builder_limit": 600
+    },
+    {
+      "id": "gin",
+      "url": "https://github.com/gin-gonic/gin",
+      "license": "MIT",
+      "language": "Go",
+      "pinned_head": "dcaa4296d111981ffb31ac3eba90bb63e1eb5ab9",
+      "commits": 2007,
+      "corpus_cases": 76,
+      "corpus_multi_file": 54,
+      "corpus_sha256": "ec827cafee28bf1ca47775ad61102af1a6f0032e62b3e5743678e1a5d442dc08",
+      "builder_limit": 600
+    },
+    {
+      "id": "got",
+      "url": "https://github.com/sindresorhus/got",
+      "license": "MIT",
+      "language": "TypeScript",
+      "pinned_head": "e3924aa1e53a6ca3eb93a43618ce532442a89b40",
+      "commits": 1664,
+      "corpus_cases": 108,
+      "corpus_multi_file": 82,
+      "corpus_sha256": "3b23adf38b42dc841834a5d957405e4b848890a3ca7a544a813c9b689b676c5a",
+      "builder_limit": 600
+    }
+  ],
+  "totals": {
+    "repositories": 4,
+    "cases": 251
+  }
+}

@@ -1,0 +1,2203 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "what-it-takes-to-win",
+    "head": "d3747e8cea4fd1d886ad5c54c09d6096d182352d"
+  },
+  "tier": "small",
+  "tier_code_files": 65,
+  "corpus_counts": {
+    "cases": 14,
+    "path_leak": 9,
+    "baseline_blind": 5,
+    "multi_file": 9
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": true,
+      "best": 0.5655,
+      "control": 0,
+      "reason": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "Fix birth year estimation: add birth_year column to CSV, recover 195 filtered people",
+        "revision": "5460fddaeb2ce4baae19ad23051f2ccfa9291390",
+        "returned": [
+          "src/pages/index.astro",
+          "src/pages/person/[id].astro",
+          ".github/workflows/ci.yml",
+          "src/data/archetypes.json",
+          "src/scripts/merge_research.py"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "keep generated profile links audit-safe",
+        "revision": "25cca210c275ab0311e5c177f5399bab158b4114",
+        "returned": [
+          "src/pages/methodology/index.astro",
+          "src/pages/insights/index.astro",
+          "src/pages/compare/index.astro",
+          "data/research/merge_report.json",
+          "src/data/archetypes.json"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "Fix data quality: remove 6 duplicate IDs, cap 2393 leverage scores at 0-2",
+        "revision": "77787b7d957c37a1988bd747876d9fd686e5ac58",
+        "returned": [
+          ".github/workflows/ci.yml",
+          "src/pages/person/[id].astro",
+          "src/data/archetypes.json",
+          "src/data/people.json",
+          "src/scripts/build_founder_engineer_queue.py"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix birth year estimation: add birth_year column to CSV, recover 195 filtered people",
+        "revision": "5460fddaeb2ce4baae19ad23051f2ccfa9291390",
+        "returned": [
+          "src/data/people.json",
+          "data/research/merge_report.json",
+          "src/pages/compare/index.astro",
+          "src/data/archetypes.json",
+          "src/pages/person/[id].astro"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix person_id slugs for subagent-researched people",
+        "revision": "f784628dce33bc8e82d943fdfc2dbd45b26deed9",
+        "returned": [
+          "src/data/people.json",
+          "data/research/merge_report.json",
+          ".github/workflows/ci.yml",
+          "astro.config.mjs",
+          "package-lock.json"
+        ]
+      },
+      {
+        "provider_id": "codevetter-structural-context",
+        "query": "satisfy research script quality checks",
+        "revision": "1ce2ba36ee066491a27801755037e5f8c68221a6",
+        "returned": [
+          "src/scripts/check-code-health.mjs",
+          "public/scripts/posthog.js",
+          "src/scripts/merge_founder_research.mjs",
+          "src/scripts/merge_research.py",
+          "src/scripts/story-world.ts"
+        ]
+      },
+      {
+        "provider_id": "codevetter-structural-context",
+        "query": "Fix person_id slugs for subagent-researched people",
+        "revision": "f784628dce33bc8e82d943fdfc2dbd45b26deed9",
+        "returned": [
+          "src/pages/person/[id].astro",
+          "src/scripts/charts.js",
+          "public/data/people.csv",
+          "src/data/people.csv",
+          "src/data/people.json"
+        ]
+      },
+      {
+        "provider_id": "codevetter-structural-context",
+        "query": "stop claiming a completed source audit on /coverage/",
+        "revision": "9bcd0d62e016122c615a87d356e5d47a930085ba",
+        "returned": [
+          "src/scripts/audit_sources.mjs",
+          "src/data/methodology.md",
+          "quality/source-audit/audit-v1.json",
+          "quality/source-audit/REPORT.md",
+          "src/lib/coverage.ts"
+        ]
+      }
+    ],
+    "trustworthy": true
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 14,
+          "mean_recall_at_5": 0.1786,
+          "full_recall_at_5": 0.0714,
+          "mean_recall_at_10": 0.2738,
+          "full_recall_at_10": 0.0714,
+          "mean_recall_at_20": 0.4167,
+          "full_recall_at_20": 0.2143,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0357,
+          "mean_precision_at_10": 0.0643,
+          "zero_hit_rate": 0.4286,
+          "median_tokens_delivered": 468773,
+          "median_latency_ms": 13.1465,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 13,
+          "mean_recall_at_5": 0.1154,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.2179,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.3718,
+          "full_recall_at_20": 0.1538,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0385,
+          "mean_precision_at_10": 0.0615,
+          "zero_hit_rate": 0.4615,
+          "median_tokens_delivered": 280819,
+          "median_latency_ms": 13.407,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 1,
+          "mean_recall_at_5": 1,
+          "full_recall_at_5": 1,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 6535110,
+          "median_latency_ms": 12.625,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.1667,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1667,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.2778,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0556,
+          "mean_precision_at_10": 0.0556,
+          "zero_hit_rate": 0.5556,
+          "median_tokens_delivered": 255464,
+          "median_latency_ms": 14.229,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 5,
+          "mean_recall_at_5": 0.2,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 0.4667,
+          "full_recall_at_10": 0.2,
+          "mean_recall_at_20": 0.6667,
+          "full_recall_at_20": 0.6,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.08,
+          "zero_hit_rate": 0.2,
+          "median_tokens_delivered": 3297240,
+          "median_latency_ms": 12.625,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 14
+      },
+      "resources": {
+        "baseline_rss_mb": 27088,
+        "peak_rss_mb": 27112.5,
+        "delta_rss_mb": 24.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 14,
+          "mean_recall_at_5": 0.25,
+          "full_recall_at_5": 0.0714,
+          "mean_recall_at_10": 0.4583,
+          "full_recall_at_10": 0.2857,
+          "mean_recall_at_20": 0.756,
+          "full_recall_at_20": 0.5714,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0179,
+          "mean_precision_at_10": 0.1071,
+          "zero_hit_rate": 0.1429,
+          "median_tokens_delivered": 6735249,
+          "median_latency_ms": 22.991,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 13,
+          "mean_recall_at_5": 0.1923,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.4167,
+          "full_recall_at_10": 0.2308,
+          "mean_recall_at_20": 0.7372,
+          "full_recall_at_20": 0.5385,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0192,
+          "mean_precision_at_10": 0.1077,
+          "zero_hit_rate": 0.1538,
+          "median_tokens_delivered": 6709755,
+          "median_latency_ms": 22.891,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 1,
+          "mean_recall_at_5": 1,
+          "full_recall_at_5": 1,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 6760802,
+          "median_latency_ms": 23.091,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.1667,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.3056,
+          "full_recall_at_10": 0.1111,
+          "mean_recall_at_20": 0.6204,
+          "full_recall_at_20": 0.3333,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0278,
+          "mean_precision_at_10": 0.0889,
+          "zero_hit_rate": 0.2222,
+          "median_tokens_delivered": 6709755,
+          "median_latency_ms": 25.604,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 5,
+          "mean_recall_at_5": 0.4,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 0.7333,
+          "full_recall_at_10": 0.6,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.14,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 6760743,
+          "median_latency_ms": 21.5,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 14
+      },
+      "resources": {
+        "baseline_rss_mb": 27136.4,
+        "peak_rss_mb": 27161.3,
+        "delta_rss_mb": 25,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "summary": {
+        "all": {
+          "cases": 14,
+          "mean_recall_at_5": 0.3184,
+          "full_recall_at_5": 0.2143,
+          "mean_recall_at_10": 0.378,
+          "full_recall_at_10": 0.2857,
+          "mean_recall_at_20": 0.4494,
+          "full_recall_at_20": 0.3571,
+          "mean_recall_at_1000_tokens": 0.4137,
+          "mean_recall_at_4000_tokens": 0.4494,
+          "mean_recall_at_16000_tokens": 0.4494,
+          "mean_precision_at_10": 0.0783,
+          "zero_hit_rate": 0.4286,
+          "median_tokens_delivered": 707.5,
+          "median_latency_ms": 596.7665,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 13,
+          "mean_recall_at_5": 0.3429,
+          "full_recall_at_5": 0.2308,
+          "mean_recall_at_10": 0.4071,
+          "full_recall_at_10": 0.3077,
+          "mean_recall_at_20": 0.484,
+          "full_recall_at_20": 0.3846,
+          "mean_recall_at_1000_tokens": 0.4455,
+          "mean_recall_at_4000_tokens": 0.484,
+          "mean_recall_at_16000_tokens": 0.484,
+          "mean_precision_at_10": 0.0844,
+          "zero_hit_rate": 0.3846,
+          "median_tokens_delivered": 706,
+          "median_latency_ms": 617.309,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 1,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 2895,
+          "median_latency_ms": 542.13,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.4954,
+          "full_recall_at_5": 0.3333,
+          "mean_recall_at_10": 0.588,
+          "full_recall_at_10": 0.4444,
+          "mean_recall_at_20": 0.6991,
+          "full_recall_at_20": 0.5556,
+          "mean_recall_at_1000_tokens": 0.6435,
+          "mean_recall_at_4000_tokens": 0.6991,
+          "mean_recall_at_16000_tokens": 0.6991,
+          "mean_precision_at_10": 0.1219,
+          "zero_hit_rate": 0.1111,
+          "median_tokens_delivered": 730,
+          "median_latency_ms": 732.119,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 5,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 298,
+          "median_latency_ms": 542.13,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 13,
+        "indexed-but-returned-nothing": 1
+      },
+      "resources": {
+        "baseline_rss_mb": 27148.4,
+        "peak_rss_mb": 28766,
+        "delta_rss_mb": 1617.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 91381760
+      }
+    },
+    {
+      "provider_id": "graphify",
+      "summary": {
+        "all": {
+          "cases": 14,
+          "mean_recall_at_5": 0.5179,
+          "full_recall_at_5": 0.4286,
+          "mean_recall_at_10": 0.5417,
+          "full_recall_at_10": 0.4286,
+          "mean_recall_at_20": 0.5655,
+          "full_recall_at_20": 0.5,
+          "mean_recall_at_1000_tokens": 0.3631,
+          "mean_recall_at_4000_tokens": 0.5655,
+          "mean_recall_at_16000_tokens": 0.5655,
+          "mean_precision_at_10": 0.1401,
+          "zero_hit_rate": 0.3571,
+          "median_tokens_delivered": 2745.5,
+          "median_latency_ms": 2376.937,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 13,
+          "mean_recall_at_5": 0.4808,
+          "full_recall_at_5": 0.3846,
+          "mean_recall_at_10": 0.5064,
+          "full_recall_at_10": 0.3846,
+          "mean_recall_at_20": 0.5321,
+          "full_recall_at_20": 0.4615,
+          "mean_recall_at_1000_tokens": 0.391,
+          "mean_recall_at_4000_tokens": 0.5321,
+          "mean_recall_at_16000_tokens": 0.5321,
+          "mean_precision_at_10": 0.1432,
+          "zero_hit_rate": 0.3846,
+          "median_tokens_delivered": 2518,
+          "median_latency_ms": 2394.766,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 1,
+          "mean_recall_at_5": 1,
+          "full_recall_at_5": 1,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 1,
+          "mean_recall_at_16000_tokens": 1,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 5197,
+          "median_latency_ms": 2355.442,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.5463,
+          "full_recall_at_5": 0.4444,
+          "mean_recall_at_10": 0.5463,
+          "full_recall_at_10": 0.4444,
+          "mean_recall_at_20": 0.5463,
+          "full_recall_at_20": 0.4444,
+          "mean_recall_at_1000_tokens": 0.3796,
+          "mean_recall_at_4000_tokens": 0.5463,
+          "mean_recall_at_16000_tokens": 0.5463,
+          "mean_precision_at_10": 0.1623,
+          "zero_hit_rate": 0.3333,
+          "median_tokens_delivered": 4162,
+          "median_latency_ms": 3160.813,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 5,
+          "mean_recall_at_5": 0.4667,
+          "full_recall_at_5": 0.4,
+          "mean_recall_at_10": 0.5333,
+          "full_recall_at_10": 0.4,
+          "mean_recall_at_20": 0.6,
+          "full_recall_at_20": 0.6,
+          "mean_recall_at_1000_tokens": 0.3333,
+          "mean_recall_at_4000_tokens": 0.6,
+          "mean_recall_at_16000_tokens": 0.6,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.4,
+          "median_tokens_delivered": 1697,
+          "median_latency_ms": 2355.442,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 13,
+        "indexed-but-returned-nothing": 1
+      },
+      "resources": {
+        "baseline_rss_mb": 28265.5,
+        "peak_rss_mb": 28740,
+        "delta_rss_mb": 474.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 6459392
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-3dd1b2f11b56",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 85064,
+      "latency_ms": 25.945,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-42de39f1e3e7",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/merge_founder_research.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/merge_founder_research.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 146049,
+      "latency_ms": 23.148,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-62d014f029c5",
+      "path_leak": true,
+      "required_files": [
+        "src/data/archetypes.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/build_dataset.mjs"
+      ],
+      "found": [
+        "src/data/archetypes.json",
+        "src/scripts/build_dataset.mjs"
+      ],
+      "missed": [
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 116883,
+      "latency_ms": 14.229,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-6e229e791c6c",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/audit_discovery.mjs",
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "found": [
+        "src/scripts/audit_discovery.mjs"
+      ],
+      "missed": [
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 70158,
+      "latency_ms": 13.407,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-77787b7d957c",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 3211331,
+      "latency_ms": 12.886,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-8105b178afd6",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro",
+        "src/pages/index.astro"
+      ],
+      "found": [
+        "src/pages/index.astro"
+      ],
+      "missed": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 3297240,
+      "latency_ms": 12.203,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-9d6998dcea66",
+      "path_leak": true,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 280819,
+      "latency_ms": 12.308,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-a6e68b3385a5",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 3474579,
+      "latency_ms": 11.131,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-c699da18123d",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro"
+      ],
+      "found": [
+        "src/layouts/Base.astro"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 6535110,
+      "latency_ms": 12.625,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-c9ac67e7bf08",
+      "path_leak": true,
+      "required_files": [
+        "data/research/merge_report.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/merge_research.py"
+      ],
+      "found": [
+        "data/research/merge_report.json",
+        "src/data/people.json",
+        "src/scripts/merge_research.py"
+      ],
+      "missed": [
+        "src/data/people.csv"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.1765,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 255464,
+      "latency_ms": 11.941,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-d3747e8cea4f",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/scripts/marble-world.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1023991,
+      "latency_ms": 21.428,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-dbe87b68b695",
+      "path_leak": true,
+      "required_files": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "found": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.json"
+      ],
+      "missed": [
+        "src/data/people.csv"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 6487453,
+      "latency_ms": 11.216,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-ec48ef20dcb2",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/coverage.ts",
+        "src/pages/coverage/index.astro",
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "src/lib/coverage.ts",
+        "src/pages/coverage/index.astro",
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 193919,
+      "latency_ms": 15.239,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "what-it-takes-to-win-eca794d585ba",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/scripts/marble-world.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 656727,
+      "latency_ms": 15.327,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-3dd1b2f11b56",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 6765015,
+      "latency_ms": 23.427,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-42de39f1e3e7",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/merge_founder_research.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/merge_founder_research.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10025220,
+      "latency_ms": 31.217,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-62d014f029c5",
+      "path_leak": true,
+      "required_files": [
+        "src/data/archetypes.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/build_dataset.mjs"
+      ],
+      "found": [
+        "src/data/archetypes.json",
+        "src/data/people.json",
+        "src/scripts/build_dataset.mjs"
+      ],
+      "missed": [
+        "src/data/people.csv"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.75,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2687952,
+      "latency_ms": 22.891,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-6e229e791c6c",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/audit_discovery.mjs",
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "found": [
+        "src/scripts/audit_discovery.mjs",
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 17,
+      "tokens_delivered": 6709755,
+      "latency_ms": 25.604,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-77787b7d957c",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 6427537,
+      "latency_ms": 19.692,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-8105b178afd6",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro",
+        "src/pages/index.astro"
+      ],
+      "found": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro",
+        "src/pages/index.astro"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 6760743,
+      "latency_ms": 21.5,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-9d6998dcea66",
+      "path_leak": true,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 6709425,
+      "latency_ms": 22.774,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-a6e68b3385a5",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3474209,
+      "latency_ms": 19.721,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-c699da18123d",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro"
+      ],
+      "found": [
+        "src/layouts/Base.astro"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 6760802,
+      "latency_ms": 23.091,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-c9ac67e7bf08",
+      "path_leak": true,
+      "required_files": [
+        "data/research/merge_report.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/merge_research.py"
+      ],
+      "found": [
+        "data/research/merge_report.json",
+        "src/data/people.json",
+        "src/scripts/merge_research.py"
+      ],
+      "missed": [
+        "src/data/people.csv"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.1765,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 255464,
+      "latency_ms": 18.718,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-d3747e8cea4f",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [
+        "src/scripts/marble-world.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 10043630,
+      "latency_ms": 39.1,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-dbe87b68b695",
+      "path_leak": true,
+      "required_files": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "found": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.json"
+      ],
+      "missed": [
+        "src/data/people.csv"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 1,
+      "tokens_delivered": 6427548,
+      "latency_ms": 20.542,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-ec48ef20dcb2",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/coverage.ts",
+        "src/pages/coverage/index.astro",
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "found": [
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "missed": [
+        "src/lib/coverage.ts",
+        "src/pages/coverage/index.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 10025220,
+      "latency_ms": 27.117,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "what-it-takes-to-win-eca794d585ba",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/scripts/marble-world.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10037129,
+      "latency_ms": 31.244,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-3dd1b2f11b56",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 298,
+      "latency_ms": 1241.912,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-42de39f1e3e7",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/merge_founder_research.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "found": [
+        "src/scripts/merge_founder_research.mjs"
+      ],
+      "missed": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "recall_at_5": 0.125,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.125,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.125,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.125,
+      "recall_at_4000_tokens": 0.125,
+      "recall_at_16000_tokens": 0.125,
+      "first_hit_rank": 3,
+      "tokens_delivered": 730,
+      "latency_ms": 1238.762,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-62d014f029c5",
+      "path_leak": true,
+      "required_files": [
+        "src/data/archetypes.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/build_dataset.mjs"
+      ],
+      "found": [
+        "src/data/archetypes.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/build_dataset.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 13,
+      "tokens_delivered": 514,
+      "latency_ms": 555.402,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-6e229e791c6c",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/audit_discovery.mjs",
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "found": [
+        "src/scripts/audit_discovery.mjs",
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 877,
+      "latency_ms": 569.025,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-77787b7d957c",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [],
+      "missed": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 39,
+      "latency_ms": 503.834,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-8105b178afd6",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro",
+        "src/pages/index.astro"
+      ],
+      "found": [],
+      "missed": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro",
+        "src/pages/index.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 674,
+      "latency_ms": 576.224,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-9d6998dcea66",
+      "path_leak": true,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 706,
+      "latency_ms": 617.309,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-a6e68b3385a5",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [],
+      "missed": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 379.948,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-c699da18123d",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro"
+      ],
+      "found": [],
+      "missed": [
+        "src/layouts/Base.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2895,
+      "latency_ms": 542.13,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-c9ac67e7bf08",
+      "path_leak": true,
+      "required_files": [
+        "data/research/merge_report.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/merge_research.py"
+      ],
+      "found": [
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "missed": [
+        "data/research/merge_report.json",
+        "src/scripts/merge_research.py"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2857,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2857,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 2647,
+      "latency_ms": 162.305,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-d3747e8cea4f",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [
+        "src/scripts/marble-world.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 838,
+      "latency_ms": 2092.926,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-dbe87b68b695",
+      "path_leak": true,
+      "required_files": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "found": [],
+      "missed": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 47,
+      "latency_ms": 732.119,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-ec48ef20dcb2",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/coverage.ts",
+        "src/pages/coverage/index.astro",
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "found": [
+        "src/lib/coverage.ts",
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "missed": [
+        "src/pages/coverage/index.astro"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 5,
+      "tokens_delivered": 806,
+      "latency_ms": 1440.033,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "what-it-takes-to-win-eca794d585ba",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [
+        "src/scripts/marble-world.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 709,
+      "latency_ms": 1375.129,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-3dd1b2f11b56",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2518,
+      "latency_ms": 2506.805,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-42de39f1e3e7",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/merge_founder_research.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "src/scripts/apply_3d_scores.mjs",
+        "src/scripts/apply_scoring.mjs",
+        "src/scripts/build_scoring_batches.mjs",
+        "src/scripts/build_yc_founder_batches.mjs",
+        "src/scripts/fetch_yc_companies.mjs",
+        "src/scripts/heuristic_score.mjs",
+        "src/scripts/merge_founder_research.mjs",
+        "src/scripts/scrape_yc_founders.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4162,
+      "latency_ms": 4270.802,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-62d014f029c5",
+      "path_leak": true,
+      "required_files": [
+        "src/data/archetypes.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/build_dataset.mjs"
+      ],
+      "found": [
+        "src/scripts/build_dataset.mjs"
+      ],
+      "missed": [
+        "src/data/archetypes.json",
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1111,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 5451,
+      "latency_ms": 1818.913,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-6e229e791c6c",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/audit_discovery.mjs",
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "found": [
+        "src/scripts/audit_discovery.mjs",
+        "src/scripts/generate_discovery_surfaces.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5059,
+      "latency_ms": 3160.813,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-77787b7d957c",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [],
+      "missed": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 784,
+      "latency_ms": 1925.719,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-8105b178afd6",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro",
+        "src/pages/index.astro"
+      ],
+      "found": [
+        "src/layouts/Base.astro",
+        "src/pages/explore/index.astro",
+        "src/pages/index.astro"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1875,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1697,
+      "latency_ms": 2394.766,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-9d6998dcea66",
+      "path_leak": true,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 195,
+      "latency_ms": 2359.108,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-a6e68b3385a5",
+      "path_leak": false,
+      "required_files": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "found": [],
+      "missed": [
+        "src/pages/compare/index.astro",
+        "src/pages/person/[id].astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7,
+      "latency_ms": 1716.235,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-c699da18123d",
+      "path_leak": false,
+      "required_files": [
+        "src/layouts/Base.astro"
+      ],
+      "found": [
+        "src/layouts/Base.astro"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 5197,
+      "latency_ms": 2355.442,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-c9ac67e7bf08",
+      "path_leak": true,
+      "required_files": [
+        "data/research/merge_report.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/merge_research.py"
+      ],
+      "found": [],
+      "missed": [
+        "data/research/merge_report.json",
+        "src/data/people.csv",
+        "src/data/people.json",
+        "src/scripts/merge_research.py"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2973,
+      "latency_ms": 736.375,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-d3747e8cea4f",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [
+        "src/scripts/marble-world.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 6591,
+      "latency_ms": 4660.961,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-dbe87b68b695",
+      "path_leak": true,
+      "required_files": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "found": [],
+      "missed": [
+        "public/data/people.json",
+        "public/data/search-index.json",
+        "src/data/people.csv",
+        "src/data/people.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5363,
+      "latency_ms": 1995.987,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-ec48ef20dcb2",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/coverage.ts",
+        "src/pages/coverage/index.astro",
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "found": [
+        "src/lib/coverage.ts",
+        "src/pages/coverage/index.astro"
+      ],
+      "missed": [
+        "src/scripts/audit_clarity.mjs"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.4,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.4,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 951,
+      "latency_ms": 6436.596,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "what-it-takes-to-win-eca794d585ba",
+      "path_leak": true,
+      "required_files": [
+        "src/scripts/marble-world.ts"
+      ],
+      "found": [
+        "src/scripts/marble-world.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 190,
+      "latency_ms": 4680.92,
+      "indexed_revision_matches": true
+    }
+  ]
+}

@@ -1,0 +1,5638 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "email-manager",
+    "head": "6750f6ee35bd70bd5e1b31e9e5308b019e2d67d8"
+  },
+  "tier": "small",
+  "tier_code_files": 102,
+  "corpus_counts": {
+    "cases": 47,
+    "path_leak": 21,
+    "baseline_blind": 26,
+    "multi_file": 14
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": true,
+      "best": 0.5952,
+      "control": 0.0566,
+      "reason": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "hide HF transformers import from server bundler",
+        "revision": "7796afb6ea63065a43e425264ab2bd72977456b8",
+        "returned": [
+          "src/lib/auth.ts",
+          "tsconfig.json",
+          "src/lib/embeddings.ts",
+          "src/components/Analytics.tsx",
+          ".github/workflows/weekly.yml"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "Fix 500 errors: add token refresh and API error handling",
+        "revision": "5a0df4b3fee1874f78e91f6fb283bcf3559cb10a",
+        "returned": [
+          "src/app/page.tsx",
+          "src/components/EmailDetail.tsx",
+          "src/lib/auth.ts",
+          "src/app/api/emails/[id]/route.ts",
+          "src/app/api/emails/route.ts"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "hide HF transformers import from server bundler",
+        "revision": "7796afb6ea63065a43e425264ab2bd72977456b8",
+        "returned": [
+          "package.json",
+          "pnpm-lock.yaml",
+          "src/app/page.tsx",
+          "next.config.ts",
+          "src/components/Analytics.tsx"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "create better-auth migrations + schema mapping for D1",
+        "revision": "3cbd63102c967b7ad151f44592049b080c876d6a",
+        "returned": [
+          "package.json",
+          "pnpm-lock.yaml",
+          "src/app/page.tsx",
+          "next.config.ts",
+          "src/components/Analytics.tsx"
+        ]
+      },
+      {
+        "provider_id": "codevetter-structural-context",
+        "query": "migrate deploy from CF Pages to CF Workers, simplify next.config",
+        "revision": "2c1993e3e71ae79b67cb8b3ca68a62747c88e052",
+        "returned": [
+          "eslint.config.js",
+          "next.config.ts",
+          "open-next.config.ts",
+          ".github/workflows/deploy.yml",
+          "src/components/saasmaker-feedback.tsx"
+        ]
+      },
+      {
+        "provider_id": "codevetter-structural-context",
+        "query": "Fix 500 errors: add token refresh and API error handling",
+        "revision": "5a0df4b3fee1874f78e91f6fb283bcf3559cb10a",
+        "returned": [
+          "src/components/Subscriptions.tsx",
+          "src/app/page.tsx",
+          "src/components/EmailDetail.tsx",
+          "src/lib/gmail.ts",
+          "src/app/api/auth/[...nextauth]/route.ts"
+        ]
+      },
+      {
+        "provider_id": "graphify",
+        "query": "migrate deploy from CF Pages to CF Workers, simplify next.config",
+        "revision": "2c1993e3e71ae79b67cb8b3ca68a62747c88e052",
+        "returned": [
+          "postcss.config.mjs",
+          "package.json",
+          "next.config.ts",
+          "AUDIT.md",
+          "postcss-load-config"
+        ]
+      },
+      {
+        "provider_id": "graphify",
+        "query": "create better-auth migrations + schema mapping for D1",
+        "revision": "3cbd63102c967b7ad151f44592049b080c876d6a",
+        "returned": [
+          "src/lib/auth.ts",
+          "package.json",
+          "src/lib/get-access-token.ts",
+          "src/app/api/auth/[...all",
+          "src/app/api/emails/[id"
+        ]
+      }
+    ],
+    "trustworthy": true
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 47,
+          "mean_recall_at_5": 0.08,
+          "full_recall_at_5": 0.0426,
+          "mean_recall_at_10": 0.1996,
+          "full_recall_at_10": 0.1489,
+          "mean_recall_at_20": 0.3246,
+          "full_recall_at_20": 0.2128,
+          "mean_recall_at_1000_tokens": 0.0213,
+          "mean_recall_at_4000_tokens": 0.0566,
+          "mean_recall_at_16000_tokens": 0.1748,
+          "mean_precision_at_10": 0.034,
+          "zero_hit_rate": 0.5319,
+          "median_tokens_delivered": 16304,
+          "median_latency_ms": 11.997,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 40,
+          "mean_recall_at_5": 0.044,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0596,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.2065,
+          "full_recall_at_20": 0.075,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0165,
+          "mean_recall_at_16000_tokens": 0.1304,
+          "mean_precision_at_10": 0.0225,
+          "zero_hit_rate": 0.625,
+          "median_tokens_delivered": 16080,
+          "median_latency_ms": 12.1035,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 7,
+          "mean_recall_at_5": 0.2857,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 1,
+          "full_recall_at_10": 1,
+          "mean_recall_at_20": 1,
+          "full_recall_at_20": 1,
+          "mean_recall_at_1000_tokens": 0.1429,
+          "mean_recall_at_4000_tokens": 0.2857,
+          "mean_recall_at_16000_tokens": 0.4286,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 76352,
+          "median_latency_ms": 11.223,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.0694,
+          "full_recall_at_5": 0.0476,
+          "mean_recall_at_10": 0.2123,
+          "full_recall_at_10": 0.1905,
+          "mean_recall_at_20": 0.3988,
+          "full_recall_at_20": 0.2857,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0218,
+          "mean_recall_at_16000_tokens": 0.1806,
+          "mean_precision_at_10": 0.0286,
+          "zero_hit_rate": 0.4286,
+          "median_tokens_delivered": 18158,
+          "median_latency_ms": 12.181,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 26,
+          "mean_recall_at_5": 0.0885,
+          "full_recall_at_5": 0.0385,
+          "mean_recall_at_10": 0.1894,
+          "full_recall_at_10": 0.1154,
+          "mean_recall_at_20": 0.2647,
+          "full_recall_at_20": 0.1538,
+          "mean_recall_at_1000_tokens": 0.0385,
+          "mean_recall_at_4000_tokens": 0.0846,
+          "mean_recall_at_16000_tokens": 0.1702,
+          "mean_precision_at_10": 0.0385,
+          "zero_hit_rate": 0.6154,
+          "median_tokens_delivered": 14071.5,
+          "median_latency_ms": 11.858,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 47
+      },
+      "resources": {
+        "baseline_rss_mb": 27068.7,
+        "peak_rss_mb": 27154.4,
+        "delta_rss_mb": 85.7,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 47,
+          "mean_recall_at_5": 0.2473,
+          "full_recall_at_5": 0.2128,
+          "mean_recall_at_10": 0.3727,
+          "full_recall_at_10": 0.2979,
+          "mean_recall_at_20": 0.5906,
+          "full_recall_at_20": 0.5106,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0319,
+          "mean_recall_at_16000_tokens": 0.2,
+          "mean_precision_at_10": 0.0553,
+          "zero_hit_rate": 0.3404,
+          "median_tokens_delivered": 84238,
+          "median_latency_ms": 18.105,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 40,
+          "mean_recall_at_5": 0.2406,
+          "full_recall_at_5": 0.2,
+          "mean_recall_at_10": 0.3379,
+          "full_recall_at_10": 0.25,
+          "mean_recall_at_20": 0.569,
+          "full_recall_at_20": 0.475,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0375,
+          "mean_recall_at_16000_tokens": 0.185,
+          "mean_precision_at_10": 0.055,
+          "zero_hit_rate": 0.35,
+          "median_tokens_delivered": 88809,
+          "median_latency_ms": 18.2295,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 7,
+          "mean_recall_at_5": 0.2857,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 0.5714,
+          "full_recall_at_10": 0.5714,
+          "mean_recall_at_20": 0.7143,
+          "full_recall_at_20": 0.7143,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.2857,
+          "mean_precision_at_10": 0.0571,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 81053,
+          "median_latency_ms": 17.401,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.125,
+          "full_recall_at_5": 0.0952,
+          "mean_recall_at_10": 0.2817,
+          "full_recall_at_10": 0.1905,
+          "mean_recall_at_20": 0.4861,
+          "full_recall_at_20": 0.381,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0238,
+          "mean_recall_at_16000_tokens": 0.119,
+          "mean_precision_at_10": 0.0524,
+          "zero_hit_rate": 0.4286,
+          "median_tokens_delivered": 86151,
+          "median_latency_ms": 18.636,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 26,
+          "mean_recall_at_5": 0.3462,
+          "full_recall_at_5": 0.3077,
+          "mean_recall_at_10": 0.4462,
+          "full_recall_at_10": 0.3846,
+          "mean_recall_at_20": 0.675,
+          "full_recall_at_20": 0.6154,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.0385,
+          "mean_recall_at_16000_tokens": 0.2654,
+          "mean_precision_at_10": 0.0577,
+          "zero_hit_rate": 0.2692,
+          "median_tokens_delivered": 83901,
+          "median_latency_ms": 17.8015,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 47
+      },
+      "resources": {
+        "baseline_rss_mb": 27171.1,
+        "peak_rss_mb": 27284.6,
+        "delta_rss_mb": 113.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "summary": {
+        "all": {
+          "cases": 47,
+          "mean_recall_at_5": 0.4413,
+          "full_recall_at_5": 0.383,
+          "mean_recall_at_10": 0.5473,
+          "full_recall_at_10": 0.4681,
+          "mean_recall_at_20": 0.5952,
+          "full_recall_at_20": 0.5106,
+          "mean_recall_at_1000_tokens": 0.5952,
+          "mean_recall_at_4000_tokens": 0.5952,
+          "mean_recall_at_16000_tokens": 0.5952,
+          "mean_precision_at_10": 0.0996,
+          "zero_hit_rate": 0.2766,
+          "median_tokens_delivered": 500,
+          "median_latency_ms": 119.982,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 40,
+          "mean_recall_at_5": 0.4185,
+          "full_recall_at_5": 0.35,
+          "mean_recall_at_10": 0.4931,
+          "full_recall_at_10": 0.4,
+          "mean_recall_at_20": 0.5494,
+          "full_recall_at_20": 0.45,
+          "mean_recall_at_1000_tokens": 0.5494,
+          "mean_recall_at_4000_tokens": 0.5494,
+          "mean_recall_at_16000_tokens": 0.5494,
+          "mean_precision_at_10": 0.0929,
+          "zero_hit_rate": 0.3,
+          "median_tokens_delivered": 504.5,
+          "median_latency_ms": 133.504,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 7,
+          "mean_recall_at_5": 0.5714,
+          "full_recall_at_5": 0.5714,
+          "mean_recall_at_10": 0.8571,
+          "full_recall_at_10": 0.8571,
+          "mean_recall_at_20": 0.8571,
+          "full_recall_at_20": 0.8571,
+          "mean_recall_at_1000_tokens": 0.8571,
+          "mean_recall_at_4000_tokens": 0.8571,
+          "mean_recall_at_16000_tokens": 0.8571,
+          "mean_precision_at_10": 0.1383,
+          "zero_hit_rate": 0.1429,
+          "median_tokens_delivered": 477,
+          "median_latency_ms": 104.073,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.6567,
+          "full_recall_at_5": 0.5714,
+          "mean_recall_at_10": 0.7321,
+          "full_recall_at_10": 0.619,
+          "mean_recall_at_20": 0.7798,
+          "full_recall_at_20": 0.6667,
+          "mean_recall_at_1000_tokens": 0.7798,
+          "mean_recall_at_4000_tokens": 0.7798,
+          "mean_recall_at_16000_tokens": 0.7798,
+          "mean_precision_at_10": 0.1303,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 468,
+          "median_latency_ms": 134.72,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 26,
+          "mean_recall_at_5": 0.2673,
+          "full_recall_at_5": 0.2308,
+          "mean_recall_at_10": 0.3981,
+          "full_recall_at_10": 0.3462,
+          "mean_recall_at_20": 0.4462,
+          "full_recall_at_20": 0.3846,
+          "mean_recall_at_1000_tokens": 0.4462,
+          "mean_recall_at_4000_tokens": 0.4462,
+          "mean_recall_at_16000_tokens": 0.4462,
+          "mean_precision_at_10": 0.0749,
+          "zero_hit_rate": 0.5,
+          "median_tokens_delivered": 547.5,
+          "median_latency_ms": 116.062,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 47
+      },
+      "resources": {
+        "baseline_rss_mb": 27263.7,
+        "peak_rss_mb": 28594.8,
+        "delta_rss_mb": 1331,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 89001984
+      }
+    },
+    {
+      "provider_id": "graphify",
+      "summary": {
+        "all": {
+          "cases": 47,
+          "mean_recall_at_5": 0.395,
+          "full_recall_at_5": 0.3404,
+          "mean_recall_at_10": 0.4473,
+          "full_recall_at_10": 0.383,
+          "mean_recall_at_20": 0.505,
+          "full_recall_at_20": 0.4255,
+          "mean_recall_at_1000_tokens": 0.3766,
+          "mean_recall_at_4000_tokens": 0.5023,
+          "mean_recall_at_16000_tokens": 0.505,
+          "mean_precision_at_10": 0.1449,
+          "zero_hit_rate": 0.383,
+          "median_tokens_delivered": 1677,
+          "median_latency_ms": 915.738,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 40,
+          "mean_recall_at_5": 0.3892,
+          "full_recall_at_5": 0.325,
+          "mean_recall_at_10": 0.4506,
+          "full_recall_at_10": 0.375,
+          "mean_recall_at_20": 0.4933,
+          "full_recall_at_20": 0.4,
+          "mean_recall_at_1000_tokens": 0.3675,
+          "mean_recall_at_4000_tokens": 0.4902,
+          "mean_recall_at_16000_tokens": 0.4933,
+          "mean_precision_at_10": 0.159,
+          "zero_hit_rate": 0.375,
+          "median_tokens_delivered": 1669.5,
+          "median_latency_ms": 967.8655,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 7,
+          "mean_recall_at_5": 0.4286,
+          "full_recall_at_5": 0.4286,
+          "mean_recall_at_10": 0.4286,
+          "full_recall_at_10": 0.4286,
+          "mean_recall_at_20": 0.5714,
+          "full_recall_at_20": 0.5714,
+          "mean_recall_at_1000_tokens": 0.4286,
+          "mean_recall_at_4000_tokens": 0.5714,
+          "mean_recall_at_16000_tokens": 0.5714,
+          "mean_precision_at_10": 0.0643,
+          "zero_hit_rate": 0.4286,
+          "median_tokens_delivered": 1685,
+          "median_latency_ms": 909.323,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 21,
+          "mean_recall_at_5": 0.5734,
+          "full_recall_at_5": 0.5238,
+          "mean_recall_at_10": 0.5734,
+          "full_recall_at_10": 0.5238,
+          "mean_recall_at_20": 0.5913,
+          "full_recall_at_20": 0.5238,
+          "mean_recall_at_1000_tokens": 0.5317,
+          "mean_recall_at_4000_tokens": 0.5913,
+          "mean_recall_at_16000_tokens": 0.5913,
+          "mean_precision_at_10": 0.1667,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 1679,
+          "median_latency_ms": 915.738,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 26,
+          "mean_recall_at_5": 0.251,
+          "full_recall_at_5": 0.1923,
+          "mean_recall_at_10": 0.3455,
+          "full_recall_at_10": 0.2692,
+          "mean_recall_at_20": 0.4353,
+          "full_recall_at_20": 0.3462,
+          "mean_recall_at_1000_tokens": 0.2513,
+          "mean_recall_at_4000_tokens": 0.4305,
+          "mean_recall_at_16000_tokens": 0.4353,
+          "mean_precision_at_10": 0.1273,
+          "zero_hit_rate": 0.4615,
+          "median_tokens_delivered": 1547.5,
+          "median_latency_ms": 921.3515,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 46,
+        "indexed-but-returned-nothing": 1
+      },
+      "resources": {
+        "baseline_rss_mb": 28038.8,
+        "peak_rss_mb": 28757.2,
+        "delta_rss_mb": 718.4,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 16347136
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-0476e5ea7a56",
+      "path_leak": true,
+      "required_files": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 82897,
+      "latency_ms": 25.638,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-0d87af9a34b0",
+      "path_leak": true,
+      "required_files": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "found": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 11,
+      "tokens_delivered": 18158,
+      "latency_ms": 11.718,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-0eddf5a467de",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/lib/auth.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 16175,
+      "latency_ms": 16.613,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-13cc40c36dae",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts",
+        "src/lib/embeddings.ts"
+      ],
+      "found": [
+        "src/lib/embeddings.ts"
+      ],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 80783,
+      "latency_ms": 14.107,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-16cd9b84e276",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "next.config.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "next.config.ts",
+        "wrangler.toml"
+      ],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 4,
+      "tokens_delivered": 6886,
+      "latency_ms": 13.173,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-16da9a4b0f8e",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 43583,
+      "latency_ms": 12.952,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-1f4a2fcb88d5",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 21416,
+      "latency_ms": 12.527,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-1fc66e44e95f",
+      "path_leak": true,
+      "required_files": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12610,
+      "latency_ms": 12.043,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-2961ceed2611",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "found": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 17,
+      "tokens_delivered": 15243,
+      "latency_ms": 11.234,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-2aedecaad649",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7796,
+      "latency_ms": 12.346,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-3338db62bd1b",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18126,
+      "latency_ms": 11.732,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-33790a7fd4e5",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [
+        "tsconfig.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 14,
+      "tokens_delivered": 9805,
+      "latency_ms": 12.376,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-338b73db29bb",
+      "path_leak": true,
+      "required_files": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15985,
+      "latency_ms": 12.457,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-35501ddbd7e8",
+      "path_leak": true,
+      "required_files": [
+        "scripts/cf-build.mjs"
+      ],
+      "found": [
+        "scripts/cf-build.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 77583,
+      "latency_ms": 11.223,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-35efc8549441",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/components/posthog-provider.tsx",
+        "src/lib/analytics.ts",
+        "src/lib/foundry-monitoring.ts",
+        "src/lib/security-headers.ts",
+        "src/lib/vitals.ts",
+        "src/pages/HomeClient.tsx",
+        "tests/open-app.spec.ts"
+      ],
+      "found": [
+        "src/components/posthog-provider.tsx",
+        "src/pages/HomeClient.tsx"
+      ],
+      "missed": [
+        "public/_headers",
+        "src/lib/analytics.ts",
+        "src/lib/foundry-monitoring.ts",
+        "src/lib/security-headers.ts",
+        "src/lib/vitals.ts",
+        "tests/open-app.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.125,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.125,
+      "first_hit_rank": 6,
+      "tokens_delivered": 51001,
+      "latency_ms": 11.685,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-3c474e85a025",
+      "path_leak": true,
+      "required_files": [
+        "landing-astro/src/pages/faq.astro",
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx",
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "found": [
+        "landing-astro/src/pages/faq.astro",
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "missed": [
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 13,
+      "tokens_delivered": 12547,
+      "latency_ms": 11.222,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-3cbd63102c96",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8123,
+      "latency_ms": 11.437,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-45ab8efac77e",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12152,
+      "latency_ms": 11.903,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-4f284d35f52f",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/lib/auth.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10212,
+      "latency_ms": 12.182,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-50270cf8bf36",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/EmailList.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 105836,
+      "latency_ms": 12.181,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-5dd4caedcd8d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 84224,
+      "latency_ms": 10.807,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-5e56f1efdc60",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "tsconfig.json"
+      ],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 18,
+      "tokens_delivered": 78003,
+      "latency_ms": 12.499,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-61a651298526",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/EmailList.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 105836,
+      "latency_ms": 14.504,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-63eecd0ec045",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts",
+        "worker.mjs"
+      ],
+      "found": [
+        "worker.mjs"
+      ],
+      "missed": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 17,
+      "tokens_delivered": 110079,
+      "latency_ms": 12.208,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-64def25acbb3",
+      "path_leak": true,
+      "required_files": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts",
+        "src/lib/auth.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 79248,
+      "latency_ms": 14.84,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-6acde8cf1b54",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12295,
+      "latency_ms": 12.85,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-6cf000313340",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/layout.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8308,
+      "latency_ms": 11.813,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-7796afb6ea63",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [
+        "wrangler.toml"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 82790,
+      "latency_ms": 10.724,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-7b0fe5379d1a",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/api/emails/route.ts",
+        "src/app/page.tsx",
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/api/emails/route.ts",
+        "src/app/page.tsx",
+        "src/lib/auth.ts"
+      ],
+      "missed": [
+        ".gitignore"
+      ],
+      "recall_at_5": 0.8,
+      "precision_at_5": 0.8,
+      "recall_at_10": 0.8,
+      "precision_at_10": 0.4,
+      "recall_at_20": 0.8,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.2,
+      "recall_at_16000_tokens": 0.8,
+      "first_hit_rank": 1,
+      "tokens_delivered": 40120,
+      "latency_ms": 11.275,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-88e6e8039b06",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17703,
+      "latency_ms": 11.985,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-8a3b6110595c",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/layout.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8549,
+      "latency_ms": 11.788,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-92f5176080c2",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3864,
+      "latency_ms": 12.447,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-95a35f10d8b7",
+      "path_leak": true,
+      "required_files": [
+        "src/worker.ts",
+        "tests/open-app.spec.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "wrangler.toml"
+      ],
+      "missed": [
+        "src/worker.ts",
+        "tests/open-app.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 72616,
+      "latency_ms": 11.369,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-ade59255e434",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 129236,
+      "latency_ms": 11.651,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-af92947d28e7",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5563,
+      "latency_ms": 10.639,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-b3822a197c25",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12349,
+      "latency_ms": 12.991,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-b5e31e012879",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 6013,
+      "latency_ms": 11.464,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-ba9e6497f9eb",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7381,
+      "latency_ms": 11.997,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-c64f6290bdd8",
+      "path_leak": true,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [
+        "wrangler.toml"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 76352,
+      "latency_ms": 10.93,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-c7d7703e1f35",
+      "path_leak": false,
+      "required_files": [
+        "src/app/page.tsx"
+      ],
+      "found": [
+        "src/app/page.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 9,
+      "tokens_delivered": 6707,
+      "latency_ms": 11.651,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-cd131b24cb29",
+      "path_leak": true,
+      "required_files": [
+        "index.html",
+        "landing-astro/src/layouts/Layout.astro",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "index.html",
+        "landing-astro/src/layouts/Layout.astro",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 16304,
+      "latency_ms": 12.937,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-d1746f53d55e",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "found": [],
+      "missed": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 75981,
+      "latency_ms": 11.746,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-e1bbe3e69163",
+      "path_leak": false,
+      "required_files": [
+        "src/lib/security-headers.ts",
+        "src/worker.ts"
+      ],
+      "found": [
+        "src/lib/security-headers.ts"
+      ],
+      "missed": [
+        "src/worker.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 74523,
+      "latency_ms": 12.412,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-e52fcd58cd2d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 42852,
+      "latency_ms": 11.294,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-edc4fd5d594b",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 9715,
+      "latency_ms": 13.969,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-f1c2f027bafe",
+      "path_leak": false,
+      "required_files": [
+        "tests/example.spec.ts"
+      ],
+      "found": [],
+      "missed": [
+        "tests/example.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12900,
+      "latency_ms": 11.43,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "email-manager-f24464fd6750",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageQueues.tsx",
+        "src/components/TriageSession.tsx",
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css",
+        "src/worker.ts"
+      ],
+      "found": [
+        "src/components/TriageQueues.tsx"
+      ],
+      "missed": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageSession.tsx",
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css",
+        "src/worker.ts"
+      ],
+      "recall_at_5": 0.125,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.125,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.125,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.125,
+      "recall_at_16000_tokens": 0.125,
+      "first_hit_rank": 3,
+      "tokens_delivered": 14806,
+      "latency_ms": 12.164,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-0476e5ea7a56",
+      "path_leak": true,
+      "required_files": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 86151,
+      "latency_ms": 21.89,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-0d87af9a34b0",
+      "path_leak": true,
+      "required_files": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 114507,
+      "latency_ms": 18.681,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-0eddf5a467de",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 92915,
+      "latency_ms": 19.419,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-13cc40c36dae",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts",
+        "src/lib/embeddings.ts"
+      ],
+      "found": [
+        "next.config.ts"
+      ],
+      "missed": [
+        "src/lib/embeddings.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 81053,
+      "latency_ms": 19.615,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-16cd9b84e276",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "next.config.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "next.config.ts",
+        "wrangler.toml"
+      ],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 78112,
+      "latency_ms": 18.799,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-16da9a4b0f8e",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 43583,
+      "latency_ms": 18.105,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-1f4a2fcb88d5",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "found": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 18,
+      "tokens_delivered": 136353,
+      "latency_ms": 25.729,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-1fc66e44e95f",
+      "path_leak": true,
+      "required_files": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 88809,
+      "latency_ms": 16.753,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-2961ceed2611",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 114539,
+      "latency_ms": 17.4,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-2aedecaad649",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [
+        "wrangler.toml"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 83883,
+      "latency_ms": 16.67,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-3338db62bd1b",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 136353,
+      "latency_ms": 22.644,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-33790a7fd4e5",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 46302,
+      "latency_ms": 17.763,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-338b73db29bb",
+      "path_leak": true,
+      "required_files": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 139417,
+      "latency_ms": 22.716,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-35501ddbd7e8",
+      "path_leak": true,
+      "required_files": [
+        "scripts/cf-build.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/cf-build.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 77940,
+      "latency_ms": 19.54,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-35efc8549441",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/components/posthog-provider.tsx",
+        "src/lib/analytics.ts",
+        "src/lib/foundry-monitoring.ts",
+        "src/lib/security-headers.ts",
+        "src/lib/vitals.ts",
+        "src/pages/HomeClient.tsx",
+        "tests/open-app.spec.ts"
+      ],
+      "found": [
+        "src/lib/foundry-monitoring.ts",
+        "src/pages/HomeClient.tsx"
+      ],
+      "missed": [
+        "public/_headers",
+        "src/components/posthog-provider.tsx",
+        "src/lib/analytics.ts",
+        "src/lib/security-headers.ts",
+        "src/lib/vitals.ts",
+        "tests/open-app.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 14,
+      "tokens_delivered": 90883,
+      "latency_ms": 20.738,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-3c474e85a025",
+      "path_leak": true,
+      "required_files": [
+        "landing-astro/src/pages/faq.astro",
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx",
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/pages/faq.astro",
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx",
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 135232,
+      "latency_ms": 20.234,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-3cbd63102c96",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 83842,
+      "latency_ms": 16.998,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-45ab8efac77e",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "found": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 114463,
+      "latency_ms": 17.596,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-4f284d35f52f",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 13,
+      "tokens_delivered": 46156,
+      "latency_ms": 17.27,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-50270cf8bf36",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [
+        "src/components/EmailList.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 114463,
+      "latency_ms": 18.636,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-5dd4caedcd8d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 84238,
+      "latency_ms": 15.942,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-5e56f1efdc60",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 80214,
+      "latency_ms": 15.451,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-61a651298526",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [
+        "src/components/EmailList.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 114463,
+      "latency_ms": 17.072,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-63eecd0ec045",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts",
+        "worker.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts",
+        "worker.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 113173,
+      "latency_ms": 18.341,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-64def25acbb3",
+      "path_leak": true,
+      "required_files": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts",
+        "src/lib/auth.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "src/lib/auth.ts",
+        "wrangler.toml"
+      ],
+      "missed": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 83842,
+      "latency_ms": 18.118,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-6acde8cf1b54",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [
+        "next.config.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 78526,
+      "latency_ms": 17.553,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-6cf000313340",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 83868,
+      "latency_ms": 16.767,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-7796afb6ea63",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [
+        "wrangler.toml"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 81053,
+      "latency_ms": 16.664,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-7b0fe5379d1a",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/api/emails/route.ts",
+        "src/app/page.tsx",
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/api/emails/route.ts",
+        "src/app/page.tsx",
+        "src/lib/auth.ts"
+      ],
+      "missed": [
+        ".gitignore"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.6,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.8,
+      "precision_at_20": 0.2222,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.4,
+      "first_hit_rank": 6,
+      "tokens_delivered": 40120,
+      "latency_ms": 19.862,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-88e6e8039b06",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 139417,
+      "latency_ms": 22.316,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-8a3b6110595c",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 83901,
+      "latency_ms": 17.823,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-92f5176080c2",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 83844,
+      "latency_ms": 17.401,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-95a35f10d8b7",
+      "path_leak": true,
+      "required_files": [
+        "src/worker.ts",
+        "tests/open-app.spec.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "src/worker.ts",
+        "wrangler.toml"
+      ],
+      "missed": [
+        "tests/open-app.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 90651,
+      "latency_ms": 17.929,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-ade59255e434",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 141342,
+      "latency_ms": 19.394,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-af92947d28e7",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 83901,
+      "latency_ms": 15.978,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-b3822a197c25",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [
+        "next.config.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 88809,
+      "latency_ms": 15.818,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-b5e31e012879",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 81051,
+      "latency_ms": 15.282,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-ba9e6497f9eb",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [
+        "next.config.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 77903,
+      "latency_ms": 15.66,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-c64f6290bdd8",
+      "path_leak": true,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 78303,
+      "latency_ms": 15.723,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-c7d7703e1f35",
+      "path_leak": false,
+      "required_files": [
+        "src/app/page.tsx"
+      ],
+      "found": [
+        "src/app/page.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 83818,
+      "latency_ms": 18.885,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-cd131b24cb29",
+      "path_leak": true,
+      "required_files": [
+        "index.html",
+        "landing-astro/src/layouts/Layout.astro",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "index.html",
+        "landing-astro/src/layouts/Layout.astro",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 140021,
+      "latency_ms": 19.788,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-d1746f53d55e",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "found": [],
+      "missed": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 92912,
+      "latency_ms": 18.073,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-e1bbe3e69163",
+      "path_leak": false,
+      "required_files": [
+        "src/lib/security-headers.ts",
+        "src/worker.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/lib/security-headers.ts",
+        "src/worker.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 88536,
+      "latency_ms": 17.78,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-e52fcd58cd2d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 42852,
+      "latency_ms": 19.794,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-edc4fd5d594b",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 78587,
+      "latency_ms": 19.409,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-f1c2f027bafe",
+      "path_leak": false,
+      "required_files": [
+        "tests/example.spec.ts"
+      ],
+      "found": [],
+      "missed": [
+        "tests/example.spec.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 113080,
+      "latency_ms": 19.584,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "email-manager-f24464fd6750",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageQueues.tsx",
+        "src/components/TriageSession.tsx",
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css",
+        "src/worker.ts"
+      ],
+      "found": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageQueues.tsx",
+        "src/worker.ts"
+      ],
+      "missed": [
+        "src/components/TriageSession.tsx",
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css"
+      ],
+      "recall_at_5": 0.125,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.375,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 91399,
+      "latency_ms": 18.946,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-0476e5ea7a56",
+      "path_leak": true,
+      "required_files": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "found": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 370,
+      "latency_ms": 210.391,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-0d87af9a34b0",
+      "path_leak": true,
+      "required_files": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "found": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 315,
+      "latency_ms": 134.72,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-0eddf5a467de",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 13,
+      "tokens_delivered": 717,
+      "latency_ms": 151.995,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-13cc40c36dae",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts",
+        "src/lib/embeddings.ts"
+      ],
+      "found": [
+        "next.config.ts",
+        "src/lib/embeddings.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 666,
+      "latency_ms": 101.509,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-16cd9b84e276",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "next.config.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "next.config.ts"
+      ],
+      "missed": [
+        ".husky/pre-push",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 479,
+      "latency_ms": 119.982,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-16da9a4b0f8e",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 10,
+      "tokens_delivered": 314,
+      "latency_ms": 74.013,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-1f4a2fcb88d5",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 51,
+      "latency_ms": 184.161,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-1fc66e44e95f",
+      "path_leak": true,
+      "required_files": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "found": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 509,
+      "latency_ms": 168.695,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-2961ceed2611",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "found": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 286,
+      "latency_ms": 131.553,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-2aedecaad649",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 554,
+      "latency_ms": 119.355,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-3338db62bd1b",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 786,
+      "latency_ms": 200.093,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-33790a7fd4e5",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "tsconfig.json"
+      ],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 526,
+      "latency_ms": 96.227,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-338b73db29bb",
+      "path_leak": true,
+      "required_files": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 251,
+      "latency_ms": 184.289,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-35501ddbd7e8",
+      "path_leak": true,
+      "required_files": [
+        "scripts/cf-build.mjs"
+      ],
+      "found": [
+        "scripts/cf-build.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 597,
+      "latency_ms": 150.99,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-35efc8549441",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/components/posthog-provider.tsx",
+        "src/lib/analytics.ts",
+        "src/lib/foundry-monitoring.ts",
+        "src/lib/security-headers.ts",
+        "src/lib/vitals.ts",
+        "src/pages/HomeClient.tsx",
+        "tests/open-app.spec.ts"
+      ],
+      "found": [
+        "src/components/posthog-provider.tsx",
+        "src/lib/foundry-monitoring.ts",
+        "src/pages/HomeClient.tsx",
+        "tests/open-app.spec.ts"
+      ],
+      "missed": [
+        "public/_headers",
+        "src/lib/analytics.ts",
+        "src/lib/security-headers.ts",
+        "src/lib/vitals.ts"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 649,
+      "latency_ms": 152.042,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-3c474e85a025",
+      "path_leak": true,
+      "required_files": [
+        "landing-astro/src/pages/faq.astro",
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx",
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "found": [
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "missed": [
+        "landing-astro/src/pages/faq.astro",
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 8,
+      "tokens_delivered": 272,
+      "latency_ms": 221.529,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-3cbd63102c96",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [
+        ".husky/pre-push"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 251,
+      "latency_ms": 95.617,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-45ab8efac77e",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "found": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 396,
+      "latency_ms": 145.215,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-4f284d35f52f",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 611,
+      "latency_ms": 82.553,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-50270cf8bf36",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [
+        "src/components/EmailList.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 442,
+      "latency_ms": 16.86,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-5dd4caedcd8d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 455,
+      "latency_ms": 111.299,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-5e56f1efdc60",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 654,
+      "latency_ms": 96.432,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-61a651298526",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [
+        "src/components/EmailList.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 442,
+      "latency_ms": 19.938,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-63eecd0ec045",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts",
+        "worker.mjs"
+      ],
+      "found": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts",
+        "worker.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 14,
+      "tokens_delivered": 547,
+      "latency_ms": 132.288,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-64def25acbb3",
+      "path_leak": true,
+      "required_files": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts",
+        "src/lib/auth.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 2,
+      "tokens_delivered": 468,
+      "latency_ms": 97.553,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-6acde8cf1b54",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 630,
+      "latency_ms": 101.87,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-6cf000313340",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 637,
+      "latency_ms": 108.329,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-7796afb6ea63",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 584,
+      "latency_ms": 97.066,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-7b0fe5379d1a",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/api/emails/route.ts",
+        "src/app/page.tsx",
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/api/emails/route.ts",
+        "src/app/page.tsx"
+      ],
+      "missed": [
+        ".gitignore",
+        "src/lib/auth.ts"
+      ],
+      "recall_at_5": 0.2,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6,
+      "precision_at_10": 0.4286,
+      "recall_at_20": 0.6,
+      "precision_at_20": 0.4286,
+      "recall_at_1000_tokens": 0.6,
+      "recall_at_4000_tokens": 0.6,
+      "recall_at_16000_tokens": 0.6,
+      "first_hit_rank": 2,
+      "tokens_delivered": 426,
+      "latency_ms": 89.855,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-88e6e8039b06",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22,
+      "latency_ms": 199.19,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-8a3b6110595c",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 9,
+      "tokens_delivered": 621,
+      "latency_ms": 96.836,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-92f5176080c2",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.125,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 477,
+      "latency_ms": 104.073,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-95a35f10d8b7",
+      "path_leak": true,
+      "required_files": [
+        "src/worker.ts",
+        "tests/open-app.spec.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "src/worker.ts"
+      ],
+      "missed": [
+        "tests/open-app.spec.ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 953,
+      "latency_ms": 148.7,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-ade59255e434",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22,
+      "latency_ms": 225.306,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-af92947d28e7",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33,
+      "latency_ms": 96.68,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-b3822a197c25",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [
+        "next.config.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 583,
+      "latency_ms": 110.169,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-b5e31e012879",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 60,
+      "latency_ms": 98.151,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-ba9e6497f9eb",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 438,
+      "latency_ms": 92.589,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-c64f6290bdd8",
+      "path_leak": true,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [
+        "wrangler.toml"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 7,
+      "latency_ms": 90.626,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-c7d7703e1f35",
+      "path_leak": false,
+      "required_files": [
+        "src/app/page.tsx"
+      ],
+      "found": [
+        "src/app/page.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 9,
+      "tokens_delivered": 548,
+      "latency_ms": 112.769,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-cd131b24cb29",
+      "path_leak": true,
+      "required_files": [
+        "index.html",
+        "landing-astro/src/layouts/Layout.astro",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "missed": [
+        "index.html",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 8,
+      "tokens_delivered": 714,
+      "latency_ms": 198.425,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-d1746f53d55e",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "found": [],
+      "missed": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 599,
+      "latency_ms": 190.046,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-e1bbe3e69163",
+      "path_leak": false,
+      "required_files": [
+        "src/lib/security-headers.ts",
+        "src/worker.ts"
+      ],
+      "found": [
+        "src/worker.ts"
+      ],
+      "missed": [
+        "src/lib/security-headers.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 744,
+      "latency_ms": 148.468,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-e52fcd58cd2d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 610,
+      "latency_ms": 162.518,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-edc4fd5d594b",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 500,
+      "latency_ms": 223.122,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-f1c2f027bafe",
+      "path_leak": false,
+      "required_files": [
+        "tests/example.spec.ts"
+      ],
+      "found": [
+        "tests/example.spec.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 273,
+      "latency_ms": 196.14,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "email-manager-f24464fd6750",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageQueues.tsx",
+        "src/components/TriageSession.tsx",
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css",
+        "src/worker.ts"
+      ],
+      "found": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageQueues.tsx",
+        "src/components/TriageSession.tsx"
+      ],
+      "missed": [
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css",
+        "src/worker.ts"
+      ],
+      "recall_at_5": 0.375,
+      "precision_at_5": 0.6,
+      "recall_at_10": 0.375,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.375,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0.375,
+      "recall_at_4000_tokens": 0.375,
+      "recall_at_16000_tokens": 0.375,
+      "first_hit_rank": 3,
+      "tokens_delivered": 582,
+      "latency_ms": 300.551,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-0476e5ea7a56",
+      "path_leak": true,
+      "required_files": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/app/api/auth/[...all]/route.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5213,
+      "latency_ms": 1274.251,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-0d87af9a34b0",
+      "path_leak": true,
+      "required_files": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "found": [
+        "src/components/GmailFilterBuilder.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 7378,
+      "latency_ms": 984.672,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-0eddf5a467de",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [],
+      "missed": [
+        "src/lib/auth.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2347,
+      "latency_ms": 1769.723,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-13cc40c36dae",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts",
+        "src/lib/embeddings.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts",
+        "src/lib/embeddings.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 157,
+      "latency_ms": 884.276,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-16cd9b84e276",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push",
+        "next.config.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "next.config.ts"
+      ],
+      "missed": [
+        ".husky/pre-push",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 564,
+      "latency_ms": 753.882,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-16da9a4b0f8e",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4690,
+      "latency_ms": 722.37,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-1f4a2fcb88d5",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/pages/index.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 438,
+      "latency_ms": 1575.058,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-1fc66e44e95f",
+      "path_leak": true,
+      "required_files": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "found": [
+        "src/app/opengraph-image.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 767,
+      "latency_ms": 951.059,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-2961ceed2611",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "found": [
+        "src/app/app/HomeClient.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 6017,
+      "latency_ms": 1280.27,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-2aedecaad649",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 6397,
+      "latency_ms": 900.843,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-3338db62bd1b",
+      "path_leak": false,
+      "required_files": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/layouts/Layout.astro"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1023,
+      "latency_ms": 1754.545,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-33790a7fd4e5",
+      "path_leak": true,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 1,
+      "recall_at_10": 1,
+      "precision_at_10": 1,
+      "recall_at_20": 1,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 418,
+      "latency_ms": 835.116,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-338b73db29bb",
+      "path_leak": true,
+      "required_files": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1544,
+      "latency_ms": 2232.136,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-35501ddbd7e8",
+      "path_leak": true,
+      "required_files": [
+        "scripts/cf-build.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "scripts/cf-build.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 286,
+      "latency_ms": 909.323,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-35efc8549441",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/components/posthog-provider.tsx",
+        "src/lib/analytics.ts",
+        "src/lib/foundry-monitoring.ts",
+        "src/lib/security-headers.ts",
+        "src/lib/vitals.ts",
+        "src/pages/HomeClient.tsx",
+        "tests/open-app.spec.ts"
+      ],
+      "found": [
+        "src/lib/foundry-monitoring.ts",
+        "src/lib/security-headers.ts"
+      ],
+      "missed": [
+        "public/_headers",
+        "src/components/posthog-provider.tsx",
+        "src/lib/analytics.ts",
+        "src/lib/vitals.ts",
+        "src/pages/HomeClient.tsx",
+        "tests/open-app.spec.ts"
+      ],
+      "recall_at_5": 0.125,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.125,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4759,
+      "latency_ms": 1530.652,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-3c474e85a025",
+      "path_leak": true,
+      "required_files": [
+        "landing-astro/src/pages/faq.astro",
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx",
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "found": [],
+      "missed": [
+        "landing-astro/src/pages/faq.astro",
+        "landing-astro/src/pages/index.astro",
+        "src/components/SignInScreen.tsx",
+        "src/pages/PrivacyPage.tsx"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2419,
+      "latency_ms": 1941.85,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-3cbd63102c96",
+      "path_leak": true,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [
+        ".husky/pre-push"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2212,
+      "latency_ms": 748.259,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-45ab8efac77e",
+      "path_leak": false,
+      "required_files": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "found": [
+        "src/components/EmailDetail.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 12,
+      "tokens_delivered": 5842,
+      "latency_ms": 1355.368,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-4f284d35f52f",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 600,
+      "latency_ms": 751.272,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-50270cf8bf36",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [
+        "src/components/EmailList.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1679,
+      "latency_ms": 108.3,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-5dd4caedcd8d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4690,
+      "latency_ms": 1000.04,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-5e56f1efdc60",
+      "path_leak": false,
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [
+        "tsconfig.json"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 1,
+      "recall_at_10": 0.5,
+      "precision_at_10": 1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 598,
+      "latency_ms": 851.84,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-61a651298526",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailList.tsx"
+      ],
+      "found": [
+        "src/components/EmailList.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1679,
+      "latency_ms": 119.109,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-63eecd0ec045",
+      "path_leak": false,
+      "required_files": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts",
+        "worker.mjs"
+      ],
+      "found": [
+        "src/app/app/HomeClient.tsx",
+        "src/lib/get-access-token.ts"
+      ],
+      "missed": [
+        "worker.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1677,
+      "latency_ms": 1196.506,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-64def25acbb3",
+      "path_leak": true,
+      "required_files": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts",
+        "src/lib/auth.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "src/lib/auth.ts"
+      ],
+      "missed": [
+        "migrations/0001_better_auth.sql",
+        "src/db/schema.ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1388,
+      "latency_ms": 795.49,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-6acde8cf1b54",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1036,
+      "latency_ms": 927.975,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-6cf000313340",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1033,
+      "latency_ms": 716.803,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-7796afb6ea63",
+      "path_leak": false,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 6957,
+      "latency_ms": 636.129,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-7b0fe5379d1a",
+      "path_leak": false,
+      "required_files": [
+        ".gitignore",
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/api/emails/route.ts",
+        "src/app/page.tsx",
+        "src/lib/auth.ts"
+      ],
+      "found": [
+        "src/app/api/emails/route.ts",
+        "src/lib/auth.ts"
+      ],
+      "missed": [
+        ".gitignore",
+        "src/app/api/emails/[id]/route.ts",
+        "src/app/page.tsx"
+      ],
+      "recall_at_5": 0.4,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.4,
+      "precision_at_10": 0.4,
+      "recall_at_20": 0.4,
+      "precision_at_20": 0.4,
+      "recall_at_1000_tokens": 0.2,
+      "recall_at_4000_tokens": 0.4,
+      "recall_at_16000_tokens": 0.4,
+      "first_hit_rank": 3,
+      "tokens_delivered": 1418,
+      "latency_ms": 603.998,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-88e6e8039b06",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 895,
+      "latency_ms": 2218.041,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-8a3b6110595c",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 1687,
+      "latency_ms": 902.375,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-92f5176080c2",
+      "path_leak": false,
+      "required_files": [
+        "src/app/layout.tsx"
+      ],
+      "found": [
+        "src/app/layout.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.25,
+      "recall_at_10": 1,
+      "precision_at_10": 0.25,
+      "recall_at_20": 1,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 665,
+      "latency_ms": 791.064,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-95a35f10d8b7",
+      "path_leak": true,
+      "required_files": [
+        "src/worker.ts",
+        "tests/open-app.spec.ts",
+        "wrangler.toml"
+      ],
+      "found": [
+        "src/worker.ts"
+      ],
+      "missed": [
+        "tests/open-app.spec.ts",
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1690,
+      "latency_ms": 1729,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-ade59255e434",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2022,
+      "latency_ms": 3657.537,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-af92947d28e7",
+      "path_leak": false,
+      "required_files": [
+        ".husky/pre-push"
+      ],
+      "found": [],
+      "missed": [
+        ".husky/pre-push"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 96,
+      "latency_ms": 906.928,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-b3822a197c25",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1684,
+      "latency_ms": 1041.492,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-b5e31e012879",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1288,
+      "latency_ms": 815.782,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-ba9e6497f9eb",
+      "path_leak": false,
+      "required_files": [
+        "next.config.ts"
+      ],
+      "found": [],
+      "missed": [
+        "next.config.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7,
+      "latency_ms": 673.104,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-c64f6290bdd8",
+      "path_leak": true,
+      "required_files": [
+        "wrangler.toml"
+      ],
+      "found": [],
+      "missed": [
+        "wrangler.toml"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 314,
+      "latency_ms": 915.738,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-c7d7703e1f35",
+      "path_leak": false,
+      "required_files": [
+        "src/app/page.tsx"
+      ],
+      "found": [
+        "src/app/page.tsx"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 14,
+      "tokens_delivered": 1685,
+      "latency_ms": 914.728,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-cd131b24cb29",
+      "path_leak": true,
+      "required_files": [
+        "index.html",
+        "landing-astro/src/layouts/Layout.astro",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "found": [],
+      "missed": [
+        "index.html",
+        "landing-astro/src/layouts/Layout.astro",
+        "scripts/verify-public-indexing.mjs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2633,
+      "latency_ms": 1868.778,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-d1746f53d55e",
+      "path_leak": false,
+      "required_files": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "found": [],
+      "missed": [
+        "public/_headers",
+        "src/lib/security-headers.ts"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2533,
+      "latency_ms": 1609.239,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-e1bbe3e69163",
+      "path_leak": false,
+      "required_files": [
+        "src/lib/security-headers.ts",
+        "src/worker.ts"
+      ],
+      "found": [
+        "src/worker.ts"
+      ],
+      "missed": [
+        "src/lib/security-headers.ts"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1679,
+      "latency_ms": 1286.149,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-e52fcd58cd2d",
+      "path_leak": true,
+      "required_files": [
+        "src/lib/gmail.ts"
+      ],
+      "found": [
+        "src/lib/gmail.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 152,
+      "latency_ms": 593.171,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-edc4fd5d594b",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1275,
+      "latency_ms": 622.852,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-f1c2f027bafe",
+      "path_leak": false,
+      "required_files": [
+        "tests/example.spec.ts"
+      ],
+      "found": [
+        "tests/example.spec.ts"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2826,
+      "latency_ms": 1176.089,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "email-manager-f24464fd6750",
+      "path_leak": true,
+      "required_files": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageQueues.tsx",
+        "src/components/TriageSession.tsx",
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css",
+        "src/worker.ts"
+      ],
+      "found": [
+        "src/components/EmailDetail.tsx",
+        "src/components/TriageQueues.tsx",
+        "src/components/TriageSession.tsx",
+        "src/worker.ts"
+      ],
+      "missed": [
+        "src/components/ui/badge.tsx",
+        "src/lib/email-html.ts",
+        "src/lib/format-date.ts",
+        "src/styles/globals.css"
+      ],
+      "recall_at_5": 0.125,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.125,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 1662,
+      "latency_ms": 1439.87,
+      "indexed_revision_matches": true
+    }
+  ]
+}

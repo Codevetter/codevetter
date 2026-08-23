@@ -1,0 +1,5897 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "hugo",
+    "head": "7b5199fdeff7d7682e9f979f468d55bc7b67b934"
+  },
+  "tier": "medium",
+  "tier_code_files": 932,
+  "corpus_counts": {
+    "cases": 29,
+    "path_leak": 13,
+    "baseline_blind": 16,
+    "multi_file": 25
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": true,
+      "best": 0.1006,
+      "control": 0,
+      "reason": null
+    },
+    "needs_raw_payload_check": [
+      {
+        "provider_id": "ripgrep",
+        "why": "scored exactly zero — read the raw payload before believing it"
+      },
+      {
+        "provider_id": "zoekt",
+        "why": "scored exactly zero — read the raw payload before believing it"
+      },
+      {
+        "provider_id": "ast-grep",
+        "why": "scored exactly zero — read the raw payload before believing it"
+      }
+    ],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "Fix potential content XSS by escaping dangerous URLs in links and images",
+        "revision": "81a5cdca0788ca39574a17d444c9db29d0b19e27",
+        "returned": [
+          "markup/goldmark/images/images_integration_test.go",
+          "markup/goldmark/images/transform.go",
+          "tpl/collections/where_test.go",
+          "modules/collect_test.go",
+          "markup/goldmark/goldmark_integration_test.go"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix menu pageRef resolution in multidimensional setups",
+        "revision": "d98cd4aecf25b9df78d811759ea6135b0c7610f1",
+        "returned": [
+          "common/hugo/version_current.go",
+          "hugolib/site.go",
+          "hugolib/hugo_sites.go",
+          "resources/images/config.go",
+          ".github/workflows/aiwatchdog.yml"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix some default site redirect woes",
+        "revision": "66ba63cd5f30ef8807fc524dbc67399376299bb1",
+        "returned": [
+          "common/hugo/version_current.go",
+          "tpl/tplimpl/templatestore.go",
+          "tpl/tplimpl/templatestore_integration_test.go",
+          "hugolib/site.go",
+          ".github/workflows/aiwatchdog.yml"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix index out of range panic in fileEventsContentPaths",
+        "revision": "e8577771c3275d16b7d1b31cca5e9fd3ea517416",
+        "returned": [
+          "common/hugo/version_current.go",
+          "hugolib/site.go",
+          "hugolib/hugo_sites.go",
+          "resources/images/config.go",
+          ".github/workflows/aiwatchdog.yml"
+        ]
+      },
+      {
+        "provider_id": "ripgrep",
+        "query": "Fix cascade draft panic",
+        "revision": "192e3c453e904cf2e79312d4335a7ee216fe659d",
+        "returned": [
+          "hugolib/content_map_page_assembler.go",
+          "hugolib/content_map_test.go",
+          "hugolib/page__meta.go",
+          "config/allconfig/allconfig.go",
+          "config/allconfig/configlanguage.go"
+        ]
+      },
+      {
+        "provider_id": "ripgrep",
+        "query": "Fix image DecodeConfig regression of WebP images from file cache",
+        "revision": "6ef8017f60117ad9d900cc59f10a962cd68566d6",
+        "returned": [
+          "config/commonConfig.go",
+          "livereload/livereload.js",
+          "livereload/livereload.min.js",
+          "resources/image.go",
+          "resources/transform.go"
+        ]
+      },
+      {
+        "provider_id": "ripgrep",
+        "query": "Fix index out of range panic in fileEventsContentPaths",
+        "revision": "e8577771c3275d16b7d1b31cca5e9fd3ea517416",
+        "returned": [
+          "commands/server.go",
+          "hugolib/content_map_page_assembler.go",
+          "hugolib/hugo_sites_build.go",
+          "hugolib/page__meta.go",
+          "hugofs/component_fs.go"
+        ]
+      },
+      {
+        "provider_id": "ast-grep",
+        "query": "Fix menu pageRef resolution in multidimensional setups",
+        "revision": "d98cd4aecf25b9df78d811759ea6135b0c7610f1",
+        "returned": [
+          "navigation/pagemenus.go",
+          "navigation/menu.go",
+          "navigation/menu_cache_test.go",
+          "hugolib/site.go",
+          "resources/resource_spec.go"
+        ]
+      },
+      {
+        "provider_id": "ast-grep",
+        "query": "Fix it so we never auto-fallback to page resources in other roles/versions",
+        "revision": "a17bdbc5face02ed2470895bcbfe67db7749dc73",
+        "returned": [
+          "resources/resource/params.go",
+          "hugolib/content_map_page_contentnodeshifter.go",
+          "hugolib/content_map_page_contentnode.go",
+          "hugolib/content_map.go",
+          "hugolib/doctree/nodeshiftree_test.go"
+        ]
+      },
+      {
+        "provider_id": "filename-match",
+        "query": "Fix partial decorator detection in partial with blocks with outer range break or continue",
+        "revision": "f42c422a12987c9ccb1927fc17da37feedd0c7fb",
+        "returned": [
+          "tpl/templates/decorator_integration_test.go"
+        ]
+      },
+      {
+        "provider_id": "filename-match",
+        "query": "Fix multi --renderSegments merge behavior",
+        "revision": "a00b5c72ac57afe26df6688ece3ca544a56df372",
+        "returned": [
+          "hugolib/content_render_hooks_test.go",
+          "hugolib/pages_language_merge_test.go",
+          "hugolib/site_render.go",
+          "hugolib/segments/segments_integration_test.go",
+          "hugolib/segments/segments_test.go"
+        ]
+      },
+      {
+        "provider_id": "filename-match",
+        "query": "Fix panic when 404 is backed by a content file",
+        "revision": "5f46da6e2a3f838b40176775c0b46855f4f8f529",
+        "returned": [
+          "create/content_test.go",
+          "create/content.go",
+          "helpers/content_test.go",
+          "helpers/content.go",
+          "hugolib/content_factory.go"
+        ]
+      }
+    ],
+    "trustworthy": true
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0172,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0172,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0345,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0172,
+          "mean_precision_at_10": 0.0034,
+          "zero_hit_rate": 0.931,
+          "median_tokens_delivered": 31301,
+          "median_latency_ms": 28.221,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0172,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0172,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0345,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0172,
+          "mean_precision_at_10": 0.0034,
+          "zero_hit_rate": 0.931,
+          "median_tokens_delivered": 31301,
+          "median_latency_ms": 28.221,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 33227,
+          "median_latency_ms": 30.487,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.0313,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0313,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0625,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0313,
+          "mean_precision_at_10": 0.0063,
+          "zero_hit_rate": 0.875,
+          "median_tokens_delivered": 29186,
+          "median_latency_ms": 26.037,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 24754.6,
+        "peak_rss_mb": 24917.8,
+        "delta_rss_mb": 163.2,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.071,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1026,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1938,
+          "full_recall_at_20": 0.069,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.0345,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 145957,
+          "median_latency_ms": 67.935,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.071,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1026,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1938,
+          "full_recall_at_20": 0.069,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.0345,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 145957,
+          "median_latency_ms": 67.935,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0.0879,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.12,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.2335,
+          "full_recall_at_20": 0.0769,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.0462,
+          "zero_hit_rate": 0.4615,
+          "median_tokens_delivered": 141901,
+          "median_latency_ms": 64.252,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.0573,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0885,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1615,
+          "full_recall_at_20": 0.0625,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.025,
+          "zero_hit_rate": 0.6875,
+          "median_tokens_delivered": 157334.5,
+          "median_latency_ms": 69.024,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 24626.5,
+        "peak_rss_mb": 24797.4,
+        "delta_rss_mb": 170.8,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "ripgrep",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.2541,
+          "full_recall_at_5": 0.069,
+          "mean_recall_at_10": 0.3633,
+          "full_recall_at_10": 0.1379,
+          "mean_recall_at_20": 0.5213,
+          "full_recall_at_20": 0.2069,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0998,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.1724,
+          "median_tokens_delivered": 122785,
+          "median_latency_ms": 422.645,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.2541,
+          "full_recall_at_5": 0.069,
+          "mean_recall_at_10": 0.3633,
+          "full_recall_at_10": 0.1379,
+          "mean_recall_at_20": 0.5213,
+          "full_recall_at_20": 0.2069,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0998,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.1724,
+          "median_tokens_delivered": 122785,
+          "median_latency_ms": 422.645,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0.2592,
+          "full_recall_at_5": 0.0769,
+          "mean_recall_at_10": 0.413,
+          "full_recall_at_10": 0.1538,
+          "mean_recall_at_20": 0.6245,
+          "full_recall_at_20": 0.2308,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.1328,
+          "mean_precision_at_10": 0.1308,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 129765,
+          "median_latency_ms": 439.996,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.25,
+          "full_recall_at_5": 0.0625,
+          "mean_recall_at_10": 0.3229,
+          "full_recall_at_10": 0.125,
+          "mean_recall_at_20": 0.4375,
+          "full_recall_at_20": 0.1875,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0729,
+          "mean_precision_at_10": 0.075,
+          "zero_hit_rate": 0.3125,
+          "median_tokens_delivered": 117161,
+          "median_latency_ms": 405.846,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 24698.2,
+        "peak_rss_mb": 26429.3,
+        "delta_rss_mb": 1731.1,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "zoekt",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 265.348,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 29
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 265.348,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 29
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 264.899,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 13
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 267.8015,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 16
+        }
+      },
+      "outcomes": {
+        "did-not-index": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 23810.2,
+        "peak_rss_mb": 25218.4,
+        "delta_rss_mb": 1408.2,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "ast-grep",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0222,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0271,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0616,
+          "full_recall_at_20": 0.0345,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0222,
+          "mean_precision_at_10": 0.0103,
+          "zero_hit_rate": 0.8966,
+          "median_tokens_delivered": 51050,
+          "median_latency_ms": 799.159,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 1
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0222,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0271,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0616,
+          "full_recall_at_20": 0.0345,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0222,
+          "mean_precision_at_10": 0.0103,
+          "zero_hit_rate": 0.8966,
+          "median_tokens_delivered": 51050,
+          "median_latency_ms": 799.159,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 1
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0.0495,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0604,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1374,
+          "full_recall_at_20": 0.0769,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0495,
+          "mean_precision_at_10": 0.0231,
+          "zero_hit_rate": 0.7692,
+          "median_tokens_delivered": 53397,
+          "median_latency_ms": 792.053,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 47682.5,
+          "median_latency_ms": 823.7355,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 1
+        }
+      },
+      "outcomes": {
+        "answered": 27,
+        "indexed-but-returned-nothing": 2
+      },
+      "resources": {
+        "baseline_rss_mb": 22466,
+        "peak_rss_mb": 22555.8,
+        "delta_rss_mb": 89.8,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "filename-match",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.1351,
+          "full_recall_at_5": 0.0345,
+          "mean_recall_at_10": 0.181,
+          "full_recall_at_10": 0.0345,
+          "mean_recall_at_20": 0.1897,
+          "full_recall_at_20": 0.0345,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.1006,
+          "mean_recall_at_16000_tokens": 0.1638,
+          "mean_precision_at_10": 0.1103,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 27726,
+          "median_latency_ms": 13.619,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.1351,
+          "full_recall_at_5": 0.0345,
+          "mean_recall_at_10": 0.181,
+          "full_recall_at_10": 0.0345,
+          "mean_recall_at_20": 0.1897,
+          "full_recall_at_20": 0.0345,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.1006,
+          "mean_recall_at_16000_tokens": 0.1638,
+          "mean_precision_at_10": 0.1103,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 27726,
+          "median_latency_ms": 13.619,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0.3013,
+          "full_recall_at_5": 0.0769,
+          "mean_recall_at_10": 0.4038,
+          "full_recall_at_10": 0.0769,
+          "mean_recall_at_20": 0.4231,
+          "full_recall_at_20": 0.0769,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.2244,
+          "mean_recall_at_16000_tokens": 0.3654,
+          "mean_precision_at_10": 0.2462,
+          "zero_hit_rate": 0.0769,
+          "median_tokens_delivered": 27893,
+          "median_latency_ms": 13.791,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 24109,
+          "median_latency_ms": 13.5065,
+          "payload_kind": [
+            "whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 26,
+        "indexed-but-returned-nothing": 3
+      },
+      "resources": {
+        "baseline_rss_mb": 20236.7,
+        "peak_rss_mb": 20242.6,
+        "delta_rss_mb": 5.9,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23450,
+      "latency_ms": 95.092,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43237,
+      "latency_ms": 36.526,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15701,
+      "latency_ms": 35.932,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23223,
+      "latency_ms": 28.221,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 31301,
+      "latency_ms": 30.96,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33227,
+      "latency_ms": 30.487,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [
+        "markup/goldmark/goldmark_integration_test.go"
+      ],
+      "missed": [
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 31381,
+      "latency_ms": 42.958,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26363,
+      "latency_ms": 38.683,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 32262,
+      "latency_ms": 40.19,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 28830,
+      "latency_ms": 25.674,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18869,
+      "latency_ms": 26.047,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [
+        "hugolib/embedded_templates_test.go"
+      ],
+      "missed": [
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 17,
+      "tokens_delivered": 23902,
+      "latency_ms": 26.027,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 27186,
+      "latency_ms": 29.539,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33298,
+      "latency_ms": 40.436,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [],
+      "missed": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 38765,
+      "latency_ms": 30.4,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23248,
+      "latency_ms": 37.027,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 32875,
+      "latency_ms": 26.612,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33433,
+      "latency_ms": 22.923,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 39664,
+      "latency_ms": 24.299,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24224,
+      "latency_ms": 25.063,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22664,
+      "latency_ms": 38.108,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 27862,
+      "latency_ms": 33.219,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 44378,
+      "latency_ms": 25.193,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 84924,
+      "latency_ms": 20.584,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43205,
+      "latency_ms": 21.839,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43171,
+      "latency_ms": 22.634,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 29542,
+      "latency_ms": 23.688,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 34959,
+      "latency_ms": 26.299,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30727,
+      "latency_ms": 25.564,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 135284,
+      "latency_ms": 108.288,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 141901,
+      "latency_ms": 60.87,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [
+        "hugolib/cascade_test.go"
+      ],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 147188,
+      "latency_ms": 64.252,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 167064,
+      "latency_ms": 68.87,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 158300,
+      "latency_ms": 64.218,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/menu_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 2,
+      "tokens_delivered": 160960,
+      "latency_ms": 69.173,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 156369,
+      "latency_ms": 65.922,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 123900,
+      "latency_ms": 114.032,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 145957,
+      "latency_ms": 58.868,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 167158,
+      "latency_ms": 67.703,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 168902,
+      "latency_ms": 75.839,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 143955,
+      "latency_ms": 67.935,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [
+        "hugolib/integrationtest_builder.go"
+      ],
+      "missed": [
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 148660,
+      "latency_ms": 61.063,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0.1429,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.1429,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.2857,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 167157,
+      "latency_ms": 59.297,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go"
+      ],
+      "missed": [
+        ".prettierignore",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0.1667,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 140039,
+      "latency_ms": 66.55,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 158300,
+      "latency_ms": 74.145,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 145753,
+      "latency_ms": 62.226,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 133497,
+      "latency_ms": 105.884,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 141218,
+      "latency_ms": 69.178,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [
+        "hugolib/rebuild_test.go"
+      ],
+      "missed": [
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 167064,
+      "latency_ms": 77.986,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 145952,
+      "latency_ms": 77.975,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 159604,
+      "latency_ms": 63.324,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 17,
+      "tokens_delivered": 133592,
+      "latency_ms": 78.42,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [
+        "hugolib/rebuild_test.go"
+      ],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 135377,
+      "latency_ms": 105.127,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 139252,
+      "latency_ms": 80.53,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 133591,
+      "latency_ms": 61.099,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [
+        "tpl/css/build_integration_test.go"
+      ],
+      "missed": [
+        "resources/transform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 158549,
+      "latency_ms": 57.478,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 2,
+      "tokens_delivered": 163147,
+      "latency_ms": 65.968,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 138542,
+      "latency_ms": 81.184,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 199275,
+      "latency_ms": 818.28,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 129765,
+      "latency_ms": 734.222,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go"
+      ],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 128841,
+      "latency_ms": 568.135,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 95845,
+      "latency_ms": 692.425,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 142606,
+      "latency_ms": 883.542,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 85451,
+      "latency_ms": 537.834,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [
+        "markup/goldmark/render_hooks.go"
+      ],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 16,
+      "tokens_delivered": 123325,
+      "latency_ms": 722.787,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go"
+      ],
+      "missed": [
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 172712,
+      "latency_ms": 728.366,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [
+        "config/commonConfig.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 112219,
+      "latency_ms": 414.522,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 98451,
+      "latency_ms": 416.58,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 155306,
+      "latency_ms": 571.583,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 124779,
+      "latency_ms": 379.233,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 15,
+      "tokens_delivered": 254429,
+      "latency_ms": 403.51,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0.2857,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.2857,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.2857,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.1429,
+      "first_hit_rank": 2,
+      "tokens_delivered": 115860,
+      "latency_ms": 427.745,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        ".prettierignore",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0.1667,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.4,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 98117,
+      "latency_ms": 428.442,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 122103,
+      "latency_ms": 379.893,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [
+        "resources/image.go",
+        "resources/image_cache.go"
+      ],
+      "missed": [
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 107986,
+      "latency_ms": 424.716,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 87992,
+      "latency_ms": 341.45,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 13,
+      "tokens_delivered": 86071,
+      "latency_ms": 405.865,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 2,
+      "tokens_delivered": 148886,
+      "latency_ms": 491.308,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 41091,
+      "latency_ms": 362.441,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go"
+      ],
+      "missed": [
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 3,
+      "tokens_delivered": 143807,
+      "latency_ms": 400.459,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 122785,
+      "latency_ms": 405.827,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [
+        "commands/server.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "missed": [
+        "common/paths/path_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 130099,
+      "latency_ms": 378.882,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go"
+      ],
+      "missed": [
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 226391,
+      "latency_ms": 439.996,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go"
+      ],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 19,
+      "tokens_delivered": 88561,
+      "latency_ms": 355.557,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [
+        "resources/transform.go"
+      ],
+      "missed": [
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 71997,
+      "latency_ms": 393.123,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/rebuild_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 124353,
+      "latency_ms": 422.645,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ripgrep",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 97547,
+      "latency_ms": 390.098,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 264.899,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 248.695,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 259.71,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 256.011,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 265.098,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 277.563,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 398.786,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 360.714,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 251.503,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 268.99,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 265.348,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 248.062,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 273.858,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 244.805,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [],
+      "missed": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 249.703,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 274.899,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 273.11,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 253.068,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 263.825,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 285.528,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 277.447,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 266.613,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 249.145,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 257.992,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 259.07,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 528.641,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 638.585,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 329.112,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "zoekt",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 307.262,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 62353,
+      "latency_ms": 1962.497,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 75778,
+      "latency_ms": 915.183,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 52435,
+      "latency_ms": 566.009,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 44451,
+      "latency_ms": 831.988,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 79579,
+      "latency_ms": 1122.657,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/menu_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 70729,
+      "latency_ms": 703.532,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 51050,
+      "latency_ms": 941.277,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 45737,
+      "latency_ms": 760.878,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 38642,
+      "latency_ms": 700.67,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 34880,
+      "latency_ms": 693.192,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 38040,
+      "latency_ms": 1044.906,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 638.355,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 35034,
+      "latency_ms": 735.785,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go"
+      ],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0.1429,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.2857,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.2857,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.1429,
+      "first_hit_rank": 4,
+      "tokens_delivered": 53397,
+      "latency_ms": 792.053,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [],
+      "missed": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 41420,
+      "latency_ms": 621.675,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 50914,
+      "latency_ms": 817.002,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 38336,
+      "latency_ms": 962.607,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 506.006,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 75722,
+      "latency_ms": 830.469,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 117994,
+      "latency_ms": 991.097,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30979,
+      "latency_ms": 519.131,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 67067,
+      "latency_ms": 837.918,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 57464,
+      "latency_ms": 839.033,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 63525,
+      "latency_ms": 799.159,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 35373,
+      "latency_ms": 997.287,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 64387,
+      "latency_ms": 638.041,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 64476,
+      "latency_ms": 743.306,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 51885,
+      "latency_ms": 881.152,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "ast-grep",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43337,
+      "latency_ms": 694.539,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [
+        "tpl/templates/decorator_integration_test.go"
+      ],
+      "missed": [
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 1,
+      "recall_at_10": 0.5,
+      "precision_at_10": 1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2263,
+      "latency_ms": 15.143,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/hugo_sites.go"
+      ],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 6,
+      "tokens_delivered": 42078,
+      "latency_ms": 14.15,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [
+        "hugolib/cascade_test.go"
+      ],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 1,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2286,
+      "latency_ms": 13.791,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22749,
+      "latency_ms": 14.051,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0909,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 16766,
+      "latency_ms": 13.271,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/menu_test.go"
+      ],
+      "missed": [
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 52415,
+      "latency_ms": 13.05,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 54331,
+      "latency_ms": 13.821,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [
+        "commands/commandeer.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 62484,
+      "latency_ms": 13.619,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23089,
+      "latency_ms": 13.52,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7035,
+      "latency_ms": 12.752,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 31794,
+      "latency_ms": 14.314,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 8.12,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "missed": [
+        "hugolib/integrationtest_builder.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 4,
+      "tokens_delivered": 27893,
+      "latency_ms": 14.341,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24783,
+      "latency_ms": 13.873,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [
+        "hugolib/site.go",
+        "hugolib/site_render.go"
+      ],
+      "missed": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0.1667,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.1667,
+      "first_hit_rank": 3,
+      "tokens_delivered": 26758,
+      "latency_ms": 14.015,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17021,
+      "latency_ms": 13.917,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [
+        "resources/image_cache.go"
+      ],
+      "missed": [
+        "resources/image.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 27726,
+      "latency_ms": 14.133,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 7.693,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7644,
+      "latency_ms": 13.493,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 32602,
+      "latency_ms": 13.456,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 0,
+      "latency_ms": 7.237,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25129,
+      "latency_ms": 13.264,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 59510,
+      "latency_ms": 13.016,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 62439,
+      "latency_ms": 12.884,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go"
+      ],
+      "missed": [
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 2,
+      "tokens_delivered": 31534,
+      "latency_ms": 13.514,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go"
+      ],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 6,
+      "tokens_delivered": 54666,
+      "latency_ms": 12.899,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 66552,
+      "latency_ms": 13.752,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 58276,
+      "latency_ms": 15.234,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "filename-match",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 35377,
+      "latency_ms": 14.767,
+      "indexed_revision_matches": true
+    }
+  ]
+}

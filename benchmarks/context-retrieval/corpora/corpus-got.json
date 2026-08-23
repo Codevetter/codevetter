@@ -1,0 +1,4098 @@
+{
+  "schema_version": "codevetter.context-retrieval-corpus.v1",
+  "repository": {
+    "id": "got",
+    "head": "e3924aa1e53a6ca3eb93a43618ce532442a89b40"
+  },
+  "selection": {
+    "commits_scanned": 600,
+    "fixes_only": true,
+    "max_required_files": 8
+  },
+  "counts": {
+    "cases": 108,
+    "path_leak": 54,
+    "baseline_blind": 54,
+    "multi_file": 82
+  },
+  "cases": [
+    {
+      "case_id": "got-043c9501b851",
+      "repository": "got",
+      "commit": "043c9501b85172e09819d44ac8eb49c574b27bda",
+      "base_revision": "e02845f1aa737d55dce23381d0f4f2a61b1eb5e1",
+      "authored_at": "2020-07-28T10:59:11+02:00",
+      "query": "Fix `dnsCache: true` having no effect",
+      "query_tokens": [
+        "cache",
+        "effect",
+        "having",
+        "true"
+      ],
+      "specific_tokens": [
+        "cache",
+        "effect",
+        "having",
+        "true"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/create.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-05cb01405a70",
+      "repository": "got",
+      "commit": "05cb01405a7043701916a82eec1f021603e62df7",
+      "base_revision": "6a544a392bafd66c4a1d4ec0643d0d4203d70a79",
+      "authored_at": "2025-10-11T11:55:10+09:00",
+      "query": "Fix outdated 'How to store options' docs",
+      "query_tokens": [
+        "docs",
+        "options",
+        "outdated",
+        "store"
+      ],
+      "specific_tokens": [
+        "docs",
+        "options",
+        "outdated",
+        "store"
+      ],
+      "required_files": [
+        "test/arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "documentation/2-options.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-06029e0b758e",
+      "repository": "got",
+      "commit": "06029e0b758e99f4369cc7382fae907adc9f83b1",
+      "base_revision": "383a3ff4ff88d4059519efe8b3d6b27e9a6a8066",
+      "authored_at": "2025-03-31T13:59:18+01:00",
+      "query": "Gracefully handle undefined request (#2404)",
+      "query_tokens": [
+        "gracefully",
+        "handle",
+        "request",
+        "undefined"
+      ],
+      "specific_tokens": [
+        "gracefully",
+        "request",
+        "undefined"
+      ],
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-06a2d3d7d8d4",
+      "repository": "got",
+      "commit": "06a2d3d7d8d4fcc6898b6364d1a18ca1d407092b",
+      "base_revision": "6e1d9f97465d79980b03ed69518ae73a26e12c75",
+      "authored_at": "2021-06-03T01:37:38+02:00",
+      "query": "Fix a Node.js 16 bug that hangs Got streams",
+      "query_tokens": [
+        "hangs",
+        "node",
+        "streams"
+      ],
+      "specific_tokens": [
+        "hangs",
+        "node",
+        "streams"
+      ],
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-0703318d3bb6",
+      "repository": "got",
+      "commit": "0703318d3bb6cc1340614612d2ae14b23f651242",
+      "base_revision": "dbbd31777b3299ceb0db99798453e01ab8e597b1",
+      "authored_at": "2022-03-02T02:26:39+01:00",
+      "query": "Fix encoding with json `responseType` (#1996)",
+      "query_tokens": [
+        "encoding",
+        "json",
+        "response",
+        "type"
+      ],
+      "specific_tokens": [
+        "encoding",
+        "json",
+        "response",
+        "type"
+      ],
+      "required_files": [
+        "source/core/response.ts",
+        "test/encoding.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "source/core/response.ts",
+            "tokens": [
+              "response"
+            ]
+          },
+          {
+            "path": "test/encoding.ts",
+            "tokens": [
+              "encoding"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-071ea0749d81",
+      "repository": "got",
+      "commit": "071ea0749d813f34d8458dbc1fb5e3dc66e80890",
+      "base_revision": "b03e6f95ebb5fe3c51512fe0190a20385e2f9ee9",
+      "authored_at": "2026-04-20T23:13:31+07:00",
+      "query": "Fix false `ReadError` on responses without `Content-Length`",
+      "query_tokens": [
+        "content",
+        "error",
+        "false",
+        "length",
+        "read",
+        "responses"
+      ],
+      "specific_tokens": [
+        "content",
+        "false",
+        "length",
+        "read",
+        "responses"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/timed-out.ts",
+        "test/gzip.ts",
+        "test/http.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-0863bcd5e90e",
+      "repository": "got",
+      "commit": "0863bcd5e90e029518c7d9f16dbd0a8761112e9a",
+      "base_revision": "4e7567965dbc0e66bf73b9e53be8b33cda4b3842",
+      "authored_at": "2025-10-10T21:22:58+09:00",
+      "query": "Fix flaky 'timeouts are emitted ASAP' test",
+      "query_tokens": [
+        "asap",
+        "emitted",
+        "flaky",
+        "test",
+        "timeouts"
+      ],
+      "specific_tokens": [
+        "asap",
+        "emitted",
+        "flaky",
+        "test",
+        "timeouts"
+      ],
+      "required_files": [
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/timeout.ts",
+            "tokens": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-08d7a0f3285d",
+      "repository": "got",
+      "commit": "08d7a0f3285d5ac535aac873cd9090937cf008b6",
+      "base_revision": "0fb6ec60d299fd9b48966608a4c3f201746d821c",
+      "authored_at": "2021-08-21T23:52:25+02:00",
+      "query": "Fix assertions when cloning raw options",
+      "query_tokens": [
+        "assertions",
+        "cloning",
+        "options"
+      ],
+      "specific_tokens": [
+        "assertions",
+        "cloning",
+        "options"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "source/core/options.ts",
+            "tokens": [
+              "options"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-0a16a9ca7de3",
+      "repository": "got",
+      "commit": "0a16a9ca7de3a3571c2a9f617af1cf94f09e17c8",
+      "base_revision": "ff46eaecba4303dc71034552c70c31718b0e9807",
+      "authored_at": "2025-11-02T16:23:56+07:00",
+      "query": "Fix path segments containing colons being misidentified as absolute URLs",
+      "query_tokens": [
+        "absolute",
+        "colons",
+        "containing",
+        "misidentified",
+        "path",
+        "segments",
+        "urls"
+      ],
+      "specific_tokens": [
+        "absolute",
+        "colons",
+        "containing",
+        "misidentified",
+        "path",
+        "segments",
+        "urls"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-1018c2029eea",
+      "repository": "got",
+      "commit": "1018c2029eea1f5b75b5120265996f1c0b3c12ae",
+      "base_revision": "25101f228572ebeeb90c74a0e6433b389f7d3fff",
+      "authored_at": "2021-07-30T14:09:21+02:00",
+      "query": "Fix merging `searchParams`",
+      "query_tokens": [
+        "merging",
+        "params",
+        "search"
+      ],
+      "specific_tokens": [
+        "merging",
+        "params",
+        "search"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "documentation/2-options.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-11a2202de328",
+      "repository": "got",
+      "commit": "11a2202de328abc668cee5593ec59077c103d88e",
+      "base_revision": "e9489c1729a56711a18aa49d11c1ed596dfef451",
+      "authored_at": "2026-05-06T21:15:37+09:00",
+      "query": "Fix aborting during download progress",
+      "query_tokens": [
+        "aborting",
+        "download",
+        "progress"
+      ],
+      "specific_tokens": [
+        "aborting",
+        "download",
+        "progress"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-15395ee87e6d",
+      "repository": "got",
+      "commit": "15395ee87e6daad41ed06fa8cd6cb2ad11150e6b",
+      "base_revision": "fbf9e693a63d2a141ff5cd51f94a27edbc5c1250",
+      "authored_at": "2021-06-02T00:20:49+02:00",
+      "query": "Fix a typo in a test name (#1738)",
+      "query_tokens": [
+        "name",
+        "test",
+        "typo"
+      ],
+      "specific_tokens": [
+        "name",
+        "test",
+        "typo"
+      ],
+      "required_files": [
+        "test/normalize-arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/normalize-arguments.ts",
+            "tokens": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-157e02bcb613",
+      "repository": "got",
+      "commit": "157e02bcb613ab506829326e7af96e8155b4e186",
+      "base_revision": "7b19e8f32c90984a168ac2e29585bcd637535e9a",
+      "authored_at": "2020-05-03T15:41:08+02:00",
+      "query": "Fix `got.mergeOptions()` regression",
+      "query_tokens": [
+        "merge",
+        "options",
+        "regression"
+      ],
+      "specific_tokens": [
+        "merge",
+        "options",
+        "regression"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/normalize-arguments.ts",
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "readme.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-1b208df66716",
+      "repository": "got",
+      "commit": "1b208df667169249d4392214b7771546ceede204",
+      "base_revision": "e1c18444715b4e326a14aa2d90c71967c74b08ac",
+      "authored_at": "2020-09-18T16:08:25+02:00",
+      "query": "Fix a stream test",
+      "query_tokens": [
+        "stream",
+        "test"
+      ],
+      "specific_tokens": [
+        "stream",
+        "test"
+      ],
+      "required_files": [
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/stream.ts",
+            "tokens": [
+              "stream",
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-1e1e50647e93",
+      "repository": "got",
+      "commit": "1e1e50647e93d038a4cc6a9bbbfbf61165d8fd39",
+      "base_revision": "7524d9051d96c10924045d902ae219857ca3e57b",
+      "authored_at": "2021-07-01T14:37:28+09:30",
+      "query": "Fix default pagination handling for empty `Link` header (#1768)",
+      "query_tokens": [
+        "default",
+        "empty",
+        "handling",
+        "header",
+        "link",
+        "pagination"
+      ],
+      "specific_tokens": [
+        "default",
+        "empty",
+        "header",
+        "link",
+        "pagination"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/pagination.ts",
+            "tokens": [
+              "pagination"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-1e49781eff61",
+      "repository": "got",
+      "commit": "1e49781eff61a568af68a0f328bb245b2effe9cb",
+      "base_revision": "91cdc48d4b07586e4e46ed3846749e345511facc",
+      "authored_at": "2025-10-13T14:50:24+09:00",
+      "query": "Fix race condition causing retry after promise settles",
+      "query_tokens": [
+        "causing",
+        "condition",
+        "promise",
+        "race",
+        "retry",
+        "settles"
+      ],
+      "specific_tokens": [
+        "causing",
+        "condition",
+        "promise",
+        "race",
+        "retry",
+        "settles"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/retry.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "source/as-promise/index.ts",
+            "tokens": [
+              "promise"
+            ]
+          },
+          {
+            "path": "test/retry.ts",
+            "tokens": [
+              "retry"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-226cc3995f6e",
+      "repository": "got",
+      "commit": "226cc3995f6e16938163ebde24d8762e7dcd15e2",
+      "base_revision": "c0b5346433996e761bca15cdb942f2b740264118",
+      "authored_at": "2021-07-12T16:35:12+02:00",
+      "query": "Fix `Cannot call end` error when `request` returns a `Writable`",
+      "query_tokens": [
+        "call",
+        "cannot",
+        "error",
+        "request",
+        "returns",
+        "writable"
+      ],
+      "specific_tokens": [
+        "call",
+        "cannot",
+        "request",
+        "returns",
+        "writable"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-2453e5e4213f",
+      "repository": "got",
+      "commit": "2453e5e4213fe036a0108de3e4db414dcf2b4c30",
+      "base_revision": "846e298b6b48a7b78e46eb487b4fdc0ffc0f8cd9",
+      "authored_at": "2021-07-31T21:59:31+02:00",
+      "query": "Fix unhandled exception when lookup returns invalid IP early",
+      "query_tokens": [
+        "early",
+        "exception",
+        "invalid",
+        "lookup",
+        "returns",
+        "unhandled"
+      ],
+      "specific_tokens": [
+        "early",
+        "exception",
+        "invalid",
+        "lookup",
+        "returns",
+        "unhandled"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/http.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-2527bf690fd5",
+      "repository": "got",
+      "commit": "2527bf690fd528a8480a8c5cbe5edef73a190167",
+      "base_revision": "30b3b795580d7d2a62e85382af5483bcc9a60899",
+      "authored_at": "2025-10-12T02:02:43+09:00",
+      "query": "Fix stream validation errors causing unhandled rejections",
+      "query_tokens": [
+        "causing",
+        "errors",
+        "rejections",
+        "stream",
+        "unhandled",
+        "validation"
+      ],
+      "specific_tokens": [
+        "causing",
+        "rejections",
+        "stream",
+        "unhandled",
+        "validation"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/stream.ts",
+            "tokens": [
+              "stream"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-26fffe94618b",
+      "repository": "got",
+      "commit": "26fffe94618b370629f6148b6d21ebfeab1e5299",
+      "base_revision": "b3fd50c7f6b1686106c2cae1c65b1b3d2ed9df30",
+      "authored_at": "2022-09-12T20:45:48+02:00",
+      "query": "Correct RFC reference in TS docs as well (#2144)",
+      "query_tokens": [
+        "correct",
+        "docs",
+        "reference",
+        "well"
+      ],
+      "specific_tokens": [
+        "docs",
+        "reference",
+        "well"
+      ],
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-2ab94fd4daf6",
+      "repository": "got",
+      "commit": "2ab94fd4daf6e6194ea79b810172b4e9466d3e39",
+      "base_revision": "f1cc7b28404c20c536030281f99725e06c362bc3",
+      "authored_at": "2025-10-10T10:49:46+09:00",
+      "query": "Fix hang on revalidated cached responses",
+      "query_tokens": [
+        "cached",
+        "hang",
+        "responses",
+        "revalidated"
+      ],
+      "specific_tokens": [
+        "cached",
+        "hang",
+        "responses",
+        "revalidated"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [
+        "package.json"
+      ],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-2ccc4c2e8bd5",
+      "repository": "got",
+      "commit": "2ccc4c2e8bd5fb32a647f13627eaed279625f8f2",
+      "base_revision": "2c8fe196361e5fc3c063b56b816f916999d60c09",
+      "authored_at": "2020-05-31T21:00:51+02:00",
+      "query": "Fix hanging promise on aborted requests on Node v14.3.0 (#1296)",
+      "query_tokens": [
+        "aborted",
+        "hanging",
+        "node",
+        "promise",
+        "requests"
+      ],
+      "specific_tokens": [
+        "aborted",
+        "hanging",
+        "node",
+        "promise",
+        "requests"
+      ],
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-30b3b795580d",
+      "repository": "got",
+      "commit": "30b3b795580d7d2a62e85382af5483bcc9a60899",
+      "base_revision": "6ae3e7fc364b9a34ed6e276ab4671be43f660840",
+      "authored_at": "2025-10-12T00:31:50+09:00",
+      "query": "Fix incorrect `content-length` when piping decompressed responses",
+      "query_tokens": [
+        "content",
+        "decompressed",
+        "incorrect",
+        "length",
+        "piping",
+        "responses"
+      ],
+      "specific_tokens": [
+        "content",
+        "decompressed",
+        "incorrect",
+        "length",
+        "piping",
+        "responses"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "documentation/3-streams.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-32070619a547",
+      "repository": "got",
+      "commit": "32070619a5479419acd209ed8cea8d4bbc39b00f",
+      "base_revision": "461b3d41790c7f091ebbb9acd87d25a22e0ffb1a",
+      "authored_at": "2022-07-24T01:17:43+02:00",
+      "query": "Fix `ciphers` test",
+      "query_tokens": [
+        "ciphers",
+        "test"
+      ],
+      "specific_tokens": [
+        "ciphers",
+        "test"
+      ],
+      "required_files": [
+        "test/https.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/https.ts",
+            "tokens": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-398c11ae502c",
+      "repository": "got",
+      "commit": "398c11ae502c032cb91883df3bb1d9f51271e7e4",
+      "base_revision": "1c3a041685f4bf077ee8ddd0c8a1ca4d145d3c60",
+      "authored_at": "2025-10-15T20:19:47+09:00",
+      "query": "Fix HTTP/2 timings NaN issue",
+      "query_tokens": [
+        "http",
+        "issue",
+        "timings"
+      ],
+      "specific_tokens": [
+        "http",
+        "timings"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/timings.ts",
+            "tokens": [
+              "timings"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-3b3ea6776b4f",
+      "repository": "got",
+      "commit": "3b3ea6776b4f15d69d1b4dde87f32173a3a6fdb2",
+      "base_revision": "3e9d3af606c38f60e6225f8e009aacd6962fef71",
+      "authored_at": "2022-09-27T14:17:17+07:00",
+      "query": "Fix compatibility with TypeScript and ESM",
+      "query_tokens": [
+        "compatibility",
+        "script",
+        "type"
+      ],
+      "specific_tokens": [
+        "compatibility",
+        "script",
+        "type"
+      ],
+      "required_files": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-3cc40b549c4a",
+      "repository": "got",
+      "commit": "3cc40b549c4af3617e8f6793d07533f7d4123f90",
+      "base_revision": "5f278d74125608b7abe75941cb6a71e21e0fb892",
+      "authored_at": "2022-11-16T22:15:54+13:00",
+      "query": "Fix abort event listeners not always being cleaned up (#2162)",
+      "query_tokens": [
+        "abort",
+        "cleaned",
+        "event",
+        "listeners"
+      ],
+      "specific_tokens": [
+        "abort",
+        "cleaned",
+        "event",
+        "listeners"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/abort.ts",
+            "tokens": [
+              "abort"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-3d66aecacd6d",
+      "repository": "got",
+      "commit": "3d66aecacd6dbc94c420d25fae63f01f7f4af06f",
+      "base_revision": "0863bcd5e90e029518c7d9f16dbd0a8761112e9a",
+      "authored_at": "2025-10-10T21:56:28+09:00",
+      "query": "Fix DNS timing being non-zero when connecting to IP addresses",
+      "query_tokens": [
+        "addresses",
+        "connecting",
+        "timing",
+        "zero"
+      ],
+      "specific_tokens": [
+        "addresses",
+        "connecting",
+        "timing",
+        "zero"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-3e9d3af606c3",
+      "repository": "got",
+      "commit": "3e9d3af606c38f60e6225f8e009aacd6962fef71",
+      "base_revision": "6c7ebab3674fbf8a21275cfe9e06f71740219c05",
+      "authored_at": "2022-09-27T08:00:29+02:00",
+      "query": "Fix request body not being properly cached (#2150)",
+      "query_tokens": [
+        "body",
+        "cached",
+        "properly",
+        "request"
+      ],
+      "specific_tokens": [
+        "body",
+        "cached",
+        "request"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-408e22aed993",
+      "repository": "got",
+      "commit": "408e22aed99300afd4af49a4eb50963665d8a144",
+      "base_revision": "d12d6af280356b8e8fe5d3ae52efbfc065caae9d",
+      "authored_at": "2020-09-05T17:00:56+02:00",
+      "query": "Fix `options.port` on redirect (#1439)",
+      "query_tokens": [
+        "options",
+        "port",
+        "redirect"
+      ],
+      "specific_tokens": [
+        "options",
+        "port",
+        "redirect"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-439fb82d2a07",
+      "repository": "got",
+      "commit": "439fb82d2a07cece417a18c47e37cfdeaaf38db7",
+      "base_revision": "6a44a8158a0f62ded055625f9aeec028abc880f3",
+      "authored_at": "2021-08-02T09:02:19+02:00",
+      "query": "Fix relative URLs when paginating",
+      "query_tokens": [
+        "paginating",
+        "relative",
+        "urls"
+      ],
+      "specific_tokens": [
+        "paginating",
+        "relative",
+        "urls"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "source/core/response.ts",
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "documentation/4-pagination.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-462bc6300150",
+      "repository": "got",
+      "commit": "462bc630015064fa4ad4358cf28d24f95e1c958b",
+      "base_revision": "1120370e05fd8d9e768677d8474d0c82cf91a6a6",
+      "authored_at": "2021-02-26T21:37:47+03:00",
+      "query": "Fix `url` not being reused on retry in rare case (#1487)",
+      "query_tokens": [
+        "case",
+        "rare",
+        "retry",
+        "reused"
+      ],
+      "specific_tokens": [
+        "case",
+        "rare",
+        "retry",
+        "reused"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-47c1afedc77b",
+      "repository": "got",
+      "commit": "47c1afedc77b27a2eb3edd85064d8532da835045",
+      "base_revision": "88622701c70434ddc1040c46ad16de0c0acd9143",
+      "authored_at": "2020-05-10T14:39:43+02:00",
+      "query": "Fix an invalid pagination test",
+      "query_tokens": [
+        "invalid",
+        "pagination",
+        "test"
+      ],
+      "specific_tokens": [
+        "invalid",
+        "pagination",
+        "test"
+      ],
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "readme.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/pagination.ts",
+            "tokens": [
+              "pagination",
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-47c3155e4bdf",
+      "repository": "got",
+      "commit": "47c3155e4bdfcb12c32c6a7d2869ff162726b550",
+      "base_revision": "6633001dbdd5f8900e248a36669919e8a5eb58c6",
+      "authored_at": "2025-11-14T01:45:49+07:00",
+      "query": "Fix `dnsLookup` option type to accept Node.js `dns.lookup`",
+      "query_tokens": [
+        "accept",
+        "lookup",
+        "node",
+        "option",
+        "type"
+      ],
+      "specific_tokens": [
+        "accept",
+        "lookup",
+        "node",
+        "option",
+        "type"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/http.ts",
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-4cce4de19ed5",
+      "repository": "got",
+      "commit": "4cce4de19ed577f481ba45a023b395a29cadce86",
+      "base_revision": "462bc630015064fa4ad4358cf28d24f95e1c958b",
+      "authored_at": "2021-03-06T19:34:58+07:00",
+      "query": "Fix docs being out of sync from #1645",
+      "query_tokens": [
+        "docs",
+        "sync"
+      ],
+      "specific_tokens": [
+        "docs",
+        "sync"
+      ],
+      "required_files": [
+        "source/as-promise/types.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "readme.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-4d5168cc7c58",
+      "repository": "got",
+      "commit": "4d5168cc7c58d14d3165f60eed0e4e37eba7965e",
+      "base_revision": "388df48648e7c06a17237fa817ec08cef540d7da",
+      "authored_at": "2025-12-29T23:47:38+01:00",
+      "query": "Fix stream auto-end for empty PATCH/DELETE/OPTIONS",
+      "query_tokens": [
+        "auto",
+        "delete",
+        "empty",
+        "options",
+        "patch",
+        "stream"
+      ],
+      "specific_tokens": [
+        "auto",
+        "delete",
+        "empty",
+        "options",
+        "patch",
+        "stream"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/types.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "documentation/3-streams.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "test/stream.ts",
+            "tokens": [
+              "stream"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-4e7567965dbc",
+      "repository": "got",
+      "commit": "4e7567965dbc0e66bf73b9e53be8b33cda4b3842",
+      "base_revision": "fb8641856a133a7e80790d106b08b4b585079f20",
+      "authored_at": "2025-10-10T21:02:48+09:00",
+      "query": "Fix `timings.end` being undefined when stream is destroyed before completion",
+      "query_tokens": [
+        "completion",
+        "destroyed",
+        "stream",
+        "timings",
+        "undefined"
+      ],
+      "specific_tokens": [
+        "completion",
+        "destroyed",
+        "stream",
+        "timings",
+        "undefined"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/timings.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/timings.ts",
+            "tokens": [
+              "timings"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-5028c11abd21",
+      "repository": "got",
+      "commit": "5028c11abd21c9d13bb3b12abb02961ec0465a8a",
+      "base_revision": "7dcd1456a68a2603d30cbb1a4e453c4560bd51b2",
+      "authored_at": "2020-07-03T14:30:24+02:00",
+      "query": "Fix promise not returning Buffer on compressed response",
+      "query_tokens": [
+        "buffer",
+        "compressed",
+        "promise",
+        "response",
+        "returning"
+      ],
+      "specific_tokens": [
+        "buffer",
+        "compressed",
+        "promise",
+        "response",
+        "returning"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "source/as-promise/index.ts",
+            "tokens": [
+              "promise"
+            ]
+          },
+          {
+            "path": "test/promise.ts",
+            "tokens": [
+              "promise"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-50ef99a9856c",
+      "repository": "got",
+      "commit": "50ef99a9856ccd37a75b42f94d023a491728a92d",
+      "base_revision": "e23b7f9b975cd1d70254847b5348685af315163b",
+      "authored_at": "2020-05-03T19:25:46+02:00",
+      "query": "Fixes to be compatible with Node.js 14.1.0",
+      "query_tokens": [
+        "compatible",
+        "fixes",
+        "node"
+      ],
+      "specific_tokens": [
+        "compatible",
+        "node"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [
+        "package.json"
+      ],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-5772bf24dc7d",
+      "repository": "got",
+      "commit": "5772bf24dc7dd69db52fc26f8274039f52063fd2",
+      "base_revision": "a5b76bffb33d5fa8b0d1393cce410b88e7c2b848",
+      "authored_at": "2026-06-22T00:09:51+07:00",
+      "query": "Fix `searchParams` setter dropping the value when a URL is set (#2454)",
+      "query_tokens": [
+        "dropping",
+        "params",
+        "search",
+        "setter",
+        "value"
+      ],
+      "specific_tokens": [
+        "dropping",
+        "params",
+        "search",
+        "setter",
+        "value"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/hooks.ts",
+        "test/normalize-arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-59ae3b062f53",
+      "repository": "got",
+      "commit": "59ae3b062f53974599fd5e674e1ce72bc68b0163",
+      "base_revision": "2197052de61544e00daa81fd72811afcce2a397a",
+      "authored_at": "2021-07-17T18:35:27+02:00",
+      "query": "Fix an assertion for `options.method`",
+      "query_tokens": [
+        "assertion",
+        "method",
+        "options"
+      ],
+      "specific_tokens": [
+        "assertion",
+        "method",
+        "options"
+      ],
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "source/core/options.ts",
+            "tokens": [
+              "options"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-60a441939af3",
+      "repository": "got",
+      "commit": "60a441939af36143d1ead87b79ba706fe0a5b812",
+      "base_revision": "7ec171475656249c90c0246f9c29e9cee83fc8ad",
+      "authored_at": "2025-10-11T09:20:21+09:00",
+      "query": "Fix `afterResponse` hook validation to allow `null` body values",
+      "query_tokens": [
+        "allow",
+        "body",
+        "hook",
+        "null",
+        "response",
+        "validation",
+        "values"
+      ],
+      "specific_tokens": [
+        "allow",
+        "body",
+        "hook",
+        "null",
+        "response",
+        "validation",
+        "values"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-61d5e3b0ebc5",
+      "repository": "got",
+      "commit": "61d5e3b0ebc58da1299f11c20abcdc75ef77b389",
+      "base_revision": "fb03d84ebe055a4b2e78c14b0f92f3df8b966a00",
+      "authored_at": "2025-11-08T00:30:42+07:00",
+      "query": "Fix DNS cache timing confusion",
+      "query_tokens": [
+        "cache",
+        "confusion",
+        "timing"
+      ],
+      "specific_tokens": [
+        "cache",
+        "confusion",
+        "timing"
+      ],
+      "required_files": [
+        "source/core/utils/timer.ts",
+        "test/timings.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-61d6f610ffa6",
+      "repository": "got",
+      "commit": "61d6f610ffa6b760d466ff910a8e959778ee36e0",
+      "base_revision": "c83393933c2b308a312ed4dc85d852c79445e400",
+      "authored_at": "2020-07-14T18:16:29+02:00",
+      "query": "Fix typings for Node.js <=12",
+      "query_tokens": [
+        "node",
+        "typings"
+      ],
+      "specific_tokens": [
+        "node",
+        "typings"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/agent.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-676be6d85481",
+      "repository": "got",
+      "commit": "676be6d854818c891b5210ca7abe644f83ef8bfd",
+      "base_revision": "779062a1b99a9a1c13737b9fd613e185d97b158b",
+      "authored_at": "2020-07-05T22:29:19+02:00",
+      "query": "Fix TypeScript types for Promise API (#1344)",
+      "query_tokens": [
+        "promise",
+        "script",
+        "type",
+        "types"
+      ],
+      "specific_tokens": [
+        "promise",
+        "script",
+        "type",
+        "types"
+      ],
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/as-promise/types.ts",
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.667,
+        "shared_tokens": [
+          {
+            "path": "source/as-promise/core.ts",
+            "tokens": [
+              "promise"
+            ]
+          },
+          {
+            "path": "source/as-promise/types.ts",
+            "tokens": [
+              "promise",
+              "types"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-67d5039ff5a5",
+      "repository": "got",
+      "commit": "67d5039ff5a5518489529f9706199234e9b64ad6",
+      "base_revision": "469a45554ff29ca13050a2714eabaaec9f7160f7",
+      "authored_at": "2023-05-27T04:05:22-03:00",
+      "query": "Fix `get-stream` import statement (#2266)",
+      "query_tokens": [
+        "import",
+        "statement",
+        "stream"
+      ],
+      "specific_tokens": [
+        "import",
+        "statement",
+        "stream"
+      ],
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-6961284172c4",
+      "repository": "got",
+      "commit": "6961284172c4d5cca65ea7567abda7680a61fc14",
+      "base_revision": "d1d4ed2f6242c2ebfccdbfe278a582bf5ed51b8b",
+      "authored_at": "2025-10-09T14:12:15+09:00",
+      "query": "Fix validation to accept `false` as agent value",
+      "query_tokens": [
+        "accept",
+        "agent",
+        "false",
+        "validation",
+        "value"
+      ],
+      "specific_tokens": [
+        "accept",
+        "agent",
+        "false",
+        "validation",
+        "value"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/agent.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/agent.ts",
+            "tokens": [
+              "agent"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-6a544a392baf",
+      "repository": "got",
+      "commit": "6a544a392bafd66c4a1d4ec0643d0d4203d70a79",
+      "base_revision": "60a441939af36143d1ead87b79ba706fe0a5b812",
+      "authored_at": "2025-10-11T09:34:54+09:00",
+      "query": "Fix hook type definitions to reflect normalized runtime state",
+      "query_tokens": [
+        "definitions",
+        "hook",
+        "normalized",
+        "reflect",
+        "runtime",
+        "state",
+        "type"
+      ],
+      "specific_tokens": [
+        "definitions",
+        "hook",
+        "normalized",
+        "reflect",
+        "runtime",
+        "state",
+        "type"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-6ae3e7fc364b",
+      "repository": "got",
+      "commit": "6ae3e7fc364b9a34ed6e276ab4671be43f660840",
+      "base_revision": "e09a9bd1ca9747f3b53666dc0bca06e1d742899f",
+      "authored_at": "2025-10-11T19:36:19+09:00",
+      "query": "Fix EPIPE errors bypassing retry logic in Promise API",
+      "query_tokens": [
+        "bypassing",
+        "epipe",
+        "errors",
+        "logic",
+        "promise",
+        "retry"
+      ],
+      "specific_tokens": [
+        "bypassing",
+        "epipe",
+        "logic",
+        "promise",
+        "retry"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.667,
+        "shared_tokens": [
+          {
+            "path": "source/as-promise/index.ts",
+            "tokens": [
+              "promise"
+            ]
+          },
+          {
+            "path": "test/retry.ts",
+            "tokens": [
+              "retry"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-6e1d9f97465d",
+      "repository": "got",
+      "commit": "6e1d9f97465d79980b03ed69518ae73a26e12c75",
+      "base_revision": "a06e7585ab4503e1dd7178d83dd4443ff6dda6c1",
+      "authored_at": "2021-06-03T01:20:26+02:00",
+      "query": "Fix `Invalid URL` checks on Node.js 16",
+      "query_tokens": [
+        "checks",
+        "invalid",
+        "node"
+      ],
+      "specific_tokens": [
+        "checks",
+        "invalid",
+        "node"
+      ],
+      "required_files": [
+        "source/core/errors.ts",
+        "test/arguments.ts",
+        "test/error.ts",
+        "test/helpers.ts",
+        "test/helpers/invalid-url.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.2,
+        "shared_tokens": [
+          {
+            "path": "test/helpers/invalid-url.ts",
+            "tokens": [
+              "invalid"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-724d5923816b",
+      "repository": "got",
+      "commit": "724d5923816b6fa06762b7e95a64cc29e642f375",
+      "base_revision": "dc4f1e323dbdc0c4c2dbf1e03c66b714bfb51d39",
+      "authored_at": "2025-10-08T16:04:36+09:00",
+      "query": "Fix it not using HTTP/2 connection reuse by default",
+      "query_tokens": [
+        "connection",
+        "default",
+        "http",
+        "reuse",
+        "using"
+      ],
+      "specific_tokens": [
+        "connection",
+        "default",
+        "http",
+        "reuse",
+        "using"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/https.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-728aef989c1a",
+      "repository": "got",
+      "commit": "728aef989c1a6650d2b42a7f69b603075b5d35bf",
+      "base_revision": "04f3ea4b7995e1609555dd13f00641b8f470de4c",
+      "authored_at": "2020-07-03T15:40:36+02:00",
+      "query": "Fix unhandled `The server aborted pending request` rejection",
+      "query_tokens": [
+        "aborted",
+        "pending",
+        "rejection",
+        "request",
+        "server",
+        "unhandled"
+      ],
+      "specific_tokens": [
+        "aborted",
+        "pending",
+        "rejection",
+        "request",
+        "server",
+        "unhandled"
+      ],
+      "required_files": [
+        "source/as-promise/core.ts",
+        "source/core/index.ts",
+        "test/http.ts",
+        "test/promise.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-74e3167b705b",
+      "repository": "got",
+      "commit": "74e3167b705b713f00f32f48f09dce94faa20dbb",
+      "base_revision": "f6a058a7d1fdd0b65bb75db9faf94490fb7a66ec",
+      "authored_at": "2026-05-07T00:01:00+09:00",
+      "query": "Handle abort signals added by handlers",
+      "query_tokens": [
+        "abort",
+        "added",
+        "handle",
+        "handlers",
+        "signals"
+      ],
+      "specific_tokens": [
+        "abort",
+        "added",
+        "handlers",
+        "signals"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/abort.ts",
+            "tokens": [
+              "abort"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-78b105b5ebcf",
+      "repository": "got",
+      "commit": "78b105b5ebcf9d79555bd80a02c8f47f94c933d8",
+      "base_revision": "7ccc0b8ea29de26177968a6a1e37ed71c9c9e975",
+      "authored_at": "2021-04-14T00:43:45+02:00",
+      "query": "Fix request destroy check for Node.js 12",
+      "query_tokens": [
+        "check",
+        "destroy",
+        "node",
+        "request"
+      ],
+      "specific_tokens": [
+        "check",
+        "destroy",
+        "node",
+        "request"
+      ],
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-7a920647efa2",
+      "repository": "got",
+      "commit": "7a920647efa236bd1f80dad087a27371e5070f7b",
+      "base_revision": "f997bcb385d4b35ff581333e6bc9360d5ee10e71",
+      "authored_at": "2025-02-10T08:45:39+01:00",
+      "query": "Fix timeout error firing even though it's cancelled (#2399)",
+      "query_tokens": [
+        "cancelled",
+        "error",
+        "even",
+        "firing",
+        "though",
+        "timeout"
+      ],
+      "specific_tokens": [
+        "cancelled",
+        "even",
+        "firing",
+        "though",
+        "timeout"
+      ],
+      "required_files": [
+        "source/core/timed-out.ts",
+        "test/retry.ts",
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "test/timeout.ts",
+            "tokens": [
+              "timeout"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-7acd3801ec7d",
+      "repository": "got",
+      "commit": "7acd3801ec7dc80dabc41073af1cf2874b1867a1",
+      "base_revision": "6aa86f2494194907f6c6c8b4774dfa1f69df6876",
+      "authored_at": "2020-10-20T16:27:07+02:00",
+      "query": "Fix for sending files with size `0` on `stat` (#1488)",
+      "query_tokens": [
+        "files",
+        "sending",
+        "size",
+        "stat"
+      ],
+      "specific_tokens": [
+        "files",
+        "sending",
+        "size",
+        "stat"
+      ],
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "source/core/utils/get-body-size.ts",
+            "tokens": [
+              "size"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-7b19e8f32c90",
+      "repository": "got",
+      "commit": "7b19e8f32c90984a168ac2e29585bcd637535e9a",
+      "base_revision": "633e46e8cb184e6a2670ffae5f8184fcf710f31b",
+      "authored_at": "2020-05-02T16:10:42+02:00",
+      "query": "Fix hanging promise when using cache",
+      "query_tokens": [
+        "cache",
+        "hanging",
+        "promise",
+        "using"
+      ],
+      "specific_tokens": [
+        "cache",
+        "hanging",
+        "promise",
+        "using"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/cache.ts",
+            "tokens": [
+              "cache"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-7e1de4240dad",
+      "repository": "got",
+      "commit": "7e1de4240dad5e065a7c8993b65c18efa239b616",
+      "base_revision": "a59fac415ac013a48b1d514837628a5cf81d6878",
+      "authored_at": "2021-04-11T22:44:27+02:00",
+      "query": "Fix a test on Node.js 14",
+      "query_tokens": [
+        "node",
+        "test"
+      ],
+      "specific_tokens": [
+        "node",
+        "test"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/timeout.ts",
+            "tokens": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-88622701c704",
+      "repository": "got",
+      "commit": "88622701c70434ddc1040c46ad16de0c0acd9143",
+      "base_revision": "7d7361cc3845421f24288fc39464a8b38bd75d56",
+      "authored_at": "2020-05-10T14:23:14+02:00",
+      "query": "Fix reusing options when paginating",
+      "query_tokens": [
+        "options",
+        "paginating",
+        "reusing"
+      ],
+      "specific_tokens": [
+        "options",
+        "paginating",
+        "reusing"
+      ],
+      "required_files": [
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-88b32eade80f",
+      "repository": "got",
+      "commit": "88b32eade80f964c33af2bdf3970779490a7271b",
+      "base_revision": "25ae938e441ee1fb35bcfa76582d1075cc5c9eef",
+      "authored_at": "2020-09-18T23:03:29+02:00",
+      "query": "Fix a regression where body was sent after redirect",
+      "query_tokens": [
+        "body",
+        "redirect",
+        "regression",
+        "sent"
+      ],
+      "specific_tokens": [
+        "body",
+        "redirect",
+        "regression",
+        "sent"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-8d3412abb8aa",
+      "repository": "got",
+      "commit": "8d3412abb8aae3cefc75dd6f9e698988ed463dd6",
+      "base_revision": "d325d353a28e6038140aa5b18f2b6f9f796f10b6",
+      "authored_at": "2020-07-03T23:55:16+02:00",
+      "query": "Fix `prefixUrl` not working when the `url` argument is empty",
+      "query_tokens": [
+        "argument",
+        "empty",
+        "prefix",
+        "working"
+      ],
+      "specific_tokens": [
+        "argument",
+        "empty",
+        "prefix",
+        "working"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-8f775c71c41a",
+      "repository": "got",
+      "commit": "8f775c71c41a377186c6b38c6789542bfd523039",
+      "base_revision": "4dbada94e261ad890d2478c313ec3d74761b659e",
+      "authored_at": "2020-07-04T02:22:59+02:00",
+      "query": "Fix non-enumerable options [such as body] not being used",
+      "query_tokens": [
+        "body",
+        "enumerable",
+        "options",
+        "used"
+      ],
+      "specific_tokens": [
+        "body",
+        "enumerable",
+        "options",
+        "used"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/create.ts",
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-91aa0ac9e676",
+      "repository": "got",
+      "commit": "91aa0ac9e676130cd4cfc1183d16208c6167b31d",
+      "base_revision": "7dbb9ee2bd58e8ee67ebfe734e0c62e765759593",
+      "authored_at": "2020-05-10T13:07:41+01:00",
+      "query": "Fix duplicated searchParams for pagination API (#1229)",
+      "query_tokens": [
+        "duplicated",
+        "pagination",
+        "params",
+        "search"
+      ],
+      "specific_tokens": [
+        "duplicated",
+        "pagination",
+        "params",
+        "search"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "readme.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/pagination.ts",
+            "tokens": [
+              "pagination"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-92b378e5fd95",
+      "repository": "got",
+      "commit": "92b378e5fd95e891e849c7f3fa7483575ab052c3",
+      "base_revision": "f4f3ba88e4db2270792385e7d32a694d7432d232",
+      "authored_at": "2024-11-04T12:02:00+01:00",
+      "query": "Fix support for `AbortSignal#timeout()` (#2388)",
+      "query_tokens": [
+        "abort",
+        "signal",
+        "support",
+        "timeout"
+      ],
+      "specific_tokens": [
+        "abort",
+        "signal",
+        "support",
+        "timeout"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/abort.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/abort.ts",
+            "tokens": [
+              "abort"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-934211f951bf",
+      "repository": "got",
+      "commit": "934211f951bfd56751e90ec4eabe6379d8541a05",
+      "base_revision": "7582d916db72f7bab2b2c162d37cfcfde08bbba7",
+      "authored_at": "2020-07-03T13:13:11+02:00",
+      "query": "Fix hanging promise on timeout on HTTP error",
+      "query_tokens": [
+        "error",
+        "hanging",
+        "http",
+        "promise",
+        "timeout"
+      ],
+      "specific_tokens": [
+        "hanging",
+        "http",
+        "promise",
+        "timeout"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "source/as-promise/index.ts",
+            "tokens": [
+              "promise"
+            ]
+          },
+          {
+            "path": "test/error.ts",
+            "tokens": [
+              "error"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-9725fbd109a6",
+      "repository": "got",
+      "commit": "9725fbd109a6a65788bfe49da873a850a21e9bc8",
+      "base_revision": "449833a227fc3b8d1a43c3618f09217d47ac55ba",
+      "authored_at": "2025-10-14T03:34:47+09:00",
+      "query": "FIx preserving `prefixUrl` in hooks",
+      "query_tokens": [
+        "hooks",
+        "prefix",
+        "preserving"
+      ],
+      "specific_tokens": [
+        "hooks",
+        "prefix",
+        "preserving"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "test/hooks.ts",
+            "tokens": [
+              "hooks"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-98ca6181a039",
+      "repository": "got",
+      "commit": "98ca6181a0390450b1e29c277d4670634695ce85",
+      "base_revision": "bb8eca924c338ca12d5b90d6a26aa28dbddb42ee",
+      "authored_at": "2022-04-24T22:04:02+02:00",
+      "query": "Fix accidental test deletion",
+      "query_tokens": [
+        "accidental",
+        "deletion",
+        "test"
+      ],
+      "specific_tokens": [
+        "accidental",
+        "deletion",
+        "test"
+      ],
+      "required_files": [
+        "test/progress.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/progress.ts",
+            "tokens": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-99e8d134bd9a",
+      "repository": "got",
+      "commit": "99e8d134bd9ad9453a69c8c31e1a640cc7f6f1cd",
+      "base_revision": "ff83e9ee739bf9064a7e574b57dc076be86422a6",
+      "authored_at": "2021-07-31T22:20:51+02:00",
+      "query": "Fix a test on Node.js < 16",
+      "query_tokens": [
+        "node",
+        "test"
+      ],
+      "specific_tokens": [
+        "node",
+        "test"
+      ],
+      "required_files": [
+        "test/http.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/http.ts",
+            "tokens": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-9a309bdbe7e2",
+      "repository": "got",
+      "commit": "9a309bdbe7e2552c5bffbea253d58c39d6e6c3e3",
+      "base_revision": "a748343363ecb0347897264fb49df4a8f4793997",
+      "authored_at": "2020-08-06T04:13:37+02:00",
+      "query": "Fixed deprecationWarning on https options (#1391)",
+      "query_tokens": [
+        "deprecation",
+        "fixed",
+        "https",
+        "options",
+        "warning"
+      ],
+      "specific_tokens": [
+        "deprecation",
+        "fixed",
+        "https",
+        "options",
+        "warning"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/https.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/https.ts",
+            "tokens": [
+              "https"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-9ab4cf991fd5",
+      "repository": "got",
+      "commit": "9ab4cf991fd598e326f9750cf30d2e3407683ae0",
+      "base_revision": "89b7fdfd4e7ea4e76258f50b70ae8a1d2aea8125",
+      "authored_at": "2024-09-28T05:40:44+08:00",
+      "query": "Fix 404 links related to cacheable-request (#2379)",
+      "query_tokens": [
+        "cacheable",
+        "links",
+        "related",
+        "request"
+      ],
+      "specific_tokens": [
+        "cacheable",
+        "links",
+        "related",
+        "request"
+      ],
+      "required_files": [
+        "source/core/response.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "documentation/cache.md"
+      ],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-9e15d887da3b",
+      "repository": "got",
+      "commit": "9e15d887da3b065940bbc8ca38f9c748a0bbc75e",
+      "base_revision": "8d6a6807883323a83ea5f126ca56b55d9ce5f299",
+      "authored_at": "2021-07-02T02:03:11+02:00",
+      "query": "Fix incorrect response.complete when using cache",
+      "query_tokens": [
+        "cache",
+        "complete",
+        "incorrect",
+        "response",
+        "using"
+      ],
+      "specific_tokens": [
+        "cache",
+        "complete",
+        "incorrect",
+        "response",
+        "using"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/cache.ts",
+            "tokens": [
+              "cache"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-9ec6ff02a189",
+      "repository": "got",
+      "commit": "9ec6ff02a1890bc37b579eec4d62aa3aa564c9e7",
+      "base_revision": "1abeba4d112edb2313be8389e6416e650ebf4429",
+      "authored_at": "2025-10-10T00:54:19+09:00",
+      "query": "Fix `downloadProgress` firing for redirect responses",
+      "query_tokens": [
+        "download",
+        "firing",
+        "progress",
+        "redirect",
+        "responses"
+      ],
+      "specific_tokens": [
+        "download",
+        "firing",
+        "progress",
+        "redirect",
+        "responses"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/redirects.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-a2812de3baa0",
+      "repository": "got",
+      "commit": "a2812de3baa0ae925c2f506479ddf1607a77bdd8",
+      "base_revision": "9ec6ff02a1890bc37b579eec4d62aa3aa564c9e7",
+      "authored_at": "2025-10-10T01:09:12+09:00",
+      "query": "Fix handling of FormData getLength errors",
+      "query_tokens": [
+        "data",
+        "errors",
+        "form",
+        "handling",
+        "length"
+      ],
+      "specific_tokens": [
+        "data",
+        "form",
+        "length"
+      ],
+      "required_files": [
+        "source/core/utils/get-body-size.ts",
+        "test/post.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-a59fac415ac0",
+      "repository": "got",
+      "commit": "a59fac415ac013a48b1d514837628a5cf81d6878",
+      "base_revision": "45b89f5b4d2f7169586750722a0bb3a0ecfc8328",
+      "authored_at": "2021-04-11T22:12:12+02:00",
+      "query": "Fix hanging promise on HTTP/2 timeout",
+      "query_tokens": [
+        "hanging",
+        "http",
+        "promise",
+        "timeout"
+      ],
+      "specific_tokens": [
+        "hanging",
+        "http",
+        "promise",
+        "timeout"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [
+        "package.json"
+      ],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.333,
+        "shared_tokens": [
+          {
+            "path": "test/timeout.ts",
+            "tokens": [
+              "timeout"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-ac5f67dd4b92",
+      "repository": "got",
+      "commit": "ac5f67dd4b92a95db3c554f117dd2b2798e5e832",
+      "base_revision": "da4769e988801e9e6a1c9707af7a0d98fd14b183",
+      "authored_at": "2020-07-04T16:12:21+02:00",
+      "query": "Fix cache not working with HTTP2",
+      "query_tokens": [
+        "cache",
+        "http2",
+        "working"
+      ],
+      "specific_tokens": [
+        "cache",
+        "http2",
+        "working"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/cache.ts",
+            "tokens": [
+              "cache"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-aee9249444c4",
+      "repository": "got",
+      "commit": "aee9249444c4bd01c4fd094e46b4bb5a691382f5",
+      "base_revision": "28c0ca3c65716cc62c0d609a7c7043df9cf01b39",
+      "authored_at": "2026-06-28T11:45:28+02:00",
+      "query": "Preserve request body on cross-origin 307 and 308 redirects (#2460)",
+      "query_tokens": [
+        "body",
+        "cross",
+        "origin",
+        "preserve",
+        "redirects",
+        "request"
+      ],
+      "specific_tokens": [
+        "body",
+        "cross",
+        "origin",
+        "preserve",
+        "redirects",
+        "request"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/early-307-redirects.ts",
+        "test/redirects.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [
+        "documentation/2-options.md"
+      ],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.667,
+        "shared_tokens": [
+          {
+            "path": "test/early-307-redirects.ts",
+            "tokens": [
+              "redirects"
+            ]
+          },
+          {
+            "path": "test/redirects.ts",
+            "tokens": [
+              "redirects"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-af928f6d3974",
+      "repository": "got",
+      "commit": "af928f6d3974d7106718d37acc6bd1d33d2cec70",
+      "base_revision": "702ed352ac5d8527deaf4a5821d0274afc56e9d8",
+      "authored_at": "2023-04-10T02:46:20-03:00",
+      "query": "Fix type error on build (#2251)",
+      "query_tokens": [
+        "build",
+        "error",
+        "type"
+      ],
+      "specific_tokens": [
+        "build",
+        "type"
+      ],
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-b17012597e4d",
+      "repository": "got",
+      "commit": "b17012597e4d41a6fad774656f7d8858b3375dd0",
+      "base_revision": "c5ce415cb8fd929d542c618ecbd0e9087561bb56",
+      "authored_at": "2026-04-13T21:51:08+07:00",
+      "query": "Fix stream cookie jar completion race",
+      "query_tokens": [
+        "completion",
+        "cookie",
+        "race",
+        "stream"
+      ],
+      "specific_tokens": [
+        "completion",
+        "cookie",
+        "race",
+        "stream"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/stream.ts",
+            "tokens": [
+              "stream"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-b671480715db",
+      "repository": "got",
+      "commit": "b671480715dbbff908e9a385f5e714570c663cd7",
+      "base_revision": "231f55d6de3be5d580cd7fcbc4cb28ff2125cade",
+      "authored_at": "2022-09-02T18:46:07+02:00",
+      "query": "Fix `options.context` being not extensible",
+      "query_tokens": [
+        "context",
+        "extensible",
+        "options"
+      ],
+      "specific_tokens": [
+        "context",
+        "extensible",
+        "options"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "source/core/options.ts",
+            "tokens": [
+              "options"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-bf39d2c1c58f",
+      "repository": "got",
+      "commit": "bf39d2c1c58fb79fbe4ef47d92016dcb4f57b6bd",
+      "base_revision": "236e74431cb5cffd47b0ce088de1a0277a438339",
+      "authored_at": "2022-01-09T22:28:49+08:00",
+      "query": "Fix `nock` compatibility (#1959)",
+      "query_tokens": [
+        "compatibility",
+        "nock"
+      ],
+      "specific_tokens": [
+        "compatibility",
+        "nock"
+      ],
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-bf84d3697537",
+      "repository": "got",
+      "commit": "bf84d3697537d6fb6bd120591e8660cf1d93f3bc",
+      "base_revision": "9725fbd109a6a65788bfe49da873a850a21e9bc8",
+      "authored_at": "2025-10-14T15:06:17+09:00",
+      "query": "Fix body reassignment in `beforeRetry` hooks",
+      "query_tokens": [
+        "body",
+        "hooks",
+        "reassignment",
+        "retry"
+      ],
+      "specific_tokens": [
+        "body",
+        "hooks",
+        "reassignment",
+        "retry"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/hooks.ts",
+            "tokens": [
+              "hooks"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-c079b9366ff2",
+      "repository": "got",
+      "commit": "c079b9366ff2231a806c9746f0dfb4a0ec34e5d1",
+      "base_revision": "3034c2fdcebdff94907a6e015a8b154e851fc343",
+      "authored_at": "2024-11-23T07:43:37-08:00",
+      "query": "Fix a crash with Got accessing a non-existent request (#2391)",
+      "query_tokens": [
+        "accessing",
+        "crash",
+        "existent",
+        "request"
+      ],
+      "specific_tokens": [
+        "accessing",
+        "existent",
+        "request"
+      ],
+      "required_files": [
+        "source/core/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-c09b9857d1b4",
+      "repository": "got",
+      "commit": "c09b9857d1b44d090b92691eef2893bc5d998bba",
+      "base_revision": "d24e319f8a1db89f2ab2d3abd688a56e7e1b3b8b",
+      "authored_at": "2022-08-29T13:26:25+02:00",
+      "query": "Fix tough-cookie test",
+      "query_tokens": [
+        "cookie",
+        "test",
+        "tough"
+      ],
+      "specific_tokens": [
+        "cookie",
+        "test",
+        "tough"
+      ],
+      "required_files": [
+        "test/cookies.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/cookies.ts",
+            "tokens": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-c81a61159473",
+      "repository": "got",
+      "commit": "c81a61159473b8c12c22e00b42cac2ecdfc2ee87",
+      "base_revision": "897f3857a8af1baa440d5fbf3918be7bac6938bb",
+      "authored_at": "2024-03-07T10:47:06+03:00",
+      "query": "Fix error handling when UTF8 decoding fails (#2336)",
+      "query_tokens": [
+        "decoding",
+        "error",
+        "fails",
+        "handling",
+        "utf8"
+      ],
+      "specific_tokens": [
+        "decoding",
+        "utf8"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/error.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/error.ts",
+            "tokens": [
+              "error"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-c97ce7cbde86",
+      "repository": "got",
+      "commit": "c97ce7cbde86f7cc40bd646dfc660811050a8376",
+      "base_revision": "1b208df667169249d4392214b7771546ceede204",
+      "authored_at": "2020-09-18T16:55:59+02:00",
+      "query": "Fix destructure error on `promsie.json()`",
+      "query_tokens": [
+        "destructure",
+        "error",
+        "json",
+        "promsie"
+      ],
+      "specific_tokens": [
+        "destructure",
+        "json",
+        "promsie"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-cbc890292f40",
+      "repository": "got",
+      "commit": "cbc890292f406fcbde0b48663d46b510d842694c",
+      "base_revision": "15c30ee79f4cac774533f2e43c5883c8a2a89ee3",
+      "authored_at": "2021-08-12T09:05:44+02:00",
+      "query": "Fix invalid `afterResponse` return check",
+      "query_tokens": [
+        "check",
+        "invalid",
+        "response",
+        "return"
+      ],
+      "specific_tokens": [
+        "check",
+        "invalid",
+        "response",
+        "return"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-cc434bc52111",
+      "repository": "got",
+      "commit": "cc434bc5211145467e962a13a8e27eef5140d6e6",
+      "base_revision": "972fb25b5470ebe57afb3a3a0070362f19aa2dc1",
+      "authored_at": "2025-09-17T05:59:47+07:00",
+      "query": "Fix hang with responses containing `content-encoding` headers but no body",
+      "query_tokens": [
+        "body",
+        "containing",
+        "content",
+        "encoding",
+        "hang",
+        "headers",
+        "responses"
+      ],
+      "specific_tokens": [
+        "body",
+        "containing",
+        "content",
+        "encoding",
+        "hang",
+        "headers",
+        "responses"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/no-body-status-codes.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/no-body-status-codes.ts",
+            "tokens": [
+              "body"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-d1d4ed2f6242",
+      "repository": "got",
+      "commit": "d1d4ed2f6242c2ebfccdbfe278a582bf5ed51b8b",
+      "base_revision": "2d8182de7175dd1dcf649026e8887a7274aa11a0",
+      "authored_at": "2025-10-09T14:01:35+09:00",
+      "query": "Fix HTTP/2 memory leak from timeout listeners with connection reuse",
+      "query_tokens": [
+        "connection",
+        "http",
+        "leak",
+        "listeners",
+        "memory",
+        "reuse",
+        "timeout"
+      ],
+      "specific_tokens": [
+        "connection",
+        "http",
+        "leak",
+        "listeners",
+        "memory",
+        "reuse",
+        "timeout"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/timeout.ts",
+            "tokens": [
+              "timeout"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-d65d0caf627e",
+      "repository": "got",
+      "commit": "d65d0caf627e8d1f5367db34d7d9b55d332c1efb",
+      "base_revision": "eda69ff924a621e499d31cbc590993a32ddb48d3",
+      "authored_at": "2021-08-04T23:20:59+02:00",
+      "query": "Fix `username` and `password` encoding in URL",
+      "query_tokens": [
+        "encoding",
+        "password",
+        "username"
+      ],
+      "specific_tokens": [
+        "encoding",
+        "password",
+        "username"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/options.ts",
+        "test/headers.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-d8c00cfa388b",
+      "repository": "got",
+      "commit": "d8c00cfa388b0a98290035940e63e8e7c1557a5e",
+      "base_revision": "b9ba18a9ae8b945466e1bedeba7093648f7b2e1a",
+      "authored_at": "2020-05-31T21:18:59+02:00",
+      "query": "Fix overriding some options in a `beforeRequest` hook (#1293)",
+      "query_tokens": [
+        "hook",
+        "options",
+        "overriding",
+        "request"
+      ],
+      "specific_tokens": [
+        "hook",
+        "options",
+        "overriding",
+        "request"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-da4769e98880",
+      "repository": "got",
+      "commit": "da4769e988801e9e6a1c9707af7a0d98fd14b183",
+      "base_revision": "aeb2e070674a8c0567cfb6d47dbfa4a04dd48dd8",
+      "authored_at": "2020-07-04T15:19:13+02:00",
+      "query": "Fix `response` event not being emitted on cache verify request (#1305)",
+      "query_tokens": [
+        "cache",
+        "emitted",
+        "event",
+        "request",
+        "response",
+        "verify"
+      ],
+      "specific_tokens": [
+        "cache",
+        "emitted",
+        "event",
+        "request",
+        "response",
+        "verify"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/cache.ts",
+            "tokens": [
+              "cache"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-dad6a91b3d11",
+      "repository": "got",
+      "commit": "dad6a91b3d114de41126af695a5789229c05d8af",
+      "base_revision": "b581a0a8cdeb1f44790f7e1fa62e03cec45ebe89",
+      "authored_at": "2025-08-30T16:11:21+07:00",
+      "query": "Fix infinite loop when retrying with `request.options` in `afterResponse` hook",
+      "query_tokens": [
+        "hook",
+        "infinite",
+        "loop",
+        "options",
+        "request",
+        "response",
+        "retrying"
+      ],
+      "specific_tokens": [
+        "hook",
+        "infinite",
+        "loop",
+        "options",
+        "request",
+        "response",
+        "retrying"
+      ],
+      "required_files": [
+        "source/core/options.ts",
+        "test/infinite-loop-issue.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "source/core/options.ts",
+            "tokens": [
+              "options"
+            ]
+          },
+          {
+            "path": "test/infinite-loop-issue.ts",
+            "tokens": [
+              "infinite",
+              "loop"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-dc4f1e323dbd",
+      "repository": "got",
+      "commit": "dc4f1e323dbdc0c4c2dbf1e03c66b714bfb51d39",
+      "base_revision": "75287d683bbc4a1389aadef567864f1115625c7d",
+      "authored_at": "2025-10-08T16:04:23+09:00",
+      "query": "Fix hang with stream requests without body for methods like OPTIONS",
+      "query_tokens": [
+        "body",
+        "hang",
+        "like",
+        "methods",
+        "options",
+        "requests",
+        "stream"
+      ],
+      "specific_tokens": [
+        "body",
+        "hang",
+        "like",
+        "methods",
+        "options",
+        "requests",
+        "stream"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/stream.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/stream.ts",
+            "tokens": [
+              "stream"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-dfc54d9e57b7",
+      "repository": "got",
+      "commit": "dfc54d9e57b738b4447aff08940a242ec95910ae",
+      "base_revision": "cc346b79561b13e3a266b22b7f612fca5a45eb1e",
+      "authored_at": "2024-06-06T14:26:58+02:00",
+      "query": "Fix missing dependency",
+      "query_tokens": [
+        "dependency",
+        "missing"
+      ],
+      "specific_tokens": [
+        "dependency",
+        "missing"
+      ],
+      "required_files": [
+        "package.json"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-e02845f1aa73",
+      "repository": "got",
+      "commit": "e02845f1aa737d55dce23381d0f4f2a61b1eb5e1",
+      "base_revision": "a3e171c4d43c8bbb236ef3a04feb25ba6fdf6c49",
+      "authored_at": "2020-07-28T10:44:16+02:00",
+      "query": "Fix duplicated hooks when paginating",
+      "query_tokens": [
+        "duplicated",
+        "hooks",
+        "paginating"
+      ],
+      "specific_tokens": [
+        "duplicated",
+        "hooks",
+        "paginating"
+      ],
+      "required_files": [
+        "source/create.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/hooks.ts",
+            "tokens": [
+              "hooks"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-e09a9bd1ca97",
+      "repository": "got",
+      "commit": "e09a9bd1ca9747f3b53666dc0bca06e1d742899f",
+      "base_revision": "5bdd3d5f175c5e0d8e37dbb7e8a946171390de17",
+      "authored_at": "2025-10-11T16:56:20+09:00",
+      "query": "Fix silent hang when returning cached response with FormData body from beforeRequest hook",
+      "query_tokens": [
+        "body",
+        "cached",
+        "data",
+        "form",
+        "hang",
+        "hook",
+        "request",
+        "response",
+        "returning",
+        "silent"
+      ],
+      "specific_tokens": [
+        "body",
+        "cached",
+        "data",
+        "form",
+        "hang",
+        "hook",
+        "request",
+        "response",
+        "returning",
+        "silent"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-e1099fbc2aa9",
+      "repository": "got",
+      "commit": "e1099fbc2aa911cf5dfba9f5fa8a38d0aa0e6231",
+      "base_revision": "57367efc5ead58827f58818e6b282e7142be5673",
+      "authored_at": "2021-08-06T12:32:40+02:00",
+      "query": "Fix `https.alpnProtocols` not having an effect",
+      "query_tokens": [
+        "alpn",
+        "effect",
+        "having",
+        "https",
+        "protocols"
+      ],
+      "specific_tokens": [
+        "alpn",
+        "effect",
+        "having",
+        "https",
+        "protocols"
+      ],
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-e4aeb8e3bfc4",
+      "repository": "got",
+      "commit": "e4aeb8e3bfc42b56a42a5e1ab32432f92676925a",
+      "base_revision": "4be7446baaef7ff53462b3ccfc1cf44e07d44b80",
+      "authored_at": "2020-07-07T14:18:41+02:00",
+      "query": "Fix pagination backoff test",
+      "query_tokens": [
+        "backoff",
+        "pagination",
+        "test"
+      ],
+      "specific_tokens": [
+        "backoff",
+        "pagination",
+        "test"
+      ],
+      "required_files": [
+        "test/pagination.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "test/pagination.ts",
+            "tokens": [
+              "pagination",
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-e5659d401a4a",
+      "repository": "got",
+      "commit": "e5659d401a4a5a1108da3de79e89100c06026589",
+      "base_revision": "8224769a15756dd2b07954bd1526a6056f0227d2",
+      "authored_at": "2025-10-12T23:47:29+09:00",
+      "query": "Fix properly treating different UNIX socket paths as different origins",
+      "query_tokens": [
+        "different",
+        "origins",
+        "paths",
+        "properly",
+        "socket",
+        "treating",
+        "unix"
+      ],
+      "specific_tokens": [
+        "different",
+        "origins",
+        "paths",
+        "socket",
+        "treating",
+        "unix"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "source/core/utils/is-unix-socket-url.ts",
+        "test/get-unix-socket-path.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.667,
+        "shared_tokens": [
+          {
+            "path": "source/core/utils/is-unix-socket-url.ts",
+            "tokens": [
+              "socket",
+              "unix"
+            ]
+          },
+          {
+            "path": "test/get-unix-socket-path.ts",
+            "tokens": [
+              "socket",
+              "unix"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-e899c0736f6a",
+      "repository": "got",
+      "commit": "e899c0736f6a49112f98a3cebbf0fe2fac53b0c3",
+      "base_revision": "81fc00aa0ddc528adb9674894556d4dfd6aa624b",
+      "authored_at": "2025-10-09T23:09:47+09:00",
+      "query": "Fix TypeScript type definition for retry event's createRetryStream parameter",
+      "query_tokens": [
+        "create",
+        "definition",
+        "event",
+        "parameter",
+        "retry",
+        "script",
+        "stream",
+        "type"
+      ],
+      "specific_tokens": [
+        "create",
+        "definition",
+        "event",
+        "parameter",
+        "retry",
+        "script",
+        "stream",
+        "type"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/retry.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/retry.ts",
+            "tokens": [
+              "retry"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-eb045bfc324d",
+      "repository": "got",
+      "commit": "eb045bfc324de39301fc497ccaeac2f51586b102",
+      "base_revision": "f582a091500702c88f80526a8d1fd6e040b1eee3",
+      "authored_at": "2022-03-22T22:01:44+02:00",
+      "query": "allow other json values (#2015)",
+      "query_tokens": [
+        "allow",
+        "json",
+        "values"
+      ],
+      "specific_tokens": [
+        "allow",
+        "json",
+        "values"
+      ],
+      "required_files": [
+        "source/core/options.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-ecb05343dea3",
+      "repository": "got",
+      "commit": "ecb05343dea3bd35933585a1ec5bcea01348d109",
+      "base_revision": "49c605ca85fa35b7c1b6819219cb7bd5209b4085",
+      "authored_at": "2021-12-09T19:31:03-05:00",
+      "query": "Fix `deflate` responses not being decompressed (#1918)",
+      "query_tokens": [
+        "decompressed",
+        "deflate",
+        "responses"
+      ],
+      "specific_tokens": [
+        "decompressed",
+        "deflate",
+        "responses"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-f0045640d12a",
+      "repository": "got",
+      "commit": "f0045640d12ad53eca081243ede37a5ce501cb4a",
+      "base_revision": "bf84d3697537d6fb6bd120591e8660cf1d93f3bc",
+      "authored_at": "2025-10-14T17:06:46+09:00",
+      "query": "Fix shortcut methods ignoring handler errors",
+      "query_tokens": [
+        "errors",
+        "handler",
+        "ignoring",
+        "methods",
+        "shortcut"
+      ],
+      "specific_tokens": [
+        "handler",
+        "ignoring",
+        "methods",
+        "shortcut"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-f2f8cb29fe9f",
+      "repository": "got",
+      "commit": "f2f8cb29fe9ffcae39955f9a2591cc84cec349b7",
+      "base_revision": "9ab4cf991fd598e326f9750cf30d2e3407683ae0",
+      "authored_at": "2024-10-09T13:56:20+08:00",
+      "query": "Fix cache with HTTP2 (#2380)",
+      "query_tokens": [
+        "cache",
+        "http2"
+      ],
+      "specific_tokens": [
+        "cache",
+        "http2"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/cache.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/cache.ts",
+            "tokens": [
+              "cache"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-f44ef4388e0b",
+      "repository": "got",
+      "commit": "f44ef4388e0b56c8b0abd30d5161fe39053e3ce8",
+      "base_revision": "bc17e8120b527bb54352474300b5c71cf465ee7f",
+      "authored_at": "2024-07-24T06:56:41-04:00",
+      "query": "Fix handling of invalid arguments (#2367)",
+      "query_tokens": [
+        "arguments",
+        "handling",
+        "invalid"
+      ],
+      "specific_tokens": [
+        "arguments",
+        "invalid"
+      ],
+      "required_files": [
+        "source/create.ts",
+        "test/arguments.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.5,
+        "shared_tokens": [
+          {
+            "path": "test/arguments.ts",
+            "tokens": [
+              "arguments"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-f7ab6e9ffda6",
+      "repository": "got",
+      "commit": "f7ab6e9ffda6dec1821d18c070a231c9b38063ec",
+      "base_revision": "a149dfbf72fedc3822cc9f8157582f6b92d43774",
+      "authored_at": "2025-11-22T17:47:24+07:00",
+      "query": "Fix TypeScript type inference for `got.extend()` with `responseType` option",
+      "query_tokens": [
+        "extend",
+        "inference",
+        "option",
+        "response",
+        "script",
+        "type"
+      ],
+      "specific_tokens": [
+        "extend",
+        "inference",
+        "option",
+        "response",
+        "script",
+        "type"
+      ],
+      "required_files": [
+        "source/types.ts",
+        "test/create.ts",
+        "test/extend.types.ts",
+        "test/hooks.ts",
+        "test/timeout.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 0.2,
+        "shared_tokens": [
+          {
+            "path": "test/extend.types.ts",
+            "tokens": [
+              "extend"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "got-fb8641856a13",
+      "repository": "got",
+      "commit": "fb8641856a133a7e80790d106b08b4b585079f20",
+      "base_revision": "7b32611d8e5292b5e6a073fe88e8ac812ceb9eb9",
+      "authored_at": "2025-10-10T18:13:46+09:00",
+      "query": "Fix `beforeError` hook not being called for `ERR_UNSUPPORTED_PROTOCOL` error",
+      "query_tokens": [
+        "called",
+        "error",
+        "hook",
+        "protocol",
+        "unsupported"
+      ],
+      "specific_tokens": [
+        "called",
+        "hook",
+        "protocol",
+        "unsupported"
+      ],
+      "required_files": [
+        "source/core/index.ts",
+        "test/hooks.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": false,
+        "path_leak_ratio": 0,
+        "shared_tokens": []
+      }
+    },
+    {
+      "case_id": "got-ff918fb6dedb",
+      "repository": "got",
+      "commit": "ff918fb6dedb6d8b23421497ec890d43f45121b7",
+      "base_revision": "1107cc625e4cc469276483316c48896a21f6251a",
+      "authored_at": "2020-12-01T03:03:07+04:00",
+      "query": "Fix promise shortcuts in case of error status code (#1543)",
+      "query_tokens": [
+        "case",
+        "code",
+        "error",
+        "promise",
+        "shortcuts",
+        "status"
+      ],
+      "specific_tokens": [
+        "case",
+        "code",
+        "promise",
+        "shortcuts",
+        "status"
+      ],
+      "required_files": [
+        "source/as-promise/index.ts",
+        "test/promise.ts"
+      ],
+      "derivable_files": [],
+      "incidental_files": [],
+      "excluded_files": [],
+      "retrieval": {
+        "path_leak": true,
+        "path_leak_ratio": 1,
+        "shared_tokens": [
+          {
+            "path": "source/as-promise/index.ts",
+            "tokens": [
+              "promise"
+            ]
+          },
+          {
+            "path": "test/promise.ts",
+            "tokens": [
+              "promise"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "rejected_sample": [
+    {
+      "commit": "e3924aa1e53a6ca3eb93a43618ce532442a89b40",
+      "subject": "Add support for `QUERY` HTTP method (#2466)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "dd3b295fdc7c921d21fa046003c63cf1f6d14332",
+      "subject": "Various tweaks (#2465)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "1e157c43c4395912d66154993875a2a6fb3dbb6e",
+      "subject": "Rewrite HTTP/2 support (#2464)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "bfc400b2a12a0bbb4d0ed896d61d834cd5f2ebcb",
+      "subject": " Replace `cacheable-lookup` dependency with internal DNS cache (#2463)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "b855688f0e520c82aff7a1dd913f9f95a4a05337",
+      "subject": "15.1.0",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "1c88e888352c54ab4f1b16c45b05a0060601af94",
+      "subject": "Add `allowAbsoluteUrls` option (#2462)",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "66ca4e025622e1dd71f4e4f13aa6e1b79d61b069",
+      "subject": "15.0.7",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "28c0ca3c65716cc62c0d609a7c7043df9cf01b39",
+      "subject": "Fix docs typos (#2458)",
+      "reason": "no-code-files"
+    },
+    {
+      "commit": "4cc6f566eadaca4ab4a3064e94ee16072cac839b",
+      "subject": "15.0.6",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "a5b76bffb33d5fa8b0d1393cce410b88e7c2b848",
+      "subject": "Document pagination authorization handling",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "d00d845a0b435365ec73ea5a1fca6e17ee677184",
+      "subject": "15.0.5",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "f6a058a7d1fdd0b65bb75db9faf94490fb7a66ec",
+      "subject": "15.0.4",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "e9489c1729a56711a18aa49d11c1ed596dfef451",
+      "subject": "15.0.3",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "1a1452c38981d2f5f10f41392acf3dd16bb70f9b",
+      "subject": "Update dependencies",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "b03e6f95ebb5fe3c51512fe0190a20385e2f9ee9",
+      "subject": "Tweaks",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "552f0fe234745f5423e314430d9f5d77b6363ba2",
+      "subject": "15.0.2",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "c5ce415cb8fd929d542c618ecbd0e9087561bb56",
+      "subject": "Tweaks",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "aa2b3bb4ff6eada5fc766024b3b6a0c58efffb28",
+      "subject": "15.0.1",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "20633bc1d461a38d3466dd98ea0669a9d47a43aa",
+      "subject": "Simplify init types",
+      "reason": "not-a-fix"
+    },
+    {
+      "commit": "4d7e628b1c288f72a28567ceabcff51bfc160db5",
+      "subject": "Tweaks",
+      "reason": "not-a-fix"
+    }
+  ]
+}

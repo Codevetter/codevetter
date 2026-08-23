@@ -1,0 +1,6177 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "express",
+    "head": "a3714473feb3d2908add734d340e7755fd85e0a3"
+  },
+  "tier": "small",
+  "tier_code_files": 141,
+  "corpus_counts": {
+    "cases": 28,
+    "path_leak": 9,
+    "baseline_blind": 19,
+    "multi_file": 14
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": true,
+      "best": 0.7113,
+      "control": 0.2143,
+      "reason": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "Fix hanging on large stack of sync routes",
+        "revision": "75e0c7a2c91665f44d053d83be15f8ecd0177f41",
+        "returned": [
+          "test/req.range.js",
+          "test/acceptance/route-separation.js",
+          "test/res.append.js",
+          "test/req.accepts.js",
+          "lib/router/layer.js"
+        ]
+      },
+      {
+        "provider_id": "random-files",
+        "query": "remove duplicate word (#6456)",
+        "revision": "5da5a11a498a3034623960861e542a3b39b00c94",
+        "returned": [
+          "test/res.format.js",
+          "test/res.vary.js",
+          "test/res.cookie.js",
+          "lib/utils.js",
+          "examples/view-constructor/github-view.js"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "add Content-Length header only if Transfer-Encoding is not present (#4893)",
+        "revision": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+        "returned": [
+          "package.json",
+          ".github/workflows/ci.yml",
+          "lib/response.js",
+          ".github/workflows/legacy.yml",
+          ".github/workflows/scorecard.yml"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix handling very large stacks of sync middleware",
+        "revision": "92c5ce59f51cce4b3598fd040117772fac42dce8",
+        "returned": [
+          "package.json",
+          "appveyor.yml",
+          "lib/response.js",
+          "test/res.sendFile.js",
+          ".github/workflows/ci.yml"
+        ]
+      },
+      {
+        "provider_id": "semble",
+        "query": "Remove `utils-merge` dependency - use spread syntax instead (#6091)",
+        "revision": "b11122be85377375465b2aa103da43301e56f128",
+        "returned": [
+          "lib/application.js",
+          "lib/response.js",
+          "lib/express.js",
+          "lib/utils.js",
+          "lib/request.js"
+        ]
+      },
+      {
+        "provider_id": "semble",
+        "query": "Fix handling very large stacks of sync middleware",
+        "revision": "92c5ce59f51cce4b3598fd040117772fac42dce8",
+        "returned": [
+          "benchmarks/middleware.js",
+          "lib/express.js",
+          "lib/middleware/init.js",
+          "lib/application.js",
+          "lib/router/index.js"
+        ]
+      },
+      {
+        "provider_id": "semble",
+        "query": "Fix incorrect middleware execution with unanchored RegExps",
+        "revision": "a1dbb113779c45a10f56a910de1bc5f7e750eaea",
+        "returned": [
+          "lib/express.js",
+          "benchmarks/middleware.js",
+          "lib/middleware/init.js",
+          "lib/router/index.js",
+          "lib/middleware/query.js"
+        ]
+      },
+      {
+        "provider_id": "jcodemunch",
+        "query": "Fix issue where \"Request aborted\" may be logged in res.sendfile",
+        "revision": "5e9de5dcb6f1ff396038ded11951aa53c62a07a4",
+        "returned": [
+          "lib/response.js",
+          "test/app.router.js"
+        ]
+      },
+      {
+        "provider_id": "jcodemunch",
+        "query": "Fix hanging on large stack of sync routes",
+        "revision": "75e0c7a2c91665f44d053d83be15f8ecd0177f41",
+        "returned": [
+          "lib/router/index.js",
+          ".github/workflows/ci.yml"
+        ]
+      },
+      {
+        "provider_id": "jcodemunch",
+        "query": "Fix handling very large stacks of sync middleware",
+        "revision": "92c5ce59f51cce4b3598fd040117772fac42dce8",
+        "returned": [
+          "lib/router/index.js"
+        ]
+      },
+      {
+        "provider_id": "cocoindex-code",
+        "query": "add Content-Length header only if Transfer-Encoding is not present (#4893)",
+        "revision": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+        "returned": [
+          "examples/ejs/views/footer.html",
+          "lib/response.js",
+          "History.md",
+          "test/fixtures/blog/index.html",
+          "examples/ejs/views/header.html"
+        ]
+      },
+      {
+        "provider_id": "cocoindex-code",
+        "query": "Fix issue where \"Request aborted\" may be logged in res.sendfile",
+        "revision": "5e9de5dcb6f1ff396038ded11951aa53c62a07a4",
+        "returned": [
+          "History.md",
+          "examples/downloads/files/CCTV大赛上海分赛区.txt",
+          "lib/response.js",
+          "test/support/env.js"
+        ]
+      },
+      {
+        "provider_id": "cocoindex-code",
+        "query": "Fix hanging on large stack of sync routes",
+        "revision": "75e0c7a2c91665f44d053d83be15f8ecd0177f41",
+        "returned": [
+          "examples/downloads/files/amazing.txt",
+          "package.json",
+          "test/fixtures/blog/index.html",
+          "examples/static-files/public/hello.txt",
+          "History.md"
+        ]
+      },
+      {
+        "provider_id": "graphify",
+        "query": "Remove `utils-merge` dependency - use spread syntax instead (#6091)",
+        "revision": "b11122be85377375465b2aa103da43301e56f128",
+        "returned": [
+          "package.json",
+          "lib/utils.js",
+          "examples/view-locals/user.js",
+          "lib/response.js",
+          "lib/application.js"
+        ]
+      }
+    ],
+    "trustworthy": true
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.0179,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0357,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0804,
+          "full_recall_at_20": 0.0357,
+          "mean_recall_at_1000_tokens": 0.0179,
+          "mean_recall_at_4000_tokens": 0.0179,
+          "mean_recall_at_16000_tokens": 0.0714,
+          "mean_precision_at_10": 0.0071,
+          "zero_hit_rate": 0.8571,
+          "median_tokens_delivered": 17557.5,
+          "median_latency_ms": 12.054,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.0179,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0357,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0804,
+          "full_recall_at_20": 0.0357,
+          "mean_recall_at_1000_tokens": 0.0179,
+          "mean_recall_at_4000_tokens": 0.0179,
+          "mean_recall_at_16000_tokens": 0.0714,
+          "mean_precision_at_10": 0.0071,
+          "zero_hit_rate": 0.8571,
+          "median_tokens_delivered": 17557.5,
+          "median_latency_ms": 12.054,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 17126,
+          "median_latency_ms": 11.873,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.0263,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0526,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1184,
+          "full_recall_at_20": 0.0526,
+          "mean_recall_at_1000_tokens": 0.0263,
+          "mean_recall_at_4000_tokens": 0.0263,
+          "mean_recall_at_16000_tokens": 0.1053,
+          "mean_precision_at_10": 0.0105,
+          "zero_hit_rate": 0.7895,
+          "median_tokens_delivered": 17991,
+          "median_latency_ms": 12.479,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 15739.8,
+        "peak_rss_mb": 15764,
+        "delta_rss_mb": 24.3,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.4345,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 0.5625,
+          "full_recall_at_10": 0.3929,
+          "mean_recall_at_20": 0.619,
+          "full_recall_at_20": 0.5,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.2143,
+          "mean_recall_at_16000_tokens": 0.4881,
+          "mean_precision_at_10": 0.0857,
+          "zero_hit_rate": 0.25,
+          "median_tokens_delivered": 55061.5,
+          "median_latency_ms": 21.6015,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.4345,
+          "full_recall_at_5": 0.2857,
+          "mean_recall_at_10": 0.5625,
+          "full_recall_at_10": 0.3929,
+          "mean_recall_at_20": 0.619,
+          "full_recall_at_20": 0.5,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.2143,
+          "mean_recall_at_16000_tokens": 0.4881,
+          "mean_precision_at_10": 0.0857,
+          "zero_hit_rate": 0.25,
+          "median_tokens_delivered": 55061.5,
+          "median_latency_ms": 21.6015,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.3148,
+          "full_recall_at_5": 0.1111,
+          "mean_recall_at_10": 0.3148,
+          "full_recall_at_10": 0.1111,
+          "mean_recall_at_20": 0.3148,
+          "full_recall_at_20": 0.1111,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.3148,
+          "mean_precision_at_10": 0.0556,
+          "zero_hit_rate": 0.4444,
+          "median_tokens_delivered": 54998,
+          "median_latency_ms": 21.685,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.4912,
+          "full_recall_at_5": 0.3684,
+          "mean_recall_at_10": 0.6798,
+          "full_recall_at_10": 0.5263,
+          "mean_recall_at_20": 0.7632,
+          "full_recall_at_20": 0.6842,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.3158,
+          "mean_recall_at_16000_tokens": 0.5702,
+          "mean_precision_at_10": 0.1,
+          "zero_hit_rate": 0.1579,
+          "median_tokens_delivered": 55125,
+          "median_latency_ms": 21.579,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 15766.4,
+        "peak_rss_mb": 15779.7,
+        "delta_rss_mb": 13.3,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "semble",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.5625,
+          "full_recall_at_5": 0.4643,
+          "mean_recall_at_10": 0.631,
+          "full_recall_at_10": 0.5714,
+          "mean_recall_at_20": 0.6607,
+          "full_recall_at_20": 0.6429,
+          "mean_recall_at_1000_tokens": 0.4643,
+          "mean_recall_at_4000_tokens": 0.6607,
+          "mean_recall_at_16000_tokens": 0.6607,
+          "mean_precision_at_10": 0.1143,
+          "zero_hit_rate": 0.3214,
+          "median_tokens_delivered": 3644.5,
+          "median_latency_ms": 782.83,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.5625,
+          "full_recall_at_5": 0.4643,
+          "mean_recall_at_10": 0.631,
+          "full_recall_at_10": 0.5714,
+          "mean_recall_at_20": 0.6607,
+          "full_recall_at_20": 0.6429,
+          "mean_recall_at_1000_tokens": 0.4643,
+          "mean_recall_at_4000_tokens": 0.6607,
+          "mean_recall_at_16000_tokens": 0.6607,
+          "mean_precision_at_10": 0.1143,
+          "zero_hit_rate": 0.3214,
+          "median_tokens_delivered": 3644.5,
+          "median_latency_ms": 782.83,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.7593,
+          "full_recall_at_5": 0.6667,
+          "mean_recall_at_10": 0.8889,
+          "full_recall_at_10": 0.8889,
+          "mean_recall_at_20": 0.8889,
+          "full_recall_at_20": 0.8889,
+          "mean_recall_at_1000_tokens": 0.6481,
+          "mean_recall_at_4000_tokens": 0.8889,
+          "mean_recall_at_16000_tokens": 0.8889,
+          "mean_precision_at_10": 0.1667,
+          "zero_hit_rate": 0.1111,
+          "median_tokens_delivered": 3797,
+          "median_latency_ms": 776.077,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.4693,
+          "full_recall_at_5": 0.3684,
+          "mean_recall_at_10": 0.5088,
+          "full_recall_at_10": 0.4211,
+          "mean_recall_at_20": 0.5526,
+          "full_recall_at_20": 0.5263,
+          "mean_recall_at_1000_tokens": 0.3772,
+          "mean_recall_at_4000_tokens": 0.5526,
+          "mean_recall_at_16000_tokens": 0.5526,
+          "mean_precision_at_10": 0.0895,
+          "zero_hit_rate": 0.4211,
+          "median_tokens_delivered": 3591,
+          "median_latency_ms": 801.052,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 15795.2,
+        "peak_rss_mb": 17745.6,
+        "delta_rss_mb": 1950.4,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "jcodemunch",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.1161,
+          "full_recall_at_5": 0.0714,
+          "mean_recall_at_10": 0.1161,
+          "full_recall_at_10": 0.0714,
+          "mean_recall_at_20": 0.1161,
+          "full_recall_at_20": 0.0714,
+          "mean_recall_at_1000_tokens": 0.1161,
+          "mean_recall_at_4000_tokens": 0.1161,
+          "mean_recall_at_16000_tokens": 0.1161,
+          "mean_precision_at_10": 0.125,
+          "zero_hit_rate": 0.8214,
+          "median_tokens_delivered": 350,
+          "median_latency_ms": 390.5705,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 7
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.1161,
+          "full_recall_at_5": 0.0714,
+          "mean_recall_at_10": 0.1161,
+          "full_recall_at_10": 0.0714,
+          "mean_recall_at_20": 0.1161,
+          "full_recall_at_20": 0.0714,
+          "mean_recall_at_1000_tokens": 0.1161,
+          "mean_recall_at_4000_tokens": 0.1161,
+          "mean_recall_at_16000_tokens": 0.1161,
+          "mean_precision_at_10": 0.125,
+          "zero_hit_rate": 0.8214,
+          "median_tokens_delivered": 350,
+          "median_latency_ms": 390.5705,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 7
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.1111,
+          "full_recall_at_5": 0.1111,
+          "mean_recall_at_10": 0.1111,
+          "full_recall_at_10": 0.1111,
+          "mean_recall_at_20": 0.1111,
+          "full_recall_at_20": 0.1111,
+          "mean_recall_at_1000_tokens": 0.1111,
+          "mean_recall_at_4000_tokens": 0.1111,
+          "mean_recall_at_16000_tokens": 0.1111,
+          "mean_precision_at_10": 0.1111,
+          "zero_hit_rate": 0.8889,
+          "median_tokens_delivered": 350,
+          "median_latency_ms": 375.21,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 1
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.1184,
+          "full_recall_at_5": 0.0526,
+          "mean_recall_at_10": 0.1184,
+          "full_recall_at_10": 0.0526,
+          "mean_recall_at_20": 0.1184,
+          "full_recall_at_20": 0.0526,
+          "mean_recall_at_1000_tokens": 0.1184,
+          "mean_recall_at_4000_tokens": 0.1184,
+          "mean_recall_at_16000_tokens": 0.1184,
+          "mean_precision_at_10": 0.1316,
+          "zero_hit_rate": 0.7895,
+          "median_tokens_delivered": 329,
+          "median_latency_ms": 392.352,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 6
+        }
+      },
+      "outcomes": {
+        "indexed-but-returned-nothing": 7,
+        "answered": 21
+      },
+      "resources": {
+        "baseline_rss_mb": 17254.5,
+        "peak_rss_mb": 18625.2,
+        "delta_rss_mb": 1370.7,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.1786,
+          "full_recall_at_5": 0.1429,
+          "mean_recall_at_10": 0.2321,
+          "full_recall_at_10": 0.1786,
+          "mean_recall_at_20": 0.2321,
+          "full_recall_at_20": 0.1786,
+          "mean_recall_at_1000_tokens": 0.0893,
+          "mean_recall_at_4000_tokens": 0.2321,
+          "mean_recall_at_16000_tokens": 0.2321,
+          "mean_precision_at_10": 0.0518,
+          "zero_hit_rate": 0.7143,
+          "median_tokens_delivered": 2607,
+          "median_latency_ms": 922.8415,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.1786,
+          "full_recall_at_5": 0.1429,
+          "mean_recall_at_10": 0.2321,
+          "full_recall_at_10": 0.1786,
+          "mean_recall_at_20": 0.2321,
+          "full_recall_at_20": 0.1786,
+          "mean_recall_at_1000_tokens": 0.0893,
+          "mean_recall_at_4000_tokens": 0.2321,
+          "mean_recall_at_16000_tokens": 0.2321,
+          "mean_precision_at_10": 0.0518,
+          "zero_hit_rate": 0.7143,
+          "median_tokens_delivered": 2607,
+          "median_latency_ms": 922.8415,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.1111,
+          "full_recall_at_5": 0.1111,
+          "mean_recall_at_10": 0.2222,
+          "full_recall_at_10": 0.2222,
+          "mean_recall_at_20": 0.2222,
+          "full_recall_at_20": 0.2222,
+          "mean_recall_at_1000_tokens": 0.0556,
+          "mean_recall_at_4000_tokens": 0.2222,
+          "mean_recall_at_16000_tokens": 0.2222,
+          "mean_precision_at_10": 0.0593,
+          "zero_hit_rate": 0.7778,
+          "median_tokens_delivered": 2607,
+          "median_latency_ms": 834.263,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.2105,
+          "full_recall_at_5": 0.1579,
+          "mean_recall_at_10": 0.2368,
+          "full_recall_at_10": 0.1579,
+          "mean_recall_at_20": 0.2368,
+          "full_recall_at_20": 0.1579,
+          "mean_recall_at_1000_tokens": 0.1053,
+          "mean_recall_at_4000_tokens": 0.2368,
+          "mean_recall_at_16000_tokens": 0.2368,
+          "mean_precision_at_10": 0.0482,
+          "zero_hit_rate": 0.6842,
+          "median_tokens_delivered": 2633,
+          "median_latency_ms": 1187.397,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 17949,
+        "peak_rss_mb": 25538.8,
+        "delta_rss_mb": 7589.8,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "graphify",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.5149,
+          "full_recall_at_5": 0.3929,
+          "mean_recall_at_10": 0.6042,
+          "full_recall_at_10": 0.5,
+          "mean_recall_at_20": 0.6399,
+          "full_recall_at_20": 0.5357,
+          "mean_recall_at_1000_tokens": 0.5089,
+          "mean_recall_at_4000_tokens": 0.5685,
+          "mean_recall_at_16000_tokens": 0.6399,
+          "mean_precision_at_10": 0.1015,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 1681.5,
+          "median_latency_ms": 1060.489,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.5149,
+          "full_recall_at_5": 0.3929,
+          "mean_recall_at_10": 0.6042,
+          "full_recall_at_10": 0.5,
+          "mean_recall_at_20": 0.6399,
+          "full_recall_at_20": 0.5357,
+          "mean_recall_at_1000_tokens": 0.5089,
+          "mean_recall_at_4000_tokens": 0.5685,
+          "mean_recall_at_16000_tokens": 0.6399,
+          "mean_precision_at_10": 0.1015,
+          "zero_hit_rate": 0.2857,
+          "median_tokens_delivered": 1681.5,
+          "median_latency_ms": 1060.489,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.6667,
+          "full_recall_at_5": 0.5556,
+          "mean_recall_at_10": 0.6667,
+          "full_recall_at_10": 0.5556,
+          "mean_recall_at_20": 0.6667,
+          "full_recall_at_20": 0.5556,
+          "mean_recall_at_1000_tokens": 0.6667,
+          "mean_recall_at_4000_tokens": 0.6667,
+          "mean_recall_at_16000_tokens": 0.6667,
+          "mean_precision_at_10": 0.1159,
+          "zero_hit_rate": 0.2222,
+          "median_tokens_delivered": 1676,
+          "median_latency_ms": 1040.977,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.443,
+          "full_recall_at_5": 0.3158,
+          "mean_recall_at_10": 0.5746,
+          "full_recall_at_10": 0.4737,
+          "mean_recall_at_20": 0.6272,
+          "full_recall_at_20": 0.5263,
+          "mean_recall_at_1000_tokens": 0.4342,
+          "mean_recall_at_4000_tokens": 0.5219,
+          "mean_recall_at_16000_tokens": 0.6272,
+          "mean_precision_at_10": 0.0947,
+          "zero_hit_rate": 0.3158,
+          "median_tokens_delivered": 1687,
+          "median_latency_ms": 1063,
+          "payload_kind": [
+            "node-summaries"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 27,
+        "indexed-but-returned-nothing": 1
+      },
+      "resources": {
+        "baseline_rss_mb": 20384.2,
+        "peak_rss_mb": 21803.7,
+        "delta_rss_mb": 1419.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 9977856
+      }
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "summary": {
+        "all": {
+          "cases": 28,
+          "mean_recall_at_5": 0.5357,
+          "full_recall_at_5": 0.3929,
+          "mean_recall_at_10": 0.6131,
+          "full_recall_at_10": 0.5,
+          "mean_recall_at_20": 0.7113,
+          "full_recall_at_20": 0.6071,
+          "mean_recall_at_1000_tokens": 0.7113,
+          "mean_recall_at_4000_tokens": 0.7113,
+          "mean_recall_at_16000_tokens": 0.7113,
+          "mean_precision_at_10": 0.1027,
+          "zero_hit_rate": 0.1786,
+          "median_tokens_delivered": 700.5,
+          "median_latency_ms": 245.949,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 28,
+          "mean_recall_at_5": 0.5357,
+          "full_recall_at_5": 0.3929,
+          "mean_recall_at_10": 0.6131,
+          "full_recall_at_10": 0.5,
+          "mean_recall_at_20": 0.7113,
+          "full_recall_at_20": 0.6071,
+          "mean_recall_at_1000_tokens": 0.7113,
+          "mean_recall_at_4000_tokens": 0.7113,
+          "mean_recall_at_16000_tokens": 0.7113,
+          "mean_precision_at_10": 0.1027,
+          "zero_hit_rate": 0.1786,
+          "median_tokens_delivered": 700.5,
+          "median_latency_ms": 245.949,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 9,
+          "mean_recall_at_5": 0.5741,
+          "full_recall_at_5": 0.3333,
+          "mean_recall_at_10": 0.7407,
+          "full_recall_at_10": 0.5556,
+          "mean_recall_at_20": 0.7407,
+          "full_recall_at_20": 0.5556,
+          "mean_recall_at_1000_tokens": 0.7407,
+          "mean_recall_at_4000_tokens": 0.7407,
+          "mean_recall_at_16000_tokens": 0.7407,
+          "mean_precision_at_10": 0.1222,
+          "zero_hit_rate": 0.1111,
+          "median_tokens_delivered": 651,
+          "median_latency_ms": 245.881,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 19,
+          "mean_recall_at_5": 0.5175,
+          "full_recall_at_5": 0.4211,
+          "mean_recall_at_10": 0.5526,
+          "full_recall_at_10": 0.4737,
+          "mean_recall_at_20": 0.6974,
+          "full_recall_at_20": 0.6316,
+          "mean_recall_at_1000_tokens": 0.6974,
+          "mean_recall_at_4000_tokens": 0.6974,
+          "mean_recall_at_16000_tokens": 0.6974,
+          "mean_precision_at_10": 0.0935,
+          "zero_hit_rate": 0.2105,
+          "median_tokens_delivered": 722,
+          "median_latency_ms": 246.017,
+          "payload_kind": [
+            "excerpts"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 28
+      },
+      "resources": {
+        "baseline_rss_mb": 20141.3,
+        "peak_rss_mb": 20889.2,
+        "delta_rss_mb": 747.9,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 197193728
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15887,
+      "latency_ms": 18.394,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24167,
+      "latency_ms": 12.639,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17991,
+      "latency_ms": 12.587,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15115,
+      "latency_ms": 12.62,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 8352,
+      "latency_ms": 12.063,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25943,
+      "latency_ms": 12.844,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24105,
+      "latency_ms": 12.664,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17989,
+      "latency_ms": 12.584,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10199,
+      "latency_ms": 11.849,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 25824,
+      "latency_ms": 11.873,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 8,
+      "tokens_delivered": 21567,
+      "latency_ms": 12.002,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 14979,
+      "latency_ms": 11.581,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 21348,
+      "latency_ms": 11.17,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 28836,
+      "latency_ms": 12.137,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "test/Route.js"
+      ],
+      "missed": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 20,
+      "tokens_delivered": 25626,
+      "latency_ms": 14.651,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26880,
+      "latency_ms": 14.078,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12752,
+      "latency_ms": 11.995,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12150,
+      "latency_ms": 11.715,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 12313,
+      "latency_ms": 12.91,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 14066,
+      "latency_ms": 11.722,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24966,
+      "latency_ms": 12.045,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18218,
+      "latency_ms": 12.479,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 11,
+      "tokens_delivered": 22036,
+      "latency_ms": 11.723,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "examples/search/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 17126,
+      "latency_ms": 12.072,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15153,
+      "latency_ms": 11.095,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15550,
+      "latency_ms": 11.78,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [
+        "test/res.format.js"
+      ],
+      "missed": [
+        "test/app.router.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 15695,
+      "latency_ms": 11.32,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 10590,
+      "latency_ms": 11.133,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 48438,
+      "latency_ms": 24.396,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 63857,
+      "latency_ms": 22.846,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 68922,
+      "latency_ms": 22.822,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [
+        "lib/request.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 46929,
+      "latency_ms": 27.519,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 44158,
+      "latency_ms": 21.789,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 69122,
+      "latency_ms": 21.07,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 48438,
+      "latency_ms": 22.549,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.redirect.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 56208,
+      "latency_ms": 21.685,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 54109,
+      "latency_ms": 20.1,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 69044,
+      "latency_ms": 19.301,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 57263,
+      "latency_ms": 21.696,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 48439,
+      "latency_ms": 20.622,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 68691,
+      "latency_ms": 22.241,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 68940,
+      "latency_ms": 21.624,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 7,
+      "tokens_delivered": 57070,
+      "latency_ms": 19.649,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "test/Router.js"
+      ],
+      "missed": [
+        "lib/router/route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 8,
+      "tokens_delivered": 55125,
+      "latency_ms": 21.579,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 54998,
+      "latency_ms": 21.846,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 63660,
+      "latency_ms": 20.518,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 46930,
+      "latency_ms": 20.784,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 63835,
+      "latency_ms": 21.079,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 47132,
+      "latency_ms": 22.071,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 46929,
+      "latency_ms": 20.67,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 52216,
+      "latency_ms": 22.581,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "examples/search/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 63752,
+      "latency_ms": 22.93,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 3,
+      "tokens_delivered": 47164,
+      "latency_ms": 21.067,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 44146,
+      "latency_ms": 19.515,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [
+        "test/app.router.js"
+      ],
+      "missed": [
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 69122,
+      "latency_ms": 21.319,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 52218,
+      "latency_ms": 21.01,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3250,
+      "latency_ms": 870.965,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3324,
+      "latency_ms": 577.086,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3130,
+      "latency_ms": 589.526,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [
+        "lib/request.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3845,
+      "latency_ms": 595.943,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4209,
+      "latency_ms": 552.372,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3947,
+      "latency_ms": 604.348,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [
+        "test/res.type.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3506,
+      "latency_ms": 595.198,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3797,
+      "latency_ms": 649.632,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1053,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3642,
+      "latency_ms": 619.412,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3376,
+      "latency_ms": 625.864,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3486,
+      "latency_ms": 643.895,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3591,
+      "latency_ms": 614.371,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4165,
+      "latency_ms": 644.462,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3765,
+      "latency_ms": 780.468,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "lib/router/route.js"
+      ],
+      "missed": [
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1111,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3608,
+      "latency_ms": 805.668,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3454,
+      "latency_ms": 816.514,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1538,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3673,
+      "latency_ms": 888.686,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3841,
+      "latency_ms": 801.052,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3590,
+      "latency_ms": 884.012,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [
+        "lib/request.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3661,
+      "latency_ms": 845.61,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3911,
+      "latency_ms": 785.192,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3640,
+      "latency_ms": 836.859,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3744,
+      "latency_ms": 830.808,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [
+        "examples/search/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3937,
+      "latency_ms": 831.36,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1875,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3963,
+      "latency_ms": 908.686,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3647,
+      "latency_ms": 776.077,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3399,
+      "latency_ms": 940.148,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3189,
+      "latency_ms": 908.316,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 97,
+      "latency_ms": 406.16,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 436,
+      "latency_ms": 353.204,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 454,
+      "latency_ms": 338.802,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 329,
+      "latency_ms": 385.225,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.sendFile.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 315,
+      "latency_ms": 423.344,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 48,
+      "latency_ms": 492.967,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 254,
+      "latency_ms": 879.729,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 442,
+      "latency_ms": 396.655,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 350,
+      "latency_ms": 375.21,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 342,
+      "latency_ms": 431.753,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [
+        "test/Router.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 387,
+      "latency_ms": 384,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 59,
+      "latency_ms": 450.202,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 256,
+      "latency_ms": 363.12,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 461,
+      "latency_ms": 388.789,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 1,
+      "recall_at_10": 0.25,
+      "precision_at_10": 1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 419,
+      "latency_ms": 359.447,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 280,
+      "latency_ms": 420.889,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 369,
+      "latency_ms": 371.963,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 454,
+      "latency_ms": 418.441,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 435,
+      "latency_ms": 359.301,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 322,
+      "latency_ms": 377.362,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 350,
+      "latency_ms": 374.919,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 395,
+      "latency_ms": 348.514,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 48,
+      "latency_ms": 452.847,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "examples/search/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 358,
+      "latency_ms": 414.252,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 443,
+      "latency_ms": 354.923,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 1,
+      "recall_at_10": 1,
+      "precision_at_10": 1,
+      "recall_at_20": 1,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 339,
+      "latency_ms": 445.081,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 94,
+      "latency_ms": 449.819,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.5,
+      "recall_at_10": 1,
+      "precision_at_10": 0.5,
+      "recall_at_20": 1,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 392,
+      "latency_ms": 392.352,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2986,
+      "latency_ms": 3272.523,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.send.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4352,
+      "latency_ms": 10823.181,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3479,
+      "latency_ms": 64386.776,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2633,
+      "latency_ms": 129267.416,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.sendFile.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.25,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.25,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.25,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4111,
+      "latency_ms": 129823.887,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0833,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3022,
+      "latency_ms": 26728.114,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2753,
+      "latency_ms": 16502.439,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 7,
+      "tokens_delivered": 2929,
+      "latency_ms": 28871.76,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4901,
+      "latency_ms": 3685.27,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3170,
+      "latency_ms": 115279.993,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "test/Router.js"
+      ],
+      "missed": [
+        "lib/router/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 10,
+      "tokens_delivered": 3116,
+      "latency_ms": 12608.054,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.2,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 4025,
+      "latency_ms": 151870.359,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 828.107,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 855.015,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 947.428,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 898.255,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 834.263,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 1187.397,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 803.397,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 654.152,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 785.451,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 707.268,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 743.192,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "examples/search/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 740.273,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 857.18,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/router/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 831.304,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3264,
+      "latency_ms": 820.518,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2607,
+      "latency_ms": 726.492,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1150,
+      "latency_ms": 1107.786,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2445,
+      "latency_ms": 1122.143,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/application.js",
+        "lib/response.js"
+      ],
+      "missed": [
+        "test/res.cookie.js"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.125,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 4,
+      "tokens_delivered": 5687,
+      "latency_ms": 1042.812,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [
+        "lib/request.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 10,
+      "tokens_delivered": 8068,
+      "latency_ms": 1029.523,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1687,
+      "latency_ms": 924.404,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1674,
+      "latency_ms": 1032.962,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3297,
+      "latency_ms": 1036.459,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [
+        "test/res.redirect.js"
+      ],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 2483,
+      "latency_ms": 1098.65,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1676,
+      "latency_ms": 1006.982,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [],
+      "missed": [
+        "examples/auth/views/head.ejs"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 878,
+      "latency_ms": 1166.939,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 5239,
+      "latency_ms": 1069.832,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2710,
+      "latency_ms": 1143.638,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1818,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1370,
+      "latency_ms": 988.117,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 806,
+      "latency_ms": 1063,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "missed": [
+        "test/Route.js"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.75,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.75,
+      "first_hit_rank": 3,
+      "tokens_delivered": 5296,
+      "latency_ms": 1018.545,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/route.js"
+      ],
+      "missed": [
+        "test/Router.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1466,
+      "latency_ms": 1057.978,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [
+        "lib/router/route.js"
+      ],
+      "missed": [
+        "test/Route.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 2044,
+      "latency_ms": 1142.223,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [],
+      "missed": [
+        "package.json"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1242,
+      "latency_ms": 1066.084,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4647,
+      "latency_ms": 1101.449,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 7,
+      "latency_ms": 1013.558,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1673,
+      "latency_ms": 1003.259,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 6,
+      "tokens_delivered": 1675,
+      "latency_ms": 1146.015,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1694,
+      "latency_ms": 1027.475,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [
+        "examples/search/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1658,
+      "latency_ms": 1040.977,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3437,
+      "latency_ms": 1029.889,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4086,
+      "latency_ms": 1340.726,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1539,
+      "latency_ms": 1151.59,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "graphify",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1667,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1174,
+      "latency_ms": 1126.218,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-05f40f4321fe",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1598,
+      "latency_ms": 880.365,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-18e5985b8a9d",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.send.js"
+      ],
+      "found": [
+        "test/res.send.js"
+      ],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1485,
+      "latency_ms": 227.044,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-246f6f5aeeba",
+      "path_leak": false,
+      "required_files": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "lib/application.js",
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 5,
+      "tokens_delivered": 1211,
+      "latency_ms": 228.554,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-353348a83e68",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/request.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1602,
+      "latency_ms": 221.189,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-3d10279826f5",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "found": [
+        "lib/response.js",
+        "test/res.sendFile.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 823,
+      "latency_ms": 202.192,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-4c4f3ea10593",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 615,
+      "latency_ms": 341.574,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-4e61d0100d90",
+      "path_leak": false,
+      "required_files": [
+        "test/res.type.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/res.type.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 206,
+      "latency_ms": 246.322,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-54271f69b511",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "found": [],
+      "missed": [
+        "lib/response.js",
+        "test/res.redirect.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 650,
+      "latency_ms": 254.079,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-5855339455a7",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.cookie.js"
+      ],
+      "found": [
+        "test/res.cookie.js"
+      ],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 1132,
+      "latency_ms": 245.881,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-62336717bfb6",
+      "path_leak": true,
+      "required_files": [
+        "examples/auth/views/head.ejs"
+      ],
+      "found": [
+        "examples/auth/views/head.ejs"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 651,
+      "latency_ms": 230.026,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-631ada0c645d",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/index.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 772,
+      "latency_ms": 246.017,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-65b62065d2b4",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 1,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 1,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 49,
+      "latency_ms": 329.919,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-6cd404eb28ff",
+      "path_leak": true,
+      "required_files": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "found": [
+        "lib/request.js",
+        "test/req.acceptsCharsets.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 698,
+      "latency_ms": 238.796,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-6ed3439584b6",
+      "path_leak": false,
+      "required_files": [
+        ".editorconfig"
+      ],
+      "found": [],
+      "missed": [
+        ".editorconfig"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1044,
+      "latency_ms": 250.317,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-708ac4cdf5cd",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "test/Router.js"
+      ],
+      "missed": [
+        "lib/router/index.js",
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 19,
+      "tokens_delivered": 703,
+      "latency_ms": 264.994,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-74beeac0718c",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "found": [
+        "lib/router/route.js",
+        "test/Router.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 722,
+      "latency_ms": 245.721,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-7ec5dd2b3c5e",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "found": [
+        "lib/router/route.js",
+        "test/Route.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.4,
+      "recall_at_10": 1,
+      "precision_at_10": 0.2,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 859,
+      "latency_ms": 319.965,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-925a1dff1e42",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1429,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1429,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 104,
+      "latency_ms": 263.372,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-99a369f3d51b",
+      "path_leak": false,
+      "required_files": [
+        "lib/router/index.js",
+        "test/app.router.js"
+      ],
+      "found": [
+        "test/app.router.js"
+      ],
+      "missed": [
+        "lib/router/index.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 11,
+      "tokens_delivered": 671,
+      "latency_ms": 238.092,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-9d8223d92ee8",
+      "path_leak": false,
+      "required_files": [
+        "lib/request.js"
+      ],
+      "found": [
+        "lib/request.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 2,
+      "tokens_delivered": 439,
+      "latency_ms": 230.935,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-9dd0e7afdb6d",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "test/res.jsonp.js"
+      ],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 770,
+      "latency_ms": 265.392,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-a1dbb113779c",
+      "path_leak": false,
+      "required_files": [
+        "lib/response.js"
+      ],
+      "found": [
+        "lib/response.js"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 12,
+      "tokens_delivered": 767,
+      "latency_ms": 264.839,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-b3906cbdded2",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 592,
+      "latency_ms": 335.496,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-d12772393c82",
+      "path_leak": true,
+      "required_files": [
+        "examples/search/index.js"
+      ],
+      "found": [
+        "examples/search/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 616,
+      "latency_ms": 254.201,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-f275e87dff1a",
+      "path_leak": true,
+      "required_files": [
+        "lib/response.js",
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "found": [
+        "test/res.json.js",
+        "test/res.jsonp.js"
+      ],
+      "missed": [
+        "lib/response.js"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 587,
+      "latency_ms": 233.438,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-f3fa758af966",
+      "path_leak": true,
+      "required_files": [
+        "lib/router/index.js"
+      ],
+      "found": [
+        "lib/router/index.js"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 546,
+      "latency_ms": 207.427,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-f9954dd317a1",
+      "path_leak": false,
+      "required_files": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "found": [],
+      "missed": [
+        "test/app.router.js",
+        "test/res.format.js"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 36,
+      "latency_ms": 245.546,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "codevetter-structural-context",
+      "case_id": "express-fed8c2a8857a",
+      "path_leak": false,
+      "required_files": [
+        "package.json"
+      ],
+      "found": [
+        "package.json"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 924,
+      "latency_ms": 243.85,
+      "indexed_revision_matches": true
+    }
+  ]
+}

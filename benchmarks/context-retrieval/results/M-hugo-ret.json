@@ -1,0 +1,4922 @@
+{
+  "schema_version": "codevetter.context-retrieval-score.v1",
+  "repository": {
+    "id": "hugo",
+    "head": "7b5199fdeff7d7682e9f979f468d55bc7b67b934"
+  },
+  "tier": "medium",
+  "tier_code_files": 932,
+  "corpus_counts": {
+    "cases": 29,
+    "path_leak": 13,
+    "baseline_blind": 16,
+    "multi_file": 25
+  },
+  "cutoffs": [
+    5,
+    10,
+    20
+  ],
+  "gates": {
+    "controls_present": {
+      "ok": true,
+      "missing": [],
+      "reason": null
+    },
+    "controls_lose": {
+      "ok": true,
+      "best": 0.4503,
+      "control": 0,
+      "reason": null
+    },
+    "needs_raw_payload_check": [],
+    "nominated_for_hand_audit": [
+      {
+        "provider_id": "random-files",
+        "query": "Fix potential content XSS by escaping dangerous URLs in links and images",
+        "revision": "81a5cdca0788ca39574a17d444c9db29d0b19e27",
+        "returned": [
+          "markup/goldmark/images/images_integration_test.go",
+          "markup/goldmark/images/transform.go",
+          "tpl/collections/where_test.go",
+          "modules/collect_test.go",
+          "markup/goldmark/goldmark_integration_test.go"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix menu pageRef resolution in multidimensional setups",
+        "revision": "d98cd4aecf25b9df78d811759ea6135b0c7610f1",
+        "returned": [
+          "common/hugo/version_current.go",
+          "hugolib/site.go",
+          "hugolib/hugo_sites.go",
+          "resources/images/config.go",
+          ".github/workflows/aiwatchdog.yml"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix some default site redirect woes",
+        "revision": "66ba63cd5f30ef8807fc524dbc67399376299bb1",
+        "returned": [
+          "common/hugo/version_current.go",
+          "tpl/tplimpl/templatestore.go",
+          "tpl/tplimpl/templatestore_integration_test.go",
+          "hugolib/site.go",
+          ".github/workflows/aiwatchdog.yml"
+        ]
+      },
+      {
+        "provider_id": "churn-ranked",
+        "query": "Fix index out of range panic in fileEventsContentPaths",
+        "revision": "e8577771c3275d16b7d1b31cca5e9fd3ea517416",
+        "returned": [
+          "common/hugo/version_current.go",
+          "hugolib/site.go",
+          "hugolib/hugo_sites.go",
+          "resources/images/config.go",
+          ".github/workflows/aiwatchdog.yml"
+        ]
+      },
+      {
+        "provider_id": "semble",
+        "query": "Fix partial decorator detection in partial with blocks with outer range break or continue",
+        "revision": "f42c422a12987c9ccb1927fc17da37feedd0c7fb",
+        "returned": [
+          "tpl/tplimpl/templatetransform.go",
+          "tpl/templates/templates.go",
+          "tpl/partials/partials.go",
+          "tpl/tplimpl/templatestore.go",
+          "hugolib/integrationtest_builder.go"
+        ]
+      },
+      {
+        "provider_id": "semble",
+        "query": "Fix some default site redirect woes",
+        "revision": "66ba63cd5f30ef8807fc524dbc67399376299bb1",
+        "returned": [
+          "hugolib/site_render.go",
+          "resources/page/site.go",
+          "commands/server.go",
+          "config/commonConfig.go",
+          "hugolib/site.go"
+        ]
+      },
+      {
+        "provider_id": "jcodemunch",
+        "query": "Fix partial decorator detection in partial with blocks with outer range break or continue",
+        "revision": "f42c422a12987c9ccb1927fc17da37feedd0c7fb",
+        "returned": [
+          "tpl/templates/decorator_integration_test.go"
+        ]
+      },
+      {
+        "provider_id": "jcodemunch",
+        "query": "Fix multi --renderSegments merge behavior",
+        "revision": "a00b5c72ac57afe26df6688ece3ca544a56df372",
+        "returned": [
+          "docs/data/docs.yaml",
+          "hugolib/segments/segments_integration_test.go",
+          "hugolib/segments/segments.go",
+          "hugolib/segments/segments_test.go"
+        ]
+      },
+      {
+        "provider_id": "jcodemunch",
+        "query": "Fix index out of range panic in fileEventsContentPaths",
+        "revision": "e8577771c3275d16b7d1b31cca5e9fd3ea517416",
+        "returned": [
+          "hugolib/site.go",
+          "commands/server.go",
+          "watcher/filenotify/poller_test.go"
+        ]
+      },
+      {
+        "provider_id": "cocoindex-code",
+        "query": "Fix RenderShortcodes leaking context markers when indented",
+        "revision": "45e4596630b1372ab02634e4536d2b5a89452e0b",
+        "returned": [
+          "docs/content/en/showcase/_index.md",
+          "docs/content/en/functions/transform/HighlightCodeBlock.md",
+          "docs/content/en/quick-reference/glossary/layout.md",
+          "docs/content/en/methods/page/RenderShortcodes.md",
+          "docs/assets/css/components/shortcodes.css"
+        ]
+      }
+    ],
+    "trustworthy": true
+  },
+  "providers": [
+    {
+      "provider_id": "random-files",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0172,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0172,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0345,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0172,
+          "mean_precision_at_10": 0.0034,
+          "zero_hit_rate": 0.931,
+          "median_tokens_delivered": 31301,
+          "median_latency_ms": 13.627,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0172,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0172,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0345,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0172,
+          "mean_precision_at_10": 0.0034,
+          "zero_hit_rate": 0.931,
+          "median_tokens_delivered": 31301,
+          "median_latency_ms": 13.627,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 1,
+          "median_tokens_delivered": 33227,
+          "median_latency_ms": 13.26,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.0313,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0313,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.0625,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0.0313,
+          "mean_precision_at_10": 0.0063,
+          "zero_hit_rate": 0.875,
+          "median_tokens_delivered": 29186,
+          "median_latency_ms": 13.7425,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 20555.5,
+        "peak_rss_mb": 20557.5,
+        "delta_rss_mb": 2,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "churn-ranked",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.071,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1026,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1938,
+          "full_recall_at_20": 0.069,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.0345,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 145957,
+          "median_latency_ms": 34.509,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.071,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1026,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1938,
+          "full_recall_at_20": 0.069,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.0345,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 145957,
+          "median_latency_ms": 34.509,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0.0879,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.12,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.2335,
+          "full_recall_at_20": 0.0769,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.0462,
+          "zero_hit_rate": 0.4615,
+          "median_tokens_delivered": 141901,
+          "median_latency_ms": 35.48,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.0573,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0885,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1615,
+          "full_recall_at_20": 0.0625,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0.025,
+          "zero_hit_rate": 0.6875,
+          "median_tokens_delivered": 157334.5,
+          "median_latency_ms": 33.72,
+          "payload_kind": [
+            "control-whole-files"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 20574.8,
+        "peak_rss_mb": 20616.9,
+        "delta_rss_mb": 42.1,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "semble",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.2759,
+          "full_recall_at_5": 0.069,
+          "mean_recall_at_10": 0.3276,
+          "full_recall_at_10": 0.069,
+          "mean_recall_at_20": 0.4676,
+          "full_recall_at_20": 0.1724,
+          "mean_recall_at_1000_tokens": 0.2615,
+          "mean_recall_at_4000_tokens": 0.4503,
+          "mean_recall_at_16000_tokens": 0.4676,
+          "mean_precision_at_10": 0.0793,
+          "zero_hit_rate": 0.1379,
+          "median_tokens_delivered": 3945,
+          "median_latency_ms": 3516.448,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.2759,
+          "full_recall_at_5": 0.069,
+          "mean_recall_at_10": 0.3276,
+          "full_recall_at_10": 0.069,
+          "mean_recall_at_20": 0.4676,
+          "full_recall_at_20": 0.1724,
+          "mean_recall_at_1000_tokens": 0.2615,
+          "mean_recall_at_4000_tokens": 0.4503,
+          "mean_recall_at_16000_tokens": 0.4676,
+          "mean_precision_at_10": 0.0793,
+          "zero_hit_rate": 0.1379,
+          "median_tokens_delivered": 3945,
+          "median_latency_ms": 3516.448,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0.2628,
+          "full_recall_at_5": 0.0769,
+          "mean_recall_at_10": 0.3397,
+          "full_recall_at_10": 0.0769,
+          "mean_recall_at_20": 0.4789,
+          "full_recall_at_20": 0.1538,
+          "mean_recall_at_1000_tokens": 0.2308,
+          "mean_recall_at_4000_tokens": 0.4789,
+          "mean_recall_at_16000_tokens": 0.4789,
+          "mean_precision_at_10": 0.0923,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 3976,
+          "median_latency_ms": 3519.739,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.2865,
+          "full_recall_at_5": 0.0625,
+          "mean_recall_at_10": 0.3177,
+          "full_recall_at_10": 0.0625,
+          "mean_recall_at_20": 0.4583,
+          "full_recall_at_20": 0.1875,
+          "mean_recall_at_1000_tokens": 0.2865,
+          "mean_recall_at_4000_tokens": 0.4271,
+          "mean_recall_at_16000_tokens": 0.4583,
+          "mean_precision_at_10": 0.0687,
+          "zero_hit_rate": 0.25,
+          "median_tokens_delivered": 3909,
+          "median_latency_ms": 3513.5625,
+          "payload_kind": [
+            "chunks"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 20595.1,
+        "peak_rss_mb": 23870.3,
+        "delta_rss_mb": 3275.2,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "jcodemunch",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.1839,
+          "full_recall_at_5": 0.0345,
+          "mean_recall_at_10": 0.1839,
+          "full_recall_at_10": 0.0345,
+          "mean_recall_at_20": 0.1839,
+          "full_recall_at_20": 0.0345,
+          "mean_recall_at_1000_tokens": 0.1839,
+          "mean_recall_at_4000_tokens": 0.1839,
+          "mean_recall_at_16000_tokens": 0.1839,
+          "mean_precision_at_10": 0.2529,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 565,
+          "median_latency_ms": 916.254,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 3
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.1839,
+          "full_recall_at_5": 0.0345,
+          "mean_recall_at_10": 0.1839,
+          "full_recall_at_10": 0.0345,
+          "mean_recall_at_20": 0.1839,
+          "full_recall_at_20": 0.0345,
+          "mean_recall_at_1000_tokens": 0.1839,
+          "mean_recall_at_4000_tokens": 0.1839,
+          "mean_recall_at_16000_tokens": 0.1839,
+          "mean_precision_at_10": 0.2529,
+          "zero_hit_rate": 0.5862,
+          "median_tokens_delivered": 565,
+          "median_latency_ms": 916.254,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 3
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0.2821,
+          "full_recall_at_5": 0.0769,
+          "mean_recall_at_10": 0.2821,
+          "full_recall_at_10": 0.0769,
+          "mean_recall_at_20": 0.2821,
+          "full_recall_at_20": 0.0769,
+          "mean_recall_at_1000_tokens": 0.2821,
+          "mean_recall_at_4000_tokens": 0.2821,
+          "mean_recall_at_16000_tokens": 0.2821,
+          "mean_precision_at_10": 0.4359,
+          "zero_hit_rate": 0.3846,
+          "median_tokens_delivered": 565,
+          "median_latency_ms": 912.22,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.1042,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.1042,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0.1042,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0.1042,
+          "mean_recall_at_4000_tokens": 0.1042,
+          "mean_recall_at_16000_tokens": 0.1042,
+          "mean_precision_at_10": 0.1042,
+          "zero_hit_rate": 0.75,
+          "median_tokens_delivered": 566,
+          "median_latency_ms": 932.09,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 3
+        }
+      },
+      "outcomes": {
+        "answered": 26,
+        "indexed-but-returned-nothing": 3
+      },
+      "resources": {
+        "baseline_rss_mb": 20640.8,
+        "peak_rss_mb": 23825.2,
+        "delta_rss_mb": 3184.5,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "summary": {
+        "all": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0345,
+          "full_recall_at_5": 0.0345,
+          "mean_recall_at_10": 0.1437,
+          "full_recall_at_10": 0.069,
+          "mean_recall_at_20": 0.1839,
+          "full_recall_at_20": 0.069,
+          "mean_recall_at_1000_tokens": 0.0057,
+          "mean_recall_at_4000_tokens": 0.1667,
+          "mean_recall_at_16000_tokens": 0.1839,
+          "mean_precision_at_10": 0.0276,
+          "zero_hit_rate": 0.6552,
+          "median_tokens_delivered": 3742,
+          "median_latency_ms": 2652.89,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "baseline_missed": {
+          "cases": 29,
+          "mean_recall_at_5": 0.0345,
+          "full_recall_at_5": 0.0345,
+          "mean_recall_at_10": 0.1437,
+          "full_recall_at_10": 0.069,
+          "mean_recall_at_20": 0.1839,
+          "full_recall_at_20": 0.069,
+          "mean_recall_at_1000_tokens": 0.0057,
+          "mean_recall_at_4000_tokens": 0.1667,
+          "mean_recall_at_16000_tokens": 0.1839,
+          "mean_precision_at_10": 0.0276,
+          "zero_hit_rate": 0.6552,
+          "median_tokens_delivered": 3742,
+          "median_latency_ms": 2652.89,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "baseline_solved": {
+          "cases": 0,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0,
+          "full_recall_at_10": 0,
+          "mean_recall_at_20": 0,
+          "full_recall_at_20": 0,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0,
+          "mean_recall_at_16000_tokens": 0,
+          "mean_precision_at_10": 0,
+          "zero_hit_rate": 0,
+          "median_tokens_delivered": 0,
+          "median_latency_ms": 0,
+          "payload_kind": [],
+          "unavailable": 0
+        },
+        "path_leak": {
+          "cases": 13,
+          "mean_recall_at_5": 0,
+          "full_recall_at_5": 0,
+          "mean_recall_at_10": 0.0897,
+          "full_recall_at_10": 0.0769,
+          "mean_recall_at_20": 0.1795,
+          "full_recall_at_20": 0.0769,
+          "mean_recall_at_1000_tokens": 0.0128,
+          "mean_recall_at_4000_tokens": 0.141,
+          "mean_recall_at_16000_tokens": 0.1795,
+          "mean_precision_at_10": 0.0154,
+          "zero_hit_rate": 0.6923,
+          "median_tokens_delivered": 3742,
+          "median_latency_ms": 2518.959,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        },
+        "no_path_leak": {
+          "cases": 16,
+          "mean_recall_at_5": 0.0625,
+          "full_recall_at_5": 0.0625,
+          "mean_recall_at_10": 0.1875,
+          "full_recall_at_10": 0.0625,
+          "mean_recall_at_20": 0.1875,
+          "full_recall_at_20": 0.0625,
+          "mean_recall_at_1000_tokens": 0,
+          "mean_recall_at_4000_tokens": 0.1875,
+          "mean_recall_at_16000_tokens": 0.1875,
+          "mean_precision_at_10": 0.0375,
+          "zero_hit_rate": 0.625,
+          "median_tokens_delivered": 3744,
+          "median_latency_ms": 2665.06,
+          "payload_kind": [
+            "mcp-tool-result"
+          ],
+          "unavailable": 0
+        }
+      },
+      "outcomes": {
+        "answered": 29
+      },
+      "resources": {
+        "baseline_rss_mb": 23586.4,
+        "peak_rss_mb": 39028.5,
+        "delta_rss_mb": 15442.2,
+        "scope": "system-wide-upper-bound",
+        "index_bytes_added": 0
+      }
+    }
+  ],
+  "limitations": [
+    "One repository; results describe this codebase, not codebases in general.",
+    "Ground truth is the files a real fix changed, which is a proxy for the files it had to find.",
+    "Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.",
+    "Retrieval quality is not task success; a provider can retrieve well and still not help an agent."
+  ],
+  "cases": [
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23450,
+      "latency_ms": 20.213,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43237,
+      "latency_ms": 14.067,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 15701,
+      "latency_ms": 14.904,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23223,
+      "latency_ms": 13.834,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 31301,
+      "latency_ms": 13.667,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33227,
+      "latency_ms": 13.191,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [
+        "markup/goldmark/goldmark_integration_test.go"
+      ],
+      "missed": [
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 5,
+      "tokens_delivered": 31381,
+      "latency_ms": 12.581,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 26363,
+      "latency_ms": 12.932,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 32262,
+      "latency_ms": 14.065,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 28830,
+      "latency_ms": 13.96,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 18869,
+      "latency_ms": 14.338,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [
+        "hugolib/embedded_templates_test.go"
+      ],
+      "missed": [
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 17,
+      "tokens_delivered": 23902,
+      "latency_ms": 14.132,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 27186,
+      "latency_ms": 13.036,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33298,
+      "latency_ms": 12.921,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [],
+      "missed": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 38765,
+      "latency_ms": 12.178,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 23248,
+      "latency_ms": 12.052,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 32875,
+      "latency_ms": 12.546,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 33433,
+      "latency_ms": 12.185,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 39664,
+      "latency_ms": 13.245,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 24224,
+      "latency_ms": 13.651,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 22664,
+      "latency_ms": 14.923,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 27862,
+      "latency_ms": 13.448,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 44378,
+      "latency_ms": 13.936,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 84924,
+      "latency_ms": 14.677,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43205,
+      "latency_ms": 13.26,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 43171,
+      "latency_ms": 13.627,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 29542,
+      "latency_ms": 14.181,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 34959,
+      "latency_ms": 12.543,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "random-files",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 30727,
+      "latency_ms": 12.887,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 135284,
+      "latency_ms": 39.562,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 12,
+      "tokens_delivered": 141901,
+      "latency_ms": 32.943,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [
+        "hugolib/cascade_test.go"
+      ],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 11,
+      "tokens_delivered": 147188,
+      "latency_ms": 35.606,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 167064,
+      "latency_ms": 34.837,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 158300,
+      "latency_ms": 34.383,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/menu_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 2,
+      "tokens_delivered": 160960,
+      "latency_ms": 34.07,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 156369,
+      "latency_ms": 33.823,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 123900,
+      "latency_ms": 54.025,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 145957,
+      "latency_ms": 31.731,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 167158,
+      "latency_ms": 33.617,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 168902,
+      "latency_ms": 35.778,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 143955,
+      "latency_ms": 33.594,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [
+        "hugolib/integrationtest_builder.go"
+      ],
+      "missed": [
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 148660,
+      "latency_ms": 31.617,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0.1429,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.1429,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.2857,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 167157,
+      "latency_ms": 34.509,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go"
+      ],
+      "missed": [
+        ".prettierignore",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0.1667,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 4,
+      "tokens_delivered": 140039,
+      "latency_ms": 37.189,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 158300,
+      "latency_ms": 36.22,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 145753,
+      "latency_ms": 33.551,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 133497,
+      "latency_ms": 50.612,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 141218,
+      "latency_ms": 36.485,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [
+        "hugolib/rebuild_test.go"
+      ],
+      "missed": [
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 5,
+      "tokens_delivered": 167064,
+      "latency_ms": 35.129,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 145952,
+      "latency_ms": 31.94,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 159604,
+      "latency_ms": 33.067,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 17,
+      "tokens_delivered": 133592,
+      "latency_ms": 38.686,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [
+        "hugolib/rebuild_test.go"
+      ],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 9,
+      "tokens_delivered": 135377,
+      "latency_ms": 53.097,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 139252,
+      "latency_ms": 36.202,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 133591,
+      "latency_ms": 35.48,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [
+        "tpl/css/build_integration_test.go"
+      ],
+      "missed": [
+        "resources/transform.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 10,
+      "tokens_delivered": 158549,
+      "latency_ms": 30.711,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.15,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": 2,
+      "tokens_delivered": 163147,
+      "latency_ms": 32.333,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "churn-ranked",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 138542,
+      "latency_ms": 33.454,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1176,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3824,
+      "latency_ms": 5188.25,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/hugo_sites.go"
+      ],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 7,
+      "tokens_delivered": 4011,
+      "latency_ms": 3448.728,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go"
+      ],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3747,
+      "latency_ms": 3421.384,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1667,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3945,
+      "latency_ms": 3510.677,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3976,
+      "latency_ms": 3519.739,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/menu_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4362,
+      "latency_ms": 3527.413,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4122,
+      "latency_ms": 3724.742,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [
+        "commands/commandeer.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 3,
+      "tokens_delivered": 3720,
+      "latency_ms": 3330.935,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [
+        "config/commonConfig.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 3795,
+      "latency_ms": 4026.043,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [
+        "markup/goldmark/toc.go"
+      ],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 14,
+      "tokens_delivered": 4280,
+      "latency_ms": 3728.013,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3814,
+      "latency_ms": 3516.448,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [
+        "tpl/templates/templates.go"
+      ],
+      "missed": [
+        "hugolib/embedded_templates_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4002,
+      "latency_ms": 3370.786,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [
+        "hugolib/segments/segments.go"
+      ],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 6,
+      "tokens_delivered": 3985,
+      "latency_ms": 3618.548,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [
+        "hugolib/content_map_page.go"
+      ],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.1429,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.1429,
+      "recall_at_16000_tokens": 0.1429,
+      "first_hit_rank": 12,
+      "tokens_delivered": 4140,
+      "latency_ms": 3622.106,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        ".prettierignore",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.2353,
+      "recall_at_1000_tokens": 0.1667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3831,
+      "latency_ms": 3453.912,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.1053,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 3,
+      "tokens_delivered": 4287,
+      "latency_ms": 3599.271,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [
+        "resources/image.go",
+        "resources/image_cache.go"
+      ],
+      "missed": [
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1333,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 11,
+      "tokens_delivered": 3659,
+      "latency_ms": 3498.662,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3816,
+      "latency_ms": 3383.395,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugofs/component_fs.go"
+      ],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 8,
+      "tokens_delivered": 3873,
+      "latency_ms": 3409.921,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4397,
+      "latency_ms": 3502.102,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3604,
+      "latency_ms": 3462.56,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go"
+      ],
+      "missed": [
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4176,
+      "latency_ms": 3504.737,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 11,
+      "tokens_delivered": 3812,
+      "latency_ms": 3398.919,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 4179,
+      "latency_ms": 3398.768,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [
+        "internal/warpc/webp.go"
+      ],
+      "missed": [
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 5,
+      "tokens_delivered": 3731,
+      "latency_ms": 4155.543,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [
+        "hugolib/content_map_page_assembler.go"
+      ],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.05,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 13,
+      "tokens_delivered": 4025,
+      "latency_ms": 3534.806,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [
+        "resources/transform.go"
+      ],
+      "missed": [
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.2,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 3823,
+      "latency_ms": 3639.774,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/rebuild_test.go"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.4,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.2,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.1,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 3817,
+      "latency_ms": 3529.186,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "semble",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4080,
+      "latency_ms": 3567.929,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [
+        "tpl/templates/decorator_integration_test.go"
+      ],
+      "missed": [
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 1,
+      "recall_at_10": 0.5,
+      "precision_at_10": 1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 1,
+      "tokens_delivered": 561,
+      "latency_ms": 928.691,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugolib/hugo_sites.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 1191,
+      "latency_ms": 898.841,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 412,
+      "latency_ms": 896.525,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [
+        "hugolib/rendershortcodes_test.go"
+      ],
+      "missed": [
+        "hugolib/page__content.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 531,
+      "latency_ms": 905.879,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 1,
+      "recall_at_10": 1,
+      "precision_at_10": 1,
+      "recall_at_20": 1,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 1,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 1,
+      "tokens_delivered": 717,
+      "latency_ms": 955.864,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 408,
+      "latency_ms": 903.483,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [
+        "markup/goldmark/render_hooks.go"
+      ],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 478,
+      "latency_ms": 912.738,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [
+        "commands/commandeer.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.25,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.25,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 2,
+      "tokens_delivered": 697,
+      "latency_ms": 880.154,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [],
+      "missed": [
+        "config/commonConfig.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 425,
+      "latency_ms": 1394.908,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 573,
+      "latency_ms": 945.682,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4460,
+      "latency_ms": 916.254,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 728,
+      "latency_ms": 891.604,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "missed": [
+        "hugolib/integrationtest_builder.go"
+      ],
+      "recall_at_5": 0.6667,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.6667,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.6667,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.6667,
+      "recall_at_4000_tokens": 0.6667,
+      "recall_at_16000_tokens": 0.6667,
+      "first_hit_rank": 2,
+      "tokens_delivered": 484,
+      "latency_ms": 911.035,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 1141,
+      "latency_ms": 914.633,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "recall_at_5": 0.1667,
+      "precision_at_5": 1,
+      "recall_at_10": 0.1667,
+      "precision_at_10": 1,
+      "recall_at_20": 0.1667,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0.1667,
+      "recall_at_4000_tokens": 0.1667,
+      "recall_at_16000_tokens": 0.1667,
+      "first_hit_rank": 1,
+      "tokens_delivered": 592,
+      "latency_ms": 912.22,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 655,
+      "latency_ms": 981.611,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [
+        "resources/image.go"
+      ],
+      "missed": [
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.5,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.5,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.5,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 596,
+      "latency_ms": 914.645,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 559,
+      "latency_ms": 897.181,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 970,
+      "latency_ms": 920.905,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3669,
+      "latency_ms": 939.825,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 461,
+      "latency_ms": 908.373,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 410,
+      "latency_ms": 998.341,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 737,
+      "latency_ms": 976.29,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [
+        "hugolib/rebuild_test.go"
+      ],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0.25,
+      "precision_at_5": 1,
+      "recall_at_10": 0.25,
+      "precision_at_10": 1,
+      "recall_at_20": 0.25,
+      "precision_at_20": 1,
+      "recall_at_1000_tokens": 0.25,
+      "recall_at_4000_tokens": 0.25,
+      "recall_at_16000_tokens": 0.25,
+      "first_hit_rank": 1,
+      "tokens_delivered": 509,
+      "latency_ms": 907.226,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 548,
+      "latency_ms": 976.91,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 565,
+      "latency_ms": 930.705,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [
+        "resources/transform.go"
+      ],
+      "missed": [
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0.5,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.5,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 2,
+      "tokens_delivered": 611,
+      "latency_ms": 954.343,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go"
+      ],
+      "recall_at_5": 0.3333,
+      "precision_at_5": 0.3333,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.3333,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.3333,
+      "recall_at_1000_tokens": 0.3333,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 1,
+      "tokens_delivered": 491,
+      "latency_ms": 933.357,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "jcodemunch",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 530,
+      "latency_ms": 930.823,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-09048aad7655",
+      "path_leak": true,
+      "required_files": [
+        "tpl/templates/decorator_integration_test.go",
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "found": [
+        "tpl/tplimpl/templatetransform.go"
+      ],
+      "missed": [
+        "tpl/templates/decorator_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0588,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 15,
+      "tokens_delivered": 4785,
+      "latency_ms": 4798.9,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-0f1c7d12000f",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/hugo_sites.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/hugo_sites.go"
+      ],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0625,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 13,
+      "tokens_delivered": 3372,
+      "latency_ms": 2204.29,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-11f7f39913d5",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/cascade_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "magefile.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2712,
+      "latency_ms": 3401.289,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-161d0d475773",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/page__content.go",
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "found": [
+        "hugolib/page__content.go"
+      ],
+      "missed": [
+        "hugolib/rendershortcodes_test.go",
+        "markup/goldmark/hugocontext/hugocontext.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 10,
+      "tokens_delivered": 3375,
+      "latency_ms": 5963.365,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-2ffaf1fc1edb",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go"
+      ],
+      "found": [
+        "commands/server.go"
+      ],
+      "missed": [],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0556,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 8,
+      "tokens_delivered": 3742,
+      "latency_ms": 2518.959,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-3dff7c8c7a04",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/menu_test.go",
+        "hugolib/site.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3129,
+      "latency_ms": 2018.005,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-479fe6c65493",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/goldmark_integration_test.go",
+        "markup/goldmark/render_hooks.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4041,
+      "latency_ms": 2092.622,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-7a43b928a67c",
+      "path_leak": true,
+      "required_files": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/commandeer.go",
+        "commands/server.go",
+        "helpers/path.go",
+        "helpers/path_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3741,
+      "latency_ms": 3807.76,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-8a979d54d1e5",
+      "path_leak": false,
+      "required_files": [
+        "config/commonConfig.go"
+      ],
+      "found": [
+        "config/commonConfig.go"
+      ],
+      "missed": [],
+      "recall_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_10": 1,
+      "precision_at_10": 0.1,
+      "recall_at_20": 1,
+      "precision_at_20": 0.0667,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 1,
+      "recall_at_16000_tokens": 1,
+      "first_hit_rank": 4,
+      "tokens_delivered": 4086,
+      "latency_ms": 2476.136,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-8b00030b344d",
+      "path_leak": false,
+      "required_files": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "markup/goldmark/convert.go",
+        "markup/goldmark/toc.go",
+        "markup/goldmark/toc_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 5095,
+      "latency_ms": 2476.383,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-8d6145f3c315",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "hugolib/sitesmatrix/vectorstores.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3135,
+      "latency_ms": 4298.861,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-8dfcece80541",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/embedded_templates_test.go",
+        "tpl/templates/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3924,
+      "latency_ms": 3205.134,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-95e5e9f4ab6e",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/segments/segments.go",
+        "hugolib/segments/segments_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4999,
+      "latency_ms": 2182.985,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-974772422258",
+      "path_leak": true,
+      "required_files": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/fileinfo.go",
+        "hugolib/content_map.go",
+        "hugolib/content_map_page.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/sitesmatrix/dimensions.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "resources/page/pagemeta/page_frontmatter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3643,
+      "latency_ms": 1863.358,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-a77548830407",
+      "path_leak": true,
+      "required_files": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "found": [
+        "hugolib/site.go",
+        "tpl/tplimpl/embedded/templates/alias.html"
+      ],
+      "missed": [
+        ".prettierignore",
+        "config/allconfig/allconfig.go",
+        "hugolib/site_render.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.1667,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.1053,
+      "recall_at_1000_tokens": 0.1667,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 6,
+      "tokens_delivered": 2649,
+      "latency_ms": 1983.897,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-a808f6e40d4c",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/filesystems/basefs.go",
+        "hugolib/hugo_sites_build.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3443,
+      "latency_ms": 1972.115,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-b5d43cdc1783",
+      "path_leak": true,
+      "required_files": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "resources/image.go",
+        "resources/image_cache.go",
+        "resources/images/images_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4905,
+      "latency_ms": 2020.259,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-b82e496c130f",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3747,
+      "latency_ms": 2677.23,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-c1b2e58bfb94",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "found": [
+        "hugolib/sitesmatrix/sitematrix_integration_test.go"
+      ],
+      "missed": [
+        "hugofs/component_fs.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 10,
+      "tokens_delivered": 3726,
+      "latency_ms": 2266.876,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-c48551677c25",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go",
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "found": [
+        "tpl/tplimpl/templatestore.go"
+      ],
+      "missed": [
+        "hugolib/rebuild_test.go",
+        "tpl/tplimpl/templates.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0526,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 8,
+      "tokens_delivered": 3741,
+      "latency_ms": 2318.676,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-c7b35c8704ac",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_contentnodeshifter.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 2754,
+      "latency_ms": 4756.565,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-ce009e3aa9fd",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/language_content_dir_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3617,
+      "latency_ms": 6988.408,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-d4c0e4452c22",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/component_fs.go",
+        "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3174,
+      "latency_ms": 3523.449,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-e2e64aeec57c",
+      "path_leak": true,
+      "required_files": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "commands/server.go",
+        "common/paths/path_test.go",
+        "hugolib/rebuild_test.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3959,
+      "latency_ms": 2997.09,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-e9b9b36f46cc",
+      "path_leak": true,
+      "required_files": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "found": [],
+      "missed": [
+        "internal/warpc/webp.go",
+        "resources/images/images_golden_integration_test.go",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart-ff9999.webp",
+        "resources/images/testdata/images_golden/process/webp/crop-300x300-smart.webp"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 4050,
+      "latency_ms": 5206.674,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-f740d7cfe0eb",
+      "path_leak": true,
+      "required_files": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugolib/404_test.go",
+        "hugolib/content_map_page_assembler.go",
+        "hugolib/doctree/nodeshifttree.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3746,
+      "latency_ms": 3880.802,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-f772998fa349",
+      "path_leak": false,
+      "required_files": [
+        "resources/transform.go",
+        "tpl/css/build_integration_test.go"
+      ],
+      "found": [
+        "resources/transform.go"
+      ],
+      "missed": [
+        "tpl/css/build_integration_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.5,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.5,
+      "precision_at_20": 0.0714,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.5,
+      "recall_at_16000_tokens": 0.5,
+      "first_hit_rank": 9,
+      "tokens_delivered": 4402,
+      "latency_ms": 3084.246,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-f797f8490229",
+      "path_leak": false,
+      "required_files": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go",
+        "hugolib/site.go"
+      ],
+      "found": [
+        "hugolib/site.go"
+      ],
+      "missed": [
+        "hugolib/integrationtest_builder.go",
+        "hugolib/rebuild_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0.3333,
+      "precision_at_10": 0.1,
+      "recall_at_20": 0.3333,
+      "precision_at_20": 0.0769,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0.3333,
+      "recall_at_16000_tokens": 0.3333,
+      "first_hit_rank": 6,
+      "tokens_delivered": 5086,
+      "latency_ms": 2652.89,
+      "indexed_revision_matches": true
+    },
+    {
+      "provider_id": "cocoindex-code",
+      "case_id": "hugo-f8b5fa09a649",
+      "path_leak": false,
+      "required_files": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "found": [],
+      "missed": [
+        "hugofs/decorators.go",
+        "hugofs/fs.go",
+        "hugofs/rootmapping_fs.go",
+        "main_test.go"
+      ],
+      "recall_at_5": 0,
+      "precision_at_5": 0,
+      "recall_at_10": 0,
+      "precision_at_10": 0,
+      "recall_at_20": 0,
+      "precision_at_20": 0,
+      "recall_at_1000_tokens": 0,
+      "recall_at_4000_tokens": 0,
+      "recall_at_16000_tokens": 0,
+      "first_hit_rank": null,
+      "tokens_delivered": 3785,
+      "latency_ms": 2505.387,
+      "indexed_revision_matches": true
+    }
+  ]
+}
