@@ -34,6 +34,7 @@ jobs:
         working-directory: apps/desktop
         run: pnpm run lint
       - name: Fetch code-health base
+        if: github.event_name != 'workflow_dispatch'
         run: git fetch --depth=1 origin ${{ github.event.pull_request.base.sha || github.event.before || 'HEAD^' }}
       - name: Code health
         env:
