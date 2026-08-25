@@ -73,14 +73,16 @@ pub fn resolve_cross_file(nodes: &[StructuralGraphNode], edges: &mut Vec<Structu
     }
     files.sort_by(|left, right| left.id.cmp(&right.id));
     let file_index = FileIndex::new(&files);
-
     let reference_edges = edges
         .iter()
         .filter(|edge| matches!(edge.origin, GraphOrigin::Syntax | GraphOrigin::Metadata))
-        .cloned()
         .collect::<Vec<_>>();
     let mut imports_by_source_path: HashMap<String, Vec<ImportContext>> = HashMap::new();
-    for edge in reference_edges.iter().filter(|edge| edge.kind == "imports") {
+    for edge in reference_edges
+        .iter()
+        .copied()
+        .filter(|edge| edge.kind == "imports")
+    {
         let Some(reference) = node_by_id.get(edge.to.as_str()).copied() else {
             continue;
         };
@@ -248,6 +250,20 @@ fn resolve_test_targets(
     files: &[&StructuralGraphNode],
     additions: &mut Vec<StructuralGraphEdge>,
 ) {
+    let mut files_by_test_stem: HashMap<String, Vec<&StructuralGraphNode>> = HashMap::new();
+    for file in files {
+        let Some(path) = file.path.as_deref() else {
+            continue;
+        };
+        let stem = normalized_test_stem(path);
+        if !stem.is_empty() {
+            files_by_test_stem.entry(stem).or_default().push(*file);
+        }
+    }
+    for candidates in files_by_test_stem.values_mut() {
+        candidates.sort_by(|left, right| left.id.cmp(&right.id));
+    }
+
     for test in nodes.iter().filter(|node| node.kind == "test") {
         let Some(test_path) = test.path.as_deref() else {
             continue;
@@ -256,16 +272,13 @@ fn resolve_test_targets(
         if test_stem.is_empty() {
             continue;
         }
-        let mut candidates = files
-            .iter()
+        let candidates = files_by_test_stem
+            .get(&test_stem)
+            .into_iter()
+            .flatten()
             .copied()
             .filter(|file| file.path.as_deref() != Some(test_path))
-            .filter(|file| {
-                file.path.as_deref().map(normalized_test_stem).as_deref()
-                    == Some(test_stem.as_str())
-            })
             .collect::<Vec<_>>();
-        candidates.sort_by(|left, right| left.id.cmp(&right.id));
         if candidates.len() == 1 {
             let target = candidates[0];
             additions.push(StructuralGraphEdge {

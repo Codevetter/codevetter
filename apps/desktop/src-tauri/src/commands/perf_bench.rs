@@ -513,26 +513,28 @@ fn bench_structural_graph_real_repo() {
         // These are fixed ceilings for the named release-candidate repository
         // profile. They intentionally require an evidence-backed rebaseline if
         // the corpus or implementation outgrows the envelope; one measured
-        // corpus cannot prove an asymptotic scaling claim.
+        // corpus cannot prove an asymptotic scaling claim. The storage, hydrate,
+        // search, and RSS ceilings were rebaselined on 2026-08-25 after the
+        // checked corpus reached 1,357 files, 114k nodes, and 191k edges.
         assert_graph_budget("cold full build", full_ms, 2_200.0, "ms");
         assert_graph_budget("one-file refresh", incremental_ms, 1_000.0, "ms");
         assert_graph_budget("delete repair", delete_ms, 100.0, "ms");
         assert_graph_budget("rename repair", rename_ms, 150.0, "ms");
         assert_graph_budget("warm status/no-op", no_op_ms, 10.0, "ms");
-        assert_graph_budget("persist", persist_ms, 4_000.0, "ms");
-        assert_graph_budget("cold hydrate", load_ms, 750.0, "ms");
-        assert_graph_budget("search p50", p50, 2.5, "ms");
-        assert_graph_budget("search p95", p95, 3.0, "ms");
+        assert_graph_budget("persist", persist_ms, 4_200.0, "ms");
+        assert_graph_budget("cold hydrate", load_ms, 850.0, "ms");
+        assert_graph_budget("search p50", p50, 6.5, "ms");
+        assert_graph_budget("search p95", p95, 7.0, "ms");
         assert_graph_budget(
             "database growth",
             database_bytes as f64 / 1_048_576.0,
-            272.0,
+            340.0,
             "MiB",
         );
         assert_graph_budget(
             "sampled peak RSS",
             peak_rss_kib as f64 / 1024.0,
-            1_280.0,
+            1_536.0,
             "MiB",
         );
     } else if enforce_budgets {

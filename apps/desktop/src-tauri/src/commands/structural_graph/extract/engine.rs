@@ -98,7 +98,6 @@ impl StructuralGraphEngine for BundledTreeSitterEngine {
             total,
             detail: "Assembling deterministic structural graph".to_string(),
         });
-
         let affected_paths = input
             .changed_files
             .iter()
@@ -209,7 +208,10 @@ impl StructuralGraphEngine for BundledTreeSitterEngine {
         files.dedup_by(|left, right| left.path == right.path);
         let coverage = coverage_from_file_records(&files);
         deduplicate_nodes(&mut nodes);
-        deduplicate_edges(&mut edges);
+        // Resolution only reads extracted edges and the final canonicalization
+        // below removes any duplicate extracted or inferred edges. Sorting the
+        // complete edge set here as well made one-file refreshes pay the full
+        // O(E log E) cost twice without changing the resulting snapshot.
         resolve_cross_file(&nodes, &mut edges);
         deduplicate_edges(&mut edges);
         deduplicate_metrics(&mut metrics);
