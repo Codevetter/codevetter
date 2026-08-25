@@ -68,103 +68,117 @@ export default function FindingsListPanel({
   );
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-4">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <span className="cv-label">Review comments</span>
-        <span className="cv-label shrink-0">{sortedFindings.length} total</span>
+        <span className="text-[13px] font-semibold text-slate-200">Findings</span>
+        <span className="text-[12px] text-[var(--cv-text-muted)]">
+          {sortedFindings.length} {sortedFindings.length === 1 ? 'finding' : 'findings'}
+        </span>
       </div>
       {sortedFindings.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[10px] uppercase tracking-[0.08em] text-slate-500">
-          <span className="text-emerald-400">{dispositionCounts.accepted} accepted</span>
-          <span className="text-slate-600">·</span>
-          <span className="text-slate-400">{dispositionCounts.dismissed} dismissed</span>
-          <span className="text-slate-600">·</span>
+        <div className="mb-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] tabular-nums text-[var(--cv-text-muted)]">
+          <span className="text-emerald-300">{dispositionCounts.accepted} accepted</span>
+          <span aria-hidden="true">·</span>
+          <span>{dispositionCounts.dismissed} dismissed</span>
+          <span aria-hidden="true">·</span>
           <span>{dispositionCounts.unreviewed} unreviewed</span>
         </div>
       )}
-      <div className="mb-3 rounded-xl border border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <ListOrdered size={14} className="text-[var(--cv-accent)]" />
-            <span className="cv-label text-slate-300">Patch queue</span>
-          </div>
-          <span className="font-mono text-[11px] text-slate-500">{patchQueue.length} selected</span>
+      {patchQueue.length === 0 ? (
+        <div className="order-3 mt-3 flex min-h-10 items-center gap-2 border-t border-[var(--cv-line)] pt-3 text-[12px] text-[var(--cv-text-muted)]">
+          <ListOrdered size={14} className="text-[var(--cv-accent)]" />
+          <span className="font-medium text-slate-300">Patch queue</span>
+          <span className="ml-auto">None selected</span>
         </div>
-        <p className="text-[11px] leading-5 text-slate-500">{queueGuidance(patchQueue)}</p>
-        {patchQueue.length > 0 && (
-          <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] p-2">
+      ) : (
+        <div className="order-3 mt-3 rounded-xl border border-[var(--cv-line)] bg-[var(--cv-canvas)] p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
-              <span className="cv-label min-w-0 flex-1 truncate text-slate-300">Fix packet</span>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
-                onClick={handleCopyFixPacket}
-              >
-                {packetCopied ? (
-                  <CheckCircle size={10} className="text-emerald-400" />
-                ) : (
-                  <Copy size={10} />
-                )}
-                {packetCopied ? 'Copied' : 'Copy'}
-              </Button>
+              <ListOrdered size={14} className="text-[var(--cv-accent)]" />
+              <span className="cv-label text-slate-300">Patch queue</span>
             </div>
-            <p className="mt-1 text-[10px] leading-4 text-slate-500">{fixPacket.routeAdvice}</p>
-            {(taskGoal || taskAcceptance) && (
-              <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-400">
-                {taskGoal || taskAcceptance}
-              </p>
-            )}
+            <span className="font-mono text-[11px] text-[var(--cv-text-muted)]">
+              {patchQueue.length} selected
+            </span>
           </div>
-        )}
-        {patchQueue.length > 0 && (
-          <>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {Object.entries(patchQueueSeverityCounts).map(([severity, count]) => (
-                <Badge
-                  key={severity}
-                  variant="outline"
-                  className={cn(
-                    'rounded-full px-2 py-0.5 font-mono text-[9px] uppercase',
-                    severityColor(severity)
-                  )}
-                >
-                  {severity} · {count}
-                </Badge>
-              ))}
-            </div>
-            <div className="mt-3 space-y-1.5">
-              {patchQueue.slice(0, 4).map((finding, queueIdx) => (
-                <button
-                  key={`${finding.title}-${queueIdx}`}
+          <p className="text-[12px] leading-5 text-[var(--cv-text-muted)]">
+            {queueGuidance(patchQueue)}
+          </p>
+          {patchQueue.length > 0 && (
+            <div className="mt-3 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] p-2">
+              <div className="flex items-center gap-2">
+                <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
+                <span className="cv-label min-w-0 flex-1 truncate text-slate-300">Fix packet</span>
+                <Button
                   type="button"
-                  onClick={() => {
-                    const sortedIdx = sortedFindings.indexOf(finding);
-                    if (sortedIdx >= 0) handleFindingClick(sortedIdx);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] px-2 py-2 text-left hover:border-[var(--cv-line-strong)]"
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
+                  onClick={handleCopyFixPacket}
                 >
-                  <span className="font-mono text-[10px] text-slate-600">{queueIdx + 1}</span>
-                  <span className="min-w-0 flex-1 truncate text-[11px] text-slate-300">
-                    {finding.filePath || finding.title}
-                  </span>
-                  <span className="shrink-0 text-[10px] text-slate-600">
-                    {finding.line != null ? `:${finding.line}` : finding.severity}
-                  </span>
-                </button>
-              ))}
-              {patchQueue.length > 4 && (
-                <div className="px-2 text-[10px] text-slate-600">
-                  +{patchQueue.length - 4} more queued
-                </div>
+                  {packetCopied ? (
+                    <CheckCircle size={10} className="text-emerald-400" />
+                  ) : (
+                    <Copy size={10} />
+                  )}
+                  {packetCopied ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
+              <p className="mt-1 text-[10px] leading-4 text-slate-500">{fixPacket.routeAdvice}</p>
+              {(taskGoal || taskAcceptance) && (
+                <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-400">
+                  {taskGoal || taskAcceptance}
+                </p>
               )}
             </div>
-          </>
-        )}
-      </div>
-      <div className="space-y-2">
+          )}
+          {patchQueue.length > 0 && (
+            <>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {Object.entries(patchQueueSeverityCounts).map(([severity, count]) => (
+                  <Badge
+                    key={severity}
+                    variant="outline"
+                    className={cn(
+                      'rounded-full px-2 py-0.5 font-mono text-[9px] uppercase',
+                      severityColor(severity)
+                    )}
+                  >
+                    {severity} · {count}
+                  </Badge>
+                ))}
+              </div>
+              <div className="mt-3 space-y-1.5">
+                {patchQueue.slice(0, 4).map((finding, queueIdx) => (
+                  <button
+                    key={`${finding.title}-${queueIdx}`}
+                    type="button"
+                    onClick={() => {
+                      const sortedIdx = sortedFindings.indexOf(finding);
+                      if (sortedIdx >= 0) handleFindingClick(sortedIdx);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg border border-[var(--cv-line)] bg-[var(--cv-canvas)] px-2 py-2 text-left hover:border-[var(--cv-line-strong)]"
+                  >
+                    <span className="font-mono text-[10px] text-slate-600">{queueIdx + 1}</span>
+                    <span className="min-w-0 flex-1 truncate text-[11px] text-slate-300">
+                      {finding.filePath || finding.title}
+                    </span>
+                    <span className="shrink-0 text-[10px] text-slate-600">
+                      {finding.line != null ? `:${finding.line}` : finding.severity}
+                    </span>
+                  </button>
+                ))}
+                {patchQueue.length > 4 && (
+                  <div className="px-2 text-[10px] text-slate-600">
+                    +{patchQueue.length - 4} more queued
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      <div className="order-2 space-y-2">
         {sortedFindings.map((finding, idx) => {
           const evidence = {
             ...defaultFindingEvidence,
@@ -194,7 +208,7 @@ export default function FindingsListPanel({
                 }
               }}
               className={cn(
-                'w-full cursor-pointer border px-3 py-3 text-left transition-colors',
+                'w-full cursor-pointer rounded-lg border px-4 py-3.5 text-left transition-colors',
                 selectedFindingIdx === idx
                   ? 'border-[rgba(243,173,61,0.42)] bg-amber-500/10'
                   : 'border-[var(--cv-line)] bg-[var(--cv-canvas)] hover:border-[var(--cv-line-strong)] hover:bg-white/[0.035]',
@@ -225,7 +239,7 @@ export default function FindingsListPanel({
                 <Badge
                   variant="outline"
                   className={cn(
-                    'shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold uppercase',
+                    'shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold uppercase',
                     severityColor(finding.severity)
                   )}
                 >
@@ -234,7 +248,7 @@ export default function FindingsListPanel({
                 {finding.discovery_method === 'execution' && (
                   <Badge
                     variant="outline"
-                    className="shrink-0 rounded-full border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-amber-200"
+                    className="shrink-0 rounded-full border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] uppercase text-amber-200"
                   >
                     via execution
                   </Badge>
@@ -242,14 +256,14 @@ export default function FindingsListPanel({
                 {hasEvidence && (
                   <Badge
                     variant="outline"
-                    className="shrink-0 rounded-full border-amber-500/20 bg-amber-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-amber-300"
+                    className="shrink-0 rounded-full border-amber-500/20 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] uppercase text-amber-300"
                   >
                     {evidence.status.replace('_', ' ')}
                   </Badge>
                 )}
                 <span
                   className={cn(
-                    'min-w-0 flex-1 truncate text-xs font-medium text-slate-100',
+                    'min-w-0 flex-1 truncate text-[13px] font-semibold leading-[18px] text-slate-100',
                     isDismissed && 'text-slate-500 line-through'
                   )}
                 >
@@ -267,7 +281,7 @@ export default function FindingsListPanel({
                         handleSetDisposition(idx, 'accepted');
                       }}
                       className={cn(
-                        'flex h-6 w-6 items-center justify-center rounded-md border transition-colors',
+                        'flex h-7 w-7 items-center justify-center rounded-md border transition-colors',
                         isAccepted
                           ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300'
                           : 'border-[var(--cv-line)] text-slate-500 hover:border-emerald-500/40 hover:text-emerald-300'
@@ -285,7 +299,7 @@ export default function FindingsListPanel({
                         handleSetDisposition(idx, 'dismissed');
                       }}
                       className={cn(
-                        'flex h-6 w-6 items-center justify-center rounded-md border transition-colors',
+                        'flex h-7 w-7 items-center justify-center rounded-md border transition-colors',
                         isDismissed
                           ? 'border-slate-500/50 bg-slate-500/15 text-slate-300'
                           : 'border-[var(--cv-line)] text-slate-500 hover:border-slate-400/40 hover:text-slate-300'
@@ -296,7 +310,7 @@ export default function FindingsListPanel({
                   </div>
                 )}
               </div>
-              <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
+              <p className="mt-2 line-clamp-2 text-[12px] leading-[18px] text-slate-400">
                 {finding.summary}
               </p>
               {historySummary && (

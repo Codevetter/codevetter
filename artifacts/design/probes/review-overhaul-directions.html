@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CodeVetter review overhaul directions</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #060708;
+        --panel: #0b0c0e;
+        --raised: #111316;
+        --line: rgba(255, 255, 255, 0.09);
+        --line-strong: rgba(255, 255, 255, 0.17);
+        --text: #f4f4f5;
+        --secondary: #b4b4bc;
+        --muted: #85858f;
+        --amber: #f3ad3d;
+        --amber-soft: rgba(243, 173, 61, 0.12);
+        --green: #63d89a;
+        --rose: #fb7185;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+      body {
+        background: var(--ink);
+        color: var(--text);
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+        letter-spacing: -0.006em;
+      }
+      button { font: inherit; }
+      .app { display: grid; grid-template-columns: 232px minmax(0, 1fr); height: 100%; }
+      .sidebar { display: flex; flex-direction: column; border-right: 1px solid var(--line); background: #090a0b; }
+      .brand { display: flex; height: 48px; align-items: center; gap: 11px; border-bottom: 1px solid var(--line); padding: 0 16px; font-weight: 650; }
+      .brand-mark { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 7px; background: #0d0f12; color: var(--amber); font-size: 18px; }
+      .nav { padding: 20px 11px; }
+      .nav-title { margin: 0 9px 8px; color: #9b9ba4; font-size: 12px; font-weight: 650; }
+      .nav-title.verify { margin-top: 22px; }
+      .nav-item { position: relative; display: flex; height: 42px; align-items: center; gap: 12px; padding: 0 11px; border-radius: 9px; color: #a5a5ae; }
+      .nav-item.active { background: rgba(255,255,255,.07); color: white; }
+      .nav-item.active::before { position: absolute; inset: 8px auto 8px 0; width: 1px; background: var(--amber); content: ""; }
+      .nav-icon { width: 21px; text-align: center; color: #777781; }
+      .nav-item.active .nav-icon { color: #ffd07a; }
+      .settings { margin-top: auto; border-top: 1px solid var(--line); padding: 12px 11px; }
+
+      .shell { display: flex; min-width: 0; flex-direction: column; }
+      .commandbar { display: flex; height: 48px; flex: 0 0 48px; align-items: center; justify-content: center; border-bottom: 1px solid var(--line); background: #090a0b; }
+      .search { display: flex; width: 420px; height: 32px; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.035); padding: 0 12px; color: #96969f; font-size: 12px; }
+      .key { margin-left: auto; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; color: #92929b; font-size: 10px; }
+      .surface { display: flex; min-height: 0; flex: 1; flex-direction: column; padding: 0 14px 14px; }
+      .review-header { display: flex; height: 64px; flex: 0 0 64px; align-items: center; gap: 14px; border-bottom: 1px solid var(--line); padding: 0 10px; }
+      .back { color: #8e8e98; }
+      .project-id { display: flex; min-width: 0; max-width: 330px; align-items: center; gap: 10px; }
+      .repo-mark { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.035); color: #ffd07a; font-size: 14px; }
+      .project-id strong { display: block; overflow: hidden; color: var(--text); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+      .project-id span { display: block; overflow: hidden; margin-top: 2px; color: var(--muted); font: 10px/1.4 "SFMono-Regular", Menlo, monospace; text-overflow: ellipsis; white-space: nowrap; }
+      .header-separator { width: 1px; height: 32px; flex: 0 0 1px; background: var(--line); }
+      .review-id { min-width: 0; }
+      .review-id strong { display: block; font-size: 13px; }
+      .review-id span { display: block; margin-top: 2px; color: var(--muted); font: 11px/1.4 "SFMono-Regular", Menlo, monospace; }
+      .probe-name { margin-left: auto; border: 1px solid rgba(243,173,61,.25); border-radius: 999px; background: var(--amber-soft); padding: 5px 10px; color: #ffd07a; font-size: 11px; font-weight: 650; }
+      .review-stats { display: flex; gap: 20px; border-left: 1px solid var(--line); padding-left: 18px; }
+      .review-stat { text-align: right; }
+      .review-stat b { display: block; font-size: 12px; }
+      .review-stat span { color: var(--muted); font-size: 10px; }
+      .receipt { display: flex; height: 42px; flex: 0 0 42px; align-items: center; gap: 9px; border-bottom: 1px solid var(--line); padding: 0 8px; color: #a7a7af; font-size: 11px; }
+      .receipt .ok { color: #73e6aa; }
+      .receipt .right { margin-left: auto; color: var(--muted); font-family: "SFMono-Regular", Menlo, monospace; }
+
+      .direction { display: none; min-height: 0; flex: 1; }
+      body.inline .direction-inline, body.brief .direction-brief, body.triage .direction-triage { display: flex; }
+      .badge { display: inline-flex; align-items: center; border: 1px solid rgba(243,173,61,.35); border-radius: 999px; background: var(--amber-soft); padding: 3px 8px; color: #ffd06f; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+      .muted { color: var(--muted); }
+      .mono { font-family: "SFMono-Regular", Menlo, Monaco, monospace; }
+      .action { border: 0; border-radius: 8px; background: var(--amber); padding: 8px 13px; color: #090a0b; font-weight: 700; }
+      .subtle-action { border: 1px solid var(--line-strong); border-radius: 8px; background: var(--raised); padding: 7px 11px; color: var(--secondary); }
+
+      /* Direction 1: inline review */
+      .direction-inline { flex-direction: column; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 12px 12px; overflow: hidden; }
+      .inline-summary { display: flex; height: 58px; flex: 0 0 58px; align-items: center; gap: 13px; border-bottom: 1px solid var(--line); background: #090a0c; padding: 0 17px; }
+      .inline-summary strong { font-size: 15px; }
+      .inline-summary p { margin: 0; color: var(--secondary); font-size: 12px; }
+      .inline-summary .actions { display: flex; margin-left: auto; gap: 8px; }
+      .inline-work { display: grid; min-height: 0; flex: 1; grid-template-rows: minmax(0, 1fr) 190px; }
+      .inline-editor { position: relative; overflow: hidden; background: #050607; }
+      .filebar { display: flex; height: 42px; align-items: center; border-bottom: 1px solid var(--line); background: #0a0b0d; padding: 0 17px; color: #d4d4da; font: 12px "SFMono-Regular", Menlo, monospace; }
+      .filebar span { margin-left: auto; color: var(--muted); font-size: 10px; }
+      .code { padding: 16px 18px 20px; color: #d7d6e6; font: 13px/24px "SFMono-Regular", Menlo, monospace; }
+      .line { display: grid; grid-template-columns: 34px minmax(0, 1fr); min-height: 24px; }
+      .ln { color: #405066; user-select: none; }
+      .hl { margin: 0 -18px; padding: 0 18px; border-left: 2px solid var(--rose); background: rgba(251,113,133,.10); }
+      .kw { color: #d7b9ff; } .type { color: #7dd7f7; } .str { color: #6ee7b7; } .num { color: #ffd166; }
+      .thread { position: absolute; top: 124px; right: 24px; width: 410px; border: 1px solid rgba(243,173,61,.34); border-radius: 12px; background: #101114; box-shadow: 0 22px 55px rgba(0,0,0,.48); }
+      .thread-head { display: flex; align-items: center; gap: 9px; border-bottom: 1px solid var(--line); padding: 11px 13px; }
+      .thread-head strong { font-size: 13px; }
+      .thread-head span:last-child { margin-left: auto; color: var(--muted); font: 10px "SFMono-Regular", Menlo, monospace; }
+      .thread-body { padding: 14px 15px 15px; }
+      .thread-body h2 { margin: 0; font-size: 17px; line-height: 1.3; }
+      .thread-body p { margin: 8px 0 0; color: #c1c1c9; font-size: 13px; line-height: 1.6; }
+      .thread-evidence { display: flex; margin-top: 14px; gap: 7px; }
+      .evidence-chip { border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; color: #aaaab3; font-size: 11px; }
+      .thread-actions { display: flex; margin-top: 14px; gap: 8px; }
+      .problems { border-top: 1px solid var(--line); background: #090a0c; }
+      .problems-tabs { display: flex; height: 38px; align-items: center; gap: 22px; border-bottom: 1px solid var(--line); padding: 0 15px; color: var(--muted); font-size: 12px; }
+      .problems-tabs .active { height: 38px; border-bottom: 1px solid var(--amber); color: var(--text); line-height: 38px; }
+      .problem-row { display: grid; grid-template-columns: 26px 82px minmax(0, 1fr) 170px 110px; align-items: center; gap: 8px; min-height: 54px; border-bottom: 1px solid var(--line); padding: 0 15px; }
+      .problem-row strong { font-size: 13px; }
+      .problem-row span { color: var(--muted); font-size: 11px; }
+      .problem-row .source { font-family: "SFMono-Regular", Menlo, monospace; }
+
+      /* Direction 2: evidence brief */
+      .direction-brief { min-height: 0; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 12px 12px; background: #090a0c; overflow: hidden; }
+      .brief-scroll { display: grid; width: 100%; min-height: 0; grid-template-columns: minmax(0, 1fr) 330px; overflow: hidden; }
+      .case-paper { overflow: auto; padding: 28px 38px 70px; }
+      .case-kicker { color: var(--muted); font-size: 12px; }
+      .case-heading { display: flex; margin-top: 8px; align-items: flex-start; gap: 18px; }
+      .case-heading h1 { max-width: 650px; margin: 0; font-size: 26px; line-height: 1.18; letter-spacing: -.025em; }
+      .case-heading .badge { margin-top: 4px; }
+      .case-lede { max-width: 690px; margin: 14px 0 0; color: #c2c2ca; font-size: 14px; line-height: 1.65; }
+      .case-question { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 21px; }
+      .case-question h2 { margin: 0; font-size: 14px; }
+      .claim { display: grid; grid-template-columns: 38px minmax(0, 1fr) 118px; gap: 12px; border-bottom: 1px solid var(--line); padding: 17px 0; }
+      .claim-index { color: var(--muted); font: 11px "SFMono-Regular", Menlo, monospace; }
+      .claim strong { display: block; font-size: 14px; }
+      .claim p { margin: 5px 0 0; color: var(--secondary); font-size: 12px; line-height: 1.6; }
+      .claim-state { justify-self: end; color: #e6bd68; font-size: 11px; font-weight: 650; }
+      .excerpt { margin-top: 23px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .excerpt-title { display: flex; height: 38px; align-items: center; background: #0f1013; padding: 0 12px; color: var(--secondary); font: 11px "SFMono-Regular", Menlo, monospace; }
+      .excerpt-title span { margin-left: auto; color: var(--muted); }
+      .excerpt pre { margin: 0; background: #050607; padding: 14px 16px; color: #deddeb; font: 12px/22px "SFMono-Regular", Menlo, monospace; }
+      .audit-rail { overflow: auto; border-left: 1px solid var(--line); background: #070809; padding: 24px 20px; }
+      .audit-rail h2 { margin: 0; font-size: 13px; }
+      .decision-box { margin-top: 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 16px 0; }
+      .decision-box strong { display: block; font-size: 18px; }
+      .decision-box p { margin: 6px 0 0; color: var(--secondary); font-size: 12px; }
+      .audit-group { margin-top: 21px; }
+      .audit-group h3 { margin: 0 0 9px; color: var(--muted); font-size: 11px; font-weight: 600; }
+      .audit-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; color: var(--secondary); font-size: 11px; }
+      .audit-row b { color: var(--text); font-weight: 550; }
+      .audit-actions { display: grid; margin-top: 24px; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+      /* Direction 3: triage desk */
+      .direction-triage { min-height: 0; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 12px 12px; overflow: hidden; }
+      .triage-grid { display: grid; width: 100%; min-height: 0; grid-template-columns: 292px minmax(400px, 1fr) minmax(360px, .9fr); }
+      .queue { overflow: auto; border-right: 1px solid var(--line); background: #08090b; }
+      .queue-head { border-bottom: 1px solid var(--line); padding: 17px 16px 13px; }
+      .queue-head h2 { margin: 0; font-size: 15px; }
+      .queue-head p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+      .queue-filters { display: flex; gap: 6px; margin-top: 12px; }
+      .filter { border: 1px solid var(--line); border-radius: 999px; padding: 3px 7px; color: var(--muted); font-size: 10px; }
+      .filter.active { border-color: rgba(243,173,61,.3); background: var(--amber-soft); color: #ffd07a; }
+      .queue-item { border-bottom: 1px solid var(--line); padding: 14px 15px; }
+      .queue-item.active { background: rgba(243,173,61,.08); box-shadow: inset 1px 0 0 var(--amber); }
+      .queue-meta { display: flex; align-items: center; gap: 7px; }
+      .queue-meta span:last-child { margin-left: auto; color: var(--muted); font: 10px "SFMono-Regular", Menlo, monospace; }
+      .queue-item h3 { margin: 10px 0 0; font-size: 13px; }
+      .queue-item p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+      .issue { overflow: auto; background: #0a0b0d; padding: 24px 28px 70px; }
+      .issue-top { display: flex; align-items: center; gap: 10px; }
+      .issue-top .source-id { margin-left: auto; color: var(--muted); font: 10px "SFMono-Regular", Menlo, monospace; }
+      .issue h1 { margin: 15px 0 0; font-size: 23px; line-height: 1.2; letter-spacing: -.022em; }
+      .issue .summary { max-width: 620px; margin: 12px 0 0; color: #c5c5ce; font-size: 14px; line-height: 1.65; }
+      .issue-section { margin-top: 27px; border-top: 1px solid var(--line); padding-top: 20px; }
+      .issue-section h2 { margin: 0; font-size: 13px; }
+      .issue-section p { margin: 8px 0 0; color: var(--secondary); font-size: 13px; line-height: 1.65; }
+      .checklist { margin-top: 12px; }
+      .check-row { display: grid; grid-template-columns: 18px minmax(0,1fr) auto; align-items: center; gap: 9px; border-bottom: 1px solid var(--line); padding: 10px 0; color: var(--secondary); font-size: 12px; }
+      .check-row .state { color: #e6bd68; font-size: 10px; font-weight: 650; }
+      .issue-actions { display: flex; margin-top: 24px; gap: 8px; }
+      .source-pane { min-width: 0; overflow: hidden; border-left: 1px solid var(--line); background: #050607; }
+      .source-pane .code { font-size: 12px; line-height: 23px; }
+      .source-note { margin: 14px; border: 1px solid rgba(243,173,61,.3); border-radius: 10px; background: #101114; padding: 12px 13px; }
+      .source-note strong { display: block; font-size: 12px; }
+      .source-note p { margin: 5px 0 0; color: var(--secondary); font-size: 11px; line-height: 1.55; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand"><div class="brand-mark">◇</div>CodeVetter</div>
+        <div class="nav">
+          <div class="nav-title">Workspace</div>
+          <div class="nav-item"><span class="nav-icon">⌁</span>Usage</div>
+          <div class="nav-item"><span class="nav-icon">⌗</span>Repo Unpack</div>
+          <div class="nav-title verify">Verification</div>
+          <div class="nav-item active"><span class="nav-icon">ϟ</span>Review</div>
+          <div class="nav-item"><span class="nav-icon">◉</span>Testing</div>
+          <div class="nav-item"><span class="nav-icon">◔</span>Performance</div>
+        </div>
+        <div class="settings"><div class="nav-item"><span class="nav-icon">⚙</span>Settings</div></div>
+      </aside>
+
+      <main class="shell">
+        <div class="commandbar"><div class="search">⌕ <span>Search commands</span><span class="key">⌘K</span></div></div>
+        <section class="surface">
+          <header class="review-header">
+            <span class="back">← Back</span>
+            <div class="project-id"><div class="repo-mark">⌘</div><div><strong>review-warm-app</strong><span>/tmp/review-warm-app</span></div></div>
+            <span class="header-separator"></span>
+            <div class="review-id"><strong>Change review</strong><span>main...feature · claude</span></div>
+            <span class="probe-name" id="probeName"></span>
+            <div class="review-stats">
+              <div class="review-stat"><b>100</b><span>review score</span></div>
+              <div class="review-stat"><b>1</b><span>finding</span></div>
+              <div class="review-stat"><b>0</b><span>verified</span></div>
+            </div>
+          </header>
+          <div class="receipt"><span class="ok">▣</span><strong>Review context ready</strong><span>1 file inspected</span><span class="right">Complete coverage · CodeVetter MCP 0 calls · internal</span></div>
+
+          <section class="direction direction-inline">
+            <div class="inline-summary">
+              <span class="badge">Hold</span>
+              <div><strong>One finding needs verification</strong><p>The guard accepts an invalid total; confirm the behavior before acting.</p></div>
+              <div class="actions"><button class="subtle-action">Dismiss</button><button class="action">Verify finding</button></div>
+            </div>
+            <div class="inline-work">
+              <div class="inline-editor">
+                <div class="filebar">portfolio.tsx <span>typescript · line 12</span></div>
+                <div class="code">
+                  <div class="line"><span class="ln">1</span><span><span class="kw">export function</span> resolvePortfolioState(input: <span class="type">PortfolioInput</span>) {</span></div>
+                  <div class="line"><span class="ln">2</span><span>&nbsp;&nbsp;<span class="kw">const</span> account = input.account;</span></div>
+                  <div class="line"><span class="ln">3</span><span>&nbsp;&nbsp;<span class="kw">const</span> holdings = input.holdings ?? [];</span></div>
+                  <div class="line"><span class="ln">4</span><span></span></div>
+                  <div class="line"><span class="ln">5</span><span>&nbsp;&nbsp;<span class="kw">if</span> (!account) {</span></div>
+                  <div class="line"><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> { kind: <span class="str">'signed_out'</span> <span class="kw">as const</span> };</span></div>
+                  <div class="line"><span class="ln">7</span><span>&nbsp;&nbsp;}</span></div>
+                  <div class="line"><span class="ln">8</span><span></span></div>
+                  <div class="line"><span class="ln">9</span><span>&nbsp;&nbsp;<span class="kw">const</span> total = holdings.reduce((sum, item) =&gt; sum + item.value, <span class="num">0</span>);</span></div>
+                  <div class="line"><span class="ln">10</span><span>&nbsp;&nbsp;<span class="kw">const</span> hasPositions = holdings.length &gt; <span class="num">0</span>;</span></div>
+                  <div class="line"><span class="ln">11</span><span></span></div>
+                  <div class="line hl"><span class="ln">12</span><span>&nbsp;&nbsp;<span class="kw">if</span> (total &gt;= <span class="num">0</span>) {</span></div>
+                  <div class="line"><span class="ln">13</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> { kind: <span class="str">'ready'</span> <span class="kw">as const</span>, total, hasPositions };</span></div>
+                  <div class="line"><span class="ln">14</span><span>&nbsp;&nbsp;}</span></div>
+                </div>
+                <aside class="thread">
+                  <div class="thread-head"><span class="badge">Medium</span><strong>Finding 1 of 1</strong><span>src/portfolio.tsx:12</span></div>
+                  <div class="thread-body">
+                    <h2>Guard invalid state</h2>
+                    <p>The condition allows an empty portfolio to become <span class="mono">ready</span>. Return an error when the total is not positive.</p>
+                    <div class="thread-evidence"><span class="evidence-chip">Not reproduced</span><span class="evidence-chip">No runtime receipt</span></div>
+                    <div class="thread-actions"><button class="action">Run verification</button><button class="subtle-action">Add to patch</button></div>
+                  </div>
+                </aside>
+              </div>
+              <div class="problems">
+                <div class="problems-tabs"><span class="active">Findings 1</span><span>Evidence 0/1</span><span>History</span><span>Limitations</span></div>
+                <div class="problem-row"><span>□</span><span class="badge">Medium</span><strong>Guard invalid state</strong><span class="source">portfolio.tsx:12</span><span>Unchecked</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="direction direction-brief">
+            <div class="brief-scroll">
+              <article class="case-paper">
+                <div class="case-kicker">Review decision · main...feature</div>
+                <div class="case-heading"><span class="badge">Hold</span><h1>The change is not ready until one invalid-state finding is verified.</h1></div>
+                <p class="case-lede">The model review found a guard that can classify an empty portfolio as ready. CodeVetter has source context, but no executable receipt yet. Treat the finding as a lead—not proof.</p>
+                <section class="case-question">
+                  <h2>What supports this decision?</h2>
+                  <div class="claim"><span class="claim-index">01</span><div><strong>Source-qualified finding</strong><p>The condition at <span class="mono">src/portfolio.tsx:12</span> accepts zero, while the fallback names an invalid total.</p></div><span class="claim-state">Observed</span></div>
+                  <div class="claim"><span class="claim-index">02</span><div><strong>Runtime evidence is missing</strong><p>No test, reproduction, or browser receipt currently establishes the user-visible behavior.</p></div><span class="claim-state">Unverified</span></div>
+                  <div class="claim"><span class="claim-index">03</span><div><strong>Recommended next action</strong><p>Run the focused invalid-total scenario, then accept, dismiss, or queue the finding from the result.</p></div><span class="claim-state">Action</span></div>
+                </section>
+                <div class="excerpt"><div class="excerpt-title">src/portfolio.tsx <span>line 12</span></div><pre><span class="kw">const</span> hasPositions = holdings.length &gt; <span class="num">0</span>;
+
+<span class="kw">if</span> (total &gt;= <span class="num">0</span>) {
+  <span class="kw">return</span> { kind: <span class="str">'ready'</span> <span class="kw">as const</span>, total, hasPositions };
+}
+
+<span class="kw">return</span> { kind: <span class="str">'error'</span> <span class="kw">as const</span>, reason: <span class="str">'invalid_total'</span> };</pre></div>
+              </article>
+              <aside class="audit-rail">
+                <h2>Audit record</h2>
+                <div class="decision-box"><strong>0 of 1 verified</strong><p>Decision remains Hold until evidence changes.</p></div>
+                <div class="audit-group"><h3>Finding</h3><div class="audit-row"><span>Severity</span><b>Medium</b></div><div class="audit-row"><span>Disposition</span><b>Unreviewed</b></div><div class="audit-row"><span>Patch queue</span><b>Not selected</b></div></div>
+                <div class="audit-group"><h3>Provenance</h3><div class="audit-row"><span>Reviewer</span><b>claude</b></div><div class="audit-row"><span>Files inspected</span><b>1</b></div><div class="audit-row"><span>CodeVetter MCP</span><b>0 calls</b></div><div class="audit-row"><span>Coverage</span><b>Complete</b></div></div>
+                <div class="audit-group"><h3>Limit</h3><div class="audit-row"><span>No runtime receipt</span><b>Material</b></div></div>
+                <div class="audit-actions"><button class="subtle-action">Copy brief</button><button class="action">Verify</button></div>
+              </aside>
+            </div>
+          </section>
+
+          <section class="direction direction-triage">
+            <div class="triage-grid">
+              <aside class="queue">
+                <div class="queue-head"><h2>Review queue</h2><p>1 finding · 0 verified</p><div class="queue-filters"><span class="filter active">Open 1</span><span class="filter">Verified 0</span><span class="filter">Dismissed 0</span></div></div>
+                <div class="queue-item active"><div class="queue-meta"><span class="badge">Medium</span><span>Unchecked</span><span>01</span></div><h3>Guard invalid state</h3><p>portfolio.tsx · line 12</p></div>
+                <div class="queue-item"><div class="queue-meta"><span class="muted">Patch queue</span><span>0</span></div><h3>No findings selected</h3><p>Select only reproduced or accepted findings.</p></div>
+              </aside>
+              <article class="issue">
+                <div class="issue-top"><span class="badge">Medium</span><span class="muted">Model finding · not proof</span><span class="source-id">src/portfolio.tsx:12</span></div>
+                <h1>Guard invalid state</h1>
+                <p class="summary">The condition allows an empty portfolio to become ready. The code should return an error unless the total is positive.</p>
+                <section class="issue-section"><h2>Why this matters</h2><p>A user with no valid portfolio value can enter the ready state, so downstream UI may display an actionable portfolio with no positive holdings.</p></section>
+                <section class="issue-section"><h2>Suggested change</h2><p>Require <span class="mono">total &gt; 0</span>, then keep the existing <span class="mono">invalid_total</span> fallback for zero and negative totals.</p></section>
+                <section class="issue-section"><h2>Verification</h2><div class="checklist"><div class="check-row"><span>○</span><span>Reproduce with total = 0</span><span class="state">Required</span></div><div class="check-row"><span>○</span><span>Confirm existing positive-total behavior</span><span class="state">Required</span></div><div class="check-row"><span>○</span><span>Attach command and result receipt</span><span class="state">Required</span></div></div></section>
+                <div class="issue-actions"><button class="action">Run verification</button><button class="subtle-action">Dismiss</button><button class="subtle-action">Add to patch</button></div>
+              </article>
+              <aside class="source-pane">
+                <div class="filebar">portfolio.tsx <span>typescript · line 12</span></div>
+                <div class="code">
+                  <div class="line"><span class="ln">9</span><span><span class="kw">const</span> total = holdings.reduce((sum, item) =&gt; sum + item.value, <span class="num">0</span>);</span></div>
+                  <div class="line"><span class="ln">10</span><span><span class="kw">const</span> hasPositions = holdings.length &gt; <span class="num">0</span>;</span></div>
+                  <div class="line"><span class="ln">11</span><span></span></div>
+                  <div class="line hl"><span class="ln">12</span><span><span class="kw">if</span> (total &gt;= <span class="num">0</span>) {</span></div>
+                  <div class="line"><span class="ln">13</span><span>&nbsp;&nbsp;<span class="kw">return</span> { kind: <span class="str">'ready'</span> <span class="kw">as const</span>, total, hasPositions };</span></div>
+                  <div class="line"><span class="ln">14</span><span>}</span></div>
+                  <div class="line"><span class="ln">15</span><span></span></div>
+                  <div class="line"><span class="ln">16</span><span><span class="kw">return</span> { kind: <span class="str">'error'</span> <span class="kw">as const</span>, reason: <span class="str">'invalid_total'</span> };</span></div>
+                </div>
+                <div class="source-note"><strong>Decisive source relationship</strong><p>The comparison and fallback disagree at zero. Runtime verification is still required.</p></div>
+              </aside>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script>
+      const direction = new URLSearchParams(location.search).get('direction') || 'inline';
+      const names = { inline: 'Direction A · Inline Review', brief: 'Direction B · Evidence Brief', triage: 'Direction C · Triage Desk' };
+      document.body.className = direction;
+      document.getElementById('probeName').textContent = names[direction] || names.inline;
+    </script>
+  </body>
+</html>

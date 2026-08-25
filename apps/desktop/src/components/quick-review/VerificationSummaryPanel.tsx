@@ -96,72 +96,76 @@ export default function VerificationSummaryPanel({
       : decision.status === 'hold'
         ? 'border-amber-400/25 bg-amber-400/[0.07] text-amber-200'
         : 'border-slate-500/25 bg-slate-500/[0.07] text-slate-300';
+  const verifiedCount = evidenceCounts.fixed + evidenceCounts.reproduced;
 
   return (
     <>
       <div
-        className="shrink-0 border-b border-[var(--cv-line)] bg-[#07080a] px-4 py-4"
+        className="shrink-0 border-b border-[var(--cv-line)] bg-[#060708] px-6 py-5"
         data-testid="verification-decision-summary"
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className={cn('rounded-full text-[10px]', decisionTone)}>
+              <Badge variant="outline" className={cn('rounded-full text-[11px]', decisionTone)}>
                 {decision.label}
               </Badge>
-              <span className="text-[11px] font-medium text-slate-400">
+              <span className="text-[12px] font-medium text-[var(--cv-text-muted)]">
                 {decision.evidenceStrength}
               </span>
             </div>
-            <p className="mt-2 text-xs leading-5 text-slate-300">{decision.limitation}</p>
-            <p className="mt-1 text-[11px] leading-5 text-slate-500">{decision.nextAction}</p>
+            <p className="mt-3 text-[15px] font-semibold leading-6 text-slate-100">
+              {decision.limitation}
+            </p>
+            <p className="mt-1.5 text-[13px] leading-5 text-[var(--cv-text-secondary)]">
+              {decision.nextAction}
+            </p>
           </div>
           <Link
             to="/trex"
-            className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-amber-200 transition-colors hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+            aria-label="Runtime evidence"
+            className="flex shrink-0 items-center gap-1 text-[12px] font-medium text-amber-200 transition-colors hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
           >
-            Runtime evidence
+            Verify
             <ArrowRight size={12} aria-hidden="true" />
           </Link>
         </div>
 
-        <div className="mt-3 border-t border-[var(--cv-line)] pt-3">
+        <div className="mt-4 border-t border-[var(--cv-line)] pt-3">
           <button
             type="button"
             onClick={() => setVerificationOpen((o) => !o)}
             aria-expanded={verificationOpen}
-            className="flex w-full min-w-0 items-center gap-2 text-left"
+            className="flex min-h-10 w-full min-w-0 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
           >
             {verificationOpen ? (
-              <ChevronDown size={12} className="shrink-0 text-slate-500" />
+              <ChevronDown size={12} className="shrink-0 text-[var(--cv-text-muted)]" />
             ) : (
-              <ChevronRight size={12} className="shrink-0 text-slate-500" />
+              <ChevronRight size={12} className="shrink-0 text-[var(--cv-text-muted)]" />
             )}
-            <ClipboardCheck size={12} className="shrink-0 text-[var(--cv-accent)]" />
-            <span className="cv-label shrink-0 text-slate-300">Evidence details</span>
-            <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 font-mono text-[10px]">
-              <span className="text-emerald-400">{evidenceCounts.fixed} fixed</span>
-              <span className="text-slate-700">·</span>
-              <span className="text-yellow-400">{evidenceCounts.reproduced} reproduced</span>
-              <span className="text-slate-700">·</span>
-              <span className="text-slate-500">{evidenceCounts.notReproduced} not reproduced</span>
-              <span className="text-slate-700">·</span>
-              <span className="text-slate-500">{uncheckedFindings.length} unchecked</span>
-              {warmExecutionFindings.length > 0 && (
-                <>
-                  <span className="text-slate-700">·</span>
-                  <span className="text-red-300">{warmExecutionFindings.length} execution</span>
-                </>
-              )}
+            <ClipboardCheck size={13} className="shrink-0 text-slate-400" />
+            <span className="text-[12px] font-medium text-slate-200">Evidence ledger</span>
+            <span className="sr-only">Evidence details</span>
+            <span className="ml-auto shrink-0 font-mono text-[12px] text-[var(--cv-text-muted)]">
+              {verifiedCount}/{sortedFindings.length} verified
             </span>
           </button>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 pl-7 text-[12px] leading-5 tabular-nums text-[var(--cv-text-muted)]">
+            <span>{evidenceCounts.fixed} fixed</span>
+            <span>·</span>
+            <span>{evidenceCounts.reproduced} reproduced</span>
+            <span>·</span>
+            <span>{evidenceCounts.notReproduced} not reproduced</span>
+            <span>·</span>
+            <span>{uncheckedFindings.length} unchecked</span>
+          </div>
           {sortedFindings.length > 0 && (
-            <div className="mt-1.5 flex justify-end gap-1">
+            <div className="mt-2 flex justify-end gap-1">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleCopyProof}
-                className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200"
+                className="h-8 shrink-0 gap-1 px-2 text-[12px] text-[var(--cv-text-muted)] hover:text-slate-200"
               >
                 {proofCopied ? (
                   <CheckCircle size={10} className="text-emerald-400" />
@@ -175,7 +179,7 @@ export default function VerificationSummaryPanel({
                 variant="ghost"
                 onClick={handleCopyFindingNote}
                 disabled={selectedFindingIdx === null}
-                className="h-6 shrink-0 gap-1 px-2 text-[10px] text-slate-500 hover:text-slate-200 disabled:opacity-40"
+                className="h-8 shrink-0 gap-1 px-2 text-[12px] text-[var(--cv-text-muted)] hover:text-slate-200 disabled:opacity-40"
                 title={
                   selectedFindingIdx === null
                     ? 'Select a finding to copy its context note'

@@ -3,13 +3,13 @@ import {
   CheckCircle,
   CheckSquare2,
   ClipboardCheck,
+  FolderGit2,
   Loader2,
   Square,
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels';
 
 import BlastRadiusPanel from '@/components/blast-radius-panel';
 import { ProjectWorkspaceEmpty } from '@/components/project-workspace/ProjectWorkspaceEmpty';
@@ -19,6 +19,9 @@ import AudienceValidationPanel from '@/components/quick-review/AudienceValidatio
 import CreatePreviewPanel from '@/components/quick-review/CreatePreviewPanel';
 import EvidenceInsightsPanel from '@/components/quick-review/EvidenceInsightsPanel';
 import FindingsListPanel from '@/components/quick-review/FindingsListPanel';
+import InlineReviewWorkbench, {
+  type ReviewDockTab,
+} from '@/components/quick-review/InlineReviewWorkbench';
 import ReviewEditorPanel from '@/components/quick-review/ReviewEditorPanel';
 import ReviewMemoryGraphPanel from '@/components/quick-review/ReviewMemoryGraphPanel';
 import ReviewSetupPanel from '@/components/quick-review/ReviewSetupPanel';
@@ -29,7 +32,6 @@ import VerificationSummaryPanel, {
 } from '@/components/quick-review/VerificationSummaryPanel';
 import XrayExportPanel from '@/components/quick-review/XrayExportPanel';
 import SandboxRunner from '@/components/SandboxRunner';
-import ScoreBadge from '@/components/score-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -166,7 +168,10 @@ import {
   suggestReviewVerificationCommands,
 } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
-import { VERIFICATION_COPY } from '@/lib/verification-presentation';
+import {
+  deriveVerificationDecisionSummary,
+  VERIFICATION_COPY,
+} from '@/lib/verification-presentation';
 import {
   completeReviewQualificationState,
   failReviewQualificationState,
@@ -492,17 +497,19 @@ function SelectedFindingDetail({
       <Badge
         variant="outline"
         className={cn(
-          'rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
+          'rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold uppercase',
           severityColor(activeFinding.severity)
         )}
       >
         {severityIcon(activeFinding.severity)}
         <span className="ml-1">{activeFinding.severity}</span>
       </Badge>
-      <h2 className="mt-5 text-lg font-semibold leading-6 text-white">{activeFinding.title}</h2>
-      <p className="mt-3 text-sm leading-6 text-slate-400">{activeFinding.summary}</p>
+      <h2 className="mt-4 text-[18px] font-semibold leading-6 tracking-[-0.012em] text-white">
+        {activeFinding.title}
+      </h2>
+      <p className="mt-3 text-[14px] leading-[22px] text-slate-300">{activeFinding.summary}</p>
       {activeFinding.filePath && (
-        <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate-600">
+        <div className="mt-4 break-all font-mono text-[11px] leading-4 text-[var(--cv-text-muted)]">
           {activeFinding.filePath}
           {activeFinding.line != null && `:${activeFinding.line}`}
         </div>
@@ -510,9 +517,7 @@ function SelectedFindingDetail({
       {activeFinding.suggestion && (
         <div className="mt-6 border-t border-[var(--cv-line)] pt-5">
           <div className="cv-label mb-3">Suggested action</div>
-          <p className="font-mono text-[12px] leading-6 text-slate-300">
-            {activeFinding.suggestion}
-          </p>
+          <p className="text-[14px] leading-[22px] text-slate-300">{activeFinding.suggestion}</p>
         </div>
       )}
       <div className="mt-6 border-t border-[var(--cv-line)] pt-5" data-testid="trex-sandbox-panel">
@@ -1339,7 +1344,8 @@ function computeHistoryFindingSummaries(
 function buildCliReviewResultFromStored(
   review: LocalReviewRow,
   findings: CliReviewFinding[],
-  reviewManifest: ReviewManifest
+  reviewManifest: ReviewManifest,
+  reviewReadiness?: CliReviewResult['review_readiness']
 ): CliReviewResult {
   return {
     review_id: review.id,
@@ -1351,6 +1357,7 @@ function buildCliReviewResultFromStored(
     diff_range: diffRangeFromSourceLabel(review.source_label),
     findings_count: findings.length,
     review_manifest: reviewManifest,
+    review_readiness: reviewReadiness,
   };
 }
 
@@ -1390,47 +1397,86 @@ function describeReviewError(msg: string): string {
 function ResultHeader({
   result,
   diffRange,
+  projectName,
+  repoPath,
   sortedFindings,
   evidenceCounts,
   handleNewReview,
 }: {
   result: CliReviewResult;
   diffRange: string;
+  projectName: string;
+  repoPath: string;
   sortedFindings: CliReviewFinding[];
   evidenceCounts: { reproduced: number; fixed: number };
   handleNewReview: () => void;
 }) {
+  const source = result.diff_range || diffRange || 'local diff';
+  const compactSource = source.length > 34 ? `${source.slice(0, 13)}…${source.slice(-12)}` : source;
+  const findingCount = result.findings_count ?? sortedFindings.length;
+
   return (
-    <div className="cv-frame mb-3 flex h-12 shrink-0 items-center gap-3 overflow-hidden px-3">
+    <header className="mb-3 flex min-h-[68px] shrink-0 items-center gap-3 border-b border-[var(--cv-line)] px-1 py-2.5">
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 gap-1 text-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
+        className="h-10 shrink-0 gap-1 px-2 text-[var(--cv-text-muted)] hover:bg-white/[0.04] hover:text-slate-100"
         onClick={handleNewReview}
       >
         <ArrowLeft size={14} />
         Back
       </Button>
-      <div className="h-6 w-px bg-[var(--cv-line)]" />
-      <div className="min-w-0 flex-1">
-        <div className="cv-label truncate text-slate-300">
-          change review · {result.agent}
-          {result.risk_tier ? ` · ${result.risk_tier}` : ''}
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--cv-line)] bg-white/[0.035] text-amber-200">
+          <FolderGit2 size={17} aria-hidden="true" />
         </div>
-        <div className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">
-          {result.review_mode
-            ? `${result.review_mode} · ${result.diff_range || diffRange || 'local diff'}`
-            : result.diff_range || diffRange || 'local diff'}
+        <div className="min-w-0 max-w-[38%]">
+          <div className="truncate text-[14px] font-semibold tracking-[-0.01em] text-slate-100">
+            {projectName}
+          </div>
+          <div
+            className="mt-0.5 truncate font-mono text-[11px] text-[var(--cv-text-muted)]"
+            title={repoPath}
+          >
+            {repoPath || 'Repository path unavailable'}
+          </div>
+        </div>
+        <div className="h-8 w-px shrink-0 bg-[var(--cv-line)]" aria-hidden="true" />
+        <div className="min-w-0">
+          <div className="truncate text-[13px] font-semibold text-slate-200">Change review</div>
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] text-[var(--cv-text-muted)]">
+            <span className="min-w-0 truncate font-mono" title={source}>
+              {compactSource}
+            </span>
+            <span className="shrink-0">· {result.agent}</span>
+            {result.risk_tier && <span className="shrink-0">· {result.risk_tier}</span>}
+          </div>
         </div>
       </div>
-      <ScoreBadge score={Math.round(result.score)} size="sm" />
-      <div className="cv-label hidden sm:block">
-        {result.findings_count ?? sortedFindings.length} findings
+      <div className="flex h-8 items-center gap-4 border-l border-[var(--cv-line)] pl-4">
+        <div className="text-right">
+          <div className="text-[12px] font-medium tabular-nums text-slate-200">
+            {evidenceCounts.reproduced + evidenceCounts.fixed}
+          </div>
+          <div className="text-[11px] text-[var(--cv-text-muted)]">verified</div>
+        </div>
+        <div className="text-right">
+          <div className="text-[12px] font-medium tabular-nums text-slate-200">{findingCount}</div>
+          <div className="text-[11px] text-[var(--cv-text-muted)]">
+            {findingCount === 1 ? 'finding' : 'findings'}
+          </div>
+        </div>
+        <div
+          className="hidden text-right lg:block"
+          title="Model review score; executable evidence determines confidence"
+        >
+          <div className="text-[12px] font-medium tabular-nums text-[var(--cv-text-muted)]">
+            {Math.round(result.score)}
+          </div>
+          <div className="text-[11px] text-[var(--cv-text-muted)]">model score</div>
+        </div>
       </div>
-      <div className="cv-label hidden lg:block">
-        {evidenceCounts.reproduced} reproduced · {evidenceCounts.fixed} fixed
-      </div>
-    </div>
+    </header>
   );
 }
 
@@ -1455,6 +1501,9 @@ function FixFooter({
         <button
           onClick={toggleSelectAll}
           title="Select all findings for fix (dismissed excluded)"
+          aria-pressed={
+            selectableFindingCount > 0 && selectedFindings.size >= selectableFindingCount
+          }
           className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
         >
           {selectableFindingCount > 0 && selectedFindings.size >= selectableFindingCount ? (
@@ -1469,6 +1518,7 @@ function FixFooter({
             size="sm"
             onClick={handleFixSelected}
             disabled={isFixing !== null || selectedFindings.size === 0 || !viewHasRepoPath}
+            aria-describedby={!viewHasRepoPath ? 'review-fix-disabled-reason' : undefined}
             className="gap-1.5 bg-white text-xs text-black hover:bg-slate-200 disabled:opacity-50"
           >
             {isFixing === 'selected' ? (
@@ -1481,9 +1531,17 @@ function FixFooter({
               : `Fix${selectedFindings.size > 0 ? ` (${selectedFindings.size})` : ''}`}
           </Button>
           {!viewHasRepoPath && (
-            <div className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block">
-              No repo path — can't apply fixes
-            </div>
+            <>
+              <span id="review-fix-disabled-reason" className="sr-only">
+                No repository path is available, so fixes cannot be applied.
+              </span>
+              <div
+                aria-hidden="true"
+                className="absolute bottom-full right-0 mb-1.5 hidden whitespace-nowrap border border-[#2a2a2a] bg-[#1a1a1a] px-2 py-1 text-[10px] text-slate-400 shadow-lg group-hover:block"
+              >
+                No repo path — can't apply fixes
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -1491,57 +1549,104 @@ function FixFooter({
   );
 }
 
-function CoverageBanner({
+function ReviewReceipt({
   reviewManifest,
   coverageCounts,
+  readiness,
 }: {
   reviewManifest: NonNullable<CliReviewResult['review_manifest']>;
   coverageCounts: Record<string, number> | null;
+  readiness?: CliReviewResult['review_readiness'];
 }) {
+  const mcpCallCount = readiness?.codevetter_mcp_call_count ?? 0;
+  const contextDelivery = readiness?.context_delivery ?? 'internal';
+  const legacy = 'coverage_kind' in reviewManifest;
+  const coverageComplete = !legacy && reviewManifest.complete_coverage;
+  const ready = readiness?.status === 'ready';
+  const reviewed = (coverageCounts?.reviewed ?? 0) + (coverageCounts?.reused ?? 0);
+  const healthy = coverageComplete && (readiness == null || ready);
+
   return (
     <div
       className={cn(
-        'mb-3 flex shrink-0 items-center justify-between gap-4 rounded-xl border px-4 py-2.5 text-xs',
-        reviewManifest.complete_coverage && !('coverage_kind' in reviewManifest)
-          ? 'border-emerald-400/15 bg-emerald-400/[0.035] text-slate-400'
-          : 'border-amber-400/20 bg-amber-400/[0.045] text-slate-400'
+        'mb-3 grid shrink-0 gap-2 border-y px-1 py-3 text-xs lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-5',
+        healthy ? 'border-white/[0.08]' : 'border-amber-400/20'
       )}
       data-testid="review-coverage"
     >
-      {'coverage_kind' in reviewManifest ? (
-        <>
-          <span>
-            <span className="font-medium text-amber-200">Coverage unknown</span>
-            {' — '}
-            {reviewManifest.limitation}
+      <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-2">
+          <ClipboardCheck
+            size={15}
+            className={cn('shrink-0', healthy ? 'text-emerald-300' : 'text-amber-300')}
+            aria-hidden="true"
+          />
+          <span className={cn('font-medium', healthy ? 'text-slate-100' : 'text-amber-100')}>
+            {legacy
+              ? 'Coverage unknown'
+              : ready || readiness == null
+                ? coverageComplete
+                  ? 'Review context ready'
+                  : 'Partial review context'
+                : 'Review incomplete — do not treat as a full verdict'}
           </span>
-          <span className="shrink-0 text-slate-600">Legacy review</span>
-        </>
-      ) : (
-        <>
-          <span>
-            <span
-              className={cn(
-                'font-medium',
-                reviewManifest.complete_coverage ? 'text-emerald-200' : 'text-amber-200'
-              )}
-            >
-              {reviewManifest.complete_coverage ? 'Complete coverage' : 'Partial coverage'}
-            </span>
-            {' — '}
-            {(coverageCounts?.reviewed ?? 0) + (coverageCounts?.reused ?? 0)} reviewed
-            {coverageCounts?.reused ? ` (${coverageCounts.reused} reused)` : ''}
-            {coverageCounts?.skipped ? ` · ${coverageCounts.skipped} policy-skipped` : ''}
-            {coverageCounts?.failed ? ` · ${coverageCounts.failed} failed` : ''}
-            {coverageCounts?.cancelled ? ` · ${coverageCounts.cancelled} cancelled` : ''}
-            {reviewManifest.stale ? ' · target changed during review' : ''}
+          <span className="hidden text-slate-700 sm:inline">·</span>
+          <span className="hidden truncate text-[var(--cv-text-muted)] sm:inline">
+            {legacy
+              ? reviewManifest.limitation
+              : `${reviewed} file${reviewed === 1 ? '' : 's'} inspected${coverageCounts?.reused ? `, ${coverageCounts.reused} reused` : ''}`}
           </span>
-          <span className="shrink-0 text-slate-600">
-            {reviewManifest.qualification_counts.rejected} rejected ·{' '}
-            {reviewManifest.qualification_counts.unresolved} unresolved ·{' '}
-            {reviewManifest.qualification_counts.stale} stale
-          </span>
-        </>
+        </div>
+        <div className="mt-1 pl-[23px] text-[11px] text-[var(--cv-text-muted)] sm:hidden">
+          {legacy ? 'Legacy review' : `${reviewed} file${reviewed === 1 ? '' : 's'} inspected`}
+        </div>
+      </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 pl-[23px] font-mono text-[11px] text-[var(--cv-text-muted)] lg:justify-end lg:pl-0">
+        {legacy ? (
+          <span>Legacy review</span>
+        ) : (
+          <>
+            <span>{coverageComplete ? 'Complete coverage' : 'Partial coverage'}</span>
+            {readiness && (
+              <span data-testid="review-readiness">
+                graph {readiness.graph_status} · history {readiness.history_status}
+              </span>
+            )}
+            {readiness && (
+              <span>
+                {readiness.runtime_evidence_count} runtime record
+                {readiness.runtime_evidence_count === 1 ? '' : 's'}
+              </span>
+            )}
+            <span>CodeVetter MCP {mcpCallCount} calls</span>
+            <span>{contextDelivery}</span>
+          </>
+        )}
+      </div>
+      {!legacy &&
+        ((coverageCounts?.skipped ?? 0) > 0 ||
+          (coverageCounts?.failed ?? 0) > 0 ||
+          (coverageCounts?.cancelled ?? 0) > 0 ||
+          reviewManifest.stale ||
+          (readiness != null && !ready)) && (
+          <div className="text-[11px] text-amber-200/80 lg:col-span-2">
+            {[
+              coverageCounts?.skipped ? `${coverageCounts.skipped} policy-skipped` : null,
+              coverageCounts?.failed ? `${coverageCounts.failed} failed` : null,
+              coverageCounts?.cancelled ? `${coverageCounts.cancelled} cancelled` : null,
+              reviewManifest.stale ? 'target changed during review' : null,
+              ...(readiness?.limitations ?? []),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </div>
+        )}
+      {!legacy && reviewManifest.qualification_counts.rejected > 0 && (
+        <span className="sr-only">
+          {reviewManifest.qualification_counts.rejected} rejected ·{' '}
+          {reviewManifest.qualification_counts.unresolved} unresolved ·{' '}
+          {reviewManifest.qualification_counts.stale} stale
+        </span>
       )}
     </div>
   );
@@ -1600,7 +1705,8 @@ async function handleTimelineFileJump(
   setSelectedFindingIdx: (v: number | null) => void,
   setCodeLines: (v: FileLineData[]) => void,
   setCodeFilePath: (v: string) => void,
-  setCodeLanguage: (v: string) => void
+  setCodeLanguage: (v: string) => void,
+  isCurrentRequest: () => boolean
 ): Promise<void> {
   if (!jump.path) return;
   setSelectedFindingIdx(null);
@@ -1608,10 +1714,12 @@ async function handleTimelineFileJump(
     jump.path.startsWith('/') || !repoPath ? jump.path : `${repoPath}/${jump.path}`;
   try {
     const res = await readFileAroundLine(targetPath, Math.max(1, jump.line ?? 1), 15, 15);
+    if (!isCurrentRequest()) return;
     setCodeLines(res.lines);
     setCodeFilePath(res.file_path);
     setCodeLanguage(res.language);
   } catch (e) {
+    if (!isCurrentRequest()) return;
     console.error('[Review] failed to load timeline file:', e);
     setCodeLines([]);
     setCodeFilePath(jump.path);
@@ -1855,17 +1963,6 @@ function nextPaint(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-function useCompactReviewLayout(): boolean {
-  const [compact, setCompact] = useState(() => window.matchMedia('(max-width: 1099px)').matches);
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 1099px)');
-    const update = () => setCompact(query.matches);
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
-  }, []);
-  return compact;
-}
-
 async function waitForDecisionSummary(expectedText?: string): Promise<HTMLElement> {
   const deadline = performance.now() + 5_000;
   while (performance.now() < deadline) {
@@ -1919,8 +2016,6 @@ export default function QuickReview() {
     []
   );
   const reviewQualificationStarted = useRef(false);
-  const compactReviewLayout = useCompactReviewLayout();
-
   // Mode: "create" shows the form, "view" shows past review results
   const [mode, setMode] = useState<'create' | 'view'>('create');
   const [branches, setBranches] = useState<string[]>([]);
@@ -1966,9 +2061,12 @@ export default function QuickReview() {
 
   // Code viewer state (view mode)
   const [selectedFindingIdx, setSelectedFindingIdx] = useState<number | null>(null);
+  const [reviewDockTab, setReviewDockTab] = useState<ReviewDockTab>('findings');
   const [codeLines, setCodeLines] = useState<FileLineData[]>([]);
   const [codeFilePath, setCodeFilePath] = useState('');
   const [codeLanguage, setCodeLanguage] = useState('');
+  const [sourceLoading, setSourceLoading] = useState(false);
+  const sourceRequestIdRef = useRef(0);
   const [evidenceByFinding, setEvidenceByFinding] = useState<Record<string, FindingEvidence>>({});
   const [browserEvidenceByFinding, setBrowserEvidenceByFinding] = useState<
     Record<string, BrowserEvidenceRef>
@@ -2000,6 +2098,17 @@ export default function QuickReview() {
   >([]);
   const [verificationCommandSuggestionsLoading, setVerificationCommandSuggestionsLoading] =
     useState(false);
+
+  useEffect(() => {
+    sourceRequestIdRef.current += 1;
+    setSourceLoading(false);
+    setCodeLines([]);
+    setCodeFilePath('');
+    setCodeLanguage('');
+    return () => {
+      sourceRequestIdRef.current += 1;
+    };
+  }, [repoPath, reviewId]);
 
   // Synthetic user QA (browser loop → verification evidence)
   const [qaBaseUrl, setQaBaseUrl] = useState(CODEVETTER_REVIEW_SHELL.default_base_url);
@@ -2218,7 +2327,9 @@ export default function QuickReview() {
         setDiffRange('');
         setEvidenceByFinding({});
         setBrowserEvidenceByFinding({});
-        setResult(buildCliReviewResultFromStored(review, findings, reviewManifest));
+        setResult(
+          buildCliReviewResultFromStored(review, findings, reviewManifest, data.review_readiness)
+        );
         setSelectedBranch('');
         setDiffRange(diffRangeFromSourceLabel(review.source_label));
         setViewHasRepoPath(!!review.repo_path);
@@ -2400,6 +2511,7 @@ export default function QuickReview() {
   // ─── Back to create mode ─────────────────────────────────────────────────
 
   const handleNewReview = useCallback(() => {
+    sourceRequestIdRef.current += 1;
     setMode('create');
     setResult(null);
     setError(null);
@@ -2412,6 +2524,7 @@ export default function QuickReview() {
     setCodeLines([]);
     setCodeFilePath('');
     setCodeLanguage('');
+    setSourceLoading(false);
     // Re-fetch branches for the current folder
     if (repoPath) {
       loadFolderData(repoPath);
@@ -3765,14 +3878,20 @@ export default function QuickReview() {
 
   const handleFindingClick = useCallback(
     async (idx: number) => {
+      const requestId = ++sourceRequestIdRef.current;
       setSelectedFindingIdx(idx);
       const finding = sortedFindings[idx];
       if (!finding?.filePath || finding.line == null) {
         setCodeLines([]);
         setCodeFilePath(finding?.filePath ?? '');
         setCodeLanguage('');
+        setSourceLoading(false);
         return;
       }
+      setCodeLines([]);
+      setCodeFilePath(finding.filePath);
+      setCodeLanguage('');
+      setSourceLoading(true);
       try {
         const res = await readFileAroundLine(
           `${repoPath}/${finding.filePath}`,
@@ -3780,14 +3899,18 @@ export default function QuickReview() {
           15,
           15
         );
+        if (sourceRequestIdRef.current !== requestId) return;
         setCodeLines(res.lines);
         setCodeFilePath(res.file_path);
         setCodeLanguage(res.language);
+        setSourceLoading(false);
       } catch (e) {
+        if (sourceRequestIdRef.current !== requestId) return;
         console.error('[Review] failed to load code:', e);
         setCodeLines([]);
         setCodeFilePath(finding.filePath);
         setCodeLanguage('');
+        setSourceLoading(false);
       }
     },
     [sortedFindings, repoPath]
@@ -3810,18 +3933,27 @@ export default function QuickReview() {
 
   const handleJumpToCaller = useCallback(
     async (file: string, line: number) => {
+      const requestId = ++sourceRequestIdRef.current;
       setSelectedFindingIdx(null);
       if (!repoPath) return;
+      setCodeLines([]);
+      setCodeFilePath(file);
+      setCodeLanguage('');
+      setSourceLoading(true);
       try {
         const res = await readFileAroundLine(`${repoPath}/${file}`, line, 15, 15);
+        if (sourceRequestIdRef.current !== requestId) return;
         setCodeLines(res.lines);
         setCodeFilePath(res.file_path);
         setCodeLanguage(res.language);
+        setSourceLoading(false);
       } catch (e) {
+        if (sourceRequestIdRef.current !== requestId) return;
         console.error('[Review] failed to load caller code:', e);
         setCodeLines([]);
         setCodeFilePath(file);
         setCodeLanguage('');
+        setSourceLoading(false);
       }
     },
     [repoPath]
@@ -3836,14 +3968,21 @@ export default function QuickReview() {
       }
 
       if (jump.kind === 'file') {
+        const requestId = ++sourceRequestIdRef.current;
+        setCodeLines([]);
+        setCodeFilePath(jump.path ?? '');
+        setCodeLanguage('');
+        setSourceLoading(true);
         await handleTimelineFileJump(
           jump,
           repoPath,
           setSelectedFindingIdx,
           setCodeLines,
           setCodeFilePath,
-          setCodeLanguage
+          setCodeLanguage,
+          () => sourceRequestIdRef.current === requestId
         );
+        if (sourceRequestIdRef.current === requestId) setSourceLoading(false);
         return;
       }
 
@@ -3867,14 +4006,6 @@ export default function QuickReview() {
   // ─── Render ─────────────────────────────────────────────────────────────
 
   const audienceDefaultArtifact = resolveAudienceDefaultArtifact(qaLastRun, qaBaseUrl);
-  const editorPanelSize = compactReviewLayout ? 58 : 60;
-  const editorPanelMin = compactReviewLayout ? 42 : 45;
-  const sidebarPanelSize = compactReviewLayout ? 42 : 40;
-  const sidebarPanelMin = compactReviewLayout ? 30 : 32;
-  const panelOrientation = compactReviewLayout ? 'vertical' : 'horizontal';
-  const resizeHandleClass = compactReviewLayout
-    ? 'h-1.5 cursor-row-resize'
-    : 'w-1.5 cursor-col-resize';
 
   // ─── View mode layout ────────────────────────────────────────────────────
 
@@ -3900,6 +4031,256 @@ export default function QuickReview() {
       browserEvidenceByFinding,
       procedureExecutionEvents
     );
+    const sourceAvailable =
+      !activeFinding ||
+      sourceLoading ||
+      codeLines.length > 0 ||
+      fixResult !== null ||
+      isFixing !== null;
+    const projectName = selectedProject?.display_name ?? repoLabelFromPath(repoPath);
+    const reviewDecision = deriveVerificationDecisionSummary({
+      fixedCount: evidenceCounts.fixed,
+      reproducedCount: evidenceCounts.reproduced,
+      notReproducedCount: evidenceCounts.notReproduced,
+      uncheckedCount: uncheckedFindings.length,
+      executionFailureCount: 0,
+      blockedProcedureCount: procedureExecutionEvents.filter((event) => event.status === 'blocked')
+        .length,
+      satisfiedProcedureCount: procedureExecutionEvents.filter(
+        (event) => event.status === 'satisfied'
+      ).length,
+    });
+    const sourcePanel = sourceAvailable ? (
+      <section aria-label="Finding source" className="h-full min-h-0 min-w-0 overflow-hidden">
+        <ReviewEditorPanel
+          fixResult={fixResult}
+          diffFiles={diffFiles}
+          expandedFiles={expandedFiles}
+          toggleFileExpanded={toggleFileExpanded}
+          handleRevertFile={handleRevertFile}
+          handleRevertHunk={handleRevertHunk}
+          hunkNavRefs={hunkNavRefs}
+          hunkNavTargets={hunkNavTargets}
+          activeHunkNavIndex={activeHunkNavIndex}
+          handleReReview={handleReReview}
+          isReviewing={isReviewing}
+          repoPath={repoPath}
+          diffRange={diffRange}
+          handleMergeFix={handleMergeFix}
+          handleDiscardFix={handleDiscardFix}
+          handleOpenInIDE={handleOpenInIDE}
+          isFixing={isFixing}
+          fixLogRef={fixLogRef}
+          fixProgress={fixProgress}
+          selectedFindingIdx={selectedFindingIdx}
+          activeFinding={activeFinding}
+          activeCodePath={activeCodePath}
+          codeLanguage={codeLanguage}
+          codeLines={codeLines}
+          sourceLoading={sourceLoading}
+        />
+      </section>
+    ) : (
+      <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#030405] px-8 text-center">
+        <Zap size={22} className="text-slate-700" aria-hidden="true" />
+        <p className="text-[13px] font-medium text-slate-300">Source snapshot unavailable</p>
+        <p className="max-w-md text-[12px] leading-5 text-[var(--cv-text-muted)]">
+          Reopen {projectName} to inspect the referenced line. The finding and recorded evidence
+          remain available in the dock below.
+        </p>
+      </div>
+    );
+    const findingsPanel = (
+      <FindingsListPanel
+        sortedFindings={sortedFindings}
+        patchQueue={patchQueue}
+        handleCopyFixPacket={handleCopyFixPacket}
+        packetCopied={packetCopied}
+        fixPacket={fixPacket}
+        taskGoal={taskGoal}
+        taskAcceptance={taskAcceptance}
+        patchQueueSeverityCounts={patchQueueSeverityCounts}
+        handleFindingClick={handleFindingClick}
+        evidenceByFinding={evidenceByFinding}
+        findingEvidenceKey={findingEvidenceKey}
+        historyFindingSummaries={historyFindingSummaries}
+        selectedFindingIdx={selectedFindingIdx}
+        selectedFindings={selectedFindings}
+        toggleFinding={toggleFinding}
+        handleSetDisposition={handleSetDisposition}
+      />
+    );
+    const evidencePanel = (
+      <div className="grid h-full min-h-0 grid-cols-[minmax(360px,0.8fr)_minmax(0,1.2fr)] divide-x divide-[var(--cv-line)] max-[1100px]:grid-cols-1 max-[1100px]:grid-rows-2 max-[1100px]:divide-x-0 max-[1100px]:divide-y">
+        <div className="min-h-0 overflow-y-auto">
+          <VerificationSummaryPanel
+            sortedFindings={sortedFindings}
+            evidenceProcedureSteps={evidenceProcedureSteps}
+            procedureExecutionEvents={procedureExecutionEvents}
+            intentReport={intentReport}
+            uncheckedFindings={uncheckedFindings}
+            verificationOpen={verificationOpen}
+            setVerificationOpen={setVerificationOpen}
+            evidenceCounts={evidenceCounts}
+            handleCopyProof={handleCopyProof}
+            proofCopied={proofCopied}
+            handleCopyFindingNote={handleCopyFindingNote}
+            findingNoteCopied={findingNoteCopied}
+            selectedFindingIdx={selectedFindingIdx}
+            procedureEventsByStep={procedureEventsByStep}
+            procedureEventKey={procedureEventKey}
+            procedureEventTimeLabel={procedureEventTimeLabel}
+            uncheckedBySeverity={uncheckedBySeverity}
+            warmExecutionFindings={warmExecutionFindings}
+          />
+        </div>
+        <div className="min-h-0 overflow-y-auto px-5 py-4">
+          {activeFinding ? (
+            <SelectedFindingDetail
+              activeFinding={activeFinding}
+              selectedFindingIdx={selectedFindingIdx}
+              repoPath={repoPath}
+              selectedBranch={selectedBranch}
+              baseBranch={baseBranch}
+              reviewId={reviewId}
+              qaWorkflowScopeLabel={qaWorkflowScopeLabel}
+              qaActiveWorkflowId={qaActiveWorkflowId}
+              qaWorkflows={qaWorkflows}
+              qaWorkflowName={qaWorkflowName}
+              setQaWorkflowName={setQaWorkflowName}
+              handleSelectQaWorkflow={handleSelectQaWorkflow}
+              handleSaveQaWorkflow={handleSaveQaWorkflow}
+              handleDeleteQaWorkflow={handleDeleteQaWorkflow}
+              qaActiveTargetId={qaActiveTargetId}
+              qaTargets={qaTargets}
+              handleSelectQaTarget={handleSelectQaTarget}
+              qaBaseUrl={qaBaseUrl}
+              setQaBaseUrl={setQaBaseUrl}
+              qaAllowRemoteTarget={qaAllowRemoteTarget}
+              setQaAllowRemoteTarget={setQaAllowRemoteTarget}
+              qaTargetName={qaTargetName}
+              setQaTargetName={setQaTargetName}
+              qaTargetRoute={qaTargetRoute}
+              setQaTargetRoute={setQaTargetRoute}
+              qaAuthMode={qaAuthMode}
+              setQaAuthMode={setQaAuthMode}
+              qaStorageStatePath={qaStorageStatePath}
+              setQaStorageStatePath={setQaStorageStatePath}
+              qaLoopId={qaLoopId}
+              setQaLoopId={setQaLoopId}
+              setQaGoal={setQaGoal}
+              qaGoal={qaGoal}
+              qaRunnerType={qaRunnerType}
+              setQaRunnerType={setQaRunnerType}
+              qaRepoSpecPath={qaRepoSpecPath}
+              setQaRepoSpecPath={setQaRepoSpecPath}
+              qaSpecLoading={qaSpecLoading}
+              qaSpecCandidates={qaSpecCandidates}
+              qaSpecError={qaSpecError}
+              handleDiscoverQaSpecs={handleDiscoverQaSpecs}
+              qaRepoTraceMode={qaRepoTraceMode}
+              setQaRepoTraceMode={setQaRepoTraceMode}
+              qaExternalCommand={qaExternalCommand}
+              setQaExternalCommand={setQaExternalCommand}
+              handleSaveQaTarget={handleSaveQaTarget}
+              handleDeleteQaTarget={handleDeleteQaTarget}
+              handleRunSyntheticQa={handleRunSyntheticQa}
+              qaRunning={qaRunning}
+              qaError={qaError}
+              qaLastRun={qaLastRun}
+              qaArtifactPreview={qaArtifactPreview}
+              qaArtifactPreviewLoading={qaArtifactPreviewLoading}
+              handlePreviewQaArtifact={handlePreviewQaArtifact}
+              handleOpenQaArtifact={handleOpenQaArtifact}
+              setQaArtifactPreview={setQaArtifactPreview}
+              applyQaToSelectedFinding={applyQaToSelectedFinding}
+              addQaFailureFinding={addQaFailureFinding}
+              qaEvidenceHistory={qaEvidenceHistory}
+              qaPostFixComparison={qaPostFixComparison}
+              postFixQaRunning={postFixQaRunning}
+              handleRunPostFixQa={handleRunPostFixQa}
+              activeEvidence={activeEvidence}
+              updateFindingEvidence={updateFindingEvidence}
+              activeBrowserEvidence={activeBrowserEvidence}
+              updateBrowserEvidence={updateBrowserEvidence}
+              verificationCommand={verificationCommand}
+              setVerificationCommand={setVerificationCommand}
+              verificationCommandSuggestions={verificationCommandSuggestions}
+              verificationCommandSuggestionsLoading={verificationCommandSuggestionsLoading}
+              verificationCommandTimeoutMs={verificationCommandTimeoutMs}
+              setVerificationCommandTimeoutMs={setVerificationCommandTimeoutMs}
+              verificationCommandRunning={verificationCommandRunning}
+              handleRunVerificationCommand={handleRunVerificationCommand}
+              verificationCommandRunId={verificationCommandRunId}
+              verificationCommandCanceling={verificationCommandCanceling}
+              handleCancelVerificationCommand={handleCancelVerificationCommand}
+              verificationCommandError={verificationCommandError}
+              handleRecordTestCommandEvent={handleRecordTestCommandEvent}
+              toggleRevalidationItem={toggleRevalidationItem}
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+              <CheckCircle size={20} className="text-emerald-300" />
+              <p className="text-[13px] font-medium text-slate-200">No review findings</p>
+              <p className="max-w-sm text-[12px] leading-5 text-[var(--cv-text-muted)]">
+                Runtime evidence and coverage limits still determine shipping confidence.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+    const historyPanel = (
+      <div className="grid h-full min-h-0 grid-cols-2 divide-x divide-[var(--cv-line)] overflow-hidden max-[1100px]:grid-cols-1 max-[1100px]:grid-rows-2 max-[1100px]:divide-x-0 max-[1100px]:divide-y">
+        <div className="min-h-0 overflow-y-auto">
+          <AgentStatusTimeline
+            reviewTimeline={reviewTimeline}
+            timelineSegmentFindingIndexes={timelineSegmentFindingIndexes}
+            expandedTimelineItems={expandedTimelineItems}
+            setExpandedTimelineItems={setExpandedTimelineItems}
+            timelinePacketCopiedId={timelinePacketCopiedId}
+            handleCopyTimelineSegmentPacket={handleCopyTimelineSegmentPacket}
+            handleTimelineJump={handleTimelineJump}
+          />
+        </div>
+        <div className="min-h-0 overflow-y-auto">
+          <BlastRadiusSection
+            blastReport={blastReport}
+            blastLoading={blastLoading}
+            blastError={blastError}
+            deepGraphImpact={deepGraphImpact}
+            deepGraphImpactLoading={deepGraphImpactLoading}
+            handleJumpToCaller={handleJumpToCaller}
+          />
+          <MemoryGraphPanels
+            reviewMemoryGraph={reviewMemoryGraph}
+            focusedReviewMemoryGraph={focusedReviewMemoryGraph}
+          />
+        </div>
+      </div>
+    );
+    const limitationsPanel = (
+      <div className="grid h-full min-h-0 grid-cols-2 divide-x divide-[var(--cv-line)] overflow-hidden max-[1100px]:grid-cols-1 max-[1100px]:grid-rows-2 max-[1100px]:divide-x-0 max-[1100px]:divide-y">
+        <div className="min-h-0 overflow-y-auto">
+          <EvidenceInsightsPanel
+            historyExplanations={historyExplanations}
+            selectedFindingHistoryExplanation={selectedFindingHistoryExplanation}
+            evidenceCandidates={evidenceCandidates}
+            evidenceCandidateStatuses={evidenceCandidateStatuses}
+            updateEvidenceCandidateStatus={updateEvidenceCandidateStatus}
+          />
+        </div>
+        <div className="min-h-0 overflow-y-auto">
+          <AudienceValidationPanel
+            reviewId={reviewId}
+            repoPath={repoPath}
+            defaultArtifact={audienceDefaultArtifact}
+            onBundleChange={setAudienceBundle}
+          />
+          <XrayExportPanel reviewId={reviewId} findings={sortedFindings} />
+        </div>
+      </div>
+    );
 
     return (
       <ProjectWorkspaceShell mainClassName="overflow-hidden" showProjectSidebar={false}>
@@ -3907,6 +4288,8 @@ export default function QuickReview() {
           <ResultHeader
             result={result}
             diffRange={diffRange}
+            projectName={projectName}
+            repoPath={repoPath}
             sortedFindings={sortedFindings}
             evidenceCounts={evidenceCounts}
             handleNewReview={handleNewReview}
@@ -3914,248 +4297,55 @@ export default function QuickReview() {
 
           {/* Error banner */}
           {error && (
-            <div className="shrink-0 bg-red-500/10 px-4 py-2 text-xs text-red-400">{error}</div>
+            <div role="alert" className="shrink-0 bg-red-500/10 px-4 py-2 text-xs text-red-400">
+              {error}
+            </div>
           )}
 
           {reviewManifest && (
-            <CoverageBanner reviewManifest={reviewManifest} coverageCounts={coverageCounts} />
+            <ReviewReceipt
+              reviewManifest={reviewManifest}
+              coverageCounts={coverageCounts}
+              readiness={result.review_readiness}
+            />
           )}
 
-          {/* Editor + verdict body */}
-          <PanelGroup
-            orientation={panelOrientation}
-            className="min-h-0 flex-1 cv-frame overflow-hidden"
-          >
-            <Panel defaultSize={editorPanelSize} minSize={editorPanelMin}>
-              <ReviewEditorPanel
-                fixResult={fixResult}
-                diffFiles={diffFiles}
-                expandedFiles={expandedFiles}
-                toggleFileExpanded={toggleFileExpanded}
-                handleRevertFile={handleRevertFile}
-                handleRevertHunk={handleRevertHunk}
-                hunkNavRefs={hunkNavRefs}
-                hunkNavTargets={hunkNavTargets}
-                activeHunkNavIndex={activeHunkNavIndex}
-                handleReReview={handleReReview}
-                isReviewing={isReviewing}
-                repoPath={repoPath}
-                diffRange={diffRange}
-                handleMergeFix={handleMergeFix}
-                handleDiscardFix={handleDiscardFix}
-                handleOpenInIDE={handleOpenInIDE}
+          <InlineReviewWorkbench
+            decision={reviewDecision}
+            activeFinding={activeFinding}
+            activeFindingIndex={selectedFindingIdx}
+            findingCount={sortedFindings.length}
+            verifiedCount={evidenceCounts.fixed + evidenceCounts.reproduced}
+            activeEvidence={activeEvidence}
+            selectedForPatch={
+              selectedFindingIdx !== null && selectedFindings.has(selectedFindingIdx)
+            }
+            dockTab={reviewDockTab}
+            onDockTabChange={setReviewDockTab}
+            onTogglePatch={() => {
+              if (selectedFindingIdx !== null) toggleFinding(selectedFindingIdx);
+            }}
+            onSetDisposition={(disposition) => {
+              if (selectedFindingIdx !== null) {
+                void handleSetDisposition(selectedFindingIdx, disposition);
+              }
+            }}
+            source={sourcePanel}
+            findings={findingsPanel}
+            evidence={evidencePanel}
+            history={historyPanel}
+            limitations={limitationsPanel}
+            footer={
+              <FixFooter
+                selectableFindingCount={selectableFindingCount}
+                selectedFindings={selectedFindings}
                 isFixing={isFixing}
-                fixLogRef={fixLogRef}
-                fixProgress={fixProgress}
-                selectedFindingIdx={selectedFindingIdx}
-                activeFinding={activeFinding}
-                activeCodePath={activeCodePath}
-                codeLanguage={codeLanguage}
-                codeLines={codeLines}
+                viewHasRepoPath={viewHasRepoPath}
+                toggleSelectAll={toggleSelectAll}
+                handleFixSelected={handleFixSelected}
               />
-            </Panel>
-
-            <PanelResizeHandle
-              className={cn(
-                'bg-[var(--cv-line)] transition-colors hover:bg-amber-400/30',
-                resizeHandleClass
-              )}
-            />
-
-            <Panel defaultSize={sidebarPanelSize} minSize={sidebarPanelMin}>
-              <aside className="flex h-full flex-col overflow-y-auto bg-white/[0.015]">
-                <VerificationSummaryPanel
-                  sortedFindings={sortedFindings}
-                  evidenceProcedureSteps={evidenceProcedureSteps}
-                  procedureExecutionEvents={procedureExecutionEvents}
-                  intentReport={intentReport}
-                  uncheckedFindings={uncheckedFindings}
-                  verificationOpen={verificationOpen}
-                  setVerificationOpen={setVerificationOpen}
-                  evidenceCounts={evidenceCounts}
-                  handleCopyProof={handleCopyProof}
-                  proofCopied={proofCopied}
-                  handleCopyFindingNote={handleCopyFindingNote}
-                  findingNoteCopied={findingNoteCopied}
-                  selectedFindingIdx={selectedFindingIdx}
-                  procedureEventsByStep={procedureEventsByStep}
-                  procedureEventKey={procedureEventKey}
-                  procedureEventTimeLabel={procedureEventTimeLabel}
-                  uncheckedBySeverity={uncheckedBySeverity}
-                  warmExecutionFindings={warmExecutionFindings}
-                />
-
-                <div className="shrink-0 border-b border-[var(--cv-line)] p-6">
-                  <div className="cv-label mb-5">
-                    {activeFinding ? 'Selected finding' : 'Review findings'}
-                  </div>
-                  {activeFinding ? (
-                    <SelectedFindingDetail
-                      activeFinding={activeFinding}
-                      selectedFindingIdx={selectedFindingIdx}
-                      repoPath={repoPath}
-                      selectedBranch={selectedBranch}
-                      baseBranch={baseBranch}
-                      reviewId={reviewId}
-                      qaWorkflowScopeLabel={qaWorkflowScopeLabel}
-                      qaActiveWorkflowId={qaActiveWorkflowId}
-                      qaWorkflows={qaWorkflows}
-                      qaWorkflowName={qaWorkflowName}
-                      setQaWorkflowName={setQaWorkflowName}
-                      handleSelectQaWorkflow={handleSelectQaWorkflow}
-                      handleSaveQaWorkflow={handleSaveQaWorkflow}
-                      handleDeleteQaWorkflow={handleDeleteQaWorkflow}
-                      qaActiveTargetId={qaActiveTargetId}
-                      qaTargets={qaTargets}
-                      handleSelectQaTarget={handleSelectQaTarget}
-                      qaBaseUrl={qaBaseUrl}
-                      setQaBaseUrl={setQaBaseUrl}
-                      qaAllowRemoteTarget={qaAllowRemoteTarget}
-                      setQaAllowRemoteTarget={setQaAllowRemoteTarget}
-                      qaTargetName={qaTargetName}
-                      setQaTargetName={setQaTargetName}
-                      qaTargetRoute={qaTargetRoute}
-                      setQaTargetRoute={setQaTargetRoute}
-                      qaAuthMode={qaAuthMode}
-                      setQaAuthMode={setQaAuthMode}
-                      qaStorageStatePath={qaStorageStatePath}
-                      setQaStorageStatePath={setQaStorageStatePath}
-                      qaLoopId={qaLoopId}
-                      setQaLoopId={setQaLoopId}
-                      setQaGoal={setQaGoal}
-                      qaGoal={qaGoal}
-                      qaRunnerType={qaRunnerType}
-                      setQaRunnerType={setQaRunnerType}
-                      qaRepoSpecPath={qaRepoSpecPath}
-                      setQaRepoSpecPath={setQaRepoSpecPath}
-                      qaSpecLoading={qaSpecLoading}
-                      qaSpecCandidates={qaSpecCandidates}
-                      qaSpecError={qaSpecError}
-                      handleDiscoverQaSpecs={handleDiscoverQaSpecs}
-                      qaRepoTraceMode={qaRepoTraceMode}
-                      setQaRepoTraceMode={setQaRepoTraceMode}
-                      qaExternalCommand={qaExternalCommand}
-                      setQaExternalCommand={setQaExternalCommand}
-                      handleSaveQaTarget={handleSaveQaTarget}
-                      handleDeleteQaTarget={handleDeleteQaTarget}
-                      handleRunSyntheticQa={handleRunSyntheticQa}
-                      qaRunning={qaRunning}
-                      qaError={qaError}
-                      qaLastRun={qaLastRun}
-                      qaArtifactPreview={qaArtifactPreview}
-                      qaArtifactPreviewLoading={qaArtifactPreviewLoading}
-                      handlePreviewQaArtifact={handlePreviewQaArtifact}
-                      handleOpenQaArtifact={handleOpenQaArtifact}
-                      setQaArtifactPreview={setQaArtifactPreview}
-                      applyQaToSelectedFinding={applyQaToSelectedFinding}
-                      addQaFailureFinding={addQaFailureFinding}
-                      qaEvidenceHistory={qaEvidenceHistory}
-                      qaPostFixComparison={qaPostFixComparison}
-                      postFixQaRunning={postFixQaRunning}
-                      handleRunPostFixQa={handleRunPostFixQa}
-                      activeEvidence={activeEvidence}
-                      updateFindingEvidence={updateFindingEvidence}
-                      activeBrowserEvidence={activeBrowserEvidence}
-                      updateBrowserEvidence={updateBrowserEvidence}
-                      verificationCommand={verificationCommand}
-                      setVerificationCommand={setVerificationCommand}
-                      verificationCommandSuggestions={verificationCommandSuggestions}
-                      verificationCommandSuggestionsLoading={verificationCommandSuggestionsLoading}
-                      verificationCommandTimeoutMs={verificationCommandTimeoutMs}
-                      setVerificationCommandTimeoutMs={setVerificationCommandTimeoutMs}
-                      verificationCommandRunning={verificationCommandRunning}
-                      handleRunVerificationCommand={handleRunVerificationCommand}
-                      verificationCommandRunId={verificationCommandRunId}
-                      verificationCommandCanceling={verificationCommandCanceling}
-                      handleCancelVerificationCommand={handleCancelVerificationCommand}
-                      verificationCommandError={verificationCommandError}
-                      handleRecordTestCommandEvent={handleRecordTestCommandEvent}
-                      toggleRevalidationItem={toggleRevalidationItem}
-                    />
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-[var(--cv-accent)]">
-                        <CheckCircle size={18} />
-                        No review findings.
-                      </div>
-                      <p className="text-xs leading-5 text-slate-500">
-                        Runtime evidence and coverage limits still determine shipping confidence.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <AudienceValidationPanel
-                  reviewId={reviewId}
-                  repoPath={repoPath}
-                  defaultArtifact={audienceDefaultArtifact}
-                  onBundleChange={setAudienceBundle}
-                />
-
-                <XrayExportPanel reviewId={reviewId} findings={sortedFindings} />
-
-                <BlastRadiusSection
-                  blastReport={blastReport}
-                  blastLoading={blastLoading}
-                  blastError={blastError}
-                  deepGraphImpact={deepGraphImpact}
-                  deepGraphImpactLoading={deepGraphImpactLoading}
-                  handleJumpToCaller={handleJumpToCaller}
-                />
-
-                <FindingsListPanel
-                  sortedFindings={sortedFindings}
-                  patchQueue={patchQueue}
-                  handleCopyFixPacket={handleCopyFixPacket}
-                  packetCopied={packetCopied}
-                  fixPacket={fixPacket}
-                  taskGoal={taskGoal}
-                  taskAcceptance={taskAcceptance}
-                  patchQueueSeverityCounts={patchQueueSeverityCounts}
-                  handleFindingClick={handleFindingClick}
-                  evidenceByFinding={evidenceByFinding}
-                  findingEvidenceKey={findingEvidenceKey}
-                  historyFindingSummaries={historyFindingSummaries}
-                  selectedFindingIdx={selectedFindingIdx}
-                  selectedFindings={selectedFindings}
-                  toggleFinding={toggleFinding}
-                  handleSetDisposition={handleSetDisposition}
-                />
-
-                <AgentStatusTimeline
-                  reviewTimeline={reviewTimeline}
-                  timelineSegmentFindingIndexes={timelineSegmentFindingIndexes}
-                  expandedTimelineItems={expandedTimelineItems}
-                  setExpandedTimelineItems={setExpandedTimelineItems}
-                  timelinePacketCopiedId={timelinePacketCopiedId}
-                  handleCopyTimelineSegmentPacket={handleCopyTimelineSegmentPacket}
-                  handleTimelineJump={handleTimelineJump}
-                />
-
-                <MemoryGraphPanels
-                  reviewMemoryGraph={reviewMemoryGraph}
-                  focusedReviewMemoryGraph={focusedReviewMemoryGraph}
-                />
-
-                <EvidenceInsightsPanel
-                  historyExplanations={historyExplanations}
-                  selectedFindingHistoryExplanation={selectedFindingHistoryExplanation}
-                  evidenceCandidates={evidenceCandidates}
-                  evidenceCandidateStatuses={evidenceCandidateStatuses}
-                  updateEvidenceCandidateStatus={updateEvidenceCandidateStatus}
-                />
-
-                <FixFooter
-                  selectableFindingCount={selectableFindingCount}
-                  selectedFindings={selectedFindings}
-                  isFixing={isFixing}
-                  viewHasRepoPath={viewHasRepoPath}
-                  toggleSelectAll={toggleSelectAll}
-                  handleFixSelected={handleFixSelected}
-                />
-              </aside>
-            </Panel>
-          </PanelGroup>
+            }
+          />
         </div>
       </ProjectWorkspaceShell>
     );

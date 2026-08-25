@@ -204,21 +204,52 @@ async function installReviewMock(
           controlled.__reviewWarmCommands.push({ cmd, args });
           if (cmd === 'get_preference') {
             const key = String(args?.key ?? '');
+            const preferences: Record<string, string> = {
+              onboarding_complete: 'true',
+              active_repo_path: repoPath,
+            };
             return {
               key,
-              value:
-                key === 'onboarding_complete'
-                  ? 'true'
-                  : key === 'active_repo_path'
-                    ? repoPath
-                    : null,
+              value: preferences[key] ?? null,
             };
           }
-          if (cmd === 'set_preference' || cmd === 'preload_directory_picker') return undefined;
+          if (new Set(['set_preference', 'preload_directory_picker']).has(cmd)) return undefined;
           if (cmd === 'list_repo_projects') return [projectRow];
           if (cmd === 'register_repo_project') return projectRow;
           if (cmd === 'list_reviews') return { reviews: [reviewRow] };
           if (cmd === 'get_review') return { review: reviewRow, findings: findingRows };
+          if (cmd === 'read_file_around_line') {
+            const targetLine = Number(args?.line ?? 12);
+            const source = [
+              'export function resolvePortfolioState(input: PortfolioInput) {',
+              '  const account = input.account;',
+              '  const holdings = input.holdings ?? [];',
+              '',
+              '  if (!account) {',
+              "    return { kind: 'signed_out' as const };",
+              '  }',
+              '',
+              '  const total = holdings.reduce((sum, item) => sum + item.value, 0);',
+              '  const hasPositions = holdings.length > 0;',
+              '',
+              '  if (total >= 0) {',
+              "    return { kind: 'ready' as const, total, hasPositions };",
+              '  }',
+              '',
+              "  return { kind: 'error' as const, reason: 'invalid_total' };",
+              '}',
+            ];
+            return {
+              lines: source.map((text, index) => ({
+                line: index + 1,
+                text,
+                highlight: index + 1 === targetLine,
+              })),
+              language: 'typescript',
+              target_line: targetLine,
+              file_path: `${repoPath}/src/portfolio.tsx`,
+            };
+          }
           if (cmd === 'get_review_manifest')
             return legacy
               ? {
@@ -266,6 +297,22 @@ async function installReviewMock(
           if (cmd === 'list_git_branches')
             return { branches: ['main', 'feature'], current: 'feature' };
           if (cmd === 'list_pull_requests') return { pull_requests: [] };
+          if (cmd === 'get_mcp_repository_settings')
+            return {
+              repo_id: 'repo_review_fixture',
+              enabled: true,
+              indexed: true,
+              indexed_head: 'b'.repeat(40),
+              current_head: 'b'.repeat(40),
+              stale: false,
+              server_path: '/Applications/CodeVetter/codevetter-mcp',
+              client_config: {},
+              resource_kinds: ['repository', 'graph'],
+              tool_names: ['prepare_review', 'graph_query', 'history_search'],
+              redaction_rules: ['No arbitrary file reads'],
+              limits: { page_size: 100 },
+              recent_audit: [],
+            };
           if (cmd === 'detect_project_for_repo') return { project: null, source: null };
           if (cmd === 'get_audience_validation') return bundle;
           if (cmd === 'list_warm_verification_runs') return warmRuns;
@@ -357,11 +404,28 @@ test('Review presents deterministic coverage and rejected candidate counts', asy
   await openPastReview(page);
   await expect(page.getByTestId('review-coverage')).toContainText('Complete coverage');
   await expect(page.getByTestId('review-coverage')).toContainText('2 rejected');
+  await page.getByRole('tab', { name: /Evidence/ }).click();
   const decision = page.getByTestId('verification-decision-summary');
   await expect(decision).toBeVisible();
   await expect(decision).toContainText(/Hold|No confidence/);
   await expect(decision).toContainText(/unchecked|runtime evidence/i);
   await expect(decision.getByRole('link', { name: 'Runtime evidence' })).toBeVisible();
+});
+
+test('Review shows readiness for an external review agent', async ({ page }) => {
+  await installReviewMock(page, false);
+  await navigateTo(page, '/review');
+  await waitForNoSpinners(page);
+  await expect(page.getByText('Review agent ready')).toBeVisible();
+  await page.getByRole('button', { name: /feature/ }).click();
+  await expect(page.getByText(/prepare this exact range/)).toBeVisible();
+  await expect(page.getByText('Run the full local check')).toBeVisible();
+  await expect(page.getByText(/codevetter check --repo/)).toContainText(
+    'codevetter check --repo /tmp/review-warm-app --range main...feature'
+  );
+  await page.getByRole('button', { name: 'Copy command template' }).click();
+  await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Agent MCP' })).toBeVisible();
 });
 
 test('Review labels legacy aggregate coverage as unknown', async ({ page }) => {
@@ -425,6 +489,7 @@ async function openPastReview(page: Page) {
     .filter({ hasText: /findings/ })
     .last()
     .click();
+  await page.getByRole('tab', { name: /Review record/ }).click();
   await expect(page.getByTestId('audience-validation-panel')).toBeVisible();
 }
 
@@ -446,8 +511,10 @@ for (const evidence of [
     await expect(
       panel.getByRole('button', { name: /^(verify changed|start|run|cancel)/i })
     ).toHaveCount(0);
+    await page.getByRole('tab', { name: /History/ }).click();
     await expect(page.getByText('Warm verification history').first()).toBeVisible();
     if (!evidence.stale) {
+      await page.getByRole('tab', { name: /Evidence/ }).click();
       await page.getByRole('button').filter({ hasText: 'Evidence details' }).click();
       const executionFindings = page.getByTestId('warm-execution-findings');
       await expect(executionFindings).toContainText('Recent read-only execution findings');

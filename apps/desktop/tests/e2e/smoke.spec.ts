@@ -19,8 +19,8 @@ test.describe('Smoke tests', () => {
     await navigateTo(page, '/');
     await waitForNoSpinners(page);
 
-    await expect(page.getByRole('link', { name: 'Check a change' }).first()).toBeVisible();
-    await expect(page.getByText('Claude + Codex + Devin usage')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Search commands' })).toBeVisible();
+    await expect(page.getByText('Claude + Codex + Grok, plus Devin')).toBeVisible();
     await expect(page.getByText('Provider telemetry')).toBeVisible();
   });
 
@@ -148,9 +148,9 @@ test.describe('Smoke tests', () => {
     });
 
     await navigateTo(page, '/');
-    await expect(page.getByText('Claude + Codex + Devin usage')).toBeVisible();
-    await expect(page.getByText('ccusage 20.0.20 · Devin local')).toBeVisible();
-    await expect(page.getByText('Local usage · ccusage + Devin')).toBeVisible();
+    await expect(page.getByText('Claude + Codex + Grok, plus Devin')).toBeVisible();
+    await expect(page.getByText('ccusage 20.0.20 · Devin separate')).toBeVisible();
+    await expect(page.getByText('Local usage · ccusage · Devin separate')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Claude' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Codex' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Devin' })).toBeVisible();
@@ -184,10 +184,11 @@ test.describe('Smoke tests', () => {
     // Product pillars plus the Settings utility.
     const links = nav.locator('[data-nav-destination]');
     await expect(links).toHaveCount(6);
-    await expect(nav.getByTestId('check-change-action')).toBeVisible();
     for (const label of ['Usage', 'Review', 'Testing', 'Performance', 'Repo Unpack', 'Settings']) {
       await expect(nav.getByRole('link', { name: label, exact: true })).toBeVisible();
     }
+    await expect(nav).not.toContainText('Evidence workbench');
+    await expect(nav).not.toContainText('Review workspace');
     await expect(nav.getByText('Roadmap')).toHaveCount(0);
     await expect(nav.getByText('Now')).toHaveCount(0);
   });

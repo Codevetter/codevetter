@@ -168,6 +168,15 @@ task order. Nested evidence moves from multi-column to single-column before
 labels or values are compressed. Long paths and URLs truncate locally rather
 than widening the page.
 
+### Review Workbench
+
+Completed reviews use a source-first desktop composition. The repository name
+and local path precede the change range and reviewer in the persistent header,
+so evidence is never detached from its project scope. The selected finding is
+anchored over the relevant source, while findings, executable evidence,
+history, and limitations live in a compact lower dock. The repository sidebar
+and global command bar remain outside this workbench.
+
 ## Elevation & Depth
 
 Depth is primarily tonal and structural. Hairline translucent borders, subtle

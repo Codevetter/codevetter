@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Search } from 'lucide-react';
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 
 import { AppErrorBoundary } from '@/components/app-error-boundary';
@@ -113,15 +114,31 @@ function Shell() {
         <div className="cv-ambient" aria-hidden="true" />
         <UpdateChecker />
         {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
-        <Sidebar onSearch={open} />
+        <Sidebar />
         <main className="cv-content-frame box-border flex h-full min-h-0 min-w-0 flex-1 flex-col">
-          <AppErrorBoundary
-            scope="route"
-            resetKey={location.key}
-            onExit={() => window.location.assign('/')}
-          >
-            <Outlet />
-          </AppErrorBoundary>
+          <header className="no-drag flex h-12 shrink-0 items-center justify-center border-b border-white/[0.065] bg-[#090a0b] px-4">
+            <button
+              type="button"
+              onClick={open}
+              className="group flex h-[32px] w-full max-w-[420px] items-center gap-2.5 rounded-lg border border-white/[0.08] bg-white/[0.035] px-3 text-left text-[12px] text-zinc-400 transition-[border-color,background-color,color] duration-150 hover:border-white/[0.14] hover:bg-white/[0.055] hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090a0b]"
+              aria-label="Search commands"
+            >
+              <Search size={14} className="shrink-0 text-zinc-500 group-hover:text-zinc-300" />
+              <span className="min-w-0 flex-1 truncate">Search commands</span>
+              <kbd className="rounded border border-white/[0.08] bg-black/20 px-1.5 py-0.5 font-sans text-[10px] text-zinc-400">
+                ⌘K
+              </kbd>
+            </button>
+          </header>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <AppErrorBoundary
+              scope="route"
+              resetKey={location.key}
+              onExit={() => window.location.assign('/')}
+            >
+              <Outlet />
+            </AppErrorBoundary>
+          </div>
         </main>
         <CommandPalette isOpen={isOpen} onClose={close} onCloseAutoFocus={restoreFocus} />
         <KeyboardShortcuts />

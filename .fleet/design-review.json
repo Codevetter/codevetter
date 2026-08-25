@@ -2,58 +2,55 @@
   "$schema": "fleet.design-review.v1",
   "version": 1,
   "project": "codevetter",
-  "target": "T-Rex change and preview verification",
-  "mode": "preserve",
+  "target": "desktop review workbench overhaul",
+  "mode": "overhaul",
   "register": "product",
-  "context": {
-    "product": "PRODUCT.md",
-    "design": "DESIGN.md"
-  },
+  "context": { "product": "PRODUCT.md", "design": "DESIGN.md" },
   "direction": {
-    "references": [],
-    "probes": [],
-    "selected": "existing-design",
-    "approval": "not-required",
-    "before": "artifacts/design/trex-before-1440.png"
+    "references": ["GitHub pull request review", "Sentry issue details", "VS Code workbench"],
+    "probes": [
+      {
+        "id": "inline-review",
+        "path": "artifacts/design/probes/review-overhaul-inline-review.png"
+      },
+      {
+        "id": "evidence-brief",
+        "path": "artifacts/design/probes/review-overhaul-evidence-brief.png"
+      },
+      {
+        "id": "triage-desk",
+        "path": "artifacts/design/probes/review-overhaul-triage-desk.png"
+      }
+    ],
+    "selected": "inline-review",
+    "approval": "approved",
+    "before": "artifacts/design/review-inspector-readable-after-1440.png"
   },
   "evidence": {
     "screenshots": [
       {
         "width": 390,
-        "path": "artifacts/design/trex-after-390.png"
+        "path": "artifacts/design/review-inline-overhaul-audit-390.png"
       },
       {
         "width": 768,
-        "path": "artifacts/design/trex-after-768.png"
+        "path": "artifacts/design/review-inline-overhaul-audit-768.png"
       },
-      {
-        "width": 1440,
-        "path": "artifacts/design/trex-after-1440.png"
-      }
+      { "width": 900, "path": "artifacts/design/review-inline-overhaul-after-900.png" },
+      { "width": 1280, "path": "artifacts/design/review-inline-overhaul-after-1280.png" },
+      { "width": 1440, "path": "artifacts/design/review-inline-overhaul-after-1440.png" }
     ],
     "projectCheck": {
-      "command": "cd apps/desktop && pnpm exec tsc --noEmit",
+      "command": "cd apps/desktop && pnpm exec biome check src/pages/QuickReview.tsx src/components/quick-review/InlineReviewWorkbench.tsx tests/e2e/review-warm-evidence.spec.ts && pnpm exec tsc --noEmit && PLAYWRIGHT_EXECUTABLE_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' pnpm exec playwright test tests/e2e/review-warm-evidence.spec.ts",
       "status": "pass"
     },
-    "critique": {
-      "score": 37,
-      "maximum": 40
-    },
-    "audit": {
-      "score": 19,
-      "maximum": 20
-    },
-    "unresolved": {
-      "p0": 0,
-      "p1": 0
-    },
-    "detector": {
-      "posture": "advisory",
-      "findings": []
-    }
+    "critique": { "score": 32, "maximum": 40 },
+    "audit": { "score": 16, "maximum": 20 },
+    "unresolved": { "p0": 0, "p1": 0 },
+    "detector": { "posture": "advisory", "findings": [] }
   },
   "ownerFeedback": {
-    "decision": "delegated",
-    "note": "Owner authorized the bounded preserve-lane implementation with 'go for it'; the incumbent CodeVetter workbench language remains authoritative."
+    "decision": "keep",
+    "note": "Owner accepted the finished Inline Review direction: Okay I can live with this."
   }
 }

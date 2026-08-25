@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 import HistoryContextPanel from '@/components/quick-review/HistoryContextPanel';
+import ReviewAgentReadiness from '@/components/quick-review/ReviewAgentReadiness';
 import ScoreBadge from '@/components/score-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -261,6 +262,8 @@ export default function ReviewSetupPanel({
             {diffRange}
           </div>
         )}
+
+        <ReviewAgentReadiness repoPath={repoPath} diffRange={diffRange} />
 
         <Separator className="bg-[var(--cv-line)]" />
 

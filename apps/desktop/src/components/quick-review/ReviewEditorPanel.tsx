@@ -1,11 +1,9 @@
 import { Loader2, Zap } from 'lucide-react';
-import type { MutableRefObject, RefObject } from 'react';
+import { type MutableRefObject, type RefObject, useEffect, useRef } from 'react';
 
 import FixDiffView from '@/components/quick-review/FixDiffView';
-import { Badge } from '@/components/ui/badge';
 import type { DiffFile } from '@/lib/quick-review-code';
 import { renderCodeLine } from '@/lib/quick-review-code';
-import { severityColor, severityIcon } from '@/lib/quick-review-format';
 import type { CliReviewFinding, FileLineData, FixFindingsResult } from '@/lib/tauri-ipc';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +11,16 @@ interface HunkNavTarget {
   key: string;
   filePath: string;
   hunkIndex: number;
+}
+
+function splitSourcePath(path: string): { name: string; directory: string } {
+  if (!path) return { name: 'Source unavailable', directory: '' };
+  const normalized = path.replaceAll('\\', '/');
+  const segments = normalized.split('/');
+  return {
+    name: segments.pop() || normalized,
+    directory: segments.join('/'),
+  };
 }
 
 export interface ReviewEditorPanelProps {
@@ -40,6 +48,7 @@ export interface ReviewEditorPanelProps {
   activeCodePath: string;
   codeLanguage: string;
   codeLines: FileLineData[];
+  sourceLoading: boolean;
 }
 
 export default function ReviewEditorPanel({
@@ -67,7 +76,16 @@ export default function ReviewEditorPanel({
   activeCodePath,
   codeLanguage,
   codeLines,
+  sourceLoading,
 }: ReviewEditorPanelProps) {
+  const activeSource = splitSourcePath(activeCodePath);
+  const highlightedLineRef = useRef<HTMLPreElement>(null);
+
+  useEffect(() => {
+    if (sourceLoading) return;
+    highlightedLineRef.current?.scrollIntoView({ block: 'center' });
+  }, [codeLines, sourceLoading]);
+
   return (
     <div className="cv-scan flex h-full flex-col bg-[#050505]">
       {/* Fix results view */}
@@ -101,12 +119,15 @@ export default function ReviewEditorPanel({
           <div ref={fixLogRef} className="flex-1 overflow-y-auto p-4">
             {fixProgress.length > 0 ? (
               fixProgress.map((line, i) => (
-                <div key={i} className="font-mono text-[11px] leading-5 text-slate-500">
+                <div
+                  key={i}
+                  className="font-mono text-[11px] leading-5 text-[var(--cv-text-muted)]"
+                >
                   {line}
                 </div>
               ))
             ) : (
-              <div className="flex items-center gap-2 text-slate-600 text-sm">
+              <div className="flex items-center gap-2 text-sm text-[var(--cv-text-muted)]">
                 <Loader2 size={16} className="animate-spin" />
                 Waiting for output...
               </div>
@@ -116,36 +137,36 @@ export default function ReviewEditorPanel({
       ) : selectedFindingIdx !== null && activeFinding ? (
         <>
           {/* File path header + finding context */}
-          <div className="cv-terminal-bar h-11 shrink-0 px-4">
-            <span className="cv-dot" />
-            <span className="cv-dot" />
-            <span className="cv-dot" />
-            <span className="cv-label mx-auto">{activeCodePath || 'source unavailable'}</span>
-            {codeLanguage && <span className="cv-label">{codeLanguage}</span>}
-          </div>
-          <div className="shrink-0 border-b border-[var(--cv-line)] px-6 py-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="cv-label mb-2">Selected finding</div>
-                <h2 className="truncate text-sm font-semibold text-slate-100">
-                  {activeFinding.title}
-                </h2>
+          <div className="flex h-12 shrink-0 items-center gap-3 border-b border-[var(--cv-line)] bg-[#090a0c] px-5">
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-mono text-[11px] font-medium text-slate-300">
+                {activeSource.name}
               </div>
-              <Badge
-                variant="outline"
-                className={cn(
-                  'shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase',
-                  severityColor(activeFinding.severity)
-                )}
-              >
-                {severityIcon(activeFinding.severity)}
-                <span className="ml-1">{activeFinding.severity}</span>
-              </Badge>
+              {activeSource.directory && (
+                <div className="mt-0.5 truncate font-mono text-[11px] text-[var(--cv-text-muted)]">
+                  {activeSource.directory}
+                </div>
+              )}
             </div>
+            {codeLanguage && (
+              <span className="shrink-0 text-[10px] font-medium text-[var(--cv-text-muted)]">
+                {codeLanguage}
+              </span>
+            )}
+            {activeFinding.line != null && (
+              <span className="shrink-0 font-mono text-[10px] text-[var(--cv-text-muted)]">
+                line {activeFinding.line}
+              </span>
+            )}
           </div>
           {/* Code lines */}
-          <div className="flex-1 overflow-y-auto bg-[#030405] px-6 py-5 font-mono text-[13px] leading-7">
-            {codeLines.length > 0 ? (
+          <div className="flex-1 overflow-y-auto bg-[#030405] px-5 py-5 font-mono text-[13px] leading-7">
+            {sourceLoading ? (
+              <div className="flex h-full items-center justify-center gap-2 text-[12px] text-[var(--cv-text-muted)]">
+                <Loader2 size={14} className="animate-spin text-[var(--cv-accent)]" />
+                Loading source…
+              </div>
+            ) : codeLines.length > 0 ? (
               <div className="grid grid-cols-[42px_1fr] gap-x-4">
                 {codeLines.map((cl) => (
                   <div key={cl.line} className="contents">
@@ -158,6 +179,7 @@ export default function ReviewEditorPanel({
                       {cl.line}
                     </span>
                     <pre
+                      ref={cl.highlight ? highlightedLineRef : undefined}
                       className={cn(
                         'min-w-0 whitespace-pre border-l-2 px-3',
                         cl.highlight
@@ -173,8 +195,8 @@ export default function ReviewEditorPanel({
             ) : (
               <div className="grid grid-cols-[42px_1fr] gap-x-4">
                 <span className="text-right text-slate-700">{activeFinding.line ?? 1}</span>
-                <span className="-mx-3 border-l-2 border-[var(--cv-danger)] bg-red-500/10 px-3 text-slate-500">
-                  No source snapshot is available for this finding.
+                <span className="-mx-3 border-l-2 border-[var(--cv-danger)] bg-red-500/10 px-3 text-slate-400">
+                  Source snapshot unavailable. Reopen the repository to inspect this line.
                 </span>
               </div>
             )}
@@ -182,14 +204,12 @@ export default function ReviewEditorPanel({
         </>
       ) : (
         <div className="flex h-full flex-col">
-          <div className="cv-terminal-bar h-11 px-4">
-            <span className="cv-dot" />
-            <span className="cv-dot" />
-            <span className="cv-dot" />
-            <span className="cv-label mx-auto">Review result · select a comment</span>
-            <span className="cv-label">⌘ K</span>
+          <div className="flex h-12 items-center border-b border-[var(--cv-line)] bg-[#090a0c] px-5">
+            <span className="text-xs font-medium text-[var(--cv-text-muted)]">
+              Source inspection
+            </span>
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-[#030405] text-slate-600">
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-[#030405] text-[var(--cv-text-muted)]">
             <Zap size={24} className="text-slate-700" />
             <span className="text-sm">Select a review comment to inspect source</span>
           </div>

@@ -89,7 +89,7 @@ test.describe('desktop visual system', () => {
     expect(transitionDurationMs).toBeLessThanOrEqual(0.001);
   });
 
-  test('opens command search from the sidebar and restores focus on close', async ({ page }) => {
+  test('opens command search from the top bar and restores focus on close', async ({ page }) => {
     await navigateTo(page, '/');
 
     const search = page.getByRole('button', { name: 'Search commands' });
@@ -97,7 +97,7 @@ test.describe('desktop visual system', () => {
     await expect(search).toBeVisible();
     await expect
       .poll(async () => Math.round((await search.boundingBox())?.height ?? 0))
-      .toBeGreaterThanOrEqual(40);
+      .toBeGreaterThanOrEqual(32);
     await expect
       .poll(async () => Math.round((await usage.boundingBox())?.height ?? 0))
       .toBeGreaterThanOrEqual(40);
@@ -116,12 +116,13 @@ test.describe('desktop visual system', () => {
     await navigateTo(page, '/');
 
     const nav = page.getByRole('navigation', { name: 'Primary navigation' });
-    const checkChange = nav.getByTestId('check-change-action');
-    await expect(checkChange).toBeVisible();
-    await expect(checkChange).toContainText('Review · run · decide');
+    const review = nav.getByRole('link', { name: 'Review', exact: true });
+    await expect(review).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Testing', exact: true })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Performance', exact: true })).toBeVisible();
     await expect(nav).not.toContainText('G H');
     await expect(nav).not.toContainText('G F');
-    await checkChange.click();
+    await review.click();
     await expect(page).toHaveURL(/\/review$/);
     await expect(page.getByRole('heading', { name: 'Review the change' })).toBeVisible();
 
