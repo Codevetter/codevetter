@@ -424,7 +424,10 @@ mod tests {
 
     #[test]
     fn token_keys_expand_paths_and_camel_case_without_losing_the_whole_token() {
-        assert_eq!(token_keys("context.go"), vec!["context.go", "context", "go"]);
+        assert_eq!(
+            token_keys("context.go"),
+            vec!["context.go", "context", "go"]
+        );
         assert_eq!(token_keys("FullPath"), vec!["fullpath", "full", "path"]);
         assert_eq!(
             token_keys("src/parseURLQuery"),

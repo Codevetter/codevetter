@@ -131,11 +131,11 @@ pub fn resolve_target(repo_path: &str, diff_range: &str) -> Result<ResolvedRevie
     if range.is_empty() || (range.starts_with('-') && range != "--staged" && range != "--cached") {
         return Err("Review range is empty or resembles an unsupported Git option".to_string());
     }
-    let head_sha = git_text(&root, &["rev-parse", "--verify", "HEAD^{commit}"])?;
-    let base_ref = range
-        .split("...")
-        .next()
-        .and_then(|value| value.split("..").next())
+    let current_head_sha = git_text(&root, &["rev-parse", "--verify", "HEAD^{commit}"])?;
+    let range_refs = range.split_once("...").or_else(|| range.split_once(".."));
+    let base_ref = range_refs
+        .map(|(base, _)| base)
+        .or(Some(range))
         .filter(|value| {
             !value.is_empty()
                 && *value != "--staged"
@@ -150,6 +150,15 @@ pub fn resolve_target(repo_path: &str, diff_range: &str) -> Result<ResolvedRevie
             )
         })
         .transpose()?;
+    let head_sha = range_refs
+        .map(|(_, head)| {
+            git_text(
+                &root,
+                &["rev-parse", "--verify", &format!("{head}^{{commit}}")],
+            )
+        })
+        .transpose()?
+        .unwrap_or(current_head_sha);
     let raw_diff = git_diff(&root, range, None)?;
     let source_fingerprint = digest(raw_diff.as_bytes());
     let diff_mode = if matches!(range, "--staged" | "--cached") {
@@ -1144,6 +1153,31 @@ mod tests {
             "safe.rs"
         );
         assert!(resolve_target(temp.path().to_str().unwrap(), "--output=/tmp/x").is_err());
+    }
+
+    #[test]
+    fn range_target_uses_the_selected_head_revision() {
+        let temp = fixture();
+        git(temp.path(), &["add", "safe.rs"]);
+        git(temp.path(), &["commit", "-qm", "feature"]);
+        git(temp.path(), &["branch", "selected-feature"]);
+        fs::write(temp.path().join("safe.rs"), "fn current_only() {}\n").expect("write");
+        git(temp.path(), &["add", "safe.rs"]);
+        git(temp.path(), &["commit", "-qm", "current"]);
+
+        let selected = git_text(
+            temp.path(),
+            &["rev-parse", "--verify", "selected-feature^{commit}"],
+        )
+        .expect("selected head");
+        let current = git_text(temp.path(), &["rev-parse", "--verify", "HEAD^{commit}"])
+            .expect("current head");
+        let target = resolve_target(temp.path().to_str().unwrap(), "HEAD~2...selected-feature")
+            .expect("range target");
+
+        assert_eq!(target.head_sha, selected);
+        assert_ne!(target.head_sha, current);
+        assert_eq!(target.diff_mode, "range");
     }
 
     #[test]

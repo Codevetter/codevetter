@@ -171,7 +171,7 @@ test.describe('Agent MCP settings', () => {
             }
           : null,
         resource_kinds: ['repository', 'graph', 'release', 'evidence'],
-        tool_names: ['graph_query', 'history_search'],
+        tool_names: ['prepare_review', 'graph_query', 'history_search'],
         redaction_rules: ['No arbitrary file reads', 'Sensitive paths remain opaque'],
         limits: { page_size: 100, response_bytes: 262144 },
         recent_audit: audit,
@@ -232,12 +232,16 @@ test.describe('Agent MCP settings', () => {
     await expect(page.getByText('graph_query', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Enable' }).click();
     await expect(page.getByText('Enabled', { exact: true })).toBeVisible();
+    await expect(page.getByText('Ready for review agents')).toBeVisible();
     await expect(page.getByText('repo_0123456789abcdef')).toBeVisible();
     await page.getByRole('button', { name: 'Copy config' }).click();
     await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
     const clipboard = await page.evaluate(() => navigator.clipboard.readText());
     expect(clipboard).toContain('codevetter-history');
     expect(clipboard).not.toContain('sk-');
+    await page.getByRole('button', { name: 'Copy invocation' }).click();
+    await expect(page.getByRole('button', { name: 'Invocation copied' })).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('prepare_review');
     await page.getByRole('button', { name: 'Disable' }).click();
     await expect(page.getByText('Disabled', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copy config' })).toBeDisabled();

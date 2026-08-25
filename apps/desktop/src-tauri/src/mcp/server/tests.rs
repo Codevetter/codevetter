@@ -81,6 +81,7 @@ fn every_tool_is_explicitly_read_only_and_schema_bounded() {
             "history_trace",
             "history_compare",
             "history_get_evidence",
+            "prepare_review",
             "review_list_manifests",
             "archaeology_list_rules",
             "archaeology_list_domains",
@@ -264,7 +265,7 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     });
     let client = TestClient.serve(client_transport).await.expect("client");
     let tools = client.list_tools(None).await.expect("tools");
-    assert_eq!(tools.tools.len(), 23);
+    assert_eq!(tools.tools.len(), 24);
     assert!(tools.tools.iter().all(|tool| tool.output_schema.is_some()));
     let templates = client
         .list_resource_templates(None)
@@ -363,6 +364,31 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     let structured = result.structured_content.expect("structured");
     assert_eq!(structured["schemaVersion"], 1);
     assert!(structured.to_string().find(&repo_path).is_none());
+    fs::write(repo.join("main.rs"), "fn main() { println!(\"ready\"); }\n")
+        .expect("changed source");
+    let prepared = client
+        .call_tool(
+            CallToolRequestParams::new("prepare_review").with_arguments(
+                json!({"task": "Check the changed entrypoint", "change": "WORKTREE"})
+                    .as_object()
+                    .expect("arguments")
+                    .clone(),
+            ),
+        )
+        .await
+        .expect("prepared review")
+        .structured_content
+        .expect("prepared review structured");
+    assert_eq!(
+        prepared["data"]["data"]["schema_version"],
+        "codevetter.review-packet/v1"
+    );
+    assert_eq!(
+        prepared["data"]["data"]["source"]["changed_paths"][0]["path"],
+        "main.rs"
+    );
+    assert_eq!(prepared["data"]["data"]["source"]["head_sha"], head);
+    assert!(prepared.to_string().find(&repo_path).is_none());
     let first_page = client
         .call_tool(
             CallToolRequestParams::new("history_list_releases")
@@ -521,6 +547,23 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
             .expect("missing graph error")["error"]["code"],
         "unavailable"
     );
+    let prepared_without_graph = client
+        .call_tool(
+            CallToolRequestParams::new("prepare_review").with_arguments(
+                json!({"task": "Check the changed entrypoint", "change": "WORKTREE"})
+                    .as_object()
+                    .expect("arguments")
+                    .clone(),
+            ),
+        )
+        .await
+        .expect("prepared review without graph")
+        .structured_content
+        .expect("prepared review without graph structured");
+    assert_eq!(
+        prepared_without_graph["data"]["data"]["graph"]["status"],
+        "unavailable"
+    );
 
     connection
         .execute(
@@ -641,6 +684,18 @@ fn request_validation_rejects_unknown_and_out_of_bounds_arguments() {
     .expect("arguments")
     .clone();
     assert!(validate_tool_arguments("archaeology_hydrate_evidence", &arguments).is_ok());
+
+    arguments = json!({"task": "Review the change", "change": "main...feature"})
+        .as_object()
+        .expect("arguments")
+        .clone();
+    assert!(validate_tool_arguments("prepare_review", &arguments).is_ok());
+
+    arguments = json!({"task": "Review the change", "change": "x".repeat(513)})
+        .as_object()
+        .expect("arguments")
+        .clone();
+    assert!(validate_tool_arguments("prepare_review", &arguments).is_err());
 }
 
 #[test]

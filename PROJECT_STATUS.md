@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-23
+Last updated: 2026-08-24
 
 ## Why / What
 
@@ -55,6 +55,27 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-08-24 — Unified local change check (unreleased source):** the packaged
+  `codevetter` CLI now accepts one clean checked-out PR head or Git range plus
+  task intent and emits `codevetter.local-check/v1`. The runner resolves exact
+  base/head identities, executes the existing CLI review pipeline, selects or
+  accepts one closed correctness target, captures one qualified performance
+  diagnosis, and returns an explicit optimization handoff. A candidate can be
+  rerun with `--baseline-repo` for same-scope paired verification. It does not
+  install dependencies, edit source, push, merge, deploy, or turn a missing
+  test/benchmark into a pass. Review setup exposes a copyable command; release
+  publication and real cross-project benchmark qualification remain separate.
+
+- **2026-08-24 — Review-agent preparation flow (unreleased source):** the
+  packaged read-only MCP now includes `prepare_review`, which binds a bounded
+  task to one exact Git change and composes a versioned review packet from the
+  existing target resolver, structural graph, history, prior deterministic
+  review manifests, and testing/performance scope candidates. It does not call
+  a model, execute project code, write a receipt, or modify the repository.
+  Agent MCP settings and Review setup expose the readiness state and minimal
+  invocation without adding a route or product surface. Release publication
+  remains separate.
 
 - **2026-08-23 — Agent-context utility evidence foundation:** Added a closed,
   backward-compatible telemetry contract to new agent-task receipts. The runner
@@ -478,7 +499,7 @@ Internal (fleet):
 ### Queryable codebase history
 - Repo Unpacked persists a backward-compatible schema-v2 history graph connecting bounded commit files, decisions, verification hints, and co-change leads with citations and trust labels.
 - Local queries prefer exact file/ID/label matches, rank broader terms, expand one hop, and state confidence, no-match, and truncation explicitly without mutating snapshots or creating findings.
-- Settings can expose one explicitly enabled indexed repository through the packaged read-only `codevetter-mcp` stdio sidecar. Thirteen strict tools cover graph queries, releases, search, as-of state, lineage, explanations, causal traces, comparisons, annotations, and evidence hydration; opaque versioned resources provide paginated discovery without absolute paths or credentials.
+- Settings can expose one explicitly enabled indexed repository through the packaged read-only `codevetter-mcp` stdio sidecar. Twenty-four strict tools cover task-level review preparation, graph queries, releases, search, as-of state, lineage, explanations, causal traces, comparisons, review manifests, business-rule archaeology, and evidence hydration; opaque versioned resources provide paginated discovery without absolute paths or credentials.
 
 ### App shell and UX
 - Home opens to usage dashboard (Today / Week / Month / Year counters); Repo holds repository context and Activity; Settings holds operational tools and preferences.

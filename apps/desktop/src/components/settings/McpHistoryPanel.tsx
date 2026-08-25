@@ -21,6 +21,7 @@ export default function McpHistoryPanel() {
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedInvocation, setCopiedInvocation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const selectedRepoRef = useRef(selectedRepoPath);
   const refreshGeneration = useRef(0);
@@ -62,6 +63,7 @@ export default function McpHistoryPanel() {
     setSaving(false);
     setClearing(false);
     setCopied(false);
+    setCopiedInvocation(false);
     setError(null);
     if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
     void refresh();
@@ -105,8 +107,25 @@ export default function McpHistoryPanel() {
     try {
       await navigator.clipboard.writeText(JSON.stringify(settings.client_config, null, 2));
       if (selectedRepoRef.current !== requestedRepo) return;
+      setCopiedInvocation(false);
       setCopied(true);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopied(false), 1_800);
+    } catch (cause) {
+      if (selectedRepoRef.current === requestedRepo) setError(message(cause));
+    }
+  }
+
+  async function copyInvocation() {
+    const requestedRepo = selectedRepoPath;
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(REVIEW_INVOCATION);
+      if (selectedRepoRef.current !== requestedRepo) return;
+      setCopied(false);
+      setCopiedInvocation(true);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopiedInvocation(false), 1_800);
     } catch (cause) {
       if (selectedRepoRef.current === requestedRepo) setError(message(cause));
     }
@@ -171,7 +190,7 @@ export default function McpHistoryPanel() {
           selectedRepoPath={selectedRepoPath}
           selectProject={selectProject}
         />
-        <div className="flex items-start justify-between gap-5">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between sm:gap-5">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-medium text-slate-200">Repository history over MCP</h2>
@@ -192,19 +211,12 @@ export default function McpHistoryPanel() {
               network.
             </p>
           </div>
-          <Button
-            onClick={() => void toggleEnabled()}
-            disabled={saving || clearing || !settings?.indexed}
-            aria-describedby={!settings?.indexed ? 'mcp-index-required' : undefined}
-            variant={settings?.enabled ? 'outline' : 'default'}
-            className={
-              settings?.enabled
-                ? 'border-[#292929] bg-transparent'
-                : 'bg-amber-700 text-white hover:bg-amber-600'
-            }
-          >
-            {saving ? 'Saving…' : settings?.enabled ? 'Disable' : 'Enable'}
-          </Button>
+          <McpEnableButton
+            settings={settings}
+            saving={saving}
+            clearing={clearing}
+            toggleEnabled={toggleEnabled}
+          />
         </div>
 
         {!settings?.indexed && (
@@ -230,6 +242,8 @@ export default function McpHistoryPanel() {
           <Metric label="Resources" value={`${settings?.resource_kinds.length ?? 0} kinds`} />
           <Metric label="Recent accesses" value={String(settings?.recent_audit.length ?? 0)} />
         </div>
+
+        <ReviewReadiness settings={settings} />
       </div>
 
       <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
@@ -263,6 +277,29 @@ export default function McpHistoryPanel() {
         <span role="status" aria-live="polite" className="sr-only">
           {copied ? 'Configuration copied' : ''}
         </span>
+
+        <div className="mt-5 border-t border-[#1a1a1a] pt-5">
+          <h3 className="text-xs font-medium text-slate-300">Prepare one review</h3>
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">
+            Ask the agent to call <code className="font-mono text-slate-300">prepare_review</code>{' '}
+            with the task and exact worktree, staged, commit, or range selector. The result is
+            context and suggested checks—not a verdict.
+          </p>
+          <pre className="mt-3 whitespace-pre-wrap break-all rounded-lg border border-[#1a1a1a] bg-[#050505] p-3 text-[11px] leading-5 text-slate-300">
+            <code>{REVIEW_INVOCATION}</code>
+          </pre>
+          <Button
+            variant="outline"
+            disabled={!settings?.tool_names.includes('prepare_review')}
+            onClick={() => void copyInvocation()}
+            className="mt-3 border-[#292929] bg-transparent"
+          >
+            {copiedInvocation ? 'Invocation copied' : 'Copy invocation'}
+          </Button>
+          <span role="status" aria-live="polite" className="sr-only">
+            {copiedInvocation ? 'Review invocation copied' : ''}
+          </span>
+        </div>
       </div>
 
       <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
@@ -314,6 +351,66 @@ export default function McpHistoryPanel() {
         <PreviewList label="Redaction" values={settings?.redaction_rules} />
       </div>
     </section>
+  );
+}
+
+function McpEnableButton({
+  settings,
+  saving,
+  clearing,
+  toggleEnabled,
+}: {
+  settings: McpRepositorySettings | null;
+  saving: boolean;
+  clearing: boolean;
+  toggleEnabled: () => Promise<void>;
+}) {
+  const enabled = settings?.enabled ?? false;
+  return (
+    <Button
+      onClick={() => void toggleEnabled()}
+      disabled={saving || clearing || !settings?.indexed}
+      aria-describedby={!settings?.indexed ? 'mcp-index-required' : undefined}
+      variant={enabled ? 'outline' : 'default'}
+      className={
+        enabled ? 'border-[#292929] bg-transparent' : 'bg-amber-700 text-white hover:bg-amber-600'
+      }
+    >
+      {saving ? 'Saving…' : enabled ? 'Disable' : 'Enable'}
+    </Button>
+  );
+}
+
+function ReviewReadiness({ settings }: { settings: McpRepositorySettings | null }) {
+  const hasTool = settings?.tool_names.includes('prepare_review') ?? false;
+  const ready = Boolean(settings?.enabled && settings.indexed && hasTool);
+  const label = ready
+    ? settings?.stale
+      ? 'Ready with stale context'
+      : 'Ready for review agents'
+    : 'Review agent setup required';
+  const detail = !settings?.indexed
+    ? 'Build release history for this repository first.'
+    : !hasTool
+      ? 'Install a CodeVetter build that includes prepare_review.'
+      : !settings.enabled
+        ? 'Enable this repository above to authorize local review preparation.'
+        : 'The agent can prepare the selected change; refresh indexes for current context.';
+
+  return (
+    <div className="mt-5 flex flex-col items-start gap-2 border-t border-[#1a1a1a] pt-4 sm:flex-row sm:justify-between sm:gap-4">
+      <div>
+        <p
+          className={
+            ready && !settings?.stale ? 'text-xs text-emerald-400' : 'text-xs text-amber-300'
+          }
+        >
+          {label}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-slate-400">{detail}</p>
+      </div>
+      <span className="shrink-0 font-mono text-[10px] text-slate-500">prepare_review</span>
+    </div>
   );
 }
 
@@ -373,3 +470,15 @@ function historyLabel(settings: McpRepositorySettings | null): string {
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
+
+const REVIEW_INVOCATION = JSON.stringify(
+  {
+    tool: 'prepare_review',
+    arguments: {
+      task: 'Review this change against its task and acceptance criteria.',
+      change: 'main...feature',
+    },
+  },
+  null,
+  2
+);

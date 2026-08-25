@@ -81,6 +81,11 @@ pub(crate) fn tool_definitions() -> Vec<Tool> {
             &["ids"],
         ),
         (
+            "prepare_review",
+            "Prepare a bounded source-backed review packet for one exact repository change",
+            &["task", "change"],
+        ),
+        (
             "review_list_manifests",
             "List bounded deterministic review coverage manifests for this authorized repository",
             &[],
@@ -148,12 +153,17 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
         "cursor",
         "rule_id",
         "review_id",
+        "task",
     ] {
         properties.insert(
             field.to_string(),
             json!({"type": "string", "maxLength": 4096}),
         );
     }
+    properties.insert(
+        "change".to_string(),
+        json!({"type": "string", "minLength": 1, "maxLength": 512}),
+    );
     properties.insert(
         "limit".to_string(),
         json!({"type": "integer", "minimum": 1, "maximum": MAX_PAGE_SIZE}),
@@ -375,6 +385,7 @@ pub(crate) fn tool_fields(name: &str) -> Option<&'static [&'static str]> {
         "history_trace" => &["selector", "limit", "cursor"],
         "history_compare" => &["before", "after"],
         "history_get_evidence" => &["ids"],
+        "prepare_review" => &["task", "change"],
         "review_list_manifests" => &["review_id", "limit", "cursor"],
         "archaeology_list_rules" => &["filter", "limit", "cursor"],
         "archaeology_list_domains" => &["limit", "cursor"],

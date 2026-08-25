@@ -13,6 +13,7 @@ const TRACKED_VERSION = JSON.parse(
 const HELP = `CodeVetter execution-backed verification
 
 Usage:
+  codevetter check (--pr <url> | --range <base..head>) --task <text> [options]
   codevetter trex (--pr <url> | --range <base..head>) --preview <url> [--repo <path>] [--json]
 
 Options:
@@ -20,6 +21,8 @@ Options:
   --range <range>
   --preview <url>
   --repo <path>
+  --task <text>
+  --baseline-repo <path>
   --json
 `;
 
@@ -47,7 +50,7 @@ test('qualifies the tracked version, help surface, and bundle declarations', asy
 
   assert.equal(result.version, TRACKED_VERSION);
   assert.equal(result.bundleEntry, 'binaries/codevetter');
-  assert.equal(result.helpContracts, 6);
+  assert.equal(result.helpContracts, 9);
   assert.ok(result.bytes > 0);
 });
 

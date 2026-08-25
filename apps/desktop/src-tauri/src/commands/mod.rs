@@ -26,6 +26,7 @@ pub mod history_query;
 pub mod history_read;
 pub mod history_summary_graph;
 pub mod intel;
+pub mod local_check;
 pub mod local_qualification;
 pub mod local_usage;
 pub mod managed_work;

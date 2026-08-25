@@ -81,7 +81,7 @@ pub async fn cancel_cli_review(repo_path: String) -> Result<Value, String> {
     Ok(json!({"cancelled": true}))
 }
 
-/// Resolve a CLI binary (e.g. "claude", "gemini") to an absolute path.
+/// Resolve a CLI binary (e.g. "claude", "gemini", "codex") to an absolute path.
 ///
 /// Tauri apps on macOS don't always inherit the user's shell PATH — especially
 /// when launched outside a terminal — so `StdCommand::new("claude")` can fail
@@ -487,6 +487,22 @@ struct TrustedReviewGraphContext {
     qualification: String,
 }
 
+#[derive(Debug, Clone, Serialize)]
+struct ReviewReadiness {
+    status: String,
+    graph_status: String,
+    graph_built_for_review: bool,
+    history_status: String,
+    history_chars: usize,
+    conventions_status: String,
+    runtime_evidence_count: usize,
+    coordinator_status: String,
+    complete_coverage: bool,
+    codevetter_mcp_call_count: usize,
+    context_delivery: String,
+    limitations: Vec<String>,
+}
+
 fn graph_node_id(kind: &str, value: &str) -> String {
     let mut slug = value
         .chars()
@@ -757,84 +773,218 @@ fn build_trusted_review_graph_context(
     repo_path: &str,
     changed_files: &[String],
 ) -> Option<TrustedReviewGraphContext> {
-    use crate::commands::structural_graph::{
-        query::{GraphDirection, GraphQueryFilter},
-        service::StructuralGraphReadService,
-    };
-    use std::collections::{BTreeMap, HashSet};
-
-    const MAX_SEEDS_PER_FILE: usize = 2;
-    const MAX_NODES: usize = 24;
-    const MAX_EDGES: usize = 48;
+    use crate::commands::structural_graph::service::StructuralGraphReadService;
 
     let service = StructuralGraphReadService::new(connection, repo_path);
     let status = service.status().ok()?;
     if !status.indexed {
         return None;
     }
-    let mut nodes = BTreeMap::new();
-    let mut edges = BTreeMap::new();
-    let mut context = None;
-    let mut truncated = status.truncated;
-    let filter = GraphQueryFilter::default();
+    let snapshot = service.snapshot().ok()?;
+    trusted_review_graph_context_from_snapshot(&snapshot, status.current_head, changed_files)
+}
 
+fn trusted_review_graph_context_from_snapshot(
+    snapshot: &crate::commands::structural_graph::types::StructuralGraphSnapshot,
+    current_head: Option<String>,
+    changed_files: &[String],
+) -> Option<TrustedReviewGraphContext> {
+    use std::collections::{BTreeSet, HashSet};
+
+    const MAX_SEEDS_PER_FILE: usize = 2;
+    const MAX_NODES: usize = 24;
+    const MAX_EDGES: usize = 48;
+
+    let mut selected_ids = BTreeSet::new();
     for file in changed_files.iter().take(12) {
-        let search = service.search(file, &filter, 12).ok()?;
-        truncated |= search.truncated;
-        context.get_or_insert_with(|| search.context.clone());
-        let seeds = search
-            .hits
-            .iter()
-            .filter(|hit| hit.node.path.as_deref() == Some(file.as_str()))
-            .take(MAX_SEEDS_PER_FILE)
-            .map(|hit| hit.node.clone())
-            .collect::<Vec<_>>();
-        for seed in seeds {
-            nodes.entry(seed.id.clone()).or_insert(seed.clone());
-            let neighborhood = service
-                .neighbors(&seed.id, GraphDirection::Both, &filter, 8, None)
-                .ok()?;
-            truncated |= neighborhood.truncated;
-            for node in neighborhood.nodes {
-                nodes.entry(node.id.clone()).or_insert(node);
-            }
-            for edge in neighborhood.edges {
-                edges.entry(edge.id.clone()).or_insert(edge);
-            }
-        }
+        selected_ids.extend(
+            snapshot
+                .nodes
+                .iter()
+                .filter(|node| {
+                    node.path.as_deref() == Some(file.as_str())
+                        || node
+                            .sources
+                            .iter()
+                            .any(|source| source.path == file.as_str())
+                })
+                .take(MAX_SEEDS_PER_FILE)
+                .map(|node| node.id.clone()),
+        );
     }
-
-    let context = context?;
-    if nodes.is_empty() {
+    if selected_ids.is_empty() {
         return None;
     }
-    truncated |= nodes.len() > MAX_NODES || edges.len() > MAX_EDGES;
-    let nodes = nodes.into_values().take(MAX_NODES).collect::<Vec<_>>();
+
+    let mut edges = snapshot
+        .edges
+        .iter()
+        .filter(|edge| selected_ids.contains(&edge.from) || selected_ids.contains(&edge.to))
+        .take(MAX_EDGES)
+        .cloned()
+        .collect::<Vec<_>>();
+    for edge in &edges {
+        selected_ids.insert(edge.from.clone());
+        selected_ids.insert(edge.to.clone());
+    }
+    let nodes = snapshot
+        .nodes
+        .iter()
+        .filter(|node| selected_ids.contains(&node.id))
+        .take(MAX_NODES)
+        .cloned()
+        .collect::<Vec<_>>();
     let node_ids = nodes
         .iter()
         .map(|node| node.id.as_str())
         .collect::<HashSet<_>>();
-    let edges = edges
-        .into_values()
-        .filter(|edge| node_ids.contains(edge.from.as_str()) && node_ids.contains(edge.to.as_str()))
-        .take(MAX_EDGES)
-        .collect::<Vec<_>>();
+    edges.retain(|edge| {
+        node_ids.contains(edge.from.as_str()) && node_ids.contains(edge.to.as_str())
+    });
+    let stale = snapshot.repo_head != current_head;
 
     Some(TrustedReviewGraphContext {
-        schema_version: context.schema_version,
-        snapshot_id: context.snapshot_id,
-        engine_id: context.engine_id,
-        engine_version: context.engine_version,
-        indexed_head: status.indexed_head,
-        current_head: status.current_head,
-        stale: status.stale,
-        coverage: context.coverage,
+        schema_version: snapshot.schema_version,
+        snapshot_id: snapshot.id.clone(),
+        engine_id: snapshot.engine.id.clone(),
+        engine_version: snapshot.engine.version.clone(),
+        indexed_head: snapshot.repo_head.clone(),
+        current_head,
+        stale,
+        coverage: snapshot.coverage.clone(),
         nodes,
         edges,
-        truncated,
+        truncated: snapshot.truncated
+            || selected_ids.len() > MAX_NODES
+            || snapshot.edges.len() > MAX_EDGES,
         qualification: "Navigation-only structural context. Trust and source anchors are preserved; topology never creates findings, changes severity, or upgrades a claim to verified evidence."
             .to_string(),
     })
+}
+
+fn changed_files_need_structural_context(changed_files: &[String]) -> bool {
+    changed_files.iter().any(|file| {
+        Path::new(file)
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .is_some_and(|extension| {
+                matches!(
+                    extension.to_ascii_lowercase().as_str(),
+                    "c" | "cc"
+                        | "cpp"
+                        | "cs"
+                        | "cxx"
+                        | "go"
+                        | "java"
+                        | "js"
+                        | "jsx"
+                        | "mjs"
+                        | "cjs"
+                        | "kt"
+                        | "kts"
+                        | "php"
+                        | "py"
+                        | "rb"
+                        | "rs"
+                        | "swift"
+                        | "ts"
+                        | "tsx"
+                )
+            })
+    })
+}
+
+async fn ensure_trusted_review_graph_context(
+    db: &DbState,
+    repo_path: &str,
+    expected_head: &str,
+    changed_files: &[String],
+) -> Result<(Option<TrustedReviewGraphContext>, bool), String> {
+    {
+        let connection = db.0.lock().map_err(|error| error.to_string())?;
+        if let Some(context) =
+            build_trusted_review_graph_context(&connection, repo_path, changed_files)
+        {
+            if !context.stale && context.current_head.as_deref() == Some(expected_head) {
+                return Ok((Some(context), false));
+            }
+        }
+    }
+
+    if !changed_files_need_structural_context(changed_files) {
+        return Ok((None, false));
+    }
+
+    let database = Arc::clone(&db.0);
+    let repo_path = repo_path.to_string();
+    let expected_head = expected_head.to_string();
+    let changed_files = changed_files.to_vec();
+    tokio::task::spawn_blocking(move || {
+        use crate::commands::structural_graph::{
+            extract::BundledTreeSitterEngine,
+            storage::persist_snapshot,
+            types::{
+                StructuralGraphBuildInput, StructuralGraphCancellation, StructuralGraphEngine,
+            },
+        };
+
+        let canonical = std::fs::canonicalize(&repo_path)
+            .map_err(|error| format!("Resolve review repository for context: {error}"))?;
+        let current_head = StdCommand::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(&canonical)
+            .output()
+            .map_err(|error| format!("Read review repository HEAD: {error}"))?;
+        if !current_head.status.success() {
+            return Err("Read review repository HEAD for structural context".to_string());
+        }
+        let current_head = String::from_utf8_lossy(&current_head.stdout)
+            .trim()
+            .to_string();
+        if current_head != expected_head {
+            return Err(format!(
+                "Exact review context requires the target head {expected_head} to be checked out; current HEAD is {current_head}"
+            ));
+        }
+
+        let engine = BundledTreeSitterEngine;
+        let snapshot = engine
+            .build(
+                &StructuralGraphBuildInput::full(canonical, Some(current_head)),
+                &StructuralGraphCancellation::default(),
+                &|_| {},
+            )
+            .map_err(|error| format!("Build exact structural review context: {error}"))?;
+        let connection = database
+            .lock()
+            .map_err(|_| "Structural review context database is unavailable".to_string())?;
+        persist_snapshot(&connection, &snapshot)
+            .map_err(|error| format!("Persist exact structural review context: {error}"))?;
+        let context = trusted_review_graph_context_from_snapshot(
+            &snapshot,
+            Some(expected_head.clone()),
+            &changed_files,
+        )
+        .ok_or_else(|| {
+                let indexed_paths = snapshot
+                    .nodes
+                    .iter()
+                    .filter_map(|node| node.path.as_deref())
+                    .take(8)
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!(
+                    "Exact structural graph was built but no changed-file context resolved ({} nodes; indexed paths: {indexed_paths})",
+                    snapshot.nodes.len()
+                )
+            })?;
+        if context.stale || context.current_head.as_deref() != Some(expected_head.as_str()) {
+            return Err("Exact structural review context became stale before review".to_string());
+        }
+        Ok((Some(context), true))
+    })
+    .await
+    .map_err(|error| format!("Structural review context worker failed: {error}"))?
 }
 
 fn render_trusted_review_graph_for_prompt(context: &TrustedReviewGraphContext) -> String {
@@ -948,7 +1098,9 @@ fn render_qa_evidence_for_prompt(qa_runs: &[Value]) -> String {
     lines.push("\nRecent synthetic user QA evidence (runtime proof from prior runs):".to_string());
     for run in qa_runs.iter().take(5) {
         let pass = value_bool(run, &["pass"]).unwrap_or(false);
-        let status = if pass { "PASS" } else { "FAIL" };
+        let status = value_string(run, &["evidence_status"])
+            .map(|value| value.to_ascii_uppercase())
+            .unwrap_or_else(|| if pass { "PASS" } else { "FAIL" }.to_string());
         let runner = value_string(run, &["runner_type", "runnerType"]).unwrap_or("unknown");
         let route = value_string(run, &["route"]).unwrap_or("(route unknown)");
         let goal = value_string(run, &["goal"]).unwrap_or("(goal missing)");
@@ -1026,7 +1178,7 @@ Specialist pass: {name} ({id})
 Specialist focus: {focus}
 Specialist checks:
 {checks}{sensitive}
-Report only issues in this specialist's scope unless a critical cross-scope defect is obvious."#,
+Use this specialist focus as the primary lens, but trace related callers, tests, and changed files. Report any verified cross-file contract defect you find even when it crosses specialist boundaries."#,
         tier = plan.tier,
         mode = plan.mode,
         changed_lines = plan.changed_lines,
@@ -1041,6 +1193,7 @@ Report only issues in this specialist's scope unless a critical cross-scope defe
 fn build_review_prompt(
     project_description: &str,
     change_description: &str,
+    diff_range: &str,
     conventions_section: &str,
     files_section: &str,
     blast_section: &str,
@@ -1057,12 +1210,13 @@ fn build_review_prompt(
 
 Project: {project_description}
 Change: {change_description}
+Exact target range: {diff_range}
 {specialist_block}
 {conventions_section}{files_section}{blast_section}{history_section}{graph_section}{qa_section}{evidence_section}{procedure_section}
 How to review:
 1. Start by extracting the material assumptions the agent appears to be making: stated intent, comments, deleted guards, renamed concepts, changed defaults, history/talk claims, and any "this is safe because..." premise.
 2. Check those assumptions for contradictions against repo conventions, the actual code, caller contracts, persisted data, IPC/API boundaries, tests, and runtime evidence. Treat a contradicted assumption, or an assumption the code relies on but does not enforce, as a real review target.
-3. Read the diff carefully. You have file-read tools — use them when a finding's validity depends on context the diff doesn't show (callers, tests, related files, imports, prior implementation).
+3. Read the diff carefully. You have file-read and repository-search tools — use them to inspect callers, tests, related changed files, imports, and prior implementation. The review unit is only an execution boundary; it is never the reasoning boundary.
 4. Verify each potential issue against the actual code before reporting. If you cannot cite specific lines that prove the problem, drop the finding — or, if the signal is real but unverified, lower confidence honestly instead of hiding the uncertainty.
 5. Use the blast-radius data above to weight severity: a behavior change to a symbol with 6+ callers should be at least medium severity unless the change is provably backward-compatible.
 6. Skip nitpicks (formatting, naming preference, missing comments) unless they will cause real bugs, enforce a false assumption, or break a workflow.
@@ -1092,6 +1246,12 @@ Rules:
 
 Diff:
 {diff_text}"#
+    )
+}
+
+fn large_diff_review_instruction(diff_range: &str, diff_bytes: usize) -> String {
+    format!(
+        "The exact diff is {diff_bytes} bytes, so it is not duplicated into this prompt. Inspect the complete change with repository tools using `git diff --find-renames {diff_range}` and open every relevant caller, consumer, and test before reporting findings."
     )
 }
 
@@ -1147,7 +1307,7 @@ async fn run_agent_json_with_limits(
     deadline: Duration,
     max_output_bytes: usize,
 ) -> Result<(Value, String), String> {
-    if !matches!(cli_cmd, "claude" | "gemini") {
+    if !matches!(cli_cmd, "claude" | "gemini" | "codex") {
         return Err(format!("Unsupported review executor: {cli_cmd}"));
     }
     if cli_path == cli_cmd && resolve_cli_path(cli_cmd) == cli_cmd {
@@ -1158,7 +1318,7 @@ async fn run_agent_json_with_limits(
 
     let mut command = TokioCommand::new(&cli_path);
     command
-        .args(["-p", &prompt])
+        .args(review_executor_arguments(cli_cmd, &prompt))
         .current_dir(&repo_path)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
@@ -1240,7 +1400,7 @@ async fn run_agent_json_with_limits(
         return Err(format!(
             "{cli_cmd} failed (exit {:?}): {}",
             status.code(),
-            String::from_utf8_lossy(&stderr)
+            review_executor_failure_detail(&stdout, &stderr)
         ));
     }
     let raw_output =
@@ -1252,6 +1412,57 @@ async fn run_agent_json_with_limits(
         serde_json::from_str(&json_str).map_err(|e| format!("Failed to parse JSON: {e}"))?;
 
     Ok((parsed, raw_output))
+}
+
+fn review_executor_failure_detail(stdout: &[u8], stderr: &[u8]) -> String {
+    let compact = |bytes: &[u8]| {
+        String::from_utf8_lossy(bytes)
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty())
+            .collect::<Vec<_>>()
+            .join(" ")
+            .chars()
+            .take(2_048)
+            .collect::<String>()
+    };
+    let stderr = compact(stderr);
+    let stdout = compact(stdout);
+    match (stderr.is_empty(), stdout.is_empty()) {
+        (false, false) => format!("stderr: {stderr}; stdout: {stdout}"),
+        (false, true) => stderr,
+        (true, false) => stdout,
+        (true, true) => "executor returned no diagnostic output".to_string(),
+    }
+}
+
+fn review_executor_arguments(cli_cmd: &str, prompt: &str) -> Vec<String> {
+    match cli_cmd {
+        "claude" => ["--setting-sources", "user", "-p", prompt]
+            .into_iter()
+            .map(ToOwned::to_owned)
+            .collect(),
+        "codex" => [
+            "exec",
+            "--ephemeral",
+            "--ignore-user-config",
+            "-c",
+            if prompt.starts_with("You are the coordinator") {
+                "model_reasoning_effort=\"high\""
+            } else {
+                "model_reasoning_effort=\"medium\""
+            },
+            "--sandbox",
+            "read-only",
+            "--color",
+            "never",
+            prompt,
+        ]
+        .into_iter()
+        .map(ToOwned::to_owned)
+        .collect(),
+        _ => vec!["-p".to_string(), prompt.to_string()],
+    }
 }
 
 fn findings_from(parsed: &Value) -> Vec<Value> {
@@ -1462,22 +1673,26 @@ fn dedupe_findings(findings: Vec<Value>) -> Vec<Value> {
 fn build_coordinator_prompt(
     project_description: &str,
     change_description: &str,
+    diff_range: &str,
     plan: &ReviewPlan,
-    evidence_section: &str,
+    context_section: &str,
     specialist_outputs: &[Value],
 ) -> String {
     let outputs = serde_json::to_string_pretty(specialist_outputs).unwrap_or_else(|_| "[]".into());
     format!(
-        r#"You are the coordinator for a CodeVetter specialist review. Deduplicate and rank findings from specialist reviewers. Keep only real, verified issues. Drop duplicates, style-only comments, and findings that lack a concrete file/symbol/line basis.
+        r#"You are the coordinator and final system-integrity reviewer for a CodeVetter specialist review. Deduplicate and rank findings, then inspect the repository for cross-file defects the file-level passes may have missed. Keep only real, verified issues. Drop duplicates, style-only comments, and findings that lack a concrete file/symbol/line basis.
 
 Assumption integrity is mandatory: before keeping any finding, confirm the premise it depends on. Preserve findings where the implementation contradicts its stated intent, a comment/docs claim is false, an implicit invariant is relied on but unenforced, or prior agent claims would steer follow-up work incorrectly. Drop findings that are themselves based on an unconfirmed assumption.
 
 Project: {project_description}
 Change: {change_description}
+Exact target range: {diff_range}
 Review tier: {tier}
 Review mode: {mode}
 Changed lines: {changed_lines}
-{evidence_section}
+{context_section}
+
+Before producing the verdict, use repository search and file-read tools to trace changed data and control flow across the complete changed-file list. Pay particular attention to invariants implemented across builders, runners, scoring, gates, reports, adapters, and tests. Do not assume a specialist's file-level conclusion covers its callers or consumers.
 
 Specialist outputs:
 {outputs}
@@ -1496,7 +1711,8 @@ Rules:
         tier = plan.tier,
         mode = plan.mode,
         changed_lines = plan.changed_lines,
-        evidence_section = evidence_section,
+        diff_range = diff_range,
+        context_section = context_section,
         outputs = outputs,
     )
 }
@@ -1551,9 +1767,22 @@ pub async fn get_review(db: State<'_, DbState>, id: String) -> Result<Value, Str
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     let (review, findings) =
         queries::get_local_review_with_findings(&conn, &id).map_err(|e| e.to_string())?;
+    let review_readiness = conn
+        .query_row(
+            "SELECT metadata FROM activity_log
+             WHERE event_type = 'cli_review_completed'
+               AND metadata LIKE ?1
+             ORDER BY created_at DESC LIMIT 1",
+            [format!("%\"review_id\":\"{id}\"%")],
+            |row| row.get::<_, String>(0),
+        )
+        .ok()
+        .and_then(|raw| serde_json::from_str::<Value>(&raw).ok())
+        .and_then(|metadata| metadata.get("review_readiness").cloned());
     Ok(json!({
         "review": review,
         "findings": findings,
+        "review_readiness": review_readiness,
     }))
 }
 
@@ -1619,7 +1848,7 @@ pub async fn set_finding_disposition(
     Ok(json!({ "updated": updated }))
 }
 
-/// Run a code review via a CLI agent (claude or gemini).
+/// Run a code review via a CLI agent (claude, gemini, or codex).
 ///
 /// 1. Gets the git diff for the given range
 /// 2. Builds a review prompt and spawns the agent CLI
@@ -1664,9 +1893,9 @@ pub async fn run_cli_review_core(
     standards_pack: Option<String>,
 ) -> Result<Value, String> {
     let agent = agent.unwrap_or_else(|| "claude".to_string());
-    if !matches!(agent.as_str(), "claude" | "gemini") {
+    if !matches!(agent.as_str(), "claude" | "gemini" | "codex") {
         return Err(format!(
-            "Unsupported review executor `{agent}`. Choose `claude` or `gemini`."
+            "Unsupported review executor `{agent}`. Choose `claude`, `gemini`, or `codex`."
         ));
     }
     let qa_runs = qa_runs.unwrap_or_default();
@@ -1752,17 +1981,21 @@ pub async fn run_cli_review_core(
     // History context (first signals): recent commits on touched files + prior agent summaries + recurring failures.
     // Computed here so the *reviewer agent* sees intent ("why touched files changed before") before judging the new diff.
     // Uses same changed_files list; compact + capped inside the builder. Secrets excluded in git.rs.
-    let (history_section, trusted_graph_context) = {
+    let history_section = {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
-        let h = crate::commands::git::build_compact_history_section_for_prompt(
+        crate::commands::git::build_compact_history_section_for_prompt(
             &repo_path,
             &changed_files,
             &conn,
-        );
-        let graph = build_trusted_review_graph_context(&conn, &repo_path, &changed_files);
-        drop(conn);
-        (h, graph)
+        )
     };
+    let (trusted_graph_context, graph_built_for_review) = ensure_trusted_review_graph_context(
+        &db,
+        &repo_path,
+        &review_manifest.target.head_sha,
+        &changed_files,
+    )
+    .await?;
 
     let plan = build_review_plan(&diff_text, &changed_files);
     let structural_evidence =
@@ -1813,6 +2046,36 @@ pub async fn run_cli_review_core(
         serde_json::to_value(&trusted_graph_context).unwrap_or(Value::Null);
     let qa_evidence_section = render_qa_evidence_for_prompt(&qa_runs);
     let qa_evidence_json = json!(qa_runs.iter().take(5).cloned().collect::<Vec<_>>());
+    let graph_status = if trusted_graph_context.is_some() {
+        "ready"
+    } else if changed_files_need_structural_context(&changed_files) {
+        "unavailable"
+    } else {
+        "not_applicable"
+    };
+    let history_status = if history_section.trim().is_empty() {
+        "empty"
+    } else {
+        "ready"
+    };
+    let conventions_status = if conventions_section.trim().is_empty() {
+        "not_present"
+    } else {
+        "ready"
+    };
+    let context_inventory_section = format!(
+        "\nReview context inventory (verify before trusting the verdict):\n- exact structural graph: {graph_status}{}\n- Git and prior-agent history: {history_status} ({} chars)\n- repository conventions: {conventions_status}\n- runtime/testing/performance evidence records: {}\n",
+        if graph_built_for_review {
+            " (built for this exact checked-out head)"
+        } else {
+            ""
+        },
+        history_section.len(),
+        qa_runs.len(),
+    );
+    let coordinator_context_section = format!(
+        "{context_inventory_section}{conventions_section}{files_section}{blast_section}{history_section}{graph_section}{qa_evidence_section}{evidence_section}{procedure_section}"
+    );
 
     // 4. Spawn the CLI agent for the selected tier/specialists.
     let cli_cmd = agent.as_str();
@@ -1850,43 +2113,22 @@ pub async fn run_cli_review_core(
         }
     }
 
-    // The fast path remains one aggregate payload. Once the aggregate exceeds
-    // 100 KiB (or a partial resume exists), each unfinished file becomes its
-    // own bounded execution unit. Nothing is silently truncated.
-    let use_unit_execution = requires_unit_execution
-        || pending_units.len()
-            < review_manifest
-                .units
-                .iter()
-                .filter(|unit| {
-                    !matches!(
-                        unit.coverage_state,
-                        crate::commands::deterministic_review::ReviewCoverageState::Skipped
-                    )
-                })
-                .count();
     let mut execution_batches: Vec<(Vec<usize>, String, String)> = Vec::new();
-    if use_unit_execution {
-        for index in pending_units {
-            let unit = &mut review_manifest.units[index];
-            let unit_diff = crate::commands::deterministic_review::read_unit_diff(
-                &review_manifest.target,
-                &unit.file_path,
-            )?;
-            if unit_diff.len() > unit.prompt_budget_bytes {
-                unit.coverage_state =
-                    crate::commands::deterministic_review::ReviewCoverageState::Failed;
-                unit.coverage_reason = Some("file_diff_exceeds_prompt_budget".to_string());
-                continue;
-            }
-            execution_batches.push((
-                vec![index],
-                unit_diff,
-                format!("\nReview unit file:\n- {}\n", unit.file_path),
-            ));
-        }
-    } else if !pending_units.is_empty() {
-        execution_batches.push((pending_units, diff_text.clone(), files_section.clone()));
+    if !pending_units.is_empty() {
+        let review_diff = if requires_unit_execution {
+            large_diff_review_instruction(&diff_range, diff_text.len())
+        } else {
+            diff_text.clone()
+        };
+        let execution_scope = if requires_unit_execution {
+            format!(
+                "{files_section}\nWhole-change execution scope: all {} changed files. Every specialist is accountable for cross-file reasoning and complete source inspection.\n",
+                changed_files.len()
+            )
+        } else {
+            files_section.clone()
+        };
+        execution_batches.push((pending_units, review_diff, execution_scope));
     }
 
     let mut specialist_prompts = Vec::<ReviewPromptJob>::new();
@@ -1896,11 +2138,12 @@ pub async fn run_cli_review_core(
             let base_prompt = build_review_prompt(
                 &project_description,
                 &change_description,
+                &diff_range,
                 &conventions_section,
                 &batch_files,
                 &blast_section,
                 &history_section,
-                &graph_section,
+                &format!("{context_inventory_section}{graph_section}"),
                 &qa_evidence_section,
                 &evidence_section,
                 &procedure_section,
@@ -2113,8 +2356,9 @@ pub async fn run_cli_review_core(
         let coordinator_prompt = build_coordinator_prompt(
             &project_description,
             &change_description,
+            &diff_range,
             &plan,
-            &evidence_section,
+            &coordinator_context_section,
             &specialist_outputs,
         );
         prompts_used.push(coordinator_prompt.clone());
@@ -2268,6 +2512,75 @@ pub async fn run_cli_review_core(
         });
     }
 
+    let coordinator_status = if !plan.uses_coordinator {
+        "not_required"
+    } else if coordinator_failed.is_some() {
+        "failed"
+    } else if review_manifest.cancelled {
+        "not_run"
+    } else {
+        "completed"
+    };
+    let mut readiness_limitations = Vec::new();
+    if changed_files_need_structural_context(&changed_files) && trusted_graph_context.is_none() {
+        readiness_limitations.push("Exact structural graph context was unavailable".to_string());
+    }
+    if !review_manifest.complete_coverage {
+        let incomplete_units = review_manifest
+            .units
+            .iter()
+            .filter(|unit| {
+                !matches!(
+                    unit.coverage_state,
+                    crate::commands::deterministic_review::ReviewCoverageState::Reviewed
+                        | crate::commands::deterministic_review::ReviewCoverageState::Reused
+                )
+            })
+            .count();
+        readiness_limitations.push(format!(
+            "{incomplete_units} of {} review units did not complete",
+            review_manifest.units.len()
+        ));
+    }
+    if let Some(error) = coordinator_failed.as_ref() {
+        readiness_limitations.push(format!(
+            "Coordinator failed: {}",
+            error.chars().take(320).collect::<String>()
+        ));
+    }
+    if review_manifest.stale {
+        readiness_limitations.push("The target changed during review".to_string());
+    }
+    if review_manifest.cancelled {
+        readiness_limitations.push("The review was cancelled".to_string());
+    }
+    let review_status = if readiness_limitations.is_empty() {
+        "completed"
+    } else {
+        "incomplete"
+    };
+    let review_readiness = ReviewReadiness {
+        status: if readiness_limitations.is_empty() {
+            "ready".to_string()
+        } else {
+            "incomplete".to_string()
+        },
+        graph_status: graph_status.to_string(),
+        graph_built_for_review,
+        history_status: history_status.to_string(),
+        history_chars: history_section.len(),
+        conventions_status: conventions_status.to_string(),
+        runtime_evidence_count: qa_runs.len(),
+        coordinator_status: coordinator_status.to_string(),
+        complete_coverage: review_manifest.complete_coverage,
+        // Built-in CLI reviews call the same repository services directly. MCP
+        // activity from external agents is audited separately and must not be
+        // attributed to this review merely because it happened concurrently.
+        codevetter_mcp_call_count: 0,
+        context_delivery: "internal".to_string(),
+        limitations: readiness_limitations,
+    };
+
     let summary = parsed
         .get("summary")
         .and_then(|v| v.as_str())
@@ -2277,8 +2590,17 @@ pub async fn run_cli_review_core(
     let score = score_from_findings(&parsed, &findings_val);
 
     let summary_markdown = format!(
-        "{}\n\n---\nReview mode: {} ({}) · changed lines: {} · specialist passes: {}{}",
+        "{}\n\n---\nReview status: {} · context: {} · coverage: {} · CodeVetter MCP calls: {} ({})\nReview mode: {} ({}) · changed lines: {} · specialist passes: {}{}",
         summary,
+        review_status,
+        review_readiness.status,
+        if review_manifest.complete_coverage {
+            "complete"
+        } else {
+            "partial"
+        },
+        review_readiness.codevetter_mcp_call_count,
+        review_readiness.context_delivery,
         plan.mode,
         plan.tier,
         plan.changed_lines,
@@ -2305,7 +2627,14 @@ pub async fn run_cli_review_core(
         repo_full_name: None,
         pr_number: None,
         agent_used: Some(agent.clone()),
-        status: Some("completed".to_string()),
+        status: Some(
+            if review_status == "completed" {
+                "completed"
+            } else {
+                "completed_with_limitations"
+            }
+            .to_string(),
+        ),
         standards_pack,
     };
 
@@ -2358,7 +2687,14 @@ pub async fn run_cli_review_core(
         &conn,
         &review_id,
         &crate::db::queries::LocalReviewUpdate {
-            status: Some("completed".to_string()),
+            status: Some(
+                if review_status == "completed" {
+                    "completed"
+                } else {
+                    "completed_with_limitations"
+                }
+                .to_string(),
+            ),
             score_composite: Some(score),
             findings_count: Some(findings_val.len() as i64),
             review_action: None,
@@ -2413,6 +2749,7 @@ pub async fn run_cli_review_core(
                     "evidence_candidates": evidence_candidates_json.clone(),
                     "evidence_procedure_steps": evidence_procedure_steps_json.clone(),
                     "coordinator_failed": coordinator_failed,
+                    "review_readiness": review_readiness,
                     "review_manifest": review_manifest.clone(),
                 })
                 .to_string(),
@@ -2457,6 +2794,8 @@ pub async fn run_cli_review_core(
         "specialists": plan.specialists.iter().map(|s| s.id).collect::<Vec<_>>(),
         "sensitive_paths": plan.sensitive_paths.clone(),
         "coordinator_used": plan.uses_coordinator,
+        "review_status": review_status,
+        "review_readiness": review_readiness,
         "review_memory_graph": review_memory_graph_json,
         "trusted_graph_context": trusted_graph_context_json,
         "qa_evidence": qa_evidence_json,
@@ -3409,6 +3748,57 @@ mod tests {
         assert!(prompt.contains("never creates findings"));
     }
 
+    #[test]
+    fn review_builds_exact_head_graph_when_no_index_exists() {
+        let root = tempfile::tempdir().expect("fixture repository");
+        std::fs::create_dir_all(root.path().join("src")).expect("create source directory");
+        std::fs::write(
+            root.path().join("src/score.ts"),
+            "export function score(value: number) { return value + 1; }\n",
+        )
+        .expect("write source");
+        let git = |arguments: &[&str]| {
+            let output = StdCommand::new("git")
+                .args(arguments)
+                .current_dir(root.path())
+                .env("GIT_AUTHOR_NAME", "CodeVetter test")
+                .env("GIT_AUTHOR_EMAIL", "test@codevetter.local")
+                .env("GIT_COMMITTER_NAME", "CodeVetter test")
+                .env("GIT_COMMITTER_EMAIL", "test@codevetter.local")
+                .output()
+                .expect("run git");
+            assert!(
+                output.status.success(),
+                "git {arguments:?} failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            String::from_utf8_lossy(&output.stdout).trim().to_string()
+        };
+        git(&["init", "-q"]);
+        git(&["add", "src/score.ts"]);
+        git(&["commit", "-q", "-m", "fixture"]);
+        let head = git(&["rev-parse", "HEAD"]);
+
+        let connection = rusqlite::Connection::open_in_memory().expect("database");
+        crate::db::schema::run_migrations(&connection).expect("migrations");
+        let db = DbState(Arc::new(Mutex::new(connection)));
+        let runtime = tokio::runtime::Runtime::new().expect("runtime");
+        let (context, built) = runtime
+            .block_on(ensure_trusted_review_graph_context(
+                &db,
+                &root.path().to_string_lossy(),
+                &head,
+                &["src/score.ts".to_string()],
+            ))
+            .expect("build exact context");
+
+        let context = context.expect("trusted context");
+        assert!(built);
+        assert!(!context.stale);
+        assert_eq!(context.current_head.as_deref(), Some(head.as_str()));
+        assert!(!context.nodes.is_empty());
+    }
+
     fn bench_finding(title: &str, line: i64, severity: &str, confidence: f64) -> Value {
         json!({
             "title": title,
@@ -3541,10 +3931,31 @@ mod tests {
     }
 
     #[test]
+    fn code_changes_require_exact_structural_context() {
+        assert!(changed_files_need_structural_context(&[
+            "scripts/score.mjs".to_string(),
+            "README.md".to_string(),
+        ]));
+        assert!(!changed_files_need_structural_context(&[
+            "README.md".to_string(),
+            ".gitignore".to_string(),
+        ]));
+    }
+
+    #[test]
+    fn large_reviews_use_one_exact_range_instead_of_fragmented_file_diffs() {
+        let instruction = large_diff_review_instruction("base...head", 150_000);
+        assert!(instruction.contains("150000 bytes"));
+        assert!(instruction.contains("git diff --find-renames base...head"));
+        assert!(instruction.contains("caller, consumer, and test"));
+    }
+
+    #[test]
     fn review_prompt_includes_ranked_evidence_candidates() {
         let prompt = build_review_prompt(
             "Local desktop reviewer",
             "Change auth boundary",
+            "main...feature",
             "",
             "\nFiles changed in this range (1 total):\n- src/auth.ts\n",
             "",
@@ -3564,6 +3975,8 @@ mod tests {
         assert!(prompt.contains("blocked steps as remaining work"));
         assert!(prompt.contains("Start by extracting the material assumptions"));
         assert!(prompt.contains("contradicted assumption"));
+        assert!(prompt.contains("Exact target range: main...feature"));
+        assert!(prompt.contains("execution boundary; it is never the reasoning boundary"));
     }
 
     #[test]
@@ -3581,6 +3994,7 @@ mod tests {
         let prompt = build_review_prompt(
             "Local desktop reviewer",
             "Change checkout flow",
+            "main...feature",
             "",
             "\nFiles changed in this range (1 total):\n- src/pages/Checkout.tsx\n",
             "",
@@ -3703,6 +4117,45 @@ mod tests {
         assert_eq!(models[0].group, "Open Source");
         assert_eq!(models[1].id, "claude-sonnet-5");
         assert_eq!(models[1].group, "Anthropic");
+    }
+
+    #[test]
+    fn claude_reviews_ignore_untrusted_project_settings() {
+        assert_eq!(
+            review_executor_arguments("claude", "review"),
+            vec!["--setting-sources", "user", "-p", "review"]
+        );
+        assert_eq!(
+            review_executor_arguments("gemini", "review"),
+            vec!["-p", "review"]
+        );
+        assert_eq!(
+            review_executor_arguments("codex", "review"),
+            vec![
+                "exec",
+                "--ephemeral",
+                "--ignore-user-config",
+                "-c",
+                "model_reasoning_effort=\"medium\"",
+                "--sandbox",
+                "read-only",
+                "--color",
+                "never",
+                "review",
+            ]
+        );
+        assert_eq!(
+            review_executor_arguments("codex", "You are the coordinator for this review")[4],
+            "model_reasoning_effort=\"high\""
+        );
+    }
+
+    #[test]
+    fn executor_failures_preserve_stdout_only_diagnostics() {
+        assert_eq!(
+            review_executor_failure_detail(b"You've hit your individual spend limit\n", b"",),
+            "You've hit your individual spend limit"
+        );
     }
 
     #[cfg(unix)]

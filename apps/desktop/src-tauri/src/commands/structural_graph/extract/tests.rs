@@ -686,18 +686,31 @@ fn structured_config_files_contribute_searchable_entries_not_just_their_own_path
         "deployKind: worker",
         "deployKind: pages",
     ] {
-        assert!(entries.contains(&expected), "missing {expected:?} in {entries:?}");
+        assert!(
+            entries.contains(&expected),
+            "missing {expected:?} in {entries:?}"
+        );
     }
     // Flags and counts collapse onto one deduplicated key rather than one node
     // per line, and every entry is anchored in the file.
-    assert_eq!(entries.iter().filter(|label| **label == "deployed").count(), 1);
-    assert!(!entries.iter().any(|label| label.starts_with("schemaVersion:")));
+    assert_eq!(
+        entries.iter().filter(|label| **label == "deployed").count(),
+        1
+    );
+    assert!(!entries
+        .iter()
+        .any(|label| label.starts_with("schemaVersion:")));
     assert!(contribution
         .nodes
         .iter()
         .filter(|node| node.kind == "config_entry")
-        .all(|node| node.path.as_deref() == Some("ops/config/projects.json")
-            && node.sources.iter().all(|source| source.start_line.is_some())));
+        .all(
+            |node| node.path.as_deref() == Some("ops/config/projects.json")
+                && node
+                    .sources
+                    .iter()
+                    .all(|source| source.start_line.is_some())
+        ));
 }
 
 #[test]

@@ -91,7 +91,7 @@ pub async fn resolve_evidence_scope(
     resolve(input).await
 }
 
-async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceScopePlan, String> {
+pub(crate) async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceScopePlan, String> {
     let root = canonical_repository(&input.repo_path)?;
     input.repo_path = root.to_string_lossy().into_owned();
     let original_input = normalize_intent(input.kind, input.value)?;
@@ -143,7 +143,8 @@ async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceScopePlan, Str
             ],
         ),
     };
-    let targets = discover_targets(&root, &files);
+    let discovery_files = target_discovery_files(&root, input.kind, &files, &scope_paths);
+    let targets = discover_targets(&root, &discovery_files);
     let mut scored = score_targets(input.kind, original_input.as_deref(), &scope_paths, targets);
     match input.consumer {
         EvidenceScopeConsumer::Testing => scored.retain(|candidate| candidate.testing_supported),
@@ -246,6 +247,27 @@ async fn repository_files(root: &Path) -> Result<Vec<String>, String> {
     files.sort();
     files.dedup();
     Ok(files)
+}
+
+fn target_discovery_files(
+    root: &Path,
+    kind: EvidenceScopeKind,
+    repository_files: &[String],
+    scope_paths: &[String],
+) -> Vec<String> {
+    let mut files = repository_files.to_vec();
+    if kind == EvidenceScopeKind::Change {
+        files.extend(
+            scope_paths
+                .iter()
+                .filter(|path| safe_relative(path) && !excluded_path(path))
+                .filter(|path| root.join(path).is_file())
+                .cloned(),
+        );
+    }
+    files.sort();
+    files.dedup();
+    files
 }
 
 async fn git_text(root: &Path, args: &[&str]) -> Result<String, String> {
@@ -706,6 +728,44 @@ mod tests {
                 "src/checkout/coupon.test.ts",
                 "import './coupon'"
             ) >= 8
+        );
+    }
+
+    #[test]
+    fn changed_tests_survive_the_repository_file_cap() {
+        let repo = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(repo.path().join("scripts/context-retrieval")).unwrap();
+        std::fs::create_dir_all(repo.path().join("apps/desktop/scripts")).unwrap();
+        std::fs::write(
+            repo.path()
+                .join("scripts/context-retrieval/abandon.test.mjs"),
+            "test('abandon retrieval arm', () => {});\n",
+        )
+        .unwrap();
+        std::fs::write(
+            repo.path()
+                .join("apps/desktop/scripts/archaeology-reviewer-effort.test.mjs"),
+            "test('codevetter review', () => {});\n",
+        )
+        .unwrap();
+        let changed = vec!["scripts/context-retrieval/abandon.test.mjs".to_string()];
+        let files = target_discovery_files(
+            repo.path(),
+            EvidenceScopeKind::Change,
+            &["apps/desktop/scripts/archaeology-reviewer-effort.test.mjs".to_string()],
+            &changed,
+        );
+        let candidates = score_targets(
+            EvidenceScopeKind::Change,
+            Some("https://github.com/Codevetter/codevetter/pull/173"),
+            &changed,
+            discover_targets(repo.path(), &files),
+        );
+        assert_eq!(
+            candidates
+                .first()
+                .map(|candidate| candidate.target.as_str()),
+            Some("scripts/context-retrieval/abandon.test.mjs")
         );
     }
 

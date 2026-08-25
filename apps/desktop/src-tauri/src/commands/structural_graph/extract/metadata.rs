@@ -426,10 +426,7 @@ fn is_lockfile_path(lower_path: &str) -> bool {
 /// key/value entry yield nothing, which is how prose, punctuation-only lines and
 /// continuation values are left alone.
 fn config_entry_labels(trimmed: &str) -> Vec<String> {
-    trimmed
-        .split(',')
-        .filter_map(config_entry_label)
-        .collect()
+    trimmed.split(',').filter_map(config_entry_label).collect()
 }
 
 /// `"deployKind": "worker"` -> `deployKind: worker`; `tier: parked` -> the same
@@ -479,7 +476,10 @@ fn ini_section_label(line: &str) -> Option<String> {
         return None;
     }
     let (name, rest) = match inner.split_once(char::is_whitespace) {
-        Some((name, rest)) => (name.trim(), rest.trim().trim_matches(['"', '\'', '`']).trim()),
+        Some((name, rest)) => (
+            name.trim(),
+            rest.trim().trim_matches(['"', '\'', '`']).trim(),
+        ),
         None => (inner, ""),
     };
     if name.is_empty() {
@@ -540,9 +540,9 @@ fn split_config_key(line: &str) -> Option<(&str, &str)> {
     let key = key.trim();
     let plausible = !key.is_empty()
         && key.len() <= 80
-        && key
-            .chars()
-            .all(|character| character.is_alphanumeric() || matches!(character, '_' | '-' | '.' | '$' | '/'))
+        && key.chars().all(|character| {
+            character.is_alphanumeric() || matches!(character, '_' | '-' | '.' | '$' | '/')
+        })
         && key.chars().any(char::is_alphanumeric);
     plausible.then_some((key, rest.get(1..).unwrap_or_default()))
 }

@@ -41,6 +41,14 @@ pub(super) fn dispatch_tool(
     let limit = bounded_limit(arguments.get("limit"));
     let filter = optional_field::<GraphQueryFilter>(&arguments, "filter")?.unwrap_or_default();
     let data = match name {
+        "prepare_review" => serde_json::to_value(prepare_review_packet(
+            connection,
+            repo_path,
+            &graph,
+            &history,
+            required_string(&arguments, "task")?,
+            required_string(&arguments, "change")?,
+        )?),
         "graph_query" => {
             let query = optional_string(&arguments, "query")?;
             let fingerprint = serde_json::to_string(&(query.map(str::to_ascii_lowercase), &filter))

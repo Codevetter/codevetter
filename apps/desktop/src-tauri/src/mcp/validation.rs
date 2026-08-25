@@ -69,11 +69,21 @@ pub(crate) fn validate_tool_arguments(
         return Err(format!("Unknown '{field}' argument for {name}"));
     }
 
-    for field in ["query", "node", "from", "to", "entity", "review_id"] {
+    for field in [
+        "query",
+        "node",
+        "from",
+        "to",
+        "entity",
+        "review_id",
+        "task",
+        "change",
+    ] {
         if let Some(value) = arguments.get(field) {
+            let maximum = if field == "change" { 512 } else { 4_096 };
             let text = value
                 .as_str()
-                .filter(|text| text.len() <= 4_096)
+                .filter(|text| text.len() <= maximum)
                 .ok_or_else(|| format!("'{field}' must be a bounded string"))?;
             if text.trim().is_empty() {
                 return Err(format!("'{field}' must not be empty"));

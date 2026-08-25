@@ -1721,7 +1721,7 @@ export default function Settings() {
           <div className="flex flex-col">
             <CategoryTitle
               title="Agent MCP"
-              description="Expose local structural and release history to coding agents with explicit repository scope."
+              description="Give review agents bounded context for one exact change with explicit repository scope."
             />
             <McpHistoryPanel />
           </div>

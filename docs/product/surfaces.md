@@ -39,13 +39,32 @@ Source: `navItems` in `apps/desktop/src/components/sidebar.tsx`.
 |---|---|---|---|
 | Usage | `/` | `apps/desktop/src/pages/Home.tsx` | Local spend and token trends from bundled `ccusage` for Claude/Codex/Grok plus CodeVetter's separately queried Devin tracker; provider remaining-usage and quota telemetry stays separate and unchanged. |
 | Repo Unpack | `/unpack` | `apps/desktop/src/pages/RepoPage.tsx` | Whole-repo evidence-backed system brief. Tab `match`es `/unpack` and `/intel`. Scanner in `src-tauri/src/commands/unpack*.rs`; persisted to `repo_unpacked_reports`. See [architecture/repo-unpacked.md](../architecture/repo-unpacked.md). |
-| Review | `/review` | `apps/desktop/src/pages/QuickReview.tsx` | First change-checking stage: select an exact change, inspect source-qualified findings and coverage gaps, attach evidence, and export a local Agent PR X-Ray. Findings remain leads until executable evidence supports the decision. |
+| Review | `/review` | `apps/desktop/src/pages/QuickReview.tsx` | First change-checking stage: select an exact change, inspect source-qualified findings and coverage gaps, attach evidence, and export a local Agent PR X-Ray. The setup panel reports Agent MCP readiness and exposes the exact local `codevetter check` command for the selected range. Findings remain leads until executable evidence supports the decision. |
 | Testing | `/trex` | `apps/desktop/src/pages/TRex.tsx` | Runtime-evidence stage: resolve a human-described flow, exact PR/change, or bounded codebase portfolio into runnable tests; confirm the plan; then capture receipts. Direct preview, changed-capability verification, scenarios, and PR watchers remain available. See [trex-change-preview.md](./trex-change-preview.md). |
 | Performance | `/performance` | `apps/desktop/src/pages/Performance.tsx` | Uses the same intent resolver, then admits one exact Node test/script, Vitest, Playwright, or Go benchmark workload. Shows zero-egress admission, observed versus inferred evidence, limitations, one next action, cleanup state, and machine-readable receipts. |
 
 Settings (`/settings`) is a labelled utility separated at the bottom of the
 same fixed rail, not a seventh product surface. It hosts preferences, Ops,
 Memories, Rubrics, Agent MCP, usage, and About through `?section=`.
+Agent MCP reports repository readiness and provides a copyable
+`prepare_review` invocation; it remains read-only and never runs the reviewer
+or suggested verification.
+
+The packaged CLI provides the orchestration entry point:
+
+```bash
+codevetter check --range main...HEAD \
+  --task "Describe the expected behavior" \
+  --json
+```
+
+`check` requires a clean local checkout at the resolved change head. It
+composes the existing review, correctness, and performance engines into one
+versioned receipt. It may discover the highest-confidence closed target or
+accept explicit adapter/target pairs for reproducible benchmark runs. The
+optimization stage is a bounded handoff: a coding agent edits an isolated
+checkout, then `--baseline-repo` activates paired verification. CodeVetter does
+not edit the selected checkout or perform GitHub, release, or deployment work.
 
 The Repo surface (`apps/desktop/src/pages/RepoPage.tsx`) consolidates Unpack,
 Activity, Graph, Inventory, Analysis, Handoff, and past snapshots.

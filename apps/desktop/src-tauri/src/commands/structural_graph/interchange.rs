@@ -795,7 +795,10 @@ mod tests {
         // the pretty printer's padding, and it is what used to consume roughly a
         // third of MAX_IMPORT_BYTES on real repositories.
         assert!(!json.contains("\n  "), "export must not be indented");
-        let pretty = serde_json::to_string_pretty(&serde_json::from_str::<serde_json::Value>(&json).expect("valid json")).expect("pretty");
+        let pretty = serde_json::to_string_pretty(
+            &serde_json::from_str::<serde_json::Value>(&json).expect("valid json"),
+        )
+        .expect("pretty");
         assert!(
             json.len() < pretty.len(),
             "compact export ({} bytes) must be smaller than the indented form ({} bytes)",

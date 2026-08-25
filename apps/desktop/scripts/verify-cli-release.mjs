@@ -5,11 +5,14 @@ import { fileURLToPath } from 'node:url';
 
 const desktopRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requiredHelpFragments = [
+  'codevetter check (--pr <url> | --range <base..head>) --task <text>',
   'codevetter trex (--pr <url> | --range <base..head>) --preview <url>',
   '--pr <url>',
   '--range <range>',
   '--preview <url>',
   '--repo <path>',
+  '--task <text>',
+  '--baseline-repo <path>',
   '--json',
 ];
 
@@ -124,11 +127,11 @@ if (isMain) {
   try {
     const result = qualifyCli(parseArgs(process.argv.slice(2)));
     process.stdout.write(
-      `T-Rex CLI qualification passed: ${result.version}, ${result.bytes} bytes, ${result.helpContracts} help contracts\n`
+      `CodeVetter CLI qualification passed: ${result.version}, ${result.bytes} bytes, ${result.helpContracts} help contracts\n`
     );
   } catch (error) {
     process.stderr.write(
-      `T-Rex CLI qualification failed: ${error instanceof Error ? error.message : String(error)}\n`
+      `CodeVetter CLI qualification failed: ${error instanceof Error ? error.message : String(error)}\n`
     );
     process.exitCode = 1;
   }

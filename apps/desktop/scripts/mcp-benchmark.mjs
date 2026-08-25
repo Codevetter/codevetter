@@ -7,7 +7,7 @@ import { createInterface } from 'node:readline';
 
 const PROTOCOL_VERSION = '2025-11-25';
 const MAX_STRUCTURED_RESPONSE_BYTES = 256 * 1_024;
-const EXPECTED_TOOL_COUNT = 23;
+const EXPECTED_TOOL_COUNT = 24;
 const EXPECTED_RELEASE_COUNT = 64;
 const EXPECTED_GRAPH_NODE_COUNT = 512;
 const EXPECTED_GRAPH_EDGE_COUNT = 1_024;
@@ -74,6 +74,7 @@ async function runBenchmark(fixture) {
   }
 
   const schemas = await verifySchemas(session);
+  await verifyPrepareReview(session, fixture);
   const resources = await verifyResources(session, fixture);
   const workloadDefinitions = createWorkloads(fixture);
   for (let round = 0; round < options.warmupRounds; round += 1) {
@@ -312,6 +313,26 @@ async function verifyResources(session, fixture) {
   assertResponseBound(read, 'resources/read');
   assertRedacted(read, fixture);
   return { total: all.length, paginationComplete: !cursor, repositoryReadable: true };
+}
+
+async function verifyPrepareReview(session, fixture) {
+  const response = await session.request('tools/call', {
+    name: 'prepare_review',
+    arguments: {
+      task: 'Review the latest committed change against its intended behavior.',
+      change: 'HEAD~1...HEAD',
+    },
+  });
+  assertRpcSuccess(response, 'prepare_review');
+  assert.equal(response.result?.isError, false, 'prepare_review returned a tool error');
+  const packet = response.result?.structuredContent?.data?.data;
+  assert.equal(packet?.schema_version, 'codevetter.review-packet/v1');
+  assert.ok(packet?.source?.head_sha, 'prepare_review omitted the exact head identity');
+  assert.ok(packet?.source?.changed_paths?.length, 'prepare_review omitted changed paths');
+  assert.ok(Array.isArray(packet?.limitations), 'prepare_review omitted limitations');
+  assertEnvelope(response.result?.structuredContent, 'prepare_review');
+  assertResponseBound(response, 'prepare_review');
+  assertRedacted(response, fixture);
 }
 
 async function verifyStrictArgumentsAndRedaction(session, fixture) {

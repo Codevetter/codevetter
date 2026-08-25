@@ -906,9 +906,11 @@ export async function getLocalDiff(
   });
 }
 
-export async function getReview(
-  id: string
-): Promise<{ review: LocalReviewRow; findings: LocalReviewFindingRow[] }> {
+export async function getReview(id: string): Promise<{
+  review: LocalReviewRow;
+  findings: LocalReviewFindingRow[];
+  review_readiness?: ReviewReadiness;
+}> {
   return safeInvoke('get_review', { id });
 }
 
@@ -1161,12 +1163,29 @@ export interface CliReviewResult {
   specialists?: string[];
   sensitive_paths?: string[];
   coordinator_used?: boolean;
+  review_status?: 'completed' | 'incomplete';
+  review_readiness?: ReviewReadiness;
   review_memory_graph?: ReviewMemoryGraph;
   trusted_graph_context?: TrustedReviewGraphContext | null;
   qa_evidence?: ReviewQaRunEvidence[];
   evidence_candidates?: EvidenceCandidate[];
   evidence_procedure_steps?: EvidenceProcedureStep[];
   review_manifest?: ReviewManifest;
+}
+
+export interface ReviewReadiness {
+  status: 'ready' | 'incomplete';
+  graph_status: 'ready' | 'unavailable' | 'not_applicable';
+  graph_built_for_review: boolean;
+  history_status: 'ready' | 'empty';
+  history_chars: number;
+  conventions_status: 'ready' | 'not_present';
+  runtime_evidence_count: number;
+  coordinator_status: 'completed' | 'failed' | 'not_run' | 'not_required';
+  complete_coverage: boolean;
+  codevetter_mcp_call_count?: number;
+  context_delivery?: 'internal' | 'mcp' | 'mixed';
+  limitations: string[];
 }
 
 export type ReviewCoverageState = 'reviewed' | 'reused' | 'skipped' | 'failed' | 'cancelled';

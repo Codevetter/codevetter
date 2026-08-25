@@ -658,7 +658,7 @@ async fn resolve_pull_request(repo_path: &str, value: &str) -> Result<TrexSource
     })
 }
 
-pub(crate) async fn resolve_scope_change(
+pub async fn resolve_scope_change(
     repo_path: &str,
     value: &str,
 ) -> Result<TrexSourceReceipt, String> {

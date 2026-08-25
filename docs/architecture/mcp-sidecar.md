@@ -19,6 +19,8 @@ or refresh its indexes.
    select **Enable**.
 5. Select **Copy config** and paste the exact JSON into the local MCP client.
    Reload the client if it does not detect configuration changes automatically.
+6. For review work, ask the client to call `prepare_review` with the task and
+   exact worktree, staged, commit, or range selector shown in Review.
 
 Opening Agent MCP prepares a disabled opaque scope so CodeVetter can preview
 the exact configuration; it does not enable access. The generated entry has
@@ -64,6 +66,7 @@ limits, stable links, and structured data.
 
 | Tool | Purpose |
 |---|---|
+| `prepare_review` | Compose a bounded `codevetter.review-packet/v1` for one exact change from existing graph, history, prior-review, and verification-candidate evidence. It does not run a reviewer or execute a check. |
 | `graph_query` | Search the structural graph or return a compact overview. |
 | `graph_get_node` | Explain one stable node and its source-backed relationships. |
 | `graph_get_neighbors` | Read bounded incoming, outgoing, or bidirectional neighbors. |
@@ -92,6 +95,26 @@ Start with graph overview, release listing, history search, review manifests,
 or the business-rule catalog. Follow stable IDs into explanation, lineage,
 trace, or hydration calls, and request only citations the agent actually needs.
 Normal execution never makes a model or provider call.
+
+### Prepare a review
+
+`prepare_review` is the task-level entry point for a review agent. Use the
+exact selector CodeVetter shows for the selected change:
+
+```json
+{
+  "task": "Review this change against its task and acceptance criteria.",
+  "change": "main...feature"
+}
+```
+
+The packet binds itself to the resolved Git identity and changed paths. It
+keeps graph impact as qualified leads, preserves stale or missing-source
+limitations, includes prior deterministic review manifests where available,
+and suggests testing or performance targets through the existing deterministic
+scope resolver. Suggested targets are not executed and are not proof. Invalid
+or option-shaped selectors fail closed, and the fixed MCP repository scope
+cannot be overridden by arguments.
 
 ## Resources
 

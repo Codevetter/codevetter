@@ -150,7 +150,9 @@ fn adding_a_query_term_never_shrinks_the_retrieved_set() {
             &format!("src/shared{index}.rs"),
         ));
     }
-    graph.nodes.push(node("node:paths", "paths", "src/paths.rs"));
+    graph
+        .nodes
+        .push(node("node:paths", "paths", "src/paths.rs"));
     let ids = |query: &str| {
         search(&graph, query, &GraphQueryFilter::default(), Some(500))
             .hits
@@ -178,7 +180,9 @@ fn search_weights_rare_terms_above_terms_the_whole_graph_shares() {
             &format!("src/handler{index}.rs"),
         ));
     }
-    graph.nodes.push(node("node:rare", "reticulate", "src/rare.rs"));
+    graph
+        .nodes
+        .push(node("node:rare", "reticulate", "src/rare.rs"));
     let result = search(
         &graph,
         "reticulate handler",

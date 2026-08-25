@@ -29,7 +29,7 @@ test.describe('MCP settings', () => {
 
     await page.getByRole('button', { name: 'Copy config' }).focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('status')).toContainText('Configuration copied');
+    await expect(page.getByText('Configuration copied', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'Disable' }).click();
     await expect(page.getByText('Disabled', { exact: true })).toBeVisible();
@@ -132,7 +132,10 @@ async function installMcpMock(page: Page, delayFirstRepo: boolean) {
             },
           },
           resource_kinds: ['repository', 'release', 'evidence'],
-          tool_names: Array.from({ length: 13 }, (_, index) => `tool-${index}`),
+          tool_names: [
+            'prepare_review',
+            ...Array.from({ length: 13 }, (_, index) => `tool-${index}`),
+          ],
           redaction_rules: ['No credentials', 'Opaque repository paths'],
           limits: { page_size: 100 },
           recent_audit: isRepoB ? [] : audit,
