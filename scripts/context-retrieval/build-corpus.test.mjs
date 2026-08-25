@@ -148,8 +148,8 @@ test('scoring is deterministic and stratifies by what the baseline actually miss
   const root = await fixtureRepo();
   try {
     const corpus = buildRetrievalCorpus({ repo: root, limit: 10 });
-    const first = await scoreRetrieval({ corpus, repo: root });
-    const second = await scoreRetrieval({ corpus, repo: root });
+    const first = await scoreRetrieval({ corpus, repo: root, minFreeMemoryMb: 0 });
+    const second = await scoreRetrieval({ corpus, repo: root, minFreeMemoryMb: 0 });
 
     const stable = (score) => ({
       ...score,
