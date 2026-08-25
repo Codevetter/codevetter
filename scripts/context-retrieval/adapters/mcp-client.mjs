@@ -60,10 +60,20 @@ export function createMcpAdapter({
         });
       }
       if (indexToolName && names.includes(indexToolName)) {
-        await session.request('tools/call', {
-          name: indexToolName,
-          arguments: buildIndexArguments({ root, query, limit }),
-        });
+        try {
+          await session.request('tools/call', {
+            name: indexToolName,
+            arguments: buildIndexArguments({ root, query, limit }),
+          });
+        } catch (error) {
+          return unavailable({
+            providerId,
+            query,
+            revision,
+            started,
+            reason: mcpFailureReason('index', error),
+          });
+        }
       }
       const result = await session.request('tools/call', {
         name: toolName,
@@ -86,6 +96,10 @@ export function createMcpAdapter({
       session.close();
     }
   };
+}
+
+export function mcpFailureReason(stage, error) {
+  return `${stage}: ${firstLine(error)}`;
 }
 
 function shapeResponse({ providerId, query, revision, started, result, root, limit, parsePaths }) {

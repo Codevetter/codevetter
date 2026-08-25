@@ -51,7 +51,7 @@
     "test:graph-context": "node --test scripts/run-structural-context-evaluation.test.mjs",
     "test:corpus-contracts": "node --test scripts/agent-task-corpus/*.test.mjs",
     "test:context-provider-plan": "node --test scripts/agent-task-corpus/context-provider-plan.test.mjs",
-    "test:retrieval": "node --test scripts/context-retrieval/*.test.mjs",
+    "test:retrieval": "node --test scripts/context-retrieval/*.test.mjs scripts/context-retrieval/adapters/*.test.mjs",
     "test:runtime-failure-capsule": "node --test scripts/runtime-failure-capsule/*.test.mjs",
     "test:verification-receipts": "node --test scripts/verification-receipts/*.test.mjs",
     "test:automation": "node --test scripts/emit-foundry-receipt.test.mjs",

@@ -106,7 +106,15 @@ test('a gate verdict stored per-arm does not condemn a run whose controls are pr
     providers: [
       {
         provider_id: id,
-        summary: { all: { cases: 108, mean_recall_at_4000_tokens: r4k, unavailable: 0 } },
+        summary: {
+          all: {
+            cases: 108,
+            mean_recall_at_1000_tokens: r4k,
+            mean_recall_at_4000_tokens: r4k,
+            mean_recall_at_16000_tokens: r4k,
+            unavailable: 0,
+          },
+        },
         outcomes: { answered: 108 },
       },
     ],
@@ -131,4 +139,61 @@ test('a gate verdict stored per-arm does not condemn a run whose controls are pr
   // The gate must still bite when the controls genuinely are not there.
   const soloed = loadTiered([paths[0]]).get('small');
   assert.deepEqual(soloed.get('semble').gate_failures, ['got']);
+});
+
+test('controls from one repository cannot validate another repository', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cr-tiered-repos-'));
+  const failed = { trustworthy: false };
+  const score = (repo, providers) => ({
+    tier: 'small',
+    repository: { id: repo },
+    gates: failed,
+    providers: providers.map(([provider_id, recall]) => ({
+      provider_id,
+      summary: {
+        all: {
+          cases: 10,
+          mean_recall_at_1000_tokens: recall,
+          mean_recall_at_4000_tokens: recall,
+          mean_recall_at_16000_tokens: recall,
+        },
+      },
+      outcomes: { answered: 10 },
+    })),
+  });
+  const paths = [];
+  for (const [name, contents] of [
+    [
+      'repo-a.json',
+      score('repo-a', [
+        ['real-a', 0.8],
+        ['random-files', 0.01],
+        ['random-code-files', 0.01],
+        ['churn-ranked', 0.01],
+      ]),
+    ],
+    ['repo-b.json', score('repo-b', [['real-b', 0.7]])],
+  ]) {
+    const path = join(dir, name);
+    writeFileSync(path, JSON.stringify(contents));
+    paths.push(path);
+  }
+
+  const loaded = loadTiered(paths).get('small');
+  assert.deepEqual(loaded.get('real-a').gate_failures, []);
+  assert.deepEqual(loaded.get('real-b').gate_failures, ['repo-b']);
+});
+
+test('query-blind controls are never published as tier leaders', () => {
+  const out = render(
+    new Map([
+      [
+        'small',
+        bucket([row('real', ['got'], 0.4, 0.4, 0.4), row('random-files', ['got'], 0.9, 0.1, 0.1)]),
+      ],
+    ])
+  );
+
+  assert.match(out, /\*\*small @ r@1k\*\*: real/);
+  assert.doesNotMatch(out, /\*\*small @ r@1k\*\*: random-files/);
 });

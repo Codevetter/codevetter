@@ -15,9 +15,10 @@ function fixtureRepo() {
   git('config', 'user.email', 'test@example.com');
   git('config', 'user.name', 'test');
   writeFileSync(join(dir, 'handler.go'), 'package main\n');
+  writeFileSync(join(dir, 'large.go'), `package main\n// ${'x'.repeat(600 * 1024)}\n`);
   writeFileSync(join(dir, 'package.json'), '{}\n');
   git('add', '-A');
-  git('commit', '-qm', 'init');
+  git('-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'init');
   return { dir, revision: git('rev-parse', 'HEAD').trim() };
 }
 
@@ -84,4 +85,21 @@ test('the provider runs inside the worktree and receives the configured env', ()
   // handler.go resolves only if PROBE_PATH survived; the cwd basename is the worktree
   // directory name, which is not a file, so it is correctly filtered out.
   assert.deepEqual(result.files, ['handler.go']);
+});
+
+test('whole-file payloads charge the exact size of oversized results', () => {
+  const { dir, revision } = fixtureRepo();
+  const worktreeRoot = mkdtempSync(join(tmpdir(), 'cr-wt-'));
+  const retrieve = createGenericCliAdapter({
+    providerId: 'whole-file-probe',
+    binary: '/bin/echo',
+    queryArgs: () => ['large.go'],
+    worktreeRoot,
+    payloadKind: 'whole-files',
+  });
+
+  const result = retrieve({ repo: dir, revision, query: 'large', limit: 20 });
+  assert.equal(result.ranking[0].path, 'large.go');
+  assert.ok(result.ranking[0].tokens > 131_072);
+  assert.equal(result.tokens_delivered, result.ranking[0].tokens);
 });

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { TOPIC_QUERIES, diffAgainstRegistry, triage } from './discover-candidates.mjs';
+import { TOPIC_QUERIES, diffAgainstRegistry, runSweep, triage } from './discover-candidates.mjs';
 
 test('matching is owner-aware: same name, different owner is not covered', () => {
   // The exact miss: repowise-npm was registered; repowise-dev/repowise (6.2k stars,
@@ -71,4 +71,11 @@ test('the star floor is 1000 and sub-floor tools are dropped with a reason', () 
     ['BeaconBay/ck']
   );
   assert.equal(dropped[0].reason, 'below-star-floor');
+});
+
+test('discovery fails closed when GitHub search is unavailable', () => {
+  assert.throws(
+    () => runSweep({ gh: 'codevetter-missing-gh-executable' }),
+    /GitHub discovery failed/
+  );
 });

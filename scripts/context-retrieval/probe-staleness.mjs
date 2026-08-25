@@ -118,18 +118,19 @@ export function providerRunners({
   runners.set('keyword-search', {
     holds_index: false,
     index: () => ({ ok: true }),
-    query: ({ worktree, query }) => ({
-      output: tryRun('git', [
-        '-C',
-        worktree,
-        'grep',
-        '--name-only',
-        '--ignore-case',
-        '--fixed-strings',
-        '-e',
-        query.split(' ')[0],
-      ]),
-    }),
+    query: ({ worktree, query }) =>
+      allowNoMatch(
+        runForSignal('git', [
+          '-C',
+          worktree,
+          'grep',
+          '--name-only',
+          '--ignore-case',
+          '--fixed-strings',
+          '-e',
+          query.split(' ')[0],
+        ])
+      ),
   });
 
   if (graphifyBinary) {
@@ -138,16 +139,19 @@ export function providerRunners({
       index: ({ worktree }) => ({
         ok: tryRun(graphifyBinary, ['update', worktree, '--no-cluster'], worktree) !== null,
       }),
-      query: ({ worktree, query }) => ({
-        output: tryRun(graphifyBinary, [
-          'query',
-          query,
-          '--graph',
-          join(worktree, 'graphify-out', 'graph.json'),
-          '--budget',
-          '2000',
-        ]),
-      }),
+      query: ({ worktree, query }) =>
+        runForSignal(
+          graphifyBinary,
+          [
+            'query',
+            query,
+            '--graph',
+            join(worktree, 'graphify-out', 'graph.json'),
+            '--budget',
+            '2000',
+          ],
+          worktree
+        ),
     });
   }
 
@@ -158,14 +162,13 @@ export function providerRunners({
         ok: tryRun(codesearchBinary, ['index', 'add', worktree], worktree, cacheDir) !== null,
       }),
       // No --sync: the point is to observe the stale index, not refresh it.
-      query: ({ worktree, query }) => ({
-        output: tryRun(
+      query: ({ worktree, query }) =>
+        runForSignal(
           codesearchBinary,
           ['search', query, '--path', worktree, '--compact', '--quiet'],
           worktree,
           cacheDir
         ),
-      }),
     });
   }
 
@@ -175,9 +178,10 @@ export function providerRunners({
       index: ({ worktree }) => ({
         ok: tryRun(`${zoektBinary}-index`, ['-index', cacheDir, worktree], worktree) !== null,
       }),
-      query: ({ query }) => ({
-        output: tryRun(zoektBinary, ['-index_dir', cacheDir, '-l', query.split(' ')[0]]),
-      }),
+      query: ({ query }) =>
+        allowNoMatch(
+          runForSignal(zoektBinary, ['-index_dir', cacheDir, '-l', query.split(' ')[0]])
+        ),
     });
   }
   if (sembleBinary) {
@@ -188,9 +192,8 @@ export function providerRunners({
         ok:
           tryRun(sembleBinary, ['search', 'initial index warm', '--top-k', '5'], worktree) !== null,
       }),
-      query: ({ worktree, query }) => ({
-        output: tryRun(sembleBinary, ['search', query, '--top-k', '20'], worktree),
-      }),
+      query: ({ worktree, query }) =>
+        runForSignal(sembleBinary, ['search', query, '--top-k', '20'], worktree),
     });
   }
   if (fixtureTool) {
@@ -199,9 +202,7 @@ export function providerRunners({
       index: ({ worktree, revision, snapshot }) => ({
         ok: tryRun(fixtureTool, ['build', worktree, revision, snapshot]) !== null,
       }),
-      query: ({ query, snapshot }) => ({
-        output: tryRun(fixtureTool, ['query', snapshot, query, '60']),
-      }),
+      query: ({ query, snapshot }) => runForSignal(fixtureTool, ['query', snapshot, query, '60']),
     });
   }
 
@@ -279,11 +280,16 @@ export function probeStaleness({ repo, cases, runners, worktreeRoot, snapshotRoo
             if (stillPresent) {
               detail = 'checkout did not remove the file';
             } else {
-              const { output } = runner.query({ worktree, query: entry.query, snapshot });
+              const { output, exitCode } = runner.query({
+                worktree,
+                query: entry.query,
+                snapshot,
+              });
               outcome = classify({
                 output,
                 deletedPath: entry.deleted_path,
                 holdsIndex: runner.holds_index,
+                exitCode,
               });
             }
           }
@@ -337,9 +343,9 @@ export function summarize(results) {
     .sort((left, right) => (left.phantom_rate ?? 0) - (right.phantom_rate ?? 0));
 }
 
-function tryRun(command, args, cwd, cacheDir) {
+export function runForSignal(command, args, cwd, cacheDir) {
   try {
-    return execFileSync(command, args, {
+    const output = execFileSync(command, args, {
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -348,11 +354,22 @@ function tryRun(command, args, cwd, cacheDir) {
         ? { env: { ...process.env, CODESEARCH_DATA_DIR: cacheDir, CODESEARCH_HOME: cacheDir } }
         : {}),
     });
+    return { output, exitCode: 0 };
   } catch (error) {
-    // git grep exits 1 on no match, which is an answer rather than a failure.
-    if (error?.status === 1 && typeof error.stdout === 'string') return error.stdout;
-    return null;
+    if (!Number.isInteger(error?.status)) return { output: null, exitCode: null };
+    const stdout = typeof error.stdout === 'string' ? error.stdout : '';
+    const stderr = typeof error.stderr === 'string' ? error.stderr : '';
+    return { output: `${stdout}${stderr}`, exitCode: error.status };
   }
+}
+
+function allowNoMatch(result) {
+  return result.exitCode === 1 ? { ...result, exitCode: 0 } : result;
+}
+
+function tryRun(command, args, cwd, cacheDir) {
+  const result = runForSignal(command, args, cwd, cacheDir);
+  return result.exitCode === 0 ? result.output : null;
 }
 
 async function writeJsonAtomic(path, value) {

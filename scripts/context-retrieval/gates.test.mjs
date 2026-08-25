@@ -13,7 +13,16 @@ import {
 
 const arm = (id, r4, extra = {}) => ({
   provider_id: id,
-  summary: { all: { mean_recall_at_4000_tokens: r4, cases: 10, unavailable: 0, ...extra } },
+  summary: {
+    all: {
+      mean_recall_at_1000_tokens: r4,
+      mean_recall_at_4000_tokens: r4,
+      mean_recall_at_16000_tokens: r4,
+      cases: 10,
+      unavailable: 0,
+      ...extra,
+    },
+  },
 });
 
 test('a report without controls is refused', () => {
@@ -40,6 +49,22 @@ test('a control scoring near the leader fails the run', () => {
     providers: [arm('codesearch', 0.592), arm('churn-ranked', 0.018), arm('random-files', 0.026)],
   });
   assert.equal(good.ok, true);
+});
+
+test('controls must lose at every published token budget', () => {
+  const result = checkControlsLose({
+    providers: [
+      arm('codesearch', 0.6),
+      arm('random-files', 0.02, { mean_recall_at_1000_tokens: 0.4 }),
+      arm('random-code-files', 0.02),
+      arm('churn-ranked', 0.02),
+    ],
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.by_budget.mean_recall_at_1000_tokens.ok, false);
+  assert.equal(result.by_budget.mean_recall_at_4000_tokens.ok, true);
+  assert.match(result.reason, /1000 tokens/);
 });
 
 test('install failure is never conflated with poor retrieval', () => {

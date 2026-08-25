@@ -28,24 +28,44 @@ export function checkControlsPresent(providerIds) {
 
 // A query-blind arm scoring near the leaders means the metric is measuring something
 // other than retrieval. Checked numerically so it cannot be rationalised away.
-export function checkControlsLose({ providers, budget = 'mean_recall_at_4000_tokens' }) {
-  const score = (id) => providers.find((p) => p.provider_id === id)?.summary?.all?.[budget] ?? 0;
-  const best = Math.max(
-    ...providers
-      .filter((p) => !REQUIRED_CONTROLS.includes(p.provider_id))
-      .map((p) => p.summary?.all?.[budget] ?? 0),
-    0
+const CONTROL_BUDGETS = [
+  'mean_recall_at_1000_tokens',
+  'mean_recall_at_4000_tokens',
+  'mean_recall_at_16000_tokens',
+];
+
+export function checkControlsLose({ providers, budget }) {
+  const budgets = budget ? [budget] : CONTROL_BUDGETS;
+  const byBudget = Object.fromEntries(
+    budgets.map((key) => {
+      const score = (id) =>
+        providers.find((provider) => provider.provider_id === id)?.summary?.all?.[key] ?? 0;
+      const best = Math.max(
+        ...providers
+          .filter((provider) => !REQUIRED_CONTROLS.includes(provider.provider_id))
+          .map((provider) => provider.summary?.all?.[key] ?? 0),
+        0
+      );
+      const control = Math.max(...REQUIRED_CONTROLS.map(score), 0);
+      return [key, { ok: best > 0 && control < best * 0.5, best, control }];
+    })
   );
-  const worstControl = Math.max(...REQUIRED_CONTROLS.map(score), 0);
-  // A control within half the leader's score is not a plausible retrieval result.
-  const ok = best > 0 && worstControl < best * 0.5;
+  const failures = Object.entries(byBudget).filter(([, result]) => !result.ok);
+  const representative = byBudget.mean_recall_at_4000_tokens ?? Object.values(byBudget)[0];
   return {
-    ok,
-    best,
-    control: worstControl,
-    reason: ok
-      ? null
-      : `a query-blind control scored ${(worstControl * 100).toFixed(1)}% against a leader's ${(best * 100).toFixed(1)}%. Suspect the metric, not the tools.`,
+    ok: failures.length === 0,
+    best: representative.best,
+    control: representative.control,
+    by_budget: byBudget,
+    reason:
+      failures.length === 0
+        ? null
+        : `a query-blind control was too close to the leader at ${failures
+            .map(
+              ([key, result]) =>
+                `${key.match(/\d+/)?.[0] ?? key} tokens (${(result.control * 100).toFixed(1)}% vs ${(result.best * 100).toFixed(1)}%)`
+            )
+            .join(', ')}. Suspect the metric, not the tools.`,
   };
 }
 

@@ -52,12 +52,10 @@ export function environmentIdentity() {
   };
 }
 
-export function freeMemoryMb() {
+export function freeMemoryMb({ exec = execFileSync } = {}) {
   try {
-    const pageSize = Number(
-      execFileSync('sysctl', ['-n', 'hw.pagesize'], { encoding: 'utf8' }).trim()
-    );
-    const stats = execFileSync('vm_stat', { encoding: 'utf8' });
+    const pageSize = Number(exec('sysctl', ['-n', 'hw.pagesize'], { encoding: 'utf8' }).trim());
+    const stats = exec('vm_stat', { encoding: 'utf8' });
     const grab = (label) => {
       const match = new RegExp(`${label}:\\s+(\\d+)`).exec(stats);
       return match ? Number(match[1]) : 0;
@@ -74,26 +72,26 @@ export function freeMemoryMb() {
     const fromPages = Math.round((pages * pageSize) / 1048576);
     // Cross-check against the kernel's own view and take the larger. `memory_pressure`
     // is the number Activity Monitor agrees with; page arithmetic is the pessimist.
-    return Math.max(fromPages, pressureFreeMb());
+    return Math.max(fromPages, pressureFreeMb(exec) ?? 0);
   } catch {
-    return Number.POSITIVE_INFINITY;
+    return null;
   }
 }
 
 // The kernel's own free-percentage line, converted to MB. Returns 0 rather than
 // throwing when unavailable, so the page-arithmetic path stays authoritative there.
-function pressureFreeMb() {
+function pressureFreeMb(exec) {
   try {
-    const out = execFileSync('memory_pressure', {
+    const out = exec('memory_pressure', {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     });
     const percent = /free percentage:\s*(\d+)%/i.exec(out);
-    if (!percent) return 0;
-    const total = Number(execFileSync('sysctl', ['-n', 'hw.memsize'], { encoding: 'utf8' }).trim());
+    if (!percent) return null;
+    const total = Number(exec('sysctl', ['-n', 'hw.memsize'], { encoding: 'utf8' }).trim());
     return Math.round((total * Number(percent[1])) / 100 / 1048576);
   } catch {
-    return 0;
+    return null;
   }
 }
 
@@ -151,11 +149,12 @@ export function summarizeRegistry(registry) {
   };
 }
 
-export function guardMemory({ minFreeMb = MIN_FREE_MEMORY_MB } = {}) {
-  const free = freeMemoryMb();
+export function guardMemory({ minFreeMb = MIN_FREE_MEMORY_MB, freeMemory = freeMemoryMb } = {}) {
+  if (minFreeMb <= 0) return { free_mb: null, ok: true, minimum_mb: minFreeMb };
+  const free = freeMemory();
   return {
-    free_mb: free === Number.POSITIVE_INFINITY ? null : free,
-    ok: free >= minFreeMb,
+    free_mb: Number.isFinite(free) ? free : null,
+    ok: Number.isFinite(free) && free >= minFreeMb,
     minimum_mb: minFreeMb,
   };
 }

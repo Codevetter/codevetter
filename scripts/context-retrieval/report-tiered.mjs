@@ -19,6 +19,7 @@ import {
   checkControlsPresent,
   checkRankingComparable,
   coverageOf,
+  REQUIRED_CONTROLS,
 } from './gates.mjs';
 
 const BUDGETS = [
@@ -36,9 +37,8 @@ const BUDGETS = [
 // or learns to ignore the gate, and the second is worse. So the gate is recomputed over
 // the union of everything loaded, and a stored failure is honoured only when the union
 // cannot re-derive a pass.
-function unionGatesPass(paths) {
-  const providers = new Set();
-  const scored = [];
+function unionGatesByRepository(paths) {
+  const fields = new Map();
   for (const path of paths) {
     let score;
     try {
@@ -47,19 +47,27 @@ function unionGatesPass(paths) {
       continue; // Re-read in the main pass, where a bad file fails loudly.
     }
     if (score.superseded_by) continue;
+    const repo = score.repository?.id ?? 'unknown';
+    const field = fields.get(repo) ?? { providers: new Set(), scored: [] };
     for (const entry of score.providers ?? []) {
-      providers.add(entry.provider_id);
-      if (entry.summary) scored.push({ provider_id: entry.provider_id, summary: entry.summary });
+      field.providers.add(entry.provider_id);
+      if (entry.summary)
+        field.scored.push({ provider_id: entry.provider_id, summary: entry.summary });
     }
+    fields.set(repo, field);
   }
-  return (
-    checkControlsPresent([...providers]).ok && checkControlsLose({ providers: scored }).ok !== false
+  return new Map(
+    [...fields].map(([repo, field]) => [
+      repo,
+      checkControlsPresent([...field.providers]).ok &&
+        checkControlsLose({ providers: field.scored }).ok !== false,
+    ])
   );
 }
 
 export function loadTiered(paths) {
   const byTier = new Map();
-  const unionOk = unionGatesPass(paths);
+  const unionOk = unionGatesByRepository(paths);
   for (const path of paths) {
     const score = JSON.parse(readFileSync(path, 'utf8'));
     // A superseded run stays on disk as evidence for a retraction but must not be
@@ -86,7 +94,8 @@ export function loadTiered(paths) {
       }
       // Only a genuine failure counts: if the union has its controls and they lose, a
       // per-artifact "controls absent" is an artefact of how the run was split up.
-      if (score.gates?.trustworthy === false && !unionOk) row.gate_failures.push(repo);
+      if (score.gates?.trustworthy === false && unionOk.get(repo) !== true)
+        row.gate_failures.push(repo);
       bucket.set(entry.provider_id, row);
     }
     byTier.set(tier, bucket);
@@ -187,7 +196,9 @@ export function render(byTier, { planHash } = {}) {
     const bucket = byTier.get(tier);
     if (!bucket) continue;
     for (const [label] of BUDGETS) {
-      const rows = summariseTier(bucket).filter((r) => r.scores[label] !== null);
+      const rows = summariseTier(bucket).filter(
+        (row) => row.scores[label] !== null && !REQUIRED_CONTROLS.includes(row.provider_id)
+      );
       if (!rows.length) continue;
       const best = rows.reduce((a, b) => (b.scores[label] > a.scores[label] ? b : a));
       perTierLeaders.push(

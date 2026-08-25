@@ -35,7 +35,7 @@ import {
   nominateForAudit,
 } from './gates.mjs';
 import { guardMemory } from './probe-candidates.mjs';
-import { classify, countCodeFiles } from './tiers.mjs';
+import { planFixedIndex, protocolFor, tierFromRevisions } from './tiers.mjs';
 import { createResourceMonitor, directoryBytes } from './resources.mjs';
 
 export const RETRIEVAL_SCORE_SCHEMA_VERSION = 'codevetter.context-retrieval-score.v1';
@@ -62,6 +62,7 @@ export function resolveAdapters({
   ripgrepBinary,
   cliTools = {},
   repomix = false,
+  reuseIndex = false,
 } = {}) {
   const adapters = new Map([
     ['keyword-search', retrieveByKeyword],
@@ -503,6 +504,7 @@ export function resolveAdapters({
         providerId: id,
         worktreeRoot,
         indexRoot: `${cacheDir}/${id}-index`,
+        reuseIndex,
         ...make(binary),
       })
     );
@@ -539,9 +541,10 @@ export function isHardFailure(reason) {
 // minutes proving a repository unindexable 11 times at 5 minutes apiece. Abandon the arm
 // instead and record why, so the skip is never mistaken for a score. Consecutive rather
 // than cumulative: a provider that recovers continues.
-async function runArm({ adapter, corpus, repo, limit, shuffleQueries }) {
+async function runArm({ adapter, corpus, repo, limit, shuffleQueries, indexRevision }) {
   const cases = [];
   let consecutiveHardFailures = 0;
+  let lastHardFailure = null;
   let abandoned = null;
   for (const [index, entry] of corpus.cases.entries()) {
     if (abandoned) break;
@@ -553,20 +556,24 @@ async function runArm({ adapter, corpus, repo, limit, shuffleQueries }) {
     // resolve immediately.
     const response = await adapter({
       repo,
-      revision: entry.base_revision,
+      revision: indexRevision ?? entry.base_revision,
       query: source.query,
       queryTokens: source.query_tokens,
       limit,
     });
     cases.push({ case: entry, response, measures: measureCase(entry, response) });
-    consecutiveHardFailures = isHardFailure(response.unavailable_reason)
-      ? consecutiveHardFailures + 1
-      : 0;
+    if (isHardFailure(response.unavailable_reason)) {
+      consecutiveHardFailures += 1;
+      lastHardFailure = response.unavailable_reason;
+    } else {
+      consecutiveHardFailures = 0;
+      lastHardFailure = null;
+    }
     if (consecutiveHardFailures >= ABANDON_AFTER_HARD_FAILURES) {
       abandoned = {
         after_cases: cases.length,
         remaining: corpus.cases.length - cases.length,
-        reason: `${consecutiveHardFailures} consecutive index failures; the arm cannot index this repository`,
+        reason: `${consecutiveHardFailures} consecutive hard failures; last failure: ${lastHardFailure}`,
       };
     }
   }
@@ -603,11 +610,51 @@ function limitationsFor(gates, aborted) {
   }
   limitations.push(
     'One repository; results describe this codebase, not codebases in general.',
-    'Ground truth is the files a real fix changed, which is a proxy for the files it had to find.',
+    'Ground truth is the pre-existing files a real fix changed, which is a proxy for the files it had to find.',
     'Commit subjects were written with the fix in hand, so queries are friendlier than real user prompts.',
     'Retrieval quality is not task success; a provider can retrieve well and still not help an agent.'
   );
   return limitations;
+}
+
+export function validateRetrievalCorpus(corpus) {
+  if (corpus?.schema_version !== 'codevetter.context-retrieval-corpus.v2') {
+    throw new Error(
+      'Corpus must use codevetter.context-retrieval-corpus.v2; rebuild it so post-fix-only paths cannot enter pre-fix ground truth'
+    );
+  }
+  if (
+    !Array.isArray(corpus.cases) ||
+    corpus.cases.some((entry) => !Array.isArray(entry.created_files))
+  ) {
+    throw new Error('Corpus v2 cases must record created_files');
+  }
+  return corpus;
+}
+
+export function planScoreExecution({ repo, corpus }) {
+  const tierEvidence = tierFromRevisions(
+    repo,
+    corpus.cases.map((entry) => entry.base_revision),
+    { sample: corpus.cases.length }
+  );
+  if (!tierEvidence.ok) throw new Error(`Could not assign score tier: ${tierEvidence.reason}`);
+  if (tierEvidence.spans_tiers) {
+    throw new Error(`Corpus spans tiers and must be split: ${tierEvidence.spans_tiers.join(', ')}`);
+  }
+  const protocol = protocolFor(tierEvidence.tier);
+  if (protocol !== 'fixed-index') {
+    return { tier_evidence: tierEvidence, protocol, cases: corpus.cases, rejected: [] };
+  }
+  const fixed = planFixedIndex({ repo, cases: corpus.cases });
+  if (!fixed.ok) throw new Error(`Could not plan fixed-index score: ${fixed.reason}`);
+  return {
+    tier_evidence: tierEvidence,
+    protocol,
+    index_revision: fixed.index_revision,
+    cases: fixed.admitted,
+    rejected: fixed.rejected,
+  };
 }
 
 export async function scoreRetrieval({
@@ -619,6 +666,7 @@ export async function scoreRetrieval({
   shuffleQueries = false,
   cacheDir,
   minFreeMemoryMb = 3072,
+  execution = planScoreExecution({ repo, corpus }),
 }) {
   const providers = [];
   const provider_abandoned = new Map();
@@ -640,7 +688,14 @@ export async function scoreRetrieval({
     }
     const monitor = createResourceMonitor();
     const cacheBefore = cacheDir ? directoryBytes(cacheDir) : 0;
-    const { cases, abandoned } = await runArm({ adapter, corpus, repo, limit, shuffleQueries });
+    const { cases, abandoned } = await runArm({
+      adapter,
+      corpus: { ...corpus, cases: execution.cases },
+      repo,
+      limit,
+      shuffleQueries,
+      indexRevision: execution.index_revision,
+    });
     if (abandoned) provider_abandoned.set(providerId, abandoned);
     const resources = monitor.stop();
     providers.push({
@@ -688,9 +743,17 @@ export async function scoreRetrieval({
     // Measured, not declared: the reporter groups on this, and a hand-set tier is
     // exactly how a benchmark ends up with a repository filed under the tier that
     // flatters it.
-    tier: tierOf(repo),
-    tier_code_files: codeFilesOf(repo),
-    corpus_counts: corpus.counts,
+    tier: execution.tier_evidence.tier,
+    tier_code_files: execution.tier_evidence.median_code_files,
+    tier_evidence: execution.tier_evidence,
+    protocol: execution.protocol,
+    ...(execution.index_revision ? { index_revision: execution.index_revision } : {}),
+    ...(execution.rejected.length > 0 ? { protocol_rejected: execution.rejected } : {}),
+    corpus_counts: {
+      ...corpus.counts,
+      cases: execution.cases.length,
+      multi_file: execution.cases.filter((entry) => entry.required_files.length > 1).length,
+    },
     cutoffs: CUTOFFS,
     gates,
     providers: providers.map((provider) => ({
@@ -713,13 +776,15 @@ export async function scoreRetrieval({
         ...entry.measures,
         tokens_delivered: entry.response.tokens_delivered,
         latency_ms: entry.response.latency_ms,
-        indexed_revision_matches: entry.response.indexed_revision === entry.case.base_revision,
+        indexed_revision_matches:
+          entry.response.indexed_revision ===
+          (execution.index_revision ?? entry.case.base_revision),
       }))
     ),
   };
 }
 
-function measureCase(entry, response) {
+export function measureCase(entry, response) {
   const required = new Set(entry.required_files);
   const measures = { found: [], missed: [] };
   for (const cutoff of CUTOFFS) {
@@ -729,14 +794,8 @@ function measureCase(entry, response) {
     measures[`precision_at_${cutoff}`] =
       window.length === 0 ? 0 : round(hit.length / window.length);
   }
-  // Cost is amortised evenly across returned results, because most providers report
-  // one payload total rather than a per-result cost. Documented approximation, not a
-  // per-file measurement.
-  const perResult =
-    response.files.length > 0 ? (response.tokens_delivered ?? 0) / response.files.length : 0;
   for (const budget of TOKEN_BUDGETS) {
-    const affordable = perResult > 0 ? Math.floor(budget / perResult) : response.files.length;
-    const window = response.files.slice(0, Math.max(0, affordable));
+    const window = affordablePrefix(response, budget);
     measures[`recall_at_${budget}_tokens`] = round(
       window.filter((path) => required.has(path)).length / required.size
     );
@@ -748,6 +807,26 @@ function measureCase(entry, response) {
   const firstHit = response.files.findIndex((path) => required.has(path));
   measures.first_hit_rank = firstHit === -1 ? null : firstHit + 1;
   return measures;
+}
+
+function affordablePrefix(response, budget) {
+  if (response.files.length === 0) return [];
+  const rankedCosts = response.ranking?.map((entry) => entry.tokens);
+  if (
+    rankedCosts?.length === response.files.length &&
+    rankedCosts.every((tokens) => Number.isFinite(tokens) && tokens > 0)
+  ) {
+    let spent = 0;
+    let affordable = 0;
+    for (const tokens of rankedCosts) {
+      if (spent + tokens > budget) break;
+      spent += tokens;
+      affordable += 1;
+    }
+    return response.files.slice(0, affordable);
+  }
+  const total = response.tokens_delivered;
+  return Number.isFinite(total) && total > 0 && total <= budget ? response.files : [];
 }
 
 function summarize(cases, baselineMissed) {
@@ -834,22 +913,6 @@ function mean(values) {
   const usable = values.filter((value) => Number.isFinite(value));
   if (usable.length === 0) return 0;
   return round(usable.reduce((total, value) => total + value, 0) / usable.length);
-}
-
-function tierOf(repo) {
-  try {
-    return classify(countCodeFiles(repo)).id;
-  } catch {
-    return 'untiered';
-  }
-}
-
-function codeFilesOf(repo) {
-  try {
-    return countCodeFiles(repo);
-  } catch {
-    return null;
-  }
 }
 
 function median(values) {
@@ -941,7 +1004,8 @@ function parseArgs(args) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const options = parseArgs(process.argv.slice(2));
-    const corpus = JSON.parse(readFileSync(options.corpusPath, 'utf8'));
+    const corpus = validateRetrievalCorpus(JSON.parse(readFileSync(options.corpusPath, 'utf8')));
+    const execution = planScoreExecution({ repo: options.repo, corpus });
     const adapters = resolveAdapters({
       tool: options.tool,
       cacheDir: options.cacheDir ? `${options.cacheDir}/snapshots` : undefined,
@@ -959,6 +1023,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       ripgrepBinary: options.ripgrepBinary,
       cliTools: options.cliTools ?? {},
       repomix: options.repomix,
+      reuseIndex: execution.protocol === 'fixed-index',
     });
     const score = await scoreRetrieval({
       corpus,
@@ -967,6 +1032,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       adapters,
       shuffleQueries: options.shuffleQueries,
       cacheDir: options.cacheDir,
+      execution,
     });
     const rendered =
       options.format === 'json'

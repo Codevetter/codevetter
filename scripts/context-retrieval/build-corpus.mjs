@@ -9,7 +9,7 @@ import { mkdir, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const RETRIEVAL_CORPUS_SCHEMA_VERSION = 'codevetter.context-retrieval-corpus.v1';
+export const RETRIEVAL_CORPUS_SCHEMA_VERSION = 'codevetter.context-retrieval-corpus.v2';
 export const MAX_REQUIRED_FILES = 8;
 
 const UNIT_SEPARATOR = '\u001f';
@@ -23,7 +23,8 @@ const NOISE_DIRECTORY = /(^|\/)(docs|openspec|\.github|node_modules|\.changeset)
 // the published field measurement uses, contains neither and is unaffected.
 const NOISE_EXTENSION = /\.(md|mdx|rst|png|jpe?g|svg|ico|gif|webp|jsonl|snap|lock|txt)$/i;
 const LOCKFILE = /(^|\/)(pnpm-lock\.yaml|package-lock\.json|Cargo\.lock|yarn\.lock)$/;
-const TEST_FILE = /(\.test\.|\.spec\.|(^|\/)(tests?|__tests__|e2e)\/)/;
+const TEST_FILE =
+  /(\.(test|spec)\.|_test\.[^/]+$|(^|\/)test_[^/]+$|(^|\/)(tests?|__tests__|e2e)\/)/;
 // Version manifests ride along with releases. Nobody had to *find* them, so they
 // only count as ground truth when the change is genuinely about the manifest.
 const VERSION_MANIFEST =
@@ -173,11 +174,8 @@ function buildCase({ root, repoId, commit, subject, authoredAt, maxRequiredFiles
   } catch {
     return { reason: 'root-commit' };
   }
-  const changed = git(root, ['show', '--name-only', '--format=', commit])
-    .split('\n')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-  if (changed.length === 0) return { reason: 'no-files' };
+  const { retrievable: changed, created } = changedPathsAtBase(root, commit);
+  if (changed.length === 0) return { reason: created.length > 0 ? 'no-pre-fix-files' : 'no-files' };
 
   const kept = changed.filter((path) => !isNoise(path));
   const excluded = changed.filter((path) => isNoise(path));
@@ -228,6 +226,7 @@ function buildCase({ root, repoId, commit, subject, authoredAt, maxRequiredFiles
       derivable_files: derivable.sort(),
       incidental_files: incidental.sort(),
       excluded_files: excluded.sort(),
+      created_files: created.sort(),
       retrieval: {
         // Whether query vocabulary leaks into the file path. This is a property of the
         // query, not a difficulty label: content search does not read paths.
@@ -261,9 +260,35 @@ function sharesStem(source, test) {
     value
       .split('/')
       .pop()
-      .replace(/\.(test|spec)\./, '.')
+      .replace(/\.(test|spec)(?=\.)/, '')
+      .replace(/^test_/, '')
+      .replace(/_test(?=\.[a-z0-9]+$)/i, '')
       .replace(/\.[a-z0-9]+$/i, '');
   return stem(source) === stem(test);
+}
+
+function changedPathsAtBase(root, commit) {
+  const fields = git(root, [
+    'diff-tree',
+    '--no-commit-id',
+    '--name-status',
+    '--no-renames',
+    '-r',
+    '-z',
+    commit,
+  ])
+    .split('\0')
+    .filter(Boolean);
+  const retrievable = [];
+  const created = [];
+  for (let index = 0; index < fields.length; index += 2) {
+    const status = fields[index];
+    const path = fields[index + 1];
+    if (!path) continue;
+    if (status === 'A') created.push(path);
+    else retrievable.push(path);
+  }
+  return { retrievable, created };
 }
 
 function isNoise(path) {

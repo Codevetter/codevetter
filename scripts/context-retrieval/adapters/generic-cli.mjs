@@ -40,8 +40,6 @@ function removeTree(path, attempts = 5) {
   return false;
 }
 
-const MAX_FILE_BYTES = 512 * 1024;
-
 // Exported so the extraction can be tested directly. It was previously buried inside
 // the adapter closure, reachable only by running a real tool against a real worktree —
 // which is how three separate defects survived in it (a sort inversion, absolute paths
@@ -152,9 +150,17 @@ export function createGenericCliAdapter({
     return combined;
   }
 
-  function payloadTokens(worktree, top, combined) {
+  function rankedResults(worktree, top) {
+    if (payloadKind !== 'whole-files') return top;
+    return top.map((entry) => ({
+      ...entry,
+      tokens: Math.max(1, Math.ceil(fileBytes(worktree, entry.path) / 4)),
+    }));
+  }
+
+  function payloadTokens(ranking, combined) {
     if (payloadKind !== 'whole-files') return Math.ceil(Buffer.byteLength(combined) / 4);
-    return Math.ceil(top.reduce((sum, entry) => sum + fileBytes(worktree, entry.path), 0) / 4);
+    return ranking.reduce((sum, entry) => sum + entry.tokens, 0);
   }
 
   function teardown(repo, worktree) {
@@ -200,11 +206,12 @@ export function createGenericCliAdapter({
 
       const ordered = extractPaths({ text: combined, worktree, ignorePattern });
       const top = ordered.slice(0, limit);
+      const ranking = rankedResults(worktree, top);
       return {
         ...shape(base),
         files: top.map((entry) => entry.path),
-        ranking: top,
-        tokens_delivered: payloadTokens(worktree, top, combined),
+        ranking,
+        tokens_delivered: payloadTokens(ranking, combined),
         results_parsed: ordered.length,
       };
     } catch (error) {
@@ -247,13 +254,7 @@ function unavailable({ providerId, payloadKind, query, revision, started, reason
 
 function fileBytes(worktree, path) {
   try {
-    const size = Number.parseInt(
-      run('wc', ['-c', join(worktree, path)])
-        .trim()
-        .split(/\s+/)[0],
-      10
-    );
-    return Number.isFinite(size) && size <= MAX_FILE_BYTES ? size : 0;
+    return statSync(join(worktree, path)).size;
   } catch {
     return 0;
   }

@@ -31,10 +31,15 @@ A case is built from one real fix commit in a local repository:
 
 - **query** — the commit subject, with its conventional-commit prefix stripped
 - **base revision** — `commit^`, the tree as it was *before* the fix
-- **ground truth** — the code files that fix actually changed
+- **ground truth** — the pre-existing files that fix changed or deleted
+- **created files** — post-fix-only paths, recorded for audit but never scored against
 
 A provider is asked what it would surface for the query at the base revision, and
 its answer is compared against the ground truth. Everything is local git.
+
+Corpus v2 enforces this pre-fix boundary. Checked-in v1 corpus and score artifacts
+are archival and must be regenerated before publishing or comparing new results;
+the scorer rejects them instead of silently retaining impossible-recall cases.
 
 ```bash
 pnpm retrieval:corpus --limit 966 --out /tmp/corpus.json          # this repo

@@ -30,7 +30,12 @@ for (const file of readdirSync(dir)) {
   const score = JSON.parse(readFileSync(`${dir}/${file}`, 'utf8'));
   meta ??= { repo: score.repository, tier: score.tier, counts: score.corpus_counts };
   for (const p of score.providers ?? []) {
-    arms.push({ id: p.provider_id, summary: p.summary, outcomes: p.outcomes ?? {} });
+    arms.push({
+      id: p.provider_id,
+      summary: p.summary,
+      outcomes: p.outcomes ?? {},
+      abandoned: p.abandoned ?? null,
+    });
   }
 }
 
@@ -56,7 +61,20 @@ function row(arm, subset) {
     latency: s.median_latency_ms,
     unavailable: s.cases ? s.unavailable / s.cases : null,
     answered: arm.outcomes.answered ?? null,
+    abandoned: arm.abandoned,
   };
+}
+
+function plannedCases(subset) {
+  if (subset === 'no_path_leak' && Number.isFinite(meta.counts.path_leak)) {
+    return meta.counts.cases - meta.counts.path_leak;
+  }
+  return meta.counts.cases;
+}
+
+function statusOf(row) {
+  if (!row.abandoned) return 'complete';
+  return `abandoned after ${row.abandoned.after_cases}; ${row.abandoned.remaining} remaining`;
 }
 
 const out = [];
@@ -91,15 +109,15 @@ for (const [subset, gloss] of SUBSETS) {
   if (!rows.length) continue;
   const retrievers = rows.filter((r) => !PACKERS.has(r.id));
   retrievers.sort((x, y) => (y.r4k ?? -1) - (x.r4k ?? -1));
-  const n = retrievers[0]?.cases ?? 0;
-  out.push(`## ${subset} — ${gloss} (${n} cases)`);
+  const planned = plannedCases(subset);
+  out.push(`## ${subset} — ${gloss} (${planned} planned cases)`);
   out.push('');
-  out.push('| Arm | r@1k | r@4k | r@16k | median tokens | p50 ms | unavailable |');
-  out.push('| --- | ---: | ---: | ---: | ---: | ---: | ---: |');
+  out.push('| Arm | cases | status | r@1k | r@4k | r@16k | median tokens | p50 ms | unavailable |');
+  out.push('| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |');
   for (const r of retrievers) {
     const label = CONTROLS.has(r.id) ? `_${r.id}_ (control)` : r.id;
     out.push(
-      `| ${label} | ${pct(r.r1k)} | ${pct(r.r4k)} | ${pct(r.r16k)} | ${num(r.tokens)} | ${num(r.latency)} | ${pct(r.unavailable)} |`
+      `| ${label} | ${r.cases}/${planned} | ${statusOf(r)} | ${pct(r.r1k)} | ${pct(r.r4k)} | ${pct(r.r16k)} | ${num(r.tokens)} | ${num(r.latency)} | ${pct(r.unavailable)} |`
     );
   }
   out.push('');
@@ -107,10 +125,12 @@ for (const [subset, gloss] of SUBSETS) {
   if (packers.length) {
     out.push('Whole-repository packers, listed apart because they do not rank:');
     out.push('');
-    out.push('| Arm | r@1k | r@4k | r@16k | median tokens |');
-    out.push('| --- | ---: | ---: | ---: | ---: |');
+    out.push('| Arm | cases | status | r@1k | r@4k | r@16k | median tokens |');
+    out.push('| --- | ---: | --- | ---: | ---: | ---: | ---: |');
     for (const r of packers) {
-      out.push(`| ${r.id} | ${pct(r.r1k)} | ${pct(r.r4k)} | ${pct(r.r16k)} | ${num(r.tokens)} |`);
+      out.push(
+        `| ${r.id} | ${r.cases}/${planned} | ${statusOf(r)} | ${pct(r.r1k)} | ${pct(r.r4k)} | ${pct(r.r16k)} | ${num(r.tokens)} |`
+      );
     }
     out.push('');
   }

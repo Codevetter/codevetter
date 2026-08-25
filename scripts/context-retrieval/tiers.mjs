@@ -124,3 +124,50 @@ export function admissibleUnderFixedIndex({ repo, indexRevision, caseRevision })
     return false;
   }
 }
+
+export function planFixedIndex({ repo, cases }) {
+  const revisions = [...new Set(cases.map((entry) => entry.base_revision).filter(Boolean))];
+  if (revisions.length === 0) return { ok: false, reason: 'no case revisions' };
+  let indexRevision = revisions[0];
+  try {
+    for (const revision of revisions.slice(1)) {
+      indexRevision = execFileSync('git', ['-C', repo, 'merge-base', indexRevision, revision], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }).trim();
+    }
+  } catch {
+    return { ok: false, reason: 'case revisions have no resolvable common ancestor' };
+  }
+  const admitted = [];
+  const rejected = [];
+  for (const entry of cases) {
+    if (!admissibleUnderFixedIndex({ repo, indexRevision, caseRevision: entry.commit })) {
+      rejected.push({ case_id: entry.case_id, reason: 'fix is not newer than the index revision' });
+      continue;
+    }
+    const missing = entry.required_files.filter(
+      (path) => !pathExistsAtRevision(repo, indexRevision, path)
+    );
+    if (missing.length > 0) {
+      rejected.push({
+        case_id: entry.case_id,
+        reason: `required paths absent from fixed index: ${missing.join(', ')}`,
+      });
+      continue;
+    }
+    admitted.push(entry);
+  }
+  return { ok: admitted.length > 0, index_revision: indexRevision, admitted, rejected };
+}
+
+function pathExistsAtRevision(repo, revision, path) {
+  try {
+    execFileSync('git', ['-C', repo, 'cat-file', '-e', `${revision}:${path}`], {
+      stdio: 'ignore',
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}

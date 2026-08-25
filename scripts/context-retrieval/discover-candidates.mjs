@@ -188,10 +188,13 @@ function search(gh, args) {
     return execFileSync(gh, [...args, '--json', 'fullName,stargazersCount,pushedAt,description'], {
       encoding: 'utf8',
       maxBuffer: 32 * 1024 * 1024,
-      stdio: ['ignore', 'pipe', 'ignore'],
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
-  } catch {
-    return '[]';
+  } catch (error) {
+    const detail = String(error?.stderr || error?.message || error)
+      .split('\n')[0]
+      .trim();
+    throw new Error(`GitHub discovery failed for ${args.join(' ')}: ${detail || 'unknown error'}`);
   }
 }
 
@@ -201,6 +204,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const at = args.indexOf(flag);
     return at === -1 ? fallback : args[at + 1];
   };
+  const registryPath = get('--registry');
+  if (!registryPath) throw new Error('--registry is required');
+  let registry;
+  try {
+    registry = JSON.parse(readFileSync(registryPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`Could not read candidate registry ${registryPath}: ${error.message}`);
+  }
   const text = get('--from')
     ? readFileSync(get('--from'), 'utf8')
     : runSweep({ minStars: Number(get('--min-stars', '1000')) });
@@ -208,7 +219,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     minStars: Number(get('--min-stars', '1000')),
     freshSince: get('--fresh-since'),
   });
-  const registry = JSON.parse(readFileSync(get('--registry'), 'utf8'));
   const { missing } = diffAgainstRegistry(kept, registry);
   process.stdout.write(
     `${JSON.stringify(

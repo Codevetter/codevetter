@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { isHardFailure, scoreRetrieval } from './score.mjs';
+import { mcpFailureReason } from './adapters/mcp-client.mjs';
 
 // This file used to assert on score.mjs's SOURCE TEXT — matching the literal expression
 // `consecutiveHardFailures = hard ? consecutiveHardFailures + 1 : 0`. That tests the
@@ -64,12 +65,19 @@ test('an arm that cannot index is abandoned rather than retried for every case',
       },
     ],
   ]);
-  const report = await scoreRetrieval({ corpus, repo, providerIds: ['stub'], adapters });
+  const report = await scoreRetrieval({
+    corpus,
+    repo,
+    providerIds: ['stub'],
+    adapters,
+    minFreeMemoryMb: 0,
+  });
   assert.equal(calls, 3, `adapter was called ${calls} times; it should stop after 3`);
   const arm = report.providers.find((entry) => entry.provider_id === 'stub');
   assert.ok(arm.abandoned, 'abandonment was not recorded in the artifact');
   assert.equal(arm.abandoned.after_cases, 3);
   assert.equal(arm.abandoned.remaining, 27);
+  assert.match(arm.abandoned.reason, /index step failed/);
 });
 
 test('the failure counter is consecutive, so an arm that recovers keeps going', async () => {
@@ -86,7 +94,13 @@ test('the failure counter is consecutive, so an arm that recovers keeps going', 
       },
     ],
   ]);
-  const report = await scoreRetrieval({ corpus, repo, providerIds: ['stub'], adapters });
+  const report = await scoreRetrieval({
+    corpus,
+    repo,
+    providerIds: ['stub'],
+    adapters,
+    minFreeMemoryMb: 0,
+  });
   assert.equal(calls, 12, 'the arm was abandoned despite recovering between failures');
   assert.equal(report.providers[0].abandoned, undefined);
 });
@@ -104,4 +118,5 @@ test('an empty result is a result; only index, worktree and capacity refusals ar
   assert.equal(isHardFailure(undefined), false);
   assert.equal(isHardFailure(''), false);
   assert.equal(isHardFailure('query: timed out'), false);
+  assert.equal(isHardFailure(mcpFailureReason('index', new Error('timeout on tools/call'))), true);
 });

@@ -70,6 +70,7 @@ jobs:
         run: |
           pnpm run test:automation
           pnpm run test:corpus-contracts
+          pnpm run test:retrieval
       - name: Prepare MCP sidecar
         working-directory: apps/desktop
         run: pnpm run prepare:mcp-sidecar

@@ -7,7 +7,7 @@ import test from 'node:test';
 
 import { buildRetrievalCorpus, pathTokens, tokenize } from './build-corpus.mjs';
 import { retrieveByKeyword } from './adapters/keyword-search.mjs';
-import { renderRetrievalScore, scoreRetrieval } from './score.mjs';
+import { renderRetrievalScore, scoreRetrieval, validateRetrievalCorpus } from './score.mjs';
 
 async function fixtureRepo() {
   const root = await mkdtemp(join(tmpdir(), 'codevetter-retrieval-'));
@@ -20,11 +20,15 @@ async function fixtureRepo() {
       await writeFile(join(root, path), contents);
     }
     run('add', '-A');
-    run('commit', '-m', message);
+    run('-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null', 'commit', '-m', message);
   };
   await commit('feat: seed the fixture tree', {
     'ledger.ts': 'export function settle(rows) {\n  return rows;\n}\n',
     'ledger.test.ts': 'test("settle", () => {});\n',
+    'account.go': 'package account\nfunc Settle() {}\n',
+    'account_test.go': 'package account\nfunc TestSettle() {}\n',
+    'profile.py': 'def settle():\n    return True\n',
+    'test_profile.py': 'def test_settle():\n    assert True\n',
     'unrelated.ts': 'export const spare = 1;\n',
     'package.json': '{ "version": "1.0.0" }\n',
     'README.md': '# fixture\n',
@@ -32,6 +36,11 @@ async function fixtureRepo() {
   await commit('fix: settle pending ledger rows before payout', {
     'ledger.ts': 'export function settle(rows) {\n  return rows.filter(Boolean);\n}\n',
     'ledger.test.ts': 'test("settle", () => { /* pending */ });\n',
+    'account.go': 'package account\nfunc Settle() { /* pending */ }\n',
+    'account_test.go': 'package account\nfunc TestSettle() { /* pending */ }\n',
+    'profile.py': 'def settle():\n    return False\n',
+    'test_profile.py': 'def test_settle():\n    assert False\n',
+    'payout-report.ts': 'export const report = true;\n',
     'package.json': '{ "version": "1.0.1" }\n',
     'README.md': '# fixture updated\n',
   });
@@ -59,23 +68,37 @@ test('ground truth excludes docs, releases, derivable tests, and version manifes
   const root = await fixtureRepo();
   try {
     const corpus = buildRetrievalCorpus({ repo: root, limit: 10 });
+    assert.doesNotThrow(() => validateRetrievalCorpus(corpus));
     assert.equal(corpus.counts.cases, 1);
     const [entry] = corpus.cases;
 
     assert.equal(entry.query, 'settle pending ledger rows before payout');
-    // The source file is the only thing anyone had to locate.
-    assert.deepEqual(entry.required_files, ['ledger.ts']);
+    // Only pre-existing source files belong in the retrieval denominator.
+    assert.deepEqual(entry.required_files, ['account.go', 'ledger.ts', 'profile.py']);
     // A test sharing its stem with a changed source is free recall, not ground truth.
-    assert.deepEqual(entry.derivable_files, ['ledger.test.ts']);
+    assert.deepEqual(entry.derivable_files, [
+      'account_test.go',
+      'ledger.test.ts',
+      'test_profile.py',
+    ]);
     // A version bump rode along; it is recorded but not scored.
     assert.deepEqual(entry.incidental_files, ['package.json']);
     assert.deepEqual(entry.excluded_files, ['README.md']);
+    // A file created by the fix cannot be retrieved from the pre-fix revision.
+    assert.deepEqual(entry.created_files, ['payout-report.ts']);
     assert.equal(entry.base_revision.length, 40);
     assert.notEqual(entry.base_revision, entry.commit);
     assert.equal(entry.retrieval.path_leak, true);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test('stale corpora fail closed before scoring', () => {
+  assert.throws(
+    () => validateRetrievalCorpus({ schema_version: 'codevetter.context-retrieval-corpus.v1' }),
+    /rebuild it/
+  );
 });
 
 test('a manifest-only change keeps the manifest as ground truth', async () => {
