@@ -18,6 +18,10 @@ use super::evidence_scope::{
     EvidenceScopeKind, EvidenceScopePlan,
 };
 use super::review::run_cli_review_core;
+use super::spec_coverage::{
+    compose_spec_coverage, load_spec_packet, validate_selected_requirements, SpecCoverageReceipt,
+    SpecEvidenceReference, SpecExecutionOutcome,
+};
 use super::trex_preview::{resolve_scope_change, TrexSourceReceipt};
 
 const MAX_RUNTIME_OUTPUT_BYTES: usize = 512 * 1024;
@@ -77,8 +81,31 @@ pub struct LocalCheckReceipt {
     pub task: String,
     pub source: TrexSourceReceipt,
     pub stages: LocalCheckStages,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub spec_coverage: Option<SpecCoverageReceipt>,
     pub verdict: LocalCheckVerdict,
     pub limitations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocalCheckPreflightReceipt {
+    pub schema_version: String,
+    pub ran_at: String,
+    pub repo_path: String,
+    pub task: String,
+    pub source: TrexSourceReceipt,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub spec_coverage: Option<SpecCoverageReceipt>,
+    pub correctness_target: Option<LocalCheckTarget>,
+    pub performance_target: Option<LocalCheckTarget>,
+    pub status: LocalCheckStatus,
+    pub limitations: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LocalCheckProgress {
+    pub stage: &'static str,
+    pub state: &'static str,
 }
 
 #[derive(Debug, Clone)]
@@ -86,6 +113,8 @@ pub struct LocalCheckInput {
     pub repo_path: PathBuf,
     pub change: String,
     pub task: String,
+    pub spec_paths: Vec<PathBuf>,
+    pub selected_requirement_ids: Vec<String>,
     pub review_agent: String,
     pub test_target: Option<LocalCheckTarget>,
     pub performance_target: Option<LocalCheckTarget>,
@@ -96,30 +125,47 @@ pub struct LocalCheckInput {
 }
 
 pub async fn run_local_check(input: LocalCheckInput) -> Result<LocalCheckReceipt, String> {
-    validate_input(&input)?;
-    let repo_path = canonical_clean_repository(&input.repo_path)?;
-    let repo_text = repo_path.to_string_lossy().into_owned();
-    let source = resolve_scope_change(&repo_text, &input.change).await?;
-    require_checked_out_head(&repo_path, &source.head_sha)?;
+    run_local_check_with_progress(input, |_| {}).await
+}
+
+pub async fn run_local_check_with_progress<F>(
+    input: LocalCheckInput,
+    mut on_progress: F,
+) -> Result<LocalCheckReceipt, String>
+where
+    F: FnMut(LocalCheckProgress),
+{
+    on_progress(LocalCheckProgress {
+        stage: "preflight",
+        state: "running",
+    });
+    let prepared = prepare_local_check(&input).await?;
+    on_progress(LocalCheckProgress {
+        stage: "preflight",
+        state: "completed",
+    });
+    let PreparedLocalCheck {
+        repo_path,
+        repo_text,
+        source,
+        spec_packet,
+        test_plan,
+        performance_plan,
+        correctness_target,
+        performance_target,
+        performance_selection_limitation,
+    } = prepared;
     let diff_range = format!("{}...{}", source.base_sha, source.head_sha);
+    let review_task = compose_review_task(&input.task, spec_packet.as_ref());
     let app_data_dir = default_app_data_dir()?;
     let connection =
         db::init_db(app_data_dir).map_err(|error| format!("open CodeVetter database: {error}"))?;
     let db = DbState(std::sync::Arc::new(std::sync::Mutex::new(connection)));
 
-    let test_plan = discover_plan(&repo_text, &input.change, EvidenceScopeConsumer::Testing).await;
-    let performance_plan = discover_plan(
-        &repo_text,
-        &input.change,
-        EvidenceScopeConsumer::Performance,
-    )
-    .await;
-    let correctness_target = select_target(input.test_target.clone(), test_plan.as_ref().ok());
-    let performance_target = select_target(
-        input.performance_target.clone(),
-        performance_plan.as_ref().ok(),
-    );
-
+    on_progress(LocalCheckProgress {
+        stage: "correctness",
+        state: "running",
+    });
     let correctness = run_runtime_stage(
         &repo_path,
         "run",
@@ -131,6 +177,7 @@ pub async fn run_local_check(input: LocalCheckInput) -> Result<LocalCheckReceipt
         test_plan.err(),
     )
     .await;
+    on_progress(progress_for_stage("correctness", &correctness));
     let baseline = input
         .baseline_repo_path
         .as_ref()
@@ -141,6 +188,14 @@ pub async fn run_local_check(input: LocalCheckInput) -> Result<LocalCheckReceipt
     } else {
         "diagnose-performance"
     };
+    on_progress(LocalCheckProgress {
+        stage: "performance",
+        state: if performance_target.is_some() {
+            "running"
+        } else {
+            "skipped"
+        },
+    });
     let performance = run_runtime_stage(
         &repo_path,
         performance_operation,
@@ -149,22 +204,28 @@ pub async fn run_local_check(input: LocalCheckInput) -> Result<LocalCheckReceipt
         input.warmups,
         input.timeout_ms,
         baseline.as_deref(),
-        performance_plan.err(),
+        performance_plan.err().or(performance_selection_limitation),
     )
     .await;
+    on_progress(progress_for_stage("performance", &performance));
     let review_runtime_context = vec![
         runtime_stage_review_context("correctness", &correctness),
         runtime_stage_review_context("performance", &performance),
     ];
+    on_progress(LocalCheckProgress {
+        stage: "review",
+        state: "running",
+    });
     let review = run_review_stage(
         db,
         &repo_text,
         &diff_range,
-        &input.task,
+        &review_task,
         &input.review_agent,
         review_runtime_context,
     )
     .await;
+    on_progress(progress_for_stage("review", &review));
     let optimization = optimization_stage(
         &repo_path,
         &source.base_sha,
@@ -177,6 +238,8 @@ pub async fn run_local_check(input: LocalCheckInput) -> Result<LocalCheckReceipt
         input.samples,
         input.warmups,
         input.timeout_ms,
+        &input.spec_paths,
+        &input.selected_requirement_ids,
     );
     let stages = LocalCheckStages {
         review,
@@ -184,9 +247,32 @@ pub async fn run_local_check(input: LocalCheckInput) -> Result<LocalCheckReceipt
         performance,
         optimization,
     };
-    let verdict = aggregate_verdict(&stages);
+    let spec_coverage = spec_packet.map(|packet| {
+        let review_completed = matches!(
+            stages.review.status,
+            LocalCheckStatus::Completed | LocalCheckStatus::NeedsAttention
+        );
+        let execution = match stages.correctness.status {
+            LocalCheckStatus::Passed => SpecExecutionOutcome::Passed,
+            LocalCheckStatus::Failed => SpecExecutionOutcome::Failed,
+            _ => SpecExecutionOutcome::Unavailable,
+        };
+        compose_spec_coverage(
+            packet,
+            &input.selected_requirement_ids,
+            &source.head_sha,
+            review_completed,
+            execution,
+            correctness_spec_evidence(&stages.correctness),
+        )
+    });
+    let verdict = apply_spec_confidence(aggregate_verdict(&stages), spec_coverage.as_ref());
     let limitations = collect_limitations(&stages);
 
+    on_progress(LocalCheckProgress {
+        stage: "done",
+        state: verdict_name(verdict),
+    });
     Ok(LocalCheckReceipt {
         schema_version: "codevetter.local-check/v1".into(),
         run_id: format!("local-check-{}", uuid::Uuid::new_v4()),
@@ -195,9 +281,160 @@ pub async fn run_local_check(input: LocalCheckInput) -> Result<LocalCheckReceipt
         task: input.task,
         source,
         stages,
+        spec_coverage,
         verdict,
         limitations,
     })
+}
+
+pub async fn preflight_local_check(
+    input: &LocalCheckInput,
+) -> Result<LocalCheckPreflightReceipt, String> {
+    let prepared = prepare_local_check(input).await?;
+    let PreparedLocalCheck {
+        repo_text,
+        source,
+        spec_packet,
+        test_plan,
+        performance_plan,
+        correctness_target,
+        performance_target,
+        performance_selection_limitation,
+        ..
+    } = prepared;
+    let spec_coverage = spec_packet.map(|packet| {
+        compose_spec_coverage(
+            packet,
+            &input.selected_requirement_ids,
+            &source.head_sha,
+            false,
+            SpecExecutionOutcome::Unavailable,
+            None,
+        )
+    });
+    let mut limitations = Vec::new();
+    if correctness_target.is_none() {
+        limitations.push(
+            test_plan
+                .err()
+                .unwrap_or_else(|| "No defensible correctness target matched this change".into()),
+        );
+    }
+    if performance_target.is_none() {
+        limitations.push(
+            performance_plan
+                .err()
+                .or(performance_selection_limitation)
+                .unwrap_or_else(|| {
+                    "No dedicated performance workload matched; use explicit --perf-adapter and --perf-target to opt in"
+                        .into()
+                }),
+        );
+    }
+    if let Some(summary) = spec_coverage.as_ref().map(|coverage| &coverage.summary) {
+        if summary.total_requirements == 0 {
+            limitations.push(
+                "Supplied specs contain no explicit `### Requirement:` sections; review was not started"
+                    .into(),
+            );
+        } else if summary.selected_for_execution == 0 {
+            limitations.push(
+                "No extracted requirement is bound to correctness; select at least one --requirement before review"
+                    .into(),
+            );
+        }
+    }
+    let status = if correctness_target.is_some()
+        && spec_coverage.as_ref().is_none_or(|coverage| {
+            coverage.summary.total_requirements > 0 && coverage.summary.selected_for_execution > 0
+        }) {
+        LocalCheckStatus::Ready
+    } else {
+        LocalCheckStatus::NoConfidence
+    };
+
+    Ok(LocalCheckPreflightReceipt {
+        schema_version: "codevetter.local-check-preflight/v1".into(),
+        ran_at: chrono::Utc::now().to_rfc3339(),
+        repo_path: repo_text,
+        task: input.task.clone(),
+        source,
+        spec_coverage,
+        correctness_target,
+        performance_target,
+        status,
+        limitations,
+    })
+}
+
+#[derive(Debug)]
+struct PreparedLocalCheck {
+    repo_path: PathBuf,
+    repo_text: String,
+    source: TrexSourceReceipt,
+    spec_packet: Option<super::spec_coverage::SpecPacket>,
+    test_plan: Result<EvidenceScopePlan, String>,
+    performance_plan: Result<EvidenceScopePlan, String>,
+    correctness_target: Option<LocalCheckTarget>,
+    performance_target: Option<LocalCheckTarget>,
+    performance_selection_limitation: Option<String>,
+}
+
+async fn prepare_local_check(input: &LocalCheckInput) -> Result<PreparedLocalCheck, String> {
+    validate_input(input)?;
+    let repo_path = canonical_clean_repository(&input.repo_path)?;
+    if let Some(baseline) = input.baseline_repo_path.as_ref() {
+        canonical_clean_repository(baseline)?;
+    }
+    let repo_text = repo_path.to_string_lossy().into_owned();
+    let source = resolve_scope_change(&repo_text, &input.change).await?;
+    require_checked_out_head(&repo_path, &source.head_sha)?;
+    let spec_packet = load_spec_packet(&repo_path, &input.spec_paths)?;
+    validate_selected_requirements(spec_packet.as_ref(), &input.selected_requirement_ids)?;
+    let test_plan = discover_plan(&repo_text, &input.change, EvidenceScopeConsumer::Testing).await;
+    let performance_plan = discover_plan(
+        &repo_text,
+        &input.change,
+        EvidenceScopeConsumer::Performance,
+    )
+    .await;
+    let correctness_target = select_target(input.test_target.clone(), test_plan.as_ref().ok());
+    let (performance_target, performance_selection_limitation) = select_performance_target(
+        input.performance_target.clone(),
+        performance_plan.as_ref().ok(),
+    );
+
+    Ok(PreparedLocalCheck {
+        repo_path,
+        repo_text,
+        source,
+        spec_packet,
+        test_plan,
+        performance_plan,
+        correctness_target,
+        performance_target,
+        performance_selection_limitation,
+    })
+}
+
+fn apply_spec_confidence(
+    verdict: LocalCheckVerdict,
+    coverage: Option<&SpecCoverageReceipt>,
+) -> LocalCheckVerdict {
+    if verdict != LocalCheckVerdict::PassedWithLimits {
+        return verdict;
+    }
+    let Some(summary) = coverage.map(|value| &value.summary) else {
+        return verdict;
+    };
+    if summary.total_requirements == 0
+        || summary.selected_for_execution == 0
+        || summary.verified + summary.contradicted < summary.selected_for_execution
+    {
+        LocalCheckVerdict::NoConfidence
+    } else {
+        verdict
+    }
 }
 
 fn validate_input(input: &LocalCheckInput) -> Result<(), String> {
@@ -216,6 +453,9 @@ fn validate_input(input: &LocalCheckInput) -> Result<(), String> {
     if !(100..=120_000).contains(&input.timeout_ms) {
         return Err("Runtime timeout must be between 100 and 120,000 milliseconds".into());
     }
+    if input.spec_paths.is_empty() && !input.selected_requirement_ids.is_empty() {
+        return Err("Selected requirements require at least one spec path".into());
+    }
     if let Some(target) = input.test_target.as_ref() {
         validate_target(target, false)?;
     }
@@ -223,6 +463,35 @@ fn validate_input(input: &LocalCheckInput) -> Result<(), String> {
         validate_target(target, true)?;
     }
     Ok(())
+}
+
+fn correctness_spec_evidence(stage: &LocalCheckStage) -> Option<SpecEvidenceReference> {
+    if !matches!(
+        stage.status,
+        LocalCheckStatus::Passed | LocalCheckStatus::Failed
+    ) {
+        return None;
+    }
+    let target = stage.target.as_ref();
+    Some(SpecEvidenceReference {
+        stage: "correctness".into(),
+        status: match stage.status {
+            LocalCheckStatus::Passed => "passed",
+            LocalCheckStatus::Failed => "failed",
+            _ => unreachable!(),
+        }
+        .into(),
+        adapter: target.map(|value| value.adapter.clone()),
+        target: target.map(|value| value.target.clone()),
+        source: target.map(|value| value.source.clone()),
+    })
+}
+
+fn compose_review_task(task: &str, packet: Option<&super::spec_coverage::SpecPacket>) -> String {
+    packet
+        .filter(|packet| !packet.review_context.is_empty())
+        .map(|packet| format!("{task}\n\n{}", packet.review_context))
+        .unwrap_or_else(|| task.to_string())
 }
 
 fn validate_target(target: &LocalCheckTarget, performance: bool) -> Result<(), String> {
@@ -438,6 +707,47 @@ fn select_target(
     explicit.or_else(|| plan?.candidates.first().map(candidate_target))
 }
 
+fn select_performance_target(
+    explicit: Option<LocalCheckTarget>,
+    plan: Option<&EvidenceScopePlan>,
+) -> (Option<LocalCheckTarget>, Option<String>) {
+    if let Some(target) = explicit {
+        return (Some(target), None);
+    }
+    let Some(plan) = plan else {
+        return (None, None);
+    };
+    if let Some(candidate) = plan
+        .candidates
+        .iter()
+        .find(|candidate| dedicated_performance_candidate(candidate))
+    {
+        return (Some(candidate_target(candidate)), None);
+    }
+    (
+        None,
+        Some(
+            "Discovery found no dedicated performance workload; generic tests require explicit --perf-adapter and --perf-target selection"
+                .into(),
+        ),
+    )
+}
+
+fn dedicated_performance_candidate(candidate: &EvidenceScopeCandidate) -> bool {
+    if candidate.adapter == "go-bench" || candidate.name.is_some() {
+        return true;
+    }
+    candidate
+        .target
+        .split(|character: char| !character.is_ascii_alphanumeric())
+        .any(|token| {
+            matches!(
+                token.to_ascii_lowercase().as_str(),
+                "bench" | "benchmark" | "benchmarks" | "perf" | "performance" | "load"
+            )
+        })
+}
+
 fn candidate_target(candidate: &EvidenceScopeCandidate) -> LocalCheckTarget {
     LocalCheckTarget {
         adapter: candidate.adapter.clone(),
@@ -642,6 +952,8 @@ fn optimization_stage(
     samples: u8,
     warmups: u8,
     timeout_ms: u64,
+    spec_paths: &[PathBuf],
+    selected_requirement_ids: &[String],
 ) -> LocalCheckStage {
     let Some(target) = target else {
         return LocalCheckStage {
@@ -692,6 +1004,8 @@ fn optimization_stage(
         samples,
         warmups,
         timeout_ms,
+        spec_paths,
+        selected_requirement_ids,
     );
     LocalCheckStage {
         status: if matches!(performance.status, LocalCheckStatus::Passed | LocalCheckStatus::Completed) {
@@ -723,6 +1037,8 @@ fn render_candidate_command(
     samples: u8,
     warmups: u8,
     timeout_ms: u64,
+    spec_paths: &[PathBuf],
+    selected_requirement_ids: &[String],
 ) -> String {
     let correctness = correctness_target
         .map(|selected| {
@@ -744,12 +1060,22 @@ fn render_candidate_command(
         .as_ref()
         .map(|value| format!(" --perf-name {}", shell_token(value)))
         .unwrap_or_default();
+    let specs = spec_paths
+        .iter()
+        .map(|path| format!(" --spec {}", shell_token(&path.to_string_lossy())))
+        .collect::<String>();
+    let requirements = selected_requirement_ids
+        .iter()
+        .map(|id| format!(" --requirement {}", shell_token(id)))
+        .collect::<String>();
     format!(
-        "codevetter check --repo <candidate-worktree> --range {} --task {} --agent {}{} --perf-adapter {} --perf-target {}{} --baseline-repo {} --samples {} --warmups {} --timeout-ms {}",
+        "codevetter check --repo <candidate-worktree> --range {} --task {} --agent {}{}{}{} --perf-adapter {} --perf-target {}{} --baseline-repo {} --samples {} --warmups {} --timeout-ms {}",
         shell_token(&format!("{base_sha}...HEAD")),
         shell_token(task),
         shell_token(review_agent),
         correctness,
+        specs,
+        requirements,
         shell_token(&target.adapter),
         shell_token(&target.target),
         performance_name,
@@ -780,6 +1106,33 @@ fn no_confidence_stage(
         target,
         evidence: json!({"verdict": {"status": "no_confidence"}}),
         limitations: vec![limitation],
+    }
+}
+
+fn progress_for_stage(stage: &'static str, result: &LocalCheckStage) -> LocalCheckProgress {
+    LocalCheckProgress {
+        stage,
+        state: status_name(result.status),
+    }
+}
+
+fn status_name(status: LocalCheckStatus) -> &'static str {
+    match status {
+        LocalCheckStatus::Passed => "passed",
+        LocalCheckStatus::Completed => "completed",
+        LocalCheckStatus::Ready => "ready",
+        LocalCheckStatus::NeedsAttention => "needs_attention",
+        LocalCheckStatus::Failed => "failed",
+        LocalCheckStatus::NoConfidence => "no_confidence",
+    }
+}
+
+fn verdict_name(verdict: LocalCheckVerdict) -> &'static str {
+    match verdict {
+        LocalCheckVerdict::PassedWithLimits => "passed_with_limits",
+        LocalCheckVerdict::NeedsAttention => "needs_attention",
+        LocalCheckVerdict::Failed => "failed",
+        LocalCheckVerdict::NoConfidence => "no_confidence",
     }
 }
 
@@ -821,16 +1174,16 @@ fn default_app_data_dir() -> Result<PathBuf, String> {
     #[cfg(target_os = "macos")]
     {
         let home = std::env::var_os("HOME").ok_or_else(|| "HOME is unavailable".to_string())?;
-        return Ok(PathBuf::from(home)
+        Ok(PathBuf::from(home)
             .join("Library")
             .join("Application Support")
-            .join("com.codevetter.desktop"));
+            .join("com.codevetter.desktop"))
     }
     #[cfg(target_os = "windows")]
     {
         let app_data =
             std::env::var_os("APPDATA").ok_or_else(|| "APPDATA is unavailable".to_string())?;
-        return Ok(PathBuf::from(app_data).join("com.codevetter.desktop"));
+        Ok(PathBuf::from(app_data).join("com.codevetter.desktop"))
     }
     #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
     {
@@ -887,6 +1240,38 @@ mod tests {
             optimization: stage(LocalCheckStatus::NoConfidence),
         };
         assert_eq!(aggregate_verdict(&stages), LocalCheckVerdict::NoConfidence);
+    }
+
+    #[test]
+    fn review_only_spec_coverage_cannot_preserve_a_passing_verdict() {
+        let coverage: SpecCoverageReceipt = serde_json::from_value(json!({
+            "schema_version": "codevetter.spec-coverage/v1",
+            "head_sha": "a".repeat(40),
+            "sources": [],
+            "requirements": [],
+            "summary": {
+                "total_requirements": 2,
+                "review_input_requirements": 2,
+                "selected_for_execution": 0,
+                "verified": 0,
+                "contradicted": 0,
+                "review_only": 2,
+                "unverified": 0,
+                "review_input_coverage_percent": 100,
+                "executable_evidence_coverage_percent": 0,
+                "verified_coverage_percent": 0
+            },
+            "limitations": []
+        }))
+        .expect("coverage");
+        assert_eq!(
+            apply_spec_confidence(LocalCheckVerdict::PassedWithLimits, Some(&coverage)),
+            LocalCheckVerdict::NoConfidence
+        );
+        assert_eq!(
+            apply_spec_confidence(LocalCheckVerdict::Failed, Some(&coverage)),
+            LocalCheckVerdict::Failed
+        );
     }
 
     #[test]
@@ -951,12 +1336,93 @@ mod tests {
             3,
             1,
             30_000,
+            &[PathBuf::from("docs/parser.md")],
+            &["parser-output-stable".into()],
         );
         assert!(command.contains("--task 'Preserve parser output'"));
         assert!(command.contains("--agent codex"));
         assert!(command.contains("--test-target test/parser.test.mjs"));
         assert!(command.contains("--perf-target test/parser.performance.test.mjs"));
+        assert!(command.contains("--spec docs/parser.md"));
+        assert!(command.contains("--requirement parser-output-stable"));
         assert!(command.contains("--baseline-repo /tmp/baseline"));
+    }
+
+    #[test]
+    fn review_task_includes_cited_specs_without_calling_them_proof() {
+        let repo = tempfile::tempdir().expect("repo");
+        let docs = repo.path().join("docs");
+        std::fs::create_dir_all(&docs).expect("docs");
+        std::fs::write(
+            docs.join("product.md"),
+            "### Requirement: account-lockout\nLock after five failed attempts.\n",
+        )
+        .expect("spec");
+        let packet = load_spec_packet(repo.path(), &[PathBuf::from("docs/product.md")])
+            .expect("packet")
+            .expect("some packet");
+        let task = compose_review_task("Preserve authentication", Some(&packet));
+        assert!(task.starts_with("Preserve authentication"));
+        assert!(task.contains("[account-lockout] docs/product.md:1"));
+        assert!(task.contains("not executable proof"));
+    }
+
+    #[test]
+    fn automatic_performance_requires_a_dedicated_workload() {
+        let candidate = |target: &str, adapter: &str, name: Option<&str>| EvidenceScopeCandidate {
+            id: format!("scope-{target}"),
+            adapter: adapter.into(),
+            target: target.into(),
+            name: name.map(ToOwned::to_owned),
+            reason: "fixture".into(),
+            source_paths: Vec::new(),
+            confidence_milli: 900,
+            testing_supported: true,
+            performance_supported: true,
+        };
+        assert!(!dedicated_performance_candidate(&candidate(
+            "test/parser.test.ts",
+            "vitest",
+            None,
+        )));
+        assert!(dedicated_performance_candidate(&candidate(
+            "test/parser.performance.test.ts",
+            "vitest",
+            None,
+        )));
+        assert!(dedicated_performance_candidate(&candidate(
+            "benchmark_test.go",
+            "go-bench",
+            Some("BenchmarkParse"),
+        )));
+    }
+
+    #[test]
+    fn explicit_performance_target_bypasses_discovery_filter() {
+        let explicit = LocalCheckTarget {
+            adapter: "vitest".into(),
+            target: "test/parser.test.ts".into(),
+            name: None,
+            source: "explicit".into(),
+        };
+        let (selected, limitation) = select_performance_target(Some(explicit.clone()), None);
+        assert_eq!(selected, Some(explicit));
+        assert!(limitation.is_none());
+    }
+
+    #[test]
+    fn progress_names_are_stable_and_machine_bounded() {
+        assert_eq!(
+            progress_for_stage("review", &stage(LocalCheckStatus::NeedsAttention)),
+            LocalCheckProgress {
+                stage: "review",
+                state: "needs_attention",
+            }
+        );
+        assert_eq!(
+            verdict_name(LocalCheckVerdict::PassedWithLimits),
+            "passed_with_limits"
+        );
     }
 
     #[test]

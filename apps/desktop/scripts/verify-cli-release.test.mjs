@@ -22,6 +22,9 @@ Options:
   --preview <url>
   --repo <path>
   --task <text>
+  --preflight
+  --spec <path>
+  --requirement <id>
   --baseline-repo <path>
   --json
 `;
@@ -50,7 +53,7 @@ test('qualifies the tracked version, help surface, and bundle declarations', asy
 
   assert.equal(result.version, TRACKED_VERSION);
   assert.equal(result.bundleEntry, 'binaries/codevetter');
-  assert.equal(result.helpContracts, 9);
+  assert.equal(result.helpContracts, 12);
   assert.ok(result.bytes > 0);
 });
 
@@ -81,6 +84,32 @@ test('fails when a documented T-Rex flag disappears', async (t) => {
   });
 
   assert.throws(() => qualifyCli({ binaryPath }), /CLI help is missing required contract: --json/);
+});
+
+test('fails when the spec verification contract disappears', async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), 'codevetter-cli-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const binaryPath = await fakeCli(directory, {
+    help: HELP.replace('--requirement <id>', '--criterion <id>'),
+  });
+
+  assert.throws(
+    () => qualifyCli({ binaryPath }),
+    /CLI help is missing required contract: --requirement <id>/
+  );
+});
+
+test('fails when the preflight contract disappears', async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), 'codevetter-cli-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const binaryPath = await fakeCli(directory, {
+    help: HELP.replace('--preflight', '--execute-only'),
+  });
+
+  assert.throws(
+    () => qualifyCli({ binaryPath }),
+    /CLI help is missing required contract: --preflight/
+  );
 });
 
 test('fails when either Tauri bundle declaration drops the CLI', async (t) => {

@@ -49,6 +49,7 @@ pub mod session_adapters;
 pub mod session_retention;
 pub mod sessions;
 pub mod setup;
+pub mod spec_coverage;
 pub mod structural_graph;
 pub mod synthetic_qa;
 pub mod taste;
