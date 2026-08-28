@@ -12,6 +12,9 @@ const requiredHelpFragments = [
   '--preview <url>',
   '--repo <path>',
   '--task <text>',
+  '--preflight',
+  '--spec <path>',
+  '--requirement <id>',
   '--baseline-repo <path>',
   '--json',
 ];

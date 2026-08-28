@@ -1,5 +1,6 @@
 use codevetter_desktop::commands::local_check::{
-    run_local_check, LocalCheckInput, LocalCheckReceipt, LocalCheckStatus, LocalCheckTarget,
+    preflight_local_check, run_local_check_with_progress, LocalCheckInput,
+    LocalCheckPreflightReceipt, LocalCheckReceipt, LocalCheckStatus, LocalCheckTarget,
     LocalCheckVerdict,
 };
 use codevetter_desktop::commands::trex_preview::{
@@ -24,6 +25,9 @@ Options:
   --preview <url>  Existing HTTP(S) preview containing the change
   --repo <path>    Repository path (defaults to the current directory)
   --task <text>    Intended behavior for the change
+  --preflight      Validate source, specs, and targets without model or project execution
+  --spec <path>    Repo-relative Markdown spec (repeatable)
+  --requirement <id>  Requirement id explicitly bound to correctness (repeatable)
   --agent <name>   Review executor: claude, gemini, or codex (default: claude)
   --test-adapter <adapter>  Explicit correctness adapter
   --test-target <path>      Explicit correctness target
@@ -58,6 +62,8 @@ struct CheckArguments {
     repo_path: PathBuf,
     change: String,
     task: String,
+    spec_paths: Vec<PathBuf>,
+    selected_requirement_ids: Vec<String>,
     review_agent: String,
     test_target: Option<LocalCheckTarget>,
     performance_target: Option<LocalCheckTarget>,
@@ -65,11 +71,12 @@ struct CheckArguments {
     samples: u8,
     warmups: u8,
     timeout_ms: u64,
+    preflight: bool,
     output: OutputMode,
 }
 
 enum CliCommand {
-    Check(CheckArguments),
+    Check(Box<CheckArguments>),
     Trex(TrexArguments),
     Help,
     Version,
@@ -98,16 +105,20 @@ async fn run() -> Result<i32, String> {
             println!("codevetter {}", app_version());
             Ok(0)
         }
-        CliCommand::Check(arguments) => run_check(arguments).await,
+        CliCommand::Check(arguments) => run_check(*arguments).await,
         CliCommand::Trex(arguments) => run_trex(arguments).await,
     }
 }
 
 async fn run_check(arguments: CheckArguments) -> Result<i32, String> {
-    let receipt = run_local_check(LocalCheckInput {
+    let output = arguments.output;
+    let preflight = arguments.preflight;
+    let input = LocalCheckInput {
         repo_path: arguments.repo_path,
         change: arguments.change,
         task: arguments.task,
+        spec_paths: arguments.spec_paths,
+        selected_requirement_ids: arguments.selected_requirement_ids,
         review_agent: arguments.review_agent,
         test_target: arguments.test_target,
         performance_target: arguments.performance_target,
@@ -115,9 +126,28 @@ async fn run_check(arguments: CheckArguments) -> Result<i32, String> {
         samples: arguments.samples,
         warmups: arguments.warmups,
         timeout_ms: arguments.timeout_ms,
+    };
+    if preflight {
+        let receipt = preflight_local_check(&input).await?;
+        match output {
+            OutputMode::Json => println!(
+                "{}",
+                serde_json::to_string(&receipt)
+                    .map_err(|error| format!("serialize local check preflight: {error}"))?
+            ),
+            OutputMode::Human => print!("{}", render_human_preflight(&receipt)),
+        }
+        return Ok(preflight_exit_code(receipt.status));
+    }
+
+    let human_progress = output == OutputMode::Human;
+    let receipt = run_local_check_with_progress(input, |progress| {
+        if human_progress {
+            eprintln!("[codevetter] {}: {}", progress.stage, progress.state);
+        }
     })
     .await?;
-    match arguments.output {
+    match output {
         OutputMode::Json => println!(
             "{}",
             serde_json::to_string(&receipt)
@@ -235,6 +265,8 @@ fn parse_check(
     let mut pull_request = None;
     let mut range = None;
     let mut task = None;
+    let mut spec_paths = Vec::new();
+    let mut selected_requirement_ids = Vec::new();
     let mut review_agent = "claude".to_string();
     let mut test_adapter = None;
     let mut test_target = None;
@@ -246,6 +278,7 @@ fn parse_check(
     let mut samples = 3;
     let mut warmups = 1;
     let mut timeout_ms = 30_000;
+    let mut preflight = false;
     let mut output = OutputMode::Human;
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
@@ -253,6 +286,11 @@ fn parse_check(
             "--pr" => pull_request = Some(required_value(&mut arguments, "--pr")?),
             "--range" => range = Some(required_value(&mut arguments, "--range")?),
             "--task" => task = Some(required_value(&mut arguments, "--task")?),
+            "--preflight" => preflight = true,
+            "--spec" => spec_paths.push(PathBuf::from(required_value(&mut arguments, "--spec")?)),
+            "--requirement" => {
+                selected_requirement_ids.push(required_value(&mut arguments, "--requirement")?)
+            }
             "--agent" => review_agent = required_value(&mut arguments, "--agent")?,
             "--test-adapter" => {
                 test_adapter = Some(required_value(&mut arguments, "--test-adapter")?)
@@ -294,10 +332,15 @@ fn parse_check(
         performance_target,
         performance_name,
     )?;
-    Ok(CliCommand::Check(CheckArguments {
+    if spec_paths.is_empty() && !selected_requirement_ids.is_empty() {
+        return Err("--requirement requires at least one --spec".into());
+    }
+    Ok(CliCommand::Check(Box::new(CheckArguments {
         repo_path: repo_path.unwrap_or_else(|| cwd.to_path_buf()),
         change,
         task: task.ok_or_else(|| "--task is required".to_string())?,
+        spec_paths,
+        selected_requirement_ids,
         review_agent,
         test_target,
         performance_target,
@@ -305,8 +348,9 @@ fn parse_check(
         samples,
         warmups,
         timeout_ms,
+        preflight,
         output,
-    }))
+    })))
 }
 
 fn paired_target(
@@ -359,16 +403,16 @@ fn default_app_data_dir() -> Result<PathBuf, String> {
     #[cfg(target_os = "macos")]
     {
         let home = std::env::var_os("HOME").ok_or_else(|| "HOME is unavailable".to_string())?;
-        return Ok(PathBuf::from(home)
+        Ok(PathBuf::from(home)
             .join("Library")
             .join("Application Support")
-            .join("com.codevetter.desktop"));
+            .join("com.codevetter.desktop"))
     }
     #[cfg(target_os = "windows")]
     {
         let app_data =
             std::env::var_os("APPDATA").ok_or_else(|| "APPDATA is unavailable".to_string())?;
-        return Ok(PathBuf::from(app_data).join("com.codevetter.desktop"));
+        Ok(PathBuf::from(app_data).join("com.codevetter.desktop"))
     }
     #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
     {
@@ -399,13 +443,48 @@ fn local_check_exit_code(verdict: LocalCheckVerdict) -> i32 {
     }
 }
 
-fn render_human_check(receipt: &LocalCheckReceipt) -> String {
-    let status = |value: LocalCheckStatus| {
-        serde_json::to_value(value)
-            .ok()
-            .and_then(|value| value.as_str().map(ToOwned::to_owned))
-            .unwrap_or_else(|| "unknown".into())
+fn preflight_exit_code(status: LocalCheckStatus) -> i32 {
+    if status == LocalCheckStatus::Ready {
+        0
+    } else {
+        2
+    }
+}
+
+fn render_human_preflight(receipt: &LocalCheckPreflightReceipt) -> String {
+    let target = |value: Option<&LocalCheckTarget>| {
+        value
+            .map(|target| format!("{} {}", target.adapter, target.target))
+            .unwrap_or_else(|| "unavailable".into())
     };
+    let mut output = format!(
+        "preflight: {}\nhead: {}\ncorrectness target: {}\nperformance target: {}\n",
+        local_status_text(receipt.status),
+        receipt.source.head_sha,
+        target(receipt.correctness_target.as_ref()),
+        target(receipt.performance_target.as_ref()),
+    );
+    if let Some(spec) = receipt.spec_coverage.as_ref() {
+        output.push_str(&format!(
+            "specs: {} source(s), {} requirement(s), {} selected\n",
+            spec.sources.len(),
+            spec.summary.total_requirements,
+            spec.summary.selected_for_execution,
+        ));
+    }
+    if !receipt.limitations.is_empty() {
+        output.push_str("limitations:\n");
+        for limitation in &receipt.limitations {
+            output.push_str(&format!("- {limitation}\n"));
+        }
+    }
+    if receipt.status == LocalCheckStatus::Ready {
+        output.push_str("next: rerun this command without --preflight to execute verification\n");
+    }
+    output
+}
+
+fn render_human_check(receipt: &LocalCheckReceipt) -> String {
     let verdict = serde_json::to_value(receipt.verdict)
         .ok()
         .and_then(|value| value.as_str().map(ToOwned::to_owned))
@@ -413,11 +492,39 @@ fn render_human_check(receipt: &LocalCheckReceipt) -> String {
     let mut output = format!(
         "verdict: {verdict}\nhead: {}\nreview: {}\ncorrectness: {}\nperformance: {}\noptimization: {}\n",
         receipt.source.head_sha,
-        status(receipt.stages.review.status),
-        status(receipt.stages.correctness.status),
-        status(receipt.stages.performance.status),
-        status(receipt.stages.optimization.status),
+        local_status_text(receipt.stages.review.status),
+        local_status_text(receipt.stages.correctness.status),
+        local_status_text(receipt.stages.performance.status),
+        local_status_text(receipt.stages.optimization.status),
     );
+    render_review_findings(&mut output, &receipt.stages.review.evidence);
+    if let Some(spec) = receipt.spec_coverage.as_ref() {
+        let percent = |value: Option<u8>| {
+            value
+                .map(|number| format!("{number}%"))
+                .unwrap_or_else(|| "n/a".into())
+        };
+        output.push_str(&format!(
+            "specs: {} source(s), {} requirement(s)\nspec review input: {}/{} ({})\nspec executable evidence: {}/{} ({})\nspec verified: {}/{} ({})\n",
+            spec.sources.len(),
+            spec.summary.total_requirements,
+            spec.summary.review_input_requirements,
+            spec.summary.total_requirements,
+            percent(spec.summary.review_input_coverage_percent),
+            spec.summary.verified + spec.summary.contradicted,
+            spec.summary.total_requirements,
+            percent(spec.summary.executable_evidence_coverage_percent),
+            spec.summary.verified,
+            spec.summary.total_requirements,
+            percent(spec.summary.verified_coverage_percent),
+        ));
+        if !spec.limitations.is_empty() {
+            output.push_str("spec limitations:\n");
+            for limitation in spec.limitations.iter().take(8) {
+                output.push_str(&format!("- {limitation}\n"));
+            }
+        }
+    }
     if let Some(command) = receipt
         .stages
         .optimization
@@ -434,6 +541,76 @@ fn render_human_check(receipt: &LocalCheckReceipt) -> String {
         }
     }
     output
+}
+
+fn local_status_text(status: LocalCheckStatus) -> String {
+    serde_json::to_value(status)
+        .ok()
+        .and_then(|value| value.as_str().map(ToOwned::to_owned))
+        .unwrap_or_else(|| "unknown".into())
+}
+
+fn render_review_findings(output: &mut String, evidence: &serde_json::Value) {
+    let Some(findings) = evidence
+        .get("findings")
+        .and_then(serde_json::Value::as_array)
+    else {
+        return;
+    };
+    let mut findings = findings.iter().collect::<Vec<_>>();
+    findings.sort_by_key(|finding| {
+        match finding.get("severity").and_then(serde_json::Value::as_str) {
+            Some("critical") => 0,
+            Some("high") => 1,
+            Some("medium") => 2,
+            Some("low") => 3,
+            _ => 4,
+        }
+    });
+    if findings.is_empty() {
+        return;
+    }
+    output.push_str("review findings:\n");
+    for finding in findings.into_iter().take(3) {
+        let severity = finding
+            .get("severity")
+            .and_then(serde_json::Value::as_str)
+            .map(|value| terminal_text(value, 16))
+            .unwrap_or_else(|| "unknown".into());
+        let title = finding
+            .get("title")
+            .and_then(serde_json::Value::as_str)
+            .map(|value| terminal_text(value, 180))
+            .unwrap_or_else(|| "Untitled finding".into());
+        let location = finding
+            .get("filePath")
+            .and_then(serde_json::Value::as_str)
+            .map(|path| {
+                let path = terminal_text(path, 180);
+                finding
+                    .get("line")
+                    .and_then(serde_json::Value::as_u64)
+                    .map(|line| format!(" ({path}:{line})"))
+                    .unwrap_or_else(|| format!(" ({path})"))
+            })
+            .unwrap_or_default();
+        output.push_str(&format!("- {severity}: {title}{location}\n"));
+    }
+}
+
+fn terminal_text(value: &str, max_chars: usize) -> String {
+    value
+        .chars()
+        .filter_map(|character| match character {
+            '\n' | '\r' | '\t' => Some(' '),
+            value if value.is_control() => None,
+            value => Some(value),
+        })
+        .take(max_chars)
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 fn render_human_receipt(receipt: &TrexPreviewReceipt) -> String {
@@ -566,6 +743,7 @@ mod tests {
                     limitations: vec!["Candidate edits remain external.".into()],
                 },
             },
+            spec_coverage: None,
             verdict,
             limitations: vec!["Candidate edits remain external.".into()],
         }
@@ -647,6 +825,13 @@ mod tests {
                 "main...HEAD".into(),
                 "--task".into(),
                 "Reduce parser latency without changing output".into(),
+                "--preflight".into(),
+                "--spec".into(),
+                "docs/parser.md".into(),
+                "--spec".into(),
+                "docs/architecture.md".into(),
+                "--requirement".into(),
+                "parser-output-stable".into(),
                 "--test-adapter".into(),
                 "node-test".into(),
                 "--test-target".into(),
@@ -667,7 +852,19 @@ mod tests {
         assert_eq!(arguments.repo_path, Path::new("/tmp/widget"));
         assert_eq!(arguments.change, "main...HEAD");
         assert_eq!(arguments.review_agent, "claude");
+        assert_eq!(
+            arguments.spec_paths,
+            vec![
+                PathBuf::from("docs/parser.md"),
+                PathBuf::from("docs/architecture.md")
+            ]
+        );
+        assert_eq!(
+            arguments.selected_requirement_ids,
+            vec!["parser-output-stable"]
+        );
         assert_eq!(arguments.samples, 5);
+        assert!(arguments.preflight);
         assert_eq!(arguments.output, OutputMode::Json);
         assert_eq!(
             arguments
@@ -703,6 +900,19 @@ mod tests {
                 "https://github.com/acme/widget/pull/1".into(),
                 "--task".into(),
                 "Review this".into(),
+            ],
+            cwd,
+        )
+        .is_err());
+        assert!(parse_arguments(
+            [
+                "check".into(),
+                "--range".into(),
+                "main...HEAD".into(),
+                "--task".into(),
+                "Review this".into(),
+                "--requirement".into(),
+                "missing-spec".into(),
             ],
             cwd,
         )
@@ -754,5 +964,74 @@ mod tests {
         let payload = serde_json::to_value(&passed).expect("receipt JSON");
         assert_eq!(payload["schema_version"], "codevetter.local-check/v1");
         assert_eq!(payload["stages"]["correctness"]["status"], "passed");
+        assert!(payload.get("spec_coverage").is_none());
+
+        let mut spec_passed = passed.clone();
+        spec_passed.spec_coverage = Some(
+            serde_json::from_value(serde_json::json!({
+                "schema_version": "codevetter.spec-coverage/v1",
+                "head_sha": "b".repeat(40),
+                "sources": [{"path": "docs/product.md", "sha256": format!("sha256:{}", "c".repeat(64)), "bytes": 42}],
+                "requirements": [],
+                "summary": {
+                    "total_requirements": 5,
+                    "review_input_requirements": 5,
+                    "selected_for_execution": 2,
+                    "verified": 2,
+                    "contradicted": 0,
+                    "review_only": 3,
+                    "unverified": 0,
+                    "review_input_coverage_percent": 100,
+                    "executable_evidence_coverage_percent": 40,
+                    "verified_coverage_percent": 40
+                },
+                "limitations": []
+            }))
+            .expect("spec coverage"),
+        );
+        let spec_output = render_human_check(&spec_passed);
+        assert!(spec_output.contains("spec review input: 5/5 (100%)"));
+        assert!(spec_output.contains("spec executable evidence: 2/5 (40%)"));
+        assert!(spec_output.contains("spec verified: 2/5 (40%)"));
+
+        let mut findings = passed.clone();
+        findings.stages.review.evidence = serde_json::json!({
+            "findings": [
+                {"severity": "low", "title": "Fourth finding", "filePath": "src/four.ts", "line": 4},
+                {"severity": "high", "title": "Unsafe\nterminal\u{1b}[31m title", "filePath": "src/high.ts", "line": 9},
+                {"severity": "critical", "title": "Critical finding", "filePath": "src/critical.ts", "line": 2},
+                {"severity": "medium", "title": "Medium finding", "filePath": "src/medium.ts"}
+            ]
+        });
+        let findings_output = render_human_check(&findings);
+        assert!(findings_output.contains("review findings:"));
+        assert!(findings_output.contains("- critical: Critical finding (src/critical.ts:2)"));
+        assert!(findings_output.contains("- high: Unsafe terminal[31m title (src/high.ts:9)"));
+        assert!(findings_output.contains("- medium: Medium finding (src/medium.ts)"));
+        assert!(!findings_output.contains("Fourth finding"));
+
+        let preflight = LocalCheckPreflightReceipt {
+            schema_version: "codevetter.local-check-preflight/v1".into(),
+            ran_at: "2026-08-29T00:00:00Z".into(),
+            repo_path: passed.repo_path.clone(),
+            task: passed.task.clone(),
+            source: passed.source.clone(),
+            spec_coverage: None,
+            correctness_target: Some(LocalCheckTarget {
+                adapter: "vitest".into(),
+                target: "test/parser.test.ts".into(),
+                name: None,
+                source: "discovered:fixture".into(),
+            }),
+            performance_target: None,
+            status: LocalCheckStatus::Ready,
+            limitations: vec!["No dedicated performance workload matched".into()],
+        };
+        let preflight_output = render_human_preflight(&preflight);
+        assert_eq!(preflight_exit_code(preflight.status), 0);
+        assert!(preflight_output.contains("preflight: ready"));
+        assert!(preflight_output.contains("correctness target: vitest test/parser.test.ts"));
+        assert!(preflight_output.contains("performance target: unavailable"));
+        assert!(preflight_output.contains("rerun this command without --preflight"));
     }
 }
