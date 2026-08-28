@@ -7,33 +7,29 @@ import Stats from '@/components/Stats.astro';
 import Bento from '@/components/Bento.astro';
 import HowItWorks from '@/components/HowItWorks.astro';
 import Providers from '@/components/Providers.astro';
-import Pricing from '@/components/Pricing.astro';
+import Availability from '@/components/Availability.astro';
 import CTA from '@/components/CTA.astro';
 import FAQ from '@/components/FAQ.astro';
 import Footer from '@/components/Footer.astro';
 
-// CodeVetter landing — Astro static port of apps/landing-page/app/page.tsx.
-// Composition mirrors the React page 1:1.
+// CodeVetter landing — execution-backed verification positioning.
 ---
 
 <Layout
-  title="CodeVetter — Review, test, and optimize AI-written code"
-  description="AI writes code fast—and often leaves redundant work and hidden bottlenecks. CodeVetter reviews, tests, and profiles agent-written changes with executable evidence."
+  title="CodeVetter — Execution-backed agent verification"
+  description="Verify whether a coding agent completed its task. CodeVetter binds the exact change to executable checks, inspectable evidence, limitations, and a measurable verdict."
   path="/"
 >
   <main>
     <Nav />
     <Hero />
-    {/* Everything below the hero is wrapped in `content-visibility:auto`
-        so the browser skips layout/paint until each section enters the
-        viewport. Drops first-paint cost from 951 DOM elements down to
-        the ~250 the hero needs. See globals.css → `.cv-below-fold`. */}
+    {/* Section wrappers preserve document order and anchor behavior. */}
     <div class="cv-below-fold"><CatchStrip /></div>
     <div class="cv-below-fold"><Stats /></div>
     <div class="cv-below-fold"><Bento /></div>
     <div class="cv-below-fold"><HowItWorks /></div>
     <div class="cv-below-fold"><Providers /></div>
-    <div class="cv-below-fold"><Pricing /></div>
+    <div class="cv-below-fold"><Availability /></div>
     <div class="cv-below-fold"><CTA /></div>
     <div class="cv-below-fold"><FAQ /></div>
     <div class="cv-below-fold"><Footer /></div>

@@ -46,7 +46,7 @@ const OPENAPI_SPEC = {
     title: 'CodeVetter public API',
     version: '1.0.0',
     description:
-      'CodeVetter is a desktop-first AI code review workbench. The public web API exposes read-only agent surfaces: the agent catalog, sitemap, and markdown alternates. The verification engine itself runs locally in the Tauri desktop app and does not expose a remote API.',
+      'CodeVetter provides execution-backed verification and evaluation for coding-agent changes. The public web API exposes read-only agent surfaces: the agent catalog, sitemap, and markdown alternates. The verification engine itself runs locally through the packaged CLI and MCP sidecars and does not expose a remote API.',
     contact: { name: 'CodeVetter', url: 'https://codevetter.com' },
     license: { name: 'ISC', url: 'https://github.com/Codevetter/codevetter/blob/main/LICENSE' },
   },
@@ -296,6 +296,28 @@ async function tryMarkdownNegotiation(request, url, pathname, env) {
   });
 }
 
+async function tryAgentMode(request, url, pathname, env) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
+  if (pathname !== '/' || url.searchParams.get('mode') !== 'agent') return null;
+
+  const mdUrl = new URL(url);
+  mdUrl.pathname = '/index.md';
+  mdUrl.search = '';
+  const mdResponse = await env.ASSETS.fetch(new Request(mdUrl.toString(), request));
+  if (mdResponse.status !== 200) return null;
+
+  const headers = new Headers(mdResponse.headers);
+  headers.set('content-type', 'text/markdown; charset=utf-8');
+  headers.set('cache-control', 'public, max-age=300, s-maxage=300');
+  headers.set('vary', 'Accept, Accept-Encoding');
+  headers.set('x-content-type-options', 'nosniff');
+  headers.set('x-edge-cache', 'WORKER-ASSETS');
+  return new Response(request.method === 'HEAD' ? null : mdResponse.body, {
+    status: 200,
+    headers,
+  });
+}
+
 async function fetchWithApiFallback(url, request, pathname, env) {
   let response = await env.ASSETS.fetch(request);
   if (response.status === 404 && (pathname === '/api/ai' || pathname === '/api-ai.json')) {
@@ -324,6 +346,10 @@ function applyResponseHeaders(response, pathname) {
     headers.set('RateLimit-Remaining', '119');
     headers.set('RateLimit-Reset', '60');
   }
+  if (pathname === '/.well-known/ai-catalog.json') {
+    headers.set('content-type', 'application/ai-catalog+json; charset=utf-8');
+    headers.set('access-control-allow-origin', '*');
+  }
   if (pathname.endsWith('.md')) {
     headers.set('content-type', 'text/markdown; charset=utf-8');
     headers.set('vary', 'Accept, Accept-Encoding');
@@ -333,6 +359,11 @@ function applyResponseHeaders(response, pathname) {
   if (response.status === 200 && (headers.get('content-type') || '').includes('text/html')) {
     const existingVary = headers.get('vary');
     headers.set('vary', existingVary ? `${existingVary}, Accept` : 'Accept, Accept-Encoding');
+    const markdown = markdownPathFor(pathname);
+    headers.set(
+      'link',
+      `<${markdown}>; rel="alternate"; type="text/markdown", </sitemap-index.xml>; rel="sitemap"; type="application/xml", </openapi.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", </api/ai>; rel="service-desc"; type="application/json", </.well-known/ai-catalog.json>; rel="ai-catalog"; type="application/ai-catalog+json"`
+    );
   }
   return new Response(response.body, {
     status: response.status,
@@ -350,6 +381,9 @@ export default {
     if (pathname === '/openapi.json' || pathname === '/openapi.yaml') {
       return serveOpenApiSpec();
     }
+
+    const agentModeResponse = await tryAgentMode(request, url, pathname, env);
+    if (agentModeResponse) return agentModeResponse;
 
     // JSON errors for /api/* paths that don't match a known surface.
     if (pathname.startsWith('/api/') && pathname !== '/api/ai' && pathname !== '/api-ai.json') {

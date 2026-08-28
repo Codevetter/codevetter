@@ -30,7 +30,8 @@ const tone = {
       <a class="mt-7 inline-flex h-10 items-center border border-[--color-line-2] px-4 text-sm text-white hover:border-[--color-accent]/50" href="/optimize">How Optimize works</a>
     </header>
 
-    <section class="mt-20 border-t border-[--color-line]" aria-label="Project case studies">
+    <section class="mt-20 border-t border-[--color-line]" aria-labelledby="project-case-studies">
+      <h2 id="project-case-studies" class="pt-8 text-2xl font-semibold text-white">Project case studies</h2>
       {optimizationCaseStudies.map((study) => (
         <a class="group grid gap-4 border-b border-[--color-line] py-7 sm:grid-cols-[150px_110px_minmax(0,1fr)_110px] sm:items-start" href={`/benchmark/optimization/${study.slug}`}>
           <strong class="text-base font-medium text-white group-hover:text-[--color-accent]">{study.project}</strong>

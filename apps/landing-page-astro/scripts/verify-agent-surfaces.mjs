@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,7 +36,54 @@ const routes = [...sitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map((match) =
 const routeSet = new Set(routes.map(canonicalUrl));
 const failures = [];
 
-// Verify sitemap-index.xml exists and points to sitemap-0.xml.
+const aiCatalog = JSON.parse(
+  fs.readFileSync(path.join(dist, '.well-known', 'ai-catalog.json'), 'utf8')
+);
+if (aiCatalog.specVersion !== '1.0' || !Array.isArray(aiCatalog.entries)) {
+  failures.push('/.well-known/ai-catalog.json is not an AI Catalog 1.0 document');
+}
+for (const entry of aiCatalog.entries ?? []) {
+  if (
+    typeof entry?.identifier !== 'string' ||
+    typeof entry?.displayName !== 'string' ||
+    typeof entry?.type !== 'string' ||
+    typeof entry?.url !== 'string' ||
+    new URL(entry.url, origin).origin !== origin
+  ) {
+    failures.push(`${entry?.identifier ?? 'unnamed'}: AI Catalog entry is incomplete or external`);
+  }
+}
+
+const skillsIndex = JSON.parse(
+  fs.readFileSync(path.join(dist, '.well-known', 'agent-skills', 'index.json'), 'utf8')
+);
+for (const skill of skillsIndex.skills ?? []) {
+  const skillFile = localFile(skill.url);
+  if (
+    typeof skill?.name !== 'string' ||
+    typeof skill?.description !== 'string' ||
+    skill?.type !== 'text/markdown' ||
+    !fs.existsSync(skillFile)
+  ) {
+    failures.push(`${skill?.name ?? 'unnamed'}: skill discovery entry is incomplete`);
+    continue;
+  }
+  const skillBytes = fs.readFileSync(skillFile);
+  const digest = `sha256:${createHash('sha256').update(skillBytes).digest('hex')}`;
+  if (skill.digest !== digest) {
+    failures.push(`${skill.name}: skill digest does not match the published SKILL.md`);
+  }
+  const skillSource = skillBytes.toString('utf8');
+  if (!skillSource.startsWith('---\n') || !skillSource.includes(`\nname: ${skill.name}\n`)) {
+    failures.push(`${skill.name}: published SKILL.md metadata does not match discovery`);
+  }
+}
+if (!Array.isArray(skillsIndex.skills) || skillsIndex.skills.length === 0) {
+  failures.push('/.well-known/agent-skills/index.json contains no skills');
+}
+
+// Verify both sitemap indexes resolve to checked-in build output. The docs
+// sitemap is merged after Astro builds the landing sitemap.
 const sitemapIndex = fs.readFileSync(path.join(dist, 'sitemap-index.xml'), 'utf8');
 const indexEntries = [...sitemapIndex.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map(
   (match) => match[1]
@@ -48,8 +96,12 @@ if (indexEntries.length === 0) {
   failures.push('sitemap-index.xml contains no sitemap entries');
 }
 for (const entry of indexEntries) {
-  if (!entry.endsWith('/sitemap-0.xml')) {
-    failures.push(`${entry}: sitemap-index entry does not point to sitemap-0.xml`);
+  const entryUrl = new URL(entry, origin);
+  const sitemapFile = path.join(dist, decodeURIComponent(entryUrl.pathname).replace(/^\/+/, ''));
+  if (entryUrl.origin !== origin || !entryUrl.pathname.endsWith('.xml')) {
+    failures.push(`${entry}: sitemap-index entry is not a same-origin XML sitemap`);
+  } else if (!fs.existsSync(sitemapFile)) {
+    failures.push(`${entry}: sitemap-index entry has no local build output`);
   }
 }
 if (JSON.stringify(legacyEntries) !== JSON.stringify(indexEntries)) {
@@ -109,9 +161,12 @@ if (failures.length > 0) {
 
 console.log(`PASS ${routes.length}/${routes.length} sitemap routes have readable Markdown`);
 console.log(
-  `PASS ${indexEntries.length} sitemap-index entr${indexEntries.length === 1 ? 'y' : 'ies'} point to sitemap-0.xml`
+  `PASS ${indexEntries.length} sitemap-index entr${indexEntries.length === 1 ? 'y' : 'ies'} resolve to local sitemap files`
 );
 console.log(`PASS sitemap.xml mirrors the canonical sitemap index`);
 console.log(
   `PASS ${surfaces.length}/${routes.length} API catalog surfaces cover every sitemap route and are readable`
+);
+console.log(
+  `PASS ${skillsIndex.skills.length} published skill digest and ${aiCatalog.entries.length} AI Catalog entries`
 );

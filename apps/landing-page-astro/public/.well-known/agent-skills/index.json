@@ -1,0 +1,11 @@
+{
+  "skills": [
+    {
+      "name": "codevetter-local-verification",
+      "type": "text/markdown",
+      "description": "Verify whether a coding agent completed a local software task using CodeVetter's packaged CLI, executable checks, and portable evidence. Use when CodeVetter is already installed and the user asks for an evidence-backed verdict on one exact PR or Git range.",
+      "url": "/.well-known/agent-skills/codevetter-local-verification/SKILL.md",
+      "digest": "sha256:aa4b255bade1fcf38726aa22905272c1ced1adf481d1a9d4fac1467dddb94e33"
+    }
+  ]
+}

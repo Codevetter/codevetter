@@ -30,13 +30,20 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 
 ## Product links
 
-- Home: https://codevetter.com/ — Features, pricing, how it works
+- Home: https://codevetter.com/ — Verification contract, evidence, provider boundary, and current availability
 - Public benchmark: https://codevetter.com/benchmark — Reproducible cases, results, scorer, and limitations
 - Documentation: https://codevetter.com/docs/ — Product and engineering knowledge system
 - Download: https://codevetter.com/download — macOS release
 - FAQ: https://codevetter.com/faq — Common questions about local verification and provider boundaries
 - Changelog: https://codevetter.com/changelog — Verified shipped outcomes
 - Privacy: https://codevetter.com/privacy — Local-first data handling
+
+## Current availability
+
+- The public release currently contains an Apple-silicon macOS DMG and updater archive.
+- The desktop distribution packages local CLI and stdio MCP sidecars.
+- No npm package, hosted verifier, hosted MCP server, Homebrew cask, Intel macOS installer, Windows installer, or Linux installer is currently published.
+- Provider-backed review sends selected context directly to the provider configured by the user; no CodeVetter review server is required.
 
 ## Verification guides
 
@@ -47,6 +54,8 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 
 ## Machine surfaces
 
+- https://codevetter.com/.well-known/agent-skills/index.json
+- https://codevetter.com/.well-known/agent-skills/codevetter-local-verification/SKILL.md
 - https://codevetter.com/llms.txt
 - https://codevetter.com/llms-full.txt
 - https://codevetter.com/api/ai

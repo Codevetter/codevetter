@@ -16,7 +16,7 @@ Do not use CodeVetter for: generic static code review without execution, style-o
 
 ## Product
 
-- [Home](https://codevetter.com/): Features, pricing, how it works
+- [Home](https://codevetter.com/): Verification contract, evidence, provider boundary, and current availability
 - [Public benchmark](https://codevetter.com/benchmark): Reproducible cases, scorer, results, and limitations
 - [Documentation](https://codevetter.com/docs/): Product, architecture, development, and operations truth
 - [Download](https://codevetter.com/download): macOS release
@@ -34,21 +34,27 @@ Do not use CodeVetter for: generic static code review without execution, style-o
 ## Machine surfaces
 
 - [Agent catalog](https://codevetter.com/api/ai): JSON inventory of public surfaces
+- [AI catalog](https://codevetter.com/.well-known/ai-catalog.json): Typed discovery catalog for the local verification skill and read-only public API
+- [Agent skills index](https://codevetter.com/.well-known/agent-skills/index.json): Discovery metadata for the local-verification skill
+- [Local verification skill](https://codevetter.com/.well-known/agent-skills/codevetter-local-verification/SKILL.md): Bounded instructions for the packaged CLI and stdio MCP
 - [OpenAPI spec](https://codevetter.com/openapi.json): Machine-readable API description
+- [Pricing and availability](https://codevetter.com/pricing.md): Machine-readable commercial truth and provider-cost boundary
 - [Homepage markdown](https://codevetter.com/index.md): Product brief without JS
 - [Benchmark markdown](https://codevetter.com/benchmark.md): Reproducible benchmark summary without JS
 - [Documentation markdown](https://codevetter.com/docs.md): Canonical documentation index without JS
 - [This index](https://codevetter.com/llms.txt)
 - [Full agent brief](https://codevetter.com/llms-full.txt)
 
-## CLI
+## Local CLI and MCP
 
-CodeVetter ships a CLI for agent verification:
+The macOS desktop distribution packages a local `codevetter` CLI and a
+read-only stdio `codevetter-mcp` sidecar. Review setup in the desktop app
+exposes the exact local invocation for the selected repository and change.
 
 ```bash
-npx codevetter verify --repo ./my-project --task "fix the failing tests"
+codevetter check --repo ./my-project --range main...HEAD --task "fix the failing tests"
 ```
 
-The CLI runs the same execution-backed verification pipeline as the desktop app
-and emits a portable evidence bundle. See `codevetter verify --help` for all
-subcommands (verify, benchmark, evidence, mcp).
+There is no separately published `codevetter` npm package and no hosted MCP or
+verification endpoint. The local MCP sidecar uses stdio and repository-scoped
+configuration from the desktop app.
