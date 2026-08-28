@@ -1,6 +1,6 @@
 ---
 title: "Learnings: platform and stack"
-description: "Platform + stack concepts: Tauri 2, IPC, CLI-agent subprocesses, ast-grep, agent talks, rusqlite, provider APIs, auto-updater, DORA, calibration, workspaces, CF Pages, GEO, release chaining."
+description: "How CodeVetter uses Tauri, typed IPC, CLI-agent subprocesses, structural scanning, local storage, provider APIs, updates, telemetry, and release tooling."
 ---
 
 Desktop Tauri 2 / Rust app that reviews agent-generated code diffs using pluggable LLM providers, running fully offline as a macOS binary.
@@ -53,7 +53,7 @@ Desktop Tauri 2 / Rust app that reviews agent-generated code diffs using pluggab
 - What: The `/v1/chat/completions` HTTP shape that Anthropic, OpenAI, and OpenRouter all expose.
 - Why here: one request shape covers all three configurable providers, so provider choice is config, not code.
 - Gotcha (from code): Provider presets all use a `/v1` base URL — `PROVIDER_PRESETS` maps provider names to `baseUrl` + `model`; the Anthropic preset points at `api.anthropic.com/v1`, which accepts the OpenAI shape. (`apps/desktop/src/lib/review-service.ts:112–128`)
-- Source: https://platform.openai.com/docs/api-reference/chat
+- Source: https://developers.openai.com/api/reference/resources/chat
 
 ## Tauri auto-updater (`tauri-plugin-updater`)
 - What: Plugin that checks GitHub Releases for a `latest.json` manifest and applies delta updates.
@@ -83,7 +83,7 @@ Desktop Tauri 2 / Rust app that reviews agent-generated code diffs using pluggab
 - What: Node's built-in multi-package monorepo support via `workspaces` in `package.json`.
 - Why here: desktop app + landing page in one repo; one lockfile discipline or deploys break.
 - Gotcha (from code): A stale `pnpm-lock.yaml` coexisted with `package-lock.json`; Cloudflare Pages picked up the pnpm lockfile and failed because it was out of sync. (`pnpm-lock.yaml` still exists at repo root alongside `package-lock.json`)
-- Source: https://docs.npmjs.com/cli/using-npm/workspaces
+- Source: https://docs.npmjs.com/cli/using-npm/workspaces/
 
 ## Cloudflare Pages deployment
 - What: Static-site and SSR hosting on Cloudflare's edge network, triggered by git push.
@@ -100,7 +100,7 @@ Desktop Tauri 2 / Rust app that reviews agent-generated code diffs using pluggab
 - What: workflows triggered by events that a GITHUB_TOKEN created do NOT cascade to other workflows — a documented anti-recursion safeguard; `workflow_dispatch` is the one event that still fires.
 - Why here: the auto-release workflow creates the release with GITHUB_TOKEN, so it must dispatch the binary-build workflow explicitly or nothing builds.
 - Gotcha (from code): the comment block at the top of `auto-release.yml` is the canonical explanation; a `tauri.conf.json` version bump on main is the trigger.
-- Source: https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+- Source: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow
 
 ## GEO — AI-crawler discoverability
 - What: making a site legible to AI answer engines (GPTBot, ClaudeBot, Perplexity): FAQ blocks, robots rules, structured data.

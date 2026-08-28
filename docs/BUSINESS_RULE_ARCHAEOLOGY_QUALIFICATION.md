@@ -1,8 +1,8 @@
 ---
-title: Business-rule archaeology qualification policy
+title: Business-rule archaeology gates
 ---
 
-# Business-rule archaeology qualification policy
+# Business-rule archaeology gates
 
 The version-one policy is checked in at
 `apps/desktop/tests/fixtures/business-rule-archaeology/qualification-policy-v1.json` and is

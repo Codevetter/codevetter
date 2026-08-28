@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-# Runbook: cut a desktop release
+# Cut a desktop release
 
 Releases are triggered by a version bump in
 `apps/desktop/src-tauri/tauri.conf.json` on `main`. The rest is automated by
