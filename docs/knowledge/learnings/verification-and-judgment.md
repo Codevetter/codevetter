@@ -1,6 +1,6 @@
 ---
 title: "Learnings: verification and judgment"
-description: "The verification stack: pairwise judging + order effects, staged verification, audience provenance, deterministic taste verdict, worktree isolation, FTS5, synthetic QA, spec-driven workflow."
+description: "How CodeVetter judges candidate changes with staged verification, provenance, deterministic evidence grades, isolated worktrees, and synthetic QA."
 ---
 
 The stack that decides whether agent-written work is actually shippable.

@@ -60,6 +60,7 @@
     "prepare": "husky || true",
     "lint": "biome check .",
     "format": "biome format --write .",
+    "build:landing": "pnpm --dir apps/landing-page-astro run build && pnpm --dir docs-site install --frozen-lockfile && pnpm --dir docs-site run build && node scripts/merge-landing-docs.mjs",
     "deploy": "node scripts/manual-deploy.mjs deploy-landing.yml ci.yml",
     "knip": "knip --no-exit-code --reporter symbols",
     "knip:strict": "knip --reporter symbols",

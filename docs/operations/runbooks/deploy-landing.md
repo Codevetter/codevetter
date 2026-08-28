@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-# Runbook: deploy the landing page
+# Deploy the landing page
 
 Landing deploys are manual (`workflow_dispatch` on `deploy-landing.yml`).
 They are not triggered by push.

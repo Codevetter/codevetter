@@ -1,6 +1,6 @@
 ---
 title: "Learnings: telemetry and indexing"
-description: "The usage pipeline: JSONL transcript parsing, usage dedup, incremental byte-offset cursors, day bucketing, API-equivalent pricing, rolling quota windows, background QoS."
+description: "How CodeVetter parses agent transcripts, deduplicates usage, tracks incremental cursors, calculates costs and quotas, and indexes history in the background."
 ---
 
 The pipeline that turns raw agent transcripts into the Home usage numbers.
@@ -10,7 +10,7 @@ Format matches [new-things.md](new-things.md); roadmap in [README.md](README.md)
 - What: Claude Code logs each session as JSONL; an assistant message is written as one line PER CONTENT BLOCK, each repeating the same final `usage` object.
 - Why here: the indexer summed every line — 50%+ of usage lines are byte-identical repeats, so ALL Claude token/cost numbers ran ~2.2× inflated until v1.2.17.
 - Gotcha (from code): dedup key is `(message.id, requestId)`; duplicates are always adjacent among usage lines but flush up to ~40s apart, so the last key persists per session (`cc_sessions.last_usage_key`) to survive incremental-read boundaries. (`session_adapters.rs` claude parse; `history.rs::fix_claude_usage_dedup`)
-- Source: https://github.com/ryoppippi/ccusage (dedups the same way)
+- Source: https://github.com/ccusage/ccusage (dedups the same way)
 
 ## Cumulative vs delta token counters
 - What: some CLIs report per-message token deltas (Claude), others a session-cumulative running total in every event (Codex `total_token_usage`).
@@ -75,13 +75,13 @@ Format matches [new-things.md](new-things.md); roadmap in [README.md](README.md)
 - What: pricing subscription usage at per-token list prices to get a comparable workload measure, versioned so stored costs refresh when prices change.
 - Why here: all $ figures are API-equivalents, not bills; a stale or mis-matched table silently distorts everything (o3-priced Codex, sonnet-priced Fable, GPT-5.6-sol at 1/4 price — all real incidents).
 - Gotcha (from code): `estimate_cost` match arms are ORDER-SENSITIVE (specific ids before family fallbacks); bump `PRICING_REV` on any change or already-indexed sessions keep old costs. (`history.rs::estimate_cost`)
-- Source: https://docs.anthropic.com/en/docs/about-claude/pricing + https://developers.openai.com/api/docs/pricing
+- Source: https://platform.claude.com/docs/en/about-claude/pricing + https://developers.openai.com/api/docs/pricing
 
 ## Rolling quota windows (provider quota APIs)
 - What: providers meter subscription usage in trailing windows (5h/7d) that re-anchor with activity; used% falls as bursts age out.
 - Why here: the Codex/Claude cards mirror the provider's own endpoints — a dropping percentage and re-arming countdown is correct behavior, not a telemetry bug ("codex keeps resetting").
 - Gotcha (from code): ChatGPT's `wham/usage` also carries manual rate-limit reset credits and per-model quota pools (`additional_rate_limits`) that the main window numbers don't include. (`accounts.rs::check_live_usage_openai`)
-- Source: https://platform.openai.com/docs/guides/rate-limits (concept)
+- Source: https://developers.openai.com/api/docs/guides/rate-limits (concept)
 
 ## macOS background QoS for indexer threads
 - What: dropping a thread to `QOS_CLASS_BACKGROUND` so the OS schedules it on efficiency cores and throttles it whenever the user is active.
