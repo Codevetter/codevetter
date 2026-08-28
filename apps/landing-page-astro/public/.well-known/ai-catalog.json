@@ -1,0 +1,24 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "CodeVetter",
+    "identifier": "did:web:codevetter.com",
+    "documentationUrl": "https://codevetter.com/docs/"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:codevetter.com:skill:local-verification",
+      "displayName": "CodeVetter local verification",
+      "type": "text/markdown",
+      "url": "https://codevetter.com/.well-known/agent-skills/codevetter-local-verification/SKILL.md",
+      "description": "Bounded instructions for verifying one exact local coding-agent change with the packaged CodeVetter CLI."
+    },
+    {
+      "identifier": "urn:air:codevetter.com:api:public-agent-surfaces",
+      "displayName": "CodeVetter public agent surfaces",
+      "type": "application/vnd.oai.openapi+json",
+      "url": "https://codevetter.com/openapi.json",
+      "description": "Read-only discovery API for CodeVetter product truth, Markdown alternates, and public evidence surfaces."
+    }
+  ]
+}

@@ -11,6 +11,9 @@
     "negotiation": true
   },
   "openapi": "https://codevetter.com/openapi.json",
+  "aiCatalog": "https://codevetter.com/.well-known/ai-catalog.json",
+  "agentSkills": "https://codevetter.com/.well-known/agent-skills/index.json",
+  "pricing": "https://codevetter.com/pricing.md",
   "surfaces": [
     {
       "id": "home",

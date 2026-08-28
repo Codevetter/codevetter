@@ -2,6 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import Nav from '@/components/Nav.astro';
 import Footer from '@/components/Footer.astro';
+import { currentReleaseUrl } from '@/data/release';
 
 // Port of apps/landing-page/app/download/page.tsx.
 
@@ -19,36 +20,12 @@ const PLATFORMS: Platform[] = [
     asset: 'CodeVetter_*_aarch64.dmg',
     command: 'Open the .dmg, drag CodeVetter to Applications.',
   },
-  {
-    name: 'macOS — Intel',
-    arch: 'x86_64',
-    asset: 'CodeVetter_*_x64.dmg',
-    command: 'Open the .dmg, drag CodeVetter to Applications.',
-  },
-  {
-    name: 'Windows',
-    arch: 'x86_64',
-    asset: 'CodeVetter_*_x64-setup.exe',
-    command: 'Run the installer.',
-  },
-  {
-    name: 'Linux — .deb',
-    arch: 'x86_64',
-    asset: 'code-vetter_*_amd64.deb',
-    command: 'sudo dpkg -i code-vetter_*_amd64.deb',
-  },
-  {
-    name: 'Linux — AppImage',
-    arch: 'x86_64',
-    asset: 'code-vetter_*_amd64.AppImage',
-    command: 'chmod +x code-vetter_*_amd64.AppImage && ./code-vetter_*_amd64.AppImage',
-  },
 ];
 ---
 
 <Layout
   title="Download — CodeVetter"
-  description="Install CodeVetter for macOS, Windows, or Linux."
+  description="Download the current Apple-silicon macOS release of CodeVetter from GitHub Releases, or inspect and build the open-source repository."
   path="/download"
 >
   <main class="min-h-screen bg-stone-950 text-stone-200">
@@ -61,12 +38,13 @@ const PLATFORMS: Platform[] = [
         Download
       </h1>
       <p class="mt-3 text-sm leading-7 text-stone-400">
-        Native desktop binaries. Local-first; no signup. Auto-updates from
-        GitHub Releases — disable in settings if you prefer manual control.
+        The current public artifact is an Apple-silicon macOS DMG. CodeVetter
+        requires no CodeVetter account; release updates are published through
+        GitHub Releases.
       </p>
 
       <a
-        href="https://github.com/Codevetter/codevetter/releases/latest"
+        href={currentReleaseUrl}
         target="_blank"
         rel="noopener noreferrer"
         class="mt-6 inline-block rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-stone-950 hover:bg-amber-400"
@@ -74,7 +52,8 @@ const PLATFORMS: Platform[] = [
         Latest release →
       </a>
 
-      <section class="mt-10 space-y-3">
+      <section class="mt-10 space-y-3" aria-labelledby="available-build">
+        <h2 id="available-build" class="text-xl font-semibold text-white">Available build</h2>
         {PLATFORMS.map((p) => (
           <div class="rounded-md border border-stone-800 bg-stone-900/40 p-4">
             <p class="text-sm font-medium text-white">{p.name}</p>
@@ -86,6 +65,12 @@ const PLATFORMS: Platform[] = [
         ))}
       </section>
 
+      <div class="mt-6 rounded-md border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-stone-400">
+        Intel macOS, Windows, Linux, and Homebrew installers are not currently
+        published. Use the source repository if you need to inspect another
+        platform build path.
+      </div>
+
       <p class="mt-10 text-xs text-stone-500">
         Building from source? See the{' '}
         <a
@@ -96,7 +81,7 @@ const PLATFORMS: Platform[] = [
         >
           repo README
         </a>{' '}
-        — Tauri 2 + React 19 + Rust, npm workspaces.
+      — Tauri 2 + React 19 + Rust, pnpm workspaces.
       </p>
     </article>
     <Footer />

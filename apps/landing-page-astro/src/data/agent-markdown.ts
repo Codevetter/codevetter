@@ -3,6 +3,7 @@ import results from '@/data/benchmark-results.json';
 import examples from '@/data/xray-examples.json';
 import docsIndexSource from '../../../../docs/index.md?raw';
 import { verificationContent } from '@/data/verification-content';
+import { currentReleaseUrl } from '@/data/release';
 import {
   optimizationCaseStudies,
   type OptimizationCaseStudy,
@@ -69,11 +70,12 @@ const staticPages: Record<string, string> = {
 ## Supported release artifacts
 
 - macOS on Apple Silicon: \`CodeVetter_*_aarch64.dmg\`
-- macOS on Intel: \`CodeVetter_*_x64.dmg\`
-- Windows on x86_64: \`CodeVetter_*_x64-setup.exe\`
-- Linux on x86_64: Debian package or AppImage
 
-[Open the latest release](https://github.com/Codevetter/codevetter/releases/latest).`
+The current public release does not contain Intel macOS, Windows, Linux, or
+Homebrew installers. The repository remains available for source inspection
+and local builds.
+
+[Open the latest release](${currentReleaseUrl}).`
   ),
   faq: page(
     'CodeVetter FAQ',
@@ -205,7 +207,7 @@ The core loop is: task → agent change → executable verification → evidence
 
 ## Open source
 
-CodeVetter is open-source under the ISC license. The source lives at github.com/Codevetter/codevetter. Signed macOS binaries are published via GitHub Releases with an auto-updater.
+CodeVetter is open-source under the ISC license. The source lives at github.com/Codevetter/codevetter. The current Apple-silicon macOS build and updater archive are published via GitHub Releases.
 
 ## Built by
 

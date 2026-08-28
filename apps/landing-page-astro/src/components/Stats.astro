@@ -1,32 +1,24 @@
 ---
-// Port of apps/landing-page/components/organisms/Stats.tsx.
 const items = [
-  { k: '0ms', v: 'Cloud round-trip', sub: 'the review runs on your device' },
-  { k: '3+', v: 'LLM providers', sub: 'anthropic · openai · openrouter' },
-  { k: '100%', v: 'Code stays local', sub: 'no proxy, no telemetry' },
-  { k: '$0', v: 'To run forever', sub: 'bring your own LLM key' },
+  { k: '27', v: 'Published synthetic cases', sub: 'inspectable inputs and scorer' },
+  { k: '29', v: 'Labeled expected findings', sub: 'bounded recognition evidence' },
+  { k: '3', v: 'Verdict states', sub: 'pass · fail · unverified' },
+  { k: '0', v: 'Required hosted verifier', sub: 'execution and product state stay local' },
 ];
 ---
 
-<section class="relative overflow-hidden bg-[#0A0A0A] py-16">
+<section class="relative overflow-hidden bg-[#0a0a0a] py-16" aria-label="CodeVetter evidence summary">
   <div class="absolute inset-0 grid-bg opacity-20 pointer-events-none" aria-hidden="true"></div>
-
-  <div class="relative max-w-7xl mx-auto px-6">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-      {items.map((it) => (
-        <div class="relative group p-6 rounded-3xl hover:bg-white/[0.02] transition-colors duration-500">
-          <div class="font-display text-4xl md:text-5xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500 tabular-nums mb-3 tracking-tighter">
-            {it.k}
-          </div>
-          <div class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-1 group-hover:text-white transition-colors">
-            {it.v}
-          </div>
-          <div class="text-xs text-gray-500 font-medium">
-            {it.sub}
-          </div>
-          <div class="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+  <div class="relative mx-auto max-w-7xl px-6">
+    <div class="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/5 bg-white/5 sm:grid-cols-2 lg:grid-cols-4">
+      {items.map((item) => (
+        <div class="bg-[#0b0c0e] p-6 sm:p-7">
+          <div class="font-display text-4xl font-bold tracking-tight text-white">{item.k}</div>
+          <div class="mt-3 text-xs font-bold uppercase tracking-[0.14em] text-gray-300">{item.v}</div>
+          <div class="mt-2 text-xs leading-relaxed text-gray-400">{item.sub}</div>
         </div>
       ))}
     </div>
+    <p class="mt-4 text-center text-xs leading-relaxed text-gray-400">The public corpus measures a narrow recognition task. It is not evidence of production-wide accuracy or external-user adoption.</p>
   </div>
 </section>

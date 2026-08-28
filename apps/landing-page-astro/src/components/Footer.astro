@@ -1,15 +1,13 @@
 ---
 import Icon from './Icon.astro';
 
-// Port of apps/landing-page/components/molecules/Footer.tsx.
-
 const cols = [
   {
     label: 'Product',
     items: [
-      { l: 'Features', h: '/#features' },
+      { l: 'Run a verification', h: '/#run' },
       { l: 'How it works', h: '/#how' },
-      { l: 'Pricing', h: '/#pricing' },
+      { l: 'Availability', h: '/#availability' },
       { l: 'Changelog', h: '/changelog' },
       { l: 'Roadmap', h: 'https://github.com/Codevetter/codevetter/issues' },
     ],
@@ -17,7 +15,7 @@ const cols = [
   {
     label: 'Resources',
     items: [
-      { l: 'Documentation', h: '/docs/' },
+      { l: 'Evidence documentation', h: '/verification-evidence-bundle' },
       { l: 'FAQ', h: '/faq' },
       { l: 'Verification guide', h: '/coding-agent-verification' },
       { l: 'Review vs verification', h: '/ai-code-review-vs-verification' },
@@ -31,6 +29,8 @@ const cols = [
   {
     label: 'Connect',
     items: [
+      { l: 'About', h: '/about' },
+      { l: 'Contact', h: '/contact' },
       { l: 'Source', h: 'https://github.com/Codevetter/codevetter', icon: 'github' },
       { l: 'Twitter', h: 'https://x.com/sarthakcodes', icon: 'twitter' },
       { l: 'Email', h: 'mailto:hello@codevetter.dev', icon: 'mail' },
@@ -55,12 +55,10 @@ const year = new Date().getFullYear();
         </span>
       </div>
       <p class="text-sm text-gray-400 max-w-xs leading-relaxed">
-        Desktop code review for the agent era. Built by engineers who got burned merging AI diffs without a second look.
+        Execution-backed verification for coding-agent changes. Preserve the
+        task, exact change, executable evidence, limitations, and measurable verdict.
       </p>
-      <div class="flex items-center gap-3 text-emerald-400 text-xs font-mono bg-emerald-500/5 border border-emerald-500/10 w-fit px-3 py-1.5 rounded-full">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        All systems operational
-      </div>
+      <a href="/benchmark" class="inline-flex text-xs font-mono text-[--color-accent] hover:underline">Inspect public evidence →</a>
     </div>
 
     {cols.map((c) => (
@@ -73,10 +71,10 @@ const year = new Date().getFullYear();
             <li>
               <a
                 href={it.h}
-                class="flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors group"
+                class="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors group"
               >
                 {it.icon && (
-                  <span class="text-gray-600 group-hover:text-blue-400 transition-colors">
+                  <span class="text-gray-400 group-hover:text-blue-300 transition-colors">
                     <Icon name={it.icon} width={14} height={14} class="w-3.5 h-3.5" />
                   </span>
                 )}
@@ -89,30 +87,15 @@ const year = new Date().getFullYear();
     ))}
   </div>
 
-  <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5">
-    <div class="text-xs font-bold text-white uppercase tracking-widest mb-5">
-      Built with Foundry
-    </div>
-    <div class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-600">
-      <a href="https://sassmaker.com" class="hover:text-white transition-colors">Foundry <span class="text-gray-700">— SaaS factory floor</span></a>
-      <a href="https://aliveville.com" class="hover:text-white transition-colors">Aliveville <span class="text-gray-700">— AI world simulator</span></a>
-      <a href="https://highsignal.app" class="hover:text-white transition-colors">High Signal <span class="text-gray-700">— Daily tech/startup brief</span></a>
-      <a href="https://karte.cc" class="hover:text-white transition-colors">Karte <span class="text-gray-700">— AI link-in-bio</span></a>
-      <a href="https://rolepatch.com" class="hover:text-white transition-colors">RolePatch <span class="text-gray-700">— AI resume tailoring</span></a>
-      <a href="https://significanthobbies.com" class="hover:text-white transition-colors">Significant Hobbies <span class="text-gray-700">— Hobby journey mapper</span></a>
-    </div>
-  </div>
-
-  <div class="max-w-7xl mx-auto px-6 mt-10 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-600 font-medium">
+  <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400 font-medium">
     <div class="flex items-center gap-6">
       <span>© {year} CodeVetter · ISC License</span>
       <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
       <a href="/terms" class="hover:text-white transition-colors">Terms</a>
-      <a href="https://sassmaker.com" class="hover:text-white transition-colors">Foundry</a>
       <a href="https://sarthakagrawal.dev" class="hover:text-white transition-colors">Sarthak</a>
     </div>
     <div class="flex items-center gap-2">
-      <span>Your agent ships fast. CodeVetter ships right.</span>
+      <span>Review suggests. Evidence decides.</span>
     </div>
   </div>
 </footer>
