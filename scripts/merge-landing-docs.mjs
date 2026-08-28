@@ -155,9 +155,41 @@ function normalizeDocsURLs(directory) {
   return { replacements, duplicateTitles };
 }
 
-function assertInternalDocsLinks(directory) {
+function localDocsRoute(rawHref, currentRoute) {
+  const localHref = rawHref.startsWith(SITE_ORIGIN) ? rawHref.slice(SITE_ORIGIN.length) : rawHref;
+  if (localHref.startsWith('#') || localHref.startsWith('//') || /^(?:[a-z]+:)/i.test(localHref)) {
+    return null;
+  }
+
+  const { pathname } = splitURLSuffix(localHref);
+  const route = pathname.startsWith('/')
+    ? pathname
+    : posix.resolve(posix.dirname(currentRoute), pathname);
+  return route.startsWith('/docs/') ? route : null;
+}
+
+function brokenPageDocsLinks(target) {
+  const relativeHTML = relative(publicDocs, target).split(sep).join('/');
+  const currentRoute =
+    relativeHTML === 'index.html' ? '/docs/' : `/docs/${relativeHTML.replace(/index\.html$/, '')}`;
+  const html = readFileSync(target, 'utf8');
   const brokenLinks = [];
 
+  for (const match of html.matchAll(RENDERED_HREF_PATTERN)) {
+    const route = localDocsRoute(match[2], currentRoute);
+    if (!route) continue;
+
+    const docsPath = route.slice('/docs/'.length);
+    const candidate = route.endsWith('/')
+      ? resolve(publicDocs, docsPath, 'index.html')
+      : resolve(publicDocs, docsPath);
+    if (!existsSync(candidate)) brokenLinks.push(`${relativeHTML}: ${match[2]}`);
+  }
+  return brokenLinks;
+}
+
+function assertInternalDocsLinks(directory) {
+  const brokenLinks = [];
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const target = resolve(directory, entry.name);
     if (entry.isDirectory()) {
@@ -165,40 +197,7 @@ function assertInternalDocsLinks(directory) {
       continue;
     }
     if (!entry.name.endsWith('.html')) continue;
-
-    const relativeHTML = relative(publicDocs, target).split(sep).join('/');
-    const currentRoute =
-      relativeHTML === 'index.html'
-        ? '/docs/'
-        : `/docs/${relativeHTML.replace(/index\.html$/, '')}`;
-    const html = readFileSync(target, 'utf8');
-
-    for (const match of html.matchAll(RENDERED_HREF_PATTERN)) {
-      let rawHref = match[2];
-      if (rawHref.startsWith(SITE_ORIGIN)) {
-        rawHref = rawHref.slice(SITE_ORIGIN.length);
-      } else if (
-        rawHref.startsWith('#') ||
-        rawHref.startsWith('//') ||
-        /^(?:[a-z]+:)/i.test(rawHref)
-      ) {
-        continue;
-      }
-
-      const { pathname } = splitURLSuffix(rawHref);
-      const route = pathname.startsWith('/')
-        ? pathname
-        : posix.resolve(posix.dirname(currentRoute), pathname);
-      if (!route.startsWith('/docs/')) continue;
-
-      const docsPath = route.slice('/docs/'.length);
-      const candidate = route.endsWith('/')
-        ? resolve(publicDocs, docsPath, 'index.html')
-        : resolve(publicDocs, docsPath);
-      if (!existsSync(candidate)) {
-        brokenLinks.push(`${relativeHTML}: ${match[2]}`);
-      }
-    }
+    brokenLinks.push(...brokenPageDocsLinks(target));
   }
 
   if (directory === publicDocs && brokenLinks.length > 0) {
