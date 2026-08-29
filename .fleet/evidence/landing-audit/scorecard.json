@@ -1,0 +1,97 @@
+{
+  "$schema": "fleet.landing-audit.scorecard.v1",
+  "project": "codevetter",
+  "priority": "P1",
+  "candidate": "http://127.0.0.1:4405/",
+  "productionChanged": false,
+  "checkedAt": "2026-08-28",
+  "purpose": {
+    "score": 96,
+    "minimum": 85,
+    "p0": 0,
+    "p1": 0
+  },
+  "design": {
+    "score": 91,
+    "minimum": 90,
+    "p0": 0,
+    "p1": 0
+  },
+  "seo": {
+    "score": 100,
+    "pages": 74,
+    "passed": 1110,
+    "failed": 0,
+    "warnings": 0,
+    "internalLinks": 111,
+    "internalLinkIssues": 0,
+    "externalLinks": 100,
+    "externalRedirectOrAvailabilityIssues": 0,
+    "ahrefs": {
+      "projectId": 10205898,
+      "productionBaselineHealth": 48,
+      "productionBaselineErrors": 233,
+      "productionBaselineWarnings": 95,
+      "productionBaselineNotices": 178,
+      "candidateRemediation": {
+        "broken404Pages": 91,
+        "canonicalRedirects": 49,
+        "multipleH1Pages": 36,
+        "pagesLinkingToBrokenPages": 30,
+        "orphanPages": 2,
+        "externalRedirects": 5
+      },
+      "status": "candidate-clean-production-recrawl-pending",
+      "note": "Ahrefs remains the deployed-history baseline until an authorized deployment and fresh crawl. The Cloudflare Pages candidate resolves every sitemap page and internal link without redirects or errors."
+    }
+  },
+  "geo": {
+    "score": 100,
+    "tier": "S",
+    "surfaces": 25,
+    "validSurfaces": 25,
+    "note": "The local Worker served the full agent catalog and Markdown negotiation; the canonical public origin independently passes the S-tier index audit."
+  },
+  "performance": {
+    "score": 99,
+    "runs": 20,
+    "successfulRuns": 20,
+    "weightedLcpMs": 514,
+    "weightedCls": 0,
+    "weightedTbtMs": 0,
+    "cwvLcpP75Ms": 813,
+    "profiles": {
+      "mobileSlowLcpP75Ms": 1593,
+      "mobileMidLcpP75Ms": 811,
+      "mobileFastLcpP75Ms": 407,
+      "desktopLcpP75Ms": 218
+    },
+    "report": "performance.html"
+  },
+  "verification": {
+    "astroBuild": "pass",
+    "agentSurfaces": "25/25",
+    "workerApiCatalog": "pass",
+    "markdownNegotiation": "pass",
+    "responsiveBrowser": "pass",
+    "axeWcagAAndAA": {
+      "desktopViolations": 0,
+      "mobileViolations": 0
+    },
+    "footer": {
+      "askAi": "pass",
+      "projectStrip": "pass",
+      "aboutAndContactInlinks": "pass"
+    },
+    "releaseTruth": "v1.11.0 Apple-silicon DMG and updater archive verified",
+    "responsiveScreenshots": [
+      "../../../artifacts/design/landing-audit/final-p1-390.png",
+      "../../../artifacts/design/landing-audit/final-p1-768.png",
+      "../../../artifacts/design/landing-audit/final-p1-1440.png"
+    ]
+  },
+  "limitations": [
+    "The real receipt is genuine self-dogfood evidence but is not output from the exact codevetter check command shown on the page.",
+    "The current public production landing remains unchanged until an explicit deployment is authorized."
+  ]
+}
