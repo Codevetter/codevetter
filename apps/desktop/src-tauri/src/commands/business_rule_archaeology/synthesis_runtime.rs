@@ -554,10 +554,6 @@ pub(crate) fn resolve_trusted_provider_configuration(
             validate_provider_descriptor(&descriptor)?;
             descriptor
         }
-        "free-ai" => canonical_hosted_descriptor(
-            "free-ai",
-            "https://ai-gateway.sassmaker.com/v1/chat/completions",
-        ),
         "openai" => canonical_hosted_descriptor("openai", "https://api.openai.com/v1/responses"),
         "anthropic" => {
             canonical_hosted_descriptor("anthropic", "https://api.anthropic.com/v1/messages")
@@ -572,8 +568,7 @@ pub(crate) fn resolve_trusted_provider_configuration(
         return Err("Hosted archaeology synthesis cannot accept a local endpoint".into());
     }
 
-    let expected_cost = if user.provider_identity == "local" || user.provider_identity == "free-ai"
-    {
+    let expected_cost = if user.provider_identity == "local" {
         ArchaeologyCostClass::Free
     } else {
         ArchaeologyCostClass::Paid
@@ -2231,7 +2226,6 @@ fn validate_provider_descriptor(descriptor: &ArchaeologyProviderDescriptor) -> R
         }
         (ArchaeologyProviderKind::Hosted, ArchaeologyNetworkScope::Remote) => {
             let allowed = match descriptor.provider_identity.as_str() {
-                "free-ai" => "https://ai-gateway.sassmaker.com/v1/chat/completions",
                 "openai" => "https://api.openai.com/v1/responses",
                 "anthropic" => "https://api.anthropic.com/v1/messages",
                 "openrouter" => "https://openrouter.ai/api/v1/chat/completions",
@@ -2381,7 +2375,7 @@ fn validate_selection_identity(
         return Err("Archaeology synthesis provider selection is invalid or unbounded".into());
     }
     let expected_cost = match selection.provider_identity.as_str() {
-        "local" | "free-ai" => ArchaeologyCostClass::Free,
+        "local" => ArchaeologyCostClass::Free,
         "openai" | "anthropic" | "openrouter" => ArchaeologyCostClass::Paid,
         _ if descriptor.kind == ArchaeologyProviderKind::Local => ArchaeologyCostClass::Free,
         _ => return Err("Archaeology synthesis provider cost class is unknown".into()),
