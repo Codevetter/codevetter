@@ -13,7 +13,7 @@ audited.
 ## Layout
 
 ```
-benchmark/
+benchmarks/public-catch-rate/
   cases/
     <case-id>/
       source.<ext>   # the code snippet with known issues
@@ -112,7 +112,7 @@ From the repo root:
 # This requires no reviewer output and always works.
 npm run bench:public
 
-# Score a reviewer's output after dropping files into benchmark/reviews/.
+# Score a reviewer's output after dropping files into benchmarks/public-catch-rate/reviews/.
 npm run bench:public -- --reviewer=codevetter
 
 # Emit a JSON scorecard.
@@ -127,7 +127,7 @@ npm run bench:public -- --reviewer=codevetter --min-rate=0.8
 
 ## How to evaluate a tool against this benchmark
 
-1. For each case in `benchmark/cases/<case-id>/`, feed `source.<ext>` to your
+1. For each case in `benchmarks/public-catch-rate/cases/<case-id>/`, feed `source.<ext>` to your
    reviewer (CodeVetter or any comparator).
 2. Normalize the reviewer's findings into the `reviews/<case-id>.json` shape
    above, filling `matched_ground_truth` with the ground-truth ids each finding
@@ -149,6 +149,6 @@ npm run bench:public -- --reviewer=codevetter --min-rate=0.8
 - Cases are synthetic and self-contained; they are not tied to a specific PR or
   repo. They exist to make the benchmark reproducible by anyone, anywhere.
 - The sibling `benchmarks/agent-prs/` harness measures catch rate on real public
-  agent-generated PRs with preserved review artifacts. This `benchmark/` set
+  agent-generated PRs with preserved review artifacts. This `benchmarks/public-catch-rate/` set
   complements it with broad, language- and issue-type coverage that is cheap to
   re-run.

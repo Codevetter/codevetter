@@ -3495,9 +3495,9 @@ mod tests {
     use super::*;
 
     /// Generate CodeVetter's public-benchmark comparator outputs by running
-    /// every `benchmark/cases/<id>/` through the REAL production review
+    /// every `benchmarks/public-catch-rate/cases/<id>/` through the REAL production review
     /// pipeline (risk tiers, specialists, coordinator, dedup) headlessly.
-    /// Raw pipeline output lands in `benchmark/reviews-raw/<id>.codevetter.raw.json`;
+    /// Raw pipeline output lands in `benchmarks/public-catch-rate/reviews-raw/<id>.codevetter.raw.json`;
     /// ground-truth mapping is a separate, human-checked step. Requires the
     /// `claude` CLI on PATH and burns real quota — hence ignored.
     #[test]

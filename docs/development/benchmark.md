@@ -95,7 +95,7 @@ avoid overfitting 27 cases.
 Protocol: every case ran through the REAL production pipeline (risk tiers,
 specialists, coordinator, dedup) via the ignored Rust harness
 `diag_benchmark_generate_codevetter_reviews`; raw outputs live in
-`benchmark/reviews-raw/`. Ground-truth mapping was proposed mechanically
+`benchmarks/public-catch-rate/reviews-raw/`. Ground-truth mapping was proposed mechanically
 (`scripts/map-benchmark-reviews.mjs`) and then hand-judged per finding under
 one rule: a finding matches only if its CORE CLAIM identifies the defect;
 process findings (no-tests, shipped-with-comment) never match.
