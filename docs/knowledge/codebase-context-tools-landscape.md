@@ -1,3 +1,8 @@
+---
+title: Codebase context tools landscape
+description: Retained April 2026 research survey of context, indexing, documentation, and review tools.
+---
+
 # Codebase Context Tools for AI Agents & AI Code Review
 ## Complete Landscape Research - April 2026
 
