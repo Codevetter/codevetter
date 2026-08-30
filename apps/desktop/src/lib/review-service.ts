@@ -125,10 +125,6 @@ export function getActiveStandardsPackId(): string | null {
 }
 
 export const PROVIDER_PRESETS: Record<string, { baseUrl: string; model: string }> = {
-  'free-ai': {
-    baseUrl: 'https://ai-gateway.sassmaker.com/v1',
-    model: 'auto',
-  },
   anthropic: {
     baseUrl: 'https://api.anthropic.com/v1',
     model: 'claude-sonnet-4-20250514',

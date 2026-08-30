@@ -125,7 +125,7 @@ describe('buildActiveStandardsContext', () => {
 
 describe('PROVIDER_PRESETS', () => {
   it('exposes a base url and model for each known provider', () => {
-    for (const key of ['free-ai', 'anthropic', 'openai', 'openrouter']) {
+    for (const key of ['anthropic', 'openai', 'openrouter']) {
       const preset = PROVIDER_PRESETS[key];
       assert.ok(preset, `missing preset for ${key}`);
       assert.match(preset.baseUrl, /^https:\/\//);
