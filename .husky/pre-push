@@ -1,13 +1,17 @@
-# Abort push if lint fails or a known secret pattern leaks into tracked files.
-#
-# NOTE: foundry.json is excluded below because it already contains a committed
-# projectKey (pk_...) that predates the pk_ pattern. Remove that exclusion once
-# the key is rotated and moved out of the tracked file.
+# Abort push if lint fails or Gitleaks finds a secret in repository history.
+# Keep the narrow regex fallback for contributors who do not have Gitleaks.
 set -e
 
 if [ -f package.json ] && grep -q '"lint"' package.json; then
-  npm run lint || { echo "lint failed — fix before pushing" >&2; exit 1; }
+  pnpm run lint || { echo "lint failed — fix before pushing" >&2; exit 1; }
 fi
+
+if command -v gitleaks >/dev/null 2>&1; then
+  pnpm run quality:secrets
+  exit 0
+fi
+
+echo "gitleaks is not installed; using the limited tracked-file fallback" >&2
 
 SECRETS=$(git ls-files -z 2>/dev/null \
   | xargs -0 grep -lE \

@@ -780,9 +780,9 @@ It deterministically generates 20,000, 200,000, and 800,000
 the official sorted min/mean/max output contract with UTF-8 station names, and
 emits the existing `size<N>=<duration>ms/op` contract. Dataset construction is
 outside the timed region. The benchmark's
-[README](../../benchmarks/runtime-challenges/temperature-aggregation/README.md)
+[README](https://github.com/Codevetter/codevetter/blob/main/benchmarks/runtime-challenges/temperature-aggregation/README.md)
 contains the exact diagnosis command, while its
-[artifact record](../../benchmarks/runtime-challenges/temperature-aggregation/ARTIFACT.md)
+[artifact record](https://github.com/Codevetter/codevetter/blob/main/benchmarks/runtime-challenges/temperature-aggregation/ARTIFACT.md)
 records attribution and the differences from the official Java challenge.
 
 The initial qualification used CodeVetter to select the parser at 77.64% CPU
@@ -913,7 +913,7 @@ pnpm --silent runtime:campaign -- promote \
 The same six campaign operations are available from `runtime:mcp`. Start that server
 with `--repo /path/to/candidate --incumbent-repo /path/to/incumbent` so the
 promotion checkout is fixed outside tool arguments. The checked-in
-[agent program](../../scripts/runtime-failure-capsule/AUTONOMOUS_OPTIMIZATION_PROGRAM.md)
+[agent program](https://github.com/Codevetter/codevetter/blob/main/scripts/runtime-failure-capsule/AUTONOMOUS_OPTIMIZATION_PROGRAM.md)
 defines the loop and its authority boundary.
 
 Campaign artifacts are local JSON under the declared directory: one manifest,

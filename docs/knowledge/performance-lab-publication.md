@@ -55,7 +55,7 @@ product's end game. Merge status does not upgrade evidence strength: the
 directional, unverified, guardrail, and synthetic-stress entries are not
 independent claims of proven customer impact. The full inactive-project
 disposition is retained in
-[`evidence/performance/old-local-projects-results-2026-08-09.md`](../../evidence/performance/old-local-projects-results-2026-08-09.md).
+[`evidence/performance/old-local-projects-results-2026-08-09.md`](https://github.com/Codevetter/codevetter/blob/main/evidence/performance/old-local-projects-results-2026-08-09.md).
 
 ## External open-source work
 

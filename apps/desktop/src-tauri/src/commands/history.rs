@@ -1565,12 +1565,11 @@ fn upsert_adapter_summary_session(
     let archive_messages = summary.archive_messages.clone();
     let parse_warnings = summary.parse_warnings.clone();
 
-    for warning in &summary.parse_warnings {
+    if !summary.parse_warnings.is_empty() {
         log::warn!(
-            "{} session adapter warning for {}: {}",
+            "{} session adapter reported {} parse warning(s)",
             summary.adapter_id,
-            source_ref,
-            warning
+            summary.parse_warnings.len()
         );
     }
 

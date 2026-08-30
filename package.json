@@ -68,6 +68,13 @@
     "quality:complexity": "node scripts/check-changed-complexity.mjs",
     "quality:cycles": "biome lint --only=suspicious/noImportCycles .",
     "quality:dependencies": "pnpm audit --audit-level high",
+    "quality:sarif": "node scripts/run-biome-sarif.mjs",
+    "quality:secrets": "gitleaks git --no-banner --redact=100 .",
+    "quality:secrets:staged": "gitleaks git --pre-commit --staged --no-banner --redact=100 .",
+    "quality:mutation:accounting": "pnpm --package @stryker-mutator/core@10.0.0 --package typescript@5.9.3 dlx stryker run scripts/stryker-accounting.config.mjs",
+    "quality:rust-policy": "cargo-deny --manifest-path apps/desktop/src-tauri/Cargo.toml --config apps/desktop/src-tauri/deny.toml --frozen check --hide-inclusion-graph licenses sources bans",
+    "quality:vulnerabilities": "node scripts/run-osv-offline.mjs",
+    "quality:workflows": "actionlint",
     "quality:duplication": "jscpd apps/desktop/src apps/landing-page-astro/src scripts --min-lines 8 --min-tokens 60 --mode strict --format typescript,tsx,javascript --cross-formats js-ts --ignore '**/fixtures/**,**/generated/**,**/gen/**,**/node_modules/**,**/dist/**,**/out/**,**/coverage/**' --threshold 0.81 --reporters console,threshold --no-colors --no-tips",
     "retrieval:discover": "node scripts/context-retrieval/discover-candidates.mjs --registry benchmarks/context-retrieval/candidates.json --fresh-since 2026-02-22"
   },

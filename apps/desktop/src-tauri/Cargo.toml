@@ -2,6 +2,7 @@
 name = "codevetter-desktop"
 version = "0.1.0"
 edition = "2021"
+publish = false
 description = "CodeVetter Desktop — code review + agent management"
 default-run = "codevetter-desktop"
 

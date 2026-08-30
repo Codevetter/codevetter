@@ -34,8 +34,11 @@
     "ccusage"
   ],
   "ignoreBinaries": [
+    "actionlint",
+    "cargo-deny",
     "du",
     "go",
+    "gitleaks",
     "lipo",
     "lsof",
     "netstat",

@@ -570,9 +570,7 @@ fn start_agent_terminal_impl(
         ) {
             Ok(result) => return Ok(result),
             Err(error) => {
-                eprintln!(
-                    "Codex app-server unavailable for {session_id}; falling back to PTY: {error}"
-                );
+                eprintln!("Codex app-server unavailable; falling back to PTY: {error}");
             }
         }
     }

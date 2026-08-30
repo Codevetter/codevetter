@@ -113,8 +113,17 @@ function removeDuplicatePageTitle(html) {
   return { html: after, removed: 1 };
 }
 
+function hasSiteOrigin(value) {
+  return (
+    value === SITE_ORIGIN ||
+    value.startsWith(`${SITE_ORIGIN}/`) ||
+    value.startsWith(`${SITE_ORIGIN}?`) ||
+    value.startsWith(`${SITE_ORIGIN}#`)
+  );
+}
+
 function canonicalDocsURL(value) {
-  const prefix = value.startsWith(SITE_ORIGIN) ? SITE_ORIGIN : '';
+  const prefix = hasSiteOrigin(value) ? SITE_ORIGIN : '';
   const relativeURL = prefix ? value.slice(prefix.length) : value;
   const { pathname, suffix } = splitURLSuffix(relativeURL);
   if (pathname === '/docs/index' || pathname === '/docs/index/') {
@@ -156,7 +165,7 @@ function normalizeDocsURLs(directory) {
 }
 
 function localDocsRoute(rawHref, currentRoute) {
-  const localHref = rawHref.startsWith(SITE_ORIGIN) ? rawHref.slice(SITE_ORIGIN.length) : rawHref;
+  const localHref = hasSiteOrigin(rawHref) ? rawHref.slice(SITE_ORIGIN.length) : rawHref;
   if (localHref.startsWith('#') || localHref.startsWith('//') || /^(?:[a-z]+:)/i.test(localHref)) {
     return null;
   }

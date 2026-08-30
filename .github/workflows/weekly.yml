@@ -4,24 +4,35 @@ on:
     - cron: '0 9 * * 1'
   workflow_dispatch:
 
+permissions: {}
+
+concurrency:
+  group: weekly-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
+    name: Run weekly quality canary
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
       - name: Record source revision
         id: rev
         run: |
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-          echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          {
+            echo "sha=$(git rev-parse HEAD)"
+            echo "short=$(git rev-parse --short HEAD)"
+            echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '22'
 
@@ -72,24 +83,29 @@ jobs:
 
       - name: Emit canary evidence
         if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          SOURCE_REVISION: ${{ steps.rev.outputs.sha }}
+          SOURCE_REVISION_SHORT: ${{ steps.rev.outputs.short }}
+          STARTED_AT: ${{ steps.rev.outputs.ts }}
         run: |
           set -euo pipefail
           mkdir -p canary-out
           # The conclusion is only known after the quality step; read it
           # from the job status env that GitHub sets for `if: always()` steps.
           # We treat any non-success quality step as a failure.
-          CONCLUSION="${{ job.status }}"
+          CONCLUSION="$JOB_STATUS"
           # `job.status` is the *job* status at the point this step starts;
           # because this step runs with `if: always()`, the prior step's
           # failure has already propagated to the job status.
           cat > canary-out/canary-evidence.json <<JSON
           {
             "workflow": "weekly.yml",
-            "run_id": "${{ github.run_id }}",
-            "run_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "source_revision": "${{ steps.rev.outputs.sha }}",
-            "source_revision_short": "${{ steps.rev.outputs.short }}",
-            "started_at": "${{ steps.rev.outputs.ts }}",
+            "run_id": "$GITHUB_RUN_ID",
+            "run_url": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID",
+            "source_revision": "$SOURCE_REVISION",
+            "source_revision_short": "$SOURCE_REVISION_SHORT",
+            "started_at": "$STARTED_AT",
             "conclusion": "${CONCLUSION}",
             "bounds": { "timeout_minutes": 20 },
             "declared_cron": "0 9 * * 1",
@@ -97,22 +113,24 @@ jobs:
             "freshness_window_days": 8
           }
           JSON
-          echo "### Weekly canary evidence" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Revision | \`${{ steps.rev.outputs.short }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Started | ${{ steps.rev.outputs.ts }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Conclusion | ${CONCLUSION} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Timeout | 20 minutes |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Run | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "If this run failed, the previous failed run's conclusion + URL are the unresolved failure evidence. Foundry reads this artifact to compute freshness against the 8-day window." >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Weekly canary evidence"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Revision | \`$SOURCE_REVISION_SHORT\` |"
+            echo "| Started | $STARTED_AT |"
+            echo "| Conclusion | ${CONCLUSION} |"
+            echo "| Timeout | 20 minutes |"
+            echo "| Run | [$GITHUB_RUN_ID]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) |"
+            echo ""
+            echo "If this run failed, the previous failed run's conclusion + URL are the unresolved failure evidence. Foundry reads this artifact to compute freshness against the 8-day window."
+          } >> "$GITHUB_STEP_SUMMARY"
           cat canary-out/canary-evidence.json
 
       - name: Upload canary evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: canary-evidence
           path: canary-out/canary-evidence.json

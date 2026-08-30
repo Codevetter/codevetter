@@ -2,7 +2,7 @@
 title: Verification receipts
 description: Machine-first ingestion and comparison of project-owned test and performance evidence.
 sidebar:
-  order: 4
+  order: 5
 ---
 
 # Verification receipts
@@ -32,7 +32,7 @@ The canonical producer schema is
 - limitations that bound the producer's claims.
 
 The complete executable example is
-[`codevetter-local-fast-2026-08-07.json`](../../scripts/verification-receipts/fixtures/codevetter-local-fast-2026-08-07.json).
+[`codevetter-local-fast-2026-08-07.json`](https://github.com/Codevetter/codevetter/blob/main/scripts/verification-receipts/fixtures/codevetter-local-fast-2026-08-07.json).
 That projection intentionally remains `no_confidence` for inventory because its
 source receipt contains aggregate outcomes instead of individual test and
 selection identities. Its command-level RSS is retained as partial evidence,
