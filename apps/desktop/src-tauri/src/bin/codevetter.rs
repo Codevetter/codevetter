@@ -3,6 +3,10 @@ use codevetter_desktop::commands::local_check::{
     LocalCheckPreflightReceipt, LocalCheckReceipt, LocalCheckStatus, LocalCheckTarget,
     LocalCheckVerdict,
 };
+use codevetter_desktop::commands::tool_collectors::{
+    collect_tool_evidence, CollectorKind, CollectorStatus, ToolCollectionInput,
+    ToolCollectionReceipt,
+};
 use codevetter_desktop::commands::trex_preview::{
     execute_trex_preview, TrexChangeKind, TrexPreviewReceipt, TrexPreviewRunInput,
     TrexPreviewVerdict,
@@ -17,6 +21,7 @@ CodeVetter execution-backed verification
 Usage:
   codevetter check (--pr <url> | --range <base..head>) --task <text> [options]
   codevetter trex (--pr <url> | --range <base..head>) --preview <url> [--repo <path>] [--json]
+  codevetter collect --range <base..head> --collector <name> [--collector <name> ...] [--repo <path>] [--json]
   codevetter --version
 
 Options:
@@ -39,6 +44,7 @@ Options:
   --samples <n>             Performance samples, 2-10 (default: 3)
   --warmups <n>             Performance warmups, 0-5 (default: 1)
   --timeout-ms <n>          Per-workload timeout, 100-120000 (default: 30000)
+  --collector <name>        gitleaks, cargo-audit, or cargo-llvm-cov (repeatable)
   --json           Print only the canonical receipt JSON
 ";
 
@@ -75,8 +81,17 @@ struct CheckArguments {
     output: OutputMode,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CollectArguments {
+    repo_path: PathBuf,
+    change: String,
+    collectors: Vec<CollectorKind>,
+    output: OutputMode,
+}
+
 enum CliCommand {
     Check(Box<CheckArguments>),
+    Collect(CollectArguments),
     Trex(TrexArguments),
     Help,
     Version,
@@ -106,8 +121,27 @@ async fn run() -> Result<i32, String> {
             Ok(0)
         }
         CliCommand::Check(arguments) => run_check(*arguments).await,
+        CliCommand::Collect(arguments) => run_collect(arguments).await,
         CliCommand::Trex(arguments) => run_trex(arguments).await,
     }
+}
+
+async fn run_collect(arguments: CollectArguments) -> Result<i32, String> {
+    let receipt = collect_tool_evidence(ToolCollectionInput {
+        repo_path: arguments.repo_path,
+        change: arguments.change,
+        collectors: arguments.collectors,
+    })
+    .await?;
+    match arguments.output {
+        OutputMode::Json => println!(
+            "{}",
+            serde_json::to_string(&receipt)
+                .map_err(|error| format!("serialize tool collection receipt: {error}"))?
+        ),
+        OutputMode::Human => print!("{}", render_human_collection(&receipt)),
+    }
+    Ok(collection_exit_code(&receipt))
 }
 
 async fn run_check(arguments: CheckArguments) -> Result<i32, String> {
@@ -212,6 +246,7 @@ fn parse_arguments(
         "--help" | "-h" | "help" => return Ok(CliCommand::Help),
         "--version" | "-V" => return Ok(CliCommand::Version),
         "check" => return parse_check(arguments, cwd),
+        "collect" => return parse_collect(arguments, cwd),
         "trex" => {}
         _ => return Err(format!("unknown command `{command}`\n\n{HELP}")),
     }
@@ -253,6 +288,38 @@ fn parse_arguments(
         change_kind,
         change,
         preview_url,
+        output,
+    }))
+}
+
+fn parse_collect(
+    mut arguments: impl Iterator<Item = String>,
+    cwd: &Path,
+) -> Result<CliCommand, String> {
+    let mut repo_path = None;
+    let mut range = None;
+    let mut collectors = Vec::new();
+    let mut output = OutputMode::Human;
+    while let Some(argument) = arguments.next() {
+        match argument.as_str() {
+            "--repo" => repo_path = Some(PathBuf::from(required_value(&mut arguments, "--repo")?)),
+            "--range" => range = Some(required_value(&mut arguments, "--range")?),
+            "--collector" => collectors.push(CollectorKind::parse(&required_value(
+                &mut arguments,
+                "--collector",
+            )?)?),
+            "--json" => output = OutputMode::Json,
+            "--help" | "-h" => return Ok(CliCommand::Help),
+            _ => return Err(format!("unknown collect argument `{argument}`")),
+        }
+    }
+    if collectors.is_empty() {
+        return Err("at least one --collector is required".into());
+    }
+    Ok(CliCommand::Collect(CollectArguments {
+        repo_path: repo_path.unwrap_or_else(|| cwd.to_path_buf()),
+        change: range.ok_or_else(|| "--range is required".to_string())?,
+        collectors,
         output,
     }))
 }
@@ -449,6 +516,50 @@ fn preflight_exit_code(status: LocalCheckStatus) -> i32 {
     } else {
         2
     }
+}
+
+fn collection_exit_code(receipt: &ToolCollectionReceipt) -> i32 {
+    if receipt.collectors.iter().any(|collector| {
+        matches!(
+            collector.status,
+            CollectorStatus::Unavailable | CollectorStatus::Error
+        )
+    }) {
+        2
+    } else if receipt
+        .collectors
+        .iter()
+        .any(|collector| collector.status == CollectorStatus::Findings)
+    {
+        1
+    } else {
+        0
+    }
+}
+
+fn render_human_collection(receipt: &ToolCollectionReceipt) -> String {
+    let mut output = format!("head: {}\n", receipt.source.head_sha);
+    for collector in &receipt.collectors {
+        let name = serde_json::to_value(collector.collector)
+            .ok()
+            .and_then(|value| value.as_str().map(ToOwned::to_owned))
+            .unwrap_or_else(|| "unknown".into());
+        let status = serde_json::to_value(collector.status)
+            .ok()
+            .and_then(|value| value.as_str().map(ToOwned::to_owned))
+            .unwrap_or_else(|| "unknown".into());
+        output.push_str(&format!(
+            "{name}: {status} ({} finding(s), {} ms)\n",
+            collector.finding_count, collector.duration_ms
+        ));
+    }
+    if !receipt.limitations.is_empty() {
+        output.push_str("limitations:\n");
+        for limitation in &receipt.limitations {
+            output.push_str(&format!("- {limitation}\n"));
+        }
+    }
+    output
 }
 
 fn render_human_preflight(receipt: &LocalCheckPreflightReceipt) -> String {
@@ -913,6 +1024,51 @@ mod tests {
                 "Review this".into(),
                 "--requirement".into(),
                 "missing-spec".into(),
+            ],
+            cwd,
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn collect_parser_requires_a_range_and_explicit_supported_collectors() {
+        let cwd = Path::new("/tmp/widget");
+        let CliCommand::Collect(arguments) = parse_arguments(
+            [
+                "collect".into(),
+                "--range".into(),
+                "main..HEAD".into(),
+                "--collector".into(),
+                "gitleaks".into(),
+                "--collector".into(),
+                "cargo-audit".into(),
+                "--json".into(),
+            ],
+            cwd,
+        )
+        .expect("collect arguments") else {
+            panic!("expected collect command")
+        };
+        assert_eq!(arguments.repo_path, cwd);
+        assert_eq!(arguments.change, "main..HEAD");
+        assert_eq!(
+            arguments.collectors,
+            vec![CollectorKind::Gitleaks, CollectorKind::CargoAudit]
+        );
+        assert_eq!(arguments.output, OutputMode::Json);
+
+        assert!(parse_arguments(
+            ["collect".into(), "--range".into(), "main..HEAD".into()],
+            cwd,
+        )
+        .is_err());
+        assert!(parse_arguments(
+            [
+                "collect".into(),
+                "--range".into(),
+                "main..HEAD".into(),
+                "--collector".into(),
+                "unknown".into(),
             ],
             cwd,
         )

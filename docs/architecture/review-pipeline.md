@@ -97,6 +97,18 @@ removed without discarding otherwise valid evidence. Qualification diagnostics
 and rejected/stale/unresolved counts stay in the manifest so the UI cannot turn
 partial evidence into full confidence.
 
+## External collector boundary
+
+The unreleased `codevetter collect` path resolves the same exact clean Git
+change before invoking an optional local sidecar. `tool_collectors.rs` owns
+binary/config identity, no-shell supervision, output limits, normalization, and
+limitations; the external tool does not own the CodeVetter verdict. The first
+implemented adapter is Gitleaks 8.30.1 and drops raw match/secret fields before
+serialization. cargo-audit and cargo-llvm-cov remain claim-closed preflights
+until their offline database and LLVM prerequisites are packaged. The
+[qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/tool-collector-foundation-2026-08-31.md)
+records the proven slice; issue #198 owns packaging and remaining execution.
+
 ## Manifest and interruption behavior
 
 SQLite stores additive run, unit, attempt, qualification, and checkpoint state.
@@ -155,9 +167,10 @@ separately authorized.
 ## Standards packs
 
 `StandardsPack` (`review-service.ts`) groups checks by focus
-(`product-safety`, `security-boundary`, …). The active pack is persisted in
-user settings (`codevetter_review_config` localStorage key, mirrored to Tauri
-preferences) and linked to reviews via `local_reviews.standards_pack`. The
+(`product-safety`, `security-boundary`, …). The active pack is persisted in an
+allowlisted `codevetter_review_config` localStorage record that cannot retain
+legacy provider credentials, and linked to reviews via
+`local_reviews.standards_pack`. The
 Rubrics page (`/rubrics`) handles pack authoring, exact prompt preview,
 per-pack usage stats, and cloning.
 

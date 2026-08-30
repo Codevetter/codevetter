@@ -36,10 +36,25 @@ the underlying `rustsec` crate is a **library**: it runs in-process in
   [RustSec/advisory-db](https://github.com/RustSec/advisory-db) at
   `~/.cargo/advisory-db` — trivially vendorable and shippable.
 - Pair with **cargo-deny** (`--offline`) for SPDX license-policy enforcement,
-  which nothing else here does for Rust. Note its output is structured JSON log
-  lines, **not SARIF** — the mapping would be yours to write.
+  which nothing else here does for Rust. Version 0.20.2 emits native SARIF
+  2.1.0; the repository now verifies that output instead of relying on the
+  earlier, stale JSON-only assessment.
 
-### `gitleaks` — bundle as a sidecar
+### `cargo-deny` — wired repository policy
+
+The tracked `apps/desktop/src-tauri/deny.toml` evaluates the shipped Apple
+Silicon target, permits only the license families present in the qualified
+graph, denies wildcard requirements, denies unknown registries and all Git
+dependencies, and reports duplicate versions without failing on Tauri-owned
+convergence. `pnpm quality:rust-policy` runs the locked offline check locally.
+
+`repository-security.yml` downloads the exact 0.20.2 Linux musl binary,
+verifies its publisher digest, uploads native license/source SARIF, and enforces
+the bans lane separately. The qualified baseline has clean licenses and sources
+plus 14 non-blocking duplicate-version warnings. Exact artifact identities and
+limitations are in the [tracked evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/security/cargo-deny-baseline-2026-08-31.md).
+
+### `gitleaks` — repository gate plus an unreleased product collector foundation
 
 **MIT**, and the core scanner's license is unchanged. Fully offline: no DB, no
 network, rules embedded or from `.gitleaks.toml`. Emits SARIF. Static Go binary,
@@ -51,6 +66,60 @@ the commercial relicensing applies **only to `gitleaks/gitleaks-action` v2.0.0+*
 
 Caution: v8.30.1 shipped 2026-03-21 and recent commits are largely Dependabot.
 Not stale, but feature velocity has slowed.
+
+The repository integration invokes the binary directly rather than the
+commercially relicensed action:
+
+- `.husky/pre-commit` scans staged changes when Gitleaks is installed;
+- `.husky/pre-push` scans complete Git history, with the previous pattern scan
+  retained only as a limited fallback;
+- `pnpm quality:secrets` is the reproducible local command;
+- `repository-security.yml` downloads v8.30.1, verifies its embedded SHA-256,
+  emits redacted SARIF, uploads the result, and fails on a finding.
+
+`.gitleaksignore` contains four exact historical fingerprints. It does not
+allowlist whole paths or rules, so later findings in those files remain visible.
+The unreleased Rust backend and `codevetter collect` CLI now add a bounded,
+versioned `codevetter.tool-collection/v1` foundation. It resolves one clean
+checked-out Git range, accepts only an exact 8.30.1 bundle sibling or explicit
+debug/test override, records the binary SHA-256 and configuration identity,
+invokes without a shell under time/output/environment bounds, and normalizes
+only rule and repository-relative location metadata. Raw `Secret` and `Match`
+fields are dropped before serialization, and the JSON report remains in a
+bounded process pipe instead of a temporary file. Missing cargo-audit and cargo-llvm-cov
+prerequisites remain explicit `unavailable` evidence.
+
+This source wiring is not evidence that any sidecar has shipped. No Gitleaks
+binary is yet declared in Tauri resources or qualified inside a signed app
+bundle, and cargo-audit/coverage execution remains unimplemented under issue
+#198.
+
+### `osv-scanner` — offline repository runner wired, remediation required
+
+`pnpm quality:vulnerabilities` invokes the repository-owned 2.5.1 runner with
+`--offline --offline-vulnerabilities`. It hashes the preseeded ecosystem
+databases and writes SARIF plus a versioned receipt under ignored `artifacts/`.
+Database refresh remains an explicit, separate network operation. The qualified
+warm scan took 8.942 seconds and found 35 affected locked package versions and
+52 advisory/package matches: 18 Rust packages and 17 docs-site npm packages.
+The remainder is dominated by unmaintained GTK3 and Unicode Rust crates that
+need platform/reachability classification rather than a blind allowlist. See
+the [tracked baseline evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/security/osv-baseline-2026-08-31.md).
+
+This explains why the root `pnpm audit` result was insufficient: it did not
+cover the independent docs-site lockfile or RustSec. The trial is not yet a
+gate because the current baseline would fail and each finding still needs
+scope/reachability review. Integration and remediation are tracked in issue
+#195. Database refresh must stay separate from the offline scan so a product
+run cannot turn a transient network path into an implicit manifest upload.
+
+The approved Blume 1.5.3 and event-listener 5.4.2 maintenance reduced the same
+offline result from 52 matches to 39 result instances (36 normalized rules) at
+revision `855202998b56c1658b9decda22298a1b63fb5caf`. It did not make the graph
+clean: the docs-site production audit still reports 12 high, 7 moderate, and 1
+low advisory in current transitive build/documentation paths. The
+[baseline receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/security/osv-baseline-2026-08-31.md)
+keeps both the improvement and remaining exposure explicit.
 
 ## Rejected
 
@@ -136,6 +205,16 @@ corrections to common belief:
 
 Useful detail: the misconfiguration checks bundle is **embedded in the binary at
 build time**, so that scanning survives with zero network.
+
+A bounded 0.74.0 repository trial confirmed that
+`--disable-telemetry --skip-version-check --skip-check-update` suppresses the
+notification request and uses the embedded checks. It also showed why this is
+not yet a useful maintained lane: the unbounded scan reported against a
+dependency-owned Dockerfile, while the dependency-excluded scan misclassified a
+warm-verification JSON fixture as CloudFormation and found no supported
+first-party IaC surface. Trivy config scanning is therefore **trialled, not
+wired** until such a surface exists. See the
+[tracked receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/security/trivy-config-qualification-2026-08-31.md).
 
 ## SBOM formats
 

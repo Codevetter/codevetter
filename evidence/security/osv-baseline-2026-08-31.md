@@ -53,3 +53,18 @@ Do not add a second vulnerability scanner or silently baseline these findings.
 First test the Blume update and bounded Cargo lockfile remediation, then repeat
 this exact offline scan. CI enforcement should follow remediation so the gate
 does not normalize known high-severity results.
+
+## Approved maintenance follow-up
+
+At exact revision `855202998b56c1658b9decda22298a1b63fb5caf`, after updating
+Blume 1.0.4 to 1.5.3 and event-listener 5.4.1 to 5.4.2, the same database set
+and offline runner completed in 9.745 seconds with 39 result instances and 36
+normalized SARIF rules. This is a reduction from 52 advisory/package matches,
+not a clean result and not an allowlist.
+
+The independent docs-site production audit still reports 12 high, 7 moderate,
+and 1 low advisory. Current Blume transitively retains those build/documentation
+paths, and several have no resolution through the current direct version. The
+repository-wide root production audit remains clean because the docs site has
+its own lockfile; both facts must stay visible until issue #195 completes
+reachability and upstream/remediation review.

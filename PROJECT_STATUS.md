@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-24
+Last updated: 2026-08-31
 
 ## Why / What
 
@@ -39,7 +39,6 @@ separately approved safety design justify renewed investment.
 
 External:
 - Bundled `ccusage` 20.0.20 sidecar — local, offline Claude/Codex/Grok usage accounting; exact updates are opened weekly and remain qualification-gated.
-- User-supplied LLM API keys (Anthropic / OpenAI / OpenRouter) stored in user settings — no server-side auth.
 - Installed and authenticated Codex or Claude CLI for Work conversations; provider account policy remains external to CodeVetter.
 - GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on `tauri.conf.json` version bumps, dispatching `release.yml` to build/sign/upload Tauri binaries; `@tauri-apps/plugin-updater` consumes the `latest.json` manifest.
 - Cloudflare Pages — hosts the landing page (`codevetter` project, codevetter.com).
@@ -55,6 +54,28 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-08-31 — Bounded external collector foundation (unreleased source):**
+  Added `codevetter collect` and a shared Rust `codevetter.tool-collection/v1`
+  receipt for one exact clean checked-out Git range. The first adapter executes
+  an exact Gitleaks 8.30.1 bundle sibling or explicit debug/test override without a
+  shell, with a minimal environment, timeout, bounded output, binary/config
+  identity, repository-relative normalization, and raw secret fields removed
+  before serialization. cargo-audit and cargo-llvm-cov currently return
+  explicit `unavailable` evidence after optional exact-version preflight; they
+  do not install tools, fetch advisory data, or claim coverage. No sidecar is
+  yet bundled and no release claim is made; packaging and the remaining
+  collectors stay tracked in issue #198.
+
+- **2026-08-31 — Apple Container trial qualified with a containment caveat:**
+  Installed the signed/notarized 1.3.1 CLI after owner authorization and
+  exercised a 1-CPU/256-MB, internal-network, no-DNS, read-only-root sandbox on
+  the supported arm64 macOS 27 host. The cached no-op run took 0.61 seconds and
+  teardown left zero containers. A controlled traversal fixture proved the CLI
+  does not enforce CodeVetter's workspace-root boundary, so any adapter must
+  canonicalize and reject out-of-root mounts itself. This is external-prerequisite
+  qualification, not a bundled dependency or architecture approval; issue #197
+  remains open.
 
 - **2026-08-24 — Unified local change check (unreleased source):** the packaged
   `codevetter` CLI now accepts one clean checked-out PR head or Git range plus

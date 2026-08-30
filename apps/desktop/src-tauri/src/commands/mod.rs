@@ -53,6 +53,7 @@ pub mod spec_coverage;
 pub mod structural_graph;
 pub mod synthetic_qa;
 pub mod taste;
+pub mod tool_collectors;
 pub mod trex_preview;
 pub mod trex_watcher;
 pub mod unpack;
