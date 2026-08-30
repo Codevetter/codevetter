@@ -82,7 +82,7 @@ is only the presentation and search layer.
 - [performance-lab-publication.md](./knowledge/performance-lab-publication.md) —
   published optimization experiments, external PRs, and evidence boundaries.
 - [tooling-decisions.md](./knowledge/tooling-decisions.md) — what CodeVetter
-  embeds instead of building, what it refuses, and why. Hub for the four
+  embeds instead of building, what it refuses, and why. Hub for the five
   evaluations below.
 - [tooling-secrets-and-supply-chain.md](./knowledge/tooling-secrets-and-supply-chain.md)
   — secret scanners and dependency/vulnerability scanners.
@@ -92,6 +92,8 @@ is only the presentation and search layer.
   public agent benchmark corpora, graded on determinism and licensing.
 - [tooling-documentation.md](./knowledge/tooling-documentation.md) — the
   DeepWiki reject and what would fit instead.
+- [tooling-sandboxing.md](./knowledge/tooling-sandboxing.md) — isolation for
+  running untrusted agent code, determinism controls, SARIF analyzers.
 - [codebase-context-tools-landscape.md](./knowledge/codebase-context-tools-landscape.md)
   — April 2026 survey of codebase indexing and context tooling.
 
