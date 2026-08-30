@@ -154,7 +154,6 @@ impl ArchaeologyProviderFactory for EnvironmentArchaeologyProviderFactory {
             ArchaeologyProviderKind::Local => None,
             ArchaeologyProviderKind::Hosted => {
                 let variable = match descriptor.provider_identity.as_str() {
-                    "free-ai" => "FREE_AI_API_KEY",
                     "openai" => "OPENAI_API_KEY",
                     "anthropic" => "ANTHROPIC_API_KEY",
                     "openrouter" => "OPENROUTER_API_KEY",
