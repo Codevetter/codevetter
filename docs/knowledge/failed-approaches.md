@@ -117,6 +117,21 @@ and the constraint it leaves behind. Link here when rejecting a similar idea.
 - **Constraint**: do not reintroduce `tauri-driver`. See
   [development/testing.md](../development/testing.md).
 
+## Research parked outside `docs/` gets re-done
+
+- **What broke**: the DeepWiki adoption question was researched twice — once in
+  April 2026, again in August 2026 — reaching the same reject verdict both
+  times.
+- **Root cause**: the April survey was committed to a top-level `research/`
+  directory that nothing linked to and `scripts/check-docs.mjs` never
+  validated. It was invisible at the moment the question was re-asked.
+- **Fix**: moved to
+  [codebase-context-tools-landscape.md](./codebase-context-tools-landscape.md)
+  and linked from `docs/index.md`; `research/` removed.
+- **Constraint**: evaluations and surveys go in `docs/knowledge/` with
+  frontmatter and an index entry. A finding that is not reachable from
+  `docs/index.md` will be paid for twice.
+
 ## More lessons
 
 See also [`LESSONS.md`](https://github.com/Codevetter/codevetter/blob/main/docs/archive/LESSONS.md) for older entries

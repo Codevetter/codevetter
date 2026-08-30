@@ -81,6 +81,19 @@ is only the presentation and search layer.
 - [competitive-landscape.md](./knowledge/competitive-landscape.md) — AI code review competitive landscape.
 - [performance-lab-publication.md](./knowledge/performance-lab-publication.md) —
   published optimization experiments, external PRs, and evidence boundaries.
+- [tooling-decisions.md](./knowledge/tooling-decisions.md) — what CodeVetter
+  embeds instead of building, what it refuses, and why. Hub for the four
+  evaluations below.
+- [tooling-secrets-and-supply-chain.md](./knowledge/tooling-secrets-and-supply-chain.md)
+  — secret scanners and dependency/vulnerability scanners.
+- [tooling-coverage.md](./knowledge/tooling-coverage.md) — coverage collection
+  across Rust/TS/Python, the LCOV transport decision, diff-coverage traps.
+- [tooling-agent-benchmarks.md](./knowledge/tooling-agent-benchmarks.md) —
+  public agent benchmark corpora, graded on determinism and licensing.
+- [tooling-documentation.md](./knowledge/tooling-documentation.md) — the
+  DeepWiki reject and what would fit instead.
+- [codebase-context-tools-landscape.md](./knowledge/codebase-context-tools-landscape.md)
+  — April 2026 survey of codebase indexing and context tooling.
 
 ### Learnings
 
