@@ -1,15 +1,7 @@
 node_modules/
 
-# Action runtime bundle must stay versioned.
-dist/*
-!dist/index.js
-
 # Generated build artifacts should not be tracked.
-packages/*/dist
-workers/*/dist
-workers/*/dist-cjs
-workers/*/.wrangler
-.vercel
+dist/
 out/
 .next/
 target/
@@ -35,6 +27,11 @@ apps/desktop/native/AgentIsland/.build/
 # Secrets
 .claude/settings.local.json
 
+# Local agent/tool state and output — not shared repo content.
+.claude/projects/
+.fleet/
+.impeccable/
+
 # IDE
 .vscode/
 .idea/
@@ -50,7 +47,10 @@ apps/desktop/synthetic-qa-artifacts/
 .playwright-mcp/
 
 # Public benchmark reviewer output (drop tool outputs here, not tracked)
-benchmark/reviews/
+benchmarks/public-catch-rate/reviews/
+
+# Scratch output from CLI runs (--out artifacts/...). Committed evidence lives in evidence/.
+artifacts/
 
 # Coverage
 coverage/
