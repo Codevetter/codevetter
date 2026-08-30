@@ -36,6 +36,7 @@ questions, not findings.
 | `lcov` crate | MIT OR Apache-2.0 | In-process parser | [coverage](./tooling-coverage.md) |
 | τ³-bench (tau2-bench) | MIT | Corpus under `benchmarks/` | [agent benchmarks](./tooling-agent-benchmarks.md) |
 | Terminal-Bench 4.0 (Harbor) | Apache-2.0 | Corpus under `benchmarks/` | [agent benchmarks](./tooling-agent-benchmarks.md) |
+| `libkrun` | Apache-2.0 | In-process VMM in `src-tauri/` | [sandboxing](./tooling-sandboxing.md) |
 
 `cargo-audit` is the highest-leverage item: the `rustsec` crate runs inside the
 existing Rust backend with no new process boundary, no sidecar to codesign, and
@@ -54,6 +55,9 @@ absent from the changelog — pin `>= 0.22.0` and trust the source, not the docs
 | `lcov` / `genhtml` Perl tooling | GPL-2.0 — do not bundle (the *format* is unencumbered) |
 | Meta OpenApps | CC-BY-NC-4.0, commercial use prohibited |
 | DeepWiki | Hosted; private repos need a paid Devin account — see [documentation tooling](./tooling-documentation.md) |
+| CodeQL | License forbids use on non-open-source codebases without paid GHAS — see [sandboxing](./tooling-sandboxing.md) |
+| Firecracker, gVisor | Linux-kernel only; no macOS host mode exists |
+| Docker Desktop | Proprietary GUI app, license-gated at 250 employees / $10M revenue |
 | WorkArena, WebVoyager | Require live third-party websites or hosted SaaS |
 | detect-secrets | Dormant since 2024; no SARIF |
 | Nosey Parker | Archived 2026-04-24, superseded by Titus |
