@@ -56,13 +56,18 @@ apps/
     tests/              # Playwright e2e tests
   landing-page-astro/   # Astro marketing site → Cloudflare Pages (codevetter.com)
 docs/                   # Canonical knowledge system — see docs/index.md
-benchmark/              # Public catch-rate benchmark cases + harness
-scripts/                # Benchmark + deploy + doc-validation scripts
+docs-site/              # Blume presentation layer for docs/ (NOT the source of truth)
+benchmarks/             # Evaluation corpora — public-catch-rate/, agent-prs/,
+                        #   agent-tasks/, runtime-challenges/, context-*/, performance-lab/
+evidence/               # Committed run evidence: design/, performance/, reviews/
+scripts/                # Benchmark + corpus + deploy + doc-validation scripts
 .github/workflows/      # ci, auto-release, release, deploy-landing, weekly, docs
-blume.config.ts         # Blume presentation layer for docs/ (NOT the source of truth)
 STATUS.md               # Compatibility pointer
 PROJECT_STATUS.md       # Current/shipped product truth (fleet source of truth)
 ```
+
+`artifacts/` is gitignored scratch for CLI runs (`--out artifacts/...`).
+Committed evidence belongs in `evidence/`.
 
 ## Key commands
 ```bash
@@ -121,7 +126,7 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 
 The committed Markdown under `docs/` is the **source of truth** for product
 knowledge, architecture, decisions, workflows, operations, learnings, and
-failed approaches. Blume (`blume.config.ts`) is only the presentation/search
+failed approaches. Blume (`docs-site/blume.config.ts`) is only the presentation/search
 layer — generated output (`.blume/`) is gitignored.
 
 - **Navigation hub**: `docs/index.md`
