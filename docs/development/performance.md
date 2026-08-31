@@ -150,21 +150,33 @@ static import closure plus the default Home route—not the sum of every lazy ro
   wrap the per-file diff in `React.memo`. Deferred — speculative without a profile,
   and risky in a 6k-line file.
 
-### Bundle budget guard (`bench:bundle`)
+### Bundle budget guards (`bench:bundle`)
 
 Reads Vite's manifest to compute the actual entry + Home static closure and fails
 if that exceeds **550 KB raw**, if any individual chunk exceeds **500 KB raw**, or
-if the complete lazy distribution exceeds **1,800 KB raw**. This catches startup
+if the complete lazy distribution exceeds **1,800 KB raw**. Size Limit then
+independently checks the emitted `out/assets/*.js` distribution against the same
+1.8 MB ceiling. The upstream tool is deliberately additive: it cannot express
+the Tauri-specific entry + Home closure or individual lazy-chunk limits. This catches startup
 regressions without treating intentionally deferred code as startup work:
 
 | chunk / closure | raw KB | gzip KB | note |
 |-----------------|-------:|--------:|------|
-| initial + Home | 452.8 | — | startup parse boundary |
-| `AgentPanel-*` | 457.0 | 114.8 | largest lazy feature chunk |
-| `index-*` | 396.7 | 127.4 | entry/vendor |
-| `RepoPage-*` | 239.4 | 58.2 | lazy route |
-| `QuickReview-*` | 200.8 | 52.6 | lazy route |
-| **all lazy routes** | **1,601.3** | **444.7** | distribution guard |
+| initial + Home | 472.5 | — | startup parse boundary |
+| `index-*` | 411.5 | 132.5 | entry/vendor |
+| `RepoPage-*` | 304.4 | 75.0 | lazy route |
+| `QuickReview-*` | 254.2 | 67.9 | lazy route |
+| **all lazy routes** | **1,232.3** | **353.6** | distribution guard; Size Limit reports 1.26 MB decimal |
+
+### Browser performance evidence
+
+Chrome DevTools MCP is the maintained browser-performance path for local traces,
+network diagnostics, and Core Web Vitals investigation. Lighthouse JSON from an
+external producer can be ingested by the verification-receipt CLI, but remains
+observational evidence rather than a correctness or release verdict. Lighthouse
+CI 0.15.1 was exercised for three successful local landing-page runs, then
+rejected as a repository dependency because its current graph fails the
+high-severity dependency gate, including an unpatched archive traversal.
 
 ## 4. Release-history graph — backfill, time travel, and scrubbing
 

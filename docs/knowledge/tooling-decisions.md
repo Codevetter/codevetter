@@ -33,6 +33,8 @@ questions, not findings.
   part of a maintained path.
 - **Wired** — invoked by a tracked local command, hook, workflow, or product
   adapter.
+- **Configured** — registered with a maintainer client, but not yet callable
+  because authentication, product authorization, or a client restart is pending.
 - **Rejected** — disqualified for the named lane. Rejection in the private
   customer-code product lane does not automatically reject a public-repository
   maintainer aid.
@@ -70,9 +72,28 @@ as a signed desktop sidecar remains **approved** work.
 | StrykerJS 10.0.0 | Bounded local command wired | Accounting oracle: 218 mutants, 185 killed, 33 survived, 84.86% score; `pnpm quality:mutation:accounting`, tracked in issue #196 |
 | Schemathesis 4.25.2 | Rejected for current surface | CLI availability verified, but CodeVetter has no OpenAPI/Swagger contract or HTTP server to exercise |
 | Apple `container` CLI | Approved for measured trial | Host qualifies (arm64, macOS 27), but the signed admin-installed system service is absent; tracked in issue #197 |
+| Lighthouse CI 0.15.1 | Trialled, rejected as a repo dependency | Three local landing-page runs passed the proposed category/Core Web Vitals gates, but the package introduced three high advisories including unpatched `extract-zip` traversal; raw Lighthouse JSON ingestion remains supported |
+| Size Limit 13.0.3 | Wired, additive | Caps the complete emitted desktop JS distribution after the existing Tauri-aware entry/Home and per-chunk budget gate; it does not replace those product-specific calculations |
+| `fast-xml-parser` 5.11.1 | Wired | Closed JUnit and Cobertura XML ingestion with DTD/entity rejection before parsing |
+| `@friedemannsommer/lcov-parser` 8.0.0 | Wired | Local LCOV ingestion without bundling the GPL Perl `lcov` tools |
+| Playwright built-in JSON/JUnit reporters + c8 LCOV/Cobertura reporters | Wired and dogfooded | `pnpm verification:dogfood` runs the active suites, emits all four upstream formats, ingests them, and keeps unproven verdict dimensions at `no_confidence` |
+| Chrome DevTools MCP 1.8.0 | Wired | Pinned maintainer MCP for traces and browser diagnostics; isolated/headless profile, telemetry and CrUX lookup disabled, response headers redacted |
+| Playwright MCP 0.0.79 | Wired | Pinned isolated/headless maintainer browser with service workers blocked and a bounded local/codevetter.com origin allowlist |
+| GitHub MCP Server 1.11.0 | Wired and verified | Checksum-verified official Darwin arm64 binary registered as local stdio with `repos`, `issues`, `pull_requests`, `actions`, and `code_security`; strict read-only mode and narrow browser OAuth scopes (`read:org`, `security_events`) replace the earlier PAT-dependent remote registration, with live repository, PR, Actions, issue, and CodeQL reads verified |
+| CodeVetter packaged graph/history MCP | Wired and verified | Enabled for the canonical checkout through the product-generated opaque repository scope; current history and tree-sitter structural indexes returned bounded `history_search` and `graph_query` results, with operational access metadata recorded locally |
 
 These tools subsidize discovery and evidence collection. CodeVetter still owns
 receipt qualification, taxonomy, budgets, and the final measurable verdict.
+The maintainer client also registers CodeVetter's repository-scoped runtime MCP
+as `codevetter-runtime-exec` and its non-executing receipt MCP as
+`codevetter-verification`; the names preserve the execution boundary. The
+product-generated packaged sidecar is registered separately as
+`codevetter-history`. Newly added registrations appear as callable client tools
+in the next Codex session, so the packaged sidecar was also protocol-smoked
+directly in this session. GitHub's browser OAuth is complete, and its token
+remains in the server process rather than Codex configuration. Future repository
+scopes must still be enabled in CodeVetter and copied from its opaque generated
+configuration rather than synthesizing database arguments.
 
 The first CodeQL run also exposed a cleartext localStorage API-key field. Source
 tracing showed that the old browser gateway execution path had already been
@@ -110,6 +131,7 @@ source, not the docs.
 | WorkArena, WebVoyager | Require live third-party websites or hosted SaaS |
 | detect-secrets | Dormant since 2024; no SARIF |
 | Nosey Parker | Archived 2026-04-24, superseded by Titus |
+| Lighthouse CI as a repository dependency | Current 0.15.1 dependency graph fails the repository's high-severity audit, including unpatched `extract-zip` traversal; do not hide the same package behind an untracked `dlx` invocation |
 
 ## Adopt only with explicit configuration
 

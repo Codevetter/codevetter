@@ -47,6 +47,7 @@
     "verification:ingest": "node scripts/verification-receipts/cli.mjs ingest",
     "verification:compare": "node scripts/verification-receipts/cli.mjs compare",
     "verification:mcp": "node scripts/verification-receipts/mcp.mjs",
+    "verification:dogfood": "node scripts/verification-receipts/dogfood-cli.mjs",
     "test:benchmark": "node --test scripts/run-catch-rate-benchmark.test.mjs scripts/run-structural-context-evaluation.test.mjs",
     "test:graph-context": "node --test scripts/run-structural-context-evaluation.test.mjs",
     "test:corpus-contracts": "node --test scripts/agent-task-corpus/*.test.mjs",
@@ -86,10 +87,14 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
+    "@friedemannsommer/lcov-parser": "8.0.0",
+    "@size-limit/file": "13.0.3",
+    "fast-xml-parser": "5.11.1",
     "husky": "^9.1.7",
     "jscpd": "5.0.14",
     "knip": "^6.6.3",
     "lint-staged": "^16.4.0",
+    "size-limit": "13.0.3",
     "ultracite": "7.10.2"
   },
   "optionalDependencies": {

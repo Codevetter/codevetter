@@ -55,6 +55,32 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-08-31 — External performance, testing, and MCP evidence adapters
+  (unreleased source):** verification-receipt ingestion now accepts Playwright
+  JSON, JUnit XML, LCOV, Cobertura XML, Lighthouse JSON, and Chrome trace JSON
+  while preserving raw artifact identity, hashing failure text, rejecting XML
+  entities, and keeping observation-only formats at `no_confidence`. A three-run
+  Lighthouse CI trial passed the proposed landing-page gates, but the dependency
+  was removed after the high-severity audit exposed an unpatched transitive
+  archive traversal. Upstream Size Limit now follows rather than replaces the
+  desktop's Tauri-aware bundle budgets. `pnpm verification:dogfood` now runs the
+  active Playwright and c8 suites, emits Playwright JSON, JUnit, LCOV, and
+  Cobertura through their built-in reporters, and successfully ingests all four
+  while retaining `no_confidence` outside their proof. The run also removed the
+  retired Work/Board E2E inventory and exposed then fixed a duplicate React key
+  in Testing. The maintainer Codex client has pinned
+  isolated Chrome DevTools and Playwright MCPs plus named CodeVetter runtime and
+  receipt MCPs. GitHub's checksum-verified official v1.11.0 local server replaces
+  the PAT-dependent remote registration, with read-only relevant toolsets and
+  narrow in-memory browser OAuth. Live repository, pull-request, Actions, issue,
+  and CodeQL reads verify the connection without exposing a write tool. The
+  packaged CodeVetter graph/history MCP is also enabled for the canonical
+  checkout from the app-generated opaque configuration. Its history and
+  tree-sitter structural indexes are current at the checked-out HEAD, and direct
+  protocol smoke tests returned bounded `history_search` and `graph_query`
+  results with local access-audit rows. No product release or deployment is
+  claimed; work is tracked in issue #200.
+
 - **2026-08-31 — Bounded external collector foundation (unreleased source):**
   Added `codevetter collect` and a shared Rust `codevetter.tool-collection/v1`
   receipt for one exact clean checked-out Git range. The first adapter executes

@@ -88,6 +88,34 @@ pnpm bench:public      # 27 public cases, catch-rate/precision/F1
 
 See [benchmark.md](./benchmark.md).
 
+## External producer compatibility
+
+CodeVetter does not require other projects to replace their test stack. The
+verification-receipt loader normalizes Playwright JSON and JUnit XML, plus LCOV
+and Cobertura coverage, while preserving the raw artifact hash and missing
+evidence as explicit limitations. Run its focused contracts with:
+
+```bash
+pnpm test:verification-receipts
+```
+
+The repository also emits and consumes those upstream formats itself:
+
+```bash
+pnpm verification:dogfood
+```
+
+Playwright writes its built-in JSON and JUnit reports alongside the list and
+HTML reporters. c8 writes LCOV and Cobertura coverage in addition to the console
+summary. Generated reports stay ignored under `apps/desktop/test-results/`,
+`apps/desktop/coverage/`, and `artifacts/`; they are reproducible evidence, not
+committed snapshots. Tests for the retired Work and Board surfaces are no longer
+part of the active E2E inventory.
+
+See [verification-receipts.md](./verification-receipts.md) for supported
+formats and the distinction between producer observations and a qualified
+CodeVetter verdict.
+
 ## Native Agent Island
 
 On macOS, the Apple-framework-only helper has a framework-independent protocol
@@ -133,7 +161,8 @@ release-mode stdio lifecycle. A failure stops the pipeline.
   owned by [GitHub issue #116](https://github.com/Codevetter/codevetter/issues/116)
   for review by 2026-09-11 because its fix requires the Astro 7 major upgrade.
 - **Clippy zero-warning** in release qualification.
-- **Bundle budgets** via `apps/desktop/scripts/bundle-budget.mjs`.
+- **Bundle budgets** via `apps/desktop/scripts/bundle-budget.mjs`, followed by
+  the additive upstream Size Limit distribution cap.
 - **GitHub-Issue specs** for non-trivial features; no repo-local spec tree is
   part of the quality gate.
 - **Pre-commit** (`.husky/pre-commit`): `lint-staged` runs `biome check --write` on staged `apps/desktop/src/**/*.{ts,tsx}`.

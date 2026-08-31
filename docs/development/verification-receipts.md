@@ -46,6 +46,34 @@ keeping the exact raw-file SHA-256 as the source identity. Missing inventory,
 attempts, resource measurements, budgets, or network evidence stay missing;
 pre-test runner failures become operational `no_confidence` evidence.
 
+The same loader accepts these established producer formats:
+
+- Playwright JSON, preserving terminal attempts, retries, durations, and hashed
+  failure signatures without copying raw errors;
+- JUnit XML, including skipped tests and failed testcase error outcomes;
+- LCOV and Cobertura XML coverage summaries;
+- Lighthouse JSON category and navigation metrics; and
+- Chrome trace JSON event count and trace duration.
+
+Test reports can support a bounded correctness projection. Coverage,
+Lighthouse, and trace artifacts are observations only: without revision-bound
+inventory, selection, resource, safety, and repeated comparison evidence they
+remain `no_confidence` and never become a shipping verdict.
+
+CodeVetter dogfoods the installed Playwright reporters and c8 coverage
+reporters end to end:
+
+```bash
+pnpm verification:dogfood
+```
+
+The command runs the active desktop browser suite, writes Playwright JSON and
+JUnit XML, runs the frontend unit suite with LCOV and Cobertura output, ingests
+all four artifacts, and writes the ignored integration summary to
+`artifacts/verification-dogfood/summary.json`. This is an integration check,
+not release qualification: it fails on a producer or ingestion error, while
+preserving `no_confidence` for verdict dimensions the reports cannot prove.
+
 The adapter takes the repository identity from the scoped project's
 `package.json`. Unsupported producer formats and producer-native receipts
 without a stable repository identity fail before analysis. Raw executable
@@ -62,7 +90,7 @@ qualified bundle is emitted.
 Ingest one repository-relative receipt:
 
 ```bash
-pnpm verification:ingest -- \
+pnpm verification:ingest \
   --repo /path/to/project \
   --receipt artifacts/verification.json
 ```
@@ -70,7 +98,7 @@ pnpm verification:ingest -- \
 Compare two receipts:
 
 ```bash
-pnpm verification:compare -- \
+pnpm verification:compare \
   --repo /path/to/project \
   --baseline artifacts/baseline.json \
   --current artifacts/current.json
@@ -90,7 +118,7 @@ limitation and never claim a controlled speedup.
 Start the separate repository-scoped, read-only stdio process:
 
 ```bash
-pnpm verification:mcp -- --repo /path/to/project
+pnpm verification:mcp --repo /path/to/project
 ```
 
 It exposes two tools:
@@ -131,5 +159,7 @@ pnpm test:verification-receipts
 The suite covers deterministic ingestion, independent budgets, transient
 rechecks, same- and cross-commit comparison, incompatible identities, unsafe
 selector narrowing, privacy rejection, filesystem containment, CLI/MCP parity,
-the real CodeVetter local-runner projection, and complete plus pre-test-failure
-Vault E2E receipt adaptation.
+the real CodeVetter local-runner projection, complete plus pre-test-failure
+Vault E2E receipt adaptation, Playwright/JUnit attempt normalization,
+LCOV/Cobertura observations, Lighthouse/Chrome trace observations, and hostile
+XML entity rejection.

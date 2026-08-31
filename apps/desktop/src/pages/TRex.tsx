@@ -408,7 +408,7 @@ export default function TRex() {
           </ProjectWorkspaceHeader>
 
           <EvidenceScopePlanner
-            key={selectedRepoPath}
+            key={`evidence-scope:${selectedRepoPath}`}
             repoPath={selectedRepoPath}
             consumer="testing"
             onConfirm={(plan, candidates) => {
@@ -439,7 +439,10 @@ export default function TRex() {
             onCleanup={handleWarmCleanup}
           />
 
-          <DifferentialVerificationPanel key={selectedRepoPath} repoPath={selectedRepoPath} />
+          <DifferentialVerificationPanel
+            key={`differential:${selectedRepoPath}`}
+            repoPath={selectedRepoPath}
+          />
 
           <ScenarioCompilerPanel repoPath={selectedRepoPath} />
 
