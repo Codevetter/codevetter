@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test, { after, before } from 'node:test';
@@ -56,6 +56,7 @@ const actual = {
 
 let fixtureDirectory;
 let fakeCodexBarPath;
+let failingCodexBarPath;
 const scriptPath = fileURLToPath(new URL('./qualify-codex-accounting-oracle.mjs', import.meta.url));
 
 before(() => {
@@ -77,6 +78,18 @@ process.stdout.write(${JSON.stringify(JSON.stringify(oracle))});
 `
   );
   chmodSync(fakeCodexBarPath, 0o755);
+  const defaultCodexBarPath = join(fixtureDirectory, 'codexbar');
+  copyFileSync(fakeCodexBarPath, defaultCodexBarPath);
+  chmodSync(defaultCodexBarPath, 0o755);
+  failingCodexBarPath = join(fixtureDirectory, 'failing-codexbar.mjs');
+  writeFileSync(
+    failingCodexBarPath,
+    `#!/usr/bin/env node
+process.stderr.write('controlled oracle failure\\n');
+process.exit(23);
+`
+  );
+  chmodSync(failingCodexBarPath, 0o755);
 });
 
 after(() => {
@@ -113,6 +126,40 @@ test('accepts an oracle cost inside bounded service-tier uncertainty', () => {
   ranged.daily[0].api_equivalent_cost_min_usd = 0.2;
   ranged.daily[0].api_equivalent_cost_max_usd = 0.5;
   assert.deepEqual(compareAccounting(normalizeCodexBar(oracle), normalizeCodeVetter(ranged)), []);
+});
+
+test('accepts exact epsilon boundaries and rejects either outside direction', () => {
+  const epsilon = 1e-12;
+  const boundary = structuredClone(actual);
+  delete boundary.totals.api_equivalent_cost_usd;
+  boundary.totals.api_equivalent_cost_min_usd = oracle.totals.totalCost + epsilon;
+  boundary.totals.api_equivalent_cost_max_usd = oracle.totals.totalCost + epsilon;
+  assert.deepEqual(compareAccounting(normalizeCodexBar(oracle), normalizeCodeVetter(boundary)), []);
+
+  const lowerBoundary = structuredClone(actual);
+  delete lowerBoundary.totals.api_equivalent_cost_usd;
+  lowerBoundary.totals.api_equivalent_cost_min_usd = oracle.totals.totalCost - epsilon;
+  lowerBoundary.totals.api_equivalent_cost_max_usd = oracle.totals.totalCost - epsilon;
+  assert.deepEqual(
+    compareAccounting(normalizeCodexBar(oracle), normalizeCodeVetter(lowerBoundary)),
+    []
+  );
+
+  const above = structuredClone(boundary);
+  above.totals.api_equivalent_cost_min_usd = oracle.totals.totalCost + epsilon * 2;
+  above.totals.api_equivalent_cost_max_usd = oracle.totals.totalCost + epsilon * 3;
+  assert.equal(
+    compareAccounting(normalizeCodexBar(oracle), normalizeCodeVetter(above))[0].field,
+    'api_equivalent_cost_usd'
+  );
+
+  const below = structuredClone(boundary);
+  below.totals.api_equivalent_cost_min_usd = oracle.totals.totalCost - epsilon * 3;
+  below.totals.api_equivalent_cost_max_usd = oracle.totals.totalCost - epsilon * 2;
+  assert.equal(
+    compareAccounting(normalizeCodexBar(oracle), normalizeCodeVetter(below))[0].field,
+    'api_equivalent_cost_usd'
+  );
 });
 
 test('rejects an oracle cost outside CodeVetter bounds', () => {
@@ -192,7 +239,30 @@ test('requires the local Codex provider and valid unique daily dates', () => {
   const duplicateOracleDate = structuredClone(oracle);
   duplicateOracleDate.daily.push(structuredClone(oracle.daily[0]));
   assert.throws(() => normalizeCodexBar(duplicateOracleDate), /oracle daily.*duplicated/);
+  const invalidOracleDate = structuredClone(oracle);
+  invalidOracleDate.daily[0].date = 20260716;
+  assert.throws(() => normalizeCodexBar(invalidOracleDate), /oracle daily.*duplicated/);
+  assert.deepEqual([...normalizeCodexBar({ ...oracle, daily: undefined }).daily], []);
   assert.throws(() => normalizeCodeVetter(undefined), /actual\.totals\.input_tokens/);
+});
+
+test('sorts multi-date comparison output deterministically', () => {
+  const orderedOracle = structuredClone(oracle);
+  orderedOracle.daily = [
+    { ...structuredClone(oracle.daily[0]), date: '2026-07-18' },
+    { ...structuredClone(oracle.daily[0]), date: '2026-07-16' },
+  ];
+  const orderedActual = structuredClone(actual);
+  orderedActual.daily = [
+    { ...structuredClone(actual.daily[0]), date: '2026-07-17' },
+    { ...structuredClone(actual.daily[0]), date: '2026-07-16' },
+  ];
+  assert.deepEqual(
+    compareAccounting(normalizeCodexBar(orderedOracle), normalizeCodeVetter(orderedActual)).map(
+      ({ scope }) => scope
+    ),
+    ['daily.2026-07-17', 'daily.2026-07-18']
+  );
 });
 
 test('reports missing daily buckets in either input', () => {
@@ -265,6 +335,26 @@ test('CLI distinguishes qualified, mismatched, and malformed evidence', () => {
   );
   assert.equal(malformed.status, 2);
   assert.match(malformed.stderr, /JSON/);
+
+  const missingActualPath = spawnSync(process.execPath, [scriptPath, '--oracle-json', oraclePath], {
+    encoding: 'utf8',
+  });
+  assert.equal(missingActualPath.status, 2);
+  assert.match(missingActualPath.stderr, /--codevetter-json path is required/);
+
+  const multiDateOracle = structuredClone(oracle);
+  multiDateOracle.daily.unshift({ ...structuredClone(oracle.daily[0]), date: '2026-07-18' });
+  const multiDateActual = structuredClone(actual);
+  multiDateActual.daily.unshift({ ...structuredClone(actual.daily[0]), date: '2026-07-18' });
+  writeFileSync(oraclePath, JSON.stringify(multiDateOracle));
+  writeFileSync(actualPath, JSON.stringify(multiDateActual));
+  const ordered = spawnSync(
+    process.execPath,
+    [scriptPath, '--oracle-json', oraclePath, '--codevetter-json', actualPath],
+    { encoding: 'utf8' }
+  );
+  assert.equal(ordered.status, 0, ordered.stderr);
+  assert.deepEqual(JSON.parse(ordered.stdout).compared_daily_buckets, ['2026-07-16', '2026-07-18']);
 });
 
 test('CLI invokes CodexBar with its exact local evidence contract', () => {
@@ -288,6 +378,17 @@ test('CLI invokes CodexBar with its exact local evidence contract', () => {
   assert.equal(qualified.status, 0, qualified.stderr);
   assert.equal(JSON.parse(qualified.stdout).qualified, true);
 
+  const defaultBinary = spawnSync(
+    process.execPath,
+    [scriptPath, '--codex-home', codexHome, '--codevetter-json', actualPath],
+    {
+      encoding: 'utf8',
+      env: { ...process.env, PATH: `${fixtureDirectory}:${process.env.PATH ?? ''}` },
+    }
+  );
+  assert.equal(defaultBinary.status, 0, defaultBinary.stderr);
+  assert.equal(JSON.parse(defaultBinary.stdout).qualified, true);
+
   const missingHome = spawnSync(
     process.execPath,
     [scriptPath, '--codevetter-json', actualPath, '--codexbar', fakeCodexBarPath],
@@ -295,4 +396,20 @@ test('CLI invokes CodexBar with its exact local evidence contract', () => {
   );
   assert.equal(missingHome.status, 2);
   assert.match(missingHome.stderr, /--codex-home is required/);
+
+  const failedOracle = spawnSync(
+    process.execPath,
+    [
+      scriptPath,
+      '--codex-home',
+      codexHome,
+      '--codexbar',
+      failingCodexBarPath,
+      '--codevetter-json',
+      actualPath,
+    ],
+    { encoding: 'utf8' }
+  );
+  assert.equal(failedOracle.status, 2);
+  assert.equal(failedOracle.stderr, 'CodexBar failed (23): controlled oracle failure\n');
 });
