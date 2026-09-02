@@ -14,22 +14,28 @@ const qualificationSchema = 'codevetter.native-package-qualification/v1';
 
 export function parseArguments(argv) {
   const options = { foregroundApproved: false, hostedEphemeral: false };
+  const valueArguments = new Map([
+    ['--incumbent-app', 'incumbentApp'],
+    ['--native-app', 'nativeApp'],
+    ['--qualification', 'qualification'],
+    ['--run-root', 'runRoot'],
+    ['--out', 'out'],
+  ]);
+  const flagArguments = new Map([
+    ['--foreground', 'foregroundApproved'],
+    ['--hosted-ephemeral', 'hostedEphemeral'],
+  ]);
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--') continue;
-    if (argument === '--incumbent-app') {
-      options.incumbentApp = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--native-app') {
-      options.nativeApp = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--qualification') {
-      options.qualification = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--run-root') {
-      options.runRoot = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--out') {
-      options.out = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--foreground') options.foregroundApproved = true;
-    else if (argument === '--hosted-ephemeral') options.hostedEphemeral = true;
-    else throw new Error(`Unknown argument: ${argument}`);
+    const valueKey = valueArguments.get(argument);
+    if (valueKey) {
+      options[valueKey] = resolve(requiredValue(argv, ++index, argument));
+      continue;
+    }
+    const flagKey = flagArguments.get(argument);
+    if (!flagKey) throw new Error(`Unknown argument: ${argument}`);
+    options[flagKey] = true;
   }
   for (const required of ['incumbentApp', 'nativeApp', 'qualification', 'runRoot', 'out']) {
     if (!options[required]) throw new Error(`--${camelToKebab(required)} is required`);

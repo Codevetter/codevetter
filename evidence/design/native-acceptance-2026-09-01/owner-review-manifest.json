@@ -36,6 +36,16 @@
       "sha256": "2f20a5029021d89dec5d266178f7c8f8f5dda8ee6d425ee73c221bd411c41182"
     },
     {
+      "path": "review-cross-review.png",
+      "pixels": "2560x1600",
+      "sha256": "ef50d2c371be35feaf3c33945e2e4e80c046bec5510890557234ec10c748ddad"
+    },
+    {
+      "path": "review-cross-review-light.png",
+      "pixels": "2560x1600",
+      "sha256": "0af64672caefd92e52611dbeb29e1d28ceff58a4a6f05bd05230c8e631c8ddd3"
+    },
+    {
       "path": "review-proof-map.png",
       "pixels": "1520x1600",
       "sha256": "226e4e236fcae302f26b2cfb3fe702f958fdd9f3dd47a39cdb4184d34a9fbf95"

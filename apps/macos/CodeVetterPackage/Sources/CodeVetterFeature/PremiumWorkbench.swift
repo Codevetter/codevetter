@@ -716,6 +716,24 @@ private struct PremiumReviewView: View {
               placeholder: "Describe the behavior this change must satisfy", text: $model.task)
           }
 
+          VStack(alignment: .leading, spacing: 7) {
+            PremiumFieldLabel("REVIEW STRATEGY")
+            Picker("Review strategy", selection: $model.reviewAgent) {
+              Text("Claude").tag("claude")
+              Text("Codex").tag("codex")
+              Text("Claude + Codex").tag("cross")
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("review-strategy")
+            Text(
+              model.reviewAgent == "cross"
+                ? "Runs independent Claude then Codex passes against the same immutable change. Agreement is coverage, not proof."
+                : "One reviewer pass; executable correctness remains a separate gate."
+            )
+            .font(.system(size: 9))
+            .foregroundStyle(.secondary)
+          }
+
           specContract
         }
 
@@ -1302,6 +1320,9 @@ private struct ReceiptDeskView: View {
         if let coverage = receipt.specCoverage {
           SpecCoverageEvidenceCard(coverage: coverage)
         }
+        if let crossReview = receipt.reviewStageEvidence?.value(at: "cross_review") {
+          CrossReviewEvidenceCard(evidence: crossReview)
+        }
         if receipt.reviewFindings.isEmpty {
           VStack(spacing: 9) {
             Image(
@@ -1348,6 +1369,18 @@ private struct ReceiptDeskView: View {
                     .font(.system(size: 8, design: .monospaced))
                     .foregroundStyle(.secondary)
                 }
+                if let classification = finding.crossReviewClass {
+                  StatusPill(
+                    label: classification.replacingOccurrences(of: "_", with: " "),
+                    color: classification == "conflicting"
+                      ? EvidenceStyle.warning : EvidenceStyle.amberForeground
+                  )
+                }
+                if !finding.reviewers.isEmpty {
+                  Text(finding.reviewers.joined(separator: " + "))
+                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                }
                 Spacer()
                 if let path = finding.filePath {
                   Button("Open source", systemImage: "arrow.up.forward.square") {
@@ -1381,6 +1414,103 @@ private struct ReceiptDeskView: View {
         }
       }
       .padding(14)
+    }
+  }
+
+  private struct CrossReviewEvidenceCard: View {
+    let evidence: PerformanceJSONValue
+
+    private var passes: [PerformanceJSONValue] {
+      evidence.value(at: "passes")?.arrayValue ?? []
+    }
+
+    private var counts: PerformanceJSONValue? { evidence.value(at: "counts") }
+
+    var body: some View {
+      VStack(alignment: .leading, spacing: 10) {
+        HStack {
+          Label("INDEPENDENT CROSS-REVIEW", systemImage: "person.2.badge.gearshape")
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .foregroundStyle(EvidenceStyle.amberForeground)
+          Spacer()
+          StatusPill(
+            label: evidence.value(at: "status")?.stringValue ?? "incomplete",
+            color: evidence.value(at: "status")?.stringValue == "completed"
+              ? EvidenceStyle.success : EvidenceStyle.warning
+          )
+        }
+        HStack(spacing: 8) {
+          crossMetric("BOTH", value: count("corroborated"))
+          crossMetric("CLAUDE ONLY", value: count("claude_only"))
+          crossMetric("CODEX ONLY", value: count("codex_only"))
+          crossMetric("CONFLICTS", value: count("conflicting"))
+        }
+        HStack(spacing: 8) {
+          crossMetric("REJECTED", value: count("rejected"))
+          crossMetric("STALE", value: count("stale"))
+          crossMetric("UNRESOLVED", value: count("unresolved"))
+          crossMetric("TOTAL TIME", value: "\(totalDuration) ms")
+        }
+        ForEach(Array(passes.enumerated()), id: \.offset) { _, pass in
+          HStack {
+            Text((pass.value(at: "reviewer")?.stringValue ?? "reviewer").uppercased())
+              .font(.system(size: 9, weight: .bold, design: .monospaced))
+            Text(pass.value(at: "status")?.stringValue ?? "incomplete")
+              .font(.system(size: 9))
+              .foregroundStyle(.secondary)
+            Spacer()
+            if let duration = pass.value(at: "duration_ms")?.numberValue {
+              Text("\(Int(duration)) ms")
+                .font(.system(size: 8, design: .monospaced))
+                .foregroundStyle(.secondary)
+            }
+          }
+        }
+        Text("USAGE  \(usageSummary)")
+          .font(.system(size: 8, weight: .semibold, design: .monospaced))
+          .foregroundStyle(.secondary)
+        Text(
+          evidence.value(at: "proof_boundary")?.stringValue
+            ?? "Reviewer agreement is coverage, never executable proof."
+        )
+        .font(.system(size: 9))
+        .foregroundStyle(.secondary)
+      }
+      .padding(14)
+      .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
+      .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
+      .accessibilityIdentifier("review-cross-review-summary")
+    }
+
+    private func count(_ key: String) -> String {
+      guard let value = counts?.value(at: key)?.numberValue else { return "0" }
+      return String(Int(value))
+    }
+
+    private var totalDuration: Int {
+      passes.reduce(0) { total, pass in
+        total + Int(pass.value(at: "duration_ms")?.numberValue ?? 0)
+      }
+    }
+
+    private var usageSummary: String {
+      passes.contains { pass in
+        guard let usage = pass.value(at: "usage") else { return false }
+        if case .null = usage { return false }
+        return true
+      } ? "recorded per reviewer" : "not reported by current executors"
+    }
+
+    private func crossMetric(_ label: String, value: String) -> some View {
+      VStack(alignment: .leading, spacing: 2) {
+        Text(value).font(.system(size: 15, weight: .semibold, design: .monospaced))
+        Text(label)
+          .font(.system(size: 7, weight: .bold, design: .monospaced))
+          .foregroundStyle(.secondary)
+      }
+      .padding(9)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(EvidenceStyle.canvas, in: RoundedRectangle(cornerRadius: 8))
     }
   }
 

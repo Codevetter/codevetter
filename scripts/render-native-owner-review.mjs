@@ -26,6 +26,8 @@ export const nativeOwnerReviewRenders = Object.freeze([
   ['CODEVETTER_UNPACK_QUERY_SCREENSHOT_PATH', 'repository-query-evidence-workbench.png'],
   ['CODEVETTER_REVIEW_FINDINGS_SCREENSHOT_PATH', 'review-findings.png'],
   ['CODEVETTER_REVIEW_FINDINGS_LIGHT_SCREENSHOT_PATH', 'review-findings-light.png'],
+  ['CODEVETTER_CROSS_REVIEW_SCREENSHOT_PATH', 'review-cross-review.png'],
+  ['CODEVETTER_CROSS_REVIEW_LIGHT_SCREENSHOT_PATH', 'review-cross-review-light.png'],
   ['CODEVETTER_REVIEW_PROOF_MAP_SCREENSHOT_PATH', 'review-proof-map.png'],
   ['CODEVETTER_REVIEW_INTENT_SCREENSHOT_PATH', 'review-intent.png'],
   ['CODEVETTER_TESTING_SCREENSHOT_PATH', 'testing.png'],

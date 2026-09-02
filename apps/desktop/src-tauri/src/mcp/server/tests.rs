@@ -541,6 +541,15 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
         receipt_projection["receipt"]["stages"]["performance"]["status"],
         local_expected["performance_status"]
     );
+    assert_eq!(
+        receipt_projection["receipt"]["stages"]["review"]["evidence"]["cross_review"]["strategy"],
+        "claude_then_codex_independent"
+    );
+    assert_eq!(
+        receipt_projection["receipt"]["stages"]["review"]["evidence"]["cross_review"]["passes"][1]
+            ["reviewer"],
+        "codex"
+    );
     assert!(receipt_projection["receipt"]["limitations"]
         .as_array()
         .is_some_and(|limitations| limitations.contains(&local_expected["limitation"])));

@@ -176,6 +176,31 @@ final class CodeVetterUITests: XCTestCase {
   }
 
   @MainActor
+  func testReviewWorkspaceExposesIndependentClaudeAndCodexStrategy() throws {
+    let app = XCUIApplication()
+    app.launchArguments = [
+      "--ui-test-repository", testingRepository.path,
+      "--ui-test-section", "Review",
+    ]
+    app.launch()
+
+    assertSelected(app.buttons["Review"])
+    let strategy = app.descendants(matching: .any)["review-strategy"]
+    XCTAssertTrue(strategy.waitForExistence(timeout: 3))
+    XCTAssertTrue(app.radioButtons["Claude"].exists)
+    XCTAssertTrue(app.radioButtons["Codex"].exists)
+    let cross = app.radioButtons["Claude + Codex"]
+    XCTAssertTrue(cross.exists)
+    cross.click()
+    assertSelected(cross)
+    XCTAssertTrue(
+      app.staticTexts[
+        "Runs independent Claude then Codex passes against the same immutable change. Agreement is coverage, not proof."
+      ].waitForExistence(timeout: 2)
+    )
+  }
+
+  @MainActor
   func testSettingsWorkspaceExcludesSecretsAndPreservesEverySection() throws {
     let app = XCUIApplication()
     app.launch()

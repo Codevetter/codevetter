@@ -10,6 +10,7 @@ pub mod business_rule_archaeology;
 pub mod cli_install;
 pub mod cli_stream;
 pub mod codex_app_server;
+pub mod cross_review;
 pub mod deterministic_review;
 pub mod differential_verification;
 pub mod dora;

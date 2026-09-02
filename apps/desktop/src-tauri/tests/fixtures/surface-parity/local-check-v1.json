@@ -51,7 +51,23 @@
         "target": null,
         "evidence": {
           "summary": "The bounded review completed without a qualified finding.",
-          "findings": []
+          "findings": [],
+          "cross_review": {
+            "schema_version": "codevetter.cross-review/v1",
+            "strategy": "claude_then_codex_independent",
+            "status": "completed",
+            "counts": {
+              "corroborated": 0,
+              "claude_only": 0,
+              "codex_only": 0,
+              "conflicting": 0
+            },
+            "passes": [
+              { "reviewer": "claude", "status": "completed" },
+              { "reviewer": "codex", "status": "completed" }
+            ],
+            "proof_boundary": "Reviewer agreement is review coverage, never executable proof."
+          }
         },
         "limitations": []
       },

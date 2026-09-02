@@ -145,7 +145,7 @@ Options:
   --request-id <id>  Correlate the versioned command, progress, cancellation, and receipt
   --spec <path>    Repo-relative Markdown spec (repeatable)
   --requirement <id>  Requirement id explicitly bound to correctness (repeatable)
-  --agent <name>   Review/fix executor: claude, gemini, or codex
+  --agent <name>   Review executor: claude, gemini, codex, or cross; fix executor: claude or codex
   --test-adapter <adapter>  Explicit correctness adapter
   --test-target <path>      Explicit correctness target
   --test-name <name>        Optional exact correctness test name
@@ -6034,6 +6034,28 @@ mod tests {
                 .target,
             "test/parser.performance.test.mjs"
         );
+    }
+
+    #[test]
+    fn check_parser_preserves_the_independent_cross_review_strategy() {
+        let CliCommand::Check(arguments) = parse_arguments(
+            [
+                "check".into(),
+                "--range".into(),
+                "main...HEAD".into(),
+                "--task".into(),
+                "Reject incomplete composite reviews".into(),
+                "--agent".into(),
+                "cross".into(),
+                "--json".into(),
+            ],
+            Path::new("/tmp/widget"),
+        )
+        .expect("arguments") else {
+            panic!("expected check");
+        };
+        assert_eq!(arguments.review_agent, "cross");
+        assert_eq!(arguments.output, OutputMode::Json);
     }
 
     #[test]

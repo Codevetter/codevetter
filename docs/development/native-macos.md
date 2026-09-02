@@ -206,7 +206,9 @@ enumerates identities, or reads credentials.
 
 The current preview result is recorded in
 [Native release-readiness inspection](../../evidence/verification/native-release-readiness-2026-09-02.md).
-Seven of 16 local checks pass and nine production gates remain blocked.
+Seven of 17 local checks pass and ten production gates remain blocked. The
+additional gate requires an offline-verified Sparkle appcast bound to the exact
+production feed, public key, version, build, and qualified archive.
 The exact current-source candidate is
 `artifacts/native-package/qualification-5r7JG4/CodeVetter.app`; its package
 receipt, archive hashes, and exact bundled-MCP smoke are recorded in
@@ -236,7 +238,11 @@ pnpm test:native:ui -- --foreground --desktop-idle
 pnpm test:native:full -- --foreground --desktop-idle
 pnpm native:build:release
 pnpm native:package:qualify
+pnpm native:package:finalize -- --qualification <qualification.json>
 pnpm test:native-package
+pnpm native:appcast:inspect -- --app <qualified-native-app> --appcast <appcast.xml> --qualification <qualification.json> --out <appcast-proof.json>
+pnpm native:notarization:prove -- --app <qualified-native-app> --archive <qualified-zip> --qualification <qualification.json> --submission <notary-result.json> --out <notarization-proof.json>
+pnpm native:installed-upgrade:qualify -- --incumbent-app <tauri-app> --native-app <qualified-native-app> --qualification <qualification.json> --run-root <isolated-root> --out <installed-proof.json> --foreground --hosted-ephemeral
 pnpm test:native-review-gallery
 pnpm native:data-continuity -- capture --database <production-app-data>/codevetter.db --phase before --out <before.json>
 pnpm native:data-continuity -- capture --database <production-app-data>/codevetter.db --phase after_upgrade --baseline <before.json> --out <after-upgrade.json>
@@ -276,7 +282,7 @@ they do not need a visible application window.
 The manual-only `native-qualification.yml` workflow is the repository-owned
 hosted path. It runs on GitHub's arm64 `xcode-27` image, grants no release or
 signing authority, and uploads only the unsigned preview package, dSYM, local
-qualification, current-tree 33-state owner-review packet, and release-readiness
+qualification, current-tree 35-state owner-review packet, and release-readiness
 evidence for seven days. Interaction tests remain opt-in through the dispatch
 input; ordinary pushes and pull requests do not start this workflow. This is
 the preferred way to qualify XCUITest without borrowing the operator's active
@@ -294,6 +300,16 @@ XCUITests, the Release build, unsigned preview packaging, and the fail-closed
 readiness inspection without using the operator's desktop. The artifact is
 retained for seven days; durable results and hashes live in
 [the checked evidence](../../evidence/verification/native-hosted-qualification-2026-09-02.md).
+
+`native-production-qualification.yml` is the separately protected, manual-only
+production-candidate lane. It has read-only repository permission, performs
+credential use in an ephemeral keychain, and may sign, notarize, create a
+Sparkle appcast, and exercise an isolated installed migration. It cannot
+publish a release. Run
+[33628919883](https://github.com/Codevetter/codevetter/actions/runs/33628919883)
+stopped at its protected-input preflight because all eight required repository
+secrets were absent; no signing, notarization, installation, or release action
+ran.
 
 The XcodeBuildMCP CLI and MCP server use the same tool implementations and the
 same project-local defaults. If a current Codex session started before the MCP

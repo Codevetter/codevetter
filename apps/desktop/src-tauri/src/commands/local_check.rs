@@ -14,6 +14,7 @@ use tokio::process::Command;
 
 use crate::{db, DbState};
 
+use super::cross_review;
 use super::evidence_scope::{
     resolve_evidence_scope, EvidenceScopeCandidate, EvidenceScopeConsumer, EvidenceScopeInput,
     EvidenceScopeKind, EvidenceScopePlan,
@@ -241,6 +242,7 @@ where
         &review_task,
         &input.review_agent,
         review_runtime_context,
+        |stage, state| on_progress(LocalCheckProgress { stage, state }),
     )
     .await;
     on_progress(progress_for_stage("review", &review));
@@ -414,6 +416,17 @@ pub async fn preflight_local_check(
         )
     });
     let mut limitations = Vec::new();
+    let missing_review_executors = if input.review_agent == "cross" {
+        cross_review::missing_executors()
+    } else {
+        Vec::new()
+    };
+    if !missing_review_executors.is_empty() {
+        limitations.push(format!(
+            "Cross-review requires both configured executors before either pass starts; missing: {}",
+            missing_review_executors.join(", ")
+        ));
+    }
     if correctness_target.is_none() {
         limitations.push(
             test_plan
@@ -445,7 +458,8 @@ pub async fn preflight_local_check(
             );
         }
     }
-    let status = if correctness_target.is_some()
+    let status = if missing_review_executors.is_empty()
+        && correctness_target.is_some()
         && spec_coverage.as_ref().is_none_or(|coverage| {
             coverage.summary.total_requirements > 0 && coverage.summary.selected_for_execution > 0
         }) {
@@ -543,8 +557,11 @@ fn validate_input(input: &LocalCheckInput) -> Result<(), String> {
     if input.task.trim().is_empty() || input.task.len() > 2_000 {
         return Err("Task must contain between 1 and 2,000 characters".into());
     }
-    if !matches!(input.review_agent.as_str(), "claude" | "gemini" | "codex") {
-        return Err("Review agent must be `claude`, `gemini`, or `codex`".into());
+    if !matches!(
+        input.review_agent.as_str(),
+        "claude" | "gemini" | "codex" | "cross"
+    ) {
+        return Err("Review agent must be `claude`, `gemini`, `codex`, or `cross`".into());
     }
     if !(2..=10).contains(&input.samples) {
         return Err("Performance samples must be between 2 and 10".into());
@@ -680,15 +697,31 @@ fn git_text(repo: &Path, arguments: &[&str]) -> Result<String, String> {
         .map_err(|_| "Git returned non-UTF-8 checkout evidence".into())
 }
 
-async fn run_review_stage(
+async fn run_review_stage<F>(
     db: DbState,
     repo_path: &str,
     diff_range: &str,
     task: &str,
     agent: &str,
     runtime_context: Vec<Value>,
-) -> LocalCheckStage {
+    on_cross_progress: F,
+) -> LocalCheckStage
+where
+    F: FnMut(&'static str, &'static str),
+{
     let started = Instant::now();
+    if agent == "cross" {
+        return run_cross_review_stage(
+            db,
+            repo_path,
+            diff_range,
+            task,
+            runtime_context,
+            started,
+            on_cross_progress,
+        )
+        .await;
+    }
     match run_cli_review_core(
         db,
         repo_path.to_string(),
@@ -701,58 +734,144 @@ async fn run_review_stage(
     )
     .await
     {
-        Ok(evidence) => {
-            let readiness_complete = evidence
-                .get("review_readiness")
-                .and_then(|value| value.get("status"))
-                .and_then(Value::as_str)
-                == Some("ready")
-                && evidence.get("review_status").and_then(Value::as_str) == Some("completed");
-            let actionable = evidence
-                .get("findings")
-                .and_then(Value::as_array)
-                .is_some_and(|findings| {
-                    findings.iter().any(|finding| {
-                        matches!(
-                            finding.get("severity").and_then(Value::as_str),
-                            Some("critical" | "high")
-                        )
-                    })
-                });
-            let limitations = if readiness_complete {
-                Vec::new()
-            } else {
-                evidence
-                    .get("review_readiness")
-                    .and_then(|value| value.get("limitations"))
-                    .and_then(Value::as_array)
-                    .map(|values| {
-                        values
-                            .iter()
-                            .filter_map(Value::as_str)
-                            .map(ToOwned::to_owned)
-                            .collect::<Vec<_>>()
-                    })
-                    .filter(|values| !values.is_empty())
-                    .unwrap_or_else(|| {
-                        vec!["Review context or execution coverage was incomplete".to_string()]
-                    })
-            };
-            LocalCheckStage {
-                status: if !readiness_complete {
-                    LocalCheckStatus::NoConfidence
-                } else if actionable {
-                    LocalCheckStatus::NeedsAttention
-                } else {
-                    LocalCheckStatus::Completed
-                },
-                duration_ms: elapsed_ms(started),
-                target: None,
-                evidence,
-                limitations,
-            }
-        }
+        Ok(evidence) => review_stage_from_evidence(started, evidence),
         Err(error) => no_confidence_stage(started, None, error),
+    }
+}
+
+async fn run_cross_review_stage<F>(
+    db: DbState,
+    repo_path: &str,
+    diff_range: &str,
+    task: &str,
+    runtime_context: Vec<Value>,
+    started: Instant,
+    mut on_progress: F,
+) -> LocalCheckStage
+where
+    F: FnMut(&'static str, &'static str),
+{
+    let missing = cross_review::missing_executors();
+    if !missing.is_empty() {
+        let receipt = cross_review::incomplete_after_pass(
+            None,
+            "preflight",
+            &format!("missing configured executors: {}", missing.join(", ")),
+        );
+        return review_stage_from_evidence(started, cross_review::project_stage_evidence(receipt));
+    }
+    let run_pass = |agent: &str, db: DbState, context: Vec<Value>| {
+        run_cli_review_core(
+            db,
+            repo_path.to_string(),
+            diff_range.to_string(),
+            "Local repository change".into(),
+            task.to_string(),
+            Some(agent.to_string()),
+            Some(context),
+            None,
+        )
+    };
+    on_progress("review_claude", "running");
+    let claude = match run_pass("claude", db.clone(), runtime_context.clone()).await {
+        Ok(evidence) => evidence,
+        Err(error) => {
+            on_progress("review_claude", "no_confidence");
+            let receipt = cross_review::incomplete_after_pass(None, "claude", &error);
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(receipt),
+            );
+        }
+    };
+    on_progress("review_claude", "completed");
+    on_progress("review_codex", "running");
+    let codex = match run_pass("codex", db.clone(), runtime_context).await {
+        Ok(evidence) => evidence,
+        Err(error) => {
+            on_progress("review_codex", "no_confidence");
+            let receipt =
+                cross_review::incomplete_after_pass(Some(("claude", claude)), "codex", &error);
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(receipt),
+            );
+        }
+    };
+    on_progress("review_codex", "completed");
+    let receipt = match cross_review::reconcile_complete(claude, codex) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                    None,
+                    "reconciliation",
+                    &error,
+                )),
+            );
+        }
+    };
+    let mut evidence = cross_review::project_stage_evidence(receipt);
+    if let Err(error) =
+        cross_review::persist_composite_review(&db, repo_path, diff_range, None, &mut evidence)
+    {
+        return no_confidence_stage(
+            started,
+            None,
+            format!("Could not persist the cross-review composite: {error}"),
+        );
+    }
+    review_stage_from_evidence(started, evidence)
+}
+
+fn review_stage_from_evidence(started: Instant, evidence: Value) -> LocalCheckStage {
+    let readiness_complete = evidence
+        .pointer("/review_readiness/status")
+        .and_then(Value::as_str)
+        == Some("ready")
+        && evidence.get("review_status").and_then(Value::as_str) == Some("completed");
+    let actionable = evidence
+        .get("findings")
+        .and_then(Value::as_array)
+        .is_some_and(|findings| {
+            findings.iter().any(|finding| {
+                matches!(
+                    finding.get("severity").and_then(Value::as_str),
+                    Some("critical" | "high")
+                )
+            })
+        });
+    let limitations = if readiness_complete {
+        Vec::new()
+    } else {
+        evidence
+            .pointer("/review_readiness/limitations")
+            .and_then(Value::as_array)
+            .map(|values| {
+                values
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .map(ToOwned::to_owned)
+                    .collect::<Vec<_>>()
+            })
+            .filter(|values| !values.is_empty())
+            .unwrap_or_else(|| {
+                vec!["Review context or execution coverage was incomplete".to_string()]
+            })
+    };
+    LocalCheckStage {
+        status: if !readiness_complete {
+            LocalCheckStatus::NoConfidence
+        } else if actionable {
+            LocalCheckStatus::NeedsAttention
+        } else {
+            LocalCheckStatus::Completed
+        },
+        duration_ms: elapsed_ms(started),
+        target: None,
+        evidence,
+        limitations,
     }
 }
 

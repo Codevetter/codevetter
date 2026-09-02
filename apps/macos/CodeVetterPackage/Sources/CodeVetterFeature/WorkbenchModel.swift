@@ -52,6 +52,7 @@ public final class WorkbenchModel {
   public var repositoryPath = ""
   public var change = "main...HEAD"
   public var task = ""
+  public var reviewAgent = "claude"
   public var choosingRepository = false
   public var choosingSpecs = false
   public var specPaths: [String] = []
@@ -336,7 +337,8 @@ public final class WorkbenchModel {
   }
 
   public var reviewInputFingerprint: String {
-    ([repositoryPath, change, task] + specPaths.sorted() + selectedRequirementIDs.sorted())
+    ([repositoryPath, change, task, reviewAgent] + specPaths.sorted()
+      + selectedRequirementIDs.sorted())
       .joined(separator: "\u{0}")
   }
 
@@ -2794,6 +2796,7 @@ public final class WorkbenchModel {
       repositoryPath: repositoryPath,
       change: change,
       task: task,
+      reviewAgent: reviewAgent,
       specPaths: specPaths,
       selectedRequirementIDs: selectedRequirementIDs.sorted()
     )

@@ -55,6 +55,22 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-09-02 — Independent Claude and Codex review (unreleased source):**
+  native Review and `codevetter check --agent cross` now request two sequential,
+  independent passes against the same immutable Rust-owned target and context.
+  The second reviewer receives no first-review output. Deterministic
+  reconciliation uses exact source-qualified path, line, and anchor identity;
+  title similarity never merges findings, a unique high-risk finding remains
+  actionable, and severity disagreement remains visible. Missing executors,
+  target drift, incomplete coverage, cancellation, or an unqualified candidate
+  fail closed without a composite finding claim. Persisted receipts preserve
+  reviewer-specific manifests, qualified candidates, readiness, duration, and
+  explicit usage/raw-candidate availability limits; repository-scoped MCP can
+  inspect the same receipt but cannot execute or cancel it. The 35-state native
+  packet includes dark/light cross-review evidence. Provider-backed caught-bug
+  recall, false-positive, latency, and observed-cost comparison remains open,
+  so cross-review is optional and is not the default.
+
 - **2026-09-02 — Native owner-quality refinement (unreleased source):** the
   Evidence Workbench preserves a true-black canvas and chrome while restoring
   restrained 1--4% near-black separation across working planes. Standalone
@@ -62,7 +78,7 @@ Internal (fleet):
   packet deterministically captures both search-only and rich repository-query
   states, plus light-appearance Review, Testing, Performance, Runs, history
   recovery, memory inspection, Agent Island configuration, and read-only Ops
-  status. All 33
+  status. All 35
   current-tree image hashes match the manifest. The same pass
   reproduced and fixed a repository-query cancellation hang by closing stdin,
   granting a bounded 200 ms termination grace, and using a final kill only for
@@ -116,7 +132,7 @@ Internal (fleet):
   Stale matched-comparison next steps now point to exact-package foreground,
   responsiveness, energy, and long-session evidence instead of asking for an
   already-completed comparison.
-  A manifest-locked local gallery exposes all 33 original-pixel dark/light
+  A manifest-locked local gallery exposes all 35 original-pixel dark/light
   renders without external assets or network calls; its test fails on missing
   or duplicate states. The final audit replaced the active Rubric pack's
   washed-out disabled amber action with a high-contrast green `Selected`
@@ -145,9 +161,10 @@ Internal (fleet):
   app to its local qualification, verifies package/signature/runtime/updater
   boundaries, and accepts only archive-bound notarization plus
   production-identity installed-upgrade proofs. The current preview passes 7
-  of 16 checks but correctly remains `shipping_ready: false` on nine production
+  of 17 checks but correctly remains `shipping_ready: false` on ten production
   gates: bundle transfer, Developer ID host/companion signing and one team,
-  Library Validation, HTTPS appcast, EdDSA key, Gatekeeper, notarization, and
+  Library Validation, HTTPS appcast, EdDSA key, archive-bound appcast,
+  Gatekeeper, notarization, and
   installed upgrade/relaunch/data/rollback evidence. The installed proof now
   binds the exact archive and build and requires a non-empty stable-record
   fingerprint across native relaunch and rollback. A dependency-free,

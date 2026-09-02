@@ -222,7 +222,7 @@ func supervisedRunnerDecodesTheCanonicalRustReceiptBoundary() async throws {
   #expect(result.receipt.limitations == ["Fixture proves transport only."])
   #expect(
     try String(contentsOf: argumentsFile, encoding: .utf8)
-      == "check --repo /fixture/repo --range main...HEAD --task Preserve output --spec docs/output.md --requirement output-stable --preflight --json"
+      == "check --repo /fixture/repo --range main...HEAD --task Preserve output --agent claude --spec docs/output.md --requirement output-stable --preflight --json"
       .replacingOccurrences(
         of: "check ", with: "check --request-id \(requestID) ", options: .anchored)
   )
@@ -284,7 +284,7 @@ func supervisedRunnerPreservesTheSharedLocalCheckReceiptAndExitSemantics() async
   #expect(result.receipt.limitations.contains(try #require(expected["limitation"] as? String)))
   #expect(
     try String(contentsOf: argumentsFile, encoding: .utf8)
-      == "check --request-id \(requestID) --repo \(repositoryPath) --range \(change) --task \(task) --progress-json --json"
+      == "check --request-id \(requestID) --repo \(repositoryPath) --range \(change) --task \(task) --agent claude --progress-json --json"
   )
 
   let mismatchedScript = script.replacingOccurrences(
@@ -306,6 +306,38 @@ func supervisedRunnerPreservesTheSharedLocalCheckReceiptAndExitSemantics() async
   } catch let error as VerificationRunnerError {
     #expect(error.localizedDescription.contains("process status"))
   }
+}
+
+@Test
+func supervisedRunnerProjectsTheSelectedCrossReviewStrategy() async throws {
+  let directory = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-cross-review-runner-\(UUID().uuidString)")
+  try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+  defer { try? FileManager.default.removeItem(at: directory) }
+  let executable = directory.appending(path: "codevetter")
+  let argumentsFile = directory.appending(path: "arguments.txt")
+  let receipt =
+    #"{"schema_version":"codevetter.local-check-preflight/v1","request_id":"cross-request","ran_at":"2026-09-02T00:00:00Z","repo_path":"/fixture/repo","task":"Review independently","source":{"kind":"range","input":"main...HEAD","base_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","commits":[],"changed_paths":["src/a.rs"]},"correctness_target":{"adapter":"node-test","target":"test/a.test.mjs","name":null,"source":"fixture"},"performance_target":null,"status":"ready","limitations":[]}"#
+  try "#!/bin/sh\nprintf '%s' \"$*\" > '\(argumentsFile.path)'\nprintf '%s\\n' '\(receipt)'\n"
+    .write(to: executable, atomically: true, encoding: .utf8)
+  try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+
+  _ = try await CodeVetterProcessRunner(executableURL: executable).run(
+    VerificationRequest(
+      requestID: "cross-request",
+      repositoryPath: "/fixture/repo",
+      change: "main...HEAD",
+      task: "Review independently",
+      reviewAgent: "cross"
+    ),
+    preflight: true,
+    onProgress: { _ in }
+  )
+
+  #expect(
+    try String(contentsOf: argumentsFile, encoding: .utf8)
+      == "check --request-id cross-request --repo /fixture/repo --range main...HEAD --task Review independently --agent cross --preflight --json"
+  )
 }
 
 @Test
@@ -441,6 +473,37 @@ func nativeReviewReceiptPromotesQualifiedFindingsAboveRawJSON() throws {
       at: URL(fileURLWithPath: screenshotPath),
       appearance: .aqua
     )
+  }
+}
+
+@MainActor
+@Test
+func nativeCrossReviewReceiptShowsIndependentProvenanceAndDisagreement() throws {
+  let payload = Data(
+    #"{"schema_version":"codevetter.local-check/v1","run_id":"local-check-cross-review","ran_at":"2026-09-02T00:00:00Z","repo_path":"/fixture/repo","task":"Review authentication independently","source":{"kind":"range","input":"main...HEAD","base_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","changed_paths":["src/auth.ts"]},"stages":{"review":{"status":"needs_attention","duration_ms":2120,"target":null,"evidence":{"review_id":"cross-review-1","agent":"cross","review_status":"completed","review_readiness":{"status":"ready","complete_coverage":true,"limitations":[]},"summary":"Independent Claude and Codex passes reconciled by source-qualified identity.","findings":[{"id":"finding-shared","severity":"critical","title":"Session validation can be bypassed","summary":"Both reviewers identified the same exact source boundary with different severity.","suggestion":"Reject the unverified session before dispatch.","filePath":"src/auth.ts","line":42,"sourceAnchor":"return dispatch(session);","confidence":0.96,"cross_review_class":"conflicting","reviewers":["claude","codex"]},{"id":"finding-codex","severity":"high","title":"Expired token remains accepted","summary":"Codex alone found the stale expiry comparison.","filePath":"src/auth.ts","line":57,"sourceAnchor":"if token.expiry < now","confidence":0.91,"cross_review_class":"codex_only","reviewers":["codex"]}],"cross_review":{"schema_version":"codevetter.cross-review/v1","strategy":"claude_then_codex_independent","status":"completed","target_identity":"target-1","passes":[{"reviewer":"claude","status":"completed","review_id":"claude-review","duration_ms":920,"findings_count":1},{"reviewer":"codex","status":"completed","review_id":"codex-review","duration_ms":1200,"findings_count":2}],"counts":{"corroborated":0,"claude_only":0,"codex_only":1,"conflicting":1},"findings":[],"unresolved":[],"limitations":[],"authority":"deterministic_source_qualified_union","proof_boundary":"Reviewer agreement is review coverage, never executable proof."}},"limitations":[]},"correctness":{"status":"passed","duration_ms":90,"target":null,"evidence":{},"limitations":[]},"performance":{"status":"no_confidence","duration_ms":0,"target":null,"evidence":{},"limitations":[]},"optimization":{"status":"ready","duration_ms":0,"target":null,"evidence":{},"limitations":[]}},"verdict":"needs_attention","limitations":["Performance evidence was not selected."]}"#
+      .utf8
+  )
+  let receipt = try JSONDecoder().decode(VerificationReceipt.self, from: payload)
+  #expect(receipt.reviewFindings.count == 2)
+  #expect(receipt.reviewFindings.first?.reviewers == ["claude", "codex"])
+  #expect(receipt.reviewFindings.first?.crossReviewClass == "conflicting")
+
+  let model = WorkbenchModel()
+  model.section = .review
+  model.repositoryPath = "/fixture/repo"
+  model.receipt = receipt
+  model.receiptJSON = String(decoding: payload, as: UTF8.self)
+  model.verificationState = .limited
+  renderReview(model)
+  if let screenshotPath = ProcessInfo.processInfo.environment[
+    "CODEVETTER_CROSS_REVIEW_SCREENSHOT_PATH"
+  ] {
+    try captureReview(model, at: URL(fileURLWithPath: screenshotPath))
+  }
+  if let screenshotPath = ProcessInfo.processInfo.environment[
+    "CODEVETTER_CROSS_REVIEW_LIGHT_SCREENSHOT_PATH"
+  ] {
+    try captureReview(model, at: URL(fileURLWithPath: screenshotPath), appearance: .aqua)
   }
 }
 

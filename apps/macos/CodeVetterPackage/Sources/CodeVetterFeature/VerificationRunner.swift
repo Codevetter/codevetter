@@ -5,6 +5,7 @@ public struct VerificationRequest: Sendable {
   public let repositoryPath: String
   public let change: String
   public let task: String
+  public let reviewAgent: String
   public let specPaths: [String]
   public let selectedRequirementIDs: [String]
 
@@ -13,6 +14,7 @@ public struct VerificationRequest: Sendable {
     repositoryPath: String,
     change: String,
     task: String,
+    reviewAgent: String = "claude",
     specPaths: [String] = [],
     selectedRequirementIDs: [String] = []
   ) {
@@ -20,6 +22,7 @@ public struct VerificationRequest: Sendable {
     self.repositoryPath = repositoryPath
     self.change = change
     self.task = task
+    self.reviewAgent = reviewAgent
     self.specPaths = specPaths
     self.selectedRequirementIDs = selectedRequirementIDs
   }
@@ -1619,6 +1622,8 @@ public struct VerificationFinding: Identifiable, Sendable {
   public let filePath: String?
   public let line: Int?
   public let confidence: Double?
+  public let reviewers: [String]
+  public let crossReviewClass: String?
 
   public var id: String {
     persistedID
@@ -1639,6 +1644,8 @@ public struct VerificationFinding: Identifiable, Sendable {
     filePath = object["filePath"]?.stringValue ?? object["file_path"]?.stringValue
     line = object["line"]?.numberValue.map(Int.init)
     confidence = object["confidence"]?.numberValue
+    reviewers = object["reviewers"]?.arrayValue?.compactMap(\.stringValue) ?? []
+    crossReviewClass = object["cross_review_class"]?.stringValue
   }
 }
 
@@ -1854,6 +1861,7 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
       "--repo", request.repositoryPath,
       "--range", request.change,
       "--task", request.task,
+      "--agent", request.reviewAgent,
     ]
     for path in request.specPaths {
       arguments += ["--spec", path]

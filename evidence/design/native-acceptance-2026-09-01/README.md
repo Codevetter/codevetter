@@ -23,6 +23,10 @@ the original render; the gallery contains no external assets or network calls.
   path origin, directed traversal, relationship counts, and trace controls.
 - `review-findings.png` — source-qualified finding, acceptance coverage, and
   limitations.
+- `review-cross-review.png` and `review-cross-review-light.png` — independent
+  Claude then Codex provenance, deterministic source-qualified reconciliation,
+  disagreement classes, and the explicit boundary between review coverage and
+  executable proof in both appearances.
 - `testing.png` — large direct-preview receipt with failed and passing journeys.
 - `performance.png` — exact workload selection beside a digest-verified stored run.
 - `runs.png` — 100-receipt ledger with a 100-response evidence index.
@@ -123,14 +127,14 @@ operational status. Configuration presence and bounded aggregate rows are
 visible in both appearances; credentials, webhook URLs, provider refreshes,
 webhook sends, configuration writes, and agent/MCP authority remain absent.
 
-An agent pixel audit of all 33 states found no P0 or P1 visual or interaction
+An agent pixel audit of all 35 states found no P0 or P1 visual or interaction
 defect. It did find one P2 orientation issue at the supported 980-point minimum:
 compact navigation hid every workspace label. The compact rail now keeps the
 selected workspace label visible while retaining quiet icon-only destinations;
 the Testing and Performance dark/light rerenders fit without clipping or content
 movement. Owner acceptance remains a separate gate.
 
-The complete isolated hosted qualification passed 81 Swift package tests in
+The prior complete isolated hosted qualification passed 81 Swift package tests in
 26.294 seconds, compiled Debug and coverage-free Release applications, and
 passed all nine XCUITests in 113.009 seconds. During the earlier visual rerun,
 the cancellation fixture reproduced a shell that could defer
@@ -142,7 +146,7 @@ Its exact results are recorded in the
 [hosted qualification receipt](../../verification/native-hosted-qualification-2026-09-02.md).
 
 `owner-review-manifest.json` records the exact pixel dimensions and SHA-256 of
-all 33 current-tree renders so the packet can be reviewed without confusing an
+all 35 current-tree renders so the packet can be reviewed without confusing an
 older state for the accepted candidate.
 
 The hosted runner also produced a complete 33-state packet, but its PNG bytes
