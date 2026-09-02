@@ -68,3 +68,26 @@ paths, and several have no resolution through the current direct version. The
 repository-wide root production audit remains clean because the docs site has
 its own lockfile; both facts must stay visible until issue #195 completes
 reachability and upstream/remediation review.
+
+## Docs-site transitive remediation — 2026-09-02
+
+The docs-site lockfile now overrides twelve fixable transitive packages to
+patched releases while retaining Blume 1.5.3 as the single direct dependency.
+The production audit moved from 18 high, 9 moderate, and 1 low advisory to 2
+high advisories, with no critical, moderate, or low advisories remaining.
+
+Both residual advisories affect `image-size` 2.0.2 parsers for ICNS, JXL, and
+HEIF. Upstream lists no patched release, and those formats are absent from
+`docs/` and `docs-site/`. The package is confined to the repository-controlled
+static documentation build; it is not shipped in the desktop runtime. This is
+reachability containment, not suppression or a clean-audit claim. The
+advisories remain visible until Blume's dependency graph provides a patched
+version.
+
+Validation after the lockfile update:
+
+- frozen docs-site install completed successfully;
+- the Blume/Astro static build produced all 61 pages;
+- `node scripts/check-docs.mjs` validated all 86 Markdown files;
+- Biome accepted the docs-site package manifest;
+- the repository contains no `.icns`, `.jxl`, `.heif`, or `.heic` docs input.
