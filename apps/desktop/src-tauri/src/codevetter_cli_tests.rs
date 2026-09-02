@@ -6,9 +6,9 @@ use codevetter_desktop::commands::trex_preview::{
 };
 
 const SURFACE_PARITY_FIXTURE: &str =
-    include_str!("../../tests/fixtures/surface-parity/evidence-scope-v1.json");
+    include_str!("../tests/fixtures/surface-parity/evidence-scope-v1.json");
 const LOCAL_CHECK_PARITY_FIXTURE: &str =
-    include_str!("../../tests/fixtures/surface-parity/local-check-v1.json");
+    include_str!("../tests/fixtures/surface-parity/local-check-v1.json");
 
 fn surface_parity_fixture() -> serde_json::Value {
     serde_json::from_str(SURFACE_PARITY_FIXTURE).expect("surface parity fixture")
@@ -1857,7 +1857,7 @@ fn collect_parser_requires_a_range_and_explicit_supported_collectors() {
 #[test]
 fn output_and_exit_codes_preserve_receipt_meaning() {
     let config: serde_json::Value =
-        serde_json::from_str(include_str!("../../tauri.conf.json")).expect("Tauri config");
+        serde_json::from_str(include_str!("../tauri.conf.json")).expect("Tauri config");
     assert_eq!(
         app_version(),
         config["version"].as_str().expect("app version")
