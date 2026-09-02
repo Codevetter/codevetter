@@ -36,7 +36,6 @@
       "!**/*.css",
       "!**/*.svg",
       "!**/*.astro",
-      "!benchmark/cases",
       "!benchmarks/public-catch-rate/cases"
     ]
   },
