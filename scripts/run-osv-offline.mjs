@@ -57,7 +57,15 @@ export function parseScannerVersion(stdout) {
   return match[1];
 }
 
-export function classifyScannerExit(status) {
+export function classifyScannerExit(status, stderr = '') {
+  if (
+    /(?:^|\n)Error during extraction:/i.test(stderr) ||
+    /unable to fetch OSV database:|no offline version of the OSV database is available/i.test(
+      stderr
+    )
+  ) {
+    return 'operational_failure';
+  }
   if (status === 0) return 'clean';
   if (status === 1) return 'findings';
   return 'operational_failure';
@@ -138,7 +146,7 @@ export function runOfflineScan({
     { cwd: repositoryRoot, encoding: 'utf8' }
   );
   const finishedAt = new Date();
-  const outcome = classifyScannerExit(scan.status);
+  const outcome = classifyScannerExit(scan.status, scan.stderr);
 
   const receipt = {
     schema: RECEIPT_SCHEMA,
@@ -166,9 +174,13 @@ export function runOfflineScan({
           path: relative(repositoryRoot, sarifPath),
           sha256: sha256File(sarifPath),
           result_count: sarifResultCount(sarifPath),
+          complete: outcome !== 'operational_failure',
         }
       : null,
     limitations: [
+      ...(outcome === 'operational_failure'
+        ? ['The scanner reported an operational error; any emitted findings are incomplete.']
+        : []),
       'Database refresh is intentionally outside this offline command.',
       'A lockfile advisory does not by itself establish runtime reachability.',
       'OSV result count may include aliases for the same underlying vulnerability.',
@@ -178,7 +190,7 @@ export function runOfflineScan({
 
   if (scan.stderr) process.stderr.write(scan.stderr);
   process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
-  return scan.status ?? 2;
+  return outcome === 'operational_failure' ? 2 : (scan.status ?? 2);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

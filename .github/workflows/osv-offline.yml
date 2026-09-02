@@ -18,7 +18,11 @@ jobs:
         env:
           OSV_CACHE_ROOT: ${{ runner.temp }}/osv-db/osv-scalibr
         run: |
-          mkdir -p "$OSV_CACHE_ROOT/npm" "$OSV_CACHE_ROOT/crates.io" "$OSV_CACHE_ROOT/Go"
+          mkdir -p \
+            "$OSV_CACHE_ROOT/npm" \
+            "$OSV_CACHE_ROOT/crates.io" \
+            "$OSV_CACHE_ROOT/Go" \
+            "$OSV_CACHE_ROOT/SwiftURL"
           curl --fail --silent --show-error --location \
             https://osv-vulnerabilities.storage.googleapis.com/npm/all.zip \
             --output "$OSV_CACHE_ROOT/npm/all.zip"
@@ -28,8 +32,11 @@ jobs:
           curl --fail --silent --show-error --location \
             https://osv-vulnerabilities.storage.googleapis.com/Go/all.zip \
             --output "$OSV_CACHE_ROOT/Go/all.zip"
+          curl --fail --silent --show-error --location \
+            https://osv-vulnerabilities.storage.googleapis.com/SwiftURL/all.zip \
+            --output "$OSV_CACHE_ROOT/SwiftURL/all.zip"
           cd "$OSV_CACHE_ROOT"
-          sha256sum npm/all.zip crates.io/all.zip Go/all.zip > SHA256SUMS
+          sha256sum npm/all.zip crates.io/all.zip Go/all.zip SwiftURL/all.zip > SHA256SUMS
       - name: Upload database snapshot
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

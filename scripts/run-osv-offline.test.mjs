@@ -44,6 +44,14 @@ test('parses scanner identity and keeps findings distinct from operational failu
   assert.equal(classifyScannerExit(1), 'findings');
   assert.equal(classifyScannerExit(2), 'operational_failure');
   assert.equal(classifyScannerExit(null), 'operational_failure');
+  assert.equal(
+    classifyScannerExit(
+      1,
+      'Error during extraction: unable to fetch OSV database: no offline version is available'
+    ),
+    'operational_failure'
+  );
+  assert.equal(classifyScannerExit(1, 'warning: advisory metadata is incomplete'), 'findings');
 });
 
 test('hashes databases by ecosystem without retaining absolute cache paths', (context) => {
