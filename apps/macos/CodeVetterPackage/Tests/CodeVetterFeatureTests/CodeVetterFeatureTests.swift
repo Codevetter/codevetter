@@ -3275,6 +3275,7 @@ func hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate() throws {
   model.performanceResultReceiptJSON = String(decoding: resultPayload, as: UTF8.self)
   #expect(model.performanceResultReceipt?.resources?.peakRSSBytes == 59_441_152)
   #expect(model.performanceResultReceipt?.evidenceRows("observed").count == 100)
+  #expect(percentile95((1...20).map { UInt64($0) }) == 19)
   model.performanceState = .completed
 
   for _ in 0..<3 { renderPerformance(model) }
@@ -4472,8 +4473,10 @@ private func captureTrexWatcher(_ model: WorkbenchModel, at destination: URL) th
 }
 
 private func percentile95(_ values: [UInt64]) -> UInt64 {
+  precondition(!values.isEmpty)
   let ordered = values.sorted()
-  return ordered[min(ordered.count * 95 / 100, ordered.count - 1)]
+  let nearestRank = Int(ceil(Double(ordered.count) * 0.95))
+  return ordered[min(max(nearestRank - 1, 0), ordered.count - 1)]
 }
 
 private func unpackFixturePayload(
