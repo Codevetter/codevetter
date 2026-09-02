@@ -99,6 +99,8 @@ jobs:
           echo "$CARGO_DENY_SHA256  $RUNNER_TEMP/$CARGO_DENY_ARCHIVE" | sha256sum --check --strict
           tar -xzf "$RUNNER_TEMP/$CARGO_DENY_ARCHIVE" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/cargo-deny-0.20.2-x86_64-unknown-linux-musl" >> "$GITHUB_PATH"
+      - name: Seed locked Rust dependencies
+        run: cargo fetch --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
       - name: Check licenses, sources, and wildcard requirements
         id: policy
         continue-on-error: true
@@ -110,7 +112,7 @@ jobs:
           cargo-deny --manifest-path apps/desktop/src-tauri/Cargo.toml --config apps/desktop/src-tauri/deny.toml --frozen check --hide-inclusion-graph bans
           bans_status=$?
           set -e
-          if [ "$policy_status" -eq 0 ] && [ ! -s artifacts/tooling/cargo-deny.sarif ]; then
+          if [ ! -s artifacts/tooling/cargo-deny.sarif ]; then
             printf '%s\n' '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"cargo-deny","version":"0.20.2","rules":[]}},"results":[]}]}' > artifacts/tooling/cargo-deny.sarif
           fi
           if jq empty artifacts/tooling/cargo-deny.sarif; then
