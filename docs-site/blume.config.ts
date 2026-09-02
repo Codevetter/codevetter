@@ -29,7 +29,9 @@ export default defineConfig({
   },
 
   theme: {
-    accent: 'amber', // matches the product's warm amber accent (#d4a039)
+    // Use the product token directly. Blume 1.5 no longer ships an "amber"
+    // preset, and treating the unknown slug as a CSS color breaks OG rendering.
+    accent: '#d4a039',
     radius: 'md',
     mode: 'system',
     fonts: {
