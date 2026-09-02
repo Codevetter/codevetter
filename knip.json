@@ -42,8 +42,11 @@
     "lipo",
     "lsof",
     "netstat",
+    "plutil",
     "ps",
     "rustc",
+    "sips",
+    "spctl",
     "swift",
     "tauri",
     "xcode-select"

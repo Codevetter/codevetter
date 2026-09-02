@@ -67,6 +67,8 @@ limits, stable links, and structured data.
 | Tool | Purpose |
 |---|---|
 | `prepare_review` | Compose a bounded `codevetter.review-packet/v1` for one exact change from existing graph, history, prior-review, and verification-candidate evidence. It does not run a reviewer or execute a check. |
+| `resolve_evidence_scope` | Resolve a bounded flow, exact change, or codebase portfolio into canonical testing or performance candidates. It never executes the candidates and therefore returns planning evidence, not runtime proof. |
+| `verification_get_receipt` | Read one persisted canonical local-check receipt by bounded run ID inside the authorized repository scope. It cannot start, cancel, or mutate verification. |
 | `graph_query` | Search the structural graph or return a compact overview. |
 | `graph_get_node` | Explain one stable node and its source-backed relationships. |
 | `graph_get_neighbors` | Read bounded incoming, outgoing, or bidirectional neighbors. |
@@ -95,6 +97,43 @@ Start with graph overview, release listing, history search, review manifests,
 or the business-rule catalog. Follow stable IDs into explanation, lineage,
 trace, or hydration calls, and request only citations the agent actually needs.
 Normal execution never makes a model or provider call.
+
+### Resolve verification evidence
+
+`resolve_evidence_scope` is the direct agent projection of the same Rust planner
+used by native Testing/Performance and `codevetter scope`. Choose `testing` or
+`performance`, then provide a `flow`, `change`, or `codebase` scope. Flow and
+change scopes require `scope_value`; codebase scope omits it.
+
+```json
+{
+  "consumer": "performance",
+  "scope_kind": "change",
+  "scope_value": "main...feature"
+}
+```
+
+The response preserves candidate confidence, source leads, uncovered paths,
+dirty state, and limitations. MCP remains read-only: use the UI or CLI to admit
+and execute a selected workload.
+
+### Read a verification receipt
+
+`verification_get_receipt` is the read-only agent projection of a local check
+that already ran through native Review, the CLI, or another explicit local CLI
+consent boundary. It requires the exact persisted `run_id`, verifies that the
+receipt belongs to the MCP server's authorized repository, decodes the
+canonical `codevetter.local-check/v1` contract, and applies the normal MCP
+redaction and response-size policy.
+
+```json
+{
+  "run_id": "local-check-01234567-89ab-cdef-0123-456789abcdef"
+}
+```
+
+The tool never executes verification. Agents that need execution must use the
+separate local CLI consent boundary; enabling MCP does not grant that authority.
 
 ### Prepare a review
 

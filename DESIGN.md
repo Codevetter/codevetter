@@ -2,10 +2,10 @@
 name: CodeVetter
 description: An evidence-first verification workbench in ink, warm amber, and explicit semantic state.
 colors:
-  canvas-ink: "#060708"
-  surface-ink: "#0c0d0f"
-  raised-ink: "#111316"
-  elevated-ink: "#17191d"
+  canvas-ink: "#000000"
+  surface-ink: "#050506"
+  raised-ink: "#09090b"
+  elevated-ink: "#0d0d10"
   evidence-white: "#f4f4f5"
   secondary-gray: "#a1a1aa"
   muted-gray: "#8a8a93"
@@ -100,7 +100,8 @@ oversized presentation typography on operating surfaces.
 
 **Key Characteristics:**
 
-- Ink surfaces separated by restrained tonal steps and hairline borders.
+- A true-black canvas with near-black working planes separated by restrained
+  hairline borders.
 - Compact native-feeling controls with generous focus treatment.
 - Warm amber used sparingly for action, selection, and verification emphasis.
 - Monospace reserved for paths, revisions, commands, and evidence identities.
@@ -108,8 +109,20 @@ oversized presentation typography on operating surfaces.
 
 ## Colors
 
-The palette is near-black ink with a single warm action voice and explicit
-semantic evidence colors.
+The palette is true-black ink with a single warm action voice and explicit
+semantic evidence colors. Chrome remains true black; working planes rise only
+1–5% above it so hierarchy survives without turning the product charcoal.
+Hairline borders carry the remaining separation instead of grey fill.
+
+Light appearance is a native counterpart, not an inverted dark skin. It uses a
+warm `#f7f6f3` canvas, quieter `#f1f0ed` chrome, white evidence planes, and a
+soft `#f3f2ef` inspector. Amber keeps the same action and selection meaning;
+amber text and icons deepen independently of the bright action fill, and
+success, warning, and failure colors use darker light-mode counterparts so
+normal-size evidence text retains at least 4.5:1 contrast. Semantic status
+colors retain their written labels. Review, Testing,
+Performance, and Runs must preserve the same evidence hierarchy and control
+priority in both appearances.
 
 ### Primary
 
@@ -119,10 +132,10 @@ semantic evidence colors.
 
 ### Neutral
 
-- **Canvas Ink:** the application background and deepest visual plane.
-- **Surface Ink:** the default card and panel plane.
-- **Raised Ink:** controls and nested evidence tiles.
-- **Elevated Ink:** overlays or deliberately elevated sub-surfaces.
+- **Canvas Ink:** the true-black application background and deepest plane.
+- **Surface Ink:** the almost-black default card and panel plane.
+- **Raised Ink:** a subtly lighter control and nested-evidence plane.
+- **Elevated Ink:** the highest near-black overlay or inspector plane.
 - **Evidence White:** primary text and decisive result labels.
 - **Secondary Gray:** supporting explanations and metadata.
 - **Muted Gray:** placeholders and low-priority context.
@@ -159,8 +172,8 @@ feed to another tool; prose and actions stay in the system sans.
 ## Layout
 
 The desktop shell has a persistent top navigation and repository sidebar, with
-a configured minimum window width of 900px. Operating pages use a centered,
-wide workbench column and stack compact bordered panels vertically.
+a configured minimum window size of 980 x 640 points. Operating pages use a
+centered, wide workbench column and stack compact bordered panels vertically.
 
 Cards use 20px internal padding and 24px section rhythm by default. Dense form
 rows may align horizontally when space permits, then stack without changing

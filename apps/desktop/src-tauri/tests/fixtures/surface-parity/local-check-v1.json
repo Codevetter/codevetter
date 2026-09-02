@@ -1,0 +1,97 @@
+{
+  "schema_version": "codevetter.local-check-surface-parity-fixture/v1",
+  "authority": {
+    "rust": "authoritative_service",
+    "cli": "supervised_execution",
+    "native": "supervised_execution",
+    "mcp": "read_only_projection",
+    "mcp_may_execute": false
+  },
+  "request": {
+    "schema_version": "codevetter.verification-command/v1",
+    "request_id": "surface-parity-local-check",
+    "operation": "execute",
+    "repo_path": "/fixture/repo",
+    "change": "main...HEAD",
+    "task": "Preserve checkout totals"
+  },
+  "expected": {
+    "receipt_schema": "codevetter.local-check/v1",
+    "request_id": "surface-parity-local-check",
+    "run_id": "local-check-surface-parity",
+    "verdict": "no_confidence",
+    "exit_code": 2,
+    "performance_status": "no_confidence",
+    "limitation": "The performance collector is unavailable in this fixture.",
+    "mcp_projection_schema": "codevetter.verification-receipt-projection/v1"
+  },
+  "canonical_receipt": {
+    "schema_version": "codevetter.local-check/v1",
+    "request_id": "surface-parity-local-check",
+    "run_id": "local-check-surface-parity",
+    "ran_at": "2026-09-01T00:00:00Z",
+    "repo_path": "/fixture/repo",
+    "task": "Preserve checkout totals",
+    "source": {
+      "kind": "range",
+      "input": "main...HEAD",
+      "base_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "commits": [
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "changed_paths": [
+        "src/cart.ts"
+      ]
+    },
+    "stages": {
+      "review": {
+        "status": "completed",
+        "duration_ms": 18,
+        "target": null,
+        "evidence": {
+          "summary": "The bounded review completed without a qualified finding.",
+          "findings": []
+        },
+        "limitations": []
+      },
+      "correctness": {
+        "status": "passed",
+        "duration_ms": 12,
+        "target": {
+          "adapter": "vitest",
+          "target": "src/cart.test.ts",
+          "name": null,
+          "source": "selected:fixture"
+        },
+        "evidence": {
+          "verdict": "passed"
+        },
+        "limitations": []
+      },
+      "performance": {
+        "status": "no_confidence",
+        "duration_ms": 0,
+        "target": null,
+        "evidence": {},
+        "limitations": [
+          "The performance collector is unavailable in this fixture."
+        ]
+      },
+      "optimization": {
+        "status": "no_confidence",
+        "duration_ms": 0,
+        "target": null,
+        "evidence": {},
+        "limitations": [
+          "No paired optimization claim can be made without performance evidence."
+        ]
+      }
+    },
+    "verdict": "no_confidence",
+    "limitations": [
+      "The performance collector is unavailable in this fixture.",
+      "No paired optimization claim can be made without performance evidence."
+    ]
+  }
+}

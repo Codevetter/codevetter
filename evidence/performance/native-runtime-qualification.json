@@ -1,0 +1,133 @@
+{
+  "schema_version": "codevetter.native-runtime-qualification/v1",
+  "recorded_at": "2026-09-01",
+  "source": {
+    "base_sha": "b34ce70edbcfab8cd9463be87b7453de7e623ed3",
+    "state": "working tree includes the uncommitted native migration",
+    "platform": "arm64-apple-macosx27.0",
+    "rust": "rustc 1.98.0",
+    "swift": "Apple Swift 6.4",
+    "xcodebuildmcp": "2.7.0"
+  },
+  "gates": {
+    "responsive_release_launch": {
+      "metric": "XCTApplicationLaunchMetric.ApplicationFirstFramePresentationResponsive",
+      "samples_seconds": [0.556924, 0.627633, 0.583197, 0.575797, 0.558257],
+      "average_seconds": 0.58,
+      "relative_standard_deviation_percent": 4.428,
+      "maximum_average_seconds": 1.0,
+      "pass": true
+    },
+    "release_workspace_memory": {
+      "surface": "Performance with the repository selected",
+      "rss_samples_kib": [
+        117440,
+        117424,
+        117120,
+        117920,
+        116928
+      ],
+      "steady_rss_kib": 117424,
+      "maximum_steady_rss_kib": 204800,
+      "release_app_bundle_kib_after_worker_packaging": 80116,
+      "source_receipt": "evidence/performance/native-tauri-comparison.json",
+      "pass": true
+    },
+    "matched_tauri_comparison": {
+      "source_receipt": "evidence/performance/native-tauri-comparison.json",
+      "samples_per_application": 5,
+      "surface_confirmed_samples": 10,
+      "first_visible_window_native_median_ms": 435.12,
+      "first_visible_window_tauri_median_ms": 419.018,
+      "first_visible_window_classification": "parity",
+      "settled_process_tree_rss_native_median_kib": 117424,
+      "settled_process_tree_rss_tauri_median_kib": 169024,
+      "settled_process_tree_rss_native_reduction_percent": 30.529,
+      "bundle_native_reduction_percent": 51.486,
+      "pass": true
+    },
+    "rust_swift_bridge": {
+      "fixture_bytes": 13248,
+      "ffi_transfer_and_decode_p95_us": 48.292,
+      "maximum_ffi_transfer_and_decode_p95_us": 250,
+      "supervised_worker_round_trip_p95_us": 73745.625,
+      "maximum_supervised_worker_round_trip_p95_us": 150000,
+      "semantic_parity": true,
+      "pass": true
+    },
+    "progress_throughput": {
+      "events": 1000,
+      "elapsed_ms": 342.278,
+      "maximum_elapsed_ms": 2000,
+      "events_per_second": 2921.6,
+      "pass": true
+    },
+    "cancellation": {
+      "elapsed_ms": 0.326,
+      "maximum_elapsed_ms": 500,
+      "successful_receipt_accepted": false,
+      "pass": true
+    },
+    "worker_crash_recovery": {
+      "crashed_receipt_accepted": false,
+      "fresh_worker_elapsed_ms": 3.739,
+      "maximum_fresh_worker_elapsed_ms": 1000,
+      "pass": true
+    },
+    "large_receipt_decode_and_render": {
+      "maximum_decode_p95_us": 25000,
+      "maximum_render_p95_us": 150000,
+      "surfaces": {
+        "repo_unpack": {
+          "dataset": "100 snapshots, 700 graph nodes, 1000 tree rows",
+          "decode_p95_us": 7587,
+          "render_p95_us": 55588,
+          "pass": true
+        },
+        "usage": {
+          "dataset": "365 daily periods and 100 sessions",
+          "decode_p95_us": 8838,
+          "render_p95_us": 30561,
+          "pass": true
+        },
+        "performance": {
+          "dataset": "100 observed evidence rows",
+          "source_receipt": "evidence/performance/native-performance-benchmark.json",
+          "independent_gate_runs": 3,
+          "decode_p95_us": 1792,
+          "render_p95_us": 46009,
+          "pass": true
+        },
+        "testing": {
+          "dataset": "100 journeys and 100 changed paths",
+          "decode_p95_us": 575,
+          "render_p95_us": 33341,
+          "pass": true
+        },
+        "runs": {
+          "dataset": "100 runs and 100 selected responses",
+          "decode_p95_us": 2826,
+          "render_p95_us": 34535,
+          "pass": true
+        }
+      },
+      "pass": true
+    }
+  },
+  "qualification": {
+    "all_gates_pass": true,
+    "swift_runtime_gate_test": "1 passed, 0 failed",
+    "release_launch_test": "historical 1 passed, 0 failed; current exact package not foreground-launched",
+    "swift_package_suite": "79 passed, 0 failed, 0 skipped",
+    "macos_suite": "historical 64 passed, 0 failed, including 9 XCUITests",
+    "release_build": "succeeded"
+  },
+  "selected_boundary": "Hybrid: bounded immutable read projections may use an in-process bridge; verification and other risky or long-running work stays in supervised workers.",
+  "limitations": [
+    "The release launch metric used ENABLE_TESTABILITY=YES for the qualification build; the separate release application build succeeded without changing shipping settings.",
+    "RSS samples cover the native application process on the selected Performance workspace; supervised worker process-tree memory is recorded by Rust execution receipts rather than folded into the app RSS.",
+    "Host-render measurements exclude window-server frame pacing and interactive scrolling.",
+    "The matched comparison qualifies lower settled Performance-workspace RSS and smaller package footprint, not workload-execution, energy, or long-session performance.",
+    "Xcode emitted one internal QoS priority-inversion advisory during the command-palette XCUITest; all 64 tests passed and no product failure accompanied it."
+  ]
+}

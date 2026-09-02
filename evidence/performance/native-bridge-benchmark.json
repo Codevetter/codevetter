@@ -1,0 +1,48 @@
+{
+  "schema_version": "codevetter.native-bridge-benchmark/v1",
+  "measured_at": "2026-09-01T23:00:30Z",
+  "source": {
+    "base_sha": "b34ce70edbcfab8cd9463be87b7453de7e623ed3",
+    "state": "working tree includes the uncommitted native migration",
+    "platform": "arm64-apple-macosx27.0.0",
+    "rust": "rustc 1.98.0",
+    "swift": "Apple Swift 6.4",
+    "xcodebuildmcp": "2.7.0"
+  },
+  "payload_bytes": 40047,
+  "ffi_transfer": {
+    "iterations": 10000,
+    "minimum_us": 0.875,
+    "median_us": 1.083,
+    "p95_us": 1.208,
+    "average_us": 1.0816948999999492
+  },
+  "ffi_transfer_and_decode": {
+    "iterations": 1000,
+    "minimum_us": 90.917,
+    "median_us": 106.708,
+    "p95_us": 171.791,
+    "average_us": 116.45407299999995
+  },
+  "worker_round_trip": {
+    "iterations": 20,
+    "minimum_us": 76987.042,
+    "median_us": 82255.209,
+    "p95_us": 84643.667,
+    "average_us": 81877.04169999999
+  },
+  "artifact_bytes": {
+    "ffi_probe_dylib": 49888,
+    "release_worker_cli": 44109408,
+    "swift_benchmark": 133208
+  },
+  "semantic_parity": true,
+  "selected_boundary": "hybrid: in-process for bounded read-only projections; supervised worker for verification execution",
+  "limitations": [
+    "The FFI probe measures a deterministic read-only projection, not long-running verification.",
+    "Debug and release application integration overhead is not included.",
+    "Process startup is intentionally included in the worker round trip.",
+    "The probe dylib size is not a production core-library size forecast.",
+    "The pinned XcodeBuildMCP package is resolved through a benchmark-local npm cache so repeated runs do not depend on the user's shared npx cache."
+  ]
+}

@@ -7,6 +7,14 @@ commands are authoritative; no sibling Fleet checkout is required. Protect
 production stability, keep changes scoped, verify work with repo-local checks,
 and record durable follow-up in this repository's GitHub Issues.
 
+Do not run XCUITest, desktop runtime comparison, AppleScript, accessibility
+control, or any automation that can launch apps, take focus, type, click, or
+manage windows while the operator is using the Mac. Foreground automation
+requires fresh authorization for an idle-screen window on that invocation;
+never infer or persist approval. Prefer the background-safe native lane and
+offscreen render gates. Use a dedicated graphical macOS runner for unattended
+interaction qualification.
+
 ## Purpose
 CodeVetter is an execution-backed verification and evaluation system for coding
 agents. It determines whether an agent completed a software task correctly

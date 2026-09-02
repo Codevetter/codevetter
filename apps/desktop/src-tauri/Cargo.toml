@@ -88,6 +88,12 @@ opt-level = 0
 [profile.test]
 debug = 1
 
+[profile.release]
+# Shipping companions favor whole-program runtime and footprint over compile
+# throughput. Keep panic unwinding for diagnosability and behavior parity.
+lto = "fat"
+codegen-units = 1
+
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]

@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-31
+Last updated: 2026-09-02
 
 ## Why / What
 
@@ -54,6 +54,175 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
 
 ## Timeline
+
+- **2026-09-02 — Native owner-quality refinement (unreleased source):** the
+  Evidence Workbench preserves a true-black canvas and chrome while restoring
+  restrained 1--4% near-black separation across working planes. Standalone
+  Review proof-map and intent renders now own an opaque canvas, and the owner
+  packet deterministically captures both search-only and rich repository-query
+  states, plus light-appearance Review, Testing, Performance, Runs, history
+  recovery, memory inspection, Agent Island configuration, and read-only Ops
+  status. All 33
+  current-tree image hashes match the manifest. The same pass
+  reproduced and fixed a repository-query cancellation hang by closing stdin,
+  granting a bounded 200 ms termination grace, and using a final kill only for
+  the exclusively owned read-only worker; its test requires settlement within
+  one second. Appearance-aware amber and semantic evidence foregrounds now
+  meet a checked 4.5:1 normal-text contrast floor in dark and light modes. The
+  native Usage settings and CLI now share a bounded Rust history-root receipt:
+  selected Codex session folders normalize to their canonical home, unrelated
+  directories fail closed, and add/remove never reads or deletes transcripts.
+  Agent and MCP authority remain unavailable. Native Settings and
+  `codevetter memories` now share a read-only `codevetter.memories/v1` receipt:
+  Rust discovers bounded known locations, exposes only existing sources through
+  opaque identities and non-absolute display paths, caps reads/output, and
+  redacts secret-like content and Git-diff lines heuristically. Memory editing
+  and agent/MCP projections remain unavailable. The same Rust settings receipt
+  now preserves all 12 non-secret Agent Island preferences across native UI,
+  CLI, and the retained helper. Native labels configuration as live and the
+  supervised runtime as pending; the helper remains off by default and is not
+  launched by the Evidence Workbench. Native Settings and `codevetter ops`
+  now share a fixed-window `codevetter.ops-status/v1` receipt for local
+  configuration presence and aggregate run evidence. It excludes credentials,
+  webhook URLs, provider calls, webhook sends, writes, and agent/MCP authority.
+  The retained Tauri shell now attempts the sanitized one-time custom-rubric
+  transfer on every startup until Rust owns a canonical preference. Existing
+  Rust state wins, invalid legacy state writes nothing, browser-only mode does
+  not invoke Tauri, and the Rubrics surface remains a visible retry path.
+  Isolated frontend and Rust tests pass; installed WebView-to-native
+  qualification remains an explicit upgrade gate.
+  The quiet lane passes 80 Swift tests and a Debug macOS build. A read-only
+  current-package receipt binds the exact
+  `qualification-5r7JG4` candidate and measures a 62.4% smaller app bundle and
+  92.4% smaller host executable than
+  the retained Tauri Release bundle; it does not refresh the historical launch
+  or settled-memory comparison.
+  Release-only fat LTO and one Rust codegen unit reduce the CLI and MCP
+  companions by 14.6% and 27.5% versus the prior candidate. Native Release
+  postprocessing removes test coverage instrumentation, strips the shipped host
+  while preserving its adjacent dSYM, and is enforced by the package gate.
+  The exact packaged MCP passes its fully sampled 50-start/200-round
+  qualification with 8.52 ms cold-initialize p95, 30.11 MiB ending RSS, 28
+  strict read-only tools, and no TCP listener.
+  The complete all-feature Rust lane now passes 1,105 tests with 31 intentional
+  ignores, strict Clippy, and formatting. The retained frontend passes 680 unit
+  tests with one intentional skip, its separate 20-scenario live warm gate,
+  package-scoped TypeScript, and a production Vite build.
+  The Rust-generated capability glossary now has a deterministic native render
+  proving the external-collector split: CLI execution is available, a native
+  collector workflow remains planned, and agent authority remains unavailable.
+  Stale matched-comparison next steps now point to exact-package foreground,
+  responsiveness, energy, and long-session evidence instead of asking for an
+  already-completed comparison.
+  A manifest-locked local gallery exposes all 33 original-pixel dark/light
+  renders without external assets or network calls; its test fails on missing
+  or duplicate states. The final audit replaced the active Rubric pack's
+  washed-out disabled amber action with a high-contrast green `Selected`
+  receipt in both appearances; only available packs retain the amber action.
+  This evidence is ready for owner review but does not infer visual acceptance.
+
+- **2026-09-02 — Native release preflight (unreleased source):** a read-only
+  `codevetter.native-release-readiness/v1` inspector now binds the exact staged
+  app to its local qualification, verifies package/signature/runtime/updater
+  boundaries, and accepts only archive-bound notarization plus
+  production-identity installed-upgrade proofs. The current preview passes 7
+  of 16 checks but correctly remains `shipping_ready: false` on nine production
+  gates: bundle transfer, Developer ID host/companion signing and one team,
+  Library Validation, HTTPS appcast, EdDSA key, Gatekeeper, notarization, and
+  installed upgrade/relaunch/data/rollback evidence. The installed proof now
+  binds the exact archive and build and requires a non-empty stable-record
+  fingerprint across native relaunch and rollback. A dependency-free,
+  read-only SQLite probe produces that content-free continuity projection and
+  fails on any missing incumbent identity. Its qualification used isolated
+  fixtures only. The inspection did not read credentials, sign, notarize,
+  install, publish, or change the installed Tauri application.
+
+- **2026-09-01 — Native macOS package candidate (unreleased source):** the
+  native AppKit/SwiftUI Evidence Workbench now builds as a hardened,
+  intentionally non-sandboxed Release app with exact Sparkle 2.9.6 wiring that
+  remains disabled for the preview identifier. A repository-owned qualifier
+  reuses the existing Rust and ccusage sidecar builders, packages the canonical
+  `codevetter`, `codevetter-mcp`, `ccusage`, and performance runtime capsule,
+  preserves Sparkle framework symlinks, smoke-tests every companion, verifies
+  deep signatures and runpaths, and produces local ZIP/DMG artifacts. The
+  staged package passed five alternating, surface-confirmed launches on the
+  populated Performance workspace at 117,424 KiB median process-tree RSS and
+  has checked true-black visual evidence. A matched five-by-five Release
+  comparison records startup parity (435.120 ms native versus 419.018 ms Tauri
+  first-visible-window median), 30.5% lower native settled RSS, and a 51.5%
+  smaller qualified native bundle. Native Review now enters one
+  Tauri-independent Rust application service: a bounded request id correlates
+  `codevetter.verification-command/v1`, ordered `codevetter.progress/v2`
+  events, request-scoped `codevetter.verification-cancel/v1`, and the distinct
+  preflight or final canonical receipt. Foreign progress, cancellation, and
+  terminal receipts fail closed. One shared no-confidence fixture now proves
+  equivalent request, stage, limitation, verdict, and exit semantics through
+  Rust, CLI, and native; the repository-scoped MCP
+  `verification_get_receipt` projection reads that same persisted canonical
+  receipt without gaining start or cancellation authority. The final packaged
+  sidecar exposes 28 strict read-only tools with no TCP listener. Native Review, the CLI, and local agent
+  invocation also share a Rust-owned, explicit-consent isolated-fix contract:
+  one detached worktree, bounded diff, recorded correctness rerun,
+  source-qualified re-review, per-finding fixed/reproduced/unchecked status,
+  retained owner inspection, and separately confirmed discard. There is no
+  commit, merge, or push action. Repo Unpack can now create a model-free local
+  snapshot from native UI or `codevetter unpack --operation scan` through one
+  Rust-owned scan/persistence boundary, then inspect stored Overview, Brief,
+  Activity, Inventory, and bounded Graph evidence in the native workspace.
+  The versioned receipt removes the raw file list from the client projection,
+  reports scan and persistence profiles separately, and continues to label
+  topology, history, and health as non-executable evidence. The native Graph
+  desk and `codevetter unpack --operation query` share the versioned
+  `codevetter.repo-query/v2` projection over the canonical structural and
+  temporal query services already used by MCP. Search, node explanation,
+  bounded impact, directed path, and causal trace retain index freshness,
+  trust, source anchors, and explicit unavailable coverage; Swift performs no
+  ranking or traversal. A scoped read-only worker prepares one search-only
+  canonical snapshot in the background, then upgrades it in place with compact
+  traversal edges only when requested while rechecking snapshot identity and
+  live-Git freshness. On the qualified 115,884-node graph, warm Release medians
+  measured 36.07 ms search, 35.15 ms explain, 116.55 ms impact, 68.38 ms path,
+  32.46 ms history search, and 32.21 ms causal trace. Search-only RSS measured
+  242.6 MiB and rich traversal RSS 307.6 MiB after rejecting a 511.9 MiB full
+  snapshot prototype. Contract/parser/render tests, 76 Swift tests, inspected
+  true-black evidence, and the quiet native compile gate pass. Native repository
+  selection now restores one
+  security-scoped bookmark across launches, and Usage applies 1w/30d/90d/all
+  windows consistently to ccusage charts, totals, models, and sessions while
+  the separate indexed Devin desk follows the same window for sessions,
+  generated/cache tokens, cost, and model rows. Live quota telemetry remains a
+  separate credential-sensitive migration. Review receipts now add a
+  Rust-owned `codevetter.review-intent-diagnostic/v1` projection across native,
+  CLI JSON, and local-agent output: it preserves the stated goal, deterministic
+  changed-surface classes, source-review and recorded-QA signals, gaps, and a
+  human-only closure boundary. Native Review gives this diagnostic a dedicated
+  true-black evidence desk and can reveal validated recorded QA artifacts in
+  Finder without promoting legacy QA into revision-exact proof. Its execution
+  action hands the exact repository and range or pull request to Testing,
+  clears stale proof and consent, and requires a preview plus fresh explicit
+  browser-run confirmation there. Native Testing, `codevetter qa`, and the
+  scoped read-only `qa_workspace_inspect` MCP tool now consume one Rust-owned
+  `codevetter.qa-workspace/v1` receipt for saved workflows and targets,
+  repository Playwright spec discovery, and deterministic post-fix rerun
+  setup. Legacy fields are projected into a separate native preference without
+  storage-state paths or arbitrary external commands; a selected route and goal
+  enter the canonical T-REX receipt, while preview consent is always reset.
+  Review will not regain a second browser execution authority. A real-agent fix
+  plus real saved-flow rerun smoke remains open. The populated
+  native app now also consumes `codevetter.onboarding/v1` for first-run state:
+  it honors the incumbent completion preference, checks executable presence
+  without inspecting authentication or credentials, transactionally saves
+  only the declared default adapter plus completion, and renders four
+  true-black Purpose, Readiness, Agent, and Workbench states. The same receipt
+  is available through `codevetter onboarding`, while About can reopen the tour
+  without changing completion state. The populated
+  native Performance receipt now lazily renders visible evidence rows and
+  repeated its 100-row gate three times at 41.867, 46.009, and 35.226 ms render
+  p95. Qualification conservatively uses the 46.009 ms worst run against the
+  unchanged 150 ms gate. This is not a release: Developer ID signing,
+  notarization, production appcast and EdDSA inputs, installed update/rollback,
+  workload/energy/long-session comparison, remaining feature/accessibility
+  parity, and owner retirement approval are still open.
 
 - **2026-08-31 — External performance, testing, and MCP evidence adapters
   (unreleased source):** verification-receipt ingestion now accepts Playwright
@@ -546,7 +715,7 @@ Internal (fleet):
 ### Queryable codebase history
 - Repo Unpacked persists a backward-compatible schema-v2 history graph connecting bounded commit files, decisions, verification hints, and co-change leads with citations and trust labels.
 - Local queries prefer exact file/ID/label matches, rank broader terms, expand one hop, and state confidence, no-match, and truncation explicitly without mutating snapshots or creating findings.
-- Settings can expose one explicitly enabled indexed repository through the packaged read-only `codevetter-mcp` stdio sidecar. Twenty-four strict tools cover task-level review preparation, graph queries, releases, search, as-of state, lineage, explanations, causal traces, comparisons, review manifests, business-rule archaeology, and evidence hydration; opaque versioned resources provide paginated discovery without absolute paths or credentials.
+- Settings can expose one explicitly enabled indexed repository through the packaged read-only `codevetter-mcp` stdio sidecar. Twenty-six strict tools cover capability and evidence-scope discovery, task-level review preparation, graph queries, releases, search, as-of state, lineage, explanations, causal traces, comparisons, review manifests, business-rule archaeology, and evidence hydration; opaque versioned resources provide paginated discovery without absolute paths or credentials.
 
 ### App shell and UX
 - Home opens to usage dashboard (Today / Week / Month / Year counters); Repo holds repository context and Activity; Settings holds operational tools and preferences.

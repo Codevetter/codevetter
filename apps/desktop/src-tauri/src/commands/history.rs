@@ -1148,7 +1148,7 @@ fn estimate_cost_precise(
 /// cache-tier split — e.g. by-model aggregate rows that fall back to
 /// session-level totals without a per-model breakdown. Treats all
 /// cache-creation tokens as the default 5-minute tier.
-fn estimate_cost(
+pub(crate) fn estimate_cost(
     model: &str,
     total_input: i64,
     output_tokens: i64,

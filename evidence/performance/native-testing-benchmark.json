@@ -1,0 +1,35 @@
+{
+  "schema_version": "codevetter.native-testing-benchmark/v1",
+  "recorded_at": "2026-08-31",
+  "target": "aarch64-apple-darwin",
+  "command": "CODEVETTER_TESTING_SCREENSHOT_PATH=artifacts/design/native-testing-receipt-dark.png npx -y xcodebuildmcp@2.7.0 swift-package test --package-path apps/macos/CodeVetterPackage --filter hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate",
+  "dataset": {
+    "journeys": 100,
+    "changed_paths": 100,
+    "derived_routes": 6,
+    "limitations": 1,
+    "viewport": "980x640"
+  },
+  "measurement": {
+    "swift_decode": {
+      "warmups": 10,
+      "samples": 100,
+      "p95_us": 510,
+      "gate_us": 25000
+    },
+    "swift_host_render": {
+      "warmups": 3,
+      "samples": 20,
+      "p95_us": 19271,
+      "gate_us": 150000
+    }
+  },
+  "qualification": {
+    "swift_package_test": "passed",
+    "macos_test": "16 passed, 0 failed, 0 skipped",
+    "dark_setup": "artifacts/design/native-testing-dark.png",
+    "light_setup": "artifacts/design/native-testing-light.png",
+    "dark_receipt": "artifacts/design/native-testing-receipt-dark.png"
+  },
+  "claim_boundary": "Measures canonical T-Rex JSON decoding and fresh NSHostingView creation, layout, and display for one 100-journey, 100-path receipt. It excludes CLI startup, Rust execution, Git resolution, preview network latency, browser runtime, window-server frame pacing, and interactive scrolling."
+}

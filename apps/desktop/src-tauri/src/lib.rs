@@ -9,6 +9,8 @@
 //! repository interpretation.
 
 pub mod agent;
+pub mod application;
+pub mod capabilities;
 pub mod commands;
 pub mod db;
 pub mod mcp;

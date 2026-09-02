@@ -1,0 +1,36 @@
+{
+  "schema_version": "codevetter.native-unpack-benchmark/v1",
+  "recorded_at": "2026-08-31",
+  "target": "aarch64-apple-darwin",
+  "command": "CODEVETTER_UNPACK_SCREENSHOT_PATH=<absolute-artifact-path> CODEVETTER_UNPACK_LIGHT_SCREENSHOT_PATH=<absolute-artifact-path> npx -y xcodebuildmcp@2.7.0 swift-package test --package-path apps/macos/CodeVetterPackage --filter largeUnpackProjectionDecodesAndRendersWithinTheNativeGate",
+  "dataset": {
+    "snapshots": 100,
+    "graph_nodes": 700,
+    "graph_edges": 699,
+    "tree_rows": 1000,
+    "viewport": "1280x800"
+  },
+  "measurement": {
+    "swift_decode": {
+      "warmups": 10,
+      "samples": 100,
+      "p95_us": 5179,
+      "gate_us": 40000
+    },
+    "swift_host_render": {
+      "warmups": 3,
+      "samples": 20,
+      "p95_us": 22921,
+      "gate_us": 150000
+    }
+  },
+  "qualification": {
+    "swift_package_test": "23 passed, 0 failed",
+    "macos_test": "29 passed, 0 failed, 0 skipped",
+    "repo_unpack_xcuitest": "read-only Rust authority and refresh controls passed",
+    "dark_render": "artifacts/design/native-unpack-dark.png",
+    "light_render": "artifacts/design/native-unpack-light.png",
+    "live_read_only_smoke": "Stored CodeVetter snapshot listed and inspected without exposing raw all_files"
+  },
+  "claim_boundary": "Measures UnpackHistoryReceipt and UnpackSnapshotRecord decoding, nested inventory decoding, and fresh NSHostingView creation, layout, and display for a bounded fixture. It excludes CLI startup, SQLite query latency, repository scanning, analysis, graph queries, window-server frame pacing, and interactive scrolling."
+}

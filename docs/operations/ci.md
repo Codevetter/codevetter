@@ -43,6 +43,7 @@ Steps, in order (a failure stops the job):
 |---|---|---|---|
 | `auto-release.yml` | push to `main` on `tauri.conf.json` version bump | cut `v<version>` release + dispatch `release.yml` | [release-pipeline.md](./release-pipeline.md) |
 | `release.yml` | `release.created` or `workflow_dispatch` | build/sign/upload Tauri binaries + `latest.json` | [release-pipeline.md](./release-pipeline.md) |
+| `native-qualification.yml` | `workflow_dispatch` (manual) | qualify the unsigned native macOS preview and optionally run XCUITest on an isolated hosted desktop | [../development/native-macos.md](../development/native-macos.md) |
 | `deploy-landing.yml` | `workflow_dispatch` (manual) | deploy Astro site to Cloudflare Pages | [landing-deploy.md](./landing-deploy.md) |
 | `weekly.yml` | cron `0 9 * * 1` (Mon 09:00 UTC) + `workflow_dispatch` | lockfile-agnostic quality check (lint/typecheck/test/build if defined) | [jobs/weekly-quality.md](./jobs/weekly-quality.md) |
 | `docs.yml` | push/PR | doc link + structure validation | [../development/docs.md](../development/docs.md) |

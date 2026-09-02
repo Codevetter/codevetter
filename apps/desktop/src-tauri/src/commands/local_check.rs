@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::time::{Duration, Instant};
 
+use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tokio::process::Command;
@@ -75,10 +76,14 @@ pub struct LocalCheckStages {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalCheckReceipt {
     pub schema_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request_id: Option<String>,
     pub run_id: String,
     pub ran_at: String,
     pub repo_path: String,
     pub task: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub standards_pack: Option<String>,
     pub source: TrexSourceReceipt,
     pub stages: LocalCheckStages,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -90,6 +95,8 @@ pub struct LocalCheckReceipt {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalCheckPreflightReceipt {
     pub schema_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request_id: Option<String>,
     pub ran_at: String,
     pub repo_path: String,
     pub task: String,
@@ -113,6 +120,8 @@ pub struct LocalCheckInput {
     pub repo_path: PathBuf,
     pub change: String,
     pub task: String,
+    pub standards_pack: Option<String>,
+    pub standards_context: Option<String>,
     pub spec_paths: Vec<PathBuf>,
     pub selected_requirement_ids: Vec<String>,
     pub review_agent: String,
@@ -156,10 +165,19 @@ where
         performance_selection_limitation,
     } = prepared;
     let diff_range = format!("{}...{}", source.base_sha, source.head_sha);
-    let review_task = compose_review_task(&input.task, spec_packet.as_ref());
+    let mut review_task = compose_review_task(&input.task, spec_packet.as_ref());
+    if let Some(context) = input
+        .standards_context
+        .as_deref()
+        .map(str::trim)
+        .filter(|context| !context.is_empty())
+    {
+        review_task.push_str("\n\n");
+        review_task.push_str(context);
+    }
     let app_data_dir = default_app_data_dir()?;
-    let connection =
-        db::init_db(app_data_dir).map_err(|error| format!("open CodeVetter database: {error}"))?;
+    let connection = db::init_db(app_data_dir.clone())
+        .map_err(|error| format!("open CodeVetter database: {error}"))?;
     let db = DbState(std::sync::Arc::new(std::sync::Mutex::new(connection)));
 
     on_progress(LocalCheckProgress {
@@ -273,18 +291,101 @@ where
         stage: "done",
         state: verdict_name(verdict),
     });
-    Ok(LocalCheckReceipt {
+    let receipt = LocalCheckReceipt {
         schema_version: "codevetter.local-check/v1".into(),
+        request_id: None,
         run_id: format!("local-check-{}", uuid::Uuid::new_v4()),
         ran_at: chrono::Utc::now().to_rfc3339(),
         repo_path: repo_text,
         task: input.task,
+        standards_pack: input.standards_pack,
         source,
         stages,
         spec_coverage,
         verdict,
         limitations,
+    };
+    let connection = db::init_db(app_data_dir)
+        .map_err(|error| format!("reopen CodeVetter database for run receipt: {error}"))?;
+    persist_local_check_receipt(&connection, &receipt)?;
+    Ok(receipt)
+}
+
+pub fn persist_local_check_receipt(
+    connection: &rusqlite::Connection,
+    receipt: &LocalCheckReceipt,
+) -> Result<(), String> {
+    let receipt_json = serde_json::to_string(receipt)
+        .map_err(|error| format!("serialize local check receipt for persistence: {error}"))?;
+    connection
+        .execute(
+            "INSERT OR REPLACE INTO local_check_runs(
+                run_id, schema_version, repo_path, base_sha, head_sha,
+                verdict, task, receipt_json, ran_at
+             ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            rusqlite::params![
+                receipt.run_id,
+                receipt.schema_version,
+                receipt.repo_path,
+                receipt.source.base_sha,
+                receipt.source.head_sha,
+                verdict_name(receipt.verdict),
+                receipt.task,
+                receipt_json,
+                receipt.ran_at,
+            ],
+        )
+        .map_err(|error| format!("persist local check receipt: {error}"))?;
+    Ok(())
+}
+
+pub fn list_local_check_receipts(
+    connection: &rusqlite::Connection,
+    repo_path: Option<&str>,
+    limit: usize,
+) -> Result<Vec<LocalCheckReceipt>, String> {
+    let limit = limit.clamp(1, 100) as i64;
+    let sql = if repo_path.is_some() {
+        "SELECT receipt_json FROM local_check_runs
+         WHERE repo_path = ?1 ORDER BY ran_at DESC LIMIT ?2"
+    } else {
+        "SELECT receipt_json FROM local_check_runs
+         ORDER BY ran_at DESC LIMIT ?2"
+    };
+    let mut statement = connection
+        .prepare(sql)
+        .map_err(|error| format!("prepare local check history: {error}"))?;
+    let decode = |row: &rusqlite::Row<'_>| -> rusqlite::Result<String> { row.get(0) };
+    let rows = match repo_path {
+        Some(repo_path) => statement.query_map(rusqlite::params![repo_path, limit], decode),
+        None => statement.query_map(rusqlite::params![rusqlite::types::Null, limit], decode),
+    }
+    .map_err(|error| format!("read local check history: {error}"))?;
+    rows.map(|row| {
+        let json = row.map_err(|error| format!("read local check receipt row: {error}"))?;
+        serde_json::from_str(&json)
+            .map_err(|error| format!("decode stored local check receipt: {error}"))
     })
+    .collect()
+}
+
+pub fn get_local_check_receipt(
+    connection: &rusqlite::Connection,
+    repo_path: &str,
+    run_id: &str,
+) -> Result<LocalCheckReceipt, String> {
+    let receipt_json = connection
+        .query_row(
+            "SELECT receipt_json FROM local_check_runs
+             WHERE repo_path = ?1 AND run_id = ?2",
+            rusqlite::params![repo_path, run_id],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()
+        .map_err(|error| format!("read local check receipt: {error}"))?
+        .ok_or_else(|| "Local-check receipt was not found in this repository scope".to_string())?;
+    serde_json::from_str(&receipt_json)
+        .map_err(|error| format!("decode stored local check receipt: {error}"))
 }
 
 pub async fn preflight_local_check(
@@ -355,6 +456,7 @@ pub async fn preflight_local_check(
 
     Ok(LocalCheckPreflightReceipt {
         schema_version: "codevetter.local-check-preflight/v1".into(),
+        request_id: None,
         ran_at: chrono::Utc::now().to_rfc3339(),
         repo_path: repo_text,
         task: input.task.clone(),
@@ -804,6 +906,24 @@ async fn run_runtime_stage(
         }
         Err(error) => no_confidence_stage(started, Some(target), error),
     }
+}
+
+pub async fn rerun_fix_correctness_target(
+    repo_path: &Path,
+    target: Option<LocalCheckTarget>,
+    timeout_ms: u64,
+) -> LocalCheckStage {
+    run_runtime_stage(
+        repo_path,
+        "run",
+        target,
+        2,
+        0,
+        timeout_ms,
+        None,
+        Some("The source verification receipt has no correctness target to recheck".into()),
+    )
+    .await
 }
 
 fn runtime_stage_status(operation: &str, evidence: &Value) -> LocalCheckStatus {
@@ -1432,5 +1552,62 @@ mod tests {
             runtime_stage_status("verify-paired-optimization", &evidence),
             LocalCheckStatus::NoConfidence
         );
+    }
+
+    #[test]
+    fn persisted_local_checks_round_trip_in_reverse_chronological_order() {
+        let connection = rusqlite::Connection::open_in_memory().expect("database");
+        crate::db::schema::run_migrations(&connection).expect("schema");
+        let receipt = |run_id: &str, repo_path: &str, ran_at: &str| LocalCheckReceipt {
+            schema_version: "codevetter.local-check/v1".into(),
+            request_id: None,
+            run_id: run_id.into(),
+            ran_at: ran_at.into(),
+            repo_path: repo_path.into(),
+            task: format!("Verify {run_id}"),
+            standards_pack: None,
+            source: TrexSourceReceipt {
+                kind: super::super::trex_preview::TrexChangeKind::Range,
+                input: "main...HEAD".into(),
+                base_sha: "a".repeat(40),
+                head_sha: "b".repeat(40),
+                commits: vec!["b".repeat(40)],
+                changed_paths: vec!["src/main.rs".into()],
+            },
+            stages: LocalCheckStages {
+                review: stage(LocalCheckStatus::Completed),
+                correctness: stage(LocalCheckStatus::Passed),
+                performance: stage(LocalCheckStatus::NoConfidence),
+                optimization: stage(LocalCheckStatus::NoConfidence),
+            },
+            spec_coverage: None,
+            verdict: LocalCheckVerdict::PassedWithLimits,
+            limitations: vec!["Fixture limitation".into()],
+        };
+        persist_local_check_receipt(
+            &connection,
+            &receipt("run-old", "/tmp/repo", "2026-08-30T00:00:00Z"),
+        )
+        .expect("old receipt");
+        persist_local_check_receipt(
+            &connection,
+            &receipt("run-new", "/tmp/repo", "2026-08-31T00:00:00Z"),
+        )
+        .expect("new receipt");
+        persist_local_check_receipt(
+            &connection,
+            &receipt("run-other", "/tmp/other", "2026-09-01T00:00:00Z"),
+        )
+        .expect("other receipt");
+
+        let rows =
+            list_local_check_receipts(&connection, Some("/tmp/repo"), 10).expect("stored history");
+        assert_eq!(
+            rows.iter()
+                .map(|row| row.run_id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["run-new", "run-old"]
+        );
+        assert_eq!(rows[0].limitations, vec!["Fixture limitation"]);
     }
 }

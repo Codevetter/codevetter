@@ -1,0 +1,41 @@
+{
+  "schema_version": "codevetter.native-run-history-benchmark/v2",
+  "recorded_at": "2026-08-31",
+  "target": "aarch64-apple-darwin",
+  "commands": {
+    "rust": "cargo test --release --manifest-path apps/desktop/src-tauri/Cargo.toml benchmark_seven_family_projection_over_seven_hundred_rows --lib -- --ignored --nocapture --test-threads=1",
+    "swift": "swift test --filter hundredRunLedgerDecodesAndRendersWithinTheNativeGate"
+  },
+  "dataset": {
+    "stored_run_rows": 700,
+    "stored_audience_response_rows": 100,
+    "families": 7,
+    "returned_rows": 100,
+    "swift_selected_response_rows": 100
+  },
+  "measurement": {
+    "rust_projection": {
+      "warmups": 20,
+      "samples": 250,
+      "median_us": 892,
+      "p95_us": 1077
+    },
+    "swift_decode": {
+      "warmups": 10,
+      "samples": 100,
+      "p95_us": 2741,
+      "gate_us": 25000
+    },
+    "swift_host_render": {
+      "warmups": 3,
+      "samples": 20,
+      "viewport": "1280x800",
+      "p95_us": 26826,
+      "gate_us": 150000
+    }
+  },
+  "claim_boundary": {
+    "rust": "Measures in-process SQLite projection, one batched audience-response query, metadata assembly, global sort, and truncation. It excludes CLI process startup.",
+    "swift": "Measures canonical JSON decoding and fresh NSHostingView creation, layout, and display for 100 runs with 100 selected audience responses. It excludes CLI startup, window-server frame pacing, and interactive scrolling."
+  }
+}

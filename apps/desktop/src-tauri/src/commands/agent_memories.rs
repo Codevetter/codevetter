@@ -1,15 +1,17 @@
 use serde::Serialize;
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::borrow::Cow;
-use std::collections::{hash_map::DefaultHasher, HashSet};
+use std::collections::HashSet;
 use std::env;
 use std::fs;
-use std::hash::{Hash, Hasher};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
 const MAX_READ_BYTES: u64 = 512 * 1024;
 const MAX_OUTPUT_CHARS: usize = 120_000;
+const MAX_RECEIPT_SOURCES: usize = 128;
+pub const MEMORY_RECEIPT_SCHEMA_VERSION: &str = "codevetter.memories/v1";
 
 #[derive(Clone)]
 struct Candidate {
@@ -20,27 +22,89 @@ struct Candidate {
     note: &'static str,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct AgentMemorySource {
-    id: String,
-    tool: String,
-    label: String,
-    path: String,
-    exists: bool,
-    readable: bool,
-    file_size_bytes: Option<u64>,
-    modified_at: Option<String>,
-    source_kind: String,
-    preview: String,
-    note: String,
+    pub id: String,
+    pub tool: String,
+    pub label: String,
+    pub path: String,
+    pub exists: bool,
+    pub readable: bool,
+    pub file_size_bytes: Option<u64>,
+    pub modified_at: Option<String>,
+    pub source_kind: String,
+    pub preview: String,
+    pub note: String,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct AgentMemoryDocument {
-    source: AgentMemorySource,
-    content: String,
-    truncated: bool,
-    extraction_note: String,
+    pub source: AgentMemorySource,
+    pub content: String,
+    pub truncated: bool,
+    pub extraction_note: String,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum MemoryReceiptOperation {
+    List,
+    Read,
+    Diff,
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+pub struct MemorySourceReceipt {
+    pub id: String,
+    pub tool: String,
+    pub label: String,
+    pub display_path: String,
+    pub exists: bool,
+    pub readable: bool,
+    pub file_size_bytes: Option<u64>,
+    pub modified_at: Option<String>,
+    pub source_kind: String,
+    pub preview: String,
+    pub note: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MemoryDocumentReceipt {
+    pub source_id: String,
+    pub content: String,
+    pub truncated: bool,
+    pub extraction_note: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MemoryDiffReceipt {
+    pub source_id: String,
+    pub has_changes: bool,
+    pub status: String,
+    pub diff: String,
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+pub struct MemoryReceiptLimits {
+    pub max_sources: usize,
+    pub max_read_bytes: u64,
+    pub max_output_chars: usize,
+    pub sources_truncated: bool,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MemoryReceipt {
+    pub schema_version: String,
+    pub generated_at: String,
+    pub operation: MemoryReceiptOperation,
+    pub selected_source_id: Option<String>,
+    pub candidate_locations_checked: usize,
+    pub sources_total: usize,
+    pub sources: Vec<MemorySourceReceipt>,
+    pub document: Option<MemoryDocumentReceipt>,
+    pub diff: Option<MemoryDiffReceipt>,
+    pub limits: MemoryReceiptLimits,
+    pub limitations: Vec<String>,
 }
 
 #[tauri::command]
@@ -50,6 +114,135 @@ pub fn list_agent_memory_sources() -> Result<Vec<AgentMemorySource>, String> {
         out.push(source_from_candidate(&candidate));
     }
     Ok(out)
+}
+
+pub fn run_memory_receipt(
+    operation: MemoryReceiptOperation,
+    source_id: Option<&str>,
+) -> Result<MemoryReceipt, String> {
+    let mut all_sources = list_agent_memory_sources()?;
+    let candidate_locations_checked = all_sources.len();
+    all_sources.retain(|source| source.exists);
+    all_sources.sort_by(|left, right| {
+        right
+            .readable
+            .cmp(&left.readable)
+            .then_with(|| right.exists.cmp(&left.exists))
+            .then_with(|| left.tool.cmp(&right.tool))
+            .then_with(|| left.label.cmp(&right.label))
+            .then_with(|| left.path.cmp(&right.path))
+    });
+    let sources_total = all_sources.len();
+    all_sources.truncate(MAX_RECEIPT_SOURCES);
+    let sources = all_sources
+        .iter()
+        .map(memory_source_receipt)
+        .collect::<Vec<_>>();
+
+    let selected = match operation {
+        MemoryReceiptOperation::List => {
+            if source_id.is_some() {
+                return Err("memory list does not accept a source id".to_string());
+            }
+            None
+        }
+        MemoryReceiptOperation::Read | MemoryReceiptOperation::Diff => {
+            let source_id = source_id
+                .filter(|value| !value.trim().is_empty())
+                .ok_or_else(|| "memory read and diff require one source id".to_string())?;
+            Some(
+                all_sources
+                    .iter()
+                    .find(|source| source.id == source_id)
+                    .ok_or_else(|| {
+                        "Memory source is unavailable or outside the bounded source catalog."
+                            .to_string()
+                    })?,
+            )
+        }
+    };
+
+    let document = if operation == MemoryReceiptOperation::Read {
+        let selected = selected.expect("read operation has a selected source");
+        let document = read_agent_memory_source(selected.path.clone())?;
+        Some(MemoryDocumentReceipt {
+            source_id: selected.id.clone(),
+            content: document.content,
+            truncated: document.truncated,
+            extraction_note: document.extraction_note,
+        })
+    } else {
+        None
+    };
+    let diff = if operation == MemoryReceiptOperation::Diff {
+        let selected = selected.expect("diff operation has a selected source");
+        let diff = get_memory_file_git_diff(selected.path.clone())?;
+        Some(MemoryDiffReceipt {
+            source_id: selected.id.clone(),
+            has_changes: diff.has_changes,
+            status: diff.status,
+            diff: diff.diff,
+        })
+    } else {
+        None
+    };
+
+    Ok(MemoryReceipt {
+        schema_version: MEMORY_RECEIPT_SCHEMA_VERSION.to_string(),
+        generated_at: chrono::Utc::now().to_rfc3339(),
+        operation,
+        selected_source_id: selected.map(|source| source.id.clone()),
+        candidate_locations_checked,
+        sources_total,
+        sources,
+        document,
+        diff,
+        limits: MemoryReceiptLimits {
+            max_sources: MAX_RECEIPT_SOURCES,
+            max_read_bytes: MAX_READ_BYTES,
+            max_output_chars: MAX_OUTPUT_CHARS,
+            sources_truncated: sources_total > MAX_RECEIPT_SOURCES,
+        },
+        limitations: vec![
+            "This surface is read-only and cannot edit, create, or delete memory sources."
+                .to_string(),
+            "Source selection uses an opaque bounded identity; absolute paths are not emitted by this receipt."
+                .to_string(),
+            "Secret-like lines are redacted heuristically; operators should still treat displayed memory as private."
+                .to_string(),
+            "Agent and MCP projections are unavailable; only the local UI and explicit CLI can read content."
+                .to_string(),
+        ],
+    })
+}
+
+fn memory_source_receipt(source: &AgentMemorySource) -> MemorySourceReceipt {
+    MemorySourceReceipt {
+        id: source.id.clone(),
+        tool: source.tool.clone(),
+        label: source.label.clone(),
+        display_path: receipt_display_path(Path::new(&source.path)),
+        exists: source.exists,
+        readable: source.readable,
+        file_size_bytes: source.file_size_bytes,
+        modified_at: source.modified_at.clone(),
+        source_kind: source.source_kind.clone(),
+        preview: source.preview.clone(),
+        note: source.note.clone(),
+    }
+}
+
+fn receipt_display_path(path: &Path) -> String {
+    let display = display_path(path);
+    if Path::new(&display).is_absolute() {
+        let name = path
+            .file_name()
+            .and_then(|value| value.to_str())
+            .unwrap_or("memory-source");
+        format!("<external>/{name}")
+    } else {
+        display
+    }
 }
 
 #[tauri::command]
@@ -694,9 +887,10 @@ fn display_path(path: &Path) -> String {
 }
 
 fn stable_id(path: &Path) -> String {
-    let mut hasher = DefaultHasher::new();
-    path.to_string_lossy().hash(&mut hasher);
-    format!("{:x}", hasher.finish())
+    format!(
+        "memory:sha256:{:x}",
+        Sha256::digest(path.to_string_lossy().as_bytes())
+    )
 }
 
 fn push_unique_path(paths: &mut Vec<PathBuf>, path: PathBuf) {
@@ -866,4 +1060,68 @@ fn redact_diff(diff: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn opaque_memory_identity_is_deterministic_and_does_not_embed_the_path() {
+        let path = Path::new("/private/example/.codex/memories/MEMORY.md");
+        let first = stable_id(path);
+        let second = stable_id(path);
+
+        assert_eq!(first, second);
+        assert!(first.starts_with("memory:sha256:"));
+        assert_eq!(first.len(), "memory:sha256:".len() + 64);
+        assert!(!first.contains(".codex"));
+        assert_ne!(
+            first,
+            stable_id(Path::new("/private/example/.codex/AGENTS.md"))
+        );
+    }
+
+    #[test]
+    fn receipt_projection_replaces_absolute_paths_with_display_paths() {
+        let source = AgentMemorySource {
+            id: "memory:sha256:fixture".to_string(),
+            tool: "Codex".to_string(),
+            label: "Codex memory".to_string(),
+            path: "/private/example/.codex/memories/MEMORY.md".to_string(),
+            exists: true,
+            readable: true,
+            file_size_bytes: Some(42),
+            modified_at: Some("2026-09-01T00:00:00Z".to_string()),
+            source_kind: "markdown".to_string(),
+            preview: "Verification evidence only".to_string(),
+            note: "Full Markdown memory registry.".to_string(),
+        };
+
+        let receipt = memory_source_receipt(&source);
+        assert_eq!(receipt.id, source.id);
+        assert_eq!(receipt.display_path, "<external>/MEMORY.md");
+        assert!(!serde_json::to_string(&receipt)
+            .unwrap()
+            .contains("\"path\""));
+    }
+
+    #[test]
+    fn content_and_diff_redaction_preserve_structure_without_secret_like_lines() {
+        let content = redact_content(
+            "# Working memory\nKeep runtime evidence.\napi_key = should-not-appear\nNext step.",
+        );
+        assert!(content.contains("Keep runtime evidence."));
+        assert!(content.contains("[redacted secret-like line]"));
+        assert!(!content.contains("should-not-appear"));
+
+        let diff = redact_diff(
+            "diff --git a/MEMORY.md b/MEMORY.md\n@@ -1 +1 @@\n-api_key = old\n+api_key = new",
+        );
+        assert!(diff.contains("diff --git"));
+        assert!(diff.contains("@@ -1 +1 @@"));
+        assert!(diff.contains("-[redacted secret-like line]"));
+        assert!(diff.contains("+[redacted secret-like line]"));
+        assert!(!diff.contains("api_key"));
+    }
 }

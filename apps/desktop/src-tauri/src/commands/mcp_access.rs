@@ -46,6 +46,26 @@ pub struct McpRepositorySettings {
     pub recent_audit: Vec<McpAuditEntry>,
 }
 
+pub const MCP_SETTINGS_SCHEMA_VERSION: &str = "codevetter.mcp-settings/v1";
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum McpSettingsOperation {
+    Read,
+    Enable,
+    Disable,
+    ClearAudit,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct McpSettingsReceipt {
+    pub schema_version: String,
+    pub generated_at: String,
+    pub operation: McpSettingsOperation,
+    pub cleared_audit_rows: usize,
+    pub settings: McpRepositorySettings,
+}
+
 pub fn canonical_repo_path(repo_path: &str) -> Result<String, String> {
     Path::new(repo_path)
         .canonicalize()
@@ -242,7 +262,7 @@ fn git_head(repo_path: &str) -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
-fn load_mcp_repository_settings(
+pub fn load_mcp_repository_settings(
     repo_path: String,
     db: &DbState,
 ) -> Result<McpRepositorySettings, String> {
@@ -355,7 +375,7 @@ pub async fn get_mcp_repository_settings(
         .map_err(|_| "MCP settings worker failed".to_string())?
 }
 
-fn update_mcp_repository_enabled(
+pub fn update_mcp_repository_enabled(
     repo_path: String,
     enabled: bool,
     db: &DbState,
@@ -410,7 +430,7 @@ pub async fn set_mcp_repository_enabled(
         .map_err(|_| "MCP settings worker failed".to_string())?
 }
 
-fn delete_mcp_access_audit(repo_path: String, db: &DbState) -> Result<usize, String> {
+pub fn delete_mcp_access_audit(repo_path: String, db: &DbState) -> Result<usize, String> {
     let canonical = canonical_repo_path(&repo_path)?;
     let connection =
         db.0.lock()
@@ -423,6 +443,29 @@ fn delete_mcp_access_audit(repo_path: String, db: &DbState) -> Result<usize, Str
             [&canonical],
         )
         .map_err(|error| format!("Clear MCP access metadata: {error}"))
+}
+
+pub fn run_mcp_settings_operation(
+    repo_path: String,
+    operation: McpSettingsOperation,
+    db: &DbState,
+) -> Result<McpSettingsReceipt, String> {
+    let (settings, cleared_audit_rows) = match operation {
+        McpSettingsOperation::Read => (load_mcp_repository_settings(repo_path, db)?, 0),
+        McpSettingsOperation::Enable => (update_mcp_repository_enabled(repo_path, true, db)?, 0),
+        McpSettingsOperation::Disable => (update_mcp_repository_enabled(repo_path, false, db)?, 0),
+        McpSettingsOperation::ClearAudit => {
+            let cleared = delete_mcp_access_audit(repo_path.clone(), db)?;
+            (load_mcp_repository_settings(repo_path, db)?, cleared)
+        }
+    };
+    Ok(McpSettingsReceipt {
+        schema_version: MCP_SETTINGS_SCHEMA_VERSION.to_string(),
+        generated_at: Utc::now().to_rfc3339(),
+        operation,
+        cleared_audit_rows,
+        settings,
+    })
 }
 
 #[tauri::command]

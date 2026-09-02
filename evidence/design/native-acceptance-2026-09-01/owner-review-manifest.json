@@ -1,0 +1,174 @@
+{
+  "schema_version": "codevetter.native-owner-review/v1",
+  "rendered_at": "2026-09-02",
+  "surface": "native macOS Evidence Workbench",
+  "scale": "deterministic offscreen pixels",
+  "owner_acceptance": "pending",
+  "entries": [
+    {
+      "path": "usage.png",
+      "pixels": "2560x1600",
+      "sha256": "f603f10c13fc4324ccc3ee477de5713c263a154f861e9044529678da12c1bd69"
+    },
+    {
+      "path": "repo-unpack.png",
+      "pixels": "2560x1600",
+      "sha256": "d7f6f28b89aade7a0845ad921a2e417399248320a60db7b0737813e579804b5f"
+    },
+    {
+      "path": "repository-query-desk.png",
+      "pixels": "3040x1960",
+      "sha256": "4b7dbedef4e3c879d69cb1a36f9167dc68430e1a6b92115c3201a4e019df8618"
+    },
+    {
+      "path": "repository-query-evidence-workbench.png",
+      "pixels": "3040x1960",
+      "sha256": "b8e62af3eb87633692407801c4b5fec81767fd8dd15f08951b8a08903bf6293e"
+    },
+    {
+      "path": "review-findings.png",
+      "pixels": "2560x1600",
+      "sha256": "e183b009b6b068d2fc125cf7890d4b861f66ce553551431c1c8a460d84592da4"
+    },
+    {
+      "path": "review-findings-light.png",
+      "pixels": "2560x1600",
+      "sha256": "2f20a5029021d89dec5d266178f7c8f8f5dda8ee6d425ee73c221bd411c41182"
+    },
+    {
+      "path": "review-proof-map.png",
+      "pixels": "1520x1600",
+      "sha256": "226e4e236fcae302f26b2cfb3fe702f958fdd9f3dd47a39cdb4184d34a9fbf95"
+    },
+    {
+      "path": "review-intent.png",
+      "pixels": "1520x1600",
+      "sha256": "8feac4aa85a0e6fc9f1c7968525f9fdc2f7702d121407292335adeede4b68b8c"
+    },
+    {
+      "path": "testing.png",
+      "pixels": "1960x1280",
+      "sha256": "f64f5c7b7f706a26d30fab8554b208c7a4dc92c1a6914fdfc77039c6380be4d4"
+    },
+    {
+      "path": "testing-light.png",
+      "pixels": "1960x1280",
+      "sha256": "808d820250a37cf25ff8f68859b519be32a8dcd0db11a98a0a5238793f35bec3"
+    },
+    {
+      "path": "testing-warm.png",
+      "pixels": "2200x1440",
+      "sha256": "4d60fc7dc3513df8b1a2f194553553d74af7eeb3c4d59f0ba133a412903b6013"
+    },
+    {
+      "path": "testing-differential.png",
+      "pixels": "2200x1440",
+      "sha256": "fbaf9a510170f8bb2a3808556d542ecc5ce18987699ba290ec7d415fe6ad776f"
+    },
+    {
+      "path": "testing-scenario.png",
+      "pixels": "2360x1520",
+      "sha256": "478038d6ac8fcefd3b1a11db166c47b0da4b89a13ec27f9fd6cccf58df60a7b2"
+    },
+    {
+      "path": "testing-watcher.png",
+      "pixels": "2360x1520",
+      "sha256": "d0089f3d40a1faea6435a9532ff0ec24ba225fa786908524051a97bb1c3378ff"
+    },
+    {
+      "path": "qa-journey-workspace.png",
+      "pixels": "2360x1520",
+      "sha256": "1d9c803ca87c3816e0af010fcb3cecb1a7fb96c1dbf7779948d25f249e9ebc8e"
+    },
+    {
+      "path": "performance.png",
+      "pixels": "1960x1280",
+      "sha256": "f27f619c7d8373f83652d62a9d5d68f67ac492a9480e155ed30c3cf4466efe85"
+    },
+    {
+      "path": "performance-light.png",
+      "pixels": "1960x1280",
+      "sha256": "6223808dc786c31a379bde7ea326e63796474b1c050631ea0165d0cae4927971"
+    },
+    {
+      "path": "runs.png",
+      "pixels": "2560x1600",
+      "sha256": "4ac3a0ab68a8724073e8a8d5117a667be7d570bc3abb5935c2c7b917ecac81ec"
+    },
+    {
+      "path": "runs-light.png",
+      "pixels": "2560x1600",
+      "sha256": "eca6f837581274cdda73dbcde9ed8424809c81c7ef93367accdb74905527be43"
+    },
+    {
+      "path": "capabilities-mcp.png",
+      "pixels": "2560x1600",
+      "sha256": "000a1536430b4baf36ffe5c77dbe2e73ca82bb6a8c4bcaa9f4b65f5b51cc037f"
+    },
+    {
+      "path": "settings.png",
+      "pixels": "2560x1600",
+      "sha256": "7d78ff7489947473b751f643fcde8f2eee88196a0d32a67539a1ee00fa6713c2"
+    },
+    {
+      "path": "settings-rubrics.png",
+      "pixels": "2560x1600",
+      "sha256": "2c1498b412f50ee2976822c96f6d1d5a5552fb6c976d2705d90e2000e8ae6dcf"
+    },
+    {
+      "path": "settings-rubrics-light.png",
+      "pixels": "2560x1600",
+      "sha256": "55f67ac4ef5a9f3721ec781652cbcfc85295b72a07cd208dacd2a02499277691"
+    },
+    {
+      "path": "settings-history-roots.png",
+      "pixels": "2560x1600",
+      "sha256": "48a02f9745fec4ca31ea62cd34df137c94deb93b7f5e14f62a41113b21102619"
+    },
+    {
+      "path": "settings-history-roots-light.png",
+      "pixels": "2560x1600",
+      "sha256": "5fa9db9b1b44551ab6a77159ba79b42b77e277a9aecf86d62834259913ded610"
+    },
+    {
+      "path": "settings-memories.png",
+      "pixels": "2560x1600",
+      "sha256": "7c800c08c1185e69febc350fa958091eb6e44d1ab6539aa8cab3174cdcbd8da5"
+    },
+    {
+      "path": "settings-memories-light.png",
+      "pixels": "2560x1600",
+      "sha256": "37883294c28f863159726af6d0cfc3f453fab8e9f90caecf65963facf34f9f42"
+    },
+    {
+      "path": "settings-agent-island.png",
+      "pixels": "2560x1600",
+      "sha256": "a6bd6714cec4668d1082f70b74afe7fa0448cff6aa4b121cbf9fa2043289dca6"
+    },
+    {
+      "path": "settings-agent-island-light.png",
+      "pixels": "2560x1600",
+      "sha256": "2b3ded2c3088fc1cb76e0d9f19db2d84fa3061daadb50368a21a7687950c508b"
+    },
+    {
+      "path": "settings-ops.png",
+      "pixels": "2560x1600",
+      "sha256": "c8b89c953425a58e27acfee69cb055550754b4c045fa63b25b8681d4abf65bd5"
+    },
+    {
+      "path": "settings-ops-light.png",
+      "pixels": "2560x1600",
+      "sha256": "0e36c9fa209eec2801a704c1d34e086426ca3d838f8a7f5e38e257a1570af796"
+    },
+    {
+      "path": "onboarding-purpose.png",
+      "pixels": "1520x1200",
+      "sha256": "f8a50752aa38edfaa9da4ed0d9ac9865c747d63c3d9ffd947a18138b105cbbb7"
+    },
+    {
+      "path": "onboarding-agent.png",
+      "pixels": "1520x1200",
+      "sha256": "c1a7c840ca52a87845efb354d1ded5ebe48dd57b32016d21facc36ce2e21baec"
+    }
+  ]
+}

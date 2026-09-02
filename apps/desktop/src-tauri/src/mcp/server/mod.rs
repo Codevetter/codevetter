@@ -6,6 +6,7 @@ use crate::{
         history_read::{
             contributors::HistoryContributorScope, HistoryReadService, HistorySearchKind,
         },
+        local_check::get_local_check_receipt,
         mcp_access::{record_mcp_audit, require_enabled_scope},
         structural_graph::{
             query::{GraphDirection, GraphQueryFilter},

@@ -457,13 +457,17 @@ fn scan_playwright_specs(root: &Path) -> Vec<PlaywrightSpecCandidate> {
     out
 }
 
+pub fn discover_playwright_specs_headless(root: &Path) -> Vec<PlaywrightSpecCandidate> {
+    scan_playwright_specs(root)
+}
+
 #[tauri::command]
 pub async fn discover_playwright_specs(repo_path: String) -> Result<Value, String> {
     let root = PathBuf::from(repo_path.trim());
     if !root.is_dir() {
         return Err("repo_path must be an existing directory".into());
     }
-    let specs = scan_playwright_specs(&root);
+    let specs = discover_playwright_specs_headless(&root);
     Ok(json!({ "specs": specs }))
 }
 

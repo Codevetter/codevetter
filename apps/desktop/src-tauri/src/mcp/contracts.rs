@@ -6,9 +6,14 @@ use std::sync::Arc;
 pub(crate) fn tool_definitions() -> Vec<Tool> {
     let specs = [
         (
+            "capability_catalog",
+            "Return the canonical UI, CLI, and agent capability glossary and parity matrix",
+            &[] as &[&str],
+        ),
+        (
             "graph_query",
             "Search the canonical structural graph or return a compact overview",
-            &[] as &[&str],
+            &[],
         ),
         (
             "graph_get_node",
@@ -86,6 +91,21 @@ pub(crate) fn tool_definitions() -> Vec<Tool> {
             &["task", "change"],
         ),
         (
+            "resolve_evidence_scope",
+            "Resolve one flow, exact change, or bounded codebase into deterministic testing or performance candidates without executing them",
+            &["consumer", "scope_kind"],
+        ),
+        (
+            "qa_workspace_inspect",
+            "Inspect secret-safe saved QA workflows, discovered Playwright specs, and optional post-fix rerun setup without executing browser or project code",
+            &[],
+        ),
+        (
+            "verification_get_receipt",
+            "Read one canonical persisted local-check receipt in this authorized repository scope without executing verification",
+            &["run_id"],
+        ),
+        (
             "review_list_manifests",
             "List bounded deterministic review coverage manifests for this authorized repository",
             &[],
@@ -153,6 +173,7 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
         "cursor",
         "rule_id",
         "review_id",
+        "run_id",
         "task",
     ] {
         properties.insert(
@@ -161,7 +182,28 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
         );
     }
     properties.insert(
+        "run_id".to_string(),
+        json!({
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._:-]+$"
+        }),
+    );
+    properties.insert(
         "change".to_string(),
+        json!({"type": "string", "minLength": 1, "maxLength": 512}),
+    );
+    properties.insert(
+        "consumer".to_string(),
+        json!({"type": "string", "enum": ["testing", "performance"]}),
+    );
+    properties.insert(
+        "scope_kind".to_string(),
+        json!({"type": "string", "enum": ["flow", "change", "codebase"]}),
+    );
+    properties.insert(
+        "scope_value".to_string(),
         json!({"type": "string", "minLength": 1, "maxLength": 512}),
     );
     properties.insert(
@@ -370,6 +412,7 @@ fn output_schema() -> Arc<JsonObject> {
 
 pub(crate) fn tool_fields(name: &str) -> Option<&'static [&'static str]> {
     Some(match name {
+        "capability_catalog" => &[],
         "graph_query" => &["query", "filter", "limit", "cursor"],
         "graph_get_node" => &["node"],
         "graph_get_neighbors" => &["node", "direction", "filter", "limit", "cursor"],
@@ -386,6 +429,9 @@ pub(crate) fn tool_fields(name: &str) -> Option<&'static [&'static str]> {
         "history_compare" => &["before", "after"],
         "history_get_evidence" => &["ids"],
         "prepare_review" => &["task", "change"],
+        "resolve_evidence_scope" => &["consumer", "scope_kind", "scope_value"],
+        "qa_workspace_inspect" => &["fix_completed_at"],
+        "verification_get_receipt" => &["run_id"],
         "review_list_manifests" => &["review_id", "limit", "cursor"],
         "archaeology_list_rules" => &["filter", "limit", "cursor"],
         "archaeology_list_domains" => &["limit", "cursor"],

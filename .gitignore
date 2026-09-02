@@ -6,6 +6,8 @@ out/
 .next/
 target/
 *.tsbuildinfo
+.build/
+default.profraw
 
 # Desktop app build
 apps/desktop/src-tauri/target/

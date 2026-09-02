@@ -5,6 +5,7 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
@@ -159,12 +160,31 @@ pub async fn run_branch_sandbox_inner(
     db: &DbState,
     input: SandboxRunInput,
 ) -> Result<SandboxRunResult, String> {
+    let emitter: SandboxStepEmitter = Arc::new(move |step| {
+        let _ = app.emit(STEP_EVENT, step);
+    });
+    run_branch_sandbox_with_emitter(db, input, emitter).await
+}
+
+/// Headless sandbox entry point for the CLI/native bridge. The canonical
+/// sandbox logic remains Rust-owned; only transient Tauri progress events are
+/// omitted when no webview is present.
+pub async fn run_branch_sandbox_headless(
+    db: &DbState,
+    input: SandboxRunInput,
+) -> Result<SandboxRunResult, String> {
+    run_branch_sandbox_with_emitter(db, input, Arc::new(|_| {})).await
+}
+
+type SandboxStepEmitter = Arc<dyn Fn(SandboxStep) + Send + Sync>;
+
+async fn run_branch_sandbox_with_emitter(
+    db: &DbState,
+    input: SandboxRunInput,
+    emit: SandboxStepEmitter,
+) -> Result<SandboxRunResult, String> {
     let started = Instant::now();
     let run_id = uuid::Uuid::new_v4().to_string();
-
-    let emit = |s: SandboxStep| {
-        let _ = app.emit(STEP_EVENT, s);
-    };
 
     emit(SandboxStep::Phase {
         phase: "setup".into(),
@@ -195,7 +215,7 @@ pub async fn run_branch_sandbox_inner(
             phase: "install".into(),
             detail: Some("npm install".into()),
         });
-        if let Err(e) = run_npm_install(&worktree_path).await {
+        if let Err(e) = run_node_install(&worktree_path).await {
             let _ = remove_worktree(&input.repo_path, &worktree_path);
             return Ok(failed_result(
                 run_id,
@@ -261,9 +281,9 @@ pub async fn run_branch_sandbox_inner(
             project_dir: None, // server is already up; don't re-launch
         };
         let brain = CliBrain::new(input.options.provider.clone(), None);
-        let app_clone = app.clone();
+        let emit_agent = emit.clone();
         let result = run_with_brain(agent_input, brain, move |step| {
-            let _ = app_clone.emit(STEP_EVENT, SandboxStep::Agent { step: step.clone() });
+            emit_agent(SandboxStep::Agent { step: step.clone() });
         })
         .await;
         match result {
@@ -442,15 +462,113 @@ async fn has_node_modules(dir: &Path) -> bool {
     tokio::fs::metadata(dir.join("node_modules")).await.is_ok()
 }
 
-async fn run_npm_install(dir: &Path) -> Result<(), String> {
-    let out = Command::new("npm")
-        .args(["install", "--no-audit", "--no-fund", "--prefer-offline"])
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NodePackageManager {
+    Pnpm,
+    Npm,
+    YarnBerry,
+    YarnClassic,
+    Bun,
+}
+
+impl NodePackageManager {
+    fn run_script(self, script: &str) -> String {
+        match (self, script) {
+            (Self::Pnpm, "test") => "pnpm test".to_string(),
+            (Self::Npm, "test") => "npm test --silent".to_string(),
+            (Self::YarnBerry | Self::YarnClassic, "test") => "yarn test".to_string(),
+            (Self::Bun, "test") => "bun test".to_string(),
+            (Self::Pnpm, _) => format!("pnpm run {script}"),
+            (Self::Npm, _) => format!("npm run {script} --silent"),
+            (Self::YarnBerry | Self::YarnClassic, _) => format!("yarn {script}"),
+            (Self::Bun, _) => format!("bun run {script}"),
+        }
+    }
+}
+
+async fn detect_node_package_manager(
+    dir: &Path,
+    package_json: Option<&Value>,
+) -> NodePackageManager {
+    if let Some(name) = package_json
+        .and_then(|value| value.get("packageManager"))
+        .and_then(Value::as_str)
+        .and_then(|value| value.split('@').next())
+    {
+        match name {
+            "pnpm" => return NodePackageManager::Pnpm,
+            "yarn" => {
+                return if tokio::fs::metadata(dir.join(".yarnrc.yml")).await.is_ok() {
+                    NodePackageManager::YarnBerry
+                } else {
+                    NodePackageManager::YarnClassic
+                };
+            }
+            "bun" => return NodePackageManager::Bun,
+            "npm" => return NodePackageManager::Npm,
+            _ => {}
+        }
+    }
+    if tokio::fs::metadata(dir.join("pnpm-lock.yaml"))
+        .await
+        .is_ok()
+    {
+        NodePackageManager::Pnpm
+    } else if tokio::fs::metadata(dir.join("yarn.lock")).await.is_ok() {
+        if tokio::fs::metadata(dir.join(".yarnrc.yml")).await.is_ok() {
+            NodePackageManager::YarnBerry
+        } else {
+            NodePackageManager::YarnClassic
+        }
+    } else if tokio::fs::metadata(dir.join("bun.lock")).await.is_ok()
+        || tokio::fs::metadata(dir.join("bun.lockb")).await.is_ok()
+    {
+        NodePackageManager::Bun
+    } else {
+        NodePackageManager::Npm
+    }
+}
+
+async fn run_node_install(dir: &Path) -> Result<(), String> {
+    let package_json = tokio::fs::read_to_string(dir.join("package.json"))
+        .await
+        .ok()
+        .and_then(|contents| serde_json::from_str::<Value>(&contents).ok());
+    let manager = detect_node_package_manager(dir, package_json.as_ref()).await;
+    let (program, args): (&str, Vec<&str>) = match manager {
+        NodePackageManager::Pnpm => (
+            "pnpm",
+            vec!["install", "--frozen-lockfile", "--prefer-offline"],
+        ),
+        NodePackageManager::Npm
+            if tokio::fs::metadata(dir.join("package-lock.json"))
+                .await
+                .is_ok() =>
+        {
+            (
+                "npm",
+                vec!["ci", "--no-audit", "--no-fund", "--prefer-offline"],
+            )
+        }
+        NodePackageManager::Npm => (
+            "npm",
+            vec!["install", "--no-audit", "--no-fund", "--prefer-offline"],
+        ),
+        NodePackageManager::YarnBerry => ("yarn", vec!["install", "--immutable"]),
+        NodePackageManager::YarnClassic => ("yarn", vec!["install", "--frozen-lockfile"]),
+        NodePackageManager::Bun => ("bun", vec!["install", "--frozen-lockfile"]),
+    };
+    let out = Command::new(program)
+        .args(&args)
         .current_dir(dir)
         .output()
         .await
-        .map_err(|e| format!("spawn npm install: {e}"))?;
+        .map_err(|e| format!("spawn {program} install: {e}"))?;
     if !out.status.success() {
-        return Err(String::from_utf8_lossy(&out.stderr).trim().to_string());
+        return Err(format!(
+            "{program} install failed: {}",
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
     }
     Ok(())
 }
@@ -461,19 +579,22 @@ const TEST_TIMEOUT_SECS: u64 = 600;
 const LOG_TAIL_BYTES: usize = 8 * 1024;
 
 pub(crate) async fn discover_test_command(dir: &Path) -> Option<String> {
-    // 1) package.json scripts.test wins.
+    // 1) Prefer the repository's declared package manager and strongest
+    // repository-owned verification script. The closed order avoids running
+    // arbitrary package scripts selected from untrusted names.
     if let Ok(contents) = tokio::fs::read_to_string(dir.join("package.json")).await {
         if let Ok(v) = serde_json::from_str::<Value>(&contents) {
-            if let Some(script) = v
-                .get("scripts")
-                .and_then(|s| s.get("test"))
-                .and_then(|t| t.as_str())
-            {
-                if !script.trim().is_empty()
-                    && !script.contains("Error: no test specified")
-                    && !script.contains("echo \"Error: no test")
-                {
-                    return Some("npm test --silent".to_string());
+            let manager = detect_node_package_manager(dir, Some(&v)).await;
+            if let Some(scripts) = v.get("scripts").and_then(Value::as_object) {
+                for script_name in ["test", "test:unit", "check", "lint", "typecheck"] {
+                    if let Some(script) = scripts.get(script_name).and_then(Value::as_str) {
+                        if !script.trim().is_empty()
+                            && !script.contains("Error: no test specified")
+                            && !script.contains("echo \"Error: no test")
+                        {
+                            return Some(manager.run_script(script_name));
+                        }
+                    }
                 }
             }
         }
@@ -898,6 +1019,69 @@ mod tests {
         assert_eq!(
             discover_test_command(&dir).await.as_deref(),
             Some("npm test --silent")
+        );
+        cleanup(&dir);
+    }
+
+    #[tokio::test]
+    async fn discovers_pnpm_workspace_safe_check_without_a_test_alias() {
+        let dir = tempdir();
+        tokio::fs::write(
+            dir.join("package.json"),
+            r#"{
+              "name":"workspace",
+              "packageManager":"pnpm@10.33.2",
+              "scripts": { "verify": "node verify-cli.mjs", "lint": "biome check ." }
+            }"#,
+        )
+        .await
+        .unwrap();
+        tokio::fs::write(dir.join("pnpm-lock.yaml"), "lockfileVersion: '9.0'\n")
+            .await
+            .unwrap();
+        assert_eq!(
+            discover_test_command(&dir).await.as_deref(),
+            Some("pnpm run lint")
+        );
+        cleanup(&dir);
+    }
+
+    #[tokio::test]
+    async fn explicit_test_script_precedes_generic_workspace_checks() {
+        let dir = tempdir();
+        tokio::fs::write(
+            dir.join("package.json"),
+            r#"{
+              "name":"workspace",
+              "packageManager":"pnpm@10.33.2",
+              "scripts": { "test": "vitest run", "lint": "biome check ." }
+            }"#,
+        )
+        .await
+        .unwrap();
+        assert_eq!(
+            discover_test_command(&dir).await.as_deref(),
+            Some("pnpm test")
+        );
+        cleanup(&dir);
+    }
+
+    #[tokio::test]
+    async fn unit_test_alias_precedes_static_checks() {
+        let dir = tempdir();
+        tokio::fs::write(
+            dir.join("package.json"),
+            r#"{
+              "name":"workspace",
+              "packageManager":"pnpm@10.33.2",
+              "scripts": { "test:unit": "vitest run", "lint": "biome check ." }
+            }"#,
+        )
+        .await
+        .unwrap();
+        assert_eq!(
+            discover_test_command(&dir).await.as_deref(),
+            Some("pnpm run test:unit")
         );
         cleanup(&dir);
     }

@@ -134,3 +134,43 @@ fn settings_preview_creates_a_stable_disabled_scope() {
     assert_eq!(first.client_config, second.client_config);
     assert!(first.client_config.is_some());
 }
+
+#[test]
+fn shared_mcp_settings_receipt_preserves_scope_and_authority_transitions() {
+    let fixture = tempfile::tempdir().expect("fixture");
+    let repo = fixture.path().join("repo");
+    std::fs::create_dir(&repo).expect("repo");
+    let repo_path = repo
+        .canonicalize()
+        .expect("canonical repo")
+        .to_string_lossy()
+        .to_string();
+    let connection = Connection::open(fixture.path().join("codevetter.db")).expect("database");
+    crate::db::schema::run_migrations(&connection).expect("schema");
+    connection
+        .execute(
+            "INSERT INTO history_graph_repositories (
+                repo_path, repository_fingerprint, indexed_head, status,
+                created_at, updated_at
+             ) VALUES (?1, 'fixture', 'indexed-head', 'ready', ?2, ?2)",
+            params![repo_path, Utc::now().to_rfc3339()],
+        )
+        .expect("history");
+    let db = DbState(Arc::new(Mutex::new(connection)));
+
+    let read = run_mcp_settings_operation(repo_path.clone(), McpSettingsOperation::Read, &db)
+        .expect("read");
+    assert_eq!(read.schema_version, MCP_SETTINGS_SCHEMA_VERSION);
+    assert!(!read.settings.enabled);
+    assert!(read.settings.client_config.is_some());
+
+    let enabled = run_mcp_settings_operation(repo_path.clone(), McpSettingsOperation::Enable, &db)
+        .expect("enable");
+    assert!(enabled.settings.enabled);
+    assert_eq!(enabled.settings.repo_id, read.settings.repo_id);
+
+    let disabled =
+        run_mcp_settings_operation(repo_path, McpSettingsOperation::Disable, &db).expect("disable");
+    assert!(!disabled.settings.enabled);
+    assert_eq!(disabled.settings.repo_id, read.settings.repo_id);
+}

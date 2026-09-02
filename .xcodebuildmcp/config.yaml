@@ -1,0 +1,15 @@
+schemaVersion: 1
+enabledWorkflows:
+  - doctor
+  - macos
+  - project-discovery
+  - project-scaffolding
+  - swift-package
+  - coverage
+  - utilities
+sessionDefaults:
+  workspacePath: ./apps/macos/CodeVetter.xcworkspace
+  scheme: CodeVetter
+filePathRenderStyle: tree
+showTestTiming: true
+sentryDisabled: true
