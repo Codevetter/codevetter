@@ -1,0 +1,5 @@
+# Actionlint 1.7.12 predates GitHub's official Xcode 27 preview image label.
+# Treat it as declared until the pinned validator includes the hosted label.
+self-hosted-runner:
+  labels:
+    - xcode-27
