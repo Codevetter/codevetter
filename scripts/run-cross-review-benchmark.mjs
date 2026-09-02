@@ -57,17 +57,34 @@ export function parseArguments(argv) {
     outRoot: join(repositoryRoot, 'artifacts/cross-review-benchmark'),
     timeoutMS: 300_000,
   };
+  const readers = {
+    '--binary': (value) => {
+      options.binary = resolve(value);
+    },
+    '--cases-root': (value) => {
+      options.casesRoot = resolve(value);
+    },
+    '--case': (value) => {
+      options.caseIDs.push(value);
+    },
+    '--limit': (value) => {
+      options.limit = Number(value);
+    },
+    '--out-root': (value) => {
+      options.outRoot = resolve(value);
+    },
+    '--timeout-ms': (value) => {
+      options.timeoutMS = Number(value);
+    },
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    const next = argv[index + 1];
     if (argument === '--') continue;
-    if (argument === '--binary' && next) options.binary = resolve(next);
-    else if (argument === '--cases-root' && next) options.casesRoot = resolve(next);
-    else if (argument === '--case' && next) options.caseIDs.push(next);
-    else if (argument === '--limit' && next) options.limit = Number(next);
-    else if (argument === '--out-root' && next) options.outRoot = resolve(next);
-    else if (argument === '--timeout-ms' && next) options.timeoutMS = Number(next);
-    else throw new Error(`Unknown or incomplete argument: ${argument}`);
+    const reader = readers[argument];
+    const next = argv[index + 1];
+    if (!reader || next === undefined)
+      throw new Error(`Unknown or incomplete argument: ${argument}`);
+    reader(next);
     index += 1;
   }
   if (options.limit !== undefined && (!Number.isInteger(options.limit) || options.limit < 1)) {
