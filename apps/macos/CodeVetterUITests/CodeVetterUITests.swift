@@ -207,16 +207,7 @@ final class CodeVetterUITests: XCTestCase {
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
-    if !waitUntilValue(
-      app.buttons["settings-section-rubrics"], equals: "Selected", timeout: 1)
-    {
-      app.buttons["settings-section-rubrics"].click()
-    }
-    XCTAssertTrue(
-      waitUntilValue(
-        app.buttons["settings-section-rubrics"], equals: "Selected", timeout: 3),
-      "Rubrics selection value did not settle"
-    )
+    assertSelected(rubricsSection)
     XCTAssertTrue(
       app.descendants(matching: .any)["rubric-settings-workspace"].waitForExistence(timeout: 5))
   }
@@ -270,21 +261,6 @@ final class CodeVetterUITests: XCTestCase {
     let expectation = XCTNSPredicateExpectation(
       predicate: NSPredicate { object, _ in
         (object as? XCUIElement)?.isSelected == true
-      },
-      object: element
-    )
-    return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
-  }
-
-  @MainActor
-  private func waitUntilValue(
-    _ element: XCUIElement,
-    equals expectedValue: String,
-    timeout: TimeInterval
-  ) -> Bool {
-    let expectation = XCTNSPredicateExpectation(
-      predicate: NSPredicate { object, _ in
-        (object as? XCUIElement)?.value as? String == expectedValue
       },
       object: element
     )
