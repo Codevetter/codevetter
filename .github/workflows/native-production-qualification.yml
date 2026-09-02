@@ -1,0 +1,257 @@
+name: Native macOS production-candidate qualification
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: native-production-qualification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Sign, notarize, migrate, and qualify native candidate
+    runs-on: xcode-27
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    env:
+      CODEVETTER_NATIVE_CHANNEL: production
+      CODEVETTER_NATIVE_BUNDLE_IDENTIFIER: com.codevetter.desktop
+      CODEVETTER_NATIVE_SPARKLE_FEED_URL: https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml
+      CODEVETTER_NATIVE_SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_EDDSA_PUBLIC_KEY }}
+
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          no-cache: true
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Require protected production inputs
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          SPARKLE_EDDSA_PRIVATE_KEY: ${{ secrets.SPARKLE_EDDSA_PRIVATE_KEY }}
+          SPARKLE_EDDSA_PUBLIC_KEY: ${{ secrets.SPARKLE_EDDSA_PUBLIC_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID SPARKLE_EDDSA_PRIVATE_KEY SPARKLE_EDDSA_PUBLIC_KEY; do
+            if [[ -z "${!name:-}" ]]; then missing+=("$name"); fi
+          done
+          if (( ${#missing[@]} > 0 )); then
+            echo "Missing protected inputs: ${missing[*]}" >&2
+            exit 1
+          fi
+
+      - name: Import Developer ID certificate into ephemeral keychain
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/codevetter-signing.keychain-db"
+          CERTIFICATE_PATH="$RUNNER_TEMP/codevetter-developer-id.p12"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
+          printf '%s' "$APPLE_CERTIFICATE" | /usr/bin/base64 --decode > "$CERTIFICATE_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          rm -f "$CERTIFICATE_PATH"
+          echo "CODEVETTER_SIGNING_KEYCHAIN=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+
+      - name: Build production-identity Release app through XcodeBuildMCP
+        run: pnpm native:build:release
+
+      - name: Build and Developer ID-sign exact native package
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm native:package:qualify -- \
+            --channel production \
+            --identity "$APPLE_SIGNING_IDENTITY" \
+            --out-root artifacts/native-production-ci
+          QUALIFICATION="$(find artifacts/native-production-ci -name qualification.json -print -quit)"
+          test -n "$QUALIFICATION"
+          PACKAGE_DIR="$(dirname "$QUALIFICATION")"
+          echo "NATIVE_QUALIFICATION=$QUALIFICATION" >> "$GITHUB_ENV"
+          echo "NATIVE_PACKAGE_DIR=$PACKAGE_DIR" >> "$GITHUB_ENV"
+
+      - name: Submit signed app to Apple and staple ticket
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEVELOPER_DIR="$(xcode-select -p)"
+          NOTARYTOOL="$DEVELOPER_DIR/usr/bin/notarytool"
+          STAPLER="$DEVELOPER_DIR/usr/bin/stapler"
+          ZIP_PATH="$(find "$NATIVE_PACKAGE_DIR" -maxdepth 1 -name '*.zip' -print -quit)"
+          "$NOTARYTOOL" submit "$ZIP_PATH" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait \
+            --output-format json > artifacts/native-production-ci/notary-initial.json
+          jq -e '.status == "Accepted"' artifacts/native-production-ci/notary-initial.json >/dev/null
+          "$STAPLER" staple "$NATIVE_PACKAGE_DIR/CodeVetter.app"
+          "$STAPLER" validate "$NATIVE_PACKAGE_DIR/CodeVetter.app"
+
+      - name: Rebuild archives around the stapled application
+        run: pnpm native:package:finalize -- --qualification "$NATIVE_QUALIFICATION"
+
+      - name: Bind final archive to Apple notarization
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          NOTARYTOOL="$(xcode-select -p)/usr/bin/notarytool"
+          ZIP_PATH="$(find "$NATIVE_PACKAGE_DIR" -maxdepth 1 -name '*.zip' -print -quit)"
+          "$NOTARYTOOL" submit "$ZIP_PATH" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait \
+            --output-format json > artifacts/native-production-ci/notary-final.json
+          jq -e '.status == "Accepted"' artifacts/native-production-ci/notary-final.json >/dev/null
+          pnpm native:notarization:prove -- \
+            --app "$NATIVE_PACKAGE_DIR/CodeVetter.app" \
+            --archive "$ZIP_PATH" \
+            --qualification "$NATIVE_QUALIFICATION" \
+            --submission artifacts/native-production-ci/notary-final.json \
+            --out artifacts/native-production-ci/notarization-proof.json
+
+      - name: Generate and cryptographically inspect Sparkle appcast
+        env:
+          SPARKLE_EDDSA_PRIVATE_KEY: ${{ secrets.SPARKLE_EDDSA_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APPCAST_DIR="artifacts/native-production-ci/appcast"
+          mkdir -p "$APPCAST_DIR"
+          ZIP_PATH="$(find "$NATIVE_PACKAGE_DIR" -maxdepth 1 -name '*.zip' -print -quit)"
+          cp "$ZIP_PATH" "$APPCAST_DIR/"
+          GENERATE_APPCAST="$(find artifacts/native-build/DerivedData/SourcePackages/artifacts -path '*/Sparkle/bin/generate_appcast' -type f -print -quit)"
+          test -x "$GENERATE_APPCAST"
+          printf '%s' "$SPARKLE_EDDSA_PRIVATE_KEY" | "$GENERATE_APPCAST" \
+            --ed-key-file - \
+            --download-url-prefix "https://github.com/Codevetter/codevetter/releases/latest/download/" \
+            "$APPCAST_DIR"
+          test -f "$APPCAST_DIR/appcast.xml"
+          pnpm native:appcast:inspect -- \
+            --app "$NATIVE_PACKAGE_DIR/CodeVetter.app" \
+            --appcast "$APPCAST_DIR/appcast.xml" \
+            --qualification "$NATIVE_QUALIFICATION" \
+            --out artifacts/native-production-ci/appcast-proof.json
+
+      - name: Download retained Tauri release for isolated migration proof
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          INCUMBENT_ROOT="$RUNNER_TEMP/codevetter-incumbent"
+          mkdir -p "$INCUMBENT_ROOT"
+          gh release download v1.11.0 \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern 'CodeVetter_aarch64.app.tar.gz' \
+            --dir "$INCUMBENT_ROOT"
+          tar -xzf "$INCUMBENT_ROOT/CodeVetter_aarch64.app.tar.gz" -C "$INCUMBENT_ROOT"
+          INCUMBENT_APP="$(find "$INCUMBENT_ROOT" -maxdepth 2 -name CodeVetter.app -type d -print -quit)"
+          test -n "$INCUMBENT_APP"
+          echo "NATIVE_INCUMBENT_APP=$INCUMBENT_APP" >> "$GITHUB_ENV"
+
+      - name: Qualify isolated upgrade, relaunch, custom rubric, data, and rollback
+        run: |
+          pnpm native:installed-upgrade:qualify -- \
+            --incumbent-app "$NATIVE_INCUMBENT_APP" \
+            --native-app "$NATIVE_PACKAGE_DIR/CodeVetter.app" \
+            --qualification "$NATIVE_QUALIFICATION" \
+            --run-root "$RUNNER_TEMP/codevetter-native-upgrade" \
+            --out artifacts/native-production-ci/installed-upgrade-proof.json \
+            --foreground \
+            --hosted-ephemeral
+
+      - name: Require every production-readiness check
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm native:release:inspect -- \
+            --app "$NATIVE_PACKAGE_DIR/CodeVetter.app" \
+            --qualification "$NATIVE_QUALIFICATION" \
+            --appcast-proof artifacts/native-production-ci/appcast-proof.json \
+            --notarization-proof artifacts/native-production-ci/notarization-proof.json \
+            --installed-proof artifacts/native-production-ci/installed-upgrade-proof.json \
+            --out artifacts/native-production-ci/release-readiness.json
+          jq -e '.shipping_ready == true and (.checks | all(.passed == true))' \
+            artifacts/native-production-ci/release-readiness.json >/dev/null
+
+      - name: Test all production qualification contracts
+        run: |
+          pnpm test:native-runner
+          pnpm test:native-package
+          pnpm test:native-package-finalize
+          pnpm test:native-appcast
+          pnpm test:native-notarization
+          pnpm test:native-data-continuity
+          pnpm test:native-installed-upgrade
+          pnpm test:native-release
+
+      - name: Remove ephemeral credential material
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${CODEVETTER_SIGNING_KEYCHAIN:-}" ]]; then
+            security delete-keychain "$CODEVETTER_SIGNING_KEYCHAIN" || true
+          fi
+          rm -f "$RUNNER_TEMP/codevetter-developer-id.p12"
+
+      - name: Upload protected production-candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-production-qualification-${{ github.run_id }}
+          path: |
+            artifacts/native-production-ci
+            artifacts/native-build/DerivedData/Build/Products/Release/CodeVetter.app.dSYM
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 0

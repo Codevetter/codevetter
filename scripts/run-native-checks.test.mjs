@@ -6,6 +6,7 @@ import {
   nativeCheckCachePath,
   nativeCheckEnvironment,
   nativeCheckInvocation,
+  nativeReleaseBuildSettings,
   parseNativeCheckArguments,
 } from './run-native-checks.mjs';
 
@@ -53,6 +54,38 @@ test('release automation disables coverage at the workspace command boundary', (
     'CLANG_ENABLE_CODE_COVERAGE=NO',
     'CLANG_COVERAGE_MAPPING=NO',
   ]);
+});
+
+test('production release builds require exact updater and identity inputs', () => {
+  const publicKey = Buffer.alloc(32, 7).toString('base64');
+  assert.deepEqual(
+    nativeReleaseBuildSettings({
+      CODEVETTER_NATIVE_CHANNEL: 'production',
+      CODEVETTER_NATIVE_BUNDLE_IDENTIFIER: 'com.codevetter.desktop',
+      CODEVETTER_NATIVE_SPARKLE_FEED_URL:
+        'https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml',
+      CODEVETTER_NATIVE_SPARKLE_PUBLIC_KEY: publicKey,
+    }).slice(-3),
+    [
+      'PRODUCT_BUNDLE_IDENTIFIER=com.codevetter.desktop',
+      'INFOPLIST_KEY_SUFeedURL=https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml',
+      `INFOPLIST_KEY_SUPublicEDKey=${publicKey}`,
+    ]
+  );
+  assert.throws(
+    () => nativeReleaseBuildSettings({ CODEVETTER_NATIVE_CHANNEL: 'production' }),
+    /com\.codevetter\.desktop/
+  );
+  assert.throws(
+    () =>
+      nativeReleaseBuildSettings({
+        CODEVETTER_NATIVE_CHANNEL: 'production',
+        CODEVETTER_NATIVE_BUNDLE_IDENTIFIER: 'com.codevetter.desktop',
+        CODEVETTER_NATIVE_SPARKLE_FEED_URL: 'http://updates.example.test/appcast.xml',
+        CODEVETTER_NATIVE_SPARKLE_PUBLIC_KEY: publicKey,
+      }),
+    /HTTPS Sparkle feed/
+  );
 });
 
 test('the foreground lane runs only XCUITest interaction targets', () => {

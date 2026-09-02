@@ -11,6 +11,7 @@ const qualificationSchema = 'codevetter.native-package-qualification/v1';
 const notarizationSchema = 'codevetter.native-notarization-proof/v1';
 const installedUpgradeSchema = 'codevetter.native-installed-upgrade-proof/v1';
 const dataContinuitySchema = 'codevetter.native-data-continuity/v1';
+const appcastSchema = 'codevetter.native-appcast-qualification/v1';
 const productionAppDataIdentity = 'com.codevetter.desktop';
 
 export function parseArguments(argv) {
@@ -25,6 +26,8 @@ export function parseArguments(argv) {
       options.notarizationProof = resolve(requiredValue(argv, ++index, argument));
     } else if (argument === '--installed-proof') {
       options.installedProof = resolve(requiredValue(argv, ++index, argument));
+    } else if (argument === '--appcast-proof') {
+      options.appcastProof = resolve(requiredValue(argv, ++index, argument));
     } else if (argument === '--out') options.out = resolve(requiredValue(argv, ++index, argument));
     else throw new Error(`Unknown argument: ${argument}`);
   }
@@ -39,6 +42,7 @@ export function evaluateNativeReleaseReadiness(input) {
   const archives = qualification.archives ?? [];
   const notarization = input.notarizationProof;
   const installed = input.installedProof;
+  const appcastProof = input.appcastProof;
   const archiveHashes = new Set(archives.map((archive) => archive.sha256));
   const appVersion = input.info.CFBundleShortVersionString;
   const appBuild = input.info.CFBundleVersion;
@@ -75,6 +79,15 @@ export function evaluateNativeReleaseReadiness(input) {
     check('execution_authority', input.entitlements['com.apple.security.app-sandbox'] !== true),
     check('https_appcast', secureURL(input.info.SUFeedURL)),
     check('sparkle_public_key', validSparklePublicKey(input.info.SUPublicEDKey)),
+    check(
+      'sparkle_appcast',
+      validAppcastProof(appcastProof, {
+        feedURL: input.info.SUFeedURL,
+        appVersion,
+        appBuild,
+        archiveHashes,
+      })
+    ),
     check('gatekeeper', input.gatekeeper.accepted),
     check(
       'notarization',
@@ -122,6 +135,20 @@ export function evaluateNativeReleaseReadiness(input) {
   };
 }
 
+function validAppcastProof(proof, { feedURL, appVersion, appBuild, archiveHashes }) {
+  return (
+    proof?.schema_version === appcastSchema &&
+    proof.status === 'qualified' &&
+    proof.qualified === true &&
+    proof.feed_url === feedURL &&
+    proof.application?.bundle_identifier === productionBundleIdentifier &&
+    proof.application?.version === appVersion &&
+    proof.application?.build === appBuild &&
+    archiveHashes.has(proof.archive?.sha256) &&
+    proof.checks?.every((item) => item.passed === true)
+  );
+}
+
 function validInstalledUpgradeProof(installed, { appVersion, appBuild, archiveHashes }) {
   const continuity = installed?.data_continuity;
   const before = continuity?.before_sha256;
@@ -165,6 +192,7 @@ export function inspectNativeReleaseReadiness(options = parseArguments(process.a
     gatekeeper: inspectGatekeeper(appPath),
     notarizationProof: options.notarizationProof ? readJSON(options.notarizationProof) : null,
     installedProof: options.installedProof ? readJSON(options.installedProof) : null,
+    appcastProof: options.appcastProof ? readJSON(options.appcastProof) : null,
   });
   const output = `${JSON.stringify(receipt, null, 2)}\n`;
   if (options.out) writeFileSync(options.out, output);
@@ -267,6 +295,8 @@ function blockerFor(id) {
       'App Sandbox is enabled and would remove required local execution authority.',
     https_appcast: 'A production HTTPS Sparkle appcast is not configured.',
     sparkle_public_key: 'A production Sparkle EdDSA public key is not configured.',
+    sparkle_appcast:
+      'No offline-verified Sparkle appcast binds the production feed, key, version, and exact archive.',
     gatekeeper: 'Gatekeeper does not accept the staged application.',
     notarization: 'No archive-bound accepted and stapled notarization proof was supplied.',
     installed_upgrade:

@@ -45,6 +45,19 @@ function input(overrides = {}) {
       stapled: true,
       archive_sha256: 'archive-sha',
     },
+    appcastProof: {
+      schema_version: 'codevetter.native-appcast-qualification/v1',
+      status: 'qualified',
+      qualified: true,
+      feed_url: 'https://updates.example.test/appcast.xml',
+      application: {
+        bundle_identifier: 'com.codevetter.desktop',
+        version: '1.11.0',
+        build: '11100',
+      },
+      archive: { sha256: 'archive-sha' },
+      checks: [{ id: 'signature', passed: true }],
+    },
     installedProof: {
       schema_version: 'codevetter.native-installed-upgrade-proof/v1',
       status: 'passed',
@@ -99,12 +112,13 @@ test('preview package fails closed on identity, signing, updater, and release pr
       entitlements: { 'com.apple.security.cs.disable-library-validation': true },
       gatekeeper: { accepted: false, detail: 'rejected' },
       notarizationProof: null,
+      appcastProof: null,
       installedProof: null,
     })
   );
   assert.equal(receipt.status, 'blocked');
   assert.equal(receipt.shipping_ready, false);
-  assert.equal(receipt.blockers.length, 9);
+  assert.equal(receipt.blockers.length, 10);
 });
 
 test('proof files must bind to the qualified archive, installed version, and build', () => {
@@ -197,6 +211,19 @@ test('Sparkle public key must be canonical base64 for exactly 32 bytes', () => {
   assert.equal(malformed.checks.find((check) => check.id === 'sparkle_public_key')?.passed, false);
 });
 
+test('appcast proof must bind the exact feed, version, build, and qualified archive', () => {
+  const malformed = evaluateNativeReleaseReadiness(
+    input({
+      appcastProof: {
+        ...input().appcastProof,
+        application: { ...input().appcastProof.application, build: '11101' },
+        archive: { sha256: 'another-archive' },
+      },
+    })
+  );
+  assert.equal(malformed.checks.find((check) => check.id === 'sparkle_appcast')?.passed, false);
+});
+
 test('argument parsing requires an app and qualification without reading credentials', () => {
   const options = parseArguments([
     '--app',
@@ -207,10 +234,13 @@ test('argument parsing requires an app and qualification without reading credent
     '/tmp/notary.json',
     '--installed-proof',
     '/tmp/installed.json',
+    '--appcast-proof',
+    '/tmp/appcast.json',
     '--out',
     '/tmp/readiness.json',
   ]);
   assert.equal(options.app, '/tmp/CodeVetter.app');
   assert.equal(options.qualification, '/tmp/qualification.json');
+  assert.equal(options.appcastProof, '/tmp/appcast.json');
   assert.throws(() => parseArguments(['--app', '/tmp/CodeVetter.app']), /qualification/);
 });

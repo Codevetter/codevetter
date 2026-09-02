@@ -15,6 +15,11 @@ on:
         required: true
         default: false
         type: boolean
+      native_production_qualification:
+        description: "Run protected signing, notarization, and migration qualification"
+        required: true
+        default: false
+        type: boolean
 permissions: {}
 
 concurrency:
@@ -28,6 +33,14 @@ jobs:
     uses: ./.github/workflows/native-qualification.yml
     with:
       run_interaction: ${{ inputs.native_interaction }}
+    permissions:
+      contents: read
+
+  native-production-qualification:
+    name: Native macOS production-candidate qualification
+    if: github.event_name == 'workflow_dispatch' && inputs.native_production_qualification
+    uses: ./.github/workflows/native-production-qualification.yml
+    secrets: inherit
     permissions:
       contents: read
 

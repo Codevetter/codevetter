@@ -9,6 +9,7 @@ import {
   assertNoCoverageInstrumentation,
   assertPackagedCliCapabilities,
   assertPreviewBundle,
+  assertProductionBundle,
   hostTarget,
   parseArguments,
   runtimeFiles,
@@ -28,6 +29,38 @@ test('packaged CLI preserves rich repository-query parity', () => {
   assert.throws(
     () => assertPackagedCliCapabilities(help.replace('--query-mode <name>', '')),
     /missing repository-query parity/
+  );
+});
+
+test('production packaging requires the canonical identifier and Sparkle inputs', () => {
+  const publicKey = Buffer.alloc(32, 7).toString('base64');
+  assert.doesNotThrow(() =>
+    assertProductionBundle({
+      CFBundleIdentifier: 'com.codevetter.desktop',
+      CFBundleExecutable: 'CodeVetterNative',
+      SUFeedURL: 'https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml',
+      SUPublicEDKey: publicKey,
+    })
+  );
+  assert.throws(
+    () =>
+      assertProductionBundle({
+        CFBundleIdentifier: 'com.codevetter.desktop.native-preview',
+        CFBundleExecutable: 'CodeVetterNative',
+        SUFeedURL: 'https://updates.example.test/appcast.xml',
+        SUPublicEDKey: publicKey,
+      }),
+    /require com\.codevetter\.desktop/
+  );
+  assert.throws(
+    () =>
+      assertProductionBundle({
+        CFBundleIdentifier: 'com.codevetter.desktop',
+        CFBundleExecutable: 'CodeVetterNative',
+        SUFeedURL: 'http://updates.example.test/appcast.xml',
+        SUPublicEDKey: publicKey,
+      }),
+    /HTTPS Sparkle feed/
   );
 });
 
@@ -104,10 +137,13 @@ test('host and argument parsing preserve explicit operator choices', () => {
     '/tmp/native-package',
     '--identity',
     'Developer ID Application: Example',
+    '--channel',
+    'production',
     '--skip-sidecar-build',
   ]);
   assert.equal(options.app, '/tmp/CodeVetter.app');
   assert.equal(options.outputRoot, '/tmp/native-package');
   assert.equal(options.identity, 'Developer ID Application: Example');
+  assert.equal(options.channel, 'production');
   assert.equal(options.prepareSidecars, false);
 });

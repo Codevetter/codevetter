@@ -34,7 +34,43 @@ export function parseNativeCheckArguments(arguments_) {
   return { mode, foregroundApproved, desktopIdleApproved };
 }
 
-export function nativeCheckCommands({ mode }) {
+export function nativeReleaseBuildSettings(environment = process.env) {
+  const settings = [
+    'ENABLE_CODE_COVERAGE=NO',
+    'CLANG_ENABLE_CODE_COVERAGE=NO',
+    'CLANG_COVERAGE_MAPPING=NO',
+  ];
+  const channel = environment.CODEVETTER_NATIVE_CHANNEL ?? 'preview';
+  if (channel === 'preview') return settings;
+  if (channel !== 'production') {
+    throw new Error(`Unsupported native release channel: ${channel}`);
+  }
+
+  const bundleIdentifier = environment.CODEVETTER_NATIVE_BUNDLE_IDENTIFIER;
+  const feedURL = environment.CODEVETTER_NATIVE_SPARKLE_FEED_URL;
+  const publicKey = environment.CODEVETTER_NATIVE_SPARKLE_PUBLIC_KEY;
+  if (bundleIdentifier !== 'com.codevetter.desktop') {
+    throw new Error('Production native builds require com.codevetter.desktop');
+  }
+  if (!isHTTPSURL(feedURL)) {
+    throw new Error('Production native builds require an HTTPS Sparkle feed URL');
+  }
+  if (!isCanonicalEdDSAPublicKey(publicKey)) {
+    throw new Error(
+      'Production native builds require a canonical 32-byte Sparkle EdDSA public key'
+    );
+  }
+  return [
+    ...settings,
+    'CODE_SIGNING_ALLOWED=NO',
+    'CODE_SIGNING_REQUIRED=NO',
+    `PRODUCT_BUNDLE_IDENTIFIER=${bundleIdentifier}`,
+    `INFOPLIST_KEY_SUFeedURL=${feedURL}`,
+    `INFOPLIST_KEY_SUPublicEDKey=${publicKey}`,
+  ];
+}
+
+export function nativeCheckCommands({ mode }, environment = process.env) {
   const background = [
     {
       label: 'Swift package behavior and offscreen render gates',
@@ -94,11 +130,7 @@ export function nativeCheckCommands({ mode }) {
         configuration: 'Release',
         arch: 'arm64',
         derivedDataPath: 'artifacts/native-build/DerivedData',
-        extraArgs: [
-          'ENABLE_CODE_COVERAGE=NO',
-          'CLANG_ENABLE_CODE_COVERAGE=NO',
-          'CLANG_COVERAGE_MAPPING=NO',
-        ],
+        extraArgs: nativeReleaseBuildSettings(environment),
       }),
     ],
   };
@@ -136,7 +168,7 @@ export function runNativeChecks(options, spawn = spawnSync) {
   }
   const cache = nativeCheckCachePath();
   mkdirSync(cache, { recursive: true });
-  for (const command of nativeCheckCommands(options)) {
+  for (const command of nativeCheckCommands(options, process.env)) {
     process.stdout.write(`\n[native] ${command.label}\n`);
     if (!command.backgroundSafe) {
       process.stdout.write(
@@ -157,6 +189,20 @@ export function runNativeChecks(options, spawn = spawnSync) {
     }
   }
   return 0;
+}
+
+function isHTTPSURL(value) {
+  try {
+    return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function isCanonicalEdDSAPublicKey(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9+/]{43}=$/.test(value)) return false;
+  const decoded = Buffer.from(value, 'base64');
+  return decoded.length === 32 && decoded.toString('base64') === value;
 }
 
 function isMainModule() {

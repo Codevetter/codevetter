@@ -49,6 +49,25 @@ export function assertPreviewBundle(info) {
   }
 }
 
+export function assertProductionBundle(info) {
+  if (info.CFBundleIdentifier !== 'com.codevetter.desktop') {
+    throw new Error(
+      `Production packages require com.codevetter.desktop; received ${info.CFBundleIdentifier ?? 'missing'}`
+    );
+  }
+  if (info.CFBundleExecutable !== 'CodeVetterNative') {
+    throw new Error(
+      `The app executable must remain distinct from the codevetter CLI; received ${info.CFBundleExecutable ?? 'missing'}`
+    );
+  }
+  if (!isHTTPSURL(info.SUFeedURL)) {
+    throw new Error('Production packages require an HTTPS Sparkle feed URL');
+  }
+  if (!isCanonicalEdDSAPublicKey(info.SUPublicEDKey)) {
+    throw new Error('Production packages require a canonical 32-byte Sparkle EdDSA public key');
+  }
+}
+
 export function hostTarget(rustVersionText) {
   const target = rustVersionText
     .split('\n')
@@ -95,6 +114,7 @@ export function parseArguments(argv) {
     app: defaultBuild,
     outputRoot: defaultOutputRoot,
     identity: '-',
+    channel: 'preview',
     prepareSidecars: true,
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -105,6 +125,8 @@ export function parseArguments(argv) {
       options.outputRoot = resolve(requiredValue(argv, ++index, argument));
     } else if (argument === '--identity') {
       options.identity = requiredValue(argv, ++index, argument);
+    } else if (argument === '--channel') {
+      options.channel = requiredValue(argv, ++index, argument);
     } else if (argument === '--skip-sidecar-build') options.prepareSidecars = false;
     else throw new Error(`Unknown argument: ${argument}`);
   }
@@ -118,7 +140,7 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   }
 
   const sourceInfo = readPlist(join(sourceApp, 'Contents/Info.plist'));
-  assertPreviewBundle(sourceInfo);
+  assertPackageBundle(sourceInfo, options.channel, options.identity);
   assertFile(join(sourceApp, 'Contents/Frameworks/Sparkle.framework/Versions/Current/Sparkle'));
   const hostLoadCommands = run('otool', [
     '-l',
@@ -166,7 +188,7 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   run('codesign', ['--verify', '--deep', '--strict', '--verbose=2', stagedApp]);
 
   const stagedInfo = readPlist(join(stagedApp, 'Contents/Info.plist'));
-  assertPreviewBundle(stagedInfo);
+  assertPackageBundle(stagedInfo, options.channel, options.identity);
   const cliHelp = run(sidecars[0], ['--help'], { stdio: ['ignore', 'pipe', 'pipe'] });
   assertPackagedCliCapabilities(cliHelp);
   const smoke = {
@@ -218,23 +240,32 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
     updater: {
       framework: 'Sparkle',
       version: sparkleVersion(stagedApp),
-      feed_configured: false,
-      eddsa_public_key_configured: false,
-      enabled: false,
+      feed_configured: isHTTPSURL(stagedInfo.SUFeedURL),
+      eddsa_public_key_configured: isCanonicalEdDSAPublicKey(stagedInfo.SUPublicEDKey),
+      enabled:
+        options.channel === 'production' &&
+        isHTTPSURL(stagedInfo.SUFeedURL) &&
+        isCanonicalEdDSAPublicKey(stagedInfo.SUPublicEDKey),
     },
     sidecars: sidecars.map((path) => artifact(path)),
     runtime_files: packagedRuntimeFiles,
     smoke,
     archives: [artifact(zipPath), artifact(dmgPath)],
     blockers: [
-      'Production bundle identifier transfer requires owner approval.',
-      'Developer ID signing and Apple notarization have not been performed.',
+      ...(options.channel === 'preview'
+        ? ['Production bundle identifier transfer requires owner approval.']
+        : []),
+      ...(options.identity === '-'
+        ? ['Developer ID signing and Apple notarization have not been performed.']
+        : ['Apple notarization has not been performed.']),
       ...(options.identity === '-'
         ? [
             'The ad-hoc preview disables Library Validation because ad-hoc components have no shared Team ID; production must prove it enabled after Developer ID signing.',
           ]
         : []),
-      'A production HTTPS Sparkle appcast and real EdDSA public key are not configured.',
+      ...(options.channel === 'preview'
+        ? ['A production HTTPS Sparkle appcast and real EdDSA public key are not configured.']
+        : []),
       'Installed upgrade and rollback proof has not been completed.',
     ],
   };
@@ -242,6 +273,29 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
   process.stdout.write(`${receiptPath}\n`);
   return { receipt, receiptPath, stagedApp, zipPath, dmgPath };
+}
+
+function assertPackageBundle(info, channel, identity) {
+  if (channel === 'preview') return assertPreviewBundle(info);
+  if (channel !== 'production') throw new Error(`Unsupported native package channel: ${channel}`);
+  if (!identity || identity === '-') {
+    throw new Error('Production native packages require a Developer ID signing identity');
+  }
+  assertProductionBundle(info);
+}
+
+function isHTTPSURL(value) {
+  try {
+    return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function isCanonicalEdDSAPublicKey(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9+/]{43}=$/.test(value)) return false;
+  const decoded = Buffer.from(value, 'base64');
+  return decoded.length === 32 && decoded.toString('base64') === value;
 }
 
 function prepareSidecars() {
