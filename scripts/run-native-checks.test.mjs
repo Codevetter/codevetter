@@ -55,11 +55,24 @@ test('release automation disables coverage at the workspace command boundary', (
 });
 
 test('the foreground lane runs only XCUITest interaction targets', () => {
-  const parsed = parseNativeCheckArguments(['--ui', '--foreground', '--desktop-idle']);
+  const parsed = parseNativeCheckArguments(['--ui', '--', '--foreground', '--desktop-idle']);
   const [command] = nativeCheckCommands(parsed);
   assert.equal(command.backgroundSafe, false);
   assert.equal(command.arguments[0], 'macos');
   assert.match(command.arguments.at(-1), /only-testing:CodeVetterUITests/);
+});
+
+test('the pnpm argument delimiter does not weaken unknown-argument rejection', () => {
+  assert.deepEqual(parseNativeCheckArguments(['--ui', '--', '--foreground', '--desktop-idle']), {
+    mode: 'ui',
+    foregroundApproved: true,
+    desktopIdleApproved: true,
+  });
+  assert.throws(
+    () =>
+      parseNativeCheckArguments(['--ui', '--', '--foreground', '--desktop-idle', '--unexpected']),
+    /Unknown native-check argument/
+  );
 });
 
 test('full qualification keeps background checks before the foreground lane', () => {

@@ -17,6 +17,7 @@ export function parseNativeCheckArguments(arguments_) {
   let foregroundApproved = false;
   let desktopIdleApproved = false;
   for (const argument of arguments_) {
+    if (argument === '--') continue;
     if (argument === '--background') mode = 'background';
     else if (argument === '--release') mode = 'release';
     else if (argument === '--ui') mode = 'ui';
