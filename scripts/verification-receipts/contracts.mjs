@@ -1,8 +1,12 @@
 import { createHash } from 'node:crypto';
+import { execFile } from 'node:child_process';
 import { readFile, realpath, rename, stat, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { promisify } from 'node:util';
 
-import { adaptVerificationReceipt } from './adapters.mjs';
+import { adaptVerificationArtifact } from './producer-adapters.mjs';
+
+const execFileAsync = promisify(execFile);
 
 export const RECEIPT_SCHEMA_VERSION = 'codevetter.project-verification-receipt/v1';
 export const BUNDLE_SCHEMA_VERSION = 'codevetter.verification-bundle/v1';
@@ -10,6 +14,7 @@ export const COMPARISON_SCHEMA_VERSION = 'codevetter.verification-comparison/v1'
 
 export const LIMITS = Object.freeze({
   receiptBytes: 2 * 1024 * 1024,
+  artifactBytes: 32 * 1024 * 1024,
   changedFiles: 1_000,
   tests: 5_000,
   attempts: 10_000,
@@ -19,6 +24,7 @@ export const LIMITS = Object.freeze({
   graphNodes: 12_000,
   graphEdges: 24_000,
   samples: 100,
+  producerObservations: 256,
 });
 
 const COVERAGE = new Set(['complete', 'partial', 'aggregate', 'missing']);
@@ -76,7 +82,8 @@ export function validateReceipt(value) {
       'limitations',
     ],
     'receipt',
-    errors
+    errors,
+    ['producer_observations']
   );
   exactString(value.schema_version, RECEIPT_SCHEMA_VERSION, 'schema_version', errors);
   isoDate(value.captured_at, 'captured_at', errors);
@@ -88,6 +95,9 @@ export function validateReceipt(value) {
   validateSafety(value.safety, errors);
   validateBudgets(value.budgets, errors);
   validateEvidence(value.evidence, errors);
+  if (value.producer_observations !== undefined) {
+    validateProducerObservations(value.producer_observations, errors);
+  }
   stringArray(value.limitations, 'limitations', errors, LIMITS.limitations);
   scanSecrets(value, 'receipt', errors);
   return errors;
@@ -97,20 +107,27 @@ export async function loadReceipt(repositoryRoot, receiptPath) {
   const { root, absolute, relativePath } = await containedExistingPath(repositoryRoot, receiptPath);
   const details = await stat(absolute);
   if (!details.isFile()) throw new Error(`receipt is not a file: ${relativePath}`);
-  if (details.size > LIMITS.receiptBytes) {
-    throw new Error(`receipt exceeds ${LIMITS.receiptBytes} byte limit`);
+  if (details.size > LIMITS.artifactBytes) {
+    throw new Error(`verification artifact exceeds ${LIMITS.artifactBytes} byte limit`);
   }
   const bytes = await readFile(absolute);
-  let sourceReceipt;
-  try {
-    sourceReceipt = JSON.parse(bytes.toString('utf8'));
-  } catch {
-    throw new Error('receipt is not valid JSON');
+  const repository = await repositoryContext(root);
+  const sourceSha256 = sha256(bytes);
+  const { receipt, sourceFormat } = adaptVerificationArtifact({
+    bytes,
+    relativePath,
+    sourceSha256,
+    repository,
+    repositoryRoot: root,
+  });
+  if (
+    details.size > LIMITS.receiptBytes &&
+    ['canonical', 'vault-e2e-profile/v1'].includes(sourceFormat)
+  ) {
+    throw new Error(`verification receipt exceeds ${LIMITS.receiptBytes} byte limit`);
   }
-  const repositoryId = await repositoryIdentity(root);
-  const { receipt, sourceFormat } = adaptVerificationReceipt(sourceReceipt, { repositoryId });
   assertValidReceipt(receipt);
-  return { root, absolute, relativePath, bytes, receipt, sourceFormat, sha256: sha256(bytes) };
+  return { root, absolute, relativePath, bytes, receipt, sourceFormat, sha256: sourceSha256 };
 }
 
 export async function writeJsonWithinRepository(repositoryRoot, outputPath, value) {
@@ -170,6 +187,24 @@ async function repositoryIdentity(root) {
     // below when a producer-native receipt needs an identity and none is available.
   }
   return null;
+}
+
+async function repositoryContext(root) {
+  const id = await repositoryIdentity(root);
+  let revision = 'unavailable';
+  let dirty = true;
+  try {
+    const [{ stdout: head }, { stdout: status }] = await Promise.all([
+      execFileAsync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }),
+      execFileAsync('git', ['-C', root, 'status', '--porcelain=v1'], { encoding: 'utf8' }),
+    ]);
+    revision = head.trim();
+    dirty = status.trim() !== '';
+  } catch {
+    // An unresolvable repository identity remains explicit and cannot support a
+    // controlled comparison claim.
+  }
+  return { id: id ?? '', revision, dirty };
 }
 
 function assertContained(root, candidate, label) {
@@ -492,6 +527,28 @@ function validateEvidence(value, errors) {
   });
 }
 
+function validateProducerObservations(value, errors) {
+  array(value, 'producer_observations', errors, LIMITS.producerObservations);
+  if (!Array.isArray(value)) return;
+  const metrics = new Set();
+  value.forEach((entry, index) => {
+    const path = `producer_observations[${index}]`;
+    object(entry, path, errors);
+    if (!plainObject(entry)) return;
+    closed(entry, ['metric', 'value', 'unit', 'scope', 'evidence'], path, errors);
+    text(entry.metric, `${path}.metric`, errors);
+    number(entry.value, `${path}.value`, errors, 0);
+    text(entry.unit, `${path}.unit`, errors);
+    text(entry.scope, `${path}.scope`, errors);
+    exactString(entry.evidence, 'producer_artifact', `${path}.evidence`, errors);
+    if (typeof entry.metric === 'string' && !/^[a-z0-9][a-z0-9._-]{0,127}$/.test(entry.metric)) {
+      errors.push(`${path}.metric is invalid`);
+    }
+    if (metrics.has(entry.metric)) errors.push(`${path}.metric is duplicate`);
+    metrics.add(entry.metric);
+  });
+}
+
 function scanSecrets(value, path, errors) {
   if (typeof value === 'string') {
     if (SECRET_PATTERN.test(value)) errors.push(`${path} contains credential-shaped content`);
@@ -516,9 +573,9 @@ function sortValue(value) {
   );
 }
 
-function closed(value, keys, path, errors) {
+function closed(value, keys, path, errors, optionalKeys = []) {
   if (!plainObject(value)) return;
-  const allowed = new Set(keys);
+  const allowed = new Set([...keys, ...optionalKeys]);
   for (const key of Object.keys(value))
     if (!allowed.has(key)) errors.push(`${path}.${key} is unknown`);
   for (const key of keys) if (!(key in value)) errors.push(`${path}.${key} is required`);

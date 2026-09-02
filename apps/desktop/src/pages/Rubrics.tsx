@@ -23,14 +23,16 @@ import {
   saveReviewConfig,
   type StandardsPack,
 } from '@/lib/review-service';
-import { getStandardsPackUsage, isTauriAvailable } from '@/lib/tauri-ipc';
+import {
+  getRubricSettings,
+  isTauriAvailable,
+  type RubricSettingsReceipt,
+  saveRubricPack,
+  setActiveRubricPack,
+} from '@/lib/tauri-ipc';
 
 function fallbackConfig(): ReviewConfig {
   return {
-    gatewayBaseUrl: '',
-    gatewayApiKey: '',
-    gatewayModel: 'auto',
-    reviewTone: 'direct',
     activeStandardsPack: DEFAULT_STANDARDS_PACKS[0].id,
     standardsPacks: [],
   };
@@ -81,47 +83,76 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
   const [usage, setUsage] = useState<Record<string, PackUsage>>({});
   const [expandedPreview, setExpandedPreview] = useState<string | null>(null);
   const [copiedPreview, setCopiedPreview] = useState<string | null>(null);
+  const [syncIssue, setSyncIssue] = useState<string | null>(null);
 
   const packs = getStandardsPacks(config);
   const activePack = getActiveStandardsPack(config);
   const customRules = config.customRules ?? [];
 
-  // Usage is keyed by pack NAME (the value persisted on each review), not id.
   useEffect(() => {
     if (!isTauriAvailable()) return;
     let cancelled = false;
-    getStandardsPackUsage()
-      .then((rows) => {
+    getRubricSettings(loadReviewConfig())
+      .then((receipt) => {
         if (cancelled) return;
-        const map: Record<string, PackUsage> = {};
-        for (const row of rows) {
-          map[row.standards_pack] = {
-            reviewCount: row.review_count,
-            totalFindings: row.total_findings,
-          };
-        }
-        setUsage(map);
+        applyCanonicalReceipt(receipt);
       })
-      .catch(() => {
-        // Non-fatal — packs simply show "no usage yet".
+      .catch((error) => {
+        if (cancelled) return;
+        setSyncIssue(error instanceof Error ? error.message : String(error));
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  function persist(next: ReviewConfig) {
+  function applyCanonicalReceipt(receipt: RubricSettingsReceipt) {
+    const standardsPacks = receipt.packs
+      .filter((pack) => !pack.built_in)
+      .map(({ id, name, focus, checks }) => ({ id, name, focus, checks }));
+    const persisted: ReviewConfig = {
+      customRules: receipt.custom_rules,
+      standardsPacks,
+      ...(receipt.active_pack_id ? { activeStandardsPack: receipt.active_pack_id } : {}),
+    };
+    saveReviewConfig(persisted);
+    setConfig({
+      ...persisted,
+      activeStandardsPack: receipt.active_pack_id ?? DEFAULT_STANDARDS_PACKS[0].id,
+    });
+    setUsage(
+      Object.fromEntries(
+        receipt.packs.map((pack) => [
+          pack.id,
+          { reviewCount: pack.review_count, totalFindings: pack.total_findings },
+        ])
+      )
+    );
+    setSyncIssue(null);
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1600);
+  }
+
+  function persistLocal(next: ReviewConfig) {
     setConfig(next);
     saveReviewConfig(next);
     setSaved(true);
     window.setTimeout(() => setSaved(false), 1600);
   }
 
-  function selectPack(packId: string) {
-    persist({ ...config, activeStandardsPack: packId });
+  async function selectPack(packId: string) {
+    if (!isTauriAvailable()) {
+      persistLocal({ ...config, activeStandardsPack: packId });
+      return;
+    }
+    try {
+      applyCanonicalReceipt(await setActiveRubricPack(packId));
+    } catch (error) {
+      setSyncIssue(error instanceof Error ? error.message : String(error));
+    }
   }
 
-  function clonePack(source: StandardsPack) {
+  async function clonePack(source: StandardsPack) {
     const cloneName = `${source.name} (copy)`;
     const cloneId = uniquePackId(makePackId(cloneName), packs);
     const clone: StandardsPack = {
@@ -130,12 +161,21 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
       focus: source.focus,
       checks: [...source.checks],
     };
-    persist({
-      ...config,
-      activeStandardsPack: clone.id,
-      standardsPacks: [...(config.standardsPacks ?? []), clone],
-    });
-    setExpandedPreview(clone.id);
+    if (!isTauriAvailable()) {
+      persistLocal({
+        ...config,
+        activeStandardsPack: clone.id,
+        standardsPacks: [...(config.standardsPacks ?? []), clone],
+      });
+      setExpandedPreview(clone.id);
+      return;
+    }
+    try {
+      applyCanonicalReceipt(await saveRubricPack(clone));
+      setExpandedPreview(clone.id);
+    } catch (error) {
+      setSyncIssue(error instanceof Error ? error.message : String(error));
+    }
   }
 
   async function copyPreview(pack: StandardsPack) {
@@ -149,7 +189,7 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
     }
   }
 
-  function addCustomPack() {
+  async function addCustomPack() {
     const checks = draftChecks
       .split('\n')
       .map((line) => line.trim())
@@ -166,14 +206,26 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
       checks,
     };
 
-    persist({
-      ...config,
-      activeStandardsPack: pack.id,
-      standardsPacks: [...(config.standardsPacks ?? []), pack],
-    });
-    setDraftName('');
-    setDraftFocus('');
-    setDraftChecks('');
+    if (!isTauriAvailable()) {
+      persistLocal({
+        ...config,
+        activeStandardsPack: pack.id,
+        standardsPacks: [...(config.standardsPacks ?? []), pack],
+      });
+      setDraftName('');
+      setDraftFocus('');
+      setDraftChecks('');
+      return;
+    }
+
+    try {
+      applyCanonicalReceipt(await saveRubricPack(pack));
+      setDraftName('');
+      setDraftFocus('');
+      setDraftChecks('');
+    } catch (error) {
+      setSyncIssue(error instanceof Error ? error.message : String(error));
+    }
   }
 
   return (
@@ -218,6 +270,11 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
             Saved
           </span>
         )}
+        {syncIssue && (
+          <div className="rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
+            Canonical rubric sync failed. Existing local settings were kept: {syncIssue}
+          </div>
+        )}
 
         <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="grid gap-4">
@@ -243,7 +300,7 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                     <div className="flex shrink-0 items-center gap-2">
                       <Button
                         type="button"
-                        onClick={() => clonePack(pack)}
+                        onClick={() => void clonePack(pack)}
                         variant="ghost"
                         size="sm"
                         title="Duplicate into a new editable pack"
@@ -253,7 +310,7 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                       </Button>
                       <Button
                         type="button"
-                        onClick={() => selectPack(pack.id)}
+                        onClick={() => void selectPack(pack.id)}
                         variant={active ? 'secondary' : 'default'}
                       >
                         {active ? 'Active' : 'Use pack'}
@@ -347,7 +404,7 @@ export default function Rubrics({ embedded = false }: { embedded?: boolean }) {
                 placeholder="One check per line"
                 className="min-h-36 w-full rounded-lg border border-[var(--cv-line)] bg-[var(--cv-surface)] px-3 py-2 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-amber-400/40"
               />
-              <Button type="button" onClick={addCustomPack} className="w-full">
+              <Button type="button" onClick={() => void addCustomPack()} className="w-full">
                 <Save size={16} className="mr-2" />
                 Save and use pack
               </Button>
