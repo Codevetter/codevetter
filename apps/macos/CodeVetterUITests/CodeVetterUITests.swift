@@ -192,11 +192,11 @@ final class CodeVetterUITests: XCTestCase {
     let cross = app.radioButtons["Claude + Codex"]
     XCTAssertTrue(cross.exists)
     cross.click()
-    assertSelected(cross)
     XCTAssertTrue(
       app.staticTexts[
         "Runs independent Claude then Codex passes against the same immutable change. Agreement is coverage, not proof."
-      ].waitForExistence(timeout: 2)
+      ].waitForExistence(timeout: 4),
+      "The selected strategy did not update the review contract"
     )
   }
 

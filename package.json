@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "bench:public": "node scripts/run-public-benchmark.mjs",
+    "bench:cross-review": "node scripts/run-cross-review-benchmark.mjs",
     "bench:catch-rate": "node scripts/run-catch-rate-benchmark.mjs",
     "bench:graph-context": "node scripts/run-structural-context-evaluation.mjs",
     "bench:curation": "node scripts/report-benchmark-curation.mjs",
@@ -61,6 +62,7 @@
     "capabilities:sync": "node scripts/sync-capability-registry.mjs",
     "capabilities:check": "node scripts/sync-capability-registry.mjs --check",
     "test:benchmark": "node --test scripts/run-catch-rate-benchmark.test.mjs scripts/run-structural-context-evaluation.test.mjs",
+    "test:cross-review-benchmark": "node --test scripts/run-cross-review-benchmark.test.mjs",
     "test:graph-context": "node --test scripts/run-structural-context-evaluation.test.mjs",
     "test:corpus-contracts": "node --test scripts/agent-task-corpus/*.test.mjs",
     "test:context-provider-plan": "node --test scripts/agent-task-corpus/context-provider-plan.test.mjs",

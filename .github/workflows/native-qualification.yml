@@ -108,7 +108,7 @@ jobs:
         run: |
           mkdir -p artifacts/native-tool-logs
           find "$HOME/Library/Developer/XcodeBuildMCP" \
-            -path '*/logs/*' -type f \
+            -path '*/logs/*' -type f -name '*.log' \
             -exec cp {} artifacts/native-tool-logs/ \;
 
       - name: Upload unsigned qualification evidence
