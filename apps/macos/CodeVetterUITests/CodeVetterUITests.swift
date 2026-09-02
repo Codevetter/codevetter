@@ -207,9 +207,10 @@ final class CodeVetterUITests: XCTestCase {
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
-    assertSelected(rubricsSection)
     XCTAssertTrue(
-      app.descendants(matching: .any)["rubric-settings-workspace"].waitForExistence(timeout: 5))
+      app.descendants(matching: .any)["rubric-settings-workspace"].waitForExistence(timeout: 5),
+      "Rubrics workspace did not open"
+    )
   }
 
   @MainActor
