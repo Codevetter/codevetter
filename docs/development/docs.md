@@ -72,7 +72,7 @@ run `node_modules/.bin/blume validate`.
 
 ## Render with Blume
 
-Blume reads `blume.config.ts` at the repo root and renders `docs/` as a
+Blume reads `docs-site/blume.config.ts` and renders `docs/` as a
 static site. It is **not** the source of truth — it only presents the
 Markdown.
 

@@ -62,3 +62,23 @@ signing-key setup and the auto-update mechanism.
 - The `pubkey` in `tauri.conf.json` must match the key pair used to sign builds. Without it, update verification will fail.
 - The `TAURI_SIGNING_PRIVATE_KEY` env var is only needed at build time, never at runtime.
 - Auto-update checks fail silently if the endpoint is unreachable or no update is available.
+
+## Native macOS production candidate
+
+The Swift/AppKit migration uses Sparkle rather than the Tauri updater and has a
+separate, non-publishing qualification workflow:
+`.github/workflows/native-production-qualification.yml`. Its protected input
+names are `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`,
+`APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`,
+`SPARKLE_EDDSA_PRIVATE_KEY`, and `SPARKLE_EDDSA_PUBLIC_KEY`. Never place their
+values in repository files, commands, receipts, or logs.
+
+The workflow imports the certificate into an ephemeral keychain, builds the
+production identifier, signs every nested executable, notarizes and staples
+the exact archive, generates and cryptographically inspects the Sparkle
+appcast, and runs an isolated incumbent-to-native-to-rollback migration proof.
+It uploads evidence for inspection but has no release publication permission.
+Run 33628919883 proved the preflight is fail-closed: all eight protected inputs
+were absent, so signing and every downstream production operation were
+skipped. Provisioning those repository secrets and rerunning the workflow is a
+release-owner gate, not application implementation work.

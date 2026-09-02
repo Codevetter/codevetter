@@ -1,6 +1,8 @@
 ---
 title: Codebase context tools landscape
-description: Retained April 2026 research survey of context, indexing, documentation, and review tools.
+description: Survey of codebase indexing, context-provider, and documentation tools evaluated for CodeVetter (research snapshot, April 2026).
+sidebar:
+  order: 90
 ---
 
 # Codebase Context Tools for AI Agents & AI Code Review
