@@ -27,6 +27,10 @@ import { getStandardsPackUsage, isTauriAvailable } from '@/lib/tauri-ipc';
 
 function fallbackConfig(): ReviewConfig {
   return {
+    gatewayBaseUrl: '',
+    gatewayApiKey: '',
+    gatewayModel: 'auto',
+    reviewTone: 'direct',
     activeStandardsPack: DEFAULT_STANDARDS_PACKS[0].id,
     standardsPacks: [],
   };

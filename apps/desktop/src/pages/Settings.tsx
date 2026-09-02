@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import {
+  loadReviewConfig,
+  PROVIDER_PRESETS,
+  type ReviewConfig,
+  saveReviewConfig,
+} from '@/lib/review-service';
 import type {
   GitHubAuthStatus,
   LinearUser,
@@ -583,6 +589,48 @@ export default function Settings() {
   // Paths
   const [claudeCodePath, setClaudeCodePath] = usePref('claude_cli_path', '');
   const [codexPath, setCodexPath] = usePref('codex_cli_path', '');
+
+  // AI Provider
+  const [aiProvider, setAiProvider] = useState('anthropic');
+  const [aiBaseUrl, setAiBaseUrl] = useState('');
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiModel, setAiModel] = useState('');
+  const [aiConfigSaved, setAiConfigSaved] = useState(false);
+
+  useEffect(() => {
+    const existing = loadReviewConfig();
+    if (existing) {
+      setAiBaseUrl(existing.gatewayBaseUrl);
+      setAiApiKey(existing.gatewayApiKey);
+      setAiModel(existing.gatewayModel);
+      // Detect provider from URL
+      if (existing.gatewayBaseUrl.includes('anthropic')) setAiProvider('anthropic');
+      else if (existing.gatewayBaseUrl.includes('openai.com')) setAiProvider('openai');
+      else if (existing.gatewayBaseUrl.includes('openrouter')) setAiProvider('openrouter');
+      else setAiProvider('custom');
+    }
+  }, []);
+
+  function handleProviderChange(provider: string) {
+    setAiProvider(provider);
+    setAiConfigSaved(false);
+    if (provider !== 'custom' && PROVIDER_PRESETS[provider]) {
+      setAiBaseUrl(PROVIDER_PRESETS[provider].baseUrl);
+      setAiModel(PROVIDER_PRESETS[provider].model);
+    }
+  }
+
+  function handleSaveAiConfig() {
+    const config: ReviewConfig = {
+      gatewayBaseUrl: aiBaseUrl,
+      gatewayApiKey: aiApiKey,
+      gatewayModel: aiModel,
+      reviewTone: defaultTone,
+    };
+    saveReviewConfig(config);
+    setAiConfigSaved(true);
+    setTimeout(() => setAiConfigSaved(false), 2000);
+  }
 
   // Notifications
   const [notifyReviewDone, toggleNotifyReviewDone] = useBoolPref('notify_review_done', true);
@@ -1450,6 +1498,82 @@ export default function Settings() {
                   Usage tracking stays lightweight on launch. Use the Home page re-index action when
                   you want to refresh Claude, Codex, or Cursor transcript archives.
                 </p>
+              </div>
+            </div>
+
+            <h3 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+              AI Provider
+            </h3>
+            <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
+              <SelectSetting
+                label="Provider"
+                description="Choose your AI provider for code reviews."
+                value={aiProvider}
+                options={[
+                  { value: 'anthropic', label: 'Anthropic (Claude)' },
+                  { value: 'openai', label: 'OpenAI (GPT)' },
+                  { value: 'openrouter', label: 'OpenRouter' },
+                  { value: 'custom', label: 'Custom Gateway' },
+                ]}
+                onChange={handleProviderChange}
+              />
+
+              <Divider />
+
+              <TextInputSetting
+                label="API Key"
+                description="Your API key for the selected provider."
+                value={aiApiKey}
+                placeholder="sk-..."
+                mono
+                onChange={(v) => {
+                  setAiApiKey(v);
+                  setAiConfigSaved(false);
+                }}
+              />
+
+              {aiProvider === 'custom' && (
+                <>
+                  <Divider />
+                  <TextInputSetting
+                    label="Base URL"
+                    description="OpenAI-compatible API endpoint."
+                    value={aiBaseUrl}
+                    placeholder="https://api.example.com/v1"
+                    mono
+                    onChange={(v) => {
+                      setAiBaseUrl(v);
+                      setAiConfigSaved(false);
+                    }}
+                  />
+                </>
+              )}
+
+              <Divider />
+
+              <TextInputSetting
+                label="Model"
+                description="Model identifier to use for reviews."
+                value={aiModel}
+                placeholder="claude-sonnet-4-20250514"
+                mono
+                onChange={(v) => {
+                  setAiModel(v);
+                  setAiConfigSaved(false);
+                }}
+              />
+
+              <div className="mt-4 flex items-center gap-3">
+                <Button
+                  onClick={handleSaveAiConfig}
+                  disabled={!aiApiKey || !aiBaseUrl || !aiModel}
+                  className="bg-amber-600 hover:bg-amber-500 text-white"
+                >
+                  {aiConfigSaved ? 'Saved!' : 'Save AI Config'}
+                </Button>
+                {!aiApiKey && (
+                  <span className="text-xs text-slate-500">API key required to run reviews</span>
+                )}
               </div>
             </div>
           </div>

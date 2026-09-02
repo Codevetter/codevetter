@@ -7,7 +7,6 @@ import {
   VERIFY_CONTRACT_LIMITS,
   type ContractIssue,
   type ContractValidation,
-  type DaemonError,
 } from './contracts';
 import {
   DIFFERENTIAL_CLASSIFICATIONS,
@@ -123,8 +122,7 @@ export type DifferentialDaemonResponse =
   | { type: 'differential_prepared'; summary: DifferentialPreparedSummary }
   | { type: 'differential_result'; summary: DifferentialRunSummary }
   | { type: 'differential_status'; summary: DifferentialStatusSummary }
-  | { type: 'differential_cleanup'; summary: DifferentialCleanupSummary }
-  | { type: 'error'; error: DaemonError };
+  | { type: 'differential_cleanup'; summary: DifferentialCleanupSummary };
 export interface DifferentialDaemonResponseEnvelope {
   protocol_version: 1;
   request_id: string;
@@ -289,25 +287,6 @@ function validateRequest(value: unknown, issues: ContractIssue[]) {
 function validateResponse(value: unknown, issues: ContractIssue[]) {
   const response = object(value, '$.response', issues);
   if (!response) return;
-  if (response.type === 'error') {
-    exactKeys(response, '$.response', ['type', 'error'], issues);
-    const error = object(response.error, '$.response.error', issues);
-    if (!error) return;
-    exactKeys(
-      error,
-      '$.response.error',
-      error.remediation === undefined
-        ? ['code', 'message', 'retryable']
-        : ['code', 'message', 'remediation', 'retryable'],
-      issues
-    );
-    stringField(error, 'code', '$.response.error', issues, { pattern: ID });
-    stringField(error, 'message', '$.response.error', issues);
-    if (error.remediation !== undefined)
-      stringField(error, 'remediation', '$.response.error', issues);
-    boolean(error, 'retryable', '$.response.error', issues);
-    return;
-  }
   exactKeys(response, '$.response', ['type', 'summary'], issues);
   const rules: Record<string, DifferentialContractRule> = {
     differential_prepared: prepared,
