@@ -1,6 +1,8 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+private let performanceEvidencePreviewLimit = 5
+
 private enum PerformanceDetailMode: String, CaseIterable, Identifiable {
   case evidence = "Evidence"
   case json = "JSON"
@@ -655,7 +657,8 @@ private struct PerformanceReceiptDesk: View {
     if !rows.isEmpty {
       LazyVStack(alignment: .leading, spacing: 8) {
         PremiumFieldLabel(title)
-        ForEach(Array(rows.prefix(10).enumerated()), id: \.offset) { _, row in
+        ForEach(Array(rows.prefix(performanceEvidencePreviewLimit).enumerated()), id: \.offset) {
+          _, row in
           HStack(alignment: .top, spacing: 9) {
             Circle().fill(color).frame(width: 5, height: 5).padding(.top, 5)
             VStack(alignment: .leading, spacing: 3) {
@@ -671,10 +674,12 @@ private struct PerformanceReceiptDesk: View {
             }
           }
         }
-        if rows.count > 10 {
-          Text("+ \(rows.count - 10) more evidence rows in canonical JSON")
-            .font(.system(size: 8, design: .monospaced))
-            .foregroundStyle(.secondary)
+        if rows.count > performanceEvidencePreviewLimit {
+          Text(
+            "+ \(rows.count - performanceEvidencePreviewLimit) more evidence rows in canonical JSON"
+          )
+          .font(.system(size: 8, design: .monospaced))
+          .foregroundStyle(.secondary)
         }
       }
     }
