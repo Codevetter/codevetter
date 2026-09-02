@@ -655,7 +655,7 @@ private struct PerformanceReceiptDesk: View {
     if !rows.isEmpty {
       LazyVStack(alignment: .leading, spacing: 8) {
         PremiumFieldLabel(title)
-        ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+        ForEach(Array(rows.prefix(20).enumerated()), id: \.offset) { _, row in
           HStack(alignment: .top, spacing: 9) {
             Circle().fill(color).frame(width: 5, height: 5).padding(.top, 5)
             VStack(alignment: .leading, spacing: 3) {
@@ -670,6 +670,11 @@ private struct PerformanceReceiptDesk: View {
               .lineLimit(3)
             }
           }
+        }
+        if rows.count > 20 {
+          Text("+ \(rows.count - 20) more evidence rows in canonical JSON")
+            .font(.system(size: 8, design: .monospaced))
+            .foregroundStyle(.secondary)
         }
       }
     }

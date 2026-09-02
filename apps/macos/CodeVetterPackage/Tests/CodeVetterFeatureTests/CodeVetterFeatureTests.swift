@@ -3274,6 +3274,7 @@ func hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate() throws {
   )
   model.performanceResultReceiptJSON = String(decoding: resultPayload, as: UTF8.self)
   #expect(model.performanceResultReceipt?.resources?.peakRSSBytes == 59_441_152)
+  #expect(model.performanceResultReceipt?.evidenceRows("observed").count == 100)
   model.performanceState = .completed
 
   for _ in 0..<3 { renderPerformance(model) }
