@@ -36,7 +36,8 @@
       "!**/*.css",
       "!**/*.svg",
       "!**/*.astro",
-      "!benchmark/cases"
+      "!benchmark/cases",
+      "!benchmarks/public-catch-rate/cases"
     ]
   },
   "formatter": {
