@@ -196,10 +196,30 @@ pub fn run_migration(conn: &Connection) -> Result<(), rusqlite::Error> {
         CREATE INDEX IF NOT EXISTS idx_local_performance_receipts_kind
             ON local_performance_receipts(receipt_kind, created_at DESC);
 
+        CREATE TABLE IF NOT EXISTS local_check_runs (
+            run_id TEXT PRIMARY KEY,
+            schema_version TEXT NOT NULL,
+            repo_path TEXT NOT NULL,
+            base_sha TEXT NOT NULL,
+            head_sha TEXT NOT NULL,
+            verdict TEXT NOT NULL,
+            task TEXT NOT NULL,
+            receipt_json TEXT NOT NULL,
+            ran_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_local_check_runs_repo_time
+            ON local_check_runs(repo_path, ran_at DESC);
+
         INSERT OR IGNORE INTO verification_workbench_schema_migrations
             (version, migration_identity, applied_at)
         VALUES
             (1, 'verification-workbench-v1', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+
+        INSERT OR IGNORE INTO verification_workbench_schema_migrations
+            (version, migration_identity, applied_at)
+        VALUES
+            (2, 'verification-workbench-local-check-runs-v2', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
         "#,
     )?;
 
@@ -255,6 +275,7 @@ mod tests {
             "managed_work_checkpoints",
             "intent_closure_receipts",
             "local_performance_receipts",
+            "local_check_runs",
         ] {
             assert!(table_exists(&conn, table), "missing {table}");
         }
@@ -268,6 +289,15 @@ mod tests {
             )
             .expect("migration row");
         assert_eq!(identity, "verification-workbench-v1");
+        let run_identity: String = conn
+            .query_row(
+                "SELECT migration_identity
+                 FROM verification_workbench_schema_migrations WHERE version = 2",
+                [],
+                |row| row.get(0),
+            )
+            .expect("local-check migration row");
+        assert_eq!(run_identity, "verification-workbench-local-check-runs-v2");
     }
 
     #[test]

@@ -45,22 +45,22 @@ pub enum ScenarioCompilerAction {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ContextSelection {
-    capabilities: Vec<String>,
-    auth_profiles: Vec<String>,
-    states: Vec<String>,
-    routes: Vec<String>,
-    include_request_policy: bool,
-    examples: Vec<String>,
+    pub capabilities: Vec<String>,
+    pub auth_profiles: Vec<String>,
+    pub states: Vec<String>,
+    pub routes: Vec<String>,
+    pub include_request_policy: bool,
+    pub examples: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ProviderSelection {
-    kind: String,
-    provider: String,
-    model: String,
-    cost_class: String,
-    paid_approved: bool,
+    pub kind: String,
+    pub provider: String,
+    pub model: String,
+    pub cost_class: String,
+    pub paid_approved: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -158,6 +158,13 @@ pub struct ScenarioCompilerActionResult {
 
 #[tauri::command]
 pub async fn run_scenario_compiler_action(
+    repo_path: String,
+    action: ScenarioCompilerAction,
+) -> Result<ScenarioCompilerActionResult, String> {
+    run_scenario_compiler_action_headless(repo_path, action).await
+}
+
+pub async fn run_scenario_compiler_action_headless(
     repo_path: String,
     action: ScenarioCompilerAction,
 ) -> Result<ScenarioCompilerActionResult, String> {

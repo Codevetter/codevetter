@@ -4,7 +4,7 @@
 //! argument arrays. The Node runtime remains the single source of truth for
 //! planning, profiling, diagnosis, and paired verification contracts.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Component, Path, PathBuf};
 use std::process::Stdio;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sysinfo::{Pid, ProcessesToUpdate, System};
 use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::io::AsyncReadExt;
 use tokio::process::Command;
@@ -88,6 +89,16 @@ pub struct PerformanceCleanupReceipt {
     pub temporary_profiles_retained: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct PerformanceResourceReceipt {
+    pub sampler: Option<String>,
+    pub sample_interval_ms: u64,
+    pub samples: u32,
+    pub peak_rss_bytes: Option<u64>,
+    pub peak_processes: Option<u32>,
+    pub limitations: Vec<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PerformanceRunReceipt {
     pub schema_version: u32,
@@ -99,6 +110,87 @@ pub struct PerformanceRunReceipt {
     pub result: Value,
     pub stderr_summary: Option<String>,
     pub cleanup: PerformanceCleanupReceipt,
+    #[serde(default)]
+    pub resources: PerformanceResourceReceipt,
+}
+
+struct PerformanceResourceSampler {
+    root_pid: Option<Pid>,
+    system: System,
+    samples: u32,
+    peak_rss_bytes: u64,
+    peak_processes: u32,
+}
+
+impl PerformanceResourceSampler {
+    fn new(root_pid: Option<u32>) -> Self {
+        Self {
+            root_pid: root_pid.map(Pid::from_u32),
+            system: System::new(),
+            samples: 0,
+            peak_rss_bytes: 0,
+            peak_processes: 0,
+        }
+    }
+
+    fn sample(&mut self) {
+        let Some(root_pid) = self.root_pid else {
+            return;
+        };
+        self.system.refresh_processes(ProcessesToUpdate::All, true);
+        let process_ids = owned_process_tree(&self.system, root_pid);
+        if process_ids.is_empty() {
+            return;
+        }
+        let rss_bytes = process_ids
+            .iter()
+            .filter_map(|pid| self.system.process(*pid))
+            .map(|process| process.memory())
+            .sum();
+        self.samples = self.samples.saturating_add(1);
+        self.peak_rss_bytes = self.peak_rss_bytes.max(rss_bytes);
+        self.peak_processes = self
+            .peak_processes
+            .max(process_ids.len().try_into().unwrap_or(u32::MAX));
+    }
+
+    fn receipt(self) -> PerformanceResourceReceipt {
+        let sampled = self.samples > 0;
+        PerformanceResourceReceipt {
+            sampler: sampled.then(|| "sysinfo_owned_process_tree".to_string()),
+            sample_interval_ms: 75,
+            samples: self.samples,
+            peak_rss_bytes: sampled.then_some(self.peak_rss_bytes),
+            peak_processes: sampled.then_some(self.peak_processes),
+            limitations: vec![if sampled {
+                "RSS and process counts are periodic owned-process-tree samples; short-lived peaks between samples may be missed."
+                    .to_string()
+            } else {
+                "Owned-process resource sampling was unavailable for this run.".to_string()
+            }],
+        }
+    }
+}
+
+fn owned_process_tree(system: &System, root_pid: Pid) -> HashSet<Pid> {
+    if system.process(root_pid).is_none() {
+        return HashSet::new();
+    }
+    let mut process_ids = HashSet::from([root_pid]);
+    loop {
+        let before = process_ids.len();
+        for (pid, process) in system.processes() {
+            if process
+                .parent()
+                .is_some_and(|parent| process_ids.contains(&parent))
+            {
+                process_ids.insert(*pid);
+            }
+        }
+        if process_ids.len() == before {
+            return process_ids;
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -131,8 +223,9 @@ pub async fn run_local_performance(
         registry: registry.inner(),
         request_id: validated.request_id.clone(),
     };
+    let cli_path = resolve_cli_path(&app)?;
     emit_progress(&app, &validated, "started");
-    let receipt = execute(&app, &validated, cancellation).await;
+    let receipt = execute(&validated, cancellation, cli_path).await;
     emit_progress(
         &app,
         &validated,
@@ -146,6 +239,14 @@ pub async fn run_local_performance(
         },
     );
     receipt
+}
+
+pub async fn run_headless_performance(
+    input: PerformanceRunInput,
+) -> Result<PerformanceRunReceipt, String> {
+    let validated = validate_input(input)?;
+    let cli_path = resolve_headless_cli_path()?;
+    execute(&validated, Arc::new(AtomicBool::new(false)), cli_path).await
 }
 
 #[tauri::command]
@@ -190,12 +291,11 @@ fn emit_progress(app: &AppHandle, input: &PerformanceRunInput, stage: &'static s
 }
 
 async fn execute(
-    app: &AppHandle,
     input: &PerformanceRunInput,
     cancellation: Arc<AtomicBool>,
+    cli_path: PathBuf,
 ) -> Result<PerformanceRunReceipt, String> {
     let started = Instant::now();
-    let cli_path = resolve_cli_path(app)?;
     let args = build_arguments(input)?;
     ensure_node_available().await?;
 
@@ -212,6 +312,7 @@ async fn execute(
     let mut child = command
         .spawn()
         .map_err(|error| format!("Could not start the local performance runtime: {error}"))?;
+    let mut resource_sampler = PerformanceResourceSampler::new(child.id());
 
     let stdout = child
         .stdout
@@ -227,6 +328,7 @@ async fn execute(
     let deadline = tokio::time::Instant::now() + overall_timeout;
     let mut cancelled = false;
     let status = loop {
+        resource_sampler.sample();
         if cancellation.load(Ordering::SeqCst) {
             cancelled = true;
             child
@@ -247,6 +349,7 @@ async fn execute(
             })?;
             let stdout_bytes = stdout_task.await.map_err(join_error)??;
             let stderr_bytes = stderr_task.await.map_err(join_error)??;
+            let resources = resource_sampler.receipt();
             return Ok(no_confidence_receipt(
                 input,
                 started,
@@ -254,6 +357,7 @@ async fn execute(
                 "The bounded desktop performance operation timed out.",
                 &stderr_bytes,
                 Some(&stdout_bytes),
+                resources,
             ));
         }
         if let Some(status) = child
@@ -267,6 +371,7 @@ async fn execute(
 
     let stdout_bytes = stdout_task.await.map_err(join_error)??;
     let stderr_bytes = stderr_task.await.map_err(join_error)??;
+    let resources = resource_sampler.receipt();
     if cancelled {
         return Ok(PerformanceRunReceipt {
             schema_version: 1,
@@ -282,6 +387,7 @@ async fn execute(
             }),
             stderr_summary: sanitize_summary(&stderr_bytes, &input.repo_path),
             cleanup: cleanup_receipt(),
+            resources,
         });
     }
 
@@ -291,6 +397,7 @@ async fn execute(
         elapsed_ms(started),
         &stdout_bytes,
         &stderr_bytes,
+        resources,
     )
 }
 
@@ -300,6 +407,7 @@ fn receipt_from_output(
     duration_ms: u64,
     stdout: &[u8],
     stderr: &[u8],
+    resources: PerformanceResourceReceipt,
 ) -> Result<PerformanceRunReceipt, String> {
     let mut result: Value = serde_json::from_slice(stdout).map_err(|_| {
         "The local performance runtime returned malformed or excessive output".to_string()
@@ -320,6 +428,7 @@ fn receipt_from_output(
         result,
         stderr_summary: sanitize_summary(stderr, &input.repo_path),
         cleanup: cleanup_receipt(),
+        resources,
     })
 }
 
@@ -525,12 +634,8 @@ fn build_arguments(input: &PerformanceRunInput) -> Result<Vec<String>, String> {
 }
 
 fn resolve_cli_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let source = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../scripts/runtime-failure-capsule/cli.mjs");
-    if source.is_file() {
-        return source
-            .canonicalize()
-            .map_err(|error| format!("Could not resolve the performance runtime: {error}"));
+    if let Ok(source) = resolve_source_cli_path() {
+        return Ok(source);
     }
     let bundled = app
         .path()
@@ -541,6 +646,34 @@ fn resolve_cli_path(app: &AppHandle) -> Result<PathBuf, String> {
         return Err("The packaged local performance runtime is unavailable".to_string());
     }
     Ok(bundled)
+}
+
+fn resolve_headless_cli_path() -> Result<PathBuf, String> {
+    if let Ok(source) = resolve_source_cli_path() {
+        return Ok(source);
+    }
+    let executable = std::env::current_exe()
+        .map_err(|error| format!("Could not resolve the CodeVetter executable: {error}"))?;
+    let bundled = executable
+        .parent()
+        .and_then(Path::parent)
+        .map(|contents| contents.join("Resources/runtime-failure-capsule/cli.mjs"))
+        .ok_or_else(|| "The packaged local performance runtime is unavailable".to_string())?;
+    if !bundled.is_file() {
+        return Err("The packaged local performance runtime is unavailable".to_string());
+    }
+    Ok(bundled)
+}
+
+fn resolve_source_cli_path() -> Result<PathBuf, String> {
+    let source = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../scripts/runtime-failure-capsule/cli.mjs");
+    if !source.is_file() {
+        return Err("The source performance runtime is unavailable".to_string());
+    }
+    source
+        .canonicalize()
+        .map_err(|error| format!("Could not resolve the performance runtime: {error}"))
 }
 
 async fn ensure_node_available() -> Result<(), String> {
@@ -575,6 +708,7 @@ fn no_confidence_receipt(
     message: &str,
     stderr: &[u8],
     stdout: Option<&[u8]>,
+    resources: PerformanceResourceReceipt,
 ) -> PerformanceRunReceipt {
     PerformanceRunReceipt {
         schema_version: 1,
@@ -591,6 +725,7 @@ fn no_confidence_receipt(
         }),
         stderr_summary: sanitize_summary(stderr, &input.repo_path),
         cleanup: cleanup_receipt(),
+        resources,
     }
 }
 
@@ -814,15 +949,40 @@ mod tests {
             "limitations": ["Exact fixture scope only."]
         });
         let stdout = serde_json::to_vec(&runtime_result).unwrap();
-        let receipt = receipt_from_output(&validated, Some(0), 17, &stdout, b"").unwrap();
+        let resources = PerformanceResourceReceipt {
+            sampler: Some("fixture".into()),
+            sample_interval_ms: 75,
+            samples: 2,
+            peak_rss_bytes: Some(1_048_576),
+            peak_processes: Some(2),
+            limitations: vec!["Fixture sample.".into()],
+        };
+        let receipt =
+            receipt_from_output(&validated, Some(0), 17, &stdout, b"", resources.clone()).unwrap();
         assert_eq!(receipt.result, runtime_result);
         assert_eq!(receipt.operation, PerformanceOperation::Plan);
         assert_eq!(receipt.state, "succeeded");
         assert!(receipt.cleanup.owned_process_reaped);
-        assert!(
-            receipt_from_output(&validated, Some(0), 0, b"not-json", b"")
-                .unwrap_err()
-                .contains("malformed")
-        );
+        assert_eq!(receipt.resources.peak_rss_bytes, Some(1_048_576));
+        assert!(receipt_from_output(
+            &validated,
+            Some(0),
+            0,
+            b"not-json",
+            b"",
+            PerformanceResourceReceipt::default(),
+        )
+        .unwrap_err()
+        .contains("malformed"));
+    }
+
+    #[test]
+    fn resource_sampler_records_the_owned_process_tree() {
+        let mut sampler = PerformanceResourceSampler::new(Some(std::process::id()));
+        sampler.sample();
+        let receipt = sampler.receipt();
+        assert!(receipt.samples >= 1);
+        assert!(receipt.peak_rss_bytes.is_some_and(|bytes| bytes > 0));
+        assert!(receipt.peak_processes.is_some_and(|count| count >= 1));
     }
 }

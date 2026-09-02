@@ -922,3 +922,141 @@ fn opportunistic_unpack_db_lock_does_not_wait() {
     drop(guard);
     assert!(lock_unpack_db(&db, true).is_ok());
 }
+
+#[test]
+fn stored_unpack_projection_preserves_identity_and_bounds_inventory_payload() {
+    let connection = rusqlite::Connection::open_in_memory().expect("memory db");
+    connection
+        .execute_batch(
+            "CREATE TABLE repo_unpacked_reports (
+                id TEXT PRIMARY KEY, repo_path TEXT NOT NULL, repo_name TEXT NOT NULL,
+                commit_sha TEXT, status TEXT NOT NULL, error_message TEXT,
+                agent_used TEXT, model_used TEXT, inventory_json TEXT, report_json TEXT,
+                files_scanned INTEGER NOT NULL, files_skipped INTEGER NOT NULL,
+                bytes_scanned INTEGER NOT NULL, runtime_ms INTEGER, cost_usd REAL,
+                started_at TEXT, completed_at TEXT, created_at TEXT NOT NULL
+            );",
+        )
+        .expect("schema");
+    let mut inventory = minimal_inventory();
+    inventory.files_scanned = 700;
+    inventory.all_files = (0..700)
+        .map(|index| format!("src/file-{index}.rs"))
+        .collect();
+    connection
+        .execute(
+            "INSERT INTO repo_unpacked_reports VALUES
+             (?1, ?2, ?3, ?4, 'scan_only', NULL, NULL, NULL, ?5, NULL,
+              700, 3, 42000, 12, NULL, ?6, ?6, ?6)",
+            rusqlite::params![
+                "snapshot-1",
+                "/tmp/demo",
+                "demo",
+                "1234567890abcdef",
+                serde_json::to_string(&inventory).expect("inventory"),
+                "2026-08-31T00:00:00Z",
+            ],
+        )
+        .expect("insert");
+
+    let summaries =
+        list_repo_unpack_reports_from_connection(&connection, Some("/tmp/demo"), Some(200))
+            .expect("summaries");
+    assert_eq!(summaries.len(), 1);
+    assert_eq!(summaries[0].id, "snapshot-1");
+    assert!(!summaries[0].analysis_ready);
+
+    let record =
+        get_repo_unpack_report_from_connection(&connection, "snapshot-1").expect("snapshot record");
+    assert_eq!(
+        record.summary.commit_sha.as_deref(),
+        Some("1234567890abcdef")
+    );
+    let projected: RepoInventory = serde_json::from_str(
+        record
+            .inventory_json
+            .as_deref()
+            .expect("inventory projection"),
+    )
+    .expect("projected inventory");
+    assert!(projected.all_files.is_empty());
+    assert!(projected.all_files_capped);
+    assert_eq!(projected.files_scanned, 700);
+}
+
+#[test]
+fn shared_unpack_scan_persistence_emits_one_bounded_receipt_for_cli_and_tauri() {
+    let connection = rusqlite::Connection::open_in_memory().expect("memory db");
+    connection
+        .execute_batch(
+            "CREATE TABLE repo_unpacked_reports (
+                id TEXT PRIMARY KEY, repo_path TEXT NOT NULL, repo_name TEXT NOT NULL,
+                commit_sha TEXT, status TEXT NOT NULL, error_message TEXT,
+                agent_used TEXT, model_used TEXT, inventory_json TEXT, report_json TEXT,
+                files_scanned INTEGER NOT NULL, files_skipped INTEGER NOT NULL,
+                bytes_scanned INTEGER NOT NULL, runtime_ms INTEGER, cost_usd REAL,
+                started_at TEXT, completed_at TEXT, created_at TEXT NOT NULL
+            );
+            CREATE TABLE repo_projects (
+                repo_path TEXT PRIMARY KEY,
+                last_unpack_at TEXT
+            );
+            INSERT INTO repo_projects (repo_path) VALUES ('/tmp/demo');",
+        )
+        .expect("schema");
+    let mut inventory = minimal_inventory();
+    inventory.files_scanned = 700;
+    inventory.all_files = (0..700)
+        .map(|index| format!("src/file-{index}.rs"))
+        .collect();
+    let mut profiler = crate::commands::unpack_scan_profile::UnpackScanProfiler::new("full_scan");
+    profiler.step("fixture", "Fixture scan");
+
+    let receipt = persist_unpack_scan_snapshot_from_connection(
+        &connection,
+        "scan-shared-1".to_string(),
+        InventoryBuildResult {
+            inventory,
+            profile: profiler.finish(),
+        },
+    )
+    .expect("persist shared scan");
+
+    assert_eq!(receipt.schema_version, "codevetter.unpack-scan/v1");
+    assert_eq!(receipt.report_id, "scan-shared-1");
+    assert_eq!(receipt.status, "scan_only");
+    assert!(receipt.inventory.all_files.is_empty());
+    assert!(receipt.inventory.all_files_capped);
+    assert_eq!(receipt.profiles.len(), 2);
+    assert_eq!(receipt.profiles[0].stage, "full_scan");
+    assert_eq!(receipt.profiles[1].stage, "local_scan_persist");
+    let export = export_repo_unpack_report_from_connection(
+        &connection,
+        "scan-shared-1",
+        "repo_memory_markdown",
+    )
+    .expect("export shared scan");
+    assert_eq!(export.schema_version, "codevetter.unpack-export/v1");
+    assert_eq!(export.report_id, "scan-shared-1");
+    assert_eq!(export.format, "repo_memory_markdown");
+    assert!(export.content.contains("Repo Memory"));
+    assert!(
+        export_repo_unpack_report_from_connection(&connection, "scan-shared-1", "pdf").is_err()
+    );
+    assert_eq!(
+        list_repo_unpack_reports_from_connection(&connection, Some("/tmp/demo"), Some(10))
+            .expect("list persisted scan")[0]
+            .id,
+        "scan-shared-1"
+    );
+    assert!(persist_unpack_scan_snapshot_from_connection(
+        &connection,
+        "\n".to_string(),
+        InventoryBuildResult {
+            inventory: minimal_inventory(),
+            profile: crate::commands::unpack_scan_profile::UnpackScanProfiler::new("full_scan")
+                .finish(),
+        },
+    )
+    .is_err());
+}

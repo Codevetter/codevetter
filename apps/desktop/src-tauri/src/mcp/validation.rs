@@ -76,11 +76,18 @@ pub(crate) fn validate_tool_arguments(
         "to",
         "entity",
         "review_id",
+        "run_id",
         "task",
         "change",
+        "scope_value",
+        "fix_completed_at",
     ] {
         if let Some(value) = arguments.get(field) {
-            let maximum = if field == "change" { 512 } else { 4_096 };
+            let maximum = match field {
+                "run_id" => 128,
+                "change" | "scope_value" => 512,
+                _ => 4_096,
+            };
             let text = value
                 .as_str()
                 .filter(|text| text.len() <= maximum)
@@ -88,6 +95,17 @@ pub(crate) fn validate_tool_arguments(
             if text.trim().is_empty() {
                 return Err(format!("'{field}' must not be empty"));
             }
+        }
+    }
+    if let Some(run_id) = arguments.get("run_id").and_then(Value::as_str) {
+        if !run_id
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b':'))
+        {
+            return Err(
+                "'run_id' may contain only ASCII letters, numbers, dash, underscore, dot, or colon"
+                    .to_string(),
+            );
         }
     }
     if let Some(value) = arguments.get("cursor") {
@@ -98,6 +116,37 @@ pub(crate) fn validate_tool_arguments(
     }
     validate_integer(arguments, "limit", 1, MAX_PAGE_SIZE)?;
     validate_integer(arguments, "depth", 1, MAX_HOPS)?;
+
+    if name == "resolve_evidence_scope" {
+        let consumer = arguments
+            .get("consumer")
+            .and_then(Value::as_str)
+            .filter(|value| matches!(*value, "testing" | "performance"))
+            .ok_or_else(|| "'consumer' must be testing or performance".to_string())?;
+        let _ = consumer;
+        let kind = arguments
+            .get("scope_kind")
+            .and_then(Value::as_str)
+            .filter(|value| matches!(*value, "flow" | "change" | "codebase"))
+            .ok_or_else(|| "'scope_kind' must be flow, change, or codebase".to_string())?;
+        match (kind, arguments.get("scope_value")) {
+            ("codebase", None) => {}
+            ("codebase", Some(_)) => {
+                return Err("'scope_value' must be omitted for codebase scope".to_string())
+            }
+            (_, Some(_)) => {}
+            (_, None) => {
+                return Err("'scope_value' is required for flow and change scope".to_string())
+            }
+        }
+    }
+
+    if name == "qa_workspace_inspect" {
+        if let Some(value) = arguments.get("fix_completed_at").and_then(Value::as_str) {
+            chrono::DateTime::parse_from_rfc3339(value)
+                .map_err(|_| "'fix_completed_at' must be an RFC3339 timestamp".to_string())?;
+        }
+    }
 
     if name.starts_with("graph_") {
         if let Some(value) = arguments.get("filter") {

@@ -425,6 +425,13 @@ fn build(conn: &rusqlite::Connection, request: XrayRequest) -> Result<XrayBuildR
     })
 }
 
+pub fn build_agent_pr_xray_from_connection(
+    conn: &rusqlite::Connection,
+    request: XrayRequest,
+) -> Result<XrayBuildResult, String> {
+    build(conn, request)
+}
+
 fn scan_payload(payload: &AgentPrXray) -> Vec<String> {
     let serialized = serde_json::to_string(payload).unwrap_or_default();
     let lower = serialized.to_ascii_lowercase();
@@ -717,12 +724,11 @@ pub async fn build_agent_pr_xray(
     request: XrayRequest,
 ) -> Result<XrayBuildResult, String> {
     let conn = db.0.lock().map_err(|error| error.to_string())?;
-    build(&conn, request)
+    build_agent_pr_xray_from_connection(&conn, request)
 }
 
-#[tauri::command]
-pub async fn save_agent_pr_xray(
-    db: State<'_, DbState>,
+pub fn save_agent_pr_xray_to_path(
+    conn: &rusqlite::Connection,
     request: SaveXrayRequest,
 ) -> Result<String, String> {
     let path = Path::new(request.path.trim());
@@ -744,10 +750,7 @@ pub async fn save_agent_pr_xray(
         .parent()
         .ok_or("X-Ray destination needs a parent directory")?;
     fs::canonicalize(parent).map_err(|_| "X-Ray destination directory is unavailable")?;
-    let result = {
-        let conn = db.0.lock().map_err(|error| error.to_string())?;
-        build(&conn, request.xray)?
-    };
+    let result = build_agent_pr_xray_from_connection(conn, request.xray)?;
     if !result.eligible {
         return Err(format!(
             "X-Ray export is blocked: {}",
@@ -772,6 +775,15 @@ pub async fn save_agent_pr_xray(
         format!("Could not finalize X-Ray: {error}")
     })?;
     Ok(path.to_string_lossy().into_owned())
+}
+
+#[tauri::command]
+pub async fn save_agent_pr_xray(
+    db: State<'_, DbState>,
+    request: SaveXrayRequest,
+) -> Result<String, String> {
+    let conn = db.0.lock().map_err(|error| error.to_string())?;
+    save_agent_pr_xray_to_path(&conn, request)
 }
 
 #[cfg(test)]

@@ -41,6 +41,7 @@ pub(super) fn dispatch_tool(
     let limit = bounded_limit(arguments.get("limit"));
     let filter = optional_field::<GraphQueryFilter>(&arguments, "filter")?.unwrap_or_default();
     let data = match name {
+        "capability_catalog" => serde_json::to_value(crate::capabilities::capability_registry()),
         "prepare_review" => serde_json::to_value(prepare_review_packet(
             connection,
             repo_path,
@@ -49,6 +50,32 @@ pub(super) fn dispatch_tool(
             required_string(&arguments, "task")?,
             required_string(&arguments, "change")?,
         )?),
+        "resolve_evidence_scope" => serde_json::to_value(resolve_agent_evidence_scope(
+            repo_path,
+            required_string(&arguments, "consumer")?,
+            required_string(&arguments, "scope_kind")?,
+            optional_string(&arguments, "scope_value")?,
+        )?),
+        "qa_workspace_inspect" => {
+            serde_json::to_value(crate::commands::qa_workspace::run_qa_workspace_headless(
+                connection,
+                PathBuf::from(repo_path),
+                crate::commands::qa_workspace::QaWorkspaceMutation::Inspect,
+                optional_string(&arguments, "fix_completed_at")?,
+            )?)
+        }
+        "verification_get_receipt" => {
+            let receipt = get_local_check_receipt(
+                connection,
+                repo_path,
+                required_string(&arguments, "run_id")?,
+            )?;
+            Ok(json!({
+                "schema_version": "codevetter.verification-receipt-projection/v1",
+                "authority": "read_only_projection",
+                "receipt": receipt,
+            }))
+        }
         "graph_query" => {
             let query = optional_string(&arguments, "query")?;
             let fingerprint = serde_json::to_string(&(query.map(str::to_ascii_lowercase), &filter))

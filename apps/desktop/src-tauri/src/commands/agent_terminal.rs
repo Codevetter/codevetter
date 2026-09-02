@@ -569,10 +569,8 @@ fn start_agent_terminal_impl(
             metadata.clone(),
         ) {
             Ok(result) => return Ok(result),
-            Err(error) => {
-                eprintln!(
-                    "Codex app-server unavailable for {session_id}; falling back to PTY: {error}"
-                );
+            Err(_error) => {
+                eprintln!("Codex app-server unavailable; falling back to PTY");
             }
         }
     }

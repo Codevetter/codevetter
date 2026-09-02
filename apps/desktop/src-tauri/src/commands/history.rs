@@ -1148,7 +1148,7 @@ fn estimate_cost_precise(
 /// cache-tier split — e.g. by-model aggregate rows that fall back to
 /// session-level totals without a per-model breakdown. Treats all
 /// cache-creation tokens as the default 5-minute tier.
-fn estimate_cost(
+pub(crate) fn estimate_cost(
     model: &str,
     total_input: i64,
     output_tokens: i64,
@@ -1565,12 +1565,11 @@ fn upsert_adapter_summary_session(
     let archive_messages = summary.archive_messages.clone();
     let parse_warnings = summary.parse_warnings.clone();
 
-    for warning in &summary.parse_warnings {
+    if !summary.parse_warnings.is_empty() {
         log::warn!(
-            "{} session adapter warning for {}: {}",
+            "{} session adapter reported {} parse warning(s)",
             summary.adapter_id,
-            source_ref,
-            warning
+            summary.parse_warnings.len()
         );
     }
 
