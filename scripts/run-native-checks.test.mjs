@@ -5,6 +5,7 @@ import {
   nativeCheckCommands,
   nativeCheckCachePath,
   nativeCheckEnvironment,
+  nativeCheckInvocation,
   parseNativeCheckArguments,
 } from './run-native-checks.mjs';
 
@@ -108,4 +109,15 @@ test('the reusable cache remains repository-local and outside committed evidence
     nativeCheckCachePath('/fixture/repo'),
     '/fixture/repo/artifacts/native-checks/xcodebuildmcp-npm-cache'
   );
+});
+
+test('local checks stay polite while isolated hosted gates retain normal priority', () => {
+  const [background] = nativeCheckCommands(parseNativeCheckArguments([]));
+  const local = nativeCheckInvocation(background, {});
+  assert.equal(local.executable, '/usr/bin/nice');
+  assert.deepEqual(local.arguments.slice(0, 5), ['-n', '10', 'npx', '-y', 'xcodebuildmcp@2.7.0']);
+
+  const hosted = nativeCheckInvocation(background, { GITHUB_ACTIONS: 'true' });
+  assert.equal(hosted.executable, 'npx');
+  assert.deepEqual(hosted.arguments.slice(0, 2), ['-y', 'xcodebuildmcp@2.7.0']);
 });

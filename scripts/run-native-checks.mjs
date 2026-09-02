@@ -117,6 +117,19 @@ export function nativeCheckEnvironment(environment, cache) {
   return clean;
 }
 
+export function nativeCheckInvocation(command, environment = process.env) {
+  const lowerPriority = command.backgroundSafe && environment.GITHUB_ACTIONS !== 'true';
+  return lowerPriority
+    ? {
+        executable: '/usr/bin/nice',
+        arguments: ['-n', '10', 'npx', '-y', XCODEBUILDMCP, ...command.arguments],
+      }
+    : {
+        executable: 'npx',
+        arguments: ['-y', XCODEBUILDMCP, ...command.arguments],
+      };
+}
+
 export function runNativeChecks(options, spawn = spawnSync) {
   if (process.platform !== 'darwin') {
     throw new Error('Native CodeVetter checks require macOS.');
@@ -130,10 +143,9 @@ export function runNativeChecks(options, spawn = spawnSync) {
         '[native] Foreground lane: CodeVetter and XCUITest may take focus until this command finishes.\n'
       );
     }
-    const executable = command.backgroundSafe ? '/usr/bin/nice' : 'npx';
-    const arguments_ = command.backgroundSafe
-      ? ['-n', '10', 'npx', '-y', XCODEBUILDMCP, ...command.arguments]
-      : ['-y', XCODEBUILDMCP, ...command.arguments];
+    // Keep local checks polite while the operator works. The isolated hosted
+    // runner owns its machine and must use normal priority for wall-clock gates.
+    const { executable, arguments: arguments_ } = nativeCheckInvocation(command);
     const result = spawn(executable, arguments_, {
       cwd: repositoryRoot,
       env: nativeCheckEnvironment(process.env, cache),
