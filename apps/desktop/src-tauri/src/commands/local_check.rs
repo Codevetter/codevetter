@@ -760,6 +760,24 @@ where
         );
         return review_stage_from_evidence(started, cross_review::project_stage_evidence(receipt));
     }
+    let policy_binding = match cross_review::coordinator_policy_binding(
+        repo_path,
+        diff_range,
+        task,
+        &runtime_context,
+    ) {
+        Ok(binding) => binding,
+        Err(error) => {
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                    None,
+                    "policy_binding",
+                    &error,
+                )),
+            );
+        }
+    };
     let run_pass = |agent: &str, db: DbState, context: Vec<Value>| {
         run_cli_review_core(
             db,
@@ -773,7 +791,7 @@ where
         )
     };
     on_progress("review_claude", "running");
-    let claude = match run_pass("claude", db.clone(), runtime_context.clone()).await {
+    let mut claude = match run_pass("claude", db.clone(), runtime_context.clone()).await {
         Ok(evidence) => evidence,
         Err(error) => {
             on_progress("review_claude", "no_confidence");
@@ -784,9 +802,19 @@ where
             );
         }
     };
+    if let Err(error) = cross_review::attach_coordinator_binding(&mut claude, &policy_binding) {
+        return review_stage_from_evidence(
+            started,
+            cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                None,
+                "claude_binding",
+                &error,
+            )),
+        );
+    }
     on_progress("review_claude", "completed");
     on_progress("review_codex", "running");
-    let codex = match run_pass("codex", db.clone(), runtime_context).await {
+    let mut codex = match run_pass("codex", db.clone(), runtime_context).await {
         Ok(evidence) => evidence,
         Err(error) => {
             on_progress("review_codex", "no_confidence");
@@ -798,6 +826,16 @@ where
             );
         }
     };
+    if let Err(error) = cross_review::attach_coordinator_binding(&mut codex, &policy_binding) {
+        return review_stage_from_evidence(
+            started,
+            cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                Some(("claude", claude)),
+                "codex_binding",
+                &error,
+            )),
+        );
+    }
     on_progress("review_codex", "completed");
     let receipt = match cross_review::reconcile_complete(claude, codex) {
         Ok(receipt) => receipt,

@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 
 use crate::db::queries::{self, LocalReviewFindingInput, LocalReviewInput, LocalReviewUpdate};
 use crate::DbState;
@@ -15,6 +16,34 @@ use crate::DbState;
 use super::review::resolve_agent_cli_path;
 
 pub const CROSS_REVIEW_SCHEMA: &str = "codevetter.cross-review/v1";
+
+pub fn coordinator_policy_binding(
+    repo_path: &str,
+    diff_range: &str,
+    task: &str,
+    runtime_context: &[Value],
+) -> Result<String, String> {
+    let canonical = serde_json::to_vec(&json!({
+        "schema_version": CROSS_REVIEW_SCHEMA,
+        "repository": repo_path,
+        "diff_range": diff_range,
+        "task": task,
+        "runtime_context": runtime_context,
+    }))
+    .map_err(|error| format!("Could not bind the cross-review policy: {error}"))?;
+    Ok(format!("{:x}", Sha256::digest(canonical)))
+}
+
+pub fn attach_coordinator_binding(evidence: &mut Value, binding: &str) -> Result<(), String> {
+    evidence
+        .as_object_mut()
+        .ok_or_else(|| "Review pass evidence is not an object".to_string())?
+        .insert(
+            "cross_review_policy_binding".into(),
+            Value::String(binding.into()),
+        );
+    Ok(())
+}
 
 pub fn missing_executors() -> Vec<String> {
     ["claude", "codex"]
@@ -29,6 +58,16 @@ pub fn reconcile_complete(claude: Value, codex: Value) -> Result<Value, String> 
     let codex_target = target_identity(&codex)?;
     if claude_target != codex_target {
         return Err("Cross-review passes do not bind the same immutable target".into());
+    }
+    let claude_policy = policy_binding(&claude)?;
+    let codex_policy = policy_binding(&codex)?;
+    if claude_policy != codex_policy {
+        return Err("Cross-review passes do not bind the same coordinator policy".into());
+    }
+    let claude_units = unit_plan_identity(&claude)?;
+    let codex_units = unit_plan_identity(&codex)?;
+    if claude_units != codex_units {
+        return Err("Cross-review passes do not cover the same review units".into());
     }
     let mut grouped = BTreeMap::<String, Vec<(&str, Value)>>::new();
     let mut unresolved = Vec::new();
@@ -129,6 +168,8 @@ pub fn reconcile_complete(claude: Value, codex: Value) -> Result<Value, String> 
         "strategy": "claude_then_codex_independent",
         "status": if complete { "completed" } else { "incomplete" },
         "target_identity": claude_target,
+        "policy_binding": claude_policy,
+        "unit_plan_identity": claude_units,
         "passes": [pass_summary("claude", &claude), pass_summary("codex", &codex)],
         "counts": counts,
         "findings": findings,
@@ -269,6 +310,36 @@ fn target_identity(evidence: &Value) -> Result<String, String> {
         .ok_or_else(|| "Review pass omitted its immutable target identity".into())
 }
 
+fn policy_binding(evidence: &Value) -> Result<String, String> {
+    evidence
+        .get("cross_review_policy_binding")
+        .and_then(Value::as_str)
+        .filter(|value| value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit()))
+        .map(str::to_string)
+        .ok_or_else(|| "Review pass omitted its shared coordinator policy binding".into())
+}
+
+fn unit_plan_identity(evidence: &Value) -> Result<String, String> {
+    let units = evidence
+        .pointer("/review_manifest/units")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "Review pass omitted its bounded unit plan".to_string())?;
+    let canonical = units
+        .iter()
+        .map(|unit| {
+            json!({
+                "file_path": unit.get("file_path"),
+                "file_status": unit.get("file_status"),
+                "diff_bytes": unit.get("diff_bytes"),
+                "prompt_budget_bytes": unit.get("prompt_budget_bytes"),
+            })
+        })
+        .collect::<Vec<_>>();
+    let bytes = serde_json::to_vec(&canonical)
+        .map_err(|error| format!("Could not bind the review unit plan: {error}"))?;
+    Ok(format!("{:x}", Sha256::digest(bytes)))
+}
+
 fn finding_identity(finding: &Value) -> Option<String> {
     let path = finding.get("filePath").and_then(Value::as_str)?.trim();
     let line = finding.get("line").and_then(Value::as_i64)?;
@@ -344,6 +415,7 @@ mod tests {
 
     fn pass(reviewer: &str, findings: Value) -> Value {
         json!({
+            "cross_review_policy_binding": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "review_id": format!("{reviewer}-review"),
             "review_status": "completed",
             "review_readiness": {"status": "ready"},
@@ -353,7 +425,13 @@ mod tests {
             "review_manifest": {
                 "target": {"identity": "immutable-target"},
                 "executor_id": reviewer,
-                "policy_fingerprint": format!("{reviewer}-policy")
+                "policy_fingerprint": format!("{reviewer}-policy"),
+                "units": [{
+                    "file_path": "src/a.rs",
+                    "file_status": "M",
+                    "diff_bytes": 128,
+                    "prompt_budget_bytes": 81920
+                }]
             }
         })
     }
@@ -464,6 +542,18 @@ mod tests {
         let mut codex = pass("codex", json!([]));
         codex["review_manifest"]["target"]["identity"] = Value::String("other".into());
         assert!(reconcile_complete(claude, codex).is_err());
+    }
+
+    #[test]
+    fn different_coordinator_policy_or_unit_plan_never_forms_a_composite() {
+        let claude = pass("claude", json!([]));
+        let mut codex = pass("codex", json!([]));
+        codex["cross_review_policy_binding"] = Value::String("b".repeat(64));
+        assert!(reconcile_complete(claude.clone(), codex).is_err());
+
+        let mut different_units = pass("codex", json!([]));
+        different_units["review_manifest"]["units"][0]["diff_bytes"] = Value::from(129);
+        assert!(reconcile_complete(claude, different_units).is_err());
     }
 
     #[test]
