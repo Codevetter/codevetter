@@ -1,0 +1,133 @@
+{
+  "agent": "claude",
+  "changed_lines": 9,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 46673,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 9,
+      "severity": "high",
+      "suggestion": "Before extracting, iterate zf.infolist() and enforce limits: reject if any info.file_size exceeds a per-file cap, if sum(file_size) exceeds a total cap, if len(infolist) exceeds a member cap, or if file_size/compress_size exceeds a ratio threshold. Extract members individually with a bounded read loop (read fixed-size chunks and abort past a running byte budget) rather than extractall. Also document that archive_path may be untrusted.",
+      "summary": "source.py:8-9 calls zf.extractall(dest) directly with no cap on per-member uncompressed size, total extracted bytes, member count, or compression ratio. As the comment at lines 6-7 acknowledges, a small crafted archive (zip bomb) can decompress to arbitrarily large output, exhausting disk and memory (DoS). The function name/signature (extract_archive, line 5) advertises no trust precondition, so with 0 current callers the next integration is likely to feed it untrusted input and inherit the vulnerability.",
+      "title": "Zip bomb: extract_archive decompresses without size/ratio/count limits"
+    }
+  ],
+  "findings_count": 1,
+  "qa_evidence": [],
+  "review_id": "e39eea18-55ce-4be4-9219-ca6fb173f57e",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "assumption-first",
+  "risk_tier": "trivial",
+  "score": 90.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "general"],
+  "summary": "Risk-tiered review (trivial) completed.\n\nSingle new file introducing extract_archive, which extracts a zip with zipfile.extractall and no decompression limits — a genuine zip-bomb / resource-exhaustion vulnerability that the code's own comment acknowledges. Stated intent and code agree (no intent/code contradiction), but the function relies on an unenforced and unadvertised 'archive is trusted' invariant, which is the material assumption risk for follow-up work. Path traversal (Zip Slip) is NOT present because CPython's extractall sanitizes member paths — deliberately not reported to avoid a false finding.\n\nSingle newly-added function extract_archive extracts a zip with zipfile.extractall and no size/ratio guards — a real decompression-bomb DoS (CWE-409), matching the case annotation. Path traversal (Zip Slip) is largely mitigated by modern extractall's own sanitization, so it is not reported as a separate finding. No callers exist yet (0 blast radius), but any use on untrusted input is unsafe.",
+  "talk_id": "04fc11e0-db90-4923-bdf0-33b550f8844a"
+}

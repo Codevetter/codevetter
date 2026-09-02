@@ -1,0 +1,151 @@
+{
+  "agent": "claude",
+  "changed_lines": 16,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 72528,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 8,
+      "severity": "high",
+      "suggestion": "Narrow the handler to `except json.JSONDecodeError` (and/or `ValueError`) so control-flow exceptions propagate. Either re-raise/wrap parse failures (e.g. raise a ConfigError) or make the failure explicit to callers instead of returning a silent `{}`; if a default is truly desired, log the error and document that `{}` means 'parse failed'.",
+      "summary": "source.py:8 uses a bare `except:` which catches BaseException — including KeyboardInterrupt and SystemExit — so Ctrl-C and interpreter shutdown are suppressed inside parse_config. It also returns `{}` (line 11) on *any* failure, and load_settings (line 16) passes that straight back, so a malformed or unreadable config silently degrades to empty settings with no signal to callers. The `-> dict` return type is structurally honored but its semantic contract (a valid parsed config) is broken, and the inline comment (lines 8–10) confirms this is a known BUG that was committed rather than fixed.",
+      "title": "Bare except in parse_config swallows BaseException and silently returns {}"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.py",
+      "line": 8,
+      "severity": "medium",
+      "suggestion": "Catch only json.JSONDecodeError (or ValueError) and re-raise / propagate rather than swallowing. Either let load_settings raise on unparseable config so the caller can show an explicit error state, or return a sentinel (e.g. None) plus the raw error so callers can distinguish parse failure from an intentionally empty config. Never map 'parse failed' to the same value as 'valid empty object'.",
+      "summary": "source.py:6-11: the bare `except:` in parse_config catches everything (including BaseException) and returns `{}`. Via load_settings (source.py:14-16), a malformed/truncated config file therefore resolves to an empty settings dict with no error, log, or empty-state signal — the data-loss/confusing-state pattern where a user's persisted settings silently appear reset and callers cannot distinguish 'missing' from 'corrupt' from 'legitimately empty'. Blast radius is 0 callers today (both symbols unused), so this is latent, not a live regression — hence medium, not high.",
+      "title": "parse_config silently returns {} on any parse failure → load_settings yields empty settings with no error"
+    },
+    {
+      "confidence": 0.7,
+      "filePath": "source.py",
+      "line": 5,
+      "severity": "low",
+      "suggestion": "Add test_source.py asserting parse_config on valid JSON round-trips and on invalid JSON raises (not returns {}), then run `python -m pytest -q` and attach the output. This is optional cleanup relative to the bare-except fix but resolves the blocked rerun_relevant_verification gate.",
+      "summary": "source.py adds parse_config and load_settings (0 callers, newly added) with no accompanying tests and no fresh command/test output in history — matching the pre-review `no-fresh-verification-evidence` candidate. Nothing proves the intended behavior (surface parse errors vs. return {}), so the change is only statically plausible.",
+      "title": "New parse/load functions ship with no tests or verification evidence"
+    }
+  ],
+  "findings_count": 3,
+  "qa_evidence": [],
+  "review_id": "f04398c5-f795-494f-ab0e-05d9f56a55b3",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 83.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new 16-line file demonstrating a bare-except antipattern. The code contains a genuine, self-documented bug: `except:` at line 8 catches BaseException (KeyboardInterrupt/SystemExit) and returns `{}` on any failure, which load_settings propagates — masking parse failures from callers. The author's own comment agrees it's a BUG, and the change shipped with it unfixed. No live regression yet (0 callers, newly added), but the defect is real and would mislead future callers.\n\nSingle 16-line new file with one genuine defect in product-safety scope: parse_config swallows all exceptions and returns {}, so load_settings turns a corrupt/truncated config into a silent empty-settings state (potential user-visible data loss, no error surfaced). Capped at medium because both functions currently have 0 callers (confirmed via grep, matches blast-radius data) — the defect is real and certain but latent until wired into a flow. The bare `except:` also catches KeyboardInterrupt/SystemExit, but json.loads is fast so that sub-issue is minor. load_settings does not guard open() errors, so OSError propagates raw — an inconsistent contract worth noting, not a data-loss bug.\n\nSmall 16-line new file with one certain defect: the bare `except:` at line 8 catches BaseException (swallowing KeyboardInterrupt/SystemExit) and returns `{}` on any failure, so parse errors are invisible to callers including load_settings (line 16). Both functions are currently uncalled (0 callers), which caps real-world impact and keeps this at medium rather than high. No tests or fresh verification exist, so the change is unproven.",
+  "talk_id": "8adc508b-89e9-419f-bbd7-2953bcb6db14"
+}

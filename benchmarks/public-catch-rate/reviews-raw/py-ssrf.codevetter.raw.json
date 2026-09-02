@@ -1,0 +1,142 @@
+{
+  "agent": "claude",
+  "changed_lines": 12,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 48393,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.py"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.95,
+      "filePath": "source.py",
+      "line": 10,
+      "severity": "critical",
+      "suggestion": "Before fetching: (1) parse the URL and allow only http/https schemes; (2) resolve the hostname and reject if any resolved IP is in a private/loopback/link-local/reserved range (ipaddress.ip_address(...).is_private/is_loopback/is_link_local/is_reserved), guarding against DNS-rebinding by pinning the validated IP for the actual connection; (3) disable redirects (allow_redirects=False) or re-validate each hop; (4) optionally enforce a host allowlist and cap response size. Consider a vetted helper/library rather than hand-rolling.",
+      "summary": "source.py:10 passes the untrusted `image_url` parameter directly into `requests.get(image_url, timeout=5)` with no validation between the function entry (line 5) and the request. There is no scheme allowlist, no host/DNS-resolution check, and no rejection of private/link-local ranges; `requests` also follows redirects by default, so a remote 302 can reach internal targets even if the initial host were checked. An attacker who controls `image_url` can read cloud metadata credentials via http://169.254.169.254/latest/meta-data/ or pivot to internal services. Currently 0 callers, so no live flow is broken yet, but this becomes exploitable the moment it is wired to user input.",
+      "title": "SSRF: user-supplied URL fetched with no scheme/host/private-range validation"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.py",
+      "line": 6,
+      "severity": "medium",
+      "suggestion": "Treat the SSRF finding as a hard blocker, not optional cleanup. After adding validation, add and run a unit test that asserts internal/metadata URLs raise before any network call (e.g. mock requests.get and assert it is never invoked for 169.254.169.254). Attach the test output as the verification artifact, then remove the stale BUG comment.",
+      "summary": "Lines 6-9 contain a self-described '# BUG:' comment identifying the SSRF, yet the committed implementation (line 10) applies no fix — a fake-green handoff where the defect is documented but not resolved. No test or command evidence accompanies the change (procedure gate rerun_relevant_verification is blocked), so nothing proves the fetch rejects internal/link-local targets. The next agent must not treat this as done.",
+      "title": "Known-defect handoff with no verification: BUG comment left in, no tests added"
+    }
+  ],
+  "findings_count": 2,
+  "qa_evidence": [],
+  "review_id": "e0e03c63-4afb-4c96-a9bf-096676790714",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-py",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-py",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-py",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.py",
+        "id": "file-source-py",
+        "kind": "file",
+        "label": "source.py"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.py",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 75.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nNewly added fetch_preview is a textbook SSRF: it fetches an arbitrary user-controlled URL (source.py:10) with no scheme, host, or private-range restrictions and default redirect following. The function's own comment honestly describes the vulnerability, so there is no stated-intent/code contradiction — but the 'URL is safe' invariant is relied upon and never enforced, and labeling a live exploit path as a documented 'BUG' risks a next agent wiring it up believing the risk was handled. 0 callers today (not yet exploitable), which caps immediate severity at high, but the impact is credential theft / internal pivot the moment it is called.\n\nSingle new file introducing fetch_preview, a textbook SSRF: untrusted image_url flows straight into requests.get with no scheme/host/private-range checks and default redirect-following (source.py:5-10). No callers today (blast radius 0), so nothing is broken in a live user flow yet — hence it's a latent critical rather than an active product-safety regression — but it is a critical cross-scope defect and must be fixed before wiring to any user input.\n\nA 12-line new module (fetch_preview) introduces a classic, unmitigated SSRF: a user-supplied URL is passed directly to requests.get with no scheme/host/private-range checks and default redirect-following, reaching cloud metadata (169.254.169.254) and internal services. The code even carries a self-labeled '# BUG:' comment yet ships unfixed, with no tests or verification — an incomplete, fake-green handoff. 0 callers today keeps live risk latent, but the function exists to consume untrusted input, so it is critical the moment it is wired up. Primary blocker: add scheme/IP-range validation + disable redirects; secondary: add a rejection test as verification before marking fixed.",
+  "talk_id": "ca9ced7e-5e08-4df1-8cef-e8622226df61"
+}

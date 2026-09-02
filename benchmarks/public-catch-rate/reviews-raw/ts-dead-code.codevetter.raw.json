@@ -1,0 +1,178 @@
+{
+  "agent": "claude",
+  "changed_lines": 21,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 82096,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.ts"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.95,
+      "filePath": "source.ts",
+      "line": 8,
+      "severity": "medium",
+      "suggestion": "Guard the 'C' case (`if (score >= 70) { return 'C'; }`) so the 'D' (`>= 60`?) and 'F' branches become reachable, then delete the now-truly-dead fallthrough. Confirm the intended grade thresholds. Also remove the unused `neverCalled` helper (source.ts:19) if it is not a deliberate fixture.",
+      "summary": "In `classify` (source.ts:2), `return 'C';` on line 8 executes for every score below 80, so the code on lines 13–16 (`if (score >= 70) return 'D';` and `return 'F';`) is unreachable. The function can only return 'A', 'B', or 'C'; e.g. `classify(50)` returns 'C' instead of 'F'. The comment on lines 11–12 correctly identifies this, so it does not mislead follow-up work, but the underlying correctness bug is real: the `return 'C'` was almost certainly meant to be guarded (e.g. `if (score >= 70) return 'C';`). `classify` is exported (0 current callers per blast radius), so this is a latent contract defect.",
+      "title": "Unconditional `return 'C'` makes 'D'/'F' branches dead — classifier can never return those grades"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.ts",
+      "line": 9,
+      "severity": "medium",
+      "suggestion": "Confirm the intended thresholds, then restructure so the branches are reachable — e.g. guard the 'C' case (`if (score >= 70) return 'C';`) before `if (score >= 60) return 'D';` / `return 'F';`, or delete lines 13-16 if 'C' truly is the floor. Do not leave the unreachable block in place.",
+      "summary": "Line 9 `return 'C';` is unconditional, so lines 13-16 (`if (score >= 70) return 'D';` and `return 'F';`) are unreachable. Any score below 80 returns 'C', so the exported classify() can never produce 'D' or 'F' — a 65 and a 45 both grade as 'C'. The line 11-12 comment excuses this as 'never used,' but classify is `export`ed (line 2) and thus a public contract; 0 callers today does not make the logic correct. Intended grade boundaries are ambiguous, so the fix needs author intent, not a guess.",
+      "title": "Unreachable code makes classify() never return 'D' or 'F'"
+    },
+    {
+      "confidence": 0.95,
+      "filePath": "source.ts",
+      "line": 9,
+      "severity": "medium",
+      "suggestion": "Delete the unconditional `return 'C';` on line 9 and let the score fall through the `>= 70` check, so the tiers read: >=90 A, >=80 B, >=70 C (or D per intent), else F. Confirm the intended cutoffs, then run `tsc --noEmit` with `allowUnreachableCode: false` to prove no unreachable branches remain.",
+      "summary": "Line 9 `return 'C';` is unconditional, so lines 13–16 (`if (score >= 70) return 'D';` and the final `return 'F';`) are unreachable. classify(75) returns 'C' instead of 'D', and classify(40) returns 'C' instead of 'F'. The function is `export`ed (line 2), so any future consumer of this public symbol gets a silently wrong grade for the entire 0–79 range. Currently 0 callers, so no live workflow is broken yet — hence medium, not high.",
+      "title": "Unreachable D/F grade tiers: classify() returns 'C' for every score below 80"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.ts",
+      "line": 19,
+      "severity": "low",
+      "suggestion": "Remove neverCalled() unless a caller is coming in a follow-up; if intentional scaffolding, note that in a commit message so the next agent doesn't re-flag it.",
+      "summary": "Lines 19-21 define `neverCalled()` which is non-exported and has 0 callers (confirmed by blast-radius). It is pure dead weight.",
+      "title": "neverCalled() is dead code"
+    },
+    {
+      "confidence": 0.85,
+      "filePath": "source.ts",
+      "line": 2,
+      "severity": "low",
+      "suggestion": "Next agent: run `npx tsc --noEmit --allowUnreachableCode false source.ts` (errors on the unreachable block) and add a table test asserting classify(95)==='A', classify(85)==='B', classify(75), classify(55) across all bands. Attach the output before marking this fixed.",
+      "summary": "Repo has no tsconfig.json, package.json, tests, or lint config; nothing was run against the diff, leaving the rerun_relevant_verification gate unresolved. The unreachable-code bug at line 9 is trivially detectable by a compiler/linter.",
+      "title": "No verification run — dead-code bug would be caught by tsc/lint"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.ts",
+      "line": 19,
+      "severity": "low",
+      "suggestion": "Remove neverCalled() unless it is a deliberate placeholder for imminent use; if kept, add a comment explaining why.",
+      "summary": "neverCalled (lines 19–21) is not exported and has 0 callers per the blast-radius scan; it only logs to console. No correctness or user-facing impact — pure dead code.",
+      "title": "Dead helper neverCalled() has no callers"
+    }
+  ],
+  "findings_count": 6,
+  "qa_evidence": [],
+  "review_id": "f1aad0f3-47ce-4dca-8a35-b973ef1cf6c2",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-ts",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-ts",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-ts",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.ts",
+        "id": "file-source-ts",
+        "kind": "file",
+        "label": "source.ts"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.ts",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 79.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new 21-line file, self-contained in the diff. The only material issue is a provable dead-code/correctness defect: the unconditional `return 'C'` on line 8 makes the 'D'/'F' branches (lines 13–16) unreachable, so `classify` can never return those grades. From the assumption-integrity angle, the inline comment's claims (code below is unreachable; helper is unused) are both accurate and verified against blast-radius data, so they will NOT steer the next agent to a false premise — the comment honestly labels the bug. Severity capped at medium because `classify` has 0 callers today despite being exported.\n\nNew standalone file with a self-admitted dead-code defect. The material bug: an unconditional `return 'C';` (line 9) makes the D/F grade tiers (lines 13–16) unreachable, so classify() returns 'C' for all scores below 80 instead of 'D' (70–79) or 'F' (<70). Because classify is exported, this is a latent public-API regression, but with 0 callers there is no broken user workflow today — rated medium. neverCalled() is harmless dead code (low). No security, data-loss, or permission-state concerns in scope.\n\nNewly added source.ts introduces an exported classify() with a live correctness bug: an unconditional `return 'C';` at line 9 renders the 'D'/'F' branches (lines 13-16) unreachable, so all scores below 80 grade as 'C'. The in-code comment acknowledges the dead code but wrongly dismisses it as harmless because the symbol is unused — it is exported and the logic is simply wrong. A second unused function (neverCalled) is minor dead code. No verification harness exists, so the bug shipped unchecked.",
+  "talk_id": "bf5c4b17-85b3-437c-a1f7-dd1b2b1295cc"
+}
