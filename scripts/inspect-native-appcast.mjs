@@ -1,32 +1,26 @@
 #!/usr/bin/env node
 
-import { execFileSync } from 'node:child_process';
 import { createHash, createPublicKey, verify } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { isMainModule, parsePathArguments, readJSON, readPlist } from './native-script-utils.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const schemaVersion = 'codevetter.native-appcast-qualification/v1';
 const qualificationSchema = 'codevetter.native-package-qualification/v1';
 
 export function parseArguments(argv) {
-  const options = {};
-  for (let index = 0; index < argv.length; index += 1) {
-    const argument = argv[index];
-    if (argument === '--') continue;
-    if (argument === '--app') options.app = resolve(requiredValue(argv, ++index, argument));
-    else if (argument === '--appcast') {
-      options.appcast = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--qualification') {
-      options.qualification = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--out') options.out = resolve(requiredValue(argv, ++index, argument));
-    else throw new Error(`Unknown argument: ${argument}`);
-  }
-  for (const required of ['app', 'appcast', 'qualification']) {
-    if (!options[required]) throw new Error(`--${required} is required`);
-  }
-  return options;
+  return parsePathArguments(argv, {
+    paths: {
+      '--app': 'app',
+      '--appcast': 'appcast',
+      '--qualification': 'qualification',
+      '--out': 'out',
+    },
+    required: ['--app', '--appcast', '--qualification'],
+  });
 }
 
 export function evaluateNativeAppcast({ xml, info, qualification, archiveBytes, archiveName }) {
@@ -85,8 +79,8 @@ export function evaluateNativeAppcast({ xml, info, qualification, archiveBytes, 
 }
 
 export function inspectNativeAppcast(options = parseArguments(process.argv.slice(2))) {
-  const info = readPlist(join(options.app, 'Contents/Info.plist'));
-  const qualification = JSON.parse(readFileSync(options.qualification, 'utf8'));
+  const info = readPlist(join(options.app, 'Contents/Info.plist'), repositoryRoot);
+  const qualification = readJSON(options.qualification);
   const xml = readFileSync(options.appcast, 'utf8');
   const enclosure = parseEnclosure(xml);
   const archiveName = basename(new URL(enclosure.url).pathname);
@@ -148,25 +142,8 @@ function ed25519PublicKey(raw) {
   return createPublicKey({ key: Buffer.concat([prefix, raw]), format: 'der', type: 'spki' });
 }
 
-function readPlist(path) {
-  return JSON.parse(
-    execFileSync('plutil', ['-convert', 'json', '-o', '-', path], {
-      cwd: repositoryRoot,
-      encoding: 'utf8',
-    })
-  );
-}
-
 function check(id, passed) {
   return { id, passed: passed === true };
 }
 
-function requiredValue(argv, index, argument) {
-  const value = argv[index];
-  if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value`);
-  return value;
-}
-
-const isMain =
-  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
-if (isMain) inspectNativeAppcast();
+if (isMainModule(import.meta.url)) inspectNativeAppcast();

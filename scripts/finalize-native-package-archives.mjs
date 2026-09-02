@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { renameSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import {
+  fileArtifact,
+  isMainModule,
+  parsePathArguments,
+  readJSON,
+} from './native-script-utils.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function parseArguments(argv) {
-  const options = {};
-  for (let index = 0; index < argv.length; index += 1) {
-    const argument = argv[index];
-    if (argument === '--') continue;
-    if (argument === '--qualification') {
-      options.qualification = resolve(requiredValue(argv, ++index, argument));
-    } else throw new Error(`Unknown argument: ${argument}`);
-  }
-  if (!options.qualification) throw new Error('--qualification is required');
-  return options;
+  return parsePathArguments(argv, {
+    paths: { '--qualification': 'qualification' },
+    required: ['--qualification'],
+  });
 }
 
 export function updateArchiveReceipt(qualification, artifacts) {
@@ -40,7 +40,7 @@ export function finalizeNativePackageArchives(
   options = parseArguments(process.argv.slice(2)),
   run = runCommand
 ) {
-  const qualification = JSON.parse(readFileSync(options.qualification, 'utf8'));
+  const qualification = readJSON(options.qualification);
   const directory = dirname(options.qualification);
   const app = resolve(qualification.application?.path ?? '');
   if (app !== join(directory, 'CodeVetter.app')) {
@@ -69,7 +69,7 @@ export function finalizeNativePackageArchives(
       throw new Error(`Unsupported native archive: ${archive.name}`);
     }
     renameSync(temporary, target);
-    artifacts.push(artifact(target));
+    artifacts.push(fileArtifact(target));
   }
   const finalized = updateArchiveReceipt(qualification, artifacts);
   writeFileSync(options.qualification, `${JSON.stringify(finalized, null, 2)}\n`);
@@ -77,25 +77,8 @@ export function finalizeNativePackageArchives(
   return finalized;
 }
 
-function artifact(path) {
-  const bytes = readFileSync(path);
-  return {
-    name: basename(path),
-    bytes: bytes.length,
-    sha256: createHash('sha256').update(bytes).digest('hex'),
-  };
-}
-
 function runCommand(command, arguments_) {
   execFileSync(command, arguments_, { cwd: repositoryRoot, stdio: 'inherit' });
 }
 
-function requiredValue(argv, index, argument) {
-  const value = argv[index];
-  if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value`);
-  return value;
-}
-
-const isMain =
-  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
-if (isMain) finalizeNativePackageArchives();
+if (isMainModule(import.meta.url)) finalizeNativePackageArchives();

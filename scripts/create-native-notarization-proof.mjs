@@ -6,28 +6,20 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { isMainModule, parsePathArguments, readJSON } from './native-script-utils.mjs';
+
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const proofSchema = 'codevetter.native-notarization-proof/v1';
 
 export function parseArguments(argv) {
-  const options = {};
-  for (let index = 0; index < argv.length; index += 1) {
-    const argument = argv[index];
-    if (argument === '--') continue;
-    if (argument === '--app') options.app = resolve(requiredValue(argv, ++index, argument));
-    else if (argument === '--archive') {
-      options.archive = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--qualification') {
-      options.qualification = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--submission') {
-      options.submission = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--out') options.out = resolve(requiredValue(argv, ++index, argument));
-    else throw new Error(`Unknown argument: ${argument}`);
-  }
-  for (const required of ['app', 'archive', 'qualification', 'submission', 'out']) {
-    if (!options[required]) throw new Error(`--${required} is required`);
-  }
-  return options;
+  const paths = {
+    '--app': 'app',
+    '--archive': 'archive',
+    '--qualification': 'qualification',
+    '--submission': 'submission',
+    '--out': 'out',
+  };
+  return parsePathArguments(argv, { paths, required: Object.keys(paths) });
 }
 
 export function buildNativeNotarizationProof({
@@ -63,8 +55,8 @@ export function buildNativeNotarizationProof({
 }
 
 export function createNativeNotarizationProof(options = parseArguments(process.argv.slice(2))) {
-  const qualification = JSON.parse(readFileSync(options.qualification, 'utf8'));
-  const submission = JSON.parse(readFileSync(options.submission, 'utf8'));
+  const qualification = readJSON(options.qualification);
+  const submission = readJSON(options.submission);
   const archiveSHA256 = createHash('sha256').update(readFileSync(options.archive)).digest('hex');
   const developerDirectory = execFileSync('xcode-select', ['-p'], { encoding: 'utf8' }).trim();
   const stapler = join(developerDirectory, 'usr/bin/stapler');
@@ -83,12 +75,4 @@ export function createNativeNotarizationProof(options = parseArguments(process.a
   return proof;
 }
 
-function requiredValue(argv, index, argument) {
-  const value = argv[index];
-  if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value`);
-  return value;
-}
-
-const isMain =
-  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
-if (isMain) createNativeNotarizationProof();
+if (isMainModule(import.meta.url)) createNativeNotarizationProof();

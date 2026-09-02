@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { realpathSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { isMainModule, parsePathArguments, readJSON, readPlist } from './native-script-utils.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const productionBundleIdentifier = 'com.codevetter.desktop';
@@ -15,25 +17,17 @@ const appcastSchema = 'codevetter.native-appcast-qualification/v1';
 const productionAppDataIdentity = 'com.codevetter.desktop';
 
 export function parseArguments(argv) {
-  const options = {};
-  for (let index = 0; index < argv.length; index += 1) {
-    const argument = argv[index];
-    if (argument === '--') continue;
-    if (argument === '--app') options.app = resolve(requiredValue(argv, ++index, argument));
-    else if (argument === '--qualification') {
-      options.qualification = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--notarization-proof') {
-      options.notarizationProof = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--installed-proof') {
-      options.installedProof = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--appcast-proof') {
-      options.appcastProof = resolve(requiredValue(argv, ++index, argument));
-    } else if (argument === '--out') options.out = resolve(requiredValue(argv, ++index, argument));
-    else throw new Error(`Unknown argument: ${argument}`);
-  }
-  if (!options.app) throw new Error('--app is required');
-  if (!options.qualification) throw new Error('--qualification is required');
-  return options;
+  return parsePathArguments(argv, {
+    paths: {
+      '--app': 'app',
+      '--qualification': 'qualification',
+      '--notarization-proof': 'notarizationProof',
+      '--installed-proof': 'installedProof',
+      '--appcast-proof': 'appcastProof',
+      '--out': 'out',
+    },
+    required: ['--app', '--qualification'],
+  });
 }
 
 export function evaluateNativeReleaseReadiness(input) {
@@ -176,7 +170,7 @@ function validInstalledUpgradeProof(installed, { appVersion, appBuild, archiveHa
 export function inspectNativeReleaseReadiness(options = parseArguments(process.argv.slice(2))) {
   const appPath = realpathSync(options.app);
   const qualification = readJSON(options.qualification);
-  const info = readPlist(join(appPath, 'Contents/Info.plist'));
+  const info = readPlist(join(appPath, 'Contents/Info.plist'), repositoryRoot);
   const signature = inspectSignature(appPath);
   const companionSignatures = (qualification.sidecars ?? []).map((sidecar) =>
     inspectSignature(join(appPath, 'Contents/MacOS', sidecar.name))
@@ -260,19 +254,6 @@ function inspectGatekeeper(appPath) {
   return { accepted: result.status === 0, detail: detail.slice(0, 500) };
 }
 
-function readPlist(path) {
-  return JSON.parse(
-    execFileSync('plutil', ['-convert', 'json', '-o', '-', path], {
-      cwd: repositoryRoot,
-      encoding: 'utf8',
-    })
-  );
-}
-
-function readJSON(path) {
-  return JSON.parse(readFileSync(path, 'utf8'));
-}
-
 function check(id, passed) {
   return { id, passed: passed === true };
 }
@@ -340,12 +321,4 @@ function valueFor(output, key) {
     ?.slice(key.length + 1);
 }
 
-function requiredValue(argv, index, argument) {
-  const value = argv[index];
-  if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value`);
-  return value;
-}
-
-const isMain =
-  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
-if (isMain) inspectNativeReleaseReadiness();
+if (isMainModule(import.meta.url)) inspectNativeReleaseReadiness();
