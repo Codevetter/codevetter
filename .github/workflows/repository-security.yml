@@ -1,0 +1,182 @@
+name: Repository Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: repository-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: GitHub Actions semantics
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned workflow analyzers
+        env:
+          ACTIONLINT_ARCHIVE: actionlint_1.7.12_linux_amd64.tar.gz
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+          ACTIONLINT_URL: https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          SHELLCHECK_ARCHIVE: shellcheck-v0.11.0.linux.x86_64.tar.gz
+          SHELLCHECK_SHA256: b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6
+          SHELLCHECK_URL: https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz
+        run: |
+          mkdir -p "$RUNNER_TEMP/workflow-tools"
+          curl --fail --silent --show-error --location "$ACTIONLINT_URL" --output "$RUNNER_TEMP/$ACTIONLINT_ARCHIVE"
+          echo "$ACTIONLINT_SHA256  $RUNNER_TEMP/$ACTIONLINT_ARCHIVE" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$ACTIONLINT_ARCHIVE" -C "$RUNNER_TEMP/workflow-tools" actionlint
+          curl --fail --silent --show-error --location "$SHELLCHECK_URL" --output "$RUNNER_TEMP/$SHELLCHECK_ARCHIVE"
+          echo "$SHELLCHECK_SHA256  $RUNNER_TEMP/$SHELLCHECK_ARCHIVE" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$SHELLCHECK_ARCHIVE" -C "$RUNNER_TEMP"
+          mv "$RUNNER_TEMP/shellcheck-v0.11.0/shellcheck" "$RUNNER_TEMP/workflow-tools/shellcheck"
+          echo "$RUNNER_TEMP/workflow-tools" >> "$GITHUB_PATH"
+      - name: Validate workflow syntax and shell fragments
+        run: |
+          actionlint -version
+          shellcheck --version
+          actionlint -color
+
+  biome-sarif:
+    name: Biome SARIF
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # Publish the generated Biome report.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Generate Biome SARIF
+        env:
+          BIOME_SARIF_PATH: artifacts/tooling/biome.sarif
+        run: pnpm run quality:sarif
+      - name: Upload Biome SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        with:
+          sarif_file: artifacts/tooling/biome.sarif
+          category: biome
+
+  cargo-deny:
+    name: Rust dependency policy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # Publish license and source-policy findings.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned cargo-deny binary
+        env:
+          CARGO_DENY_ARCHIVE: cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+          CARGO_DENY_SHA256: 9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f
+          CARGO_DENY_URL: https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+        run: |
+          curl --fail --silent --show-error --location "$CARGO_DENY_URL" --output "$RUNNER_TEMP/$CARGO_DENY_ARCHIVE"
+          echo "$CARGO_DENY_SHA256  $RUNNER_TEMP/$CARGO_DENY_ARCHIVE" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$CARGO_DENY_ARCHIVE" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/cargo-deny-0.20.2-x86_64-unknown-linux-musl" >> "$GITHUB_PATH"
+      - name: Check licenses, sources, and wildcard requirements
+        id: policy
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts/tooling
+          set +e
+          cargo-deny --format sarif --manifest-path apps/desktop/src-tauri/Cargo.toml --config apps/desktop/src-tauri/deny.toml --frozen check licenses sources > artifacts/tooling/cargo-deny.sarif
+          policy_status=$?
+          cargo-deny --manifest-path apps/desktop/src-tauri/Cargo.toml --config apps/desktop/src-tauri/deny.toml --frozen check --hide-inclusion-graph bans
+          bans_status=$?
+          set -e
+          if [ "$policy_status" -eq 0 ] && [ ! -s artifacts/tooling/cargo-deny.sarif ]; then
+            printf '%s\n' '{"$schema":"https://json.schemastore.org/sarif-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"cargo-deny","version":"0.20.2","rules":[]}},"results":[]}]}' > artifacts/tooling/cargo-deny.sarif
+          fi
+          if jq empty artifacts/tooling/cargo-deny.sarif; then
+            echo "sarif_valid=true" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$policy_status" -ne 0 ] || [ "$bans_status" -ne 0 ]; then
+            exit 1
+          fi
+      - name: Upload cargo-deny SARIF
+        if: always() && steps.policy.outputs.sarif_valid == 'true'
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        with:
+          sarif_file: artifacts/tooling/cargo-deny.sarif
+          category: cargo-deny
+      - name: Enforce cargo-deny result
+        if: always() && steps.policy.outcome == 'failure'
+        run: exit 1
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # Publish the redacted Gitleaks report.
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install pinned Gitleaks binary
+        env:
+          GITLEAKS_ARCHIVE: gitleaks_8.30.1_linux_x64.tar.gz
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          GITLEAKS_URL: https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+        run: |
+          curl --fail --silent --show-error --location "$GITLEAKS_URL" --output "$RUNNER_TEMP/$GITLEAKS_ARCHIVE"
+          echo "$GITLEAKS_SHA256  $RUNNER_TEMP/$GITLEAKS_ARCHIVE" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/gitleaks-bin"
+          tar -xzf "$RUNNER_TEMP/$GITLEAKS_ARCHIVE" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
+          echo "$RUNNER_TEMP/gitleaks-bin" >> "$GITHUB_PATH"
+      - name: Scan repository history
+        id: scan
+        continue-on-error: true
+        run: >-
+          gitleaks git --no-banner --redact=100 --report-format sarif
+          --report-path "$RUNNER_TEMP/gitleaks.sarif" .
+      - name: Upload Gitleaks SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        with:
+          sarif_file: ${{ runner.temp }}/gitleaks.sarif
+          category: gitleaks
+      - name: Enforce Gitleaks result
+        if: always() && steps.scan.outcome == 'failure'
+        run: exit 1
+
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # zizmor-action uploads its SARIF report.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Audit GitHub Actions
+        uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054 # v0.6.2

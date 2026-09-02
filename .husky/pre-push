@@ -1,14 +1,22 @@
-# Abort push if lint fails or a known secret pattern leaks into tracked files.
+# Abort push if lint fails or Gitleaks finds a secret in repository history.
+# Keep the narrow regex fallback for contributors who do not have Gitleaks.
 set -e
 
 if [ -f package.json ] && grep -q '"lint"' package.json; then
-  npm run lint || { echo "lint failed — fix before pushing" >&2; exit 1; }
+  pnpm run lint || { echo "lint failed — fix before pushing" >&2; exit 1; }
 fi
+
+if command -v gitleaks >/dev/null 2>&1; then
+  pnpm run quality:secrets
+  exit 0
+fi
+
+echo "gitleaks is not installed; using the limited tracked-file fallback" >&2
 
 SECRETS=$(git ls-files -z 2>/dev/null \
   | xargs -0 grep -lE \
-    'sk-(proj-|ant-)?[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|AIzaSy[A-Za-z0-9_-]{33}|xoxb-[A-Za-z0-9-]+|-----BEGIN (RSA |EC )?PRIVATE KEY-----' 2>/dev/null \
-  | grep -vE '(\.example$|\.sample$|/tests?/|/__tests__/|/fixtures?/|/mocks?/|/vendor/|/\.tmp-|^benchmark/|^apps/landing-page-astro/public/benchmark/|src/commands/secret_policy\.rs$)' \
+    'sk-(proj-|ant-)?[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|AIzaSy[A-Za-z0-9_-]{33}|xoxb-[A-Za-z0-9-]+|pk_[A-Za-z0-9]{32,}|-----BEGIN (RSA |EC )?PRIVATE KEY-----' 2>/dev/null \
+  | grep -vE '(\.example$|\.sample$|/tests?/|/__tests__/|/fixtures?/|/mocks?/|/vendor/|/\.tmp-|^benchmarks/public-catch-rate/|^apps/landing-page-astro/public/benchmark/|src/commands/secret_policy\.rs$|^foundry\.json$)' \
   || true)
 
 if [ -n "$SECRETS" ]; then

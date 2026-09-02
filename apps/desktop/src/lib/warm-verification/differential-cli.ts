@@ -142,22 +142,21 @@ export function differentialExitCode(
   command: Command,
   response: DifferentialDaemonResponse
 ): 0 | 2 | 3 {
-  if (command === 'prepare' && response.type === 'differential_prepared') {
-    return response.summary.status === 'ready' ? 0 : 3;
+  switch (response.type) {
+    case 'differential_prepared':
+      return command === 'prepare' && response.summary.status === 'ready' ? 0 : 3;
+    case 'differential_result':
+      if (command !== 'run' || response.summary.status !== 'complete') return 3;
+      return response.summary.classification === 'regressed' ? 2 : 0;
+    case 'differential_status':
+      if (command === 'cancel') return response.summary.state === 'not_found' ? 3 : 0;
+      if (command !== 'status' || response.summary.state !== 'completed') return 3;
+      return response.summary.classification === 'regressed' ? 2 : 0;
+    case 'differential_cleanup':
+      return command === 'cleanup' && response.summary.complete ? 0 : 3;
+    case 'error':
+      return 3;
   }
-  if (command === 'run' && response.type === 'differential_result') {
-    if (response.summary.status !== 'complete') return 3;
-    return response.summary.classification === 'regressed' ? 2 : 0;
-  }
-  if ((command === 'status' || command === 'cancel') && response.type === 'differential_status') {
-    if (command === 'cancel') return response.summary.state === 'not_found' ? 3 : 0;
-    if (response.summary.state !== 'completed') return 3;
-    return response.summary.classification === 'regressed' ? 2 : 0;
-  }
-  if (command === 'cleanup' && response.type === 'differential_cleanup') {
-    return response.summary.complete ? 0 : 3;
-  }
-  return 3;
 }
 
 function daemonRequest(options: DifferentialCliOptions): DifferentialDaemonRequest {
@@ -178,7 +177,9 @@ function print(options: DifferentialCliOptions, response: DifferentialDaemonResp
     process.stdout.write(`${JSON.stringify(response)}\n`);
     return;
   }
-  if (response.type === 'differential_prepared') {
+  if (response.type === 'error') {
+    process.stderr.write(`${response.error.code}: ${response.error.message}\n`);
+  } else if (response.type === 'differential_prepared') {
     const summary = response.summary;
     process.stdout.write(
       `${summary.status} · ${summary.scenario_count} scenario(s) · cache=${summary.source_cache_hits}/2+${Number(summary.dependency_cache_hit)}\n`
