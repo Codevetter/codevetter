@@ -8,6 +8,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -318,12 +319,10 @@ export async function main(argv = process.argv.slice(2)) {
   if (!existsSync(options.casesRoot))
     throw new Error(`Benchmark cases not found: ${options.casesRoot}`);
 
-  const allIDs = Array.from(
-    readFileSync(join(dirname(options.casesRoot), 'README.md'), 'utf8').matchAll(
-      /^\| ([a-z0-9-]+) \|/gm
-    ),
-    (match) => match[1]
-  );
+  const allIDs = readdirSync(options.casesRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
   let caseIDs = options.caseIDs.length > 0 ? options.caseIDs : allIDs;
   if (options.limit !== undefined) caseIDs = caseIDs.slice(0, options.limit);
   for (const caseID of caseIDs) {
